@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass, CloudArrowUp } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass, CloudArrowUp, TrendingUp } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
@@ -30,6 +30,7 @@ import HealthSearch from '@/components/health/HealthSearch'
 import RealTimeMonitoringHub from '@/components/health/RealTimeMonitoringHub'
 import CloudInfrastructureStatus from '@/components/health/CloudInfrastructureStatus'
 import LiveHealthDataIntegration from '@/components/health/LiveHealthDataIntegration'
+import HealthInsightsDashboard from '@/components/health/HealthInsightsDashboard'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -49,6 +50,7 @@ function App() {
   const navigationItems = {
     main: [
       { id: 'dashboard', label: 'Dashboard', icon: Heart },
+      { id: 'insights', label: 'Live Insights', icon: TrendingUp },
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
       { id: 'search', label: 'Search', icon: MagnifyingGlass },
@@ -409,7 +411,12 @@ function App() {
                   {currentPageInfo.label}
                 </h1>
                   <div className="text-sm text-muted-foreground">
-                    {currentPageInfo.category === 'Main' && 'Core health monitoring and insights'}
+                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Dashboard' && 'Core health monitoring overview'}
+                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Live Insights' && 'Real-time trending data and AI-powered insights'}
+                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Analytics' && 'Deep analysis of your health metrics'}
+                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Fall Risk' && 'Fall prevention and risk assessment'}
+                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Search' && 'Find specific health insights and data'}
+                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'History' && 'View your health history and fall records'}
                     {currentPageInfo.category === 'AI & Monitoring' && 'Advanced AI analysis and real-time monitoring'}
                     {currentPageInfo.category === 'Gamification' && 'Challenges, competitions, and motivation'}
                     {currentPageInfo.category === 'Community' && 'Share progress with your care team'}
@@ -487,7 +494,7 @@ function App() {
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                   {/* Primary Navigation - Main Features */}
                   <div>
-                    <TabsList className="grid w-full grid-cols-5 h-12">
+                    <TabsList className="grid w-full grid-cols-6 h-12">
                       {navigationItems.main.map((item) => {
                         const IconComponent = item.icon
                         return (
@@ -634,6 +641,7 @@ function App() {
               {/* Content Area */}
               <div className="space-y-6">
                 {activeTab === 'dashboard' && healthData && <HealthDashboard healthData={healthData} />}
+                {activeTab === 'insights' && healthData && <HealthInsightsDashboard healthData={healthData} />}
                 {activeTab === 'analytics' && healthData && <HealthAnalytics healthData={healthData} />}
                 {activeTab === 'fall-risk' && (
                   <FallRiskMonitor 
