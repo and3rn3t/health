@@ -99,3 +99,13 @@
 body {
   font-family: 'Inter', system-ui, sans-serif;
 }
+
+/* Hide scrollbar for horizontal scroll but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera */
+}

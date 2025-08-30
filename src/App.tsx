@@ -694,105 +694,135 @@ function App() {
                     </TabsList>
                   </div>
 
-                  {/* Quick Access Buttons */}
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-medium text-muted-foreground">More Features</h3>
-                    <Badge variant="outline" className="text-xs">
-                      {navigationItems.monitoring.length + navigationItems.ai.length + navigationItems.advanced.length + navigationItems.gamification.length + navigationItems.community.length + navigationItems.management.length + navigationItems.setup.length} more
-                    </Badge>
-                  </div>
-                  
                   {/* Compact Feature Categories */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Monitoring
-                      </h4>
-                      <div className="grid grid-cols-2 gap-1">
-                        {navigationItems.monitoring.map((item) => {
-                          const IconComponent = item.icon
-                          return (
-                            <Button
-                              key={item.id}
-                              variant={activeTab === item.id ? 'default' : 'outline'}
-                              size="sm"
-                              onClick={() => setActiveTab(item.id)}
-                              className="flex items-center gap-1 text-xs h-8 px-2"
-                            >
-                              <IconComponent className="h-3 w-3" />
-                              <span className="truncate">{item.label.split(' ')[0]}</span>
-                            </Button>
-                          )
-                        })}
-                      </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-muted-foreground">More Features</h3>
+                      <Badge variant="outline" className="text-xs">
+                        {navigationItems.monitoring.length + navigationItems.ai.length + navigationItems.advanced.length + navigationItems.gamification.length + navigationItems.community.length + navigationItems.management.length + navigationItems.setup.length} more
+                      </Badge>
                     </div>
-
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        AI & Advanced
-                      </h4>
-                      <div className="grid grid-cols-2 gap-1">
-                        {[...navigationItems.ai.slice(0, 2), ...navigationItems.advanced.slice(0, 2)].map((item) => {
-                          const IconComponent = item.icon
-                          return (
-                            <Button
-                              key={item.id}
-                              variant={activeTab === item.id ? 'default' : 'outline'}
-                              size="sm"
-                              onClick={() => setActiveTab(item.id)}
-                              className="flex items-center gap-1 text-xs h-8 px-2"
-                            >
-                              <IconComponent className="h-3 w-3" />
-                              <span className="truncate">{item.label.split(' ')[0]}</span>
-                            </Button>
-                          )
-                        })}
+                    
+                    {/* Horizontal scrollable categories */}
+                    <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                      {/* Monitoring */}
+                      <div className="flex-shrink-0 space-y-2 min-w-[140px]">
+                        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Monitoring
+                        </h4>
+                        <div className="space-y-1">
+                          {navigationItems.monitoring.slice(0, 3).map((item) => {
+                            const IconComponent = item.icon
+                            return (
+                              <Button
+                                key={item.id}
+                                variant={activeTab === item.id ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => setActiveTab(item.id)}
+                                className="w-full justify-start text-xs h-7 px-2"
+                              >
+                                <IconComponent className="h-3 w-3 mr-2" />
+                                <span className="truncate">{item.label}</span>
+                              </Button>
+                            )
+                          })}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Community
-                      </h4>
-                      <div className="grid grid-cols-2 gap-1">
-                        {[...navigationItems.gamification, ...navigationItems.community.slice(0, 1)].map((item) => {
-                          const IconComponent = item.icon
-                          return (
-                            <Button
-                              key={item.id}
-                              variant={activeTab === item.id ? 'default' : 'outline'}
-                              size="sm"
-                              onClick={() => setActiveTab(item.id)}
-                              className="flex items-center gap-1 text-xs h-8 px-2"
-                            >
-                              <IconComponent className="h-3 w-3" />
-                              <span className="truncate">{item.label.split(' ')[0]}</span>
-                            </Button>
-                          )
-                        })}
+                      {/* AI & ML */}
+                      <div className="flex-shrink-0 space-y-2 min-w-[140px]">
+                        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          AI & ML
+                        </h4>
+                        <div className="space-y-1">
+                          {navigationItems.ai.slice(0, 3).map((item) => {
+                            const IconComponent = item.icon
+                            return (
+                              <Button
+                                key={item.id}
+                                variant={activeTab === item.id ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => setActiveTab(item.id)}
+                                className="w-full justify-start text-xs h-7 px-2"
+                              >
+                                <IconComponent className="h-3 w-3 mr-2" />
+                                <span className="truncate">{item.label}</span>
+                              </Button>
+                            )
+                          })}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Settings
-                      </h4>
-                      <div className="grid grid-cols-2 gap-1">
-                        {[...navigationItems.management, ...navigationItems.setup].map((item) => {
-                          const IconComponent = item.icon
-                          return (
-                            <Button
-                              key={item.id}
-                              variant={activeTab === item.id ? 'default' : 'outline'}
-                              size="sm"
-                              onClick={() => setActiveTab(item.id)}
-                              className="flex items-center gap-1 text-xs h-8 px-2"
-                            >
-                              <IconComponent className="h-3 w-3" />
-                              <span className="truncate">{item.label.split(' ')[0]}</span>
-                            </Button>
-                          )
-                        })}
+                      {/* Advanced */}
+                      <div className="flex-shrink-0 space-y-2 min-w-[140px]">
+                        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Advanced
+                        </h4>
+                        <div className="space-y-1">
+                          {navigationItems.advanced.map((item) => {
+                            const IconComponent = item.icon
+                            return (
+                              <Button
+                                key={item.id}
+                                variant={activeTab === item.id ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => setActiveTab(item.id)}
+                                className="w-full justify-start text-xs h-7 px-2"
+                              >
+                                <IconComponent className="h-3 w-3 mr-2" />
+                                <span className="truncate">{item.label}</span>
+                              </Button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Community */}
+                      <div className="flex-shrink-0 space-y-2 min-w-[140px]">
+                        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Community
+                        </h4>
+                        <div className="space-y-1">
+                          {[...navigationItems.gamification, ...navigationItems.community].map((item) => {
+                            const IconComponent = item.icon
+                            return (
+                              <Button
+                                key={item.id}
+                                variant={activeTab === item.id ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => setActiveTab(item.id)}
+                                className="w-full justify-start text-xs h-7 px-2"
+                              >
+                                <IconComponent className="h-3 w-3 mr-2" />
+                                <span className="truncate">{item.label}</span>
+                              </Button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Setup */}
+                      <div className="flex-shrink-0 space-y-2 min-w-[140px]">
+                        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Setup
+                        </h4>
+                        <div className="space-y-1">
+                          {[...navigationItems.management, ...navigationItems.setup.slice(0, 3)].map((item) => {
+                            const IconComponent = item.icon
+                            return (
+                              <Button
+                                key={item.id}
+                                variant={activeTab === item.id ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => setActiveTab(item.id)}
+                                className="w-full justify-start text-xs h-7 px-2"
+                              >
+                                <IconComponent className="h-3 w-3 mr-2" />
+                                <span className="truncate">{item.label}</span>
+                              </Button>
+                            )
+                          })}
+                        </div>
                       </div>
                     </div>
                   </div>
