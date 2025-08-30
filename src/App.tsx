@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3 } from '@phosphor-icons/react'
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
@@ -29,6 +30,40 @@ function App() {
     (healthData.healthScore || 0) < 60 || 
     (healthData.fallRiskFactors && healthData.fallRiskFactors.some(factor => factor.risk === 'high'))
   )
+
+  // Define navigation structure with categories
+  const navigationItems = {
+    main: [
+      { id: 'dashboard', label: 'Dashboard', icon: Heart },
+      { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+      { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
+      { id: 'history', label: 'History', icon: Activity }
+    ],
+    management: [
+      { id: 'contacts', label: 'Emergency Contacts', icon: Users },
+      { id: 'import', label: 'Import Data', icon: Upload }
+    ],
+    setup: [
+      { id: 'tooling', label: 'Setup Guide', icon: Gear },
+      { id: 'phases', label: 'Implementation', icon: Roadmap }
+    ]
+  }
+
+  // Get current page details for breadcrumb
+  const getCurrentPageInfo = () => {
+    const allItems = [...navigationItems.main, ...navigationItems.management, ...navigationItems.setup]
+    const currentItem = allItems.find(item => item.id === activeTab)
+    
+    if (!currentItem) return { label: 'Dashboard', category: 'Main' }
+    
+    let category = 'Main'
+    if (navigationItems.management.find(item => item.id === activeTab)) category = 'Management'
+    if (navigationItems.setup.find(item => item.id === activeTab)) category = 'Setup'
+    
+    return { label: currentItem.label, category }
+  }
+
+  const currentPageInfo = getCurrentPageInfo()
 
   return (
     <div className="min-h-screen bg-background">
@@ -90,68 +125,102 @@ function App() {
             </Card>
           </div>
         ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            {/* Primary Navigation */}
-            <div className="flex flex-col gap-4">
-              <TabsList className="grid w-full grid-cols-4 h-12">
-                <TabsTrigger value="dashboard" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Heart className="h-4 w-4" />
-                  <span className="hidden sm:inline">Dashboard</span>
-                </TabsTrigger>
-                <TabsTrigger value="analytics" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <BarChart3 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Analytics</span>
-                </TabsTrigger>
-                <TabsTrigger value="fall-risk" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Shield className="h-4 w-4" />
-                  <span className="hidden sm:inline">Fall Risk</span>
-                </TabsTrigger>
-                <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Activity className="h-4 w-4" />
-                  <span className="hidden sm:inline">History</span>
-                </TabsTrigger>
-              </TabsList>
+          <div className="space-y-6">
+            {/* Breadcrumb Navigation */}
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink 
+                    onClick={() => setActiveTab('dashboard')}
+                    className="flex items-center gap-1 cursor-pointer"
+                  >
+                    <House className="h-4 w-4" />
+                    HealthGuard
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink 
+                    onClick={() => setActiveTab('dashboard')}
+                    className="cursor-pointer"
+                  >
+                    {currentPageInfo.category}
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{currentPageInfo.label}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
 
-              {/* Secondary Navigation */}
-              <div className="flex flex-wrap gap-2 justify-center">
-                <Button
-                  variant={activeTab === 'contacts' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setActiveTab('contacts')}
-                  className="flex items-center gap-2"
-                >
-                  <Users className="h-4 w-4" />
-                  Emergency Contacts
-                </Button>
-                <Button
-                  variant={activeTab === 'tooling' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setActiveTab('tooling')}
-                  className="flex items-center gap-2"
-                >
-                  <Gear className="h-4 w-4" />
-                  Setup Guide
-                </Button>
-                <Button
-                  variant={activeTab === 'phases' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setActiveTab('phases')}
-                  className="flex items-center gap-2"
-                >
-                  <Roadmap className="h-4 w-4" />
-                  Implementation
-                </Button>
-                <Button
-                  variant={activeTab === 'import' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setActiveTab('import')}
-                  className="flex items-center gap-2"
-                >
-                  <Upload className="h-4 w-4" />
-                  Import Data
-                </Button>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+              {/* Primary Navigation - Main Features */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-3">Main Features</h3>
+                  <TabsList className="grid w-full grid-cols-4 h-12">
+                    {navigationItems.main.map((item) => {
+                      const IconComponent = item.icon
+                      return (
+                        <TabsTrigger 
+                          key={item.id}
+                          value={item.id} 
+                          className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                        >
+                          <IconComponent className="h-4 w-4" />
+                          <span className="hidden sm:inline">{item.label}</span>
+                        </TabsTrigger>
+                      )
+                    })}
+                  </TabsList>
+                </div>
+
+                {/* Secondary Navigation - Management & Setup */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="text-xs font-medium text-muted-foreground mb-2">Management</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {navigationItems.management.map((item) => {
+                        const IconComponent = item.icon
+                        return (
+                          <Button
+                            key={item.id}
+                            variant={activeTab === item.id ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setActiveTab(item.id)}
+                            className="flex items-center gap-2"
+                          >
+                            <IconComponent className="h-4 w-4" />
+                            {item.label}
+                          </Button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-xs font-medium text-muted-foreground mb-2">Setup & Configuration</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {navigationItems.setup.map((item) => {
+                        const IconComponent = item.icon
+                        return (
+                          <Button
+                            key={item.id}
+                            variant={activeTab === item.id ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setActiveTab(item.id)}
+                            className="flex items-center gap-2"
+                          >
+                            <IconComponent className="h-4 w-4" />
+                            {item.label}
+                          </Button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
 
             <TabsContent value="dashboard" className="space-y-6">
               <HealthDashboard healthData={healthData} />
@@ -202,6 +271,7 @@ function App() {
               </Card>
             </TabsContent>
           </Tabs>
+          </div>
         )}
       </main>
     </div>
