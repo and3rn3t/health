@@ -18,6 +18,8 @@ import HealthDataImport from '@/components/health/HealthDataImport'
 import FallMonitoringTooling from '@/components/health/FallMonitoringTooling'
 import RealTimeFallDetection from '@/components/health/RealTimeFallDetection'
 import ImplementationPhases from '@/components/health/ImplementationPhases'
+import MovementPatternAnalysis from '@/components/health/MovementPatternAnalysis'
+import MLPredictionsDashboard from '@/components/health/MLPredictionsDashboard'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -39,6 +41,8 @@ function App() {
       { id: 'dashboard', label: 'Dashboard', icon: Heart },
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
+      { id: 'ml-predictions', label: 'ML Predictions', icon: Activity },
+      { id: 'movement-patterns', label: 'Movement Analysis', icon: Activity },
       { id: 'realtime', label: 'Real-time Detection', icon: Activity },
       { id: 'history', label: 'History', icon: Clock }
     ],
@@ -357,8 +361,8 @@ function App() {
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground mb-3">Main Features</h3>
-                      <TabsList className="grid w-full grid-cols-5 h-12">
-                        {navigationItems.main.map((item) => {
+                      <TabsList className="grid w-full grid-cols-4 h-12">
+                        {navigationItems.main.slice(0, 4).map((item) => {
                           const IconComponent = item.icon
                           return (
                             <TabsTrigger 
@@ -379,6 +383,21 @@ function App() {
                       <div>
                         <h4 className="text-xs font-medium text-muted-foreground mb-2">Management</h4>
                         <div className="flex flex-wrap gap-2">
+                          {navigationItems.main.slice(4).map((item) => {
+                            const IconComponent = item.icon
+                            return (
+                              <Button
+                                key={item.id}
+                                variant={activeTab === item.id ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setActiveTab(item.id)}
+                                className="flex items-center gap-2"
+                              >
+                                <IconComponent className="h-4 w-4" />
+                                {item.label}
+                              </Button>
+                            )
+                          })}
                           {navigationItems.management.map((item) => {
                             const IconComponent = item.icon
                             return (
@@ -433,6 +452,8 @@ function App() {
                     setFallRiskScore={setFallRiskScore}
                   />
                 )}
+                {activeTab === 'ml-predictions' && healthData && <MLPredictionsDashboard healthData={healthData} />}
+                {activeTab === 'movement-patterns' && healthData && <MovementPatternAnalysis healthData={healthData} />}
                 {activeTab === 'realtime' && <RealTimeFallDetection />}
                 {activeTab === 'tooling' && <RealTimeFallDetection />}
                 {activeTab === 'phases' && <ImplementationPhases />}
