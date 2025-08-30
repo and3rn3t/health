@@ -38,6 +38,8 @@ import AdvancedAppleWatchIntegration from '@/components/health/AdvancedAppleWatc
 import EnhancedHealthInsightsDashboard from '@/components/health/EnhancedHealthInsightsDashboard'
 import AppleWatchIntegrationChecklist from '@/components/health/AppleWatchIntegrationChecklist'
 import XcodeDevelopmentSetup from '@/components/health/XcodeDevelopmentSetup'
+import ComprehensiveAppleHealthKitGuide from '@/components/health/ComprehensiveAppleHealthKitGuide'
+import WebSocketArchitectureGuide from '@/components/health/WebSocketArchitectureGuide'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -145,6 +147,8 @@ function App() {
     ],
     setup: [
       { id: 'phases', label: 'Implementation', icon: Roadmap },
+      { id: 'healthkit-guide', label: 'HealthKit Guide', icon: Apple },
+      { id: 'websocket-guide', label: 'WebSocket Bridge', icon: CloudArrowUp },
       { id: 'integration-checklist', label: 'Integration Checklist', icon: Apple },
       { id: 'xcode-setup', label: 'Xcode Development Setup', icon: Code },
       { id: 'infrastructure', label: 'Cloud Infrastructure', icon: Gear }
@@ -854,6 +858,8 @@ function App() {
                   </Card>
                 )}
                 {activeTab === 'phases' && <ImplementationPhases />}
+                {activeTab === 'healthkit-guide' && <ComprehensiveAppleHealthKitGuide />}
+                {activeTab === 'websocket-guide' && <WebSocketArchitectureGuide />}
                 {activeTab === 'integration-checklist' && <AppleWatchIntegrationChecklist />}
                 {activeTab === 'xcode-setup' && <XcodeDevelopmentSetup />}
                 {activeTab === 'infrastructure' && <CloudInfrastructureStatus />}

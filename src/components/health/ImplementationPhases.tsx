@@ -221,6 +221,51 @@ const implementationPhases: PhaseDetail[] = [
   },
   {
     id: 'phase6',
+    title: '🔄 Production Apple Health Kit Integration (NEXT PRIORITY)',
+    description: 'Complete native iOS/watchOS applications with comprehensive HealthKit integration for production deployment',
+    duration: '8-12 weeks',
+    complexity: 'High',
+    cost: '$45k - $65k',
+    prerequisites: [
+      'Apple Developer Program enrollment ($99/year)',
+      'Physical iPhone and Apple Watch devices for testing',
+      'Healthcare data compliance review and HIPAA assessment',
+      'SSL/TLS certificates for production WebSocket server'
+    ],
+    deliverables: [
+      '🔄 Native iOS app with full HealthKit integration',
+      '🔄 Apple Watch companion app with advanced sensor access',
+      '🔄 Production-grade fall detection algorithm',
+      '🔄 Real-time WebSocket bridge for live health data streaming',
+      '🔄 End-to-end AES-256 encryption for health data transmission',
+      '⏳ Emergency response system with GPS location sharing',
+      '⏳ Background health monitoring with optimized battery usage',
+      '⏳ App Store submission and approval process',
+      '⏳ HIPAA-compliant data handling and storage',
+      '⏳ Multi-device synchronization and offline data queuing'
+    ],
+    technologies: [
+      '🔄 Swift & SwiftUI for native iOS development',
+      '🔄 HealthKit framework for health data access',
+      '🔄 WatchKit & watchOS for Apple Watch integration',
+      '🔄 CoreMotion for advanced movement analysis',
+      '🔄 WebSocket server (Node.js/TypeScript) with JWT authentication',
+      '⏳ CryptoKit for end-to-end encryption',
+      '⏳ WatchConnectivity for iPhone-Watch communication',
+      '⏳ Background processing and app refresh capabilities'
+    ],
+    risks: [
+      '⚠️ App Store review process delays (1-3 weeks typical)',
+      '⚠️ HealthKit permission complexities and user adoption',
+      '⚠️ Fall detection accuracy challenges requiring extensive testing',
+      '⚠️ Battery optimization requirements for 24/7 monitoring',
+      '⚠️ HIPAA compliance verification and legal review costs',
+      '⚠️ WebSocket infrastructure scaling and uptime requirements'
+    ],
+    icon: <Smartphone className="h-5 w-5 text-orange-500" />
+  },
+  {
+    id: 'phase7',
     title: 'Smart Home Integration',
     description: 'Extend monitoring beyond wearables with environmental sensors',
     duration: '4-8 weeks',
@@ -254,7 +299,7 @@ const implementationPhases: PhaseDetail[] = [
     icon: <GearSix className="h-5 w-5" />
   },
   {
-    id: 'phase7',
+    id: 'phase8',
     title: 'Advanced AI & Predictive Analytics',
     description: 'Implement sophisticated AI for health trend prediction and intervention',
     duration: '10-16 weeks',
