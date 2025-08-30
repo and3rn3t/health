@@ -37,6 +37,7 @@ import RealTimeHealthScoring from '@/components/health/RealTimeHealthScoring'
 import AdvancedAppleWatchIntegration from '@/components/health/AdvancedAppleWatchIntegration'
 import EnhancedHealthInsightsDashboard from '@/components/health/EnhancedHealthInsightsDashboard'
 import AppleWatchIntegrationChecklist from '@/components/health/AppleWatchIntegrationChecklist'
+import XcodeDevelopmentSetup from '@/components/health/XcodeDevelopmentSetup'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -145,6 +146,7 @@ function App() {
     setup: [
       { id: 'phases', label: 'Implementation', icon: Roadmap },
       { id: 'integration-checklist', label: 'Integration Checklist', icon: Apple },
+      { id: 'xcode-setup', label: 'Xcode Development Setup', icon: Code },
       { id: 'infrastructure', label: 'Cloud Infrastructure', icon: Gear }
     ]
   }
@@ -853,6 +855,7 @@ function App() {
                 )}
                 {activeTab === 'phases' && <ImplementationPhases />}
                 {activeTab === 'integration-checklist' && <AppleWatchIntegrationChecklist />}
+                {activeTab === 'xcode-setup' && <XcodeDevelopmentSetup />}
                 {activeTab === 'infrastructure' && <CloudInfrastructureStatus />}
               </div>
             </div>
