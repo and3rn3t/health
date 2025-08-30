@@ -47,11 +47,13 @@ function App() {
       { id: 'dashboard', label: 'Dashboard', icon: Heart },
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
+      { id: 'history', label: 'History', icon: Clock }
+    ],
+    ai: [
       { id: 'ai-recommendations', label: 'AI Recommendations', icon: Activity },
       { id: 'ml-predictions', label: 'ML Predictions', icon: Activity },
       { id: 'movement-patterns', label: 'Movement Analysis', icon: Activity },
-      { id: 'realtime', label: 'Real-time Detection', icon: Activity },
-      { id: 'history', label: 'History', icon: Clock }
+      { id: 'realtime', label: 'Real-time Detection', icon: Activity }
     ],
     gamification: [
       { id: 'game-center', label: 'Game Center', icon: Trophy },
@@ -74,12 +76,13 @@ function App() {
 
   // Get current page details for breadcrumb
   const getCurrentPageInfo = () => {
-    const allItems = [...navigationItems.main, ...navigationItems.gamification, ...navigationItems.community, ...navigationItems.management, ...navigationItems.setup]
+    const allItems = [...navigationItems.main, ...navigationItems.ai, ...navigationItems.gamification, ...navigationItems.community, ...navigationItems.management, ...navigationItems.setup]
     const currentItem = allItems.find(item => item.id === activeTab)
     
     if (!currentItem) return { label: 'Dashboard', category: 'Main' }
     
     let category = 'Main'
+    if (navigationItems.ai.find(item => item.id === activeTab)) category = 'AI & Monitoring'
     if (navigationItems.gamification.find(item => item.id === activeTab)) category = 'Gamification'
     if (navigationItems.community.find(item => item.id === activeTab)) category = 'Community'
     if (navigationItems.management.find(item => item.id === activeTab)) category = 'Management'
@@ -135,6 +138,38 @@ function App() {
             )}
             <div className="space-y-1">
               {navigationItems.main.map((item) => {
+                const IconComponent = item.icon
+                const isActive = activeTab === item.id
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                      w-full justify-start h-10
+                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                    `}
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* AI & Monitoring */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                AI & Monitoring
+              </h3>
+            )}
+            <div className="space-y-1">
+              {navigationItems.ai.map((item) => {
                 const IconComponent = item.icon
                 const isActive = activeTab === item.id
                 return (
@@ -366,7 +401,8 @@ function App() {
                   {currentPageInfo.label}
                 </h1>
                   <div className="text-sm text-muted-foreground">
-                    {currentPageInfo.category === 'Main' && 'Health monitoring and analytics'}
+                    {currentPageInfo.category === 'Main' && 'Core health monitoring and insights'}
+                    {currentPageInfo.category === 'AI & Monitoring' && 'Advanced AI analysis and real-time monitoring'}
                     {currentPageInfo.category === 'Gamification' && 'Challenges, competitions, and motivation'}
                     {currentPageInfo.category === 'Community' && 'Share progress with your care team'}
                     {currentPageInfo.category === 'Management' && 'Data and contact management'}
@@ -446,7 +482,7 @@ function App() {
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground mb-3">Main Features</h3>
                       <TabsList className="grid w-full grid-cols-4 h-12">
-                        {navigationItems.main.slice(0, 4).map((item) => {
+                        {navigationItems.main.map((item) => {
                           const IconComponent = item.icon
                           return (
                             <TabsTrigger 
@@ -462,12 +498,12 @@ function App() {
                       </TabsList>
                     </div>
 
-                    {/* Secondary Navigation - Management & Setup */}
+                    {/* Secondary Navigation - Advanced Features */}
                     <div className="grid md:grid-cols-3 gap-4">
                       <div>
-                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Advanced Features</h4>
+                        <h4 className="text-xs font-medium text-muted-foreground mb-2">AI & Monitoring</h4>
                         <div className="flex flex-wrap gap-2">
-                          {navigationItems.main.slice(4).map((item) => {
+                          {navigationItems.ai.map((item) => {
                             const IconComponent = item.icon
                             return (
                               <Button
@@ -507,7 +543,7 @@ function App() {
                       </div>
                       
                       <div>
-                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Community & Care</h4>
+                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Community & Management</h4>
                         <div className="flex flex-wrap gap-2">
                           {navigationItems.community.map((item) => {
                             const IconComponent = item.icon
