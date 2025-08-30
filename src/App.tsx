@@ -33,6 +33,9 @@ import LiveHealthDataIntegration from '@/components/health/LiveHealthDataIntegra
 import HealthInsightsDashboard from '@/components/health/HealthInsightsDashboard'
 import HealthAlertsConfig from '@/components/health/HealthAlertsConfig'
 import PredictiveHealthAlerts from '@/components/health/PredictiveHealthAlerts'
+import RealTimeHealthScoring from '@/components/health/RealTimeHealthScoring'
+import AdvancedAppleWatchIntegration from '@/components/health/AdvancedAppleWatchIntegration'
+import EnhancedHealthInsightsDashboard from '@/components/health/EnhancedHealthInsightsDashboard'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -53,6 +56,7 @@ function App() {
     main: [
       { id: 'dashboard', label: 'Dashboard', icon: Heart },
       { id: 'insights', label: 'Live Insights', icon: TrendingUp },
+      { id: 'realtime-scoring', label: 'Live Health Score', icon: Heart },
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
       { id: 'alerts', label: 'Health Alerts', icon: Bell },
@@ -66,7 +70,8 @@ function App() {
       { id: 'movement-patterns', label: 'Movement Analysis', icon: Activity },
       { id: 'realtime', label: 'Real-time Detection', icon: Activity },
       { id: 'monitoring-hub', label: 'Monitoring Hub', icon: Activity },
-      { id: 'live-integration', label: 'Live Data Integration', icon: CloudArrowUp }
+      { id: 'live-integration', label: 'Live Data Integration', icon: CloudArrowUp },
+      { id: 'advanced-watch', label: 'Advanced Watch Integration', icon: Activity }
     ],
     gamification: [
       { id: 'game-center', label: 'Game Center', icon: Trophy },
@@ -417,6 +422,7 @@ function App() {
                   <div className="text-sm text-muted-foreground">
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Dashboard' && 'Core health monitoring overview'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Live Insights' && 'Real-time trending data and AI-powered insights'}
+                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Live Health Score' && 'Continuous health scoring with Apple Watch integration'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Analytics' && 'Deep analysis of your health metrics'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Fall Risk' && 'Fall prevention and risk assessment'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Health Alerts' && 'Custom health monitoring alerts and thresholds'}
@@ -500,7 +506,7 @@ function App() {
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                   {/* Primary Navigation - Main Features */}
                   <div>
-                    <TabsList className="grid w-full grid-cols-8 h-12">
+                    <TabsList className="grid w-full grid-cols-9 h-12">
                       {navigationItems.main.map((item) => {
                         const IconComponent = item.icon
                         return (
@@ -647,7 +653,8 @@ function App() {
               {/* Content Area */}
               <div className="space-y-6">
                 {activeTab === 'dashboard' && healthData && <HealthDashboard healthData={healthData} />}
-                {activeTab === 'insights' && healthData && <HealthInsightsDashboard healthData={healthData} />}
+                {activeTab === 'insights' && healthData && <EnhancedHealthInsightsDashboard healthData={healthData} />}
+                {activeTab === 'realtime-scoring' && <RealTimeHealthScoring />}
                 {activeTab === 'analytics' && healthData && <HealthAnalytics healthData={healthData} />}
                 {activeTab === 'fall-risk' && (
                   <FallRiskMonitor 
@@ -675,6 +682,7 @@ function App() {
                 {activeTab === 'realtime' && <RealTimeFallDetection />}
                 {activeTab === 'monitoring-hub' && healthData && <RealTimeMonitoringHub healthData={healthData} />}
                 {activeTab === 'live-integration' && <LiveHealthDataIntegration />}
+                {activeTab === 'advanced-watch' && <AdvancedAppleWatchIntegration />}
                 {activeTab === 'history' && <FallHistory />}
                 {activeTab === 'game-center' && healthData && <HealthGameCenter healthData={healthData} />}
                 {activeTab === 'family-challenges' && <FamilyGameification />}
