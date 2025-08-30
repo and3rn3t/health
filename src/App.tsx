@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
@@ -16,6 +16,7 @@ import EmergencyContacts from '@/components/health/EmergencyContacts'
 import FallHistory from '@/components/health/FallHistory'
 import HealthDataImport from '@/components/health/HealthDataImport'
 import FallMonitoringTooling from '@/components/health/FallMonitoringTooling'
+import RealTimeFallDetection from '@/components/health/RealTimeFallDetection'
 import ImplementationPhases from '@/components/health/ImplementationPhases'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
@@ -38,14 +39,15 @@ function App() {
       { id: 'dashboard', label: 'Dashboard', icon: Heart },
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
-      { id: 'history', label: 'History', icon: Activity }
+      { id: 'realtime', label: 'Real-time Detection', icon: Activity },
+      { id: 'history', label: 'History', icon: Clock }
     ],
     management: [
       { id: 'contacts', label: 'Emergency Contacts', icon: Users },
       { id: 'import', label: 'Import Data', icon: Upload }
     ],
     setup: [
-      { id: 'tooling', label: 'Setup Guide', icon: Gear },
+      { id: 'realtime', label: 'Real-time Detection', icon: Gear },
       { id: 'phases', label: 'Implementation', icon: Roadmap }
     ]
   }
@@ -355,14 +357,14 @@ function App() {
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground mb-3">Main Features</h3>
-                      <TabsList className="grid w-full grid-cols-4 h-12">
+                      <TabsList className="grid w-full grid-cols-5 h-12">
                         {navigationItems.main.map((item) => {
                           const IconComponent = item.icon
                           return (
                             <TabsTrigger 
                               key={item.id}
                               value={item.id} 
-                              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs"
                             >
                               <IconComponent className="h-4 w-4" />
                               <span className="hidden sm:inline">{item.label}</span>
@@ -431,7 +433,8 @@ function App() {
                     setFallRiskScore={setFallRiskScore}
                   />
                 )}
-                {activeTab === 'tooling' && <FallMonitoringTooling />}
+                {activeTab === 'realtime' && <RealTimeFallDetection />}
+                {activeTab === 'tooling' && <RealTimeFallDetection />}
                 {activeTab === 'phases' && <ImplementationPhases />}
                 {activeTab === 'history' && <FallHistory />}
                 {activeTab === 'contacts' && (
