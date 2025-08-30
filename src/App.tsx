@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass, CloudArrowUp, TrendingUp, Bell } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass, CloudArrowUp, TrendingUp, Bell, Brain } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
@@ -32,6 +32,7 @@ import CloudInfrastructureStatus from '@/components/health/CloudInfrastructureSt
 import LiveHealthDataIntegration from '@/components/health/LiveHealthDataIntegration'
 import HealthInsightsDashboard from '@/components/health/HealthInsightsDashboard'
 import HealthAlertsConfig from '@/components/health/HealthAlertsConfig'
+import PredictiveHealthAlerts from '@/components/health/PredictiveHealthAlerts'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
       { id: 'alerts', label: 'Health Alerts', icon: Bell },
+      { id: 'predictive-alerts', label: 'Predictive Alerts', icon: Brain },
       { id: 'search', label: 'Search', icon: MagnifyingGlass },
       { id: 'history', label: 'History', icon: Clock }
     ],
@@ -418,6 +420,7 @@ function App() {
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Analytics' && 'Deep analysis of your health metrics'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Fall Risk' && 'Fall prevention and risk assessment'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Health Alerts' && 'Custom health monitoring alerts and thresholds'}
+                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Predictive Alerts' && 'AI-powered early warning system for health decline'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Search' && 'Find specific health insights and data'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'History' && 'View your health history and fall records'}
                     {currentPageInfo.category === 'AI & Monitoring' && 'Advanced AI analysis and real-time monitoring'}
@@ -497,7 +500,7 @@ function App() {
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                   {/* Primary Navigation - Main Features */}
                   <div>
-                    <TabsList className="grid w-full grid-cols-7 h-12">
+                    <TabsList className="grid w-full grid-cols-8 h-12">
                       {navigationItems.main.map((item) => {
                         const IconComponent = item.icon
                         return (
@@ -654,6 +657,7 @@ function App() {
                   />
                 )}
                 {activeTab === 'alerts' && healthData && <HealthAlertsConfig healthData={healthData} />}
+                {activeTab === 'predictive-alerts' && healthData && <PredictiveHealthAlerts healthData={healthData} />}
                 {activeTab === 'search' && healthData && (
                   <HealthSearch 
                     healthData={healthData} 
