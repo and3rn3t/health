@@ -20,6 +20,7 @@ import RealTimeFallDetection from '@/components/health/RealTimeFallDetection'
 import ImplementationPhases from '@/components/health/ImplementationPhases'
 import MovementPatternAnalysis from '@/components/health/MovementPatternAnalysis'
 import MLPredictionsDashboard from '@/components/health/MLPredictionsDashboard'
+import AIRecommendations from '@/components/health/AIRecommendations'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
       { id: 'dashboard', label: 'Dashboard', icon: Heart },
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
+      { id: 'ai-recommendations', label: 'AI Recommendations', icon: Activity },
       { id: 'ml-predictions', label: 'ML Predictions', icon: Activity },
       { id: 'movement-patterns', label: 'Movement Analysis', icon: Activity },
       { id: 'realtime', label: 'Real-time Detection', icon: Activity },
@@ -452,6 +454,7 @@ function App() {
                     setFallRiskScore={setFallRiskScore}
                   />
                 )}
+                {activeTab === 'ai-recommendations' && healthData && <AIRecommendations healthData={healthData} />}
                 {activeTab === 'ml-predictions' && healthData && <MLPredictionsDashboard healthData={healthData} />}
                 {activeTab === 'movement-patterns' && healthData && <MovementPatternAnalysis healthData={healthData} />}
                 {activeTab === 'realtime' && <RealTimeFallDetection />}
