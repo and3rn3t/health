@@ -27,6 +27,8 @@ import FamilyDashboard from '@/components/health/FamilyDashboard'
 import HealthGameCenter from '@/components/gamification/HealthGameCenter'
 import FamilyGameification from '@/components/gamification/FamilyGameification'
 import HealthSearch from '@/components/health/HealthSearch'
+import RealTimeMonitoringHub from '@/components/health/RealTimeMonitoringHub'
+import CloudInfrastructureStatus from '@/components/health/CloudInfrastructureStatus'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -55,7 +57,8 @@ function App() {
       { id: 'ai-recommendations', label: 'AI Recommendations', icon: Activity },
       { id: 'ml-predictions', label: 'ML Predictions', icon: Activity },
       { id: 'movement-patterns', label: 'Movement Analysis', icon: Activity },
-      { id: 'realtime', label: 'Real-time Detection', icon: Activity }
+      { id: 'realtime', label: 'Real-time Detection', icon: Activity },
+      { id: 'monitoring-hub', label: 'Monitoring Hub', icon: Activity }
     ],
     gamification: [
       { id: 'game-center', label: 'Game Center', icon: Trophy },
@@ -72,7 +75,8 @@ function App() {
       { id: 'import', label: 'Import Data', icon: Upload }
     ],
     setup: [
-      { id: 'phases', label: 'Implementation', icon: Roadmap }
+      { id: 'phases', label: 'Implementation', icon: Roadmap },
+      { id: 'infrastructure', label: 'Cloud Infrastructure', icon: Gear }
     ]
   }
 
@@ -651,6 +655,7 @@ function App() {
                 {activeTab === 'ml-predictions' && healthData && <MLPredictionsDashboard healthData={healthData} />}
                 {activeTab === 'movement-patterns' && healthData && <MovementPatternAnalysis healthData={healthData} />}
                 {activeTab === 'realtime' && <RealTimeFallDetection />}
+                {activeTab === 'monitoring-hub' && healthData && <RealTimeMonitoringHub healthData={healthData} />}
                 {activeTab === 'history' && <FallHistory />}
                 {activeTab === 'game-center' && healthData && <HealthGameCenter healthData={healthData} />}
                 {activeTab === 'family-challenges' && <FamilyGameification />}
@@ -678,6 +683,7 @@ function App() {
                   </Card>
                 )}
                 {activeTab === 'phases' && <ImplementationPhases />}
+                {activeTab === 'infrastructure' && <CloudInfrastructureStatus />}
               </div>
             </div>
           )}
