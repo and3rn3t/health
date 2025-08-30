@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass, CloudArrowUp, TrendingUp, Bell, Brain, Moon, Sun, Monitor, Apple, Code } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass, CloudArrowUp, TrendingUp, Bell, Brain, Moon, Sun, Monitor, Apple, Code, Lightbulb, Sparkle } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
@@ -40,6 +40,7 @@ import AppleWatchIntegrationChecklist from '@/components/health/AppleWatchIntegr
 import XcodeDevelopmentSetup from '@/components/health/XcodeDevelopmentSetup'
 import ComprehensiveAppleHealthKitGuide from '@/components/health/ComprehensiveAppleHealthKitGuide'
 import WebSocketArchitectureGuide from '@/components/health/WebSocketArchitectureGuide'
+import SmartFeatureRecommendations from '@/components/recommendations/SmartFeatureRecommendations'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -113,6 +114,7 @@ function App() {
       { id: 'insights', label: 'Insights', icon: TrendingUp },
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
+      { id: 'recommendations', label: 'Recommendations', icon: Lightbulb },
       { id: 'search', label: 'Search', icon: MagnifyingGlass }
     ],
     monitoring: [
@@ -587,6 +589,7 @@ function App() {
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Insights' && 'Real-time trending data and AI-powered insights'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Analytics' && 'Deep analysis of your health metrics'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Fall Risk' && 'Fall prevention and risk assessment'}
+                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Recommendations' && 'Smart suggestions based on your usage patterns'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Search' && 'Find specific health insights and data'}
                     {currentPageInfo.category === 'Monitoring' && 'Health monitoring and alert system'}
                     {currentPageInfo.category === 'AI & ML' && 'Advanced AI analysis and machine learning'}
@@ -677,17 +680,17 @@ function App() {
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                   {/* Primary Navigation - Main Features */}
                   <div>
-                    <TabsList className="grid w-full grid-cols-5 h-12">
+                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 gap-1 h-auto p-1">
                       {navigationItems.main.map((item) => {
                         const IconComponent = item.icon
                         return (
                           <TabsTrigger 
                             key={item.id}
                             value={item.id} 
-                            className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs"
+                            className="flex flex-col items-center gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs py-2 px-1 min-h-12"
                           >
                             <IconComponent className="h-4 w-4" />
-                            <span className="hidden sm:inline">{item.label}</span>
+                            <span className="text-xs leading-tight text-center">{item.label}</span>
                           </TabsTrigger>
                         )
                       })}
@@ -833,6 +836,12 @@ function App() {
               <div className="space-y-6">
                 {activeTab === 'dashboard' && healthData && <HealthDashboard healthData={healthData} />}
                 {activeTab === 'insights' && healthData && <EnhancedHealthInsightsDashboard healthData={healthData} />}
+                {activeTab === 'recommendations' && healthData && (
+                  <SmartFeatureRecommendations 
+                    healthData={healthData} 
+                    onNavigateToFeature={setActiveTab}
+                  />
+                )}
                 {activeTab === 'realtime-scoring' && <RealTimeHealthScoring />}
                 {activeTab === 'analytics' && healthData && <HealthAnalytics healthData={healthData} />}
                 {activeTab === 'fall-risk' && (

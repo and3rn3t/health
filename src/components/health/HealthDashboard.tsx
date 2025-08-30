@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Heart, Activity, Moon, TrendingUp, TrendingDown, Minus, Brain, Shield, Scale } from '@phosphor-icons/react'
+import { useUsageTracking } from '@/hooks/useUsageTracking'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 interface HealthDashboardProps {
@@ -72,6 +73,8 @@ function MetricCard({ title, value, unit, trend, icon, description, progress, cl
 }
 
 export default function HealthDashboard({ healthData }: HealthDashboardProps) {
+  const { trackAction } = useUsageTracking('dashboard')
+  
   if (!healthData || !healthData.metrics) {
     return (
       <div className="text-center py-8">
