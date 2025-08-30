@@ -55,28 +55,31 @@ function App() {
   const navigationItems = {
     main: [
       { id: 'dashboard', label: 'Dashboard', icon: Heart },
-      { id: 'insights', label: 'Live Insights', icon: TrendingUp },
-      { id: 'realtime-scoring', label: 'Live Health Score', icon: Heart },
+      { id: 'insights', label: 'Insights', icon: TrendingUp },
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
+      { id: 'search', label: 'Search', icon: MagnifyingGlass }
+    ],
+    monitoring: [
+      { id: 'realtime-scoring', label: 'Live Health Score', icon: Heart },
       { id: 'alerts', label: 'Health Alerts', icon: Bell },
       { id: 'predictive-alerts', label: 'Predictive Alerts', icon: Brain },
-      { id: 'search', label: 'Search', icon: MagnifyingGlass },
       { id: 'history', label: 'History', icon: Clock }
     ],
     ai: [
       { id: 'ai-recommendations', label: 'AI Recommendations', icon: Activity },
       { id: 'ml-predictions', label: 'ML Predictions', icon: Activity },
       { id: 'movement-patterns', label: 'Movement Analysis', icon: Activity },
-      { id: 'realtime', label: 'Real-time Detection', icon: Activity },
+      { id: 'realtime', label: 'Fall Detection', icon: Activity }
+    ],
+    advanced: [
       { id: 'monitoring-hub', label: 'Monitoring Hub', icon: Activity },
-      { id: 'live-integration', label: 'Live Data Integration', icon: CloudArrowUp },
-      { id: 'advanced-watch', label: 'Advanced Watch Integration', icon: Activity }
+      { id: 'live-integration', label: 'Live Integration', icon: CloudArrowUp },
+      { id: 'advanced-watch', label: 'Watch Integration', icon: Activity }
     ],
     gamification: [
       { id: 'game-center', label: 'Game Center', icon: Trophy },
-      { id: 'family-challenges', label: 'Family Challenges', icon: Target },
-      { id: 'competitions', label: 'Competitions', icon: Trophy }
+      { id: 'family-challenges', label: 'Family Challenges', icon: Target }
     ],
     community: [
       { id: 'family', label: 'Family Dashboard', icon: Users },
@@ -95,13 +98,15 @@ function App() {
 
   // Get current page details for breadcrumb
   const getCurrentPageInfo = () => {
-    const allItems = [...navigationItems.main, ...navigationItems.ai, ...navigationItems.gamification, ...navigationItems.community, ...navigationItems.management, ...navigationItems.setup]
+    const allItems = [...navigationItems.main, ...navigationItems.monitoring, ...navigationItems.ai, ...navigationItems.advanced, ...navigationItems.gamification, ...navigationItems.community, ...navigationItems.management, ...navigationItems.setup]
     const currentItem = allItems.find(item => item.id === activeTab)
     
     if (!currentItem) return { label: 'Dashboard', category: 'Main' }
     
     let category = 'Main'
-    if (navigationItems.ai.find(item => item.id === activeTab)) category = 'AI & Monitoring'
+    if (navigationItems.monitoring.find(item => item.id === activeTab)) category = 'Monitoring'
+    if (navigationItems.ai.find(item => item.id === activeTab)) category = 'AI & ML'
+    if (navigationItems.advanced.find(item => item.id === activeTab)) category = 'Advanced'
     if (navigationItems.gamification.find(item => item.id === activeTab)) category = 'Gamification'
     if (navigationItems.community.find(item => item.id === activeTab)) category = 'Community'
     if (navigationItems.management.find(item => item.id === activeTab)) category = 'Management'
@@ -180,11 +185,43 @@ function App() {
             </div>
           </div>
 
-          {/* AI & Monitoring */}
+          {/* Monitoring */}
           <div>
             {!sidebarCollapsed && (
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                AI & Monitoring
+                Monitoring & Alerts
+              </h3>
+            )}
+            <div className="space-y-1">
+              {navigationItems.monitoring.map((item) => {
+                const IconComponent = item.icon
+                const isActive = activeTab === item.id
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                      w-full justify-start h-10
+                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                    `}
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* AI & ML */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                AI & Machine Learning
               </h3>
             )}
             <div className="space-y-1">
@@ -212,11 +249,43 @@ function App() {
             </div>
           </div>
 
+          {/* Advanced Features */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                Advanced Features
+              </h3>
+            )}
+            <div className="space-y-1">
+              {navigationItems.advanced.map((item) => {
+                const IconComponent = item.icon
+                const isActive = activeTab === item.id
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                      w-full justify-start h-10
+                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                    `}
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                )
+              })}
+            </div>
+          </div>
+
           {/* Gamification */}
           <div>
             {!sidebarCollapsed && (
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                Gamification & Motivation
+                Gamification
               </h3>
             )}
             <div className="space-y-1">
@@ -421,15 +490,13 @@ function App() {
                 </h1>
                   <div className="text-sm text-muted-foreground">
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Dashboard' && 'Core health monitoring overview'}
-                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Live Insights' && 'Real-time trending data and AI-powered insights'}
-                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Live Health Score' && 'Continuous health scoring with Apple Watch integration'}
+                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Insights' && 'Real-time trending data and AI-powered insights'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Analytics' && 'Deep analysis of your health metrics'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Fall Risk' && 'Fall prevention and risk assessment'}
-                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Health Alerts' && 'Custom health monitoring alerts and thresholds'}
-                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Predictive Alerts' && 'AI-powered early warning system for health decline'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Search' && 'Find specific health insights and data'}
-                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'History' && 'View your health history and fall records'}
-                    {currentPageInfo.category === 'AI & Monitoring' && 'Advanced AI analysis and real-time monitoring'}
+                    {currentPageInfo.category === 'Monitoring' && 'Health monitoring and alert system'}
+                    {currentPageInfo.category === 'AI & ML' && 'Advanced AI analysis and machine learning'}
+                    {currentPageInfo.category === 'Advanced' && 'Advanced monitoring and integration features'}
                     {currentPageInfo.category === 'Gamification' && 'Challenges, competitions, and motivation'}
                     {currentPageInfo.category === 'Community' && 'Share progress with your care team'}
                     {currentPageInfo.category === 'Management' && 'Data and contact management'}
@@ -506,7 +573,7 @@ function App() {
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                   {/* Primary Navigation - Main Features */}
                   <div>
-                    <TabsList className="grid w-full grid-cols-9 h-12">
+                    <TabsList className="grid w-full grid-cols-5 h-12">
                       {navigationItems.main.map((item) => {
                         const IconComponent = item.icon
                         return (
@@ -523,129 +590,107 @@ function App() {
                     </TabsList>
                   </div>
 
-                  {/* Compact Secondary Navigation */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium text-muted-foreground">More Features</h3>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant={activeTab === 'search' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setActiveTab('search')}
-                          className="text-xs h-8"
-                        >
-                          <MagnifyingGlass className="h-3 w-3 mr-1" />
-                          Search
-                        </Button>
-                        <Badge variant="outline" className="text-xs">
-                          {navigationItems.ai.length + navigationItems.gamification.length + navigationItems.community.length + navigationItems.management.length + navigationItems.setup.length} features
-                        </Badge>
+                  {/* Quick Access Buttons */}
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-muted-foreground">More Features</h3>
+                    <Badge variant="outline" className="text-xs">
+                      {navigationItems.monitoring.length + navigationItems.ai.length + navigationItems.advanced.length + navigationItems.gamification.length + navigationItems.community.length + navigationItems.management.length + navigationItems.setup.length} more
+                    </Badge>
+                  </div>
+                  
+                  {/* Compact Feature Categories */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Monitoring
+                      </h4>
+                      <div className="grid grid-cols-2 gap-1">
+                        {navigationItems.monitoring.map((item) => {
+                          const IconComponent = item.icon
+                          return (
+                            <Button
+                              key={item.id}
+                              variant={activeTab === item.id ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => setActiveTab(item.id)}
+                              className="flex items-center gap-1 text-xs h-8 px-2"
+                            >
+                              <IconComponent className="h-3 w-3" />
+                              <span className="truncate">{item.label.split(' ')[0]}</span>
+                            </Button>
+                          )
+                        })}
                       </div>
                     </div>
-                    
-                    {/* Tabbed Interface for Feature Categories */}
-                    <Tabs defaultValue="ai" className="w-full">
-                      <TabsList className="grid w-full grid-cols-4 h-10">
-                        <TabsTrigger value="ai" className="text-xs">
-                          <Activity className="h-3 w-3 mr-1" />
-                          AI
-                        </TabsTrigger>
-                        <TabsTrigger value="games" className="text-xs">
-                          <Trophy className="h-3 w-3 mr-1" />
-                          Games
-                        </TabsTrigger>
-                        <TabsTrigger value="social" className="text-xs">
-                          <Users className="h-3 w-3 mr-1" />
-                          Social
-                        </TabsTrigger>
-                        <TabsTrigger value="settings" className="text-xs">
-                          <Gear className="h-3 w-3 mr-1" />
-                          Setup
-                        </TabsTrigger>
-                      </TabsList>
-                      
-                      <div className="mt-3">
-                        <TabsContent value="ai" className="mt-0">
-                          <div className="grid grid-cols-2 gap-2">
-                            {navigationItems.ai.map((item) => {
-                              const IconComponent = item.icon
-                              return (
-                                <Button
-                                  key={item.id}
-                                  variant={activeTab === item.id ? 'default' : 'outline'}
-                                  size="sm"
-                                  onClick={() => setActiveTab(item.id)}
-                                  className="flex items-center gap-2 text-xs h-8"
-                                >
-                                  <IconComponent className="h-3 w-3" />
-                                  <span className="truncate">{item.label}</span>
-                                </Button>
-                              )
-                            })}
-                          </div>
-                        </TabsContent>
-                        
-                        <TabsContent value="games" className="mt-0">
-                          <div className="grid grid-cols-2 gap-2">
-                            {navigationItems.gamification.map((item) => {
-                              const IconComponent = item.icon
-                              return (
-                                <Button
-                                  key={item.id}
-                                  variant={activeTab === item.id ? 'default' : 'outline'}
-                                  size="sm"
-                                  onClick={() => setActiveTab(item.id)}
-                                  className="flex items-center gap-2 text-xs h-8"
-                                >
-                                  <IconComponent className="h-3 w-3" />
-                                  <span className="truncate">{item.label}</span>
-                                </Button>
-                              )
-                            })}
-                          </div>
-                        </TabsContent>
-                        
-                        <TabsContent value="social" className="mt-0">
-                          <div className="grid grid-cols-2 gap-2">
-                            {navigationItems.community.map((item) => {
-                              const IconComponent = item.icon
-                              return (
-                                <Button
-                                  key={item.id}
-                                  variant={activeTab === item.id ? 'default' : 'outline'}
-                                  size="sm"
-                                  onClick={() => setActiveTab(item.id)}
-                                  className="flex items-center gap-2 text-xs h-8"
-                                >
-                                  <IconComponent className="h-3 w-3" />
-                                  <span className="truncate">{item.label}</span>
-                                </Button>
-                              )
-                            })}
-                          </div>
-                        </TabsContent>
-                        
-                        <TabsContent value="settings" className="mt-0">
-                          <div className="grid grid-cols-2 gap-2">
-                            {[...navigationItems.management, ...navigationItems.setup].map((item) => {
-                              const IconComponent = item.icon
-                              return (
-                                <Button
-                                  key={item.id}
-                                  variant={activeTab === item.id ? 'default' : 'outline'}
-                                  size="sm"
-                                  onClick={() => setActiveTab(item.id)}
-                                  className="flex items-center gap-2 text-xs h-8"
-                                >
-                                  <IconComponent className="h-3 w-3" />
-                                  <span className="truncate">{item.label}</span>
-                                </Button>
-                              )
-                            })}
-                          </div>
-                        </TabsContent>
+
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        AI & Advanced
+                      </h4>
+                      <div className="grid grid-cols-2 gap-1">
+                        {[...navigationItems.ai.slice(0, 2), ...navigationItems.advanced.slice(0, 2)].map((item) => {
+                          const IconComponent = item.icon
+                          return (
+                            <Button
+                              key={item.id}
+                              variant={activeTab === item.id ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => setActiveTab(item.id)}
+                              className="flex items-center gap-1 text-xs h-8 px-2"
+                            >
+                              <IconComponent className="h-3 w-3" />
+                              <span className="truncate">{item.label.split(' ')[0]}</span>
+                            </Button>
+                          )
+                        })}
                       </div>
-                    </Tabs>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Community
+                      </h4>
+                      <div className="grid grid-cols-2 gap-1">
+                        {[...navigationItems.gamification, ...navigationItems.community.slice(0, 1)].map((item) => {
+                          const IconComponent = item.icon
+                          return (
+                            <Button
+                              key={item.id}
+                              variant={activeTab === item.id ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => setActiveTab(item.id)}
+                              className="flex items-center gap-1 text-xs h-8 px-2"
+                            >
+                              <IconComponent className="h-3 w-3" />
+                              <span className="truncate">{item.label.split(' ')[0]}</span>
+                            </Button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Settings
+                      </h4>
+                      <div className="grid grid-cols-2 gap-1">
+                        {[...navigationItems.management, ...navigationItems.setup].map((item) => {
+                          const IconComponent = item.icon
+                          return (
+                            <Button
+                              key={item.id}
+                              variant={activeTab === item.id ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => setActiveTab(item.id)}
+                              className="flex items-center gap-1 text-xs h-8 px-2"
+                            >
+                              <IconComponent className="h-3 w-3" />
+                              <span className="truncate">{item.label.split(' ')[0]}</span>
+                            </Button>
+                          )
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </Tabs>
               </div>
@@ -686,7 +731,6 @@ function App() {
                 {activeTab === 'history' && <FallHistory />}
                 {activeTab === 'game-center' && healthData && <HealthGameCenter healthData={healthData} />}
                 {activeTab === 'family-challenges' && <FamilyGameification />}
-                {activeTab === 'competitions' && healthData && <HealthGameCenter healthData={healthData} />}
                 {activeTab === 'family' && healthData && <FamilyDashboard healthData={healthData} />}
                 {activeTab === 'community' && healthData && <CommunityShare healthData={healthData} />}
                 {activeTab === 'healthcare' && healthData && <HealthcarePortal healthData={healthData} />}
