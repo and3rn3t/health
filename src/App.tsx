@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass, CloudArrowUp, TrendingUp, Bell, Brain, Moon, Sun, Monitor } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass, CloudArrowUp, TrendingUp, Bell, Brain, Moon, Sun, Monitor, Apple } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
@@ -36,6 +36,7 @@ import PredictiveHealthAlerts from '@/components/health/PredictiveHealthAlerts'
 import RealTimeHealthScoring from '@/components/health/RealTimeHealthScoring'
 import AdvancedAppleWatchIntegration from '@/components/health/AdvancedAppleWatchIntegration'
 import EnhancedHealthInsightsDashboard from '@/components/health/EnhancedHealthInsightsDashboard'
+import AppleWatchIntegrationChecklist from '@/components/health/AppleWatchIntegrationChecklist'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -143,6 +144,7 @@ function App() {
     ],
     setup: [
       { id: 'phases', label: 'Implementation', icon: Roadmap },
+      { id: 'integration-checklist', label: 'Integration Checklist', icon: Apple },
       { id: 'infrastructure', label: 'Cloud Infrastructure', icon: Gear }
     ]
   }
@@ -850,6 +852,7 @@ function App() {
                   </Card>
                 )}
                 {activeTab === 'phases' && <ImplementationPhases />}
+                {activeTab === 'integration-checklist' && <AppleWatchIntegrationChecklist />}
                 {activeTab === 'infrastructure' && <CloudInfrastructureStatus />}
               </div>
             </div>
