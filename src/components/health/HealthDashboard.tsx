@@ -1,10 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { Heart, Activity, Moon, TrendingUp, TrendingDown, Minus } from '@phosphor-icons/react'
+import { Heart, Activity, Moon, TrendingUp, TrendingDown, Minus, Brain, Shield, Scale } from '@phosphor-icons/react'
+import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 interface HealthDashboardProps {
-  healthData: any
+  healthData: ProcessedHealthData
 }
 
 interface MetricCardProps {
@@ -79,10 +80,79 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
     )
   }
 
-  const { metrics, insights } = healthData
+  const { metrics, insights, dataQuality, healthScore, fallRiskFactors } = healthData
+
+  const getDataQualityColor = () => {
+    switch (dataQuality.overall) {
+      case 'excellent': return 'text-green-600'
+      case 'good': return 'text-blue-600'
+      case 'fair': return 'text-yellow-600'
+      default: return 'text-red-600'
+    }
+  }
+
+  const getHealthScoreColor = () => {
+    if (healthScore >= 80) return 'text-green-600'
+    if (healthScore >= 60) return 'text-yellow-600'
+    return 'text-red-600'
+  }
 
   return (
     <div className="space-y-6">
+      {/* Health Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="border-primary/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Brain className="h-4 w-4 text-primary" />
+              Health Score
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`text-3xl font-bold ${getHealthScoreColor()}`}>
+              {healthScore}
+              <span className="text-sm font-normal text-muted-foreground ml-1">/100</span>
+            </div>
+            <Progress value={healthScore} className="mt-3" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Fall Risk
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {fallRiskFactors.filter(f => f.risk === 'high').length > 0 ? 'High' :
+               fallRiskFactors.filter(f => f.risk === 'moderate').length > 0 ? 'Moderate' : 'Low'}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {fallRiskFactors.length} risk factors identified
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Scale className="h-4 w-4" />
+              Data Quality
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold capitalize ${getDataQualityColor()}`}>
+              {dataQuality.overall}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {dataQuality.completeness}% complete
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
@@ -91,17 +161,17 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
           unit="avg"
           trend={metrics.steps?.trend || 'stable'}
           icon={<Activity className="h-4 w-4" />}
-          description="30-day average"
+          description={`${metrics.steps?.percentileRank}th percentile`}
           progress={Math.min((metrics.steps?.average / 10000) * 100, 100)}
         />
         
         <MetricCard
           title="Resting Heart Rate"
-          value={metrics.heartRate?.average || 'N/A'}
+          value={Math.round(metrics.heartRate?.average || 0)}
           unit="bpm"
           trend={metrics.heartRate?.trend || 'stable'}
           icon={<Heart className="h-4 w-4" />}
-          description="30-day average"
+          description={`Reliability: ${metrics.heartRate?.reliability}%`}
         />
         
         <MetricCard
@@ -110,9 +180,9 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
           unit="%"
           trend={metrics.walkingSteadiness?.trend || 'stable'}
           icon={<Activity className="h-4 w-4" />}
-          description="Balance score"
+          description={`Variability: ${metrics.walkingSteadiness?.variability?.toFixed(1)}%`}
           progress={metrics.walkingSteadiness?.average || 0}
-          className={metrics.walkingSteadiness?.average < 60 ? 'border-accent' : ''}
+          className={metrics.walkingSteadiness?.average < 60 ? 'border-destructive/20' : ''}
         />
         
         <MetricCard
@@ -126,86 +196,99 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
         />
       </div>
 
-      {/* Health Insights */}
-      <Card>
-        <CardHeader>
-          <CardTitle>AI Health Insights</CardTitle>
-          <CardDescription>
-            Analysis based on your recent health data patterns
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {insights?.map((insight: string, index: number) => (
-              <div key={index} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
-                <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
-                <p className="text-sm">{insight}</p>
-              </div>
-            )) || (
-              <p className="text-muted-foreground">No insights available yet.</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Recent Trends */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Enhanced Insights Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Activity Trends</CardTitle>
-            <CardDescription>Last 7 days</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5" />
+              AI Health Insights
+            </CardTitle>
+            <CardDescription>
+              Analysis based on your health data patterns and trends
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {metrics.steps?.daily?.slice(-7).map((day: any, index: number) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-20 bg-secondary rounded-full h-2">
-                      <div 
-                        className="h-2 bg-primary rounded-full"
-                        style={{ width: `${Math.min((day.value / 10000) * 100, 100)}%` }}
-                      />
-                    </div>
-                    <span className="text-sm font-medium w-16 text-right">
-                      {day.value.toLocaleString()}
-                    </span>
-                  </div>
+            <div className="space-y-3">
+              {insights?.map((insight: string, index: number) => (
+                <div key={index} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                  <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
+                  <p className="text-sm">{insight}</p>
                 </div>
-              ))}
+              )) || (
+                <p className="text-muted-foreground">No insights available yet.</p>
+              )}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Fall Risk Indicators</CardTitle>
-            <CardDescription>Key mobility metrics</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Fall Risk Factors
+            </CardTitle>
+            <CardDescription>
+              Identified risk factors and recommendations
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Walking Steadiness</span>
-                <Badge variant={metrics.walkingSteadiness?.average > 70 ? 'default' : 'destructive'}>
-                  {metrics.walkingSteadiness?.average > 70 ? 'Good' : 'At Risk'}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Activity Level</span>
-                <Badge variant={metrics.steps?.average > 5000 ? 'default' : 'secondary'}>
-                  {metrics.steps?.average > 5000 ? 'Active' : 'Low'}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Heart Rate Variability</span>
-                <Badge variant="default">Normal</Badge>
-              </div>
+            <div className="space-y-3">
+              {fallRiskFactors?.map((factor, index) => (
+                <div key={index} className="space-y-2 p-3 border rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-sm">{factor.factor}</span>
+                    <Badge 
+                      variant={factor.risk === 'high' ? 'destructive' : 
+                              factor.risk === 'moderate' ? 'secondary' : 'default'}
+                    >
+                      {factor.risk} risk
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {factor.recommendation}
+                  </p>
+                </div>
+              )) || (
+                <p className="text-muted-foreground">No significant risk factors identified.</p>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Activity Trends Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Activity Trends</CardTitle>
+          <CardDescription>Last 14 days step count progression</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {metrics.steps?.daily?.slice(-14).map((day, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground w-16">
+                  {new Date(day.date).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
+                </span>
+                <div className="flex items-center gap-3 flex-1 mx-4">
+                  <div className="flex-1 bg-secondary rounded-full h-2">
+                    <div 
+                      className="h-2 bg-primary rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min((day.value / 10000) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-medium w-20 text-right">
+                    {day.value.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

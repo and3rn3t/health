@@ -5,25 +5,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
+import HealthAnalytics from '@/components/health/HealthAnalytics'
 import FallRiskMonitor from '@/components/health/FallRiskMonitor'
 import EmergencyContacts from '@/components/health/EmergencyContacts'
 import FallHistory from '@/components/health/FallHistory'
 import HealthDataImport from '@/components/health/HealthDataImport'
 import FallMonitoringTooling from '@/components/health/FallMonitoringTooling'
 import ImplementationPhases from '@/components/health/ImplementationPhases'
+import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
-  const [healthData, setHealthData] = useKV('health-data', null)
+  const [healthData, setHealthData] = useKV<ProcessedHealthData | null>('health-data', null)
   const [fallRiskScore, setFallRiskScore] = useKV('fall-risk-score', 0)
   const [emergencyContacts, setEmergencyContacts] = useKV('emergency-contacts', [])
   const [activeTab, setActiveTab] = useState('dashboard')
 
-  const hasHealthData = healthData && Object.keys(healthData).length > 0
-  const isHighRisk = fallRiskScore > 70
+  const hasHealthData = healthData && healthData.metrics && Object.keys(healthData.metrics).length > 0
+  const isHighRisk = hasHealthData && (
+    healthData.healthScore < 60 || 
+    healthData.fallRiskFactors.some(factor => factor.risk === 'high')
+  )
 
   return (
     <div className="min-h-screen bg-background">
@@ -41,6 +46,11 @@ function App() {
               </div>
             </div>
             <div className="flex items-center gap-4">
+              {hasHealthData && (
+                <Badge variant="outline" className="text-primary border-primary">
+                  Health Score: {healthData.healthScore}/100
+                </Badge>
+              )}
               {isHighRisk && (
                 <Badge variant="destructive" className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4" />
@@ -81,10 +91,14 @@ function App() {
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7">
+            <TabsList className="grid w-full grid-cols-8">
               <TabsTrigger value="dashboard" className="flex items-center gap-2">
                 <Heart className="h-4 w-4" />
                 Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Analytics
               </TabsTrigger>
               <TabsTrigger value="fall-risk" className="flex items-center gap-2">
                 <Shield className="h-4 w-4" />
@@ -114,6 +128,10 @@ function App() {
 
             <TabsContent value="dashboard" className="space-y-6">
               <HealthDashboard healthData={healthData} />
+            </TabsContent>
+
+            <TabsContent value="analytics" className="space-y-6">
+              <HealthAnalytics healthData={healthData} />
             </TabsContent>
 
             <TabsContent value="fall-risk" className="space-y-6">
