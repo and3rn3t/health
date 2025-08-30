@@ -41,6 +41,7 @@ import XcodeDevelopmentSetup from '@/components/health/XcodeDevelopmentSetup'
 import ComprehensiveAppleHealthKitGuide from '@/components/health/ComprehensiveAppleHealthKitGuide'
 import WebSocketArchitectureGuide from '@/components/health/WebSocketArchitectureGuide'
 import SmartFeatureRecommendations from '@/components/recommendations/SmartFeatureRecommendations'
+import UsageAnalyticsDashboard from '@/components/analytics/UsageAnalyticsDashboard'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -113,6 +114,7 @@ function App() {
       { id: 'dashboard', label: 'Dashboard', icon: Heart },
       { id: 'insights', label: 'Insights', icon: TrendingUp },
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+      { id: 'usage-analytics', label: 'Usage Analytics', icon: Brain },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
       { id: 'recommendations', label: 'Recommendations', icon: Lightbulb },
       { id: 'search', label: 'Search', icon: MagnifyingGlass }
@@ -588,6 +590,7 @@ function App() {
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Dashboard' && 'Core health monitoring overview'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Insights' && 'Real-time trending data and AI-powered insights'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Analytics' && 'Deep analysis of your health metrics'}
+                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Usage Analytics' && 'Discover how AI optimizes your HealthGuard experience'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Fall Risk' && 'Fall prevention and risk assessment'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Recommendations' && 'Smart suggestions based on your usage patterns'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Search' && 'Find specific health insights and data'}
@@ -681,7 +684,7 @@ function App() {
                   {/* Primary Navigation - Main Features */}
                   <div>
                     <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 gap-1 h-auto p-1">
-                      {navigationItems.main.map((item) => {
+                      {navigationItems.main.slice(0, 6).map((item) => {
                         const IconComponent = item.icon
                         return (
                           <TabsTrigger 
@@ -702,12 +705,36 @@ function App() {
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-medium text-muted-foreground">More Features</h3>
                       <Badge variant="outline" className="text-xs">
-                        {navigationItems.monitoring.length + navigationItems.ai.length + navigationItems.advanced.length + navigationItems.gamification.length + navigationItems.community.length + navigationItems.management.length + navigationItems.setup.length} more
+                        {navigationItems.main.slice(6).length + navigationItems.monitoring.length + navigationItems.ai.length + navigationItems.advanced.length + navigationItems.gamification.length + navigationItems.community.length + navigationItems.management.length + navigationItems.setup.length} more
                       </Badge>
                     </div>
                     
                     {/* Horizontal scrollable categories */}
                     <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                      {/* Core Features */}
+                      <div className="flex-shrink-0 space-y-2 min-w-[140px]">
+                        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Core Features
+                        </h4>
+                        <div className="space-y-1">
+                          {navigationItems.main.slice(6).map((item) => {
+                            const IconComponent = item.icon
+                            return (
+                              <Button
+                                key={item.id}
+                                variant={activeTab === item.id ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => setActiveTab(item.id)}
+                                className="w-full justify-start text-xs h-7 px-2"
+                              >
+                                <IconComponent className="h-3 w-3 mr-2" />
+                                <span className="truncate">{item.label}</span>
+                              </Button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
                       {/* Monitoring */}
                       <div className="flex-shrink-0 space-y-2 min-w-[140px]">
                         <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -836,6 +863,7 @@ function App() {
               <div className="space-y-6">
                 {activeTab === 'dashboard' && healthData && <HealthDashboard healthData={healthData} />}
                 {activeTab === 'insights' && healthData && <EnhancedHealthInsightsDashboard healthData={healthData} />}
+                {activeTab === 'usage-analytics' && healthData && <UsageAnalyticsDashboard healthData={healthData} />}
                 {activeTab === 'recommendations' && healthData && (
                   <SmartFeatureRecommendations 
                     healthData={healthData} 
