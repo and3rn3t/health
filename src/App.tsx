@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
@@ -26,6 +26,7 @@ import HealthcarePortal from '@/components/health/HealthcarePortal'
 import FamilyDashboard from '@/components/health/FamilyDashboard'
 import HealthGameCenter from '@/components/gamification/HealthGameCenter'
 import FamilyGameification from '@/components/gamification/FamilyGameification'
+import HealthSearch from '@/components/health/HealthSearch'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
       { id: 'dashboard', label: 'Dashboard', icon: Heart },
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
+      { id: 'search', label: 'Search', icon: MagnifyingGlass },
       { id: 'history', label: 'History', icon: Clock }
     ],
     ai: [
@@ -479,7 +481,7 @@ function App() {
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                   {/* Primary Navigation - Main Features */}
                   <div>
-                    <TabsList className="grid w-full grid-cols-4 h-12">
+                    <TabsList className="grid w-full grid-cols-5 h-12">
                       {navigationItems.main.map((item) => {
                         const IconComponent = item.icon
                         return (
@@ -500,9 +502,20 @@ function App() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-medium text-muted-foreground">More Features</h3>
-                      <Badge variant="outline" className="text-xs">
-                        {navigationItems.ai.length + navigationItems.gamification.length + navigationItems.community.length + navigationItems.management.length + navigationItems.setup.length} features
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant={activeTab === 'search' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setActiveTab('search')}
+                          className="text-xs h-8"
+                        >
+                          <MagnifyingGlass className="h-3 w-3 mr-1" />
+                          Search
+                        </Button>
+                        <Badge variant="outline" className="text-xs">
+                          {navigationItems.ai.length + navigationItems.gamification.length + navigationItems.community.length + navigationItems.management.length + navigationItems.setup.length} features
+                        </Badge>
+                      </div>
                     </div>
                     
                     {/* Tabbed Interface for Feature Categories */}
@@ -621,6 +634,17 @@ function App() {
                     healthData={healthData} 
                     fallRiskScore={fallRiskScore}
                     setFallRiskScore={setFallRiskScore}
+                  />
+                )}
+                {activeTab === 'search' && healthData && (
+                  <HealthSearch 
+                    healthData={healthData} 
+                    onNavigateToInsight={(tab, metric) => {
+                      setActiveTab(tab)
+                      if (metric) {
+                        toast.success(`Navigated to ${metric} in ${tab}`)
+                      }
+                    }}
                   />
                 )}
                 {activeTab === 'ai-recommendations' && healthData && <AIRecommendations healthData={healthData} />}
