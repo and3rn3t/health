@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass, CloudArrowUp, TrendingUp, Bell, Brain, Moon, Sun } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass, CloudArrowUp, TrendingUp, Bell, Brain, Moon, Sun, Monitor } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
@@ -44,20 +44,56 @@ function App() {
   const [emergencyContacts, setEmergencyContacts] = useKV('emergency-contacts', [])
   const [activeTab, setActiveTab] = useState('dashboard')
   const [sidebarCollapsed, setSidebarCollapsed] = useKV('sidebar-collapsed', false)
-  const [darkMode, setDarkMode] = useKV('dark-mode', false)
+  const [themeMode, setThemeMode] = useKV<'light' | 'dark' | 'system'>('theme-mode', 'system')
 
-  // Apply dark mode to document
+  // Apply theme based on mode and system preference
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
+    const applyTheme = () => {
+      if (themeMode === 'system') {
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (systemPrefersDark) {
+          document.documentElement.classList.add('dark')
+        } else {
+          document.documentElement.classList.remove('dark')
+        }
+      } else if (themeMode === 'dark') {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
     }
-  }, [darkMode])
 
-  const toggleDarkMode = () => {
-    setDarkMode(current => !current)
-    toast.success(darkMode ? 'Switched to light mode' : 'Switched to dark mode')
+    applyTheme()
+
+    // Listen for system theme changes when in system mode
+    if (themeMode === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+      const handleChange = () => applyTheme()
+      mediaQuery.addEventListener('change', handleChange)
+      return () => mediaQuery.removeEventListener('change', handleChange)
+    }
+  }, [themeMode])
+
+  const toggleThemeMode = () => {
+    const modes: Array<'light' | 'dark' | 'system'> = ['light', 'dark', 'system']
+    const currentIndex = modes.indexOf(themeMode)
+    const nextMode = modes[(currentIndex + 1) % modes.length]
+    setThemeMode(nextMode)
+    
+    const modeLabels = {
+      light: 'Light mode',
+      dark: 'Dark mode', 
+      system: 'System preference'
+    }
+    toast.success(`Switched to ${modeLabels[nextMode]}`)
+  }
+
+  // Helper to get current effective theme
+  const getEffectiveTheme = () => {
+    if (themeMode === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    }
+    return themeMode
   }
 
   const hasHealthData = healthData && healthData.metrics && Object.keys(healthData.metrics).length > 0
@@ -427,25 +463,27 @@ function App() {
 
         {/* Footer */}
         <div className="p-4 border-t border-border">
-          {/* Dark mode toggle */}
+          {/* Theme mode toggle */}
           <div className="mb-3">
             <Button
               variant="ghost"
               size="sm"
-              onClick={toggleDarkMode}
+              onClick={toggleThemeMode}
               className={`
                 w-full justify-start h-8
                 ${sidebarCollapsed ? 'px-3' : 'px-3'}
                 hover:bg-muted
               `}
             >
-              {darkMode ? (
-                <Sun className="h-4 w-4 flex-shrink-0" />
-              ) : (
-                <Moon className="h-4 w-4 flex-shrink-0" />
-              )}
+              {themeMode === 'dark' && <Moon className="h-4 w-4 flex-shrink-0" />}
+              {themeMode === 'light' && <Sun className="h-4 w-4 flex-shrink-0" />}
+              {themeMode === 'system' && <Monitor className="h-4 w-4 flex-shrink-0" />}
               {!sidebarCollapsed && (
-                <span className="ml-3">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
+                <span className="ml-3">
+                  {themeMode === 'dark' && 'Dark Mode'}
+                  {themeMode === 'light' && 'Light Mode'}
+                  {themeMode === 'system' && 'Auto Mode'}
+                </span>
               )}
             </Button>
           </div>
@@ -508,10 +546,12 @@ function App() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={toggleDarkMode}
+                  onClick={toggleThemeMode}
                   className="h-8 w-8 p-0"
                 >
-                  {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  {themeMode === 'dark' && <Moon className="h-4 w-4" />}
+                  {themeMode === 'light' && <Sun className="h-4 w-4" />}
+                  {themeMode === 'system' && <Monitor className="h-4 w-4" />}
                 </Button>
                 <Button 
                   variant="outline" 
@@ -553,10 +593,12 @@ function App() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={toggleDarkMode}
+                  onClick={toggleThemeMode}
                   className="h-8 w-8 p-0"
                 >
-                  {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  {themeMode === 'dark' && <Moon className="h-4 w-4" />}
+                  {themeMode === 'light' && <Sun className="h-4 w-4" />}
+                  {themeMode === 'system' && <Monitor className="h-4 w-4" />}
                 </Button>
                 <Button 
                   variant="outline" 
