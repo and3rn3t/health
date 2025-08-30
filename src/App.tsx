@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
@@ -24,6 +24,8 @@ import AIRecommendations from '@/components/health/AIRecommendations'
 import CommunityShare from '@/components/health/CommunityShare'
 import HealthcarePortal from '@/components/health/HealthcarePortal'
 import FamilyDashboard from '@/components/health/FamilyDashboard'
+import HealthGameCenter from '@/components/gamification/HealthGameCenter'
+import FamilyGameification from '@/components/gamification/FamilyGameification'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -51,6 +53,11 @@ function App() {
       { id: 'realtime', label: 'Real-time Detection', icon: Activity },
       { id: 'history', label: 'History', icon: Clock }
     ],
+    gamification: [
+      { id: 'game-center', label: 'Game Center', icon: Trophy },
+      { id: 'family-challenges', label: 'Family Challenges', icon: Target },
+      { id: 'competitions', label: 'Competitions', icon: Trophy }
+    ],
     community: [
       { id: 'family', label: 'Family Dashboard', icon: Users },
       { id: 'community', label: 'Community Share', icon: Share },
@@ -67,12 +74,13 @@ function App() {
 
   // Get current page details for breadcrumb
   const getCurrentPageInfo = () => {
-    const allItems = [...navigationItems.main, ...navigationItems.community, ...navigationItems.management, ...navigationItems.setup]
+    const allItems = [...navigationItems.main, ...navigationItems.gamification, ...navigationItems.community, ...navigationItems.management, ...navigationItems.setup]
     const currentItem = allItems.find(item => item.id === activeTab)
     
     if (!currentItem) return { label: 'Dashboard', category: 'Main' }
     
     let category = 'Main'
+    if (navigationItems.gamification.find(item => item.id === activeTab)) category = 'Gamification'
     if (navigationItems.community.find(item => item.id === activeTab)) category = 'Community'
     if (navigationItems.management.find(item => item.id === activeTab)) category = 'Management'
     if (navigationItems.setup.find(item => item.id === activeTab)) category = 'Setup'
@@ -127,6 +135,38 @@ function App() {
             )}
             <div className="space-y-1">
               {navigationItems.main.map((item) => {
+                const IconComponent = item.icon
+                const isActive = activeTab === item.id
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                      w-full justify-start h-10
+                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                    `}
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Gamification */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                Gamification & Motivation
+              </h3>
+            )}
+            <div className="space-y-1">
+              {navigationItems.gamification.map((item) => {
                 const IconComponent = item.icon
                 const isActive = activeTab === item.id
                 return (
@@ -327,6 +367,7 @@ function App() {
                 </h1>
                   <div className="text-sm text-muted-foreground">
                     {currentPageInfo.category === 'Main' && 'Health monitoring and analytics'}
+                    {currentPageInfo.category === 'Gamification' && 'Challenges, competitions, and motivation'}
                     {currentPageInfo.category === 'Community' && 'Share progress with your care team'}
                     {currentPageInfo.category === 'Management' && 'Data and contact management'}
                     {currentPageInfo.category === 'Setup' && 'Configuration and setup guides'}
@@ -445,6 +486,27 @@ function App() {
                       </div>
                       
                       <div>
+                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Gamification</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {navigationItems.gamification.map((item) => {
+                            const IconComponent = item.icon
+                            return (
+                              <Button
+                                key={item.id}
+                                variant={activeTab === item.id ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setActiveTab(item.id)}
+                                className="flex items-center gap-2"
+                              >
+                                <IconComponent className="h-4 w-4" />
+                                {item.label}
+                              </Button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                      
+                      <div>
                         <h4 className="text-xs font-medium text-muted-foreground mb-2">Community & Care</h4>
                         <div className="flex flex-wrap gap-2">
                           {navigationItems.community.map((item) => {
@@ -521,6 +583,9 @@ function App() {
                 {activeTab === 'movement-patterns' && healthData && <MovementPatternAnalysis healthData={healthData} />}
                 {activeTab === 'realtime' && <RealTimeFallDetection />}
                 {activeTab === 'history' && <FallHistory />}
+                {activeTab === 'game-center' && healthData && <HealthGameCenter healthData={healthData} />}
+                {activeTab === 'family-challenges' && <FamilyGameification />}
+                {activeTab === 'competitions' && healthData && <HealthGameCenter healthData={healthData} />}
                 {activeTab === 'family' && healthData && <FamilyDashboard healthData={healthData} />}
                 {activeTab === 'community' && healthData && <CommunityShare healthData={healthData} />}
                 {activeTab === 'healthcare' && healthData && <HealthcarePortal healthData={healthData} />}
