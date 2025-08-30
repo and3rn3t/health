@@ -476,129 +476,138 @@ function App() {
 
               {/* Mobile Navigation */}
               <div className="lg:hidden">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                   {/* Primary Navigation - Main Features */}
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground mb-3">Main Features</h3>
-                      <TabsList className="grid w-full grid-cols-4 h-12">
-                        {navigationItems.main.map((item) => {
-                          const IconComponent = item.icon
-                          return (
-                            <TabsTrigger 
-                              key={item.id}
-                              value={item.id} 
-                              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs"
-                            >
-                              <IconComponent className="h-4 w-4" />
-                              <span className="hidden sm:inline">{item.label}</span>
-                            </TabsTrigger>
-                          )
-                        })}
-                      </TabsList>
-                    </div>
+                  <div>
+                    <TabsList className="grid w-full grid-cols-4 h-12">
+                      {navigationItems.main.map((item) => {
+                        const IconComponent = item.icon
+                        return (
+                          <TabsTrigger 
+                            key={item.id}
+                            value={item.id} 
+                            className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs"
+                          >
+                            <IconComponent className="h-4 w-4" />
+                            <span className="hidden sm:inline">{item.label}</span>
+                          </TabsTrigger>
+                        )
+                      })}
+                    </TabsList>
+                  </div>
 
-                    {/* Secondary Navigation - Advanced Features */}
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div>
-                        <h4 className="text-xs font-medium text-muted-foreground mb-2">AI & Monitoring</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {navigationItems.ai.map((item) => {
-                            const IconComponent = item.icon
-                            return (
-                              <Button
-                                key={item.id}
-                                variant={activeTab === item.id ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => setActiveTab(item.id)}
-                                className="flex items-center gap-2"
-                              >
-                                <IconComponent className="h-4 w-4" />
-                                {item.label}
-                              </Button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Gamification</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {navigationItems.gamification.map((item) => {
-                            const IconComponent = item.icon
-                            return (
-                              <Button
-                                key={item.id}
-                                variant={activeTab === item.id ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => setActiveTab(item.id)}
-                                className="flex items-center gap-2"
-                              >
-                                <IconComponent className="h-4 w-4" />
-                                {item.label}
-                              </Button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Community & Management</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {navigationItems.community.map((item) => {
-                            const IconComponent = item.icon
-                            return (
-                              <Button
-                                key={item.id}
-                                variant={activeTab === item.id ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => setActiveTab(item.id)}
-                                className="flex items-center gap-2"
-                              >
-                                <IconComponent className="h-4 w-4" />
-                                {item.label}
-                              </Button>
-                            )
-                          })}
-                          {navigationItems.management.map((item) => {
-                            const IconComponent = item.icon
-                            return (
-                              <Button
-                                key={item.id}
-                                variant={activeTab === item.id ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => setActiveTab(item.id)}
-                                className="flex items-center gap-2"
-                              >
-                                <IconComponent className="h-4 w-4" />
-                                {item.label}
-                              </Button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Setup & Configuration</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {navigationItems.setup.map((item) => {
-                            const IconComponent = item.icon
-                            return (
-                              <Button
-                                key={item.id}
-                                variant={activeTab === item.id ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => setActiveTab(item.id)}
-                                className="flex items-center gap-2"
-                              >
-                                <IconComponent className="h-4 w-4" />
-                                {item.label}
-                              </Button>
-                            )
-                          })}
-                        </div>
-                      </div>
+                  {/* Compact Secondary Navigation */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-muted-foreground">More Features</h3>
+                      <Badge variant="outline" className="text-xs">
+                        {navigationItems.ai.length + navigationItems.gamification.length + navigationItems.community.length + navigationItems.management.length + navigationItems.setup.length} features
+                      </Badge>
                     </div>
+                    
+                    {/* Tabbed Interface for Feature Categories */}
+                    <Tabs defaultValue="ai" className="w-full">
+                      <TabsList className="grid w-full grid-cols-4 h-10">
+                        <TabsTrigger value="ai" className="text-xs">
+                          <Activity className="h-3 w-3 mr-1" />
+                          AI
+                        </TabsTrigger>
+                        <TabsTrigger value="games" className="text-xs">
+                          <Trophy className="h-3 w-3 mr-1" />
+                          Games
+                        </TabsTrigger>
+                        <TabsTrigger value="social" className="text-xs">
+                          <Users className="h-3 w-3 mr-1" />
+                          Social
+                        </TabsTrigger>
+                        <TabsTrigger value="settings" className="text-xs">
+                          <Gear className="h-3 w-3 mr-1" />
+                          Setup
+                        </TabsTrigger>
+                      </TabsList>
+                      
+                      <div className="mt-3">
+                        <TabsContent value="ai" className="mt-0">
+                          <div className="grid grid-cols-2 gap-2">
+                            {navigationItems.ai.map((item) => {
+                              const IconComponent = item.icon
+                              return (
+                                <Button
+                                  key={item.id}
+                                  variant={activeTab === item.id ? 'default' : 'outline'}
+                                  size="sm"
+                                  onClick={() => setActiveTab(item.id)}
+                                  className="flex items-center gap-2 text-xs h-8"
+                                >
+                                  <IconComponent className="h-3 w-3" />
+                                  <span className="truncate">{item.label}</span>
+                                </Button>
+                              )
+                            })}
+                          </div>
+                        </TabsContent>
+                        
+                        <TabsContent value="games" className="mt-0">
+                          <div className="grid grid-cols-2 gap-2">
+                            {navigationItems.gamification.map((item) => {
+                              const IconComponent = item.icon
+                              return (
+                                <Button
+                                  key={item.id}
+                                  variant={activeTab === item.id ? 'default' : 'outline'}
+                                  size="sm"
+                                  onClick={() => setActiveTab(item.id)}
+                                  className="flex items-center gap-2 text-xs h-8"
+                                >
+                                  <IconComponent className="h-3 w-3" />
+                                  <span className="truncate">{item.label}</span>
+                                </Button>
+                              )
+                            })}
+                          </div>
+                        </TabsContent>
+                        
+                        <TabsContent value="social" className="mt-0">
+                          <div className="grid grid-cols-2 gap-2">
+                            {navigationItems.community.map((item) => {
+                              const IconComponent = item.icon
+                              return (
+                                <Button
+                                  key={item.id}
+                                  variant={activeTab === item.id ? 'default' : 'outline'}
+                                  size="sm"
+                                  onClick={() => setActiveTab(item.id)}
+                                  className="flex items-center gap-2 text-xs h-8"
+                                >
+                                  <IconComponent className="h-3 w-3" />
+                                  <span className="truncate">{item.label}</span>
+                                </Button>
+                              )
+                            })}
+                          </div>
+                        </TabsContent>
+                        
+                        <TabsContent value="settings" className="mt-0">
+                          <div className="grid grid-cols-2 gap-2">
+                            {[...navigationItems.management, ...navigationItems.setup].map((item) => {
+                              const IconComponent = item.icon
+                              return (
+                                <Button
+                                  key={item.id}
+                                  variant={activeTab === item.id ? 'default' : 'outline'}
+                                  size="sm"
+                                  onClick={() => setActiveTab(item.id)}
+                                  className="flex items-center gap-2 text-xs h-8"
+                                >
+                                  <IconComponent className="h-3 w-3" />
+                                  <span className="truncate">{item.label}</span>
+                                </Button>
+                              )
+                            })}
+                          </div>
+                        </TabsContent>
+                      </div>
+                    </Tabs>
                   </div>
                 </Tabs>
               </div>
