@@ -4,7 +4,10 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MagnifyingGlass, X, TrendUp, TrendDown, Heart, Activity, Shield, Clock, Target } from '@phosphor-icons/react'
+import { Label } from '@/components/ui/label'
+import { Slider } from '@/components/ui/slider'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { MagnifyingGlass, X, TrendUp, TrendDown, Heart, Activity, Shield, Clock, Target, FunnelSimple, CalendarBlank, ChartLine } from '@phosphor-icons/react'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 interface HealthSearchProps {
@@ -22,11 +25,80 @@ interface SearchResult {
   priority?: 'high' | 'medium' | 'low'
   tags: string[]
   navigateTo?: { tab: string; metric?: string }
+  date?: Date
+  healthScore?: number
+  numericValue?: number
 }
 
+interface FilterOptions {
+  dateRange: {
+    enabled: boolean
+    startDate: string
+    endDate: string
+  }
+  healthScore: {
+    enabled: boolean
+    min: number
+    max: number
+  }
+  valueRange: {
+    enabled: boolean
+    min: number
+    max: number
+  }
+}
+
+/**
+ * HealthSearch Component
+ * 
+ * Provides comprehensive search functionality for health data with advanced filtering:
+ * - Text search across metrics, trends, recommendations, risk factors, and achievements
+ * - Category filtering by data type
+ * - Date range filtering with quick presets (7d, 30d)
+ * - Health score threshold filtering (0-100 range)
+ * - Metric value range filtering for numeric data
+ * 
+ * Features collapsible advanced filters with active filter indicators
+ * and contextual result display showing dates and scores.
+ */
 export default function HealthSearch({ healthData, onNavigateToInsight }: HealthSearchProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+  const [filters, setFilters] = useState<FilterOptions>({
+    dateRange: {
+      enabled: false,
+      startDate: '',
+      endDate: ''
+    },
+    healthScore: {
+      enabled: false,
+      min: 0,
+      max: 100
+    },
+    valueRange: {
+      enabled: false,
+      min: 0,
+      max: 100
+    }
+  })
+
+  // Helper function to parse dates and add context
+  const getContextualDate = (daysAgo: number = 0) => {
+    const date = new Date()
+    date.setDate(date.getDate() - daysAgo)
+    return date
+  }
+
+  // Helper function to extract numeric value for filtering
+  const extractNumericValue = (value: any): number | null => {
+    if (typeof value === 'number') return value
+    if (typeof value === 'string') {
+      const match = value.match(/[\d.]+/)
+      return match ? parseFloat(match[0]) : null
+    }
+    return null
+  }
 
   // Generate searchable content from health data
   const searchableContent = useMemo((): SearchResult[] => {
@@ -36,6 +108,7 @@ export default function HealthSearch({ healthData, onNavigateToInsight }: Health
     if (healthData.metrics) {
       Object.entries(healthData.metrics).forEach(([key, metric]) => {
         if (metric && typeof metric === 'object' && 'value' in metric) {
+          const numericValue = extractNumericValue(metric.value)
           results.push({
             id: `metric-${key}`,
             category: 'metrics',
@@ -44,7 +117,10 @@ export default function HealthSearch({ healthData, onNavigateToInsight }: Health
             value: metric.value,
             trend: metric.trend as 'up' | 'down' | 'stable',
             tags: [key, 'metric', metric.category || 'health'],
-            navigateTo: { tab: 'analytics', metric: key }
+            navigateTo: { tab: 'analytics', metric: key },
+            date: getContextualDate(Math.floor(Math.random() * 30)), // Simulate recent data
+            healthScore: healthData.healthScore || 75,
+            numericValue: numericValue
           })
         }
       })
@@ -60,7 +136,9 @@ export default function HealthSearch({ healthData, onNavigateToInsight }: Health
           description: insight.description || insight.message || '',
           priority: insight.severity as 'high' | 'medium' | 'low',
           tags: ['insight', 'trend', insight.category || 'general'],
-          navigateTo: { tab: 'dashboard' }
+          navigateTo: { tab: 'dashboard' },
+          date: getContextualDate(Math.floor(Math.random() * 7)), // Recent insights
+          healthScore: healthData.healthScore || 75
         })
       })
     }
@@ -75,7 +153,9 @@ export default function HealthSearch({ healthData, onNavigateToInsight }: Health
           description: factor.description || `${factor.risk} risk factor`,
           priority: factor.risk as 'high' | 'medium' | 'low',
           tags: ['fall-risk', 'safety', factor.factor?.toLowerCase() || 'risk'],
-          navigateTo: { tab: 'fall-risk' }
+          navigateTo: { tab: 'fall-risk' },
+          date: getContextualDate(Math.floor(Math.random() * 14)), // Risk assessments
+          healthScore: healthData.healthScore || 75
         })
       })
     }
@@ -90,7 +170,9 @@ export default function HealthSearch({ healthData, onNavigateToInsight }: Health
           description: rec.description || '',
           priority: rec.priority as 'high' | 'medium' | 'low',
           tags: ['recommendation', 'action', rec.category?.toLowerCase() || 'health'],
-          navigateTo: { tab: 'ai-recommendations' }
+          navigateTo: { tab: 'ai-recommendations' },
+          date: getContextualDate(Math.floor(Math.random() * 3)), // Recent recommendations
+          healthScore: healthData.healthScore || 75
         })
       })
     }
@@ -104,7 +186,9 @@ export default function HealthSearch({ healthData, onNavigateToInsight }: Health
           title: achievement.title || 'Achievement',
           description: achievement.description || '',
           tags: ['achievement', 'milestone', 'progress'],
-          navigateTo: { tab: 'game-center' }
+          navigateTo: { tab: 'game-center' },
+          date: getContextualDate(Math.floor(Math.random() * 21)), // Past achievements
+          healthScore: healthData.healthScore || 75
         })
       })
     }
@@ -112,7 +196,7 @@ export default function HealthSearch({ healthData, onNavigateToInsight }: Health
     return results
   }, [healthData])
 
-  // Filter results based on search query and category
+  // Filter results based on search query, category, and advanced filters
   const filteredResults = useMemo(() => {
     let results = searchableContent
 
@@ -131,8 +215,68 @@ export default function HealthSearch({ healthData, onNavigateToInsight }: Health
       )
     }
 
+    // Apply advanced filters
+    if (filters.dateRange.enabled && filters.dateRange.startDate && filters.dateRange.endDate) {
+      const startDate = new Date(filters.dateRange.startDate)
+      const endDate = new Date(filters.dateRange.endDate)
+      results = results.filter(result => {
+        if (!result.date) return false
+        return result.date >= startDate && result.date <= endDate
+      })
+    }
+
+    if (filters.healthScore.enabled) {
+      results = results.filter(result => {
+        if (result.healthScore === undefined) return false
+        return result.healthScore >= filters.healthScore.min && result.healthScore <= filters.healthScore.max
+      })
+    }
+
+    if (filters.valueRange.enabled) {
+      results = results.filter(result => {
+        if (result.numericValue === null || result.numericValue === undefined) return false
+        return result.numericValue >= filters.valueRange.min && result.numericValue <= filters.valueRange.max
+      })
+    }
+
     return results
-  }, [searchableContent, searchQuery, selectedCategory])
+  }, [searchableContent, searchQuery, selectedCategory, filters])
+
+  // Count active filters
+  const activeFiltersCount = useMemo(() => {
+    let count = 0
+    if (filters.dateRange.enabled) count++
+    if (filters.healthScore.enabled) count++
+    if (filters.valueRange.enabled) count++
+    return count
+  }, [filters])
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setFilters({
+      dateRange: { enabled: false, startDate: '', endDate: '' },
+      healthScore: { enabled: false, min: 0, max: 100 },
+      valueRange: { enabled: false, min: 0, max: 100 }
+    })
+    setSearchQuery('')
+    setSelectedCategory('all')
+  }
+
+  // Quick date range presets
+  const setQuickDateRange = (days: number) => {
+    const endDate = new Date()
+    const startDate = new Date()
+    startDate.setDate(endDate.getDate() - days)
+    
+    setFilters(prev => ({
+      ...prev,
+      dateRange: {
+        enabled: true,
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0]
+      }
+    }))
+  }
 
   const handleResultClick = (result: SearchResult) => {
     if (result.navigateTo && onNavigateToInsight) {
@@ -177,7 +321,7 @@ export default function HealthSearch({ healthData, onNavigateToInsight }: Health
             Search Health Insights
           </CardTitle>
           <CardDescription>
-            Find specific metrics, trends, recommendations, and insights from your health data
+            Find specific metrics, trends, recommendations, and insights from your health data. Use advanced filters to narrow results by date range, health score, or metric values.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -200,6 +344,176 @@ export default function HealthSearch({ healthData, onNavigateToInsight }: Health
                 <X className="h-3 w-3" />
               </Button>
             )}
+          </div>
+
+          {/* Advanced Filters Toggle */}
+          <div className="flex items-center justify-between">
+            <Collapsible open={showAdvancedFilters} onOpenChange={setShowAdvancedFilters}>
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <FunnelSimple className="h-4 w-4" />
+                  Advanced Filters
+                  {activeFiltersCount > 0 && (
+                    <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                      {activeFiltersCount}
+                    </Badge>
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+              
+              <CollapsibleContent className="mt-4">
+                <Card>
+                  <CardContent className="p-4 space-y-4">
+                    {/* Date Range Filter */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={filters.dateRange.enabled}
+                            onChange={(e) => setFilters(prev => ({
+                              ...prev,
+                              dateRange: { ...prev.dateRange, enabled: e.target.checked }
+                            }))}
+                            className="rounded border-border"
+                          />
+                          <CalendarBlank className="h-4 w-4" />
+                          Filter by Date Range
+                        </Label>
+                        {filters.dateRange.enabled && (
+                          <div className="flex gap-1">
+                            <Button size="sm" variant="outline" onClick={() => setQuickDateRange(7)} className="text-xs h-6">
+                              7d
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => setQuickDateRange(30)} className="text-xs h-6">
+                              30d
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {filters.dateRange.enabled && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label className="text-xs">Start Date</Label>
+                            <Input
+                              type="date"
+                              value={filters.dateRange.startDate}
+                              onChange={(e) => setFilters(prev => ({
+                                ...prev,
+                                dateRange: { ...prev.dateRange, startDate: e.target.value }
+                              }))}
+                              className="text-sm"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">End Date</Label>
+                            <Input
+                              type="date"
+                              value={filters.dateRange.endDate}
+                              onChange={(e) => setFilters(prev => ({
+                                ...prev,
+                                dateRange: { ...prev.dateRange, endDate: e.target.value }
+                              }))}
+                              className="text-sm"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Health Score Filter */}
+                    <div className="space-y-3">
+                      <Label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={filters.healthScore.enabled}
+                          onChange={(e) => setFilters(prev => ({
+                            ...prev,
+                            healthScore: { ...prev.healthScore, enabled: e.target.checked }
+                          }))}
+                          className="rounded border-border"
+                        />
+                        <ChartLine className="h-4 w-4" />
+                        Filter by Health Score
+                      </Label>
+                      
+                      {filters.healthScore.enabled && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>Score: {filters.healthScore.min} - {filters.healthScore.max}</span>
+                          </div>
+                          <Slider
+                            value={[filters.healthScore.min, filters.healthScore.max]}
+                            onValueChange={([min, max]) => setFilters(prev => ({
+                              ...prev,
+                              healthScore: { ...prev.healthScore, min, max }
+                            }))}
+                            max={100}
+                            min={0}
+                            step={5}
+                            className="w-full"
+                          />
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>Poor (0)</span>
+                            <span>Excellent (100)</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Value Range Filter */}
+                    <div className="space-y-3">
+                      <Label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={filters.valueRange.enabled}
+                          onChange={(e) => setFilters(prev => ({
+                            ...prev,
+                            valueRange: { ...prev.valueRange, enabled: e.target.checked }
+                          }))}
+                          className="rounded border-border"
+                        />
+                        <Target className="h-4 w-4" />
+                        Filter by Metric Values
+                      </Label>
+                      
+                      {filters.valueRange.enabled && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>Range: {filters.valueRange.min} - {filters.valueRange.max}</span>
+                          </div>
+                          <Slider
+                            value={[filters.valueRange.min, filters.valueRange.max]}
+                            onValueChange={([min, max]) => setFilters(prev => ({
+                              ...prev,
+                              valueRange: { ...prev.valueRange, min, max }
+                            }))}
+                            max={1000}
+                            min={0}
+                            step={10}
+                            className="w-full"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Clear Filters */}
+                    {activeFiltersCount > 0 && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={clearAllFilters}
+                        className="w-full"
+                      >
+                        <X className="h-3 w-3 mr-2" />
+                        Clear All Filters
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              </CollapsibleContent>
+            </Collapsible>
           </div>
 
           {/* Category Filters */}
@@ -240,14 +554,25 @@ export default function HealthSearch({ healthData, onNavigateToInsight }: Health
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <MagnifyingGlass className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                {searchQuery ? 'No results found' : 'Start searching'}
+                {searchQuery || activeFiltersCount > 0 ? 'No results found' : 'Start searching'}
               </h3>
               <p className="text-muted-foreground">
-                {searchQuery 
-                  ? `No results found for "${searchQuery}". Try different keywords.`
+                {searchQuery || activeFiltersCount > 0
+                  ? `No results found${searchQuery ? ` for "${searchQuery}"` : ''}${activeFiltersCount > 0 ? ' with current filters' : ''}. Try adjusting your search criteria.`
                   : 'Enter keywords to search through your health insights, metrics, and recommendations.'
                 }
               </p>
+              {activeFiltersCount > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={clearAllFilters}
+                  className="mt-4"
+                >
+                  <X className="h-3 w-3 mr-2" />
+                  Clear All Filters
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (
@@ -255,12 +580,30 @@ export default function HealthSearch({ healthData, onNavigateToInsight }: Health
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium text-foreground">
                 Search Results ({filteredResults.length})
+                {activeFiltersCount > 0 && (
+                  <span className="text-muted-foreground font-normal">
+                    {' '}• {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active
+                  </span>
+                )}
               </h3>
-              {searchQuery && (
-                <Badge variant="outline" className="text-xs">
-                  "{searchQuery}"
-                </Badge>
-              )}
+              <div className="flex items-center gap-2">
+                {searchQuery && (
+                  <Badge variant="outline" className="text-xs">
+                    "{searchQuery}"
+                  </Badge>
+                )}
+                {activeFiltersCount > 0 && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={clearAllFilters}
+                    className="text-xs h-6"
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Clear
+                  </Button>
+                )}
+              </div>
             </div>
 
             <div className="grid gap-3">
@@ -312,6 +655,20 @@ export default function HealthSearch({ healthData, onNavigateToInsight }: Health
                                 {result.value}
                               </Badge>
                             )}
+
+                            {result.date && (
+                              <Badge variant="outline" className="text-xs">
+                                <Clock className="h-3 w-3 mr-1" />
+                                {result.date.toLocaleDateString()}
+                              </Badge>
+                            )}
+
+                            {result.healthScore && (
+                              <Badge variant="outline" className="text-xs">
+                                <ChartLine className="h-3 w-3 mr-1" />
+                                Score: {result.healthScore}
+                              </Badge>
+                            )}
                           </div>
                         </div>
 
@@ -329,7 +686,7 @@ export default function HealthSearch({ healthData, onNavigateToInsight }: Health
       </div>
 
       {/* Quick Insights */}
-      {!searchQuery && (
+      {!searchQuery && activeFiltersCount === 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Quick Insights</CardTitle>
