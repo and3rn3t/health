@@ -4,6 +4,7 @@ import { Progress } from '@/components/ui/progress'
 import { Heart, Activity, Moon, TrendingUp, TrendingDown, Minus, Brain, Shield, Scale } from '@phosphor-icons/react'
 import { useUsageTracking } from '@/hooks/useUsageTracking'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
+import RecentHealthData from '@/components/health/RecentHealthData'
 
 interface HealthDashboardProps {
   healthData: ProcessedHealthData | null
@@ -278,12 +279,7 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
                   })}
                 </span>
                 <div className="flex items-center gap-3 flex-1 mx-4">
-                  <div className="flex-1 bg-secondary rounded-full h-2">
-                    <div 
-                      className="h-2 bg-primary rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min((day.value / 10000) * 100, 100)}%` }}
-                    />
-                  </div>
+                  <Progress value={Math.min((day.value / 10000) * 100, 100)} className="flex-1 h-2" />
                   <span className="text-sm font-medium w-20 text-right">
                     {day.value.toLocaleString()}
                   </span>
@@ -295,6 +291,9 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
           </div>
         </CardContent>
       </Card>
+
+  {/* Recent processed entries */}
+  <RecentHealthData />
     </div>
   )
 }

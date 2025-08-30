@@ -3,7 +3,8 @@
  * Manages real-time data streaming via WebSocket connections
  */
 
-import { ProcessedHealthData } from './healthDataProcessor'
+import { messageEnvelopeSchema } from '@/schemas/health'
+import { toast } from 'sonner'
 
 export interface LiveHealthMetric {
   timestamp: string
@@ -53,8 +54,8 @@ export class LiveHealthDataSync {
   private config: WebSocketConfig
   private subscriptions: Map<string, LiveDataSubscription> = new Map()
   private connectionStatus: ConnectionStatus
-  private heartbeatTimer: NodeJS.Timeout | null = null
-  private reconnectTimer: NodeJS.Timeout | null = null
+  private heartbeatTimer: ReturnType<typeof setInterval> | null = null
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null
   private messageQueue: any[] = []
   private userId: string
 
@@ -134,10 +135,12 @@ export class LiveHealthDataSync {
 
         this.ws.onmessage = (event) => {
           try {
-            const message = JSON.parse(event.data)
-            this.handleServerMessage(message)
+            const raw = JSON.parse(event.data)
+            const parsed = messageEnvelopeSchema.safeParse(raw)
+            if (!parsed.success) return
+            this.handleServerMessage(parsed.data)
           } catch (error) {
-            console.error('Failed to parse server message:', error)
+            // Drop invalid payloads silently to avoid leaking data
           }
         }
 
@@ -165,23 +168,25 @@ export class LiveHealthDataSync {
   private handleServerMessage(message: any) {
     switch (message.type) {
       case 'connection_established':
-        this.connectionStatus.clientId = message.clientId
+        this.connectionStatus.clientId = (message as any).data?.clientId
         break
 
       case 'live_health_update':
-        this.processLiveHealthUpdate(message.data)
+        this.processLiveHealthUpdate((message as any).data)
         break
 
       case 'historical_data_update':
-        this.processHistoricalData(message.data)
+        this.processHistoricalData((message as any).data)
         break
 
       case 'emergency_alert':
-        this.handleEmergencyAlert(message.data)
+        this.handleEmergencyAlert((message as any).data)
         break
 
       case 'error':
-        console.error('Server error:', message.message)
+        try {
+          toast.error('Realtime error')
+        } catch {}
         break
     }
   }
