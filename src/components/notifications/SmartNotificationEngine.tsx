@@ -1099,7 +1099,7 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
       </Card>
 
       {/* Recent Notifications */}
-        <Card>
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
