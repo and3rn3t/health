@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 interface DataVisualizationProps {
-  healthData: ProcessedHealthData
+  healthData: ProcessedHealthData | null
   metric: 'steps' | 'heartRate' | 'walkingSteadiness' | 'sleepHours'
   timeframe: 'daily' | 'weekly' | 'monthly'
   className?: string

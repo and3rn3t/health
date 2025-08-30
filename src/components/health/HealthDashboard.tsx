@@ -5,7 +5,7 @@ import { Heart, Activity, Moon, TrendingUp, TrendingDown, Minus, Brain, Shield, 
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 interface HealthDashboardProps {
-  healthData: ProcessedHealthData
+  healthData: ProcessedHealthData | null
 }
 
 interface MetricCardProps {
@@ -92,8 +92,9 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
   }
 
   const getHealthScoreColor = () => {
-    if (healthScore >= 80) return 'text-green-600'
-    if (healthScore >= 60) return 'text-yellow-600'
+    const score = healthScore || 0
+    if (score >= 80) return 'text-green-600'
+    if (score >= 60) return 'text-yellow-600'
     return 'text-red-600'
   }
 
@@ -110,10 +111,10 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
           </CardHeader>
           <CardContent>
             <div className={`text-3xl font-bold ${getHealthScoreColor()}`}>
-              {healthScore}
+              {healthScore || 0}
               <span className="text-sm font-normal text-muted-foreground ml-1">/100</span>
             </div>
-            <Progress value={healthScore} className="mt-3" />
+            <Progress value={healthScore || 0} className="mt-3" />
           </CardContent>
         </Card>
 
@@ -147,7 +148,7 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
               {dataQuality?.overall || 'Unknown'}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {dataQuality?.completeness || 0}% complete
+              {(dataQuality?.completeness ?? 0)}% complete
             </p>
           </CardContent>
         </Card>
@@ -161,7 +162,7 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
           unit="avg"
           trend={metrics.steps?.trend || 'stable'}
           icon={<Activity className="h-4 w-4" />}
-          description={`${metrics.steps?.percentileRank}th percentile`}
+          description={`${metrics.steps?.percentileRank || 0}th percentile`}
           progress={Math.min(((metrics.steps?.average || 0) / 10000) * 100, 100)}
         />
         
@@ -171,7 +172,7 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
           unit="bpm"
           trend={metrics.heartRate?.trend || 'stable'}
           icon={<Heart className="h-4 w-4" />}
-          description={`Reliability: ${metrics.heartRate?.reliability}%`}
+          description={`Reliability: ${metrics.heartRate?.reliability || 0}%`}
         />
         
         <MetricCard
@@ -265,7 +266,7 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {metrics.steps?.daily?.slice(-14).map((day, index) => (
+            {metrics.steps?.daily?.slice(-14)?.map((day, index) => (
               <div key={index} className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground w-16">
                   {new Date(day.date).toLocaleDateString('en-US', { 
@@ -285,7 +286,9 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
                   </span>
                 </div>
               </div>
-            ))}
+            )) || (
+              <p className="text-muted-foreground text-center py-4">No activity data available</p>
+            )}
           </div>
         </CardContent>
       </Card>

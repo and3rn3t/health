@@ -422,8 +422,8 @@ function App() {
 
               {/* Content Area */}
               <div className="space-y-6">
-                {activeTab === 'dashboard' && <HealthDashboard healthData={healthData} />}
-                {activeTab === 'analytics' && <HealthAnalytics healthData={healthData} />}
+                {activeTab === 'dashboard' && healthData && <HealthDashboard healthData={healthData} />}
+                {activeTab === 'analytics' && healthData && <HealthAnalytics healthData={healthData} />}
                 {activeTab === 'fall-risk' && (
                   <FallRiskMonitor 
                     healthData={healthData} 

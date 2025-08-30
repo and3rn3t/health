@@ -20,7 +20,7 @@ import AIInsights from '@/components/health/AIInsights'
 import { toast } from 'sonner'
 
 interface HealthAnalyticsProps {
-  healthData: ProcessedHealthData
+  healthData: ProcessedHealthData | null
 }
 
 export default function HealthAnalytics({ healthData }: HealthAnalyticsProps) {
@@ -133,18 +133,18 @@ export default function HealthAnalytics({ healthData }: HealthAnalyticsProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <div className="text-sm text-muted-foreground mb-2">Completeness</div>
-              <Progress value={dataQuality.completeness} className="mb-2" />
-              <div className="text-sm font-medium">{dataQuality.completeness}%</div>
+              <Progress value={dataQuality?.completeness || 0} className="mb-2" />
+              <div className="text-sm font-medium">{dataQuality?.completeness || 0}%</div>
             </div>
             <div>
               <div className="text-sm text-muted-foreground mb-2">Consistency</div>
-              <Progress value={dataQuality.consistency} className="mb-2" />
-              <div className="text-sm font-medium">{dataQuality.consistency}%</div>
+              <Progress value={dataQuality?.consistency || 0} className="mb-2" />
+              <div className="text-sm font-medium">{dataQuality?.consistency || 0}%</div>
             </div>
             <div>
               <div className="text-sm text-muted-foreground mb-2">Recency</div>
-              <Progress value={dataQuality.recency} className="mb-2" />
-              <div className="text-sm font-medium">{dataQuality.recency}%</div>
+              <Progress value={dataQuality?.recency || 0} className="mb-2" />
+              <div className="text-sm font-medium">{dataQuality?.recency || 0}%</div>
             </div>
           </div>
         </CardContent>
@@ -321,7 +321,7 @@ export default function HealthAnalytics({ healthData }: HealthAnalyticsProps) {
                     <span className="font-medium text-sm">Activity Forecast</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Based on current trends, your step count is likely to {metrics.steps.trend === 'increasing' ? 'continue improving' : 'need attention'} over the next 30 days.
+                    Based on current trends, your step count is likely to {(metrics.steps?.trend || 'stable') === 'increasing' ? 'continue improving' : 'need attention'} over the next 30 days.
                   </p>
                 </div>
                 
@@ -331,7 +331,7 @@ export default function HealthAnalytics({ healthData }: HealthAnalyticsProps) {
                     <span className="font-medium text-sm">Cardiovascular Health</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Your heart rate variability suggests {metrics.heartRate.variability < 10 ? 'excellent' : 'good'} cardiovascular fitness. Continue current activity levels.
+                    Your heart rate variability suggests {(metrics.heartRate?.variability || 0) < 10 ? 'excellent' : 'good'} cardiovascular fitness. Continue current activity levels.
                   </p>
                 </div>
                 
@@ -341,8 +341,8 @@ export default function HealthAnalytics({ healthData }: HealthAnalyticsProps) {
                     <span className="font-medium text-sm">Fall Risk Assessment</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Walking steadiness trends indicate {metrics.walkingSteadiness.trend === 'decreasing' ? 'increased monitoring recommended' : 'stable balance metrics'}. 
-                    {metrics.walkingSteadiness.average < 60 && ' Consider balance training exercises.'}
+                    Walking steadiness trends indicate {(metrics.walkingSteadiness?.trend || 'stable') === 'decreasing' ? 'increased monitoring recommended' : 'stable balance metrics'}. 
+                    {(metrics.walkingSteadiness?.average || 0) < 60 && ' Consider balance training exercises.'}
                   </p>
                 </div>
               </div>
