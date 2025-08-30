@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass, CloudArrowUp, TrendingUp, Bell, Brain } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass, CloudArrowUp, TrendingUp, Bell, Brain, Moon, Sun } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
@@ -44,6 +44,21 @@ function App() {
   const [emergencyContacts, setEmergencyContacts] = useKV('emergency-contacts', [])
   const [activeTab, setActiveTab] = useState('dashboard')
   const [sidebarCollapsed, setSidebarCollapsed] = useKV('sidebar-collapsed', false)
+  const [darkMode, setDarkMode] = useKV('dark-mode', false)
+
+  // Apply dark mode to document
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [darkMode])
+
+  const toggleDarkMode = () => {
+    setDarkMode(current => !current)
+    toast.success(darkMode ? 'Switched to light mode' : 'Switched to dark mode')
+  }
 
   const hasHealthData = healthData && healthData.metrics && Object.keys(healthData.metrics).length > 0
   const isHighRisk = hasHealthData && (
@@ -412,6 +427,29 @@ function App() {
 
         {/* Footer */}
         <div className="p-4 border-t border-border">
+          {/* Dark mode toggle */}
+          <div className="mb-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleDarkMode}
+              className={`
+                w-full justify-start h-8
+                ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                hover:bg-muted
+              `}
+            >
+              {darkMode ? (
+                <Sun className="h-4 w-4 flex-shrink-0" />
+              ) : (
+                <Moon className="h-4 w-4 flex-shrink-0" />
+              )}
+              {!sidebarCollapsed && (
+                <span className="ml-3">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
+              )}
+            </Button>
+          </div>
+
           {hasHealthData && !sidebarCollapsed && (
             <div className="space-y-2">
               <Badge variant="outline" className="w-full justify-center text-primary border-primary">
@@ -467,6 +505,14 @@ function App() {
                     High Fall Risk
                   </Badge>
                 )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleDarkMode}
+                  className="h-8 w-8 p-0"
+                >
+                  {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </Button>
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -504,6 +550,14 @@ function App() {
                   </div>
               </div>
               <div className="flex items-center gap-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleDarkMode}
+                  className="h-8 w-8 p-0"
+                >
+                  {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </Button>
                 <Button 
                   variant="outline" 
                   size="sm"
