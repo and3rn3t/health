@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
@@ -24,6 +24,7 @@ function App() {
   const [fallRiskScore, setFallRiskScore] = useKV('fall-risk-score', 0)
   const [emergencyContacts, setEmergencyContacts] = useKV('emergency-contacts', [])
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [sidebarCollapsed, setSidebarCollapsed] = useKV('sidebar-collapsed', false)
 
   const hasHealthData = healthData && healthData.metrics && Object.keys(healthData.metrics).length > 0
   const isHighRisk = hasHealthData && (
@@ -65,215 +66,398 @@ function App() {
 
   const currentPageInfo = getCurrentPageInfo()
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-6 py-4">
+  // Sidebar component for larger screens
+  const Sidebar = () => (
+    <aside className={`
+      fixed top-0 left-0 z-40 h-screen transition-all duration-300 ease-in-out
+      bg-card border-r border-border
+      ${sidebarCollapsed ? 'w-16' : 'w-64'}
+      hidden lg:block
+    `}>
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-lg">
-                <Shield className="h-6 w-6 text-primary-foreground" />
+            {!sidebarCollapsed && (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
+                  <Shield className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-foreground">HealthGuard</h2>
+                  <p className="text-xs text-muted-foreground">Health Monitor</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">HealthGuard</h1>
-                <p className="text-sm text-muted-foreground">Apple Health Insights & Fall Risk Monitor</p>
-              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarCollapsed(current => !current)}
+              className="h-8 w-8 p-0"
+            >
+              {sidebarCollapsed ? <List className="h-4 w-4" /> : <X className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-6">
+          {/* Main Features */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                Main Features
+              </h3>
+            )}
+            <div className="space-y-1">
+              {navigationItems.main.map((item) => {
+                const IconComponent = item.icon
+                const isActive = activeTab === item.id
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                      w-full justify-start h-10
+                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                    `}
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                )
+              })}
             </div>
-            <div className="flex items-center gap-4">
-              {hasHealthData && (
-                <Badge variant="outline" className="text-primary border-primary">
-                  Health Score: {healthData.healthScore || 0}/100
-                </Badge>
-              )}
+          </div>
+
+          {/* Management */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                Management
+              </h3>
+            )}
+            <div className="space-y-1">
+              {navigationItems.management.map((item) => {
+                const IconComponent = item.icon
+                const isActive = activeTab === item.id
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                      w-full justify-start h-10
+                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                    `}
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Setup */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                Setup & Configuration
+              </h3>
+            )}
+            <div className="space-y-1">
+              {navigationItems.setup.map((item) => {
+                const IconComponent = item.icon
+                const isActive = activeTab === item.id
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                      w-full justify-start h-10
+                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                    `}
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                )
+              })}
+            </div>
+          </div>
+        </nav>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-border">
+          {hasHealthData && !sidebarCollapsed && (
+            <div className="space-y-2">
+              <Badge variant="outline" className="w-full justify-center text-primary border-primary">
+                Health Score: {healthData.healthScore || 0}/100
+              </Badge>
               {isHighRisk && (
-                <Badge variant="destructive" className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4" />
+                <Badge variant="destructive" className="w-full justify-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
                   High Fall Risk
                 </Badge>
               )}
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="text-accent border-accent hover:bg-accent hover:text-accent-foreground"
-              >
-                <Phone className="h-4 w-4 mr-2" />
-                Emergency
-              </Button>
             </div>
-          </div>
+          )}
+          {hasHealthData && sidebarCollapsed && isHighRisk && (
+            <div className="flex justify-center">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+            </div>
+          )}
         </div>
-      </header>
+      </div>
+    </aside>
+  )
 
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-6">
-        {!hasHealthData ? (
-          <div className="max-w-2xl mx-auto">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Upload className="h-5 w-5" />
-                  Get Started with Your Health Data
-                </CardTitle>
-                <CardDescription>
-                  Import your Apple Health data to unlock comprehensive insights and fall risk monitoring.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <HealthDataImport onDataImported={setHealthData} />
-              </CardContent>
-            </Card>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Breadcrumb Navigation */}
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink 
-                    onClick={() => setActiveTab('dashboard')}
-                    className="flex items-center gap-1 cursor-pointer"
-                  >
-                    <House className="h-4 w-4" />
-                    HealthGuard
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink 
-                    onClick={() => setActiveTab('dashboard')}
-                    className="cursor-pointer"
-                  >
-                    {currentPageInfo.category}
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{currentPageInfo.label}</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              {/* Primary Navigation - Main Features */}
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-3">Main Features</h3>
-                  <TabsList className="grid w-full grid-cols-4 h-12">
-                    {navigationItems.main.map((item) => {
-                      const IconComponent = item.icon
-                      return (
-                        <TabsTrigger 
-                          key={item.id}
-                          value={item.id} 
-                          className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                        >
-                          <IconComponent className="h-4 w-4" />
-                          <span className="hidden sm:inline">{item.label}</span>
-                        </TabsTrigger>
-                      )
-                    })}
-                  </TabsList>
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Sidebar for larger screens */}
+      <Sidebar />
+      
+      {/* Main layout with responsive margin */}
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
+        {/* Header */}
+        <header className="border-b bg-card lg:hidden">
+          <div className="container mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-lg">
+                  <Shield className="h-6 w-6 text-primary-foreground" />
                 </div>
-
-                {/* Secondary Navigation - Management & Setup */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-xs font-medium text-muted-foreground mb-2">Management</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {navigationItems.management.map((item) => {
-                        const IconComponent = item.icon
-                        return (
-                          <Button
-                            key={item.id}
-                            variant={activeTab === item.id ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => setActiveTab(item.id)}
-                            className="flex items-center gap-2"
-                          >
-                            <IconComponent className="h-4 w-4" />
-                            {item.label}
-                          </Button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-xs font-medium text-muted-foreground mb-2">Setup & Configuration</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {navigationItems.setup.map((item) => {
-                        const IconComponent = item.icon
-                        return (
-                          <Button
-                            key={item.id}
-                            variant={activeTab === item.id ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => setActiveTab(item.id)}
-                            className="flex items-center gap-2"
-                          >
-                            <IconComponent className="h-4 w-4" />
-                            {item.label}
-                          </Button>
-                        )
-                      })}
-                    </div>
-                  </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">HealthGuard</h1>
+                  <p className="text-sm text-muted-foreground">Apple Health Insights & Fall Risk Monitor</p>
                 </div>
               </div>
+              <div className="flex items-center gap-4">
+                {hasHealthData && (
+                  <Badge variant="outline" className="text-primary border-primary">
+                    Health Score: {healthData.healthScore || 0}/100
+                  </Badge>
+                )}
+                {isHighRisk && (
+                  <Badge variant="destructive" className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    High Fall Risk
+                  </Badge>
+                )}
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-accent border-accent hover:bg-accent hover:text-accent-foreground"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Emergency
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
 
-            <TabsContent value="dashboard" className="space-y-6">
-              <HealthDashboard healthData={healthData} />
-            </TabsContent>
+        {/* Desktop Header */}
+        <header className="border-b bg-card hidden lg:block">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">
+                  {currentPageInfo.label}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {currentPageInfo.category === 'Main' && 'Health monitoring and analytics'}
+                  {currentPageInfo.category === 'Management' && 'Data and contact management'}
+                  {currentPageInfo.category === 'Setup' && 'Configuration and setup guides'}
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-accent border-accent hover:bg-accent hover:text-accent-foreground"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Emergency
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
 
-            <TabsContent value="analytics" className="space-y-6">
-              <HealthAnalytics healthData={healthData} />
-            </TabsContent>
-
-            <TabsContent value="fall-risk" className="space-y-6">
-              <FallRiskMonitor 
-                healthData={healthData} 
-                fallRiskScore={fallRiskScore}
-                setFallRiskScore={setFallRiskScore}
-              />
-            </TabsContent>
-
-            <TabsContent value="tooling" className="space-y-6">
-              <FallMonitoringTooling />
-            </TabsContent>
-
-            <TabsContent value="phases" className="space-y-6">
-              <ImplementationPhases />
-            </TabsContent>
-
-            <TabsContent value="history" className="space-y-6">
-              <FallHistory />
-            </TabsContent>
-
-            <TabsContent value="contacts" className="space-y-6">
-              <EmergencyContacts 
-                contacts={emergencyContacts}
-                setContacts={setEmergencyContacts}
-              />
-            </TabsContent>
-
-            <TabsContent value="import" className="space-y-6">
+        {/* Main Content */}
+        <main className="px-6 py-6">
+          {!hasHealthData ? (
+            <div className="max-w-2xl mx-auto">
               <Card>
                 <CardHeader>
-                  <CardTitle>Import Additional Health Data</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Upload className="h-5 w-5" />
+                    Get Started with Your Health Data
+                  </CardTitle>
                   <CardDescription>
-                    Update your health data to keep insights current and accurate.
+                    Import your Apple Health data to unlock comprehensive insights and fall risk monitoring.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <HealthDataImport onDataImported={setHealthData} />
                 </CardContent>
               </Card>
-            </TabsContent>
-          </Tabs>
-          </div>
-        )}
-      </main>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Breadcrumb Navigation - Mobile Only */}
+              <div className="lg:hidden">
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink 
+                        onClick={() => setActiveTab('dashboard')}
+                        className="flex items-center gap-1 cursor-pointer"
+                      >
+                        <House className="h-4 w-4" />
+                        HealthGuard
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbLink 
+                        onClick={() => setActiveTab('dashboard')}
+                        className="cursor-pointer"
+                      >
+                        {currentPageInfo.category}
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>{currentPageInfo.label}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+              </div>
+
+              {/* Mobile Navigation */}
+              <div className="lg:hidden">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                  {/* Primary Navigation - Main Features */}
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-3">Main Features</h3>
+                      <TabsList className="grid w-full grid-cols-4 h-12">
+                        {navigationItems.main.map((item) => {
+                          const IconComponent = item.icon
+                          return (
+                            <TabsTrigger 
+                              key={item.id}
+                              value={item.id} 
+                              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                            >
+                              <IconComponent className="h-4 w-4" />
+                              <span className="hidden sm:inline">{item.label}</span>
+                            </TabsTrigger>
+                          )
+                        })}
+                      </TabsList>
+                    </div>
+
+                    {/* Secondary Navigation - Management & Setup */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Management</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {navigationItems.management.map((item) => {
+                            const IconComponent = item.icon
+                            return (
+                              <Button
+                                key={item.id}
+                                variant={activeTab === item.id ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setActiveTab(item.id)}
+                                className="flex items-center gap-2"
+                              >
+                                <IconComponent className="h-4 w-4" />
+                                {item.label}
+                              </Button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Setup & Configuration</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {navigationItems.setup.map((item) => {
+                            const IconComponent = item.icon
+                            return (
+                              <Button
+                                key={item.id}
+                                variant={activeTab === item.id ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setActiveTab(item.id)}
+                                className="flex items-center gap-2"
+                              >
+                                <IconComponent className="h-4 w-4" />
+                                {item.label}
+                              </Button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Tabs>
+              </div>
+
+              {/* Content Area */}
+              <div className="space-y-6">
+                {activeTab === 'dashboard' && <HealthDashboard healthData={healthData} />}
+                {activeTab === 'analytics' && <HealthAnalytics healthData={healthData} />}
+                {activeTab === 'fall-risk' && (
+                  <FallRiskMonitor 
+                    healthData={healthData} 
+                    fallRiskScore={fallRiskScore}
+                    setFallRiskScore={setFallRiskScore}
+                  />
+                )}
+                {activeTab === 'tooling' && <FallMonitoringTooling />}
+                {activeTab === 'phases' && <ImplementationPhases />}
+                {activeTab === 'history' && <FallHistory />}
+                {activeTab === 'contacts' && (
+                  <EmergencyContacts 
+                    contacts={emergencyContacts}
+                    setContacts={setEmergencyContacts}
+                  />
+                )}
+                {activeTab === 'import' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Import Additional Health Data</CardTitle>
+                      <CardDescription>
+                        Update your health data to keep insights current and accurate.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <HealthDataImport onDataImported={setHealthData} />
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   )
 }
