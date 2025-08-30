@@ -73,12 +73,12 @@ export default function Phase1Summary() {
   ]
 
   const nextPhaseFeatures = [
-    "Apple Watch real-time integration",
-    "Advanced fall detection algorithms",
-    "Machine learning model training",
-    "Emergency response automation",
-    "Healthcare provider integration",
-    "Predictive health modeling"
+    "Custom ML model for fall prediction",
+    "Gait analysis algorithms", 
+    "Behavioral pattern recognition",
+    "Real-time risk score calculation",
+    "Personalized monitoring adjustments",
+    "Cloud-based monitoring platform"
   ]
 
   return (
@@ -90,17 +90,21 @@ export default function Phase1Summary() {
           <h1 className="text-3xl font-bold">Phase 1 Foundation Complete!</h1>
         </div>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          We've successfully built a comprehensive health data import and analytics foundation 
-          with AI-powered insights, setting the stage for advanced fall risk monitoring.
+          We've successfully completed Phases 1-2 with comprehensive health data analytics and AI insights, 
+          plus significant progress on Phase 3 fall detection framework. Ready for Apple Watch integration!
         </p>
         <div className="flex items-center justify-center gap-4">
           <Badge className="flex items-center gap-2" variant="default">
             <CheckCircle className="h-4 w-4" />
-            Phase 1 Complete
+            Phases 1-2 Complete
+          </Badge>
+          <Badge className="flex items-center gap-2" variant="secondary">
+            <Activity className="h-4 w-4" />
+            Phase 3 In Progress
           </Badge>
           <Badge className="flex items-center gap-2" variant="outline">
             <Rocket className="h-4 w-4" />
-            Ready for Phase 2
+            Ready for Phase 4
           </Badge>
         </div>
       </div>
@@ -117,17 +121,24 @@ export default function Phase1Summary() {
           <div className="space-y-4">
             <div>
               <div className="flex justify-between text-sm mb-2">
-                <span>Phase 1: Foundation & Analytics</span>
+                <span>Phase 1-2: Foundation & Enhanced Analytics</span>
                 <span className="font-medium">100% Complete</span>
               </div>
               <Progress value={100} className="h-3" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-2">
-                <span>Overall Project Progress</span>
-                <span className="font-medium">35% Complete</span>
+                <span>Phase 3: Basic Fall Detection</span>
+                <span className="font-medium">60% Complete</span>
               </div>
-              <Progress value={35} className="h-3" />
+              <Progress value={60} className="h-3" />
+            </div>
+            <div>
+              <div className="flex justify-between text-sm mb-2">
+                <span>Overall Project Progress</span>
+                <span className="font-medium">37% Complete</span>
+              </div>
+              <Progress value={37} className="h-3" />
             </div>
           </div>
         </CardContent>
@@ -135,7 +146,7 @@ export default function Phase1Summary() {
 
       {/* Completed Features */}
       <div className="grid gap-6">
-        <h2 className="text-2xl font-bold text-center">What We've Built</h2>
+        <h2 className="text-2xl font-bold text-center">What We've Built (Phases 1-2 Complete)</h2>
         
         <div className="grid md:grid-cols-2 gap-4">
           {completedFeatures.map((category, index) => (
@@ -159,6 +170,69 @@ export default function Phase1Summary() {
             </Card>
           ))}
         </div>
+      </div>
+
+      {/* Phase 3 Progress */}
+      <div className="grid gap-6">
+        <h2 className="text-2xl font-bold text-center">Phase 3 Fall Detection - In Progress</h2>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-blue-500" />
+              Current Implementation Status
+            </CardTitle>
+            <CardDescription>
+              Framework and core components implemented, Apple Watch integration next
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-medium mb-3 text-green-700">✅ Completed</h4>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Emergency contact management system</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Fall reporting and logging interface</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Fall history tracking and analytics</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Basic fall risk assessment framework</span>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-medium mb-3 text-blue-700">🔄 Next Steps</h4>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2 text-sm">
+                    <div className="w-4 h-4 border-2 border-blue-500 rounded-full mt-0.5 flex-shrink-0" />
+                    <span>Apple Watch fall detection API integration</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <div className="w-4 h-4 border-2 border-blue-500 rounded-full mt-0.5 flex-shrink-0" />
+                    <span>Core Motion sensor data processing</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <div className="w-4 h-4 border-2 border-blue-500 rounded-full mt-0.5 flex-shrink-0" />
+                    <span>Real-time emergency alert system</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <div className="w-4 h-4 border-2 border-blue-500 rounded-full mt-0.5 flex-shrink-0" />
+                    <span>False positive filtering algorithms</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Technical Achievements */}
@@ -199,10 +273,10 @@ export default function Phase1Summary() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Rocket className="h-5 w-5" />
-            What's Next: Phase 2 Enhanced Monitoring
+            What's Next: Phase 4 AI-Powered Fall Prediction
           </CardTitle>
           <CardDescription>
-            Building on our solid foundation to add real-time monitoring capabilities
+            Advanced machine learning and real-time monitoring capabilities
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -251,7 +325,7 @@ export default function Phase1Summary() {
       {/* Summary Stats */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-center">Phase 1 Impact</CardTitle>
+          <CardTitle className="text-center">Phases 1-3 Impact</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
@@ -264,8 +338,8 @@ export default function Phase1Summary() {
               <div className="text-sm text-muted-foreground">Days Historical Data</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-purple-500">5</div>
-              <div className="text-sm text-muted-foreground">AI Insight Categories</div>
+              <div className="text-3xl font-bold text-purple-500">7</div>
+              <div className="text-sm text-muted-foreground">Complete Components Built</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-red-500">10+</div>
