@@ -44,6 +44,7 @@ import SmartFeatureRecommendations from '@/components/recommendations/SmartFeatu
 import PersonalizedEngagementOptimizer from '@/components/recommendations/PersonalizedEngagementOptimizer'
 import UsageAnalyticsDashboard from '@/components/analytics/UsageAnalyticsDashboard'
 import AIUsagePredictions from '@/components/analytics/AIUsagePredictions'
+import SmartNotificationEngine from '@/components/notifications/SmartNotificationEngine'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -121,6 +122,7 @@ function App() {
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
       { id: 'recommendations', label: 'Recommendations', icon: Lightbulb },
       { id: 'engagement-optimizer', label: 'Engagement Optimizer', icon: Target },
+      { id: 'smart-notifications', label: 'Smart Notifications', icon: Bell },
       { id: 'search', label: 'Search', icon: MagnifyingGlass }
     ],
     monitoring: [
@@ -599,6 +601,7 @@ function App() {
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Fall Risk' && 'Fall prevention and risk assessment'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Recommendations' && 'Smart suggestions based on your usage patterns'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Engagement Optimizer' && 'Personalized recommendations to optimize your health monitoring experience'}
+                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Smart Notifications' && 'AI-powered notifications optimized for your engagement patterns'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Search' && 'Find specific health insights and data'}
                     {currentPageInfo.category === 'Monitoring' && 'Health monitoring and alert system'}
                     {currentPageInfo.category === 'AI & ML' && 'Advanced AI analysis and machine learning'}
@@ -711,7 +714,7 @@ function App() {
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-medium text-muted-foreground">More Features</h3>
                       <Badge variant="outline" className="text-xs">
-                        {navigationItems.main.slice(6).length + navigationItems.monitoring.length + navigationItems.ai.length + navigationItems.advanced.length + navigationItems.gamification.length + navigationItems.community.length + navigationItems.management.length + navigationItems.setup.length} more
+                        {navigationItems.main.slice(7).length + navigationItems.monitoring.length + navigationItems.ai.length + navigationItems.advanced.length + navigationItems.gamification.length + navigationItems.community.length + navigationItems.management.length + navigationItems.setup.length} more
                       </Badge>
                     </div>
                     
@@ -723,7 +726,7 @@ function App() {
                           Core Features
                         </h4>
                         <div className="space-y-1">
-                          {navigationItems.main.slice(6).map((item) => {
+                          {navigationItems.main.slice(7).map((item) => {
                             const IconComponent = item.icon
                             return (
                               <Button
@@ -882,6 +885,9 @@ function App() {
                     healthData={healthData} 
                     onNavigateToFeature={setActiveTab}
                   />
+                )}
+                {activeTab === 'smart-notifications' && healthData && (
+                  <SmartNotificationEngine healthData={healthData} />
                 )}
                 {activeTab === 'realtime-scoring' && <RealTimeHealthScoring />}
                 {activeTab === 'analytics' && healthData && <HealthAnalytics healthData={healthData} />}
