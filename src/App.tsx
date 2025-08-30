@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Heart, Activity, Shield, Phone, TrendingUp, TrendingDown, AlertTriangle, Upload, Users } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'

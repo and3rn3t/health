@@ -52,7 +52,7 @@ export default function FallHistory() {
       ...newIncident
     }
 
-    setFallHistory([incident, ...fallHistory])
+    setFallHistory((currentHistory) => [incident, ...currentHistory])
     setNewIncident({
       date: new Date().toISOString().split('T')[0],
       time: new Date().toTimeString().slice(0, 5),
