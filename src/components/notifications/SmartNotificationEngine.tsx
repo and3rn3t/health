@@ -7,7 +7,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Bell, BellRinging, Clock, Brain, TrendingUp, CheckCircle, AlertTriangle, Info, Calendar, Settings } from '@phosphor-icons/react'
+import { Input } from '@/components/ui/input'
+import { Bell, BellRinging, Clock, Brain, TrendingUp, CheckCircle, AlertTriangle, Info, Calendar, Settings, Envelope, DeviceMobile, Phone, Gear } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
@@ -17,6 +18,20 @@ interface EngagementPattern {
   engagementScore: number
   activityType: string
   frequency: number
+}
+
+interface DeliveryMethodSettings {
+  push: boolean
+  email: boolean
+  sms: boolean
+  phone: boolean
+}
+
+interface UrgencyLevelConfig {
+  low: DeliveryMethodSettings
+  medium: DeliveryMethodSettings
+  high: DeliveryMethodSettings
+  critical: DeliveryMethodSettings
 }
 
 interface NotificationPreferences {
@@ -31,6 +46,14 @@ interface NotificationPreferences {
   quietHoursEnd: number
   maxNotificationsPerDay: number
   personalizedTiming: boolean
+  deliveryMethods: UrgencyLevelConfig
+  contactInfo: {
+    email: string
+    phone: string
+    emergencyContacts: string[]
+  }
+  escalationEnabled: boolean
+  escalationDelay: number // minutes
 }
 
 interface SmartNotification {
@@ -45,6 +68,16 @@ interface SmartNotification {
   delivered: boolean
   interacted: boolean
   createdAt: Date
+  deliveryMethods: string[]
+  deliveryStatus: {
+    push?: 'sent' | 'failed' | 'pending'
+    email?: 'sent' | 'failed' | 'pending'
+    sms?: 'sent' | 'failed' | 'pending'
+    phone?: 'sent' | 'failed' | 'pending'
+  }
+  escalated: boolean
+  acknowledgmentRequired: boolean
+  acknowledged: boolean
 }
 
 interface SmartNotificationEngineProps {
@@ -63,7 +96,20 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
     quietHoursStart: 22,
     quietHoursEnd: 7,
     maxNotificationsPerDay: 6,
-    personalizedTiming: true
+    personalizedTiming: true,
+    deliveryMethods: {
+      low: { push: true, email: false, sms: false, phone: false },
+      medium: { push: true, email: true, sms: false, phone: false },
+      high: { push: true, email: true, sms: true, phone: false },
+      critical: { push: true, email: true, sms: true, phone: true }
+    },
+    contactInfo: {
+      email: '',
+      phone: '',
+      emergencyContacts: []
+    },
+    escalationEnabled: true,
+    escalationDelay: 15
   })
 
   const [engagementPatterns, setEngagementPatterns] = useKV<EngagementPattern[]>('engagement-patterns', [])
@@ -72,7 +118,13 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
     totalSent: 0,
     totalInteracted: 0,
     engagementRate: 0,
-    optimalTimeAccuracy: 0
+    optimalTimeAccuracy: 0,
+    deliveryStats: {
+      push: { sent: 0, failed: 0 },
+      email: { sent: 0, failed: 0 },
+      sms: { sent: 0, failed: 0 },
+      phone: { sent: 0, failed: 0 }
+    }
   })
 
   // Simulate real-time engagement tracking
@@ -114,8 +166,54 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
     return () => clearInterval(interval)
   }, [setEngagementPatterns])
 
+  // Get delivery methods for a priority level
+  const getDeliveryMethods = (priority: 'low' | 'medium' | 'high' | 'critical'): string[] => {
+    const methods: string[] = []
+    const config = preferences.deliveryMethods[priority]
+    
+    if (config.push) methods.push('push')
+    if (config.email) methods.push('email')
+    if (config.sms) methods.push('sms')
+    if (config.phone) methods.push('phone')
+    
+    return methods
+  }
+
+  // Simulate delivery through different channels
+  const simulateDelivery = async (notification: SmartNotification) => {
+    const deliveryStatus: SmartNotification['deliveryStatus'] = {}
+    const methods = notification.deliveryMethods
+
+    for (const method of methods) {
+      // Simulate delivery delay and success/failure
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 1000))
+      
+      const success = Math.random() > 0.1 // 90% success rate
+      deliveryStatus[method as keyof typeof deliveryStatus] = success ? 'sent' : 'failed'
+      
+      if (success) {
+        switch (method) {
+          case 'push':
+            toast.info(`📱 Push notification sent: ${notification.title}`)
+            break
+          case 'email':
+            toast.info(`📧 Email sent: ${notification.title}`)
+            break
+          case 'sms':
+            toast.info(`📱 SMS sent: ${notification.title}`)
+            break
+          case 'phone':
+            toast.info(`📞 Phone call initiated: ${notification.title}`)
+            break
+        }
+      } else {
+        toast.error(`Failed to deliver via ${method}: ${notification.title}`)
+      }
+    }
+
+    return deliveryStatus
+  }
   // Generate optimal notification times based on engagement patterns
-  const getOptimalNotificationTime = (priority: 'low' | 'medium' | 'high' | 'critical') => {
     if (!preferences.optimalTimingEnabled || engagementPatterns.length === 0) {
       return new Date()
     }
@@ -177,6 +275,7 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
     // Health reminder notifications
     if (preferences.healthReminders && healthData.healthScore && healthData.healthScore < 70) {
       const optimalTime = getOptimalNotificationTime('medium')
+      const deliveryMethods = getDeliveryMethods('medium')
       newNotifications.push({
         id: `health-${Date.now()}`,
         type: 'health',
@@ -188,7 +287,12 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
         engagementScore: 0,
         delivered: false,
         interacted: false,
-        createdAt: now
+        createdAt: now,
+        deliveryMethods,
+        deliveryStatus: {},
+        escalated: false,
+        acknowledgmentRequired: false,
+        acknowledged: false
       })
     }
 
@@ -197,6 +301,7 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
       const dailySteps = healthData.metrics.steps.value
       if (dailySteps < 8000) {
         const optimalTime = getOptimalNotificationTime('low')
+        const deliveryMethods = getDeliveryMethods('low')
         newNotifications.push({
           id: `exercise-${Date.now()}`,
           type: 'exercise',
@@ -208,7 +313,12 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
           engagementScore: 0,
           delivered: false,
           interacted: false,
-          createdAt: now
+          createdAt: now,
+          deliveryMethods,
+          deliveryStatus: {},
+          escalated: false,
+          acknowledgmentRequired: false,
+          acknowledged: false
         })
       }
     }
@@ -218,6 +328,7 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
       const highRiskFactors = healthData.fallRiskFactors.filter(f => f.risk === 'high')
       if (highRiskFactors.length > 0) {
         const optimalTime = getOptimalNotificationTime('critical')
+        const deliveryMethods = getDeliveryMethods('critical')
         newNotifications.push({
           id: `fall-risk-${Date.now()}`,
           type: 'fall-risk',
@@ -229,7 +340,12 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
           engagementScore: 0,
           delivered: false,
           interacted: false,
-          createdAt: now
+          createdAt: now,
+          deliveryMethods,
+          deliveryStatus: {},
+          escalated: false,
+          acknowledgmentRequired: true,
+          acknowledged: false
         })
       }
     }
@@ -237,6 +353,7 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
     // Achievement celebration notifications
     if (preferences.achievementCelebrations && healthData.healthScore && healthData.healthScore > 85) {
       const optimalTime = getOptimalNotificationTime('medium')
+      const deliveryMethods = getDeliveryMethods('medium')
       newNotifications.push({
         id: `achievement-${Date.now()}`,
         type: 'achievement',
@@ -248,7 +365,12 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
         engagementScore: 0,
         delivered: false,
         interacted: false,
-        createdAt: now
+        createdAt: now,
+        deliveryMethods,
+        deliveryStatus: {},
+        escalated: false,
+        acknowledgmentRequired: false,
+        acknowledged: false
       })
     }
 
@@ -260,36 +382,59 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
 
   // Simulate notification delivery at optimal times
   useEffect(() => {
-    const checkPendingNotifications = () => {
+    const checkPendingNotifications = async () => {
       const now = new Date()
-      setNotifications(current => {
-        return current.map(notification => {
-          if (!notification.delivered && notification.optimalTime <= now) {
-            // Simulate delivery
-            toast.info(notification.title, {
-              description: notification.message,
-              action: {
-                label: 'View',
-                onClick: () => {
-                  // Mark as interacted
-                  setNotifications(current => 
-                    current.map(n => 
-                      n.id === notification.id ? { ...n, interacted: true } : n
-                    )
-                  )
-                }
-              }
+      
+      for (const notification of notifications) {
+        if (!notification.delivered && notification.optimalTime <= now) {
+          // Simulate delivery through configured methods
+          const deliveryStatus = await simulateDelivery(notification)
+          
+          // Update notification with delivery status
+          setNotifications(current => 
+            current.map(n => 
+              n.id === notification.id 
+                ? { 
+                    ...n, 
+                    delivered: true, 
+                    deliveryStatus,
+                    interacted: false 
+                  } 
+                : n
+            )
+          )
+        }
+
+        // Handle escalation for critical notifications
+        if (notification.delivered && 
+            notification.priority === 'critical' && 
+            !notification.acknowledged && 
+            !notification.escalated &&
+            preferences.escalationEnabled) {
+          
+          const timeSinceDelivery = now.getTime() - notification.optimalTime.getTime()
+          const escalationThreshold = preferences.escalationDelay * 60 * 1000 // Convert to milliseconds
+          
+          if (timeSinceDelivery > escalationThreshold) {
+            // Escalate notification
+            toast.error('⚠️ Critical notification escalated to emergency contacts', {
+              description: notification.title,
+              duration: 10000
             })
-            return { ...notification, delivered: true }
+            
+            setNotifications(current => 
+              current.map(n => 
+                n.id === notification.id ? { ...n, escalated: true } : n
+              )
+            )
           }
-          return notification
-        })
-      })
+        }
+      }
     }
 
-    const interval = setInterval(checkPendingNotifications, 30000) // Check every 30 seconds
+    const interval = setInterval(checkPendingNotifications, 10000) // Check every 10 seconds
     return () => clearInterval(interval)
-  }, [setNotifications])
+  }, [notifications, preferences.escalationEnabled, preferences.escalationDelay, setNotifications])
 
   // Calculate engagement statistics
   useEffect(() => {
@@ -297,11 +442,33 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
     const interacted = notifications.filter(n => n.interacted)
     const engagementRate = delivered.length > 0 ? (interacted.length / delivered.length) * 100 : 0
     
+    // Calculate delivery method statistics
+    const deliveryStats = {
+      push: { sent: 0, failed: 0 },
+      email: { sent: 0, failed: 0 },
+      sms: { sent: 0, failed: 0 },
+      phone: { sent: 0, failed: 0 }
+    }
+    
+    delivered.forEach(notification => {
+      Object.entries(notification.deliveryStatus).forEach(([method, status]) => {
+        if (method in deliveryStats) {
+          const methodKey = method as keyof typeof deliveryStats
+          if (status === 'sent') {
+            deliveryStats[methodKey].sent++
+          } else if (status === 'failed') {
+            deliveryStats[methodKey].failed++
+          }
+        }
+      })
+    })
+    
     setNotificationStats({
       totalSent: delivered.length,
       totalInteracted: interacted.length,
       engagementRate,
-      optimalTimeAccuracy: 85 // Simulated accuracy percentage
+      optimalTimeAccuracy: 85, // Simulated accuracy percentage
+      deliveryStats
     })
   }, [notifications, setNotificationStats])
 
@@ -409,6 +576,64 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
           </CardContent>
         </Card>
       </div>
+
+      {/* Delivery Method Performance */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Delivery Method Performance
+          </CardTitle>
+          <CardDescription>
+            Success rates and reliability metrics for each delivery method
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {Object.entries(notificationStats.deliveryStats).map(([method, stats]) => {
+              const total = stats.sent + stats.failed
+              const successRate = total > 0 ? (stats.sent / total) * 100 : 0
+              
+              const getMethodIcon = (method: string) => {
+                switch (method) {
+                  case 'push': return <DeviceMobile className="h-5 w-5 text-muted-foreground" />
+                  case 'email': return <Envelope className="h-5 w-5 text-muted-foreground" />
+                  case 'sms': return <DeviceMobile className="h-5 w-5 text-muted-foreground" />
+                  case 'phone': return <Phone className="h-5 w-5 text-muted-foreground" />
+                  default: return <Bell className="h-5 w-5 text-muted-foreground" />
+                }
+              }
+              
+              return (
+                <div key={method} className="p-4 bg-muted rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {getMethodIcon(method)}
+                      <span className="font-medium capitalize">{method}</span>
+                    </div>
+                    <Badge variant={successRate >= 90 ? 'secondary' : successRate >= 75 ? 'default' : 'destructive'}>
+                      {successRate.toFixed(0)}%
+                    </Badge>
+                  </div>
+                  <div className="space-y-1 text-xs text-muted-foreground">
+                    <div className="flex justify-between">
+                      <span>Sent:</span>
+                      <span>{stats.sent}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Failed:</span>
+                      <span>{stats.failed}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Total:</span>
+                      <span>{total}</span>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
 
       {/* Engagement Patterns */}
       <Card>
@@ -632,6 +857,245 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
         </CardContent>
       </Card>
 
+      {/* Delivery Method Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Gear className="h-5 w-5" />
+            Delivery Method Configuration
+          </CardTitle>
+          <CardDescription>
+            Configure how notifications are delivered based on urgency levels
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Contact Information */}
+          <div className="space-y-4">
+            <h4 className="font-medium">Contact Information</h4>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Email Address</label>
+                <div className="flex items-center gap-2">
+                  <Envelope className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="email"
+                    placeholder="your.email@example.com"
+                    value={preferences.contactInfo.email}
+                    onChange={(e) => 
+                      setPreferences(current => ({
+                        ...current,
+                        contactInfo: { ...current.contactInfo, email: e.target.value }
+                      }))
+                    }
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Phone Number</label>
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="tel"
+                    placeholder="+1 (555) 123-4567"
+                    value={preferences.contactInfo.phone}
+                    onChange={(e) => 
+                      setPreferences(current => ({
+                        ...current,
+                        contactInfo: { ...current.contactInfo, phone: e.target.value }
+                      }))
+                    }
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Urgency Level Configuration */}
+          <div className="space-y-4">
+            <h4 className="font-medium">Delivery Methods by Urgency Level</h4>
+            
+            {Object.entries(preferences.deliveryMethods).map(([level, methods]) => (
+              <div key={level} className="p-4 border border-border rounded-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <h5 className="font-medium capitalize">{level} Priority</h5>
+                    {getPriorityBadge(level)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {level === 'low' && 'Exercise reminders, general health tips'}
+                    {level === 'medium' && 'Health score changes, medication reminders'}
+                    {level === 'high' && 'Abnormal readings, missed medications'}
+                    {level === 'critical' && 'Fall detection, emergency situations'}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <DeviceMobile className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">Push</span>
+                    </div>
+                    <Switch
+                      checked={methods.push}
+                      onCheckedChange={(checked) => 
+                        setPreferences(current => ({
+                          ...current,
+                          deliveryMethods: {
+                            ...current.deliveryMethods,
+                            [level]: { ...current.deliveryMethods[level as keyof UrgencyLevelConfig], push: checked }
+                          }
+                        }))
+                      }
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Envelope className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">Email</span>
+                    </div>
+                    <Switch
+                      checked={methods.email}
+                      onCheckedChange={(checked) => 
+                        setPreferences(current => ({
+                          ...current,
+                          deliveryMethods: {
+                            ...current.deliveryMethods,
+                            [level]: { ...current.deliveryMethods[level as keyof UrgencyLevelConfig], email: checked }
+                          }
+                        }))
+                      }
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <DeviceMobile className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">SMS</span>
+                    </div>
+                    <Switch
+                      checked={methods.sms}
+                      onCheckedChange={(checked) => 
+                        setPreferences(current => ({
+                          ...current,
+                          deliveryMethods: {
+                            ...current.deliveryMethods,
+                            [level]: { ...current.deliveryMethods[level as keyof UrgencyLevelConfig], sms: checked }
+                          }
+                        }))
+                      }
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">Phone</span>
+                    </div>
+                    <Switch
+                      checked={methods.phone}
+                      onCheckedChange={(checked) => 
+                        setPreferences(current => ({
+                          ...current,
+                          deliveryMethods: {
+                            ...current.deliveryMethods,
+                            [level]: { ...current.deliveryMethods[level as keyof UrgencyLevelConfig], phone: checked }
+                          }
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Escalation Settings */}
+          <div className="space-y-4">
+            <h4 className="font-medium">Escalation Settings</h4>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Enable Escalation</p>
+                <p className="text-xs text-muted-foreground">Escalate critical notifications if not acknowledged</p>
+              </div>
+              <Switch
+                checked={preferences.escalationEnabled}
+                onCheckedChange={(checked) => 
+                  setPreferences(current => ({ ...current, escalationEnabled: checked }))
+                }
+              />
+            </div>
+
+            {preferences.escalationEnabled && (
+              <div>
+                <p className="text-sm font-medium mb-2">Escalation Delay (minutes)</p>
+                <div className="px-3">
+                  <Slider
+                    value={[preferences.escalationDelay]}
+                    onValueChange={([value]) => 
+                      setPreferences(current => ({ ...current, escalationDelay: value }))
+                    }
+                    max={60}
+                    min={1}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <span>1 min</span>
+                    <span>{preferences.escalationDelay} minutes</span>
+                    <span>60 min</span>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  If a critical notification isn't acknowledged within this time, emergency contacts will be notified
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Test Notifications */}
+          <div className="space-y-4">
+            <h4 className="font-medium">Test Delivery Methods</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {(['low', 'medium', 'high', 'critical'] as const).map((priority) => (
+                <Button
+                  key={priority}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const testNotification: SmartNotification = {
+                      id: `test-${priority}-${Date.now()}`,
+                      type: 'health',
+                      title: `Test ${priority} notification`,
+                      message: `This is a test ${priority} priority notification to verify delivery methods.`,
+                      priority,
+                      scheduledTime: new Date(),
+                      optimalTime: new Date(),
+                      engagementScore: 0,
+                      delivered: false,
+                      interacted: false,
+                      createdAt: new Date(),
+                      deliveryMethods: getDeliveryMethods(priority),
+                      deliveryStatus: {},
+                      escalated: false,
+                      acknowledgmentRequired: priority === 'critical',
+                      acknowledged: false
+                    }
+                    
+                    setNotifications(current => [...current, testNotification])
+                    toast.success(`Test ${priority} notification created`)
+                  }}
+                  className="capitalize"
+                >
+                  Test {priority}
+                </Button>
+              ))}
+            </div>
+          </div>
+
       {/* Recent Notifications */}
       <Card>
         <CardHeader>
@@ -661,7 +1125,66 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
                         <span>Optimal: {notification.optimalTime.toLocaleTimeString()}</span>
                         {notification.delivered && <Badge variant="outline" className="text-xs">Delivered</Badge>}
                         {notification.interacted && <Badge variant="secondary" className="text-xs">Interacted</Badge>}
+                        {notification.escalated && <Badge variant="destructive" className="text-xs">Escalated</Badge>}
+                        {notification.acknowledgmentRequired && !notification.acknowledged && (
+                          <Badge variant="destructive" className="text-xs">Needs Acknowledgment</Badge>
+                        )}
                       </div>
+                      
+                      {/* Delivery Methods and Status */}
+                      {notification.deliveryMethods.length > 0 && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-xs text-muted-foreground">Methods:</span>
+                          {notification.deliveryMethods.map((method) => {
+                            const status = notification.deliveryStatus[method as keyof typeof notification.deliveryStatus]
+                            const getMethodIcon = (method: string) => {
+                              switch (method) {
+                                case 'push': return <DeviceMobile className="h-3 w-3" />
+                                case 'email': return <Envelope className="h-3 w-3" />
+                                case 'sms': return <DeviceMobile className="h-3 w-3" />
+                                case 'phone': return <Phone className="h-3 w-3" />
+                                default: return <Bell className="h-3 w-3" />
+                              }
+                            }
+                            
+                            return (
+                              <div key={method} className="flex items-center gap-1">
+                                {getMethodIcon(method)}
+                                <span className="text-xs capitalize">{method}</span>
+                                {status && (
+                                  <Badge 
+                                    variant={status === 'sent' ? 'secondary' : status === 'failed' ? 'destructive' : 'outline'}
+                                    className="text-xs px-1 py-0"
+                                  >
+                                    {status}
+                                  </Badge>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                      
+                      {/* Acknowledge Button for Critical Notifications */}
+                      {notification.acknowledgmentRequired && !notification.acknowledged && notification.delivered && (
+                        <div className="mt-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setNotifications(current => 
+                                current.map(n => 
+                                  n.id === notification.id ? { ...n, acknowledged: true, interacted: true } : n
+                                )
+                              )
+                              toast.success('Notification acknowledged')
+                            }}
+                            className="text-xs h-6"
+                          >
+                            Acknowledge
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
