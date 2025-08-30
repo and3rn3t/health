@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
@@ -21,6 +21,9 @@ import ImplementationPhases from '@/components/health/ImplementationPhases'
 import MovementPatternAnalysis from '@/components/health/MovementPatternAnalysis'
 import MLPredictionsDashboard from '@/components/health/MLPredictionsDashboard'
 import AIRecommendations from '@/components/health/AIRecommendations'
+import CommunityShare from '@/components/health/CommunityShare'
+import HealthcarePortal from '@/components/health/HealthcarePortal'
+import FamilyDashboard from '@/components/health/FamilyDashboard'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -48,24 +51,29 @@ function App() {
       { id: 'realtime', label: 'Real-time Detection', icon: Activity },
       { id: 'history', label: 'History', icon: Clock }
     ],
+    community: [
+      { id: 'family', label: 'Family Dashboard', icon: Users },
+      { id: 'community', label: 'Community Share', icon: Share },
+      { id: 'healthcare', label: 'Healthcare Portal', icon: Stethoscope }
+    ],
     management: [
       { id: 'contacts', label: 'Emergency Contacts', icon: Users },
       { id: 'import', label: 'Import Data', icon: Upload }
     ],
     setup: [
-      { id: 'realtime', label: 'Real-time Detection', icon: Gear },
       { id: 'phases', label: 'Implementation', icon: Roadmap }
     ]
   }
 
   // Get current page details for breadcrumb
   const getCurrentPageInfo = () => {
-    const allItems = [...navigationItems.main, ...navigationItems.management, ...navigationItems.setup]
+    const allItems = [...navigationItems.main, ...navigationItems.community, ...navigationItems.management, ...navigationItems.setup]
     const currentItem = allItems.find(item => item.id === activeTab)
     
     if (!currentItem) return { label: 'Dashboard', category: 'Main' }
     
     let category = 'Main'
+    if (navigationItems.community.find(item => item.id === activeTab)) category = 'Community'
     if (navigationItems.management.find(item => item.id === activeTab)) category = 'Management'
     if (navigationItems.setup.find(item => item.id === activeTab)) category = 'Setup'
     
@@ -119,6 +127,38 @@ function App() {
             )}
             <div className="space-y-1">
               {navigationItems.main.map((item) => {
+                const IconComponent = item.icon
+                const isActive = activeTab === item.id
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                      w-full justify-start h-10
+                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                    `}
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Community */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                Community & Care
+              </h3>
+            )}
+            <div className="space-y-1">
+              {navigationItems.community.map((item) => {
                 const IconComponent = item.icon
                 const isActive = activeTab === item.id
                 return (
@@ -285,11 +325,12 @@ function App() {
                 <h1 className="text-2xl font-bold text-foreground">
                   {currentPageInfo.label}
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  {currentPageInfo.category === 'Main' && 'Health monitoring and analytics'}
-                  {currentPageInfo.category === 'Management' && 'Data and contact management'}
-                  {currentPageInfo.category === 'Setup' && 'Configuration and setup guides'}
-                </p>
+                  <div className="text-sm text-muted-foreground">
+                    {currentPageInfo.category === 'Main' && 'Health monitoring and analytics'}
+                    {currentPageInfo.category === 'Community' && 'Share progress with your care team'}
+                    {currentPageInfo.category === 'Management' && 'Data and contact management'}
+                    {currentPageInfo.category === 'Setup' && 'Configuration and setup guides'}
+                  </div>
               </div>
               <div className="flex items-center gap-4">
                 <Button 
@@ -381,11 +422,32 @@ function App() {
                     </div>
 
                     {/* Secondary Navigation - Management & Setup */}
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <div className="grid md:grid-cols-3 gap-4">
                       <div>
-                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Management</h4>
+                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Advanced Features</h4>
                         <div className="flex flex-wrap gap-2">
                           {navigationItems.main.slice(4).map((item) => {
+                            const IconComponent = item.icon
+                            return (
+                              <Button
+                                key={item.id}
+                                variant={activeTab === item.id ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setActiveTab(item.id)}
+                                className="flex items-center gap-2"
+                              >
+                                <IconComponent className="h-4 w-4" />
+                                {item.label}
+                              </Button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Community & Care</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {navigationItems.community.map((item) => {
                             const IconComponent = item.icon
                             return (
                               <Button
@@ -458,9 +520,10 @@ function App() {
                 {activeTab === 'ml-predictions' && healthData && <MLPredictionsDashboard healthData={healthData} />}
                 {activeTab === 'movement-patterns' && healthData && <MovementPatternAnalysis healthData={healthData} />}
                 {activeTab === 'realtime' && <RealTimeFallDetection />}
-                {activeTab === 'tooling' && <RealTimeFallDetection />}
-                {activeTab === 'phases' && <ImplementationPhases />}
                 {activeTab === 'history' && <FallHistory />}
+                {activeTab === 'family' && healthData && <FamilyDashboard healthData={healthData} />}
+                {activeTab === 'community' && healthData && <CommunityShare healthData={healthData} />}
+                {activeTab === 'healthcare' && healthData && <HealthcarePortal healthData={healthData} />}
                 {activeTab === 'contacts' && (
                   <EmergencyContacts 
                     contacts={emergencyContacts}
@@ -480,6 +543,7 @@ function App() {
                     </CardContent>
                   </Card>
                 )}
+                {activeTab === 'phases' && <ImplementationPhases />}
               </div>
             </div>
           )}
