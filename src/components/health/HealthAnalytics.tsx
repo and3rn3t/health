@@ -289,9 +289,9 @@ export default function HealthAnalytics({ healthData }: HealthAnalyticsProps) {
                       </div>
                       <div className="flex items-center gap-2">
                         {metric.trend === 'increasing' ? (
-                          <TrendingUp className="h-4 w-4 text-green-500" />
+                          <TrendUp className="h-4 w-4 text-green-500" />
                         ) : metric.trend === 'decreasing' ? (
-                          <TrendingDown className="h-4 w-4 text-red-500" />
+                          <TrendDown className="h-4 w-4 text-red-500" />
                         ) : (
                           <div className="h-4 w-4 bg-gray-400 rounded-full" />
                         )}

@@ -55,20 +55,21 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useKV('sidebar-collapsed', false)
   const [themeMode, setThemeMode] = useKV<'light' | 'dark' | 'system'>('theme-mode', 'system')
 
-  // Apply theme based on mode and system preference
+  // Apply theme based on mode and system preference using [data-appearance]
   useEffect(() => {
+    const root = document.documentElement
+
     const applyTheme = () => {
+      // Cleanup any legacy class usage
+      root.classList.remove('dark')
+
       if (themeMode === 'system') {
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        if (systemPrefersDark) {
-          document.documentElement.classList.add('dark')
-        } else {
-          document.documentElement.classList.remove('dark')
-        }
+        root.setAttribute('data-appearance', systemPrefersDark ? 'dark' : 'light')
       } else if (themeMode === 'dark') {
-        document.documentElement.classList.add('dark')
+        root.setAttribute('data-appearance', 'dark')
       } else {
-        document.documentElement.classList.remove('dark')
+        root.setAttribute('data-appearance', 'light')
       }
     }
 
@@ -115,8 +116,8 @@ function App() {
   const navigationItems = {
     main: [
       { id: 'dashboard', label: 'Dashboard', icon: Heart },
-      { id: 'insights', label: 'Insights', icon: TrendingUp },
-      { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+  { id: 'insights', label: 'Insights', icon: TrendingUp },
+  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'usage-analytics', label: 'Usage Analytics', icon: Brain },
       { id: 'usage-predictions', label: 'Usage Predictions', icon: Sparkle },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
@@ -156,10 +157,10 @@ function App() {
       { id: 'import', label: 'Import Data', icon: Upload }
     ],
     setup: [
-      { id: 'phases', label: 'Implementation', icon: Roadmap },
-      { id: 'healthkit-guide', label: 'HealthKit Guide', icon: Apple },
+  { id: 'phases', label: 'Implementation', icon: Roadmap },
+  { id: 'healthkit-guide', label: 'HealthKit Guide', icon: Apple },
       { id: 'websocket-guide', label: 'WebSocket Bridge', icon: CloudArrowUp },
-      { id: 'integration-checklist', label: 'Integration Checklist', icon: Apple },
+  { id: 'integration-checklist', label: 'Integration Checklist', icon: Apple },
       { id: 'xcode-setup', label: 'Xcode Development Setup', icon: Code },
       { id: 'infrastructure', label: 'Cloud Infrastructure', icon: Gear }
     ]

@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
-import { Bell, BellRinging, Clock, Brain, TrendingUp, CheckCircle, AlertTriangle, Info, Calendar, Settings, Envelope, DeviceMobile, Phone, Gear } from '@phosphor-icons/react'
+import { Bell, BellRinging, Clock, Brain, TrendUp, CheckCircle, Warning, Info, Calendar, Envelope, DeviceMobile, Phone, Gear } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
@@ -444,11 +444,11 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
   const getNotificationTypeIcon = (type: string) => {
     switch (type) {
       case 'health': return <Bell className="h-4 w-4 text-blue-500" />
-      case 'exercise': return <TrendingUp className="h-4 w-4 text-green-500" />
-      case 'fall': return <AlertTriangle className="h-4 w-4 text-red-500" />
+  case 'exercise': return <TrendUp className="h-4 w-4 text-green-500" />
+  case 'fall': return <Warning className="h-4 w-4 text-red-500" />
       case 'achievement': return <CheckCircle className="h-4 w-4 text-purple-500" />
       case 'reminder': return <Clock className="h-4 w-4 text-orange-500" />
-      case 'emergency': return <AlertTriangle className="h-4 w-4 text-red-600" />
+  case 'emergency': return <Warning className="h-4 w-4 text-red-600" />
       default: return <Info className="h-4 w-4 text-gray-500" />
     }
   }
@@ -524,7 +524,7 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
                     Math.round((analytics.totalInteracted / analytics.totalDelivered) * 100) : 0}%
                 </p>
               </div>
-              <TrendingUp className="h-8 w-8 text-purple-500" />
+              <TrendUp className="h-8 w-8 text-purple-500" />
             </div>
           </CardContent>
         </Card>
