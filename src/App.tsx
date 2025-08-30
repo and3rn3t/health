@@ -91,40 +91,67 @@ function App() {
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-8">
-              <TabsTrigger value="dashboard" className="flex items-center gap-2">
-                <Heart className="h-4 w-4" />
-                Dashboard
-              </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" />
-                Analytics
-              </TabsTrigger>
-              <TabsTrigger value="fall-risk" className="flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                Fall Risk
-              </TabsTrigger>
-              <TabsTrigger value="tooling" className="flex items-center gap-2">
-                <Gear className="h-4 w-4" />
-                Monitoring Setup
-              </TabsTrigger>
-              <TabsTrigger value="phases" className="flex items-center gap-2">
-                <Roadmap className="h-4 w-4" />
-                Implementation
-              </TabsTrigger>
-              <TabsTrigger value="history" className="flex items-center gap-2">
-                <Activity className="h-4 w-4" />
-                Fall History
-              </TabsTrigger>
-              <TabsTrigger value="contacts" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Contacts
-              </TabsTrigger>
-              <TabsTrigger value="import" className="flex items-center gap-2">
-                <Upload className="h-4 w-4" />
-                Import Data
-              </TabsTrigger>
-            </TabsList>
+            {/* Primary Navigation */}
+            <div className="flex flex-col gap-4">
+              <TabsList className="grid w-full grid-cols-4 h-12">
+                <TabsTrigger value="dashboard" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Heart className="h-4 w-4" />
+                  <span className="hidden sm:inline">Dashboard</span>
+                </TabsTrigger>
+                <TabsTrigger value="analytics" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <BarChart3 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Analytics</span>
+                </TabsTrigger>
+                <TabsTrigger value="fall-risk" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Shield className="h-4 w-4" />
+                  <span className="hidden sm:inline">Fall Risk</span>
+                </TabsTrigger>
+                <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Activity className="h-4 w-4" />
+                  <span className="hidden sm:inline">History</span>
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Secondary Navigation */}
+              <div className="flex flex-wrap gap-2 justify-center">
+                <Button
+                  variant={activeTab === 'contacts' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setActiveTab('contacts')}
+                  className="flex items-center gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Emergency Contacts
+                </Button>
+                <Button
+                  variant={activeTab === 'tooling' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setActiveTab('tooling')}
+                  className="flex items-center gap-2"
+                >
+                  <Gear className="h-4 w-4" />
+                  Setup Guide
+                </Button>
+                <Button
+                  variant={activeTab === 'phases' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setActiveTab('phases')}
+                  className="flex items-center gap-2"
+                >
+                  <Roadmap className="h-4 w-4" />
+                  Implementation
+                </Button>
+                <Button
+                  variant={activeTab === 'import' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setActiveTab('import')}
+                  className="flex items-center gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  Import Data
+                </Button>
+              </div>
+            </div>
 
             <TabsContent value="dashboard" className="space-y-6">
               <HealthDashboard healthData={healthData} />
