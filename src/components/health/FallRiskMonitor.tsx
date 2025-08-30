@@ -1,13 +1,16 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Shield, AlertTriangle, TrendingDown, Activity, Heart, Phone } from '@phosphor-icons/react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Shield, AlertTriangle, TrendingDown, Activity, Heart, Phone, Brain, BarChart3 } from '@phosphor-icons/react'
+import { ProcessedHealthData } from '@/lib/healthDataProcessor'
+import MLPredictionsDashboard from './MLPredictionsDashboard'
 
 interface FallRiskMonitorProps {
-  healthData: any
+  healthData: ProcessedHealthData
   fallRiskScore: number
   setFallRiskScore: (score: number) => void
 }
@@ -52,28 +55,30 @@ function FallRiskGauge({ score }: { score: number }) {
   }
 
   const risk = getRiskLevel(score)
+  const strokeDasharray = 2 * Math.PI * 40
+  const strokeDashoffset = strokeDasharray - (score / 100) * strokeDasharray
 
   return (
-    <div className="flex flex-col items-center space-y-4">
+    <div className="flex flex-col items-center space-y-3">
       <div className="relative w-32 h-32">
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
           <circle
-            cx="60"
-            cy="60"
-            r="50"
+            cx="50"
+            cy="50"
+            r="40"
             fill="none"
-            stroke="currentColor"
+            stroke="rgb(226 232 240)"
             strokeWidth="8"
-            className="text-muted"
           />
           <circle
-            cx="60"
-            cy="60"
-            r="50"
+            cx="50"
+            cy="50"
+            r="40"
             fill="none"
-            stroke="currentColor"
+            stroke={score < 30 ? 'rgb(34 197 94)' : score < 70 ? 'rgb(234 179 8)' : 'rgb(239 68 68)'}
             strokeWidth="8"
-            strokeDasharray={`${(score / 100) * 314} 314`}
+            strokeDasharray={strokeDasharray}
+            strokeDashoffset={strokeDashoffset}
             className={risk.color}
             strokeLinecap="round"
           />
@@ -146,145 +151,168 @@ export default function FallRiskMonitor({ healthData, fallRiskScore, setFallRisk
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Risk Score Display */}
-        <Card className="lg:col-span-1">
-          <CardHeader className="text-center">
-            <CardTitle className="flex items-center justify-center gap-2">
-              <Shield className="h-5 w-5" />
-              Fall Risk Assessment
-            </CardTitle>
-            <CardDescription>
-              Based on your recent health metrics
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center">
-            <FallRiskGauge score={fallRiskScore} />
-          </CardContent>
-        </Card>
+      {/* Assessment Method Tabs */}
+      <Tabs defaultValue="traditional" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="traditional" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Traditional Assessment
+          </TabsTrigger>
+          <TabsTrigger value="ml" className="flex items-center gap-2">
+            <Brain className="h-4 w-4" />
+            AI-Powered Analysis
+          </TabsTrigger>
+        </TabsList>
 
-        {/* Risk Factors */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Risk Factors Analysis</CardTitle>
-            <CardDescription>
-              Key metrics that influence your fall risk assessment
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <RiskFactor
-              label="Walking Steadiness"
-              value={Math.round(metrics.walkingSteadiness?.average || 0)}
-              threshold={70}
-              unit="%"
-              description="Measures balance and gait stability during walking"
-            />
-            <RiskFactor
-              label="Daily Activity"
-              value={metrics.steps?.average || 0}
-              threshold={5000}
-              unit=" steps"
-              description="Higher activity levels are associated with better balance"
-            />
-            <RiskFactor
-              label="Heart Rate Variability"
-              value={85}
-              threshold={70}
-              unit="%"
-              description="Indicator of cardiovascular fitness and autonomic function"
-            />
-            <RiskFactor
-              label="Sleep Quality"
-              value={metrics.sleepHours?.average || 0}
-              threshold={7}
-              unit=" hrs"
-              description="Adequate sleep is crucial for balance and coordination"
-            />
-          </CardContent>
-        </Card>
-      </div>
+        {/* Traditional Assessment */}
+        <TabsContent value="traditional" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Risk Score Display */}
+            <Card className="lg:col-span-1">
+              <CardHeader className="text-center">
+                <CardTitle className="flex items-center justify-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Fall Risk Assessment
+                </CardTitle>
+                <CardDescription>
+                  Based on your recent health metrics
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex justify-center">
+                <FallRiskGauge score={fallRiskScore} />
+              </CardContent>
+            </Card>
 
-      {/* Recommendations */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Personalized Recommendations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {fallRiskScore > 70 && (
-                <div className="p-3 bg-accent/10 rounded-lg border border-accent/20">
-                  <h4 className="font-medium text-accent-foreground mb-2">High Priority</h4>
-                  <ul className="text-sm space-y-1 text-accent-foreground">
-                    <li>• Schedule appointment with healthcare provider</li>
-                    <li>• Consider physical therapy evaluation</li>
-                    <li>• Review home safety hazards</li>
+            {/* Risk Factors */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Risk Factors Analysis</CardTitle>
+                <CardDescription>
+                  Key metrics that influence your fall risk assessment
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <RiskFactor
+                  label="Walking Steadiness"
+                  value={Math.round(metrics.walkingSteadiness?.average || 0)}
+                  threshold={70}
+                  unit="%"
+                  description="Measures balance and gait stability during walking"
+                />
+                <RiskFactor
+                  label="Daily Activity"
+                  value={metrics.steps?.average || 0}
+                  threshold={5000}
+                  unit=" steps"
+                  description="Higher activity levels are associated with better balance"
+                />
+                <RiskFactor
+                  label="Heart Rate Variability"
+                  value={85}
+                  threshold={70}
+                  unit="%"
+                  description="Indicator of cardiovascular fitness and autonomic function"
+                />
+                <RiskFactor
+                  label="Sleep Quality"
+                  value={Math.round((metrics.sleepHours?.average || 0) / 8 * 100)}
+                  threshold={70}
+                  unit="%"
+                  description="Adequate sleep is crucial for balance and coordination"
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recommendations */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingDown className="h-5 w-5" />
+                Recommendations to Reduce Fall Risk
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <Activity className="h-4 w-4" />
+                    Physical Activity
+                  </h4>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>• Practice balance exercises (tai chi, yoga)</li>
+                    <li>• Strength training 2-3 times per week</li>
+                    <li>• Regular walking or low-impact aerobic exercise</li>
+                    <li>• Flexibility and stretching routines</li>
                   </ul>
                 </div>
-              )}
-              
-              {metrics.walkingSteadiness?.average < 70 && (
-                <div className="p-3 bg-muted rounded-lg">
-                  <h4 className="font-medium mb-2">Balance Improvement</h4>
-                  <ul className="text-sm space-y-1 text-muted-foreground">
-                    <li>• Practice tai chi or yoga</li>
-                    <li>• Single-leg standing exercises</li>
-                    <li>• Walking heel-to-toe practice</li>
+                <div className="space-y-3">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <Heart className="h-4 w-4" />
+                    Health Management
+                  </h4>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>• Regular vision and hearing checkups</li>
+                    <li>• Medication review with healthcare provider</li>
+                    <li>• Blood pressure monitoring</li>
+                    <li>• Maintain healthy weight</li>
                   </ul>
                 </div>
-              )}
-              
-              {metrics.steps?.average < 5000 && (
-                <div className="p-3 bg-muted rounded-lg">
-                  <h4 className="font-medium mb-2">Activity Increase</h4>
-                  <ul className="text-sm space-y-1 text-muted-foreground">
-                    <li>• Start with 10-minute walks</li>
-                    <li>• Use stairs when possible</li>
-                    <li>• Join group exercise classes</li>
+                <div className="space-y-3">
+                  <h4 className="font-medium">Home Safety</h4>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>• Remove tripping hazards</li>
+                    <li>• Install grab bars in bathroom</li>
+                    <li>• Ensure adequate lighting</li>
+                    <li>• Use non-slip mats</li>
                   </ul>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Phone className="h-5 w-5" />
-              Emergency Preparedness
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Alert>
-                <AlertDescription>
-                  In case of a fall, emergency contacts will be automatically notified. 
-                  Ensure your contacts are up to date.
-                </AlertDescription>
-              </Alert>
-              
-              <div className="space-y-2">
-                <h4 className="font-medium">Fall Prevention Tips:</h4>
-                <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• Remove loose rugs and clutter</li>
-                  <li>• Install grab bars in bathroom</li>
-                  <li>• Ensure adequate lighting</li>
-                  <li>• Wear non-slip shoes</li>
-                  <li>• Keep emergency phone accessible</li>
-                </ul>
+                <div className="space-y-3">
+                  <h4 className="font-medium">Sleep & Recovery</h4>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>• Maintain consistent sleep schedule</li>
+                    <li>• Aim for 7-9 hours of sleep nightly</li>
+                    <li>• Address sleep disorders</li>
+                    <li>• Limit alcohol and caffeine</li>
+                  </ul>
+                </div>
               </div>
-              
-              <Button variant="outline" className="w-full">
-                Update Emergency Contacts
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+
+          {/* Emergency Action */}
+          <Card className="border-accent">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-accent">
+                <Phone className="h-5 w-5" />
+                Emergency Action Plan
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-muted-foreground">
+                  If you experience a fall or feel at immediate risk:
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                    <Phone className="h-4 w-4 mr-2" />
+                    Call Emergency Contacts
+                  </Button>
+                  <Button variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+                    <Shield className="h-4 w-4 mr-2" />
+                    Report Fall Incident
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ML Predictions Tab */}
+        <TabsContent value="ml" className="space-y-6">
+          <MLPredictionsDashboard healthData={healthData} />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
