@@ -36,19 +36,19 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
         Analyze the following health data and provide personalized insights:
         
         Health Score: ${healthData.healthScore}/100
-        Walking Steadiness Average: ${healthData.metrics.walkingSteadiness.average}%
-        Daily Steps Average: ${healthData.metrics.steps.average}
-        Heart Rate Average: ${healthData.metrics.heartRate.average} bpm
-        Sleep Average: ${healthData.metrics.sleepHours.average} hours
+        Walking Steadiness Average: ${healthData.metrics?.walkingSteadiness?.average || 0}%
+        Daily Steps Average: ${healthData.metrics?.steps?.average || 0}
+        Heart Rate Average: ${healthData.metrics?.heartRate?.average || 0} bpm
+        Sleep Average: ${healthData.metrics?.sleepHours?.average || 0} hours
         
-        Data Quality: ${healthData.dataQuality.overall}
+        Data Quality: ${healthData.dataQuality?.overall || 'Unknown'}
         Fall Risk Factors: ${healthData.fallRiskFactors?.map(f => `${f.factor} (${f.risk} risk)`).join(', ') || 'None identified'}
         
         Current Trends:
-        - Steps: ${healthData.metrics.steps.trend}
-        - Heart Rate: ${healthData.metrics.heartRate.trend}
-        - Walking Steadiness: ${healthData.metrics.walkingSteadiness.trend}
-        - Sleep: ${healthData.metrics.sleepHours.trend}
+        - Steps: ${healthData.metrics?.steps?.trend || 'stable'}
+        - Heart Rate: ${healthData.metrics?.heartRate?.trend || 'stable'}
+        - Walking Steadiness: ${healthData.metrics?.walkingSteadiness?.trend || 'stable'}
+        - Sleep: ${healthData.metrics?.sleepHours?.trend || 'stable'}
         
         Please provide:
         1. Key health insights and recommendations
@@ -66,15 +66,15 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
         {
           type: 'recommendation',
           title: 'Walking Steadiness Improvement',
-          content: `Your walking steadiness is at ${Math.round(healthData.metrics.walkingSteadiness.average)}%. Consider daily balance exercises like tai chi or yoga to improve stability and reduce fall risk.`,
+          content: `Your walking steadiness is at ${Math.round(healthData.metrics?.walkingSteadiness?.average || 0)}%. Consider daily balance exercises like tai chi or yoga to improve stability and reduce fall risk.`,
           confidence: 85,
-          priority: healthData.metrics.walkingSteadiness.average < 60 ? 'high' : 'medium',
+          priority: (healthData.metrics?.walkingSteadiness?.average || 100) < 60 ? 'high' : 'medium',
           actionable: true
         },
         {
           type: 'achievement',
           title: 'Activity Level Progress',
-          content: `Great job maintaining ${Math.round(healthData.metrics.steps.average).toLocaleString()} steps daily! This is ${healthData.metrics.steps.average > 8000 ? 'above' : 'approaching'} recommended activity levels.`,
+          content: `Great job maintaining ${Math.round(healthData.metrics?.steps?.average || 0).toLocaleString()} steps daily! This is ${(healthData.metrics?.steps?.average || 0) > 8000 ? 'above' : 'approaching'} recommended activity levels.`,
           confidence: 95,
           priority: 'medium',
           actionable: false
@@ -82,11 +82,11 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
       ]
 
       // Add specific insights based on data patterns
-      if (healthData.metrics.sleepHours.average < 7) {
+      if ((healthData.metrics?.sleepHours?.average || 0) < 7) {
         generatedInsights.push({
           type: 'warning',
           title: 'Sleep Duration Concern',
-          content: `Your average sleep of ${healthData.metrics.sleepHours.average.toFixed(1)} hours is below the recommended 7-9 hours. Poor sleep can increase fall risk and affect balance.`,
+          content: `Your average sleep of ${(healthData.metrics?.sleepHours?.average || 0).toFixed(1)} hours is below the recommended 7-9 hours. Poor sleep can increase fall risk and affect balance.`,
           confidence: 90,
           priority: 'high',
           actionable: true
@@ -105,7 +105,7 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
       }
 
       // Add trend-based insights
-      if (healthData.metrics.walkingSteadiness.trend === 'decreasing') {
+      if (healthData.metrics?.walkingSteadiness?.trend === 'decreasing') {
         generatedInsights.push({
           type: 'warning',
           title: 'Declining Balance Metrics',
@@ -145,11 +145,11 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
     try {
       const prompt = spark.llmPrompt`
         Based on this health data:
-        - Health Score: ${healthData.healthScore}/100
-        - Walking Steadiness: ${healthData.metrics.walkingSteadiness.average}%
-        - Daily Steps: ${healthData.metrics.steps.average}
-        - Heart Rate: ${healthData.metrics.heartRate.average} bpm
-        - Sleep: ${healthData.metrics.sleepHours.average} hours
+        - Health Score: ${healthData.healthScore || 0}/100
+        - Walking Steadiness: ${healthData.metrics?.walkingSteadiness?.average || 0}%
+        - Daily Steps: ${healthData.metrics?.steps?.average || 0}
+        - Heart Rate: ${healthData.metrics?.heartRate?.average || 0} bpm
+        - Sleep: ${healthData.metrics?.sleepHours?.average || 0} hours
         
         User question: ${customQuery}
         

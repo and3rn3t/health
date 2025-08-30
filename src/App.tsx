@@ -26,7 +26,7 @@ function App() {
 
   const hasHealthData = healthData && healthData.metrics && Object.keys(healthData.metrics).length > 0
   const isHighRisk = hasHealthData && (
-    healthData.healthScore < 60 || 
+    (healthData.healthScore || 0) < 60 || 
     (healthData.fallRiskFactors && healthData.fallRiskFactors.some(factor => factor.risk === 'high'))
   )
 
@@ -48,7 +48,7 @@ function App() {
             <div className="flex items-center gap-4">
               {hasHealthData && (
                 <Badge variant="outline" className="text-primary border-primary">
-                  Health Score: {healthData.healthScore}/100
+                  Health Score: {healthData.healthScore || 0}/100
                 </Badge>
               )}
               {isHighRisk && (

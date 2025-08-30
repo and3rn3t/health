@@ -83,7 +83,7 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
   const { metrics, insights, dataQuality, healthScore, fallRiskFactors } = healthData
 
   const getDataQualityColor = () => {
-    switch (dataQuality.overall) {
+    switch (dataQuality?.overall) {
       case 'excellent': return 'text-green-600'
       case 'good': return 'text-blue-600'
       case 'fair': return 'text-yellow-600'
@@ -144,10 +144,10 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold capitalize ${getDataQualityColor()}`}>
-              {dataQuality.overall}
+              {dataQuality?.overall || 'Unknown'}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {dataQuality.completeness}% complete
+              {dataQuality?.completeness || 0}% complete
             </p>
           </CardContent>
         </Card>
@@ -162,7 +162,7 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
           trend={metrics.steps?.trend || 'stable'}
           icon={<Activity className="h-4 w-4" />}
           description={`${metrics.steps?.percentileRank}th percentile`}
-          progress={Math.min((metrics.steps?.average / 10000) * 100, 100)}
+          progress={Math.min(((metrics.steps?.average || 0) / 10000) * 100, 100)}
         />
         
         <MetricCard
@@ -180,9 +180,9 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
           unit="%"
           trend={metrics.walkingSteadiness?.trend || 'stable'}
           icon={<Activity className="h-4 w-4" />}
-          description={`Variability: ${metrics.walkingSteadiness?.variability?.toFixed(1)}%`}
+          description={`Variability: ${metrics.walkingSteadiness?.variability?.toFixed(1) || '0.0'}%`}
           progress={metrics.walkingSteadiness?.average || 0}
-          className={metrics.walkingSteadiness?.average < 60 ? 'border-destructive/20' : ''}
+          className={(metrics.walkingSteadiness?.average || 100) < 60 ? 'border-destructive/20' : ''}
         />
         
         <MetricCard
@@ -192,7 +192,7 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
           trend={metrics.sleepHours?.trend || 'stable'}
           icon={<Moon className="h-4 w-4" />}
           description="Average nightly"
-          progress={Math.min((metrics.sleepHours?.average / 9) * 100, 100)}
+          progress={Math.min(((metrics.sleepHours?.average || 0) / 9) * 100, 100)}
         />
       </div>
 
