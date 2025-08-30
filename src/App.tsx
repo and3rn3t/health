@@ -27,7 +27,7 @@ function App() {
   const hasHealthData = healthData && healthData.metrics && Object.keys(healthData.metrics).length > 0
   const isHighRisk = hasHealthData && (
     healthData.healthScore < 60 || 
-    healthData.fallRiskFactors.some(factor => factor.risk === 'high')
+    (healthData.fallRiskFactors && healthData.fallRiskFactors.some(factor => factor.risk === 'high'))
   )
 
   return (
