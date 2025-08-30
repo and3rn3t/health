@@ -24,6 +24,14 @@ interface HealthAnalyticsProps {
 }
 
 export default function HealthAnalytics({ healthData }: HealthAnalyticsProps) {
+  if (!healthData || !healthData.metrics) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">No health data available for analysis</p>
+      </div>
+    )
+  }
+
   const { metrics, dataQuality } = healthData
 
   const generateReport = async () => {
@@ -92,10 +100,10 @@ export default function HealthAnalytics({ healthData }: HealthAnalyticsProps) {
     return numerator / Math.sqrt(denominator1 * denominator2)
   }
 
-  const stepsData = metrics.steps.daily.map(d => d.value)
-  const sleepData = metrics.sleepHours.daily.map(d => d.value)
-  const heartRateData = metrics.heartRate.daily.map(d => d.value)
-  const walkingSteadinessData = metrics.walkingSteadiness.daily.map(d => d.value)
+  const stepsData = metrics.steps?.daily?.map(d => d.value) || []
+  const sleepData = metrics.sleepHours?.daily?.map(d => d.value) || []
+  const heartRateData = metrics.heartRate?.daily?.map(d => d.value) || []
+  const walkingSteadinessData = metrics.walkingSteadiness?.daily?.map(d => d.value) || []
 
   return (
     <div className="space-y-6">
@@ -180,14 +188,14 @@ export default function HealthAnalytics({ healthData }: HealthAnalyticsProps) {
         <TabsContent value="correlations" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <CorrelationChart
-              data1={metrics.steps.daily}
-              data2={metrics.sleepHours.daily}
+              data1={metrics.steps?.daily || []}
+              data2={metrics.sleepHours?.daily || []}
               label1="Steps"
               label2="Sleep Hours"
             />
             <CorrelationChart
-              data1={metrics.walkingSteadiness.daily}
-              data2={metrics.steps.daily}
+              data1={metrics.walkingSteadiness?.daily || []}
+              data2={metrics.steps?.daily || []}
               label1="Walking Steadiness"
               label2="Activity Level"
             />
@@ -237,9 +245,10 @@ export default function HealthAnalytics({ healthData }: HealthAnalyticsProps) {
               <CardContent>
                 <div className="space-y-3">
                   {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
-                    const dayData = metrics.steps.daily.filter((_, i) => i % 7 === index)
-                    const avgSteps = dayData.reduce((sum, d) => sum + d.value, 0) / dayData.length
-                    const maxSteps = Math.max(...metrics.steps.daily.map(d => d.value))
+                    const dailyData = metrics.steps?.daily || []
+                    const dayData = dailyData.filter((_, i) => i % 7 === index)
+                    const avgSteps = dayData.length > 0 ? dayData.reduce((sum, d) => sum + d.value, 0) / dayData.length : 0
+                    const maxSteps = dailyData.length > 0 ? Math.max(...dailyData.map(d => d.value)) : 1
                     
                     return (
                       <div key={day} className="flex items-center gap-3">
@@ -268,10 +277,10 @@ export default function HealthAnalytics({ healthData }: HealthAnalyticsProps) {
               <CardContent>
                 <div className="space-y-4">
                   {[
-                    { name: 'Activity Level', trend: metrics.steps.trend, value: `${metrics.steps.average.toLocaleString()} steps` },
-                    { name: 'Heart Health', trend: metrics.heartRate.trend, value: `${Math.round(metrics.heartRate.average)} bpm` },
-                    { name: 'Walking Steadiness', trend: metrics.walkingSteadiness.trend, value: `${Math.round(metrics.walkingSteadiness.average)}%` },
-                    { name: 'Sleep Quality', trend: metrics.sleepHours.trend, value: `${metrics.sleepHours.average.toFixed(1)} hours` }
+                    { name: 'Activity Level', trend: metrics.steps?.trend || 'stable', value: `${(metrics.steps?.average || 0).toLocaleString()} steps` },
+                    { name: 'Heart Health', trend: metrics.heartRate?.trend || 'stable', value: `${Math.round(metrics.heartRate?.average || 0)} bpm` },
+                    { name: 'Walking Steadiness', trend: metrics.walkingSteadiness?.trend || 'stable', value: `${Math.round(metrics.walkingSteadiness?.average || 0)}%` },
+                    { name: 'Sleep Quality', trend: metrics.sleepHours?.trend || 'stable', value: `${(metrics.sleepHours?.average || 0).toFixed(1)} hours` }
                   ].map((metric) => (
                     <div key={metric.name} className="flex items-center justify-between p-3 border rounded-lg">
                       <div>

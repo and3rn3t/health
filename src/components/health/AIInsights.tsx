@@ -42,7 +42,7 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
         Sleep Average: ${healthData.metrics.sleepHours.average} hours
         
         Data Quality: ${healthData.dataQuality.overall}
-        Fall Risk Factors: ${healthData.fallRiskFactors.map(f => `${f.factor} (${f.risk} risk)`).join(', ')}
+        Fall Risk Factors: ${healthData.fallRiskFactors?.map(f => `${f.factor} (${f.risk} risk)`).join(', ') || 'None identified'}
         
         Current Trends:
         - Steps: ${healthData.metrics.steps.trend}
@@ -116,7 +116,7 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
         })
       }
 
-      if (healthData.fallRiskFactors.length > 0) {
+      if (healthData.fallRiskFactors && healthData.fallRiskFactors.length > 0) {
         generatedInsights.push({
           type: 'prediction',
           title: 'Fall Risk Assessment',

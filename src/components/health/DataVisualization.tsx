@@ -15,6 +15,18 @@ export default function DataVisualization({
   timeframe = 'daily',
   className 
 }: DataVisualizationProps) {
+  if (!healthData?.metrics?.[metric]) {
+    return (
+      <Card className={className}>
+        <CardContent className="p-6">
+          <div className="text-center text-muted-foreground">
+            No data available for {metric}
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   const metricData = healthData.metrics[metric][timeframe]
   
   if (!metricData || metricData.length === 0) {

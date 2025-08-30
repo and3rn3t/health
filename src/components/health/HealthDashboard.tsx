@@ -126,11 +126,11 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {fallRiskFactors.filter(f => f.risk === 'high').length > 0 ? 'High' :
-               fallRiskFactors.filter(f => f.risk === 'moderate').length > 0 ? 'Moderate' : 'Low'}
+              {fallRiskFactors?.filter(f => f.risk === 'high').length > 0 ? 'High' :
+               fallRiskFactors?.filter(f => f.risk === 'moderate').length > 0 ? 'Moderate' : 'Low'}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {fallRiskFactors.length} risk factors identified
+              {fallRiskFactors?.length || 0} risk factors identified
             </p>
           </CardContent>
         </Card>
