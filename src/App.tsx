@@ -41,6 +41,7 @@ import XcodeDevelopmentSetup from '@/components/health/XcodeDevelopmentSetup'
 import ComprehensiveAppleHealthKitGuide from '@/components/health/ComprehensiveAppleHealthKitGuide'
 import WebSocketArchitectureGuide from '@/components/health/WebSocketArchitectureGuide'
 import SmartFeatureRecommendations from '@/components/recommendations/SmartFeatureRecommendations'
+import PersonalizedEngagementOptimizer from '@/components/recommendations/PersonalizedEngagementOptimizer'
 import UsageAnalyticsDashboard from '@/components/analytics/UsageAnalyticsDashboard'
 import AIUsagePredictions from '@/components/analytics/AIUsagePredictions'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
@@ -119,6 +120,7 @@ function App() {
       { id: 'usage-predictions', label: 'Usage Predictions', icon: Sparkle },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
       { id: 'recommendations', label: 'Recommendations', icon: Lightbulb },
+      { id: 'engagement-optimizer', label: 'Engagement Optimizer', icon: Target },
       { id: 'search', label: 'Search', icon: MagnifyingGlass }
     ],
     monitoring: [
@@ -596,6 +598,7 @@ function App() {
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Usage Predictions' && 'AI-powered forecasts of your health engagement trends'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Fall Risk' && 'Fall prevention and risk assessment'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Recommendations' && 'Smart suggestions based on your usage patterns'}
+                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Engagement Optimizer' && 'Personalized recommendations to optimize your health monitoring experience'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Search' && 'Find specific health insights and data'}
                     {currentPageInfo.category === 'Monitoring' && 'Health monitoring and alert system'}
                     {currentPageInfo.category === 'AI & ML' && 'Advanced AI analysis and machine learning'}
@@ -870,6 +873,12 @@ function App() {
                 {activeTab === 'usage-predictions' && healthData && <AIUsagePredictions healthData={healthData} />}
                 {activeTab === 'recommendations' && healthData && (
                   <SmartFeatureRecommendations 
+                    healthData={healthData} 
+                    onNavigateToFeature={setActiveTab}
+                  />
+                )}
+                {activeTab === 'engagement-optimizer' && healthData && (
+                  <PersonalizedEngagementOptimizer 
                     healthData={healthData} 
                     onNavigateToFeature={setActiveTab}
                   />
