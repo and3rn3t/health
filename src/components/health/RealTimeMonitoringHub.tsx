@@ -6,9 +6,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useKV } from '@github/spark/hooks'
+import { useLiveHealthData } from '@/hooks/useLiveHealthData'
 import { 
   Monitor,
   WifiHigh,
+  WifiX,
   Phone,
   Users,
   AlertTriangle,
@@ -23,7 +25,8 @@ import {
   Globe,
   CloudArrowUp,
   Heart,
-  Lightning
+  Lightning,
+  Zap
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
@@ -66,6 +69,19 @@ export default function RealTimeMonitoringHub({ healthData }: RealTimeMonitoring
   const [devices, setDevices] = useKV<ConnectedDevice[]>('connected-devices', [])
   const [emergencyContacts, setEmergencyContacts] = useKV('emergency-contacts', [])
   
+  // Use the new live health data hook
+  const {
+    isConnected: liveDataConnected,
+    isLoading: liveDataLoading,
+    liveMetrics,
+    dataRate,
+    totalMetricsReceived,
+    connectionStatus: liveConnectionStatus,
+    getLatestMetric,
+    toggleConnection: toggleLiveData,
+    hasRecentData
+  } = useLiveHealthData({ autoConnect: monitoringActive })
+  
   const [currentStatus, setCurrentStatus] = useState<MonitoringStatus>({
     isActive: monitoringActive,
     lastUpdate: new Date().toLocaleTimeString(),
@@ -75,20 +91,31 @@ export default function RealTimeMonitoringHub({ healthData }: RealTimeMonitoring
     uptime: '99.8%'
   })
 
-  // Simulate real-time updates
+  // Update status based on live data connection
   useEffect(() => {
-    if (monitoringActive) {
+    setCurrentStatus(prev => ({
+      ...prev,
+      isActive: monitoringActive && liveDataConnected,
+      lastUpdate: hasRecentData ? new Date().toLocaleTimeString() : prev.lastUpdate,
+      connectionQuality: liveConnectionStatus.dataQuality === 'offline' ? 'disconnected' : 
+        liveConnectionStatus.dataQuality as 'excellent' | 'good' | 'poor' | 'disconnected',
+      devicesConnected: liveDataConnected ? 3 : 0
+    }))
+  }, [monitoringActive, liveDataConnected, hasRecentData, liveConnectionStatus])
+
+  // Real-time updates when live data is active
+  useEffect(() => {
+    if (monitoringActive && liveDataConnected) {
       const interval = setInterval(() => {
         setCurrentStatus(prev => ({
           ...prev,
-          lastUpdate: new Date().toLocaleTimeString(),
-          devicesConnected: Math.random() > 0.9 ? prev.devicesConnected - 1 : prev.devicesConnected
+          lastUpdate: new Date().toLocaleTimeString()
         }))
       }, 5000)
       
       return () => clearInterval(interval)
     }
-  }, [monitoringActive])
+  }, [monitoringActive, liveDataConnected])
 
   // Initialize default devices if none exist
   useEffect(() => {
@@ -122,18 +149,21 @@ export default function RealTimeMonitoringHub({ healthData }: RealTimeMonitoring
     }
   }, [devices, setDevices])
 
-  const toggleMonitoring = () => {
+  const toggleMonitoring = async () => {
     const newStatus = !monitoringActive
     setMonitoringActive(newStatus)
-    setCurrentStatus(prev => ({ ...prev, isActive: newStatus }))
     
     if (newStatus) {
+      // Start live data connection
+      if (!liveDataConnected) {
+        await toggleLiveData()
+      }
       toast.success('Real-time monitoring activated')
-      // Simulate connection to monitoring infrastructure
-      setTimeout(() => {
-        toast.info('Connected to monitoring cloud infrastructure')
-      }, 1000)
     } else {
+      // Stop live data connection
+      if (liveDataConnected) {
+        await toggleLiveData()
+      }
       toast.info('Real-time monitoring paused')
     }
   }
@@ -190,6 +220,17 @@ export default function RealTimeMonitoringHub({ healthData }: RealTimeMonitoring
   }
 
   const unreadAlerts = alerts.filter(alert => !alert.resolved).length
+
+  const getConnectionIcon = () => {
+    if (!liveDataConnected) return <WifiX className="h-5 w-5 text-red-500" />
+    if (liveConnectionStatus.dataQuality === 'excellent') return <WifiHigh className="h-5 w-5 text-green-500" />
+    return <WifiHigh className="h-5 w-5 text-yellow-500" />
+  }
+
+  // Get current metrics from live data
+  const currentHeartRate = getLatestMetric('heart_rate')
+  const currentSteps = getLatestMetric('steps')
+  const currentWalkingSteadiness = getLatestMetric('walking_steadiness')
 
   return (
     <div className="space-y-6">
@@ -248,8 +289,12 @@ export default function RealTimeMonitoringHub({ healthData }: RealTimeMonitoring
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Connection</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <WifiHigh className="h-4 w-4 text-green-500" />
-                  <span className="font-semibold capitalize">{currentStatus.connectionQuality}</span>
+                  {getConnectionIcon()}
+                  <span className={`font-semibold capitalize ${
+                    liveDataConnected ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {liveDataConnected ? liveConnectionStatus.dataQuality : 'offline'}
+                  </span>
                 </div>
               </div>
               <Globe className="h-8 w-8 text-muted-foreground" />
@@ -261,10 +306,11 @@ export default function RealTimeMonitoringHub({ healthData }: RealTimeMonitoring
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Devices</p>
-                <p className="text-2xl font-bold">{currentStatus.devicesConnected}</p>
+                <p className="text-sm font-medium text-muted-foreground">Data Rate</p>
+                <p className="text-2xl font-bold">{dataRate}</p>
+                <p className="text-xs text-muted-foreground">metrics/min</p>
               </div>
-              <Activity className="h-8 w-8 text-muted-foreground" />
+              <Zap className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -316,27 +362,45 @@ export default function RealTimeMonitoringHub({ healthData }: RealTimeMonitoring
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Heart Rate</span>
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                      <span className="font-semibold">72 BPM</span>
+                      <div className={`w-2 h-2 rounded-full ${
+                        currentHeartRate ? 'bg-green-500 animate-pulse' : 'bg-gray-300'
+                      }`} />
+                      <span className="font-semibold">
+                        {currentHeartRate ? `${Math.round(currentHeartRate.value as number)} BPM` : '--'}
+                      </span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Activity Level</span>
+                    <span className="text-sm">Daily Steps</span>
                     <div className="flex items-center gap-2">
-                      <Progress value={65} className="w-20 h-2" />
-                      <span className="font-semibold">Active</span>
+                      <Progress value={currentSteps ? Math.min((currentSteps.value as number) / 100, 100) : 0} className="w-20 h-2" />
+                      <span className="font-semibold">
+                        {currentSteps ? Math.round(currentSteps.value as number) : 0}
+                      </span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Fall Risk Score</span>
-                    <Badge variant="outline" className="text-green-700 border-green-200">
-                      Low Risk
+                    <span className="text-sm">Walking Steadiness</span>
+                    <Badge variant="outline" className={
+                      currentWalkingSteadiness && currentWalkingSteadiness.value as number > 0.8 
+                        ? "text-green-700 border-green-200" 
+                        : "text-yellow-700 border-yellow-200"
+                    }>
+                      {currentWalkingSteadiness && currentWalkingSteadiness.value as number > 0.8 ? 'Good' : 'Monitoring'}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Last Update</span>
-                    <span className="text-sm text-muted-foreground">{currentStatus.lastUpdate}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {hasRecentData ? 'Live' : currentStatus.lastUpdate}
+                    </span>
                   </div>
+                  {liveDataConnected && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Total Metrics</span>
+                      <span className="text-sm font-medium">{totalMetricsReceived}</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -388,24 +452,43 @@ export default function RealTimeMonitoringHub({ healthData }: RealTimeMonitoring
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Uptime</span>
-                    <span className="text-sm font-semibold text-green-600">{currentStatus.uptime}</span>
+                    <span className="text-sm font-medium">Live Data Connection</span>
+                    <span className={`text-sm font-semibold ${
+                      liveDataConnected ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {liveDataConnected ? 'Connected' : 'Disconnected'}
+                    </span>
                   </div>
-                  <Progress value={99.8} className="h-2" />
+                  <Progress value={liveDataConnected ? 100 : 0} className="h-2" />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">Response Time</span>
-                    <span className="text-sm font-semibold text-blue-600">< 2s</span>
+                    <span className="text-sm font-semibold text-blue-600">
+                      {Math.round(liveConnectionStatus.latency)}ms
+                    </span>
                   </div>
-                  <Progress value={95} className="h-2" />
+                  <Progress value={Math.max(0, 100 - liveConnectionStatus.latency / 2)} className="h-2" />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">Data Quality</span>
-                    <span className="text-sm font-semibold text-green-600">Excellent</span>
+                    <span className={`text-sm font-semibold ${
+                      liveConnectionStatus.dataQuality === 'excellent' ? 'text-green-600' :
+                      liveConnectionStatus.dataQuality === 'good' ? 'text-blue-600' :
+                      liveConnectionStatus.dataQuality === 'poor' ? 'text-yellow-600' : 'text-red-600'
+                    }`}>
+                      {liveConnectionStatus.dataQuality}
+                    </span>
                   </div>
-                  <Progress value={97} className="h-2" />
+                  <Progress 
+                    value={
+                      liveConnectionStatus.dataQuality === 'excellent' ? 100 :
+                      liveConnectionStatus.dataQuality === 'good' ? 75 :
+                      liveConnectionStatus.dataQuality === 'poor' ? 50 : 0
+                    } 
+                    className="h-2" 
+                  />
                 </div>
               </div>
             </CardContent>

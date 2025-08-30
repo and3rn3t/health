@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap, BarChart3, House, List, X, Clock, Share, Stethoscope, Trophy, Target, MagnifyingGlass, CloudArrowUp } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
@@ -29,6 +29,7 @@ import FamilyGameification from '@/components/gamification/FamilyGameification'
 import HealthSearch from '@/components/health/HealthSearch'
 import RealTimeMonitoringHub from '@/components/health/RealTimeMonitoringHub'
 import CloudInfrastructureStatus from '@/components/health/CloudInfrastructureStatus'
+import LiveHealthDataIntegration from '@/components/health/LiveHealthDataIntegration'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -58,7 +59,8 @@ function App() {
       { id: 'ml-predictions', label: 'ML Predictions', icon: Activity },
       { id: 'movement-patterns', label: 'Movement Analysis', icon: Activity },
       { id: 'realtime', label: 'Real-time Detection', icon: Activity },
-      { id: 'monitoring-hub', label: 'Monitoring Hub', icon: Activity }
+      { id: 'monitoring-hub', label: 'Monitoring Hub', icon: Activity },
+      { id: 'live-integration', label: 'Live Data Integration', icon: CloudArrowUp }
     ],
     gamification: [
       { id: 'game-center', label: 'Game Center', icon: Trophy },
@@ -656,6 +658,7 @@ function App() {
                 {activeTab === 'movement-patterns' && healthData && <MovementPatternAnalysis healthData={healthData} />}
                 {activeTab === 'realtime' && <RealTimeFallDetection />}
                 {activeTab === 'monitoring-hub' && healthData && <RealTimeMonitoringHub healthData={healthData} />}
+                {activeTab === 'live-integration' && <LiveHealthDataIntegration />}
                 {activeTab === 'history' && <FallHistory />}
                 {activeTab === 'game-center' && healthData && <HealthGameCenter healthData={healthData} />}
                 {activeTab === 'family-challenges' && <FamilyGameification />}
