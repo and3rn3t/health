@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear } from '@phosphor-icons/react'
+import { Heart, Activity, Shield, Phone, AlertTriangle, Upload, Users, Gear, Roadmap } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import HealthDashboard from '@/components/health/HealthDashboard'
@@ -14,6 +14,7 @@ import EmergencyContacts from '@/components/health/EmergencyContacts'
 import FallHistory from '@/components/health/FallHistory'
 import HealthDataImport from '@/components/health/HealthDataImport'
 import FallMonitoringTooling from '@/components/health/FallMonitoringTooling'
+import ImplementationPhases from '@/components/health/ImplementationPhases'
 
 function App() {
   const [healthData, setHealthData] = useKV('health-data', null)
@@ -80,7 +81,7 @@ function App() {
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7">
               <TabsTrigger value="dashboard" className="flex items-center gap-2">
                 <Heart className="h-4 w-4" />
                 Dashboard
@@ -92,6 +93,10 @@ function App() {
               <TabsTrigger value="tooling" className="flex items-center gap-2">
                 <Gear className="h-4 w-4" />
                 Monitoring Setup
+              </TabsTrigger>
+              <TabsTrigger value="phases" className="flex items-center gap-2">
+                <Roadmap className="h-4 w-4" />
+                Implementation
               </TabsTrigger>
               <TabsTrigger value="history" className="flex items-center gap-2">
                 <Activity className="h-4 w-4" />
@@ -121,6 +126,10 @@ function App() {
 
             <TabsContent value="tooling" className="space-y-6">
               <FallMonitoringTooling />
+            </TabsContent>
+
+            <TabsContent value="phases" className="space-y-6">
+              <ImplementationPhases />
             </TabsContent>
 
             <TabsContent value="history" className="space-y-6">
