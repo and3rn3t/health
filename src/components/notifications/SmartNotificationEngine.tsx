@@ -1095,9 +1095,10 @@ export default function SmartNotificationEngine({ healthData }: SmartNotificatio
               ))}
             </div>
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Recent Notifications */}
+      {/* Recent Notifications */}
         <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
