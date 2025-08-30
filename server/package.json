@@ -1,0 +1,30 @@
+{
+  "name": "health-monitoring-server",
+  "version": "1.0.0",
+  "description": "WebSocket server for real-time health data streaming",
+  "main": "websocket-server.js",
+  "scripts": {
+    "start": "node websocket-server.js",
+    "dev": "nodemon websocket-server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.14.2",
+    "cors": "^2.8.5",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": [
+    "websocket",
+    "health",
+    "apple-watch",
+    "healthkit",
+    "real-time"
+  ],
+  "author": "",
+  "license": "ISC"
+}
+

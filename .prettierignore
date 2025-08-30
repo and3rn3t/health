@@ -1,0 +1,18 @@
+# Ignore artifacts
+build
+coverage
+dist
+.wrangler
+
+# Ignore all JS/TS files in node_modules
+node_modules
+
+# Ignore package files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Ignore generated files
+*.generated.*
+*.min.js
+*.min.css

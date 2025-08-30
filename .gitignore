@@ -16,6 +16,9 @@ dist-ssr
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
 .idea
 .DS_Store
 *.suo
@@ -24,11 +27,46 @@ dist-ssr
 *.sln
 *.sw?
 
+# Environment variables
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cloudflare Workers
+.wrangler/
+wrangler.toml.bak
+worker-configuration.d.ts
+
+# Build outputs
+build/
+dist/
+.next/
+out/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.nx/cache/
+
+# Testing
+coverage/
+.nyc_output
+
+# Misc
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
 **/agent-eval-report*
 packages
 pids
 .file-manifest
 .devcontainer/
-
 .spark-workbench-id
