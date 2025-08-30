@@ -1,0 +1,750 @@
+import { useState, useEffect } from 'react'
+import { useKV } from '@github/spark/hooks'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Progress } from '@/components/ui/progress'
+import { 
+  Users, 
+  Activity, 
+  Clock, 
+  Shield,
+  Heart,
+  AlertTriangle,
+  CheckCircle,
+  Bell,
+  Eye,
+  Phone,
+  MapPin,
+  Calendar,
+  Stethoscope,
+  TrendingUp,
+  UserCheck,
+  Family,
+  Emergency
+} from '@phosphor-icons/react'
+import { ProcessedHealthData } from '@/lib/healthDataProcessor'
+
+interface FamilyMember {
+  id: string
+  name: string
+  relationship: 'spouse' | 'child' | 'parent' | 'sibling' | 'caregiver' | 'other'
+  role: 'primary-caregiver' | 'emergency-contact' | 'viewer' | 'health-partner'
+  permissions: {
+    viewHealthData: boolean
+    receiveAlerts: boolean
+    emergencyContact: boolean
+    canModifySettings: boolean
+  }
+  contactInfo: {
+    email: string
+    phone: string
+    address?: string
+  }
+  lastActive: string | null
+  preferences: {
+    alertTypes: string[]
+    notificationMethod: 'email' | 'sms' | 'both'
+    quietHours: { start: string; end: string }
+  }
+}
+
+interface CaregiverAlert {
+  id: string
+  type: 'fall-detected' | 'health-decline' | 'missed-checkin' | 'emergency' | 'medication-reminder' | 'appointment'
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  message: string
+  timestamp: string
+  recipientIds: string[]
+  status: 'sent' | 'delivered' | 'acknowledged' | 'responded'
+  responseTime?: number
+}
+
+interface HealthInsight {
+  id: string
+  type: 'improvement' | 'concern' | 'milestone' | 'trend'
+  title: string
+  description: string
+  metric: string
+  value: number
+  timestamp: string
+  sharedWith: string[]
+}
+
+interface CaregiverTask {
+  id: string
+  title: string
+  description: string
+  type: 'medication' | 'appointment' | 'exercise' | 'checkup' | 'emergency-drill'
+  assignedTo: string
+  dueDate: string
+  priority: 'low' | 'medium' | 'high'
+  status: 'pending' | 'in-progress' | 'completed'
+  completedBy?: string
+  completedAt?: string
+}
+
+interface Props {
+  healthData: ProcessedHealthData
+}
+
+export default function AdvancedFamilyCaregiverDashboard({ healthData }: Props) {
+  const [familyMembers, setFamilyMembers] = useKV<FamilyMember[]>('family-members', [])
+  const [caregiverAlerts, setCaregiverAlerts] = useKV<CaregiverAlert[]>('caregiver-alerts', [])
+  const [healthInsights, setHealthInsights] = useKV<HealthInsight[]>('health-insights-shared', [])
+  const [caregiverTasks, setCaregiverTasks] = useKV<CaregiverTask[]>('caregiver-tasks', [])
+  const [selectedMember, setSelectedMember] = useState<string | null>(null)
+
+  // Initialize with sample data if empty
+  useEffect(() => {
+    if (familyMembers.length === 0) {
+      const sampleFamily: FamilyMember[] = [
+        {
+          id: 'spouse-1',
+          name: 'Sarah Johnson',
+          relationship: 'spouse',
+          role: 'primary-caregiver',
+          permissions: {
+            viewHealthData: true,
+            receiveAlerts: true,
+            emergencyContact: true,
+            canModifySettings: true
+          },
+          contactInfo: {
+            email: 'sarah.johnson@email.com',
+            phone: '(555) 123-4567',
+            address: 'Same household'
+          },
+          lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+          preferences: {
+            alertTypes: ['fall-detected', 'health-decline', 'emergency'],
+            notificationMethod: 'both',
+            quietHours: { start: '22:00', end: '07:00' }
+          }
+        },
+        {
+          id: 'child-1',
+          name: 'Michael Johnson',
+          relationship: 'child',
+          role: 'emergency-contact',
+          permissions: {
+            viewHealthData: true,
+            receiveAlerts: true,
+            emergencyContact: true,
+            canModifySettings: false
+          },
+          contactInfo: {
+            email: 'michael.j@email.com',
+            phone: '(555) 987-6543',
+            address: '123 Oak Street, Another City'
+          },
+          lastActive: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+          preferences: {
+            alertTypes: ['fall-detected', 'emergency'],
+            notificationMethod: 'sms',
+            quietHours: { start: '23:00', end: '08:00' }
+          }
+        },
+        {
+          id: 'caregiver-1',
+          name: 'Dr. Emily Chen',
+          relationship: 'caregiver',
+          role: 'health-partner',
+          permissions: {
+            viewHealthData: true,
+            receiveAlerts: true,
+            emergencyContact: false,
+            canModifySettings: false
+          },
+          contactInfo: {
+            email: 'dr.chen@healthcenter.com',
+            phone: '(555) 246-8135',
+            address: 'City Health Center'
+          },
+          lastActive: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
+          preferences: {
+            alertTypes: ['health-decline', 'missed-checkin'],
+            notificationMethod: 'email',
+            quietHours: { start: '18:00', end: '08:00' }
+          }
+        }
+      ]
+      setFamilyMembers(sampleFamily)
+
+      // Sample alerts
+      const sampleAlerts: CaregiverAlert[] = [
+        {
+          id: 'alert-1',
+          type: 'health-decline',
+          severity: 'medium',
+          message: 'Health score declined from 78 to 72 over the past week',
+          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          recipientIds: ['spouse-1', 'caregiver-1'],
+          status: 'acknowledged',
+          responseTime: 15
+        },
+        {
+          id: 'alert-2',
+          type: 'missed-checkin',
+          severity: 'low',
+          message: 'Daily activity check-in was missed yesterday',
+          timestamp: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
+          recipientIds: ['spouse-1'],
+          status: 'delivered'
+        }
+      ]
+      setCaregiverAlerts(sampleAlerts)
+
+      // Sample tasks
+      const sampleTasks: CaregiverTask[] = [
+        {
+          id: 'task-1',
+          title: 'Weekly Health Review',
+          description: 'Review weekly health metrics and trends with primary physician',
+          type: 'checkup',
+          assignedTo: 'caregiver-1',
+          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+          priority: 'medium',
+          status: 'pending'
+        },
+        {
+          id: 'task-2',
+          title: 'Emergency Contact Drill',
+          description: 'Practice emergency response procedures with family',
+          type: 'emergency-drill',
+          assignedTo: 'spouse-1',
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          priority: 'high',
+          status: 'pending'
+        }
+      ]
+      setCaregiverTasks(sampleTasks)
+    }
+  }, [familyMembers.length, setFamilyMembers, setCaregiverAlerts, setCaregiverTasks])
+
+  // Generate health insights based on current data
+  useEffect(() => {
+    if (healthData && healthInsights.length === 0) {
+      const insights: HealthInsight[] = [
+        {
+          id: 'insight-1',
+          type: 'improvement',
+          title: 'Walking Stability Improved',
+          description: 'Step regularity has improved by 15% over the past month, indicating better balance',
+          metric: 'step_regularity',
+          value: 15,
+          timestamp: new Date().toISOString(),
+          sharedWith: ['spouse-1', 'caregiver-1']
+        },
+        {
+          id: 'insight-2',
+          type: 'concern',
+          title: 'Sleep Quality Decline',
+          description: 'Deep sleep duration has decreased by 20 minutes on average this week',
+          metric: 'deep_sleep',
+          value: -20,
+          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          sharedWith: ['spouse-1']
+        }
+      ]
+      setHealthInsights(insights)
+    }
+  }, [healthData, healthInsights.length, setHealthInsights])
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return 'bg-red-100 text-red-800'
+      case 'high':
+        return 'bg-orange-100 text-orange-800'
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'low':
+        return 'bg-blue-100 text-blue-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': case 'acknowledged': case 'responded':
+        return 'bg-green-100 text-green-800'
+      case 'in-progress': case 'delivered':
+        return 'bg-blue-100 text-blue-800'
+      case 'pending': case 'sent':
+        return 'bg-yellow-100 text-yellow-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'primary-caregiver':
+        return <Heart className="h-4 w-4" />
+      case 'emergency-contact':
+        return <Phone className="h-4 w-4" />
+      case 'health-partner':
+        return <Stethoscope className="h-4 w-4" />
+      case 'viewer':
+        return <Eye className="h-4 w-4" />
+      default:
+        return <Users className="h-4 w-4" />
+    }
+  }
+
+  const activeAlerts = caregiverAlerts.filter(a => a.status !== 'acknowledged' && a.status !== 'responded')
+  const pendingTasks = caregiverTasks.filter(t => t.status === 'pending')
+  const emergencyContacts = familyMembers.filter(m => m.permissions.emergencyContact)
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <Users className="h-6 w-6" />
+            Advanced Family & Caregiver Dashboard
+          </h2>
+          <p className="text-muted-foreground">
+            Comprehensive care coordination and family health monitoring
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+            {familyMembers.length} Care Team Members
+          </Badge>
+          {activeAlerts.length > 0 && (
+            <Badge variant="destructive">
+              {activeAlerts.length} Active Alert{activeAlerts.length > 1 ? 's' : ''}
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      {/* Critical Alert Banner */}
+      {activeAlerts.some(a => a.severity === 'critical') && (
+        <Alert className="border-red-200 bg-red-50">
+          <AlertTriangle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            <strong>Critical Alert:</strong> Emergency situation requires immediate family notification.
+            <Button variant="link" className="text-red-800 underline p-0 h-auto ml-2">
+              View Details →
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Heart className="h-5 w-5 text-red-500" />
+              <span className="font-semibold">Health Score</span>
+            </div>
+            <p className="text-2xl font-bold">{healthData?.healthScore || 0}/100</p>
+            <p className="text-sm text-muted-foreground">Shared with {familyMembers.filter(m => m.permissions.viewHealthData).length} members</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Bell className="h-5 w-5 text-orange-500" />
+              <span className="font-semibold">Active Alerts</span>
+            </div>
+            <p className="text-2xl font-bold">{activeAlerts.length}</p>
+            <p className="text-sm text-muted-foreground">Requiring attention</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Clock className="h-5 w-5 text-blue-500" />
+              <span className="font-semibold">Pending Tasks</span>
+            </div>
+            <p className="text-2xl font-bold">{pendingTasks.length}</p>
+            <p className="text-sm text-muted-foreground">For care team</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Phone className="h-5 w-5 text-green-500" />
+              <span className="font-semibold">Emergency Contacts</span>
+            </div>
+            <p className="text-2xl font-bold">{emergencyContacts.length}</p>
+            <p className="text-sm text-muted-foreground">Ready to respond</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="family" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="family">Care Team</TabsTrigger>
+          <TabsTrigger value="alerts">Alerts & Notifications</TabsTrigger>
+          <TabsTrigger value="insights">Health Insights</TabsTrigger>
+          <TabsTrigger value="tasks">Care Tasks</TabsTrigger>
+          <TabsTrigger value="emergency">Emergency Response</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="family" className="space-y-4">
+          <div className="grid gap-4">
+            {familyMembers.map((member) => (
+              <Card key={member.id} className={selectedMember === member.id ? 'ring-2 ring-primary' : ''}>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        {getRoleIcon(member.role)}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{member.name}</h3>
+                        <p className="text-sm text-muted-foreground capitalize">
+                          {member.relationship} • {member.role.replace('-', ' ')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {member.permissions.emergencyContact && (
+                        <Badge variant="secondary" size="sm">
+                          <Phone className="h-3 w-3 mr-1" />
+                          Emergency
+                        </Badge>
+                      )}
+                      <Badge variant={member.lastActive && new Date(member.lastActive) > new Date(Date.now() - 24 * 60 * 60 * 1000) ? 'default' : 'secondary'} size="sm">
+                        {member.lastActive ? 
+                          `Active ${new Date(member.lastActive).toLocaleDateString()}` : 
+                          'Never active'
+                        }
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2">Contact Information</h4>
+                      <div className="text-sm space-y-1">
+                        <div>{member.contactInfo.email}</div>
+                        <div>{member.contactInfo.phone}</div>
+                        {member.contactInfo.address && (
+                          <div className="text-muted-foreground">{member.contactInfo.address}</div>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2">Permissions</h4>
+                      <div className="space-y-1">
+                        {member.permissions.viewHealthData && (
+                          <Badge variant="secondary" size="sm">View Health Data</Badge>
+                        )}
+                        {member.permissions.receiveAlerts && (
+                          <Badge variant="secondary" size="sm">Receive Alerts</Badge>
+                        )}
+                        {member.permissions.canModifySettings && (
+                          <Badge variant="secondary" size="sm">Modify Settings</Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2">Alert Preferences</h4>
+                      <div className="text-sm space-y-1">
+                        <div>Method: {member.preferences.notificationMethod}</div>
+                        <div>Quiet hours: {member.preferences.quietHours.start} - {member.preferences.quietHours.end}</div>
+                        <div>{member.preferences.alertTypes.length} alert types enabled</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 mt-4">
+                    <Button size="sm" variant="outline">
+                      <Phone className="h-4 w-4 mr-2" />
+                      Contact
+                    </Button>
+                    <Button size="sm" variant="outline">
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Activity
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant={selectedMember === member.id ? 'default' : 'outline'}
+                      onClick={() => setSelectedMember(selectedMember === member.id ? null : member.id)}
+                    >
+                      {selectedMember === member.id ? 'Selected' : 'Select'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="alerts" className="space-y-4">
+          <div className="grid gap-4">
+            {caregiverAlerts.length === 0 ? (
+              <Card>
+                <CardContent className="pt-6 text-center">
+                  <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Active Alerts</h3>
+                  <p className="text-muted-foreground">
+                    All health indicators are within normal ranges
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              caregiverAlerts.slice().reverse().map((alert) => (
+                <Card key={alert.id}>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-red-100 rounded-lg">
+                          <AlertTriangle className="h-5 w-5 text-red-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold capitalize">{alert.type.replace('-', ' ')}</h3>
+                          <p className="text-sm text-muted-foreground">{alert.message}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={getSeverityColor(alert.severity)} size="sm">
+                          {alert.severity}
+                        </Badge>
+                        <Badge className={getStatusColor(alert.status)} size="sm">
+                          {alert.status}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Sent To</Label>
+                        <div className="text-sm">
+                          {alert.recipientIds.map(id => {
+                            const member = familyMembers.find(m => m.id === id)
+                            return member ? member.name : 'Unknown'
+                          }).join(', ')}
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Timestamp</Label>
+                        <div className="text-sm">{new Date(alert.timestamp).toLocaleString()}</div>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Response Time</Label>
+                        <div className="text-sm">
+                          {alert.responseTime ? `${alert.responseTime} minutes` : 'No response yet'}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {alert.status === 'sent' || alert.status === 'delivered' ? (
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => setCaregiverAlerts(current => 
+                          current.map(a => 
+                            a.id === alert.id ? { ...a, status: 'acknowledged', responseTime: 5 } : a
+                          )
+                        )}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Mark as Acknowledged
+                      </Button>
+                    ) : (
+                      <Badge variant="secondary" size="sm">
+                        {alert.status === 'acknowledged' ? 'Acknowledged' : 'Responded'}
+                      </Badge>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="insights" className="space-y-4">
+          <div className="grid gap-4">
+            {healthInsights.map((insight) => (
+              <Card key={insight.id}>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${
+                        insight.type === 'improvement' ? 'bg-green-100' :
+                        insight.type === 'concern' ? 'bg-red-100' :
+                        insight.type === 'milestone' ? 'bg-blue-100' : 'bg-yellow-100'
+                      }`}>
+                        {insight.type === 'improvement' && <TrendingUp className="h-5 w-5 text-green-600" />}
+                        {insight.type === 'concern' && <AlertTriangle className="h-5 w-5 text-red-600" />}
+                        {insight.type === 'milestone' && <CheckCircle className="h-5 w-5 text-blue-600" />}
+                        {insight.type === 'trend' && <Activity className="h-5 w-5 text-yellow-600" />}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{insight.title}</h3>
+                        <p className="text-sm text-muted-foreground">{insight.description}</p>
+                      </div>
+                    </div>
+                    <Badge variant={insight.type === 'improvement' ? 'default' : insight.type === 'concern' ? 'destructive' : 'secondary'}>
+                      {insight.value > 0 ? '+' : ''}{insight.value}{insight.metric.includes('percent') ? '%' : insight.metric.includes('time') ? ' min' : ''}
+                    </Badge>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Shared With</Label>
+                      <div className="text-sm">
+                        {insight.sharedWith.map(id => {
+                          const member = familyMembers.find(m => m.id === id)
+                          return member ? member.name : 'Unknown'
+                        }).join(', ')}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Generated</Label>
+                      <div className="text-sm">{new Date(insight.timestamp).toLocaleDateString()}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="tasks" className="space-y-4">
+          <div className="grid gap-4">
+            {caregiverTasks.map((task) => (
+              <Card key={task.id}>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        {task.type === 'medication' && <Heart className="h-5 w-5 text-blue-600" />}
+                        {task.type === 'appointment' && <Calendar className="h-5 w-5 text-blue-600" />}
+                        {task.type === 'exercise' && <Activity className="h-5 w-5 text-blue-600" />}
+                        {task.type === 'checkup' && <Stethoscope className="h-5 w-5 text-blue-600" />}
+                        {task.type === 'emergency-drill' && <Shield className="h-5 w-5 text-blue-600" />}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{task.title}</h3>
+                        <p className="text-sm text-muted-foreground">{task.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className={getSeverityColor(task.priority)} size="sm">
+                        {task.priority}
+                      </Badge>
+                      <Badge className={getStatusColor(task.status)} size="sm">
+                        {task.status}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Assigned To</Label>
+                      <div className="text-sm">
+                        {familyMembers.find(m => m.id === task.assignedTo)?.name || 'Unknown'}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Due Date</Label>
+                      <div className="text-sm">{new Date(task.dueDate).toLocaleDateString()}</div>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Type</Label>
+                      <div className="text-sm capitalize">{task.type.replace('-', ' ')}</div>
+                    </div>
+                  </div>
+                  
+                  {task.status === 'pending' && (
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => setCaregiverTasks(current => 
+                        current.map(t => 
+                          t.id === task.id 
+                            ? { ...t, status: 'completed', completedBy: 'Current User', completedAt: new Date().toISOString() }
+                            : t
+                        )
+                      )}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Mark as Completed
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="emergency" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Phone className="h-5 w-5" />
+                Emergency Response Protocol
+              </CardTitle>
+              <CardDescription>
+                Automated emergency contact and response system
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="font-semibold mb-3">Emergency Contact Chain</h3>
+                  <div className="space-y-3">
+                    {emergencyContacts.map((contact, index) => (
+                      <div key={contact.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                        <Badge variant="secondary" size="sm">{index + 1}</Badge>
+                        <div className="flex-1">
+                          <div className="font-medium">{contact.name}</div>
+                          <div className="text-sm text-muted-foreground">{contact.contactInfo.phone}</div>
+                        </div>
+                        <Badge variant="outline" size="sm">{contact.relationship}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="font-semibold mb-3">Emergency Response Status</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 border rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span className="font-medium">Fall Detection</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">Active and monitoring</p>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span className="font-medium">Emergency Contacts</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{emergencyContacts.length} contacts ready</p>
+                    </div>
+                  </div>
+                </div>
+
+                <Button variant="destructive" className="w-full">
+                  <Phone className="h-4 w-4 mr-2" />
+                  Test Emergency Alert System
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
+
+function Label({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <label className={`text-sm font-medium ${className || ''}`}>{children}</label>
+}
