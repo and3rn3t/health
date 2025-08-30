@@ -42,6 +42,7 @@ import ComprehensiveAppleHealthKitGuide from '@/components/health/ComprehensiveA
 import WebSocketArchitectureGuide from '@/components/health/WebSocketArchitectureGuide'
 import SmartFeatureRecommendations from '@/components/recommendations/SmartFeatureRecommendations'
 import UsageAnalyticsDashboard from '@/components/analytics/UsageAnalyticsDashboard'
+import AIUsagePredictions from '@/components/analytics/AIUsagePredictions'
 import { ProcessedHealthData } from '@/lib/healthDataProcessor'
 
 function App() {
@@ -115,6 +116,7 @@ function App() {
       { id: 'insights', label: 'Insights', icon: TrendingUp },
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'usage-analytics', label: 'Usage Analytics', icon: Brain },
+      { id: 'usage-predictions', label: 'Usage Predictions', icon: Sparkle },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
       { id: 'recommendations', label: 'Recommendations', icon: Lightbulb },
       { id: 'search', label: 'Search', icon: MagnifyingGlass }
@@ -591,6 +593,7 @@ function App() {
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Insights' && 'Real-time trending data and AI-powered insights'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Analytics' && 'Deep analysis of your health metrics'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Usage Analytics' && 'Discover how AI optimizes your HealthGuard experience'}
+                    {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Usage Predictions' && 'AI-powered forecasts of your health engagement trends'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Fall Risk' && 'Fall prevention and risk assessment'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Recommendations' && 'Smart suggestions based on your usage patterns'}
                     {currentPageInfo.category === 'Main' && currentPageInfo.label === 'Search' && 'Find specific health insights and data'}
@@ -864,6 +867,7 @@ function App() {
                 {activeTab === 'dashboard' && healthData && <HealthDashboard healthData={healthData} />}
                 {activeTab === 'insights' && healthData && <EnhancedHealthInsightsDashboard healthData={healthData} />}
                 {activeTab === 'usage-analytics' && healthData && <UsageAnalyticsDashboard healthData={healthData} />}
+                {activeTab === 'usage-predictions' && healthData && <AIUsagePredictions healthData={healthData} />}
                 {activeTab === 'recommendations' && healthData && (
                   <SmartFeatureRecommendations 
                     healthData={healthData} 
