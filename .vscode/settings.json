@@ -31,5 +31,8 @@
   "tailwindCSS.experimental.classRegex": [
     "clsx\\(([^)]*)\\)",
     "cn\\(([^)]*)\\)"
-  ]
+  ],
+  "[powershell]": {
+    "editor.defaultFormatter": "ms-vscode.powershell"
+  }
 }
