@@ -8,28 +8,33 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 // Middleware
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173').split(',').map(s => s.trim());
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow tools like curl
-    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-}));
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')
+  .split(',')
+  .map((s) => s.trim());
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // allow tools like curl
+      if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Store active connections and health data
 const connections = new Map();
 const healthDataBuffer = new Map();
 const userSessions = new Map();
+const PAGE_SIZE = Number(process.env.WS_PAGE_SIZE || 25);
 
 class HealthDataProcessor {
   static processLiveHealthData(data) {
     const processed = {
       ...data,
       processedAt: new Date().toISOString(),
-      validated: true
+      validated: true,
     };
 
     // Add health score calculation
@@ -56,9 +61,12 @@ class HealthDataProcessor {
   }
 
   static checkHeartRateAlerts(heartRate) {
-    if (heartRate > 150) return { level: 'critical', message: 'Heart rate critically high' };
-    if (heartRate < 40) return { level: 'critical', message: 'Heart rate critically low' };
-    if (heartRate > 120) return { level: 'warning', message: 'Heart rate elevated' };
+    if (heartRate > 150)
+      return { level: 'critical', message: 'Heart rate critically high' };
+    if (heartRate < 40)
+      return { level: 'critical', message: 'Heart rate critically low' };
+    if (heartRate > 120)
+      return { level: 'warning', message: 'Heart rate elevated' };
     return null;
   }
 
@@ -71,8 +79,10 @@ class HealthDataProcessor {
   }
 
   static checkFallRiskAlerts(steadiness) {
-    if (steadiness < 40) return { level: 'critical', message: 'Fall risk critically high' };
-    if (steadiness < 60) return { level: 'warning', message: 'Fall risk elevated' };
+    if (steadiness < 40)
+      return { level: 'critical', message: 'Fall risk critically high' };
+    if (steadiness < 60)
+      return { level: 'warning', message: 'Fall risk elevated' };
     return null;
   }
 }
@@ -84,30 +94,36 @@ wss.on('connection', (ws, req) => {
     id: clientId,
     type: 'unknown',
     connectedAt: new Date(),
-    lastHeartbeat: new Date()
+    lastHeartbeat: new Date(),
   };
 
   connections.set(clientId, { ws, info: clientInfo });
   console.log(`Client connected: ${clientId}`);
 
   // Send welcome message
-  ws.send(JSON.stringify({
-    type: 'connection_established',
-    clientId: clientId,
-    timestamp: new Date().toISOString()
-  }));
+  ws.send(
+    JSON.stringify({
+      type: 'connection_established',
+      clientId: clientId,
+      timestamp: new Date().toISOString(),
+    })
+  );
 
   ws.on('message', (message) => {
     try {
       const data = JSON.parse(message);
       handleMessage(clientId, data);
     } catch (err) {
-  // Handle parse error without exposing payload contents
-  console.error('Invalid message format', { name: err && err.name ? err.name : 'Error' });
-      ws.send(JSON.stringify({
-        type: 'error',
-        message: 'Invalid message format'
-      }));
+      // Handle parse error without exposing payload contents
+      console.error('Invalid message format', {
+        name: err && err.name ? err.name : 'Error',
+      });
+      ws.send(
+        JSON.stringify({
+          type: 'error',
+          message: 'Invalid message format',
+        })
+      );
     }
   });
 
@@ -170,12 +186,72 @@ function handleMessage(clientId, data) {
       handleSubscription(clientId, data.metrics);
       break;
 
+    case 'start_historical_backfill':
+      startHistoricalBackfill(clientId, data && data.cursor);
+      break;
+
+    case 'get_more':
+      // Request next page in historical backfill flow
+      sendHistoricalPage(clientId, data && data.cursor);
+      break;
+
     case 'emergency_alert':
       handleEmergencyAlert(clientId, data.data);
       break;
 
     default:
       console.log(`Unknown message type: ${data.type}`);
+  }
+}
+
+function parseCursor(cursor) {
+  if (!cursor || typeof cursor !== 'string') return 0;
+  if (cursor.startsWith('offset:')) {
+    const n = Number(cursor.slice('offset:'.length));
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+  }
+  return 0;
+}
+
+function getUserBuffer(userId) {
+  const buf = healthDataBuffer.get(userId) || [];
+  // newest first by processedAt
+  return buf.slice().sort((a, b) => (a.processedAt < b.processedAt ? 1 : -1));
+}
+
+function startHistoricalBackfill(clientId, cursor) {
+  const connection = connections.get(clientId);
+  if (!connection) return;
+  const userId = connection.info.userId;
+  if (!userId) return;
+  sendHistoricalPage(clientId, cursor);
+}
+
+function sendHistoricalPage(clientId, cursor) {
+  const connection = connections.get(clientId);
+  if (!connection) return;
+  const ws = connection.ws;
+  const userId = connection.info.userId;
+  if (!userId || ws.readyState !== WebSocket.OPEN) return;
+
+  const offset = parseCursor(cursor);
+  const data = getUserBuffer(userId);
+  const items = data.slice(offset, offset + PAGE_SIZE);
+  const nextOffset = offset + items.length;
+  const hasMore = nextOffset < data.length;
+  const nextCursor = hasMore ? `offset:${nextOffset}` : undefined;
+  const message = {
+    type: 'historical_data_update',
+    data: { items, nextCursor },
+    timestamp: new Date().toISOString(),
+  };
+  try {
+    ws.send(JSON.stringify(message));
+  } catch (e) {
+    console.warn(
+      'WS send failed in historical page',
+      e && e.message ? e.message : ''
+    );
   }
 }
 
@@ -203,7 +279,7 @@ function handleLiveHealthData(clientId, healthData) {
   broadcastToWebClients(userId, {
     type: 'live_health_update',
     data: processedData,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
   // Check for emergency conditions
@@ -213,7 +289,7 @@ function handleLiveHealthData(clientId, healthData) {
       metric: healthData.type,
       value: healthData.value,
       alert: processedData.alert,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -231,10 +307,13 @@ function handleHistoricalData(clientId, historicalData) {
   broadcastToWebClients(userId, {
     type: 'historical_data_update',
     data: historicalData,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
-  console.log(`Historical data received from ${clientId}:`, historicalData.type);
+  console.log(
+    `Historical data received from ${clientId}:`,
+    historicalData.type
+  );
 }
 
 function handleSubscription(clientId, metrics) {
@@ -256,7 +335,7 @@ function handleEmergencyAlert(clientId, alertData) {
     type: 'emergency_alert',
     data: alertData,
     timestamp: new Date().toISOString(),
-    priority: 'critical'
+    priority: 'critical',
   });
 
   console.log(`Emergency alert from ${clientId}:`, alertData);
@@ -267,9 +346,11 @@ function handleEmergencyAlert(clientId, alertData) {
 
 function broadcastToWebClients(userId, message) {
   connections.forEach(({ ws, info }) => {
-    if (info.type === 'web_dashboard' &&
-        info.userId === userId &&
-        ws.readyState === WebSocket.OPEN) {
+    if (
+      info.type === 'web_dashboard' &&
+      info.userId === userId &&
+      ws.readyState === WebSocket.OPEN
+    ) {
       ws.send(JSON.stringify(message));
     }
   });
@@ -293,7 +374,7 @@ app.get('/api/health', (req, res) => {
     status: 'healthy',
     connections: connections.size,
     uptime: process.uptime(),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -305,7 +386,7 @@ app.get('/api/users/:userId/health-data', (req, res) => {
     userId: userId,
     dataPoints: userBuffer.length,
     latestData: userBuffer.slice(-10), // Last 10 readings
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -318,13 +399,13 @@ app.post('/api/users/:userId/emergency', (req, res) => {
     type: 'emergency_alert',
     data: emergencyData,
     timestamp: new Date().toISOString(),
-    priority: 'critical'
+    priority: 'critical',
   });
 
   res.json({
     status: 'emergency_alert_sent',
     userId: userId,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 

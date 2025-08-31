@@ -3,11 +3,12 @@
  * This file handles the worker logic and serves the built application
  */
 
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { z } from 'zod';
 import {
   processedHealthDataSchema,
   healthMetricSchema,
+  type ProcessedHealthData,
 } from '@/schemas/health';
 import {
   applySecurityHeaders,
@@ -19,8 +20,13 @@ import {
   verifyJwtWithJwks,
   writeAudit,
   decodeJwtPayload,
+  decryptJSON,
 } from '@/lib/security';
-import { getTtlSecondsForType } from '@/lib/retention';
+import {
+  getTtlSecondsForType,
+  purgeOldHealthData,
+  type KVNamespaceLite,
+} from '@/lib/retention';
 
 type Env = {
   ENVIRONMENT?: string;
@@ -35,21 +41,29 @@ type Env = {
       value: string,
       options?: { expirationTtl?: number }
     ) => Promise<void>;
+    get?: (key: string) => Promise<string | null>;
+    list?: (opts: {
+      prefix?: string;
+      limit?: number;
+      cursor?: string;
+    }) => Promise<{
+      keys: Array<{ name: string }>;
+      list_complete?: boolean;
+      cursor?: string;
+    }>;
+    delete?: (key: string) => Promise<void>;
   };
   HEALTH_STORAGE?: {
     put: (
       key: string,
       data: string | ReadableStream | ArrayBuffer,
-      opts?: any
-    ) => Promise<any>;
+      opts?: { httpMetadata?: { contentType?: string } }
+    ) => Promise<unknown>;
     get: (
       key: string,
-      opts?: any
+      opts?: { range?: { offset: number; length?: number } }
     ) => Promise<{ body?: ReadableStream | null } | null>;
-    list: (opts?: {
-      prefix?: string;
-      limit?: number;
-    }) => Promise<{
+    list: (opts?: { prefix?: string; limit?: number }) => Promise<{
       objects: Array<{ key: string; uploaded?: string | Date }>;
     }>;
   };
@@ -57,8 +71,10 @@ type Env = {
     fetch: (req: Request) => Promise<Response>;
   };
   RATE_LIMITER?: {
-    idFromName: (name: string) => any;
-    get: (id: any) => { fetch: (req: Request | string) => Promise<Response> };
+    idFromName: (name: string) => unknown;
+    get: (id: unknown) => {
+      fetch: (req: Request | string) => Promise<Response>;
+    };
   };
 };
 
@@ -83,7 +99,7 @@ function rateLimit(ip: string, limit = 60, intervalMs = 60_000): boolean {
 }
 
 async function rateLimitDO(
-  c: any,
+  c: Context<{ Bindings: Env }>,
   key: string,
   limit = 60,
   intervalMs = 60_000
@@ -106,7 +122,7 @@ async function rateLimitDO(
   }
 }
 
-function deriveRateLimitKey(c: any): string {
+function deriveRateLimitKey(c: Context<{ Bindings: Env }>): string {
   // Prefer per-user limit from JWT sub, fallback to IP
   const auth = c.req.header('Authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -116,7 +132,7 @@ function deriveRateLimitKey(c: any): string {
   return sub || c.req.header('CF-Connecting-IP') || 'anon';
 }
 
-async function requireAuth(c: any): Promise<boolean> {
+async function requireAuth(c: Context<{ Bindings: Env }>): Promise<boolean> {
   if (c.env.ENVIRONMENT !== 'production') return true;
   const auth = c.req.header('Authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -182,10 +198,8 @@ app.use('/api/*', async (c, next) => {
 
 // Serve static assets via Wrangler [assets] binding; fallback to next on 404
 app.use('/*', async (c, next) => {
-  const assets = c.env.ASSETS;
-  if (!assets || typeof assets.fetch !== 'function') return next();
-  const res = await assets.fetch(c.req.raw);
-  if (res.status === 404) return next();
+  const res = await c.env.ASSETS?.fetch(c.req.raw);
+  if (!res || res.status === 404) return next();
   return res;
 });
 
@@ -298,7 +312,7 @@ app.get('/api/_audit', async (c) => {
     const events: Array<{ key: string; line?: string }> = [];
     for (const obj of objects) {
       const got = await c.env.HEALTH_STORAGE.get(obj.key);
-      if (got && got.body) {
+      if (got?.body) {
         const text = await new Response(got.body).text();
         // Only include a single line (as written by writeAudit)
         const line = text.split('\n')[0];
@@ -313,6 +327,23 @@ app.get('/api/_audit', async (c) => {
   }
 });
 
+// Dev-only purge trigger
+app.post('/api/_purge', async (c) => {
+  if (c.env.ENVIRONMENT === 'production')
+    return c.json({ error: 'not_available' }, 404);
+  const url = new URL(c.req.url);
+  const limit = Math.max(
+    1,
+    Math.min(2000, Number(url.searchParams.get('limit') || 1000))
+  );
+  const prefix = url.searchParams.get('prefix') || 'health:';
+  const kv = c.env.HEALTH_KV as unknown as KVNamespaceLite | undefined;
+  if (!kv || typeof kv.list !== 'function' || typeof kv.delete !== 'function')
+    return c.json({ ok: true, scanned: 0, deleted: 0 });
+  const res = await purgeOldHealthData(c.env, kv, { limit, prefix });
+  return c.json({ ok: true, ...res });
+});
+
 // API routes for health data
 app.get('/api/health-data', async (c) => {
   // Validate query params
@@ -320,24 +351,80 @@ app.get('/api/health-data', async (c) => {
     from: z.string().datetime().optional(),
     to: z.string().datetime().optional(),
     metric: healthMetricSchema.shape.type.optional(),
+    limit: z.coerce.number().min(1).max(500).optional(),
+    cursor: z.string().optional(),
   });
 
   const url = new URL(c.req.url);
   const params = Object.fromEntries(url.searchParams.entries());
-  const parse = querySchema.safeParse(params);
-  if (!parse.success) {
+  const parsed = querySchema.safeParse(params);
+  if (!parsed.success) {
     return c.json(
-      { error: 'validation_error', details: parse.error.flatten() },
+      { error: 'validation_error', details: parsed.error.flatten() },
       400
     );
   }
 
-  // Stubbed response for now
-  return c.json({
-    ok: true,
-    query: parse.data,
-    data: [],
-  });
+  const { from, to, metric, cursor } = parsed.data;
+  const limit = parsed.data.limit ?? 100;
+  const kv = c.env.HEALTH_KV;
+  if (!kv || typeof kv.list !== 'function' || typeof kv.get !== 'function') {
+    // KV not bound or missing methods in this environment
+    return c.json({ ok: true, data: [] });
+  }
+  const prefix = metric ? `health:${metric}:` : 'health:';
+  try {
+    const listing = await kv.list({ prefix, limit, cursor });
+    const encKeyB64 = c.env.ENC_KEY;
+    const keyObj = encKeyB64 ? await getAesKey(encKeyB64) : null;
+    const rows: Array<ProcessedHealthData> = [];
+    for (const k of listing.keys) {
+      const raw = await kv.get(k.name);
+      if (!raw) continue;
+      const objUnknown = keyObj
+        ? await (async () => {
+            try {
+              return await decryptJSON<unknown>(keyObj, raw);
+            } catch {
+              return null;
+            }
+          })()
+        : (() => {
+            try {
+              return JSON.parse(raw) as unknown;
+            } catch {
+              return null;
+            }
+          })();
+      if (!objUnknown) continue;
+      const parsedRow = processedHealthDataSchema.safeParse(objUnknown);
+      if (!parsedRow.success) continue;
+      const obj = parsedRow.data;
+      // Filter by from/to on processedAt
+      if (from) {
+        if (new Date(obj.processedAt).getTime() < new Date(from).getTime())
+          continue;
+      }
+      if (to) {
+        if (new Date(obj.processedAt).getTime() > new Date(to).getTime())
+          continue;
+      }
+      rows.push(obj);
+      if (rows.length >= limit) break;
+    }
+    // Sort by processedAt desc (KV list returns lexicographic by key; keep consistent ordering)
+    rows.sort((a, b) => (a.processedAt < b.processedAt ? 1 : -1));
+    // Include pagination hints; keep backwards compatibility with data[] shape
+    return c.json({
+      ok: true,
+      data: rows,
+      nextCursor: listing.list_complete ? undefined : listing.cursor,
+      hasMore: listing.list_complete === false,
+    });
+  } catch (e) {
+    log.error('KV read failed', { error: (e as Error).message });
+    return c.json({ error: 'server_error' }, 500);
+  }
 });
 
 app.post('/api/health-data', async (c) => {
@@ -369,7 +456,7 @@ app.post('/api/health-data', async (c) => {
       await kv.put(key, payload, { expirationTtl: ttl });
     }
     const corr = c.res.headers.get('X-Correlation-Id') || '';
-    await writeAudit(c.env as any, {
+    await writeAudit(c.env as unknown as Parameters<typeof writeAudit>[0], {
       type: 'health_data_created',
       actor: 'api',
       resource: 'kv:health',
@@ -387,15 +474,32 @@ app.post('/api/health-data', async (c) => {
 // SPA fallback to index.html using ASSETS binding
 app.get('*', async (c) => {
   const url = new URL('/index.html', c.req.url);
+  if (!c.env.ASSETS) return c.text('Not Found', 404);
   return c.env.ASSETS.fetch(new Request(url.toString(), c.req.raw));
 });
 
 export default app;
 
+// Scheduled purge entry (Cloudflare Cron Triggers)
+export async function scheduled(
+  _controller: { cron: string; scheduledTime: number },
+  env: Env,
+  ctx: { waitUntil: (p: Promise<unknown>) => void }
+) {
+  const kv = env.HEALTH_KV as unknown as KVNamespaceLite | undefined;
+  if (!kv) return;
+  ctx.waitUntil(purgeOldHealthData(env, kv));
+}
+
 // Durable Object: RateLimiter (exported for Wrangler binding)
+type DOStorage = {
+  get: (key: string) => Promise<unknown>;
+  put: (key: string, value: unknown) => Promise<void>;
+};
+type DurableObjectState = { storage: DOStorage };
 export class RateLimiter {
-  private readonly storage: any;
-  constructor(state: any) {
+  private readonly storage: DOStorage;
+  constructor(state: DurableObjectState) {
     this.storage = state.storage;
   }
   async fetch(request: Request): Promise<Response> {
@@ -406,10 +510,15 @@ export class RateLimiter {
     const probe = url.searchParams.get('probe') === '1';
 
     const now = Date.now();
-    const record = (await this.storage.get(key)) || {
-      tokens: limit,
-      last: now,
-    };
+    const saved = (await this.storage.get(key)) as
+      | { tokens: number; last: number }
+      | undefined;
+    const record: { tokens: number; last: number } =
+      saved &&
+      typeof saved.tokens === 'number' &&
+      typeof saved.last === 'number'
+        ? { tokens: saved.tokens, last: saved.last }
+        : { tokens: limit, last: now };
     const elapsed = now - record.last;
     const refill = Math.floor(elapsed / interval) * limit;
     record.tokens = Math.min(limit, record.tokens + refill);

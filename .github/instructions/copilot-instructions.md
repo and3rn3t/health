@@ -36,6 +36,7 @@ These instructions guide GitHub Copilot Chat/Edits to produce code and docs that
 
 - Local persisted UI state: use `useKV` from `@github/spark/hooks` for lightweight, user-specific values.
 - Server data: use `@tanstack/react-query` for fetches, caching, and mutations. Co-locate query keys/constants.
+- Pagination: prefer cursor-based pagination for `/api/health-data` using an infinite query hook. The API returns `{ data, nextCursor?, hasMore? }`; older clients may only read `data`.
 - Validation: use `zod` for runtime schema validation at boundaries (WebSocket payloads, Worker request bodies, query params).
 - WebSocket client code should be resilient: auto-reconnect, heartbeat/ping support, backoff, and message-type guards with `zod`.
 
@@ -83,6 +84,11 @@ These instructions guide GitHub Copilot Chat/Edits to produce code and docs that
   - Input: key, url, optional schema
   - Output: `{ data, error, isLoading }`
   - Error modes: network failure, schema parse failure
+- Infinite query hook skeleton (cursor pagination)
+  - Input: params (metric, from, to, limit)
+  - Data shape: pages of `{ items, nextCursor }`
+  - getNextPageParam: `page.nextCursor`
+  - Merge strategy: `pages.flatMap(p => p.items)`
 - WebSocket client manager
   - Inputs: url, `onMessage` map keyed by `type`
   - Behaviors: backoff reconnect, ping/pong keepalive, close on tab hidden if needed
