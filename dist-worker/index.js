@@ -3531,7 +3531,8 @@ Ke({
     "live_health_update",
     "historical_data_update",
     "emergency_alert",
-    "error"
+    "error",
+    "pong"
   ]),
   data: Js().optional(),
   timestamp: xe().datetime().optional()

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 // Envelope used for WebSocket messages
 export const messageEnvelopeSchema = z.object({
@@ -8,17 +8,20 @@ export const messageEnvelopeSchema = z.object({
     'historical_data_update',
     'emergency_alert',
     'error',
+    'pong',
   ]),
   data: z.unknown().optional(),
   timestamp: z.string().datetime().optional(),
-})
+});
 
 // Minimal live health metric structure
 export const healthMetricSchema = z.object({
-  type: z.enum(['heart_rate', 'walking_steadiness', 'steps', 'oxygen_saturation']).describe('metric identifier'),
+  type: z
+    .enum(['heart_rate', 'walking_steadiness', 'steps', 'oxygen_saturation'])
+    .describe('metric identifier'),
   value: z.number().describe('numeric value for the metric'),
   unit: z.string().optional(),
-})
+});
 
 export const processedHealthDataSchema = z.object({
   type: healthMetricSchema.shape.type,
@@ -34,8 +37,8 @@ export const processedHealthDataSchema = z.object({
     })
     .nullable()
     .optional(),
-})
+});
 
-export type MessageEnvelope = z.infer<typeof messageEnvelopeSchema>
-export type HealthMetric = z.infer<typeof healthMetricSchema>
-export type ProcessedHealthData = z.infer<typeof processedHealthDataSchema>
+export type MessageEnvelope = z.infer<typeof messageEnvelopeSchema>;
+export type HealthMetric = z.infer<typeof healthMetricSchema>;
+export type ProcessedHealthData = z.infer<typeof processedHealthDataSchema>;

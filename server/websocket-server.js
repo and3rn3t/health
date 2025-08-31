@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const cors = require('cors');
+const { z } = require('zod');
 
 const app = express();
 const server = http.createServer(app);
@@ -28,6 +29,42 @@ const connections = new Map();
 const healthDataBuffer = new Map();
 const userSessions = new Map();
 const PAGE_SIZE = Number(process.env.WS_PAGE_SIZE || 25);
+
+// Schemas for basic validation and envelope enforcement
+const envelopeSchema = z.object({
+  type: z.enum([
+    'connection_established',
+    'live_health_update',
+    'historical_data_update',
+    'emergency_alert',
+    'error',
+    'pong',
+  ]),
+  data: z.unknown().optional(),
+  timestamp: z.string().datetime().optional(),
+});
+
+const inboundMessageSchema = z.object({
+  type: z.string(),
+  data: z.unknown().optional(),
+  clientType: z.string().optional(),
+  userId: z.string().optional(),
+  apiKey: z.string().optional(),
+  headers: z.record(z.string()).optional(),
+  metrics: z.array(z.string()).optional(),
+  cursor: z.string().optional(),
+});
+
+const healthMetricSchema = z.object({
+  type: z.enum([
+    'heart_rate',
+    'walking_steadiness',
+    'steps',
+    'oxygen_saturation',
+  ]),
+  value: z.number(),
+  unit: z.string().optional(),
+});
 
 class HealthDataProcessor {
   static processLiveHealthData(data) {
@@ -89,6 +126,28 @@ class HealthDataProcessor {
 
 // WebSocket connection handler
 wss.on('connection', (ws, req) => {
+  // Enforce allowed origins for WS upgrades (best-effort; Node bridge only)
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.length && !ALLOWED_ORIGINS.includes(origin)) {
+    try {
+      ws.close(4403, 'forbidden');
+    } catch {}
+    return;
+  }
+
+  // Optional bearer check at connect time for local bridge (WS_BEARER or WS_API_KEY)
+  const auth = req.headers['authorization'] || '';
+  const bearer =
+    auth && typeof auth === 'string' && auth.startsWith('Bearer ')
+      ? auth.slice(7)
+      : '';
+  if (process.env.WS_BEARER && bearer && bearer !== process.env.WS_BEARER) {
+    try {
+      ws.close(4401, 'unauthorized');
+    } catch {}
+    return;
+  }
+
   const clientId = generateClientId();
   const clientInfo = {
     id: clientId,
@@ -101,29 +160,23 @@ wss.on('connection', (ws, req) => {
   console.log(`Client connected: ${clientId}`);
 
   // Send welcome message
-  ws.send(
-    JSON.stringify({
-      type: 'connection_established',
-      clientId: clientId,
-      timestamp: new Date().toISOString(),
-    })
-  );
+  sendEnvelope(ws, 'connection_established', { clientId });
 
   ws.on('message', (message) => {
     try {
       const data = JSON.parse(message);
-      handleMessage(clientId, data);
+      const parsed = inboundMessageSchema.safeParse(data);
+      if (!parsed.success) {
+        sendEnvelope(ws, 'error', { message: 'Invalid message format' });
+        return;
+      }
+      handleMessage(clientId, parsed.data);
     } catch (err) {
       // Handle parse error without exposing payload contents
       console.error('Invalid message format', {
         name: err && err.name ? err.name : 'Error',
       });
-      ws.send(
-        JSON.stringify({
-          type: 'error',
-          message: 'Invalid message format',
-        })
-      );
+      sendEnvelope(ws, 'error', { message: 'Invalid message format' });
     }
   });
 
@@ -136,7 +189,7 @@ wss.on('connection', (ws, req) => {
     console.error(`WebSocket error for client ${clientId}:`, error);
   });
 
-  // Setup heartbeat
+  // Setup heartbeat (ws ping frames) and track client pongs
   const heartbeatInterval = setInterval(() => {
     if (ws.readyState === WebSocket.OPEN) {
       ws.ping();
@@ -160,6 +213,13 @@ function handleMessage(clientId, data) {
   const { info } = connection;
 
   switch (data.type) {
+    case 'ping': {
+      // App-level ping (in addition to WS-level ping)
+      sendEnvelope(connection.ws, 'pong', {
+        serverTime: new Date().toISOString(),
+      });
+      break;
+    }
     case 'client_identification': {
       // Optional API key check for local bridge
       const apiKey = data.apiKey || (data.headers && data.headers['x-api-key']);
@@ -240,13 +300,8 @@ function sendHistoricalPage(clientId, cursor) {
   const nextOffset = offset + items.length;
   const hasMore = nextOffset < data.length;
   const nextCursor = hasMore ? `offset:${nextOffset}` : undefined;
-  const message = {
-    type: 'historical_data_update',
-    data: { items, nextCursor },
-    timestamp: new Date().toISOString(),
-  };
   try {
-    ws.send(JSON.stringify(message));
+    sendEnvelope(ws, 'historical_data_update', { items, nextCursor });
   } catch (e) {
     console.warn(
       'WS send failed in historical page',
@@ -258,6 +313,13 @@ function sendHistoricalPage(clientId, cursor) {
 function handleLiveHealthData(clientId, healthData) {
   const connection = connections.get(clientId);
   if (!connection || connection.info.type !== 'ios_app') return;
+
+  // Validate minimal inbound metric shape (best-effort)
+  const metricValid = healthMetricSchema.safeParse(healthData);
+  if (!metricValid.success) {
+    sendEnvelope(connection.ws, 'error', { message: 'invalid_metric' });
+    return;
+  }
 
   // Process the health data
   const processedData = HealthDataProcessor.processLiveHealthData(healthData);
@@ -276,11 +338,9 @@ function handleLiveHealthData(clientId, healthData) {
   }
 
   // Broadcast to all web dashboard clients for this user
-  broadcastToWebClients(userId, {
-    type: 'live_health_update',
-    data: processedData,
-    timestamp: new Date().toISOString(),
-  });
+  broadcastToWebClients(userId, (ws) =>
+    sendEnvelope(ws, 'live_health_update', processedData)
+  );
 
   // Check for emergency conditions
   if (processedData.alert && processedData.alert.level === 'critical') {
@@ -289,7 +349,7 @@ function handleLiveHealthData(clientId, healthData) {
       metric: healthData.type,
       value: healthData.value,
       alert: processedData.alert,
-      timestamp: new Date().toISOString(),
+      at: new Date().toISOString(),
     });
   }
 
@@ -304,11 +364,9 @@ function handleHistoricalData(clientId, historicalData) {
   const userId = connection.info.userId;
 
   // Broadcast historical data to web clients
-  broadcastToWebClients(userId, {
-    type: 'historical_data_update',
-    data: historicalData,
-    timestamp: new Date().toISOString(),
-  });
+  broadcastToWebClients(userId, (ws) =>
+    sendEnvelope(ws, 'historical_data_update', historicalData)
+  );
 
   console.log(
     `Historical data received from ${clientId}:`,
@@ -331,12 +389,9 @@ function handleEmergencyAlert(clientId, alertData) {
   const userId = connection.info.userId;
 
   // Broadcast emergency alert to all clients for this user
-  broadcastToAllClients(userId, {
-    type: 'emergency_alert',
-    data: alertData,
-    timestamp: new Date().toISOString(),
-    priority: 'critical',
-  });
+  broadcastToAllClients(userId, (ws) =>
+    sendEnvelope(ws, 'emergency_alert', alertData)
+  );
 
   console.log(`Emergency alert from ${clientId}:`, alertData);
 
@@ -344,28 +399,44 @@ function handleEmergencyAlert(clientId, alertData) {
   // sendToEmergencyServices(userId, alertData);
 }
 
-function broadcastToWebClients(userId, message) {
+function broadcastToWebClients(userId, sendFn) {
   connections.forEach(({ ws, info }) => {
     if (
       info.type === 'web_dashboard' &&
       info.userId === userId &&
       ws.readyState === WebSocket.OPEN
     ) {
-      ws.send(JSON.stringify(message));
+      try {
+        sendFn(ws);
+      } catch (e) {
+        /* ignore */
+      }
     }
   });
 }
 
-function broadcastToAllClients(userId, message) {
+function broadcastToAllClients(userId, sendFn) {
   connections.forEach(({ ws, info }) => {
     if (info.userId === userId && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(message));
+      try {
+        sendFn(ws);
+      } catch (e) {
+        /* ignore */
+      }
     }
   });
 }
 
 function generateClientId() {
   return 'client_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+}
+
+// Helper to always send properly-shaped envelopes and guard outbound format
+function sendEnvelope(ws, type, data) {
+  const message = { type, data, timestamp: new Date().toISOString() };
+  const valid = envelopeSchema.safeParse(message);
+  if (!valid.success) return; // drop invalid envelope silently
+  ws.send(JSON.stringify(message));
 }
 
 // REST API endpoints
