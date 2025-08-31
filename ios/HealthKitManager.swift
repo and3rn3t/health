@@ -100,6 +100,321 @@ class HealthKitManager: NSObject, ObservableObject {
     private func startRealTimeMonitoring() {
         startHeartRateMonitoring()
         startWalkingSteadinessMonitoring()
+        startStepCountMonitoring()
+        startFallDetectionMonitoring()
+
+        // Schedule background data sync every 15 minutes
+        scheduleBackgroundDataSync()
+    }
+
+    // MARK: - Heart Rate Monitoring
+    private func startHeartRateMonitoring() {
+        guard let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate) else { return }
+
+        let query = HKAnchoredObjectQuery(
+            type: heartRateType,
+            predicate: nil,
+            anchor: nil,
+            limit: HKObjectQueryNoLimit
+        ) { [weak self] query, samples, deletedObjects, anchor, error in
+            self?.processHeartRateSamples(samples)
+        }
+
+        query.updateHandler = { [weak self] query, samples, deletedObjects, anchor, error in
+            self?.processHeartRateSamples(samples)
+        }
+
+        healthStore.execute(query)
+    }
+
+    private func processHeartRateSamples(_ samples: [HKSample]?) {
+        guard let samples = samples as? [HKQuantitySample] else { return }
+
+        for sample in samples {
+            let heartRate = sample.quantity.doubleValue(for: HKUnit.count().unitDivided(by: .minute()))
+            let timestamp = sample.startDate.timeIntervalSince1970
+
+            let healthData = [
+                "type": "heart_rate",
+                "value": heartRate,
+                "unit": "bpm",
+                "timestamp": timestamp,
+                "source": sample.sourceRevision.source.name
+            ] as [String: Any]
+
+            // Send real-time update via WebSocket
+            Task {
+                await self.sendLiveHealthUpdate(healthData)
+            }
+
+            // Check for heart rate alerts
+            if let alert = HealthAnalytics.checkHeartRateAlerts(heartRate) {
+                Task {
+                    await self.sendEmergencyAlert(type: "heart_rate", alert: alert, value: heartRate)
+                }
+            }
+        }
+    }
+
+    // MARK: - Walking Steadiness Monitoring
+    private func startWalkingSteadinessMonitoring() {
+        guard let steadinessType = HKQuantityType.quantityType(forIdentifier: .appleWalkingSteadiness) else { return }
+
+        let query = HKAnchoredObjectQuery(
+            type: steadinessType,
+            predicate: nil,
+            anchor: nil,
+            limit: HKObjectQueryNoLimit
+        ) { [weak self] query, samples, deletedObjects, anchor, error in
+            self?.processWalkingSteadinessSamples(samples)
+        }
+
+        query.updateHandler = { [weak self] query, samples, deletedObjects, anchor, error in
+            self?.processWalkingSteadinessSamples(samples)
+        }
+
+        healthStore.execute(query)
+    }
+
+    private func processWalkingSteadinessSamples(_ samples: [HKSample]?) {
+        guard let samples = samples as? [HKQuantitySample] else { return }
+
+        for sample in samples {
+            let steadiness = sample.quantity.doubleValue(for: HKUnit.percent()) * 100
+            let timestamp = sample.startDate.timeIntervalSince1970
+
+            let healthData = [
+                "type": "walking_steadiness",
+                "value": steadiness,
+                "unit": "percent",
+                "timestamp": timestamp,
+                "source": sample.sourceRevision.source.name
+            ] as [String: Any]
+
+            // Send real-time update via WebSocket
+            Task {
+                await self.sendLiveHealthUpdate(healthData)
+            }
+
+            // Check for fall risk alerts
+            if let alert = HealthAnalytics.checkFallRiskAlerts(steadiness) {
+                Task {
+                    await self.sendEmergencyAlert(type: "fall_risk", alert: alert, value: steadiness)
+                }
+            }
+        }
+    }
+
+    // MARK: - Step Count Monitoring
+    private func startStepCountMonitoring() {
+        guard let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount) else { return }
+
+        let query = HKAnchoredObjectQuery(
+            type: stepType,
+            predicate: nil,
+            anchor: nil,
+            limit: HKObjectQueryNoLimit
+        ) { [weak self] query, samples, deletedObjects, anchor, error in
+            self?.processStepCountSamples(samples)
+        }
+
+        query.updateHandler = { [weak self] query, samples, deletedObjects, anchor, error in
+            self?.processStepCountSamples(samples)
+        }
+
+        healthStore.execute(query)
+    }
+
+    private func processStepCountSamples(_ samples: [HKSample]?) {
+        guard let samples = samples as? [HKQuantitySample] else { return }
+
+        for sample in samples {
+            let stepCount = sample.quantity.doubleValue(for: HKUnit.count())
+            let timestamp = sample.startDate.timeIntervalSince1970
+
+            let healthData = [
+                "type": "step_count",
+                "value": stepCount,
+                "unit": "steps",
+                "timestamp": timestamp,
+                "source": sample.sourceRevision.source.name
+            ] as [String: Any]
+
+            // Send real-time update via WebSocket
+            Task {
+                await self.sendLiveHealthUpdate(healthData)
+            }
+        }
+    }
+
+    // MARK: - Fall Detection Monitoring (Apple Watch)
+    private func startFallDetectionMonitoring() {
+        // Note: Fall detection events are available through HealthKit
+        // but actual fall detection is handled by watchOS automatically
+        guard let fallType = HKCategoryType.categoryType(forIdentifier: .appleFallsDetection) else { return }
+
+        let query = HKAnchoredObjectQuery(
+            type: fallType,
+            predicate: nil,
+            anchor: nil,
+            limit: HKObjectQueryNoLimit
+        ) { [weak self] query, samples, deletedObjects, anchor, error in
+            self?.processFallDetectionSamples(samples)
+        }
+
+        query.updateHandler = { [weak self] query, samples, deletedObjects, anchor, error in
+            self?.processFallDetectionSamples(samples)
+        }
+
+        healthStore.execute(query)
+    }
+
+    private func processFallDetectionSamples(_ samples: [HKSample]?) {
+        guard let samples = samples as? [HKCategorySample] else { return }
+
+        for sample in samples {
+            if sample.value == HKCategoryValueAppleFallsDetection.fallDetected.rawValue {
+                let timestamp = sample.startDate.timeIntervalSince1970
+
+                let healthData = [
+                    "type": "fall_detected",
+                    "value": 1,
+                    "unit": "event",
+                    "timestamp": timestamp,
+                    "source": sample.sourceRevision.source.name
+                ] as [String: Any]
+
+                // Send immediate emergency alert for fall detection
+                Task {
+                    await self.sendEmergencyAlert(
+                        type: "fall_detected",
+                        alert: ["level": "critical", "message": "Fall detected by Apple Watch"],
+                        value: 1
+                    )
+                    await self.sendLiveHealthUpdate(healthData)
+                }
+            }
+        }
+    }
+
+    // MARK: - Background Data Sync
+    private func scheduleBackgroundDataSync() {
+        Timer.scheduledTimer(withTimeInterval: 900, repeats: true) { [weak self] _ in
+            Task {
+                await self?.syncHistoricalData()
+            }
+        }
+    }
+
+    private func syncHistoricalData() async {
+        let endDate = Date()
+        let startDate = Calendar.current.date(byAdding: .hour, value: -1, to: endDate) ?? Date()
+
+        await syncHeartRateHistory(from: startDate, to: endDate)
+        await syncWalkingSteadinessHistory(from: startDate, to: endDate)
+        await syncStepCountHistory(from: startDate, to: endDate)
+    }
+
+    private func syncHeartRateHistory(from startDate: Date, to endDate: Date) async {
+        guard let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate) else { return }
+
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
+        let query = HKSampleQuery(
+            sampleType: heartRateType,
+            predicate: predicate,
+            limit: HKObjectQueryNoLimit,
+            sortDescriptors: nil
+        ) { [weak self] query, samples, error in
+            guard let samples = samples as? [HKQuantitySample] else { return }
+
+            let heartRateData = samples.map { sample in
+                [
+                    "timestamp": sample.startDate.timeIntervalSince1970,
+                    "value": sample.quantity.doubleValue(for: HKUnit.count().unitDivided(by: .minute())),
+                    "unit": "bpm"
+                ]
+            }
+
+            let historicalData = [
+                "type": "heart_rate",
+                "samples": heartRateData
+            ] as [String: Any]
+
+            Task {
+                await self?.sendHistoricalDataUpdate(historicalData)
+            }
+        }
+
+        healthStore.execute(query)
+    }
+
+    private func syncWalkingSteadinessHistory(from startDate: Date, to endDate: Date) async {
+        guard let steadinessType = HKQuantityType.quantityType(forIdentifier: .appleWalkingSteadiness) else { return }
+
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
+        let query = HKSampleQuery(
+            sampleType: steadinessType,
+            predicate: predicate,
+            limit: HKObjectQueryNoLimit,
+            sortDescriptors: nil
+        ) { [weak self] query, samples, error in
+            guard let samples = samples as? [HKQuantitySample] else { return }
+
+            let steadinessData = samples.map { sample in
+                [
+                    "timestamp": sample.startDate.timeIntervalSince1970,
+                    "value": sample.quantity.doubleValue(for: HKUnit.percent()) * 100,
+                    "unit": "percent"
+                ]
+            }
+
+            let historicalData = [
+                "type": "walking_steadiness",
+                "samples": steadinessData
+            ] as [String: Any]
+
+            Task {
+                await self?.sendHistoricalDataUpdate(historicalData)
+            }
+        }
+
+        healthStore.execute(query)
+    }
+
+    private func syncStepCountHistory(from startDate: Date, to endDate: Date) async {
+        guard let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount) else { return }
+
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
+        let query = HKSampleQuery(
+            sampleType: stepType,
+            predicate: predicate,
+            limit: HKObjectQueryNoLimit,
+            sortDescriptors: nil
+        ) { [weak self] query, samples, error in
+            guard let samples = samples as? [HKQuantitySample] else { return }
+
+            let stepData = samples.map { sample in
+                [
+                    "timestamp": sample.startDate.timeIntervalSince1970,
+                    "value": sample.quantity.doubleValue(for: HKUnit.count()),
+                    "unit": "steps"
+                ]
+            }
+
+            let historicalData = [
+                "type": "step_count",
+                "samples": stepData
+            ] as [String: Any]
+
+            Task {
+                await self?.sendHistoricalDataUpdate(historicalData)
+            }
+        }
+
+        healthStore.execute(query)
+    }
+        startHeartRateMonitoring()
+        startWalkingSteadinessMonitoring()
         startActivityMonitoring()
     }
 
@@ -341,6 +656,87 @@ class HealthKitManager: NSObject, ObservableObject {
             return HKUnit.percent()
         default:
             return HKUnit.count()
+        }
+    }
+
+    // MARK: - WebSocket Messaging
+    private func sendLiveHealthUpdate(_ healthData: [String: Any]) async {
+        await ensureConnected()
+
+        let message = [
+            "type": "live_health_update",
+            "data": healthData,
+            "timestamp": ISO8601DateFormatter().string(from: Date())
+        ] as [String: Any]
+
+        ws.send(message)
+
+        // Also send to WebView if available
+        sendMessageToWebApp(type: "live_health_update", data: healthData)
+    }
+
+    private func sendHistoricalDataUpdate(_ historicalData: [String: Any]) async {
+        await ensureConnected()
+
+        let message = [
+            "type": "historical_data_update",
+            "data": historicalData,
+            "timestamp": ISO8601DateFormatter().string(from: Date())
+        ] as [String: Any]
+
+        ws.send(message)
+
+        // Also send to WebView if available
+        sendMessageToWebApp(type: "historical_data_update", data: historicalData)
+    }
+
+    private func sendEmergencyAlert(type: String, alert: [String: Any], value: Double) async {
+        await ensureConnected()
+
+        let alertData = [
+            "metric_type": type,
+            "alert_level": alert["level"] as? String ?? "warning",
+            "message": alert["message"] as? String ?? "Health alert",
+            "value": value,
+            "timestamp": Date().timeIntervalSince1970,
+            "user_id": userId
+        ] as [String: Any]
+
+        let message = [
+            "type": "emergency_alert",
+            "data": alertData,
+            "timestamp": ISO8601DateFormatter().string(from: Date())
+        ] as [String: Any]
+
+        ws.send(message)
+
+        // Also send to WebView if available
+        sendMessageToWebApp(type: "emergency_alert", data: alertData)
+    }
+
+    private func sendMessageToWebApp(type: String, data: [String: Any]) {
+        guard let webView = webView else { return }
+
+        let message = [
+            "type": type,
+            "data": data
+        ]
+
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: message, options: [])
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                let script = "window.dispatchEvent(new CustomEvent('healthkit_message', { detail: \(jsonString) }));"
+
+                DispatchQueue.main.async {
+                    webView.evaluateJavaScript(script) { result, error in
+                        if let error = error {
+                            print("Error sending message to WebView: \(error.localizedDescription)")
+                        }
+                    }
+                }
+            }
+        } catch {
+            print("Error serializing message for WebView: \(error.localizedDescription)")
         }
     }
 }

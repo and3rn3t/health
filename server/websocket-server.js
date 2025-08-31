@@ -44,14 +44,59 @@ const envelopeSchema = z.object({
     'error',
     'pong',
     'client_presence',
+    'client_identification',
+    'ping',
+    'heart_rate_alert',
+    'fall_risk_alert',
+    'device_status',
   ]),
   data: z.unknown().optional(),
   timestamp: z.string().datetime().optional(),
 });
 
+const liveHealthDataSchema = z.object({
+  type: z.enum([
+    'heart_rate',
+    'walking_steadiness',
+    'step_count',
+    'fall_detected',
+  ]),
+  value: z.number(),
+  unit: z.string(),
+  timestamp: z.number(),
+  source: z.string().optional(),
+});
+
+const historicalDataSchema = z.object({
+  type: z.enum(['heart_rate', 'walking_steadiness', 'step_count']),
+  samples: z.array(
+    z.object({
+      timestamp: z.number(),
+      value: z.number(),
+      unit: z.string(),
+    })
+  ),
+});
+
+const emergencyAlertSchema = z.object({
+  metric_type: z.string(),
+  alert_level: z.enum(['warning', 'critical']),
+  message: z.string(),
+  value: z.number(),
+  timestamp: z.number(),
+  user_id: z.string(),
+});
+
+const clientIdentificationSchema = z.object({
+  clientType: z.enum(['ios_app', 'web_app', 'watch_app']),
+  userId: z.string(),
+  timestamp: z.string().optional(),
+});
+
 const inboundMessageSchema = z.object({
   type: z.string(),
   data: z.unknown().optional(),
+  timestamp: z.string().optional(),
   clientType: z.string().optional(),
   userId: z.string().optional(),
   apiKey: z.string().optional(),
@@ -268,7 +313,16 @@ function handleMessage(clientId, data) {
       });
       break;
     }
+
     case 'client_identification': {
+      const parsed = clientIdentificationSchema.safeParse(data.data || data);
+      if (!parsed.success) {
+        sendEnvelope(connection.ws, 'error', {
+          message: 'Invalid client identification data',
+        });
+        return;
+      }
+
       // Optional API key check for local bridge
       const apiKey = data.apiKey || (data.headers && data.headers['x-api-key']);
       const expected = process.env.WS_API_KEY;
@@ -276,9 +330,13 @@ function handleMessage(clientId, data) {
         connections.get(clientId)?.ws.close(4401, 'unauthorized');
         return;
       }
-      info.type = data.clientType; // 'ios_app' or 'web_dashboard'
-      info.userId = data.userId;
-      console.log(`Client identified: ${clientId} as ${data.clientType}`);
+
+      info.type = parsed.data.clientType;
+      info.userId = parsed.data.userId;
+      console.log(
+        `Client identified: ${clientId} as ${parsed.data.clientType} for user ${parsed.data.userId}`
+      );
+
       if (info.userId && info.type === 'ios_app') {
         broadcastToAllClients(info.userId, (ws) =>
           sendEnvelope(ws, 'client_presence', {
@@ -291,12 +349,18 @@ function handleMessage(clientId, data) {
       break;
     }
 
+    case 'live_health_update':
     case 'live_health_data':
       handleLiveHealthData(clientId, data.data);
       break;
 
+    case 'historical_data_update':
     case 'historical_data':
       handleHistoricalData(clientId, data.data);
+      break;
+
+    case 'emergency_alert':
+      handleEmergencyAlert(clientId, data.data);
       break;
 
     case 'subscribe_health_updates':
@@ -312,12 +376,183 @@ function handleMessage(clientId, data) {
       sendHistoricalPage(clientId, data && data.cursor);
       break;
 
-    case 'emergency_alert':
-      handleEmergencyAlert(clientId, data.data);
-      break;
-
     default:
       console.log(`Unknown message type: ${data.type}`);
+  }
+}
+
+function handleLiveHealthData(clientId, data) {
+  const connection = connections.get(clientId);
+  if (!connection) return;
+
+  const parsed = liveHealthDataSchema.safeParse(data);
+  if (!parsed.success) {
+    sendEnvelope(connection.ws, 'error', {
+      message: 'Invalid live health data format',
+    });
+    return;
+  }
+
+  const userId = connection.info.userId;
+  if (!userId) return;
+
+  const healthData = parsed.data;
+
+  // Process the health data through analytics
+  const processedData = {
+    id: crypto.randomUUID(),
+    userId,
+    type: healthData.type,
+    value: healthData.value,
+    unit: healthData.unit,
+    timestamp: healthData.timestamp,
+    source: healthData.source || 'ios_app',
+    processedAt: Date.now(),
+    wellnessScore: HealthAnalytics.calculateWellnessScore(
+      healthData.type === 'heart_rate' ? healthData.value : null,
+      healthData.type === 'walking_steadiness' ? healthData.value : null
+    ),
+  };
+
+  // Add to buffer
+  if (!healthDataBuffer.has(userId)) {
+    healthDataBuffer.set(userId, []);
+  }
+  const buffer = healthDataBuffer.get(userId);
+  buffer.push(processedData);
+
+  // Keep buffer size manageable
+  if (buffer.length > 1000) {
+    buffer.shift();
+  }
+
+  // Check for alerts
+  if (healthData.type === 'heart_rate') {
+    const alert = HealthAnalytics.checkHeartRateAlerts(healthData.value);
+    if (alert) {
+      broadcastEmergencyAlert(userId, {
+        metric_type: 'heart_rate',
+        alert_level: alert.level,
+        message: alert.message,
+        value: healthData.value,
+        timestamp: healthData.timestamp,
+        user_id: userId,
+      });
+    }
+  } else if (healthData.type === 'walking_steadiness') {
+    const alert = HealthAnalytics.checkFallRiskAlerts(healthData.value);
+    if (alert) {
+      broadcastEmergencyAlert(userId, {
+        metric_type: 'fall_risk',
+        alert_level: alert.level,
+        message: alert.message,
+        value: healthData.value,
+        timestamp: healthData.timestamp,
+        user_id: userId,
+      });
+    }
+  }
+
+  // Broadcast live update to all connected clients for this user
+  broadcastToAllClients(userId, (ws) =>
+    sendEnvelope(ws, 'live_health_update', processedData)
+  );
+
+  console.log(
+    `Live health data processed: ${healthData.type} = ${healthData.value} ${healthData.unit} for user ${userId}`
+  );
+}
+
+function handleHistoricalData(clientId, data) {
+  const connection = connections.get(clientId);
+  if (!connection) return;
+
+  const parsed = historicalDataSchema.safeParse(data);
+  if (!parsed.success) {
+    sendEnvelope(connection.ws, 'error', {
+      message: 'Invalid historical data format',
+    });
+    return;
+  }
+
+  const userId = connection.info.userId;
+  if (!userId) return;
+
+  const historicalData = parsed.data;
+
+  // Process each sample
+  const processedSamples = historicalData.samples.map((sample) => ({
+    id: crypto.randomUUID(),
+    userId,
+    type: historicalData.type,
+    value: sample.value,
+    unit: sample.unit,
+    timestamp: sample.timestamp,
+    source: 'ios_app_historical',
+    processedAt: Date.now(),
+    wellnessScore: HealthAnalytics.calculateWellnessScore(
+      historicalData.type === 'heart_rate' ? sample.value : null,
+      historicalData.type === 'walking_steadiness' ? sample.value : null
+    ),
+  }));
+
+  // Add to buffer
+  if (!healthDataBuffer.has(userId)) {
+    healthDataBuffer.set(userId, []);
+  }
+  const buffer = healthDataBuffer.get(userId);
+  buffer.push(...processedSamples);
+
+  // Keep buffer size manageable
+  if (buffer.length > 1000) {
+    buffer.splice(0, buffer.length - 1000);
+  }
+
+  // Broadcast historical update to all connected clients for this user
+  broadcastToAllClients(userId, (ws) =>
+    sendEnvelope(ws, 'historical_data_update', {
+      type: historicalData.type,
+      samples: processedSamples,
+      count: processedSamples.length,
+    })
+  );
+
+  console.log(
+    `Historical data processed: ${processedSamples.length} ${historicalData.type} samples for user ${userId}`
+  );
+}
+
+function handleEmergencyAlert(clientId, data) {
+  const connection = connections.get(clientId);
+  if (!connection) return;
+
+  const parsed = emergencyAlertSchema.safeParse(data);
+  if (!parsed.success) {
+    sendEnvelope(connection.ws, 'error', {
+      message: 'Invalid emergency alert format',
+    });
+    return;
+  }
+
+  const alertData = parsed.data;
+  console.log(
+    `EMERGENCY ALERT: ${alertData.alert_level} - ${alertData.message} for user ${alertData.user_id}`
+  );
+
+  // Broadcast emergency alert to all clients
+  broadcastEmergencyAlert(alertData.user_id, alertData);
+}
+
+function broadcastEmergencyAlert(userId, alertData) {
+  broadcastToAllClients(userId, (ws) =>
+    sendEnvelope(ws, 'emergency_alert', alertData)
+  );
+
+  // Log critical alerts
+  if (alertData.alert_level === 'critical') {
+    console.log(
+      `CRITICAL ALERT: ${alertData.message} - Value: ${alertData.value} at ${new Date(alertData.timestamp * 1000).toISOString()}`
+    );
   }
 }
 
@@ -365,127 +600,6 @@ function sendHistoricalPage(clientId, cursor) {
       e && e.message ? e.message : ''
     );
   }
-}
-
-function handleLiveHealthData(clientId, healthData) {
-  const connection = connections.get(clientId);
-  if (!connection || connection.info.type !== 'ios_app') return;
-
-  // Validate minimal inbound metric shape (best-effort)
-  const metricValid = healthMetricSchema.safeParse(healthData);
-  if (!metricValid.success) {
-    sendEnvelope(connection.ws, 'error', { message: 'invalid_metric' });
-    return;
-  }
-
-  // Process the health data
-  const processedData = HealthDataProcessor.processLiveHealthData(healthData);
-
-  // Store in buffer
-  const userId = connection.info.userId;
-  if (!healthDataBuffer.has(userId)) {
-    healthDataBuffer.set(userId, []);
-  }
-  healthDataBuffer.get(userId).push(processedData);
-
-  // Keep only last 1000 readings per user
-  const userBuffer = healthDataBuffer.get(userId);
-  if (userBuffer.length > 1000) {
-    userBuffer.splice(0, userBuffer.length - 1000);
-  }
-
-  // Broadcast to all web dashboard clients for this user
-  broadcastToWebClients(userId, (ws) =>
-    sendEnvelope(ws, 'live_health_update', processedData)
-  );
-
-  // Check for emergency conditions
-  if (processedData.alert && processedData.alert.level === 'critical') {
-    handleEmergencyAlert(clientId, {
-      type: 'health_alert',
-      metric: healthData.type,
-      value: healthData.value,
-      alert: processedData.alert,
-      at: new Date().toISOString(),
-    });
-  }
-
-  // Do not log raw values in prod; keep minimal signal only
-  console.log(`Health data received from ${clientId}:`, healthData.type);
-}
-
-function handleHistoricalData(clientId, historicalData) {
-  const connection = connections.get(clientId);
-  if (!connection) return;
-
-  const userId = connection.info.userId;
-
-  // Broadcast historical data to web clients
-  broadcastToWebClients(userId, (ws) =>
-    sendEnvelope(ws, 'historical_data_update', historicalData)
-  );
-
-  console.log(
-    `Historical data received from ${clientId}:`,
-    historicalData.type
-  );
-}
-
-function handleSubscription(clientId, metrics) {
-  const connection = connections.get(clientId);
-  if (!connection) return;
-
-  connection.info.subscribedMetrics = metrics;
-  console.log(`Client ${clientId} subscribed to metrics:`, metrics);
-}
-
-function handleEmergencyAlert(clientId, alertData) {
-  const connection = connections.get(clientId);
-  if (!connection) return;
-
-  const userId = connection.info.userId;
-
-  // Broadcast emergency alert to all clients for this user
-  broadcastToAllClients(userId, (ws) =>
-    sendEnvelope(ws, 'emergency_alert', alertData)
-  );
-
-  console.log(`Emergency alert from ${clientId}:`, alertData);
-
-  // Here you would integrate with external emergency services
-  // sendToEmergencyServices(userId, alertData);
-}
-
-function broadcastToWebClients(userId, sendFn) {
-  connections.forEach(({ ws, info }) => {
-    if (
-      info.type === 'web_dashboard' &&
-      info.userId === userId &&
-      ws.readyState === WebSocket.OPEN
-    ) {
-      try {
-        sendFn(ws);
-      } catch (e) {
-        /* ignore */
-      }
-    }
-  });
-}
-
-function broadcastToAllClients(userId, sendFn) {
-  connections.forEach(({ ws, info }) => {
-    if (info.userId === userId && ws.readyState === WebSocket.OPEN) {
-      try {
-        sendFn(ws);
-      } catch (e) {
-        /* ignore */
-      }
-    }
-  });
-}
-
-function generateClientId() {
-  return 'client_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
 }
 
 // Helper to always send properly-shaped envelopes and guard outbound format
