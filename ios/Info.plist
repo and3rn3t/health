@@ -8,4 +8,31 @@
 		<true/>
 	</dict>
 </dict>
+
+<key>NSHealthShareUsageDescription</key>
+<string>This app reads your health data to provide fall risk monitoring and emergency response. Your data is processed locally and transmitted securely to your personal health dashboard.</string>
+
+<key>NSHealthUpdateUsageDescription</key>
+<string>This app may write health data for comprehensive health monitoring and emergency response coordination.</string>
+
+<key>UIBackgroundModes</key>
+<array>
+    <string>background-processing</string>
+    <string>health-kit</string>
+</array>
+
+<key>NSHealthRequiredReadAuthorizationTypeIdentifiers</key>
+<array>
+    <string>HKQuantityTypeIdentifierHeartRate</string>
+    <string>HKQuantityTypeIdentifierStepCount</string>
+    <string>HKQuantityTypeIdentifierAppleWalkingSteadiness</string>
+    <string>HKQuantityTypeIdentifierWalkingSpeed</string>
+    <string>HKQuantityTypeIdentifierWalkingStepLength</string>
+    <string>HKQuantityTypeIdentifierWalkingAsymmetryPercentage</string>
+    <string>HKQuantityTypeIdentifierWalkingDoubleSupportPercentage</string>
+    <string>HKQuantityTypeIdentifierSixMinuteWalkTestDistance</string>
+    <string>HKCategoryTypeIdentifierAppleStandHour</string>
+    <string>HKWorkoutTypeIdentifier</string>
+</array>
+
 </plist>
