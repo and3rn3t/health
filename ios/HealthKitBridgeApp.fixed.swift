@@ -3,8 +3,8 @@ import HealthKit
 
 @main
 struct HealthKitBridgeApp: App {
-    @StateObject private var healthManager = HealthKitManager()
-    @StateObject private var webSocketManager = WebSocketManager()
+    @StateObject private var healthManager = HealthKitManager.shared
+    @StateObject private var webSocketManager = WebSocketManager.shared
 
     var body: some Scene {
         WindowGroup {
