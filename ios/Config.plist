@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>API_BASE_URL</key>
-	<string>http://127.0.0.1:8787</string>
+	<string>http://127.0.0.1:8789</string>
 	<key>WS_URL</key>
-	<string>ws://127.0.0.1:3001</string>
+	<string>ws://localhost:3001</string>
 	<key>USER_ID</key>
 	<string>demo-user-1</string>
 </dict>

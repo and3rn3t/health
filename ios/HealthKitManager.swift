@@ -26,6 +26,9 @@ class HealthKitManager: NSObject, ObservableObject {
 
     @Published var authorizationStatus: HKAuthorizationStatus = .notDetermined
     @Published var isAuthorized = false
+    @Published var lastHeartRate: Double?
+    @Published var lastStepCount: Double?
+    @Published var lastWalkingSteadiness: Double?
 
     override init() {
         // Load config (throws fatalError if missing required values)
