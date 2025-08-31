@@ -7,7 +7,6 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
-</dict>
 
 <key>NSHealthShareUsageDescription</key>
 <string>This app reads your health data to provide fall risk monitoring and emergency response. Your data is processed locally and transmitted securely to your personal health dashboard.</string>
@@ -35,4 +34,5 @@
     <string>HKWorkoutTypeIdentifier</string>
 </array>
 
+</dict>
 </plist>
