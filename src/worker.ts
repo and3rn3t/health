@@ -21,6 +21,7 @@ import {
   writeAudit,
   decodeJwtPayload,
   decryptJSON,
+  signJwtHS256,
 } from '@/lib/security';
 import {
   getTtlSecondsForType,
@@ -35,6 +36,7 @@ type Env = {
   API_ISS?: string;
   API_AUD?: string;
   API_JWKS_URL?: string;
+  DEVICE_JWT_SECRET?: string; // HS256 secret for device-issued tokens (dev/edge)
   HEALTH_KV?: {
     put: (
       key: string,
@@ -324,6 +326,60 @@ app.get('/api/_audit', async (c) => {
     return c.json({ ok: true, count: events.length, events });
   } catch (e) {
     return c.json({ ok: false, error: (e as Error).message }, 500);
+  }
+});
+
+// Issue short-lived JWTs for device/WebSocket auth
+app.post('/api/device/auth', async (c) => {
+  // In production require upstream authentication before minting
+  if (!(await requireAuth(c))) return c.json({ error: 'unauthorized' }, 401);
+  const secret = c.env.DEVICE_JWT_SECRET;
+  if (!secret) return c.json({ error: 'not_configured' }, 500);
+
+  const bodySchema = z.object({
+    userId: z.string().min(1),
+    clientType: z.enum(['ios_app', 'web_dashboard']).default('ios_app'),
+    ttlSec: z.coerce
+      .number()
+      .min(60)
+      .max(60 * 60)
+      .optional(),
+  });
+  let parsed: z.infer<typeof bodySchema>;
+  try {
+    const json = await c.req.json();
+    const res = bodySchema.safeParse(json);
+    if (!res.success)
+      return c.json(
+        { error: 'validation_error', details: res.error.flatten() },
+        400
+      );
+    parsed = res.data;
+  } catch {
+    return c.json({ error: 'invalid_json' }, 400);
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const ttl = parsed.ttlSec ?? 10 * 60; // 10 minutes by default
+  const claims = {
+    iss: c.env.API_ISS || 'health-app',
+    aud: c.env.API_AUD || 'ws-device',
+    sub: parsed.userId,
+    iat: now,
+    nbf: now,
+    exp: now + ttl,
+    scope: `device:${parsed.clientType}`,
+  } as const;
+
+  try {
+    const token = await signJwtHS256(
+      claims as unknown as Record<string, unknown>,
+      secret
+    );
+    return c.json({ ok: true, token, expiresIn: ttl });
+  } catch (e) {
+    log.error('device_token_sign_failed', { error: (e as Error).message });
+    return c.json({ error: 'server_error' }, 500);
   }
 });
 

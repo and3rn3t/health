@@ -54,5 +54,10 @@ binding = "HEALTH_ANALYTICS"
 # wrangler secret put API_ISS
 # wrangler secret put API_AUD
 # wrangler secret put API_JWKS_URL
+# wrangler secret put DEVICE_JWT_SECRET
 
 # Note: For distributed rate limiting and session management, prefer Durable Objects.
+
+# Cron trigger for scheduled purge
+[triggers]
+crons = ["0 * * * *"] # hourly

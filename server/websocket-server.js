@@ -3,6 +3,7 @@ const http = require('http');
 const WebSocket = require('ws');
 const cors = require('cors');
 const { z } = require('zod');
+const crypto = require('crypto');
 
 const app = express();
 const server = http.createServer(app);
@@ -135,17 +136,37 @@ wss.on('connection', (ws, req) => {
     return;
   }
 
-  // Optional bearer check at connect time for local bridge (WS_BEARER or WS_API_KEY)
+  // Optional JWT/Bearer check at connect time; prefer HS256 device token via query param "token"
+  const url = new URL(req.url, 'http://localhost');
+  const queryToken = url.searchParams.get('token') || '';
   const auth = req.headers['authorization'] || '';
   const bearer =
     auth && typeof auth === 'string' && auth.startsWith('Bearer ')
       ? auth.slice(7)
       : '';
-  if (process.env.WS_BEARER && bearer && bearer !== process.env.WS_BEARER) {
-    try {
-      ws.close(4401, 'unauthorized');
-    } catch {}
-    return;
+  const token = queryToken || bearer;
+
+  const deviceSecret = process.env.DEVICE_JWT_SECRET || '';
+  let tokenClaims = null;
+  if (deviceSecret && token) {
+    const verified = verifyJwtHS256(token, deviceSecret, {
+      iss: process.env.API_ISS || 'health-app',
+      aud: process.env.API_AUD || 'ws-device',
+    });
+    if (!verified.ok) {
+      try {
+        ws.close(4401, 'unauthorized');
+      } catch {}
+      return;
+    }
+    tokenClaims = verified.claims;
+  } else if (process.env.WS_BEARER && bearer) {
+    if (bearer !== process.env.WS_BEARER) {
+      try {
+        ws.close(4401, 'unauthorized');
+      } catch {}
+      return;
+    }
   }
 
   const clientId = generateClientId();
@@ -155,6 +176,18 @@ wss.on('connection', (ws, req) => {
     connectedAt: new Date(),
     lastHeartbeat: new Date(),
   };
+
+  // Seed identity from JWT claims if present
+  if (tokenClaims && typeof tokenClaims === 'object') {
+    clientInfo.userId =
+      typeof tokenClaims.sub === 'string' ? tokenClaims.sub : undefined;
+    const scope =
+      typeof tokenClaims.scope === 'string' ? tokenClaims.scope : '';
+    if (scope.startsWith('device:')) {
+      const t = scope.split(':')[1];
+      if (t === 'ios_app' || t === 'web_dashboard') clientInfo.type = t;
+    }
+  }
 
   connections.set(clientId, { ws, info: clientInfo });
   console.log(`Client connected: ${clientId}`);
@@ -437,6 +470,39 @@ function sendEnvelope(ws, type, data) {
   const valid = envelopeSchema.safeParse(message);
   if (!valid.success) return; // drop invalid envelope silently
   ws.send(JSON.stringify(message));
+}
+
+// HS256 JWT verification (Node crypto)
+function verifyJwtHS256(token, secret, opts = {}) {
+  try {
+    const [h, p, s] = token.split('.');
+    if (!h || !p || !s) return { ok: false };
+    const data = `${h}.${p}`;
+    const expected = crypto
+      .createHmac('sha256', secret)
+      .update(data)
+      .digest('base64')
+      .replace(/=+$/g, '')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_');
+    if (expected !== s) return { ok: false };
+    const payload = JSON.parse(
+      Buffer.from(p.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString(
+        'utf8'
+      )
+    );
+    const now = Math.floor(Date.now() / 1000);
+    const skew = 60;
+    if (typeof payload.exp === 'number' && now > payload.exp + skew)
+      return { ok: false };
+    if (typeof payload.nbf === 'number' && now + skew < payload.nbf)
+      return { ok: false };
+    if (opts.iss && payload.iss !== opts.iss) return { ok: false };
+    if (opts.aud && payload.aud !== opts.aud) return { ok: false };
+    return { ok: true, claims: payload };
+  } catch {
+    return { ok: false };
+  }
 }
 
 // REST API endpoints

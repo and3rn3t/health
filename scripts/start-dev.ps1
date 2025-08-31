@@ -22,6 +22,7 @@ try {
     Write-Host ""
     Write-Host "💡 Make sure the WebSocket server is running on port 3001" -ForegroundColor Yellow
     Write-Host "   Use: .\start-server.ps1 in another terminal" -ForegroundColor Gray
+    Write-Host "   Optionally: set window.__WS_DEVICE_TOKEN__='<jwt>' in DevTools" -ForegroundColor Gray
     Write-Host ""
     Write-Host "Press Ctrl+C to stop the development server" -ForegroundColor Gray
     Write-Host ""

@@ -91,6 +91,7 @@ import SmartNotificationEngine from '@/components/notifications/SmartNotificatio
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import RealtimeStatusBar from '@/components/health/RealtimeStatusBar';
 import EmergencyTriggerButton from '@/components/health/EmergencyTriggerButton';
+import WSTokenSettings from '@/components/health/WSTokenSettings';
 
 function App() {
   const [healthData, setHealthData] = useKV<ProcessedHealthData | null>(
@@ -1172,6 +1173,7 @@ function App() {
         </main>
       </div>
       <RealtimeStatusBar userId="default-user" />
+      <WSTokenSettings />
     </div>
   );
 }

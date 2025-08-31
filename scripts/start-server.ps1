@@ -24,6 +24,7 @@ try {
     Write-Host "🔄 Starting WebSocket server on port 3001..." -ForegroundColor Yellow
     Write-Host "🌐 WebSocket endpoint: ws://localhost:3001" -ForegroundColor Cyan
     Write-Host "🔗 REST API endpoint: http://localhost:3001/api" -ForegroundColor Cyan
+        Write-Host "ℹ️  Tip: set DEVICE_JWT_SECRET, API_ISS, API_AUD for token-based WS auth" -ForegroundColor DarkCyan
     Write-Host ""
     Write-Host "Press Ctrl+C to stop the server" -ForegroundColor Gray
     Write-Host ""

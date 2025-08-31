@@ -23,6 +23,7 @@ export type WSHandlers = {
 
 export type WSClientOptions = {
   url: string;
+  token?: string; // optional device JWT passed via query param
   handlers?: WSHandlers;
   onOpen?: (ws: WebSocket) => void;
   onClose?: (ev: CloseEvent) => void;
@@ -37,7 +38,9 @@ export function createWSClient(opts: WSClientOptions) {
   let heartbeat: number | undefined;
 
   const connect = () => {
-    ws = new WebSocket(opts.url);
+    const url = new URL(opts.url);
+    if (opts.token) url.searchParams.set('token', opts.token);
+    ws = new WebSocket(url.toString());
 
     ws.addEventListener('open', () => {
       retry = 0;

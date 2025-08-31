@@ -105,7 +105,10 @@ export class LiveHealthDataSync {
   }
 
   private setupHealthKitListener() {
-    if (typeof window !== 'undefined') {
+    if (
+      typeof window !== 'undefined' &&
+      typeof window.addEventListener === 'function'
+    ) {
       window.addEventListener('healthkit-data', (event: Event) => {
         const ce = event as CustomEvent<HealthKitEventDetail>;
         const healthKitData = ce.detail;
@@ -136,7 +139,39 @@ export class LiveHealthDataSync {
   async connect(): Promise<boolean> {
     return new Promise((resolve) => {
       try {
-        this.ws = new WebSocket(this.config.url);
+        let token: string | undefined;
+        try {
+          if (typeof window !== 'undefined') {
+            token = (window as unknown as { __WS_DEVICE_TOKEN__?: string })
+              .__WS_DEVICE_TOKEN__;
+          }
+        } catch {
+          // ignore
+        }
+        // Allow dev override of WS URL via window hint
+        let baseUrl = this.config.url;
+        try {
+          if (typeof window !== 'undefined') {
+            const override = (window as unknown as { __WS_URL__?: string })
+              .__WS_URL__;
+            if (override) baseUrl = override;
+          }
+        } catch {
+          // ignore
+        }
+        let wsUrl = baseUrl;
+        if (token) {
+          wsUrl +=
+            (wsUrl.includes('?') ? '&' : '?') +
+            'token=' +
+            encodeURIComponent(token);
+        }
+        this.ws = new WebSocket(wsUrl);
+
+        if (!this.ws) {
+          resolve(false);
+          return;
+        }
 
         this.ws.onopen = () => {
           console.log('Connected to health monitoring server');
@@ -166,7 +201,7 @@ export class LiveHealthDataSync {
           resolve(true);
         };
 
-        this.ws.onmessage = (event) => {
+        this.ws.onmessage = (event: MessageEvent) => {
           try {
             const raw = JSON.parse(event.data);
             const parsed = messageEnvelopeSchema.safeParse(raw);
@@ -186,7 +221,7 @@ export class LiveHealthDataSync {
           this.attemptReconnect();
         };
 
-        this.ws.onerror = (error) => {
+        this.ws.onerror = (error: Event) => {
           console.error('WebSocket error:', error);
           this.connectionStatus.dataQuality = 'poor';
           resolve(false);
@@ -337,6 +372,18 @@ export class LiveHealthDataSync {
       clearInterval(this.heartbeatTimer);
       this.heartbeatTimer = null;
     }
+  }
+
+  // Public: trigger a single ping and let latency update on 'pong'.
+  // Returns true if a ping was sent.
+  requestPing(): boolean {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      const startTime = Date.now();
+      this.lastPingAt = startTime;
+      this.ws.send(JSON.stringify({ type: 'ping', timestamp: startTime }));
+      return true;
+    }
+    return false;
   }
 
   private attemptReconnect() {

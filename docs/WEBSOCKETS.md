@@ -20,6 +20,29 @@ See `src/schemas/health.ts` for the zod schema and TS types.
 - Heartbeat: respond to ping or send periodic pings.
 - Validate by type-safe handlers, drop and log on parse errors.
 
+## Authentication
+
+During development, the local Node bridge (`server/websocket-server.js`) supports JWT-based authentication for devices and dashboards.
+
+- Token minting (Worker): `POST /api/device/auth` returns a short-lived HS256 JWT.
+  - Claims: `iss`, `aud=ws-device`, `sub=<userId>`, `scope=device:<ios_app|web_dashboard>`, `exp`.
+  - Requires `DEVICE_JWT_SECRET` set in the Worker env for signing.
+- Passing token to WS:
+  - Preferred: query param `?token=<jwt>` when opening the socket.
+  - Also supported: `Authorization: Bearer <jwt>` header.
+- Server checks `iss/aud/nbf/exp` and sets `userId` and `client type` from claims.
+
+Dev convenience:
+
+- In-app WS Token panel: use the floating “WS Token” button (bottom-right) to:
+  - Set the WebSocket URL (e.g., `ws://localhost:3001`) and User ID.
+  - Click “Get token” to mint a short-lived device token from the Worker.
+  - Save to persist locally; the app exposes `window.__WS_DEVICE_TOKEN__` and `window.__WS_URL__` for the client.
+  - A small badge appears when no token is set. The button shows a countdown to token expiry and auto-refreshes near expiry; if refresh fails within the last 30s, a toast warns you. 401s prompt a sign-in toast.
+- You can also set `window.__WS_DEVICE_TOKEN__ = '<jwt>'` manually in the browser console; the client will append it to the WS URL automatically.
+- The client respects `window.__WS_URL__` to override the base WS URL during development.
+- Alternatively, a dev-only shared bearer via `WS_BEARER` can be used (less secure; avoid in production).
+
 ## Optional: paginated historical backfill
 
 While HTTP GET `/api/health-data` is the primary path for paging through historical data, the same cursor concept can be mirrored over WebSockets using the existing `historical_data_update` type.
