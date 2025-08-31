@@ -10,12 +10,12 @@ cwd = "."
 # Development environment
 [env.development]
 name = "health-app-dev"
-vars = { ENVIRONMENT = "development" }
+vars = { ENVIRONMENT = "development", ALLOWED_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173" }
 
 # Production environment
 [env.production]
 name = "health-app-prod"
-vars = { ENVIRONMENT = "production" }
+vars = { ENVIRONMENT = "production", ALLOWED_ORIGINS = "https://yourdomain.example" }
 
 # Assets configuration for static files
 [assets]
@@ -36,7 +36,8 @@ bucket_name = ""
 # WebSocket support
 [durable_objects]
 bindings = [
-  { name = "HEALTH_WEBSOCKET", class_name = "HealthWebSocket" }
+  { name = "HEALTH_WEBSOCKET", class_name = "HealthWebSocket" },
+  { name = "RATE_LIMITER", class_name = "RateLimiter" }
 ]
 
 # Analytics
@@ -47,3 +48,11 @@ binding = "HEALTH_ANALYTICS"
 # [env.production.routes]
 # pattern = "health.yourdomain.com/*"
 # zone_name = "yourdomain.com"
+
+# Secrets to set via Wrangler (do not commit):
+# wrangler secret put ENC_KEY
+# wrangler secret put API_ISS
+# wrangler secret put API_AUD
+# wrangler secret put API_JWKS_URL
+
+# Note: For distributed rate limiting and session management, prefer Durable Objects.

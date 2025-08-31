@@ -10,7 +10,7 @@
         "build:app": "tsc -b --noCheck && vite build",
         "build:worker": "vite build --config vite.worker.config.ts",
         "lint": "eslint .",
-        "format": "prettier --write .",
+    "format": "prettier --write .",
         "format:check": "prettier --check .",
         "optimize": "vite optimize",
         "preview": "vite preview",
@@ -20,7 +20,9 @@
         "cf:dev": "wrangler dev",
         "cf:tail": "wrangler tail",
         "cf:kv": "wrangler kv",
-        "start:worker": "wrangler dev --local"
+    "start:worker": "wrangler dev --local",
+    "test": "vitest run",
+    "test:watch": "vitest"
     },
     "dependencies": {
         "@github/spark": "^0.39.0",
@@ -104,7 +106,8 @@
         "tailwindcss": "^4.1.11",
         "typescript": "~5.7.2",
         "typescript-eslint": "^8.38.0",
-        "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vitest": "^2.1.4"
     },
     "workspaces": {
         "packages": [

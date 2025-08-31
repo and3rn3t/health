@@ -8,7 +8,15 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 // Middleware
-app.use(cors());
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173').split(',').map(s => s.trim());
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // allow tools like curl
+    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // Store active connections and health data
@@ -93,8 +101,9 @@ wss.on('connection', (ws, req) => {
     try {
       const data = JSON.parse(message);
       handleMessage(clientId, data);
-    } catch (error) {
-      console.error('Invalid message format:', error);
+    } catch (err) {
+  // Handle parse error without exposing payload contents
+  console.error('Invalid message format', { name: err && err.name ? err.name : 'Error' });
       ws.send(JSON.stringify({
         type: 'error',
         message: 'Invalid message format'
@@ -132,14 +141,22 @@ function handleMessage(clientId, data) {
   const connection = connections.get(clientId);
   if (!connection) return;
 
-  const { ws, info } = connection;
+  const { info } = connection;
 
   switch (data.type) {
-    case 'client_identification':
+    case 'client_identification': {
+      // Optional API key check for local bridge
+      const apiKey = data.apiKey || (data.headers && data.headers['x-api-key']);
+      const expected = process.env.WS_API_KEY;
+      if (expected && apiKey !== expected) {
+        connections.get(clientId)?.ws.close(4401, 'unauthorized');
+        return;
+      }
       info.type = data.clientType; // 'ios_app' or 'web_dashboard'
       info.userId = data.userId;
       console.log(`Client identified: ${clientId} as ${data.clientType}`);
       break;
+    }
 
     case 'live_health_data':
       handleLiveHealthData(clientId, data.data);
@@ -200,7 +217,8 @@ function handleLiveHealthData(clientId, healthData) {
     });
   }
 
-  console.log(`Health data received from ${clientId}:`, healthData.type, healthData.value);
+  // Do not log raw values in prod; keep minimal signal only
+  console.log(`Health data received from ${clientId}:`, healthData.type);
 }
 
 function handleHistoricalData(clientId, historicalData) {

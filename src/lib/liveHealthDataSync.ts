@@ -51,13 +51,13 @@ export interface LiveDataSubscription {
 
 export class LiveHealthDataSync {
   private ws: WebSocket | null = null
-  private config: WebSocketConfig
-  private subscriptions: Map<string, LiveDataSubscription> = new Map()
-  private connectionStatus: ConnectionStatus
+  private readonly config: WebSocketConfig
+  private readonly subscriptions: Map<string, LiveDataSubscription> = new Map()
+  private readonly connectionStatus: ConnectionStatus
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null
-  private messageQueue: any[] = []
-  private userId: string
+  private readonly messageQueue: any[] = []
+  private readonly userId: string
 
   constructor(userId: string, config?: Partial<WebSocketConfig>) {
     this.userId = userId
@@ -121,7 +121,9 @@ export class LiveHealthDataSync {
           this.ws?.send(JSON.stringify({
             type: 'client_identification',
             clientType: 'web_dashboard',
-            userId: this.userId
+            userId: this.userId,
+            // Dev-only optional API key; do not set in production client builds
+            apiKey: (typeof window !== 'undefined' && (window as any).__WS_API_KEY__) || undefined
           }))
 
           // Send queued messages
@@ -140,7 +142,9 @@ export class LiveHealthDataSync {
             if (!parsed.success) return
             this.handleServerMessage(parsed.data)
           } catch (error) {
-            // Drop invalid payloads silently to avoid leaking data
+            // Swallow parse errors; do not leak details while referencing variable
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+            error
           }
         }
 
@@ -168,19 +172,19 @@ export class LiveHealthDataSync {
   private handleServerMessage(message: any) {
     switch (message.type) {
       case 'connection_established':
-        this.connectionStatus.clientId = (message as any).data?.clientId
+  this.connectionStatus.clientId = message.data?.clientId
         break
 
       case 'live_health_update':
-        this.processLiveHealthUpdate((message as any).data)
+  this.processLiveHealthUpdate(message.data)
         break
 
       case 'historical_data_update':
-        this.processHistoricalData((message as any).data)
+  this.processHistoricalData(message.data)
         break
 
       case 'emergency_alert':
-        this.handleEmergencyAlert((message as any).data)
+  this.handleEmergencyAlert(message.data)
         break
 
       case 'error':
@@ -328,8 +332,7 @@ export class LiveHealthDataSync {
 let globalSyncInstance: LiveHealthDataSync | null = null
 
 export function getLiveHealthDataSync(userId: string): LiveHealthDataSync {
-  if (!globalSyncInstance) {
-    globalSyncInstance = new LiveHealthDataSync(userId)
-  }
+  // eslint-disable-next-line no-cond-assign
+  globalSyncInstance ??= new LiveHealthDataSync(userId)
   return globalSyncInstance
 }
