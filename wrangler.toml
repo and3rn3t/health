@@ -24,7 +24,7 @@ bindings = [
 name = "health-app-prod"
 vars = { ENVIRONMENT = "production", ALLOWED_ORIGINS = "https://yourdomain.example" }
 
-# Assets configuration for static files (disabled for local dev to avoid rebuild loops)
+# Assets configuration for static files (temporarily disabled for debugging)
 # [assets]
 # directory = "./dist"
 # binding = "ASSETS"
