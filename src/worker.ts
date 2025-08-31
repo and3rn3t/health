@@ -11,7 +11,6 @@ import {
   type ProcessedHealthData,
 } from '@/schemas/health';
 import {
-  applySecurityHeaders,
   corsHeaders,
   getAesKey,
   encryptJSON,
@@ -163,7 +162,6 @@ app.use('*', async (c, next) => {
     .map((s) => s.trim())
     .filter(Boolean);
   const correlationId = crypto.randomUUID();
-  c.res = c.newResponse(null); // initialize so we can set headers later
 
   if (c.req.method === 'OPTIONS') {
     const h = corsHeaders(origin, allowed);
@@ -171,7 +169,9 @@ app.use('*', async (c, next) => {
     return c.newResponse(null, { status: 204, headers: h });
   }
 
+  // Run downstream handler; Hono sets c.res
   await next();
+  const baseResp = c.res ?? new Response(null);
 
   const csp = [
     "default-src 'self'",
@@ -182,11 +182,24 @@ app.use('*', async (c, next) => {
     "frame-ancestors 'none'",
   ].join('; ');
 
-  const resp = applySecurityHeaders(c.res, csp);
-  const h = corsHeaders(origin, allowed);
-  resp.headers.set('X-Correlation-Id', correlationId);
-  h.forEach((v, k) => resp.headers.set(k, v));
-  return resp;
+  try {
+    const h = baseResp.headers;
+    h.set(
+      'Strict-Transport-Security',
+      'max-age=31536000; includeSubDomains; preload'
+    );
+    h.set('X-Content-Type-Options', 'nosniff');
+    h.set('X-Frame-Options', 'DENY');
+    h.set('Referrer-Policy', 'no-referrer');
+    h.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    h.set('Content-Security-Policy', csp);
+    h.set('X-Correlation-Id', correlationId);
+    const cors = corsHeaders(origin, allowed);
+    cors.forEach((v, k) => h.set(k, v));
+  } catch (e) {
+    log.warn('header_injection_failed', { error: (e as Error).message });
+  }
+  return baseResp;
 });
 
 // API-wide middleware: rate limiting and auth (auth is a no-op in non-production)

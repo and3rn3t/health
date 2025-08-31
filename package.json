@@ -17,10 +17,11 @@
     "wrangler": "wrangler",
     "deploy:dev": "npm run build && wrangler deploy --env development",
     "deploy:prod": "npm run build && wrangler deploy --env production",
-    "cf:dev": "wrangler dev",
+    "cf:dev": "wrangler dev --env development",
     "cf:tail": "wrangler tail",
     "cf:kv": "wrangler kv",
-    "start:worker": "wrangler dev --local",
+    "start:worker": "wrangler dev --env development --local",
+    "probe:dev": "pwsh -NoProfile -File scripts/probe.ps1 -HostUrl http://127.0.0.1 -Port 8787 -UserId demo-user",
     "pretest": "vite build --config vite.worker.config.ts",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -89,7 +90,7 @@
     "tw-animate-css": "^1.2.4",
     "uuid": "^11.1.0",
     "vaul": "^1.1.2",
-    "wrangler": "^3.114.14",
+    "wrangler": "^4.33.1",
     "ws": "^8.18.3",
     "zod": "^3.25.76"
   },

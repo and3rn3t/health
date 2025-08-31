@@ -1,0 +1,143 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "probe-health",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$u='http://127.0.0.1:8787/health'; try { (Invoke-RestMethod -Uri $u -TimeoutSec 5) | ConvertTo-Json -Depth 5 } catch { $_.Exception.Message }"
+			]
+		},
+		{
+			"label": "wrangler-dev-8788",
+			"type": "shell",
+			"command": "wrangler",
+			"args": [
+				"dev",
+				"--env",
+				"development",
+				"--port",
+				"8788"
+			],
+			"isBackground": true,
+			"problemMatcher": [
+				"$eslint - stylish"
+			],
+			"group": "build"
+		},
+		{
+			"label": "probe-health-8788",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$u='http://127.0.0.1:8788/health'; try { (Invoke-RestMethod -Uri $u -TimeoutSec 5) | ConvertTo-Json -Depth 5 } catch { $_.Exception.Message }"
+			]
+		},
+		{
+			"label": "probe-health-8788-curl",
+			"type": "shell",
+			"command": "curl.exe",
+			"args": [
+				"-sS",
+				"http://127.0.0.1:8788/health"
+			]
+		},
+		{
+			"label": "wrangler-dev-8789",
+			"type": "shell",
+			"command": "wrangler",
+			"args": [
+				"dev",
+				"--env",
+				"development",
+				"--port",
+				"8789",
+				"--var",
+				"DEVICE_JWT_SECRET:dev-local"
+			],
+			"isBackground": true,
+			"problemMatcher": [
+				"$eslint - stylish"
+			],
+			"group": "build"
+		},
+		{
+			"label": "probe-health-8789-curl",
+			"type": "shell",
+			"command": "curl.exe",
+			"args": [
+				"-sS",
+				"http://127.0.0.1:8789/health"
+			]
+		},
+		{
+			"label": "probe-worker-default",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"scripts/probe.ps1",
+				"-HostUrl",
+				"http://127.0.0.1",
+				"-Port",
+				"8789",
+				"-UserId",
+				"demo-user"
+			]
+		},
+		{
+			"label": "probe-worker-default",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"scripts/probe.ps1",
+				"-HostUrl",
+				"http://127.0.0.1",
+				"-Port",
+				"8789",
+				"-UserId",
+				"demo-user"
+			]
+		},
+		{
+			"label": "probe-worker-8789",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"scripts/probe.ps1",
+				"-HostUrl",
+				"http://127.0.0.1",
+				"-Port",
+				"8789",
+				"-UserId",
+				"demo-user"
+			]
+		},
+		{
+			"label": "probe-worker-8789",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"scripts/probe.ps1",
+				"-HostUrl",
+				"http://127.0.0.1",
+				"-Port",
+				"8789",
+				"-UserId",
+				"demo-user"
+			]
+		}
+	]
+}

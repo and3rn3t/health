@@ -4,34 +4,41 @@ compatibility_date = "2024-08-30"
 compatibility_flags = ["nodejs_compat"]
 
 [build]
-command = "npm run build"
+command = "npm run build:worker"
 cwd = "."
+watch_dir = "src"
 
 # Development environment
 [env.development]
 name = "health-app-dev"
-vars = { ENVIRONMENT = "development", ALLOWED_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173" }
+vars = { ENVIRONMENT = "development", ALLOWED_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5000,http://127.0.0.1:5000" }
+
+[env.development.durable_objects]
+bindings = [
+  { name = "HEALTH_WEBSOCKET", class_name = "HealthWebSocket" },
+  { name = "RATE_LIMITER", class_name = "RateLimiter" }
+]
 
 # Production environment
 [env.production]
 name = "health-app-prod"
 vars = { ENVIRONMENT = "production", ALLOWED_ORIGINS = "https://yourdomain.example" }
 
-# Assets configuration for static files
-[assets]
-directory = "./dist"
-binding = "ASSETS"
+# Assets configuration for static files (disabled for local dev to avoid rebuild loops)
+# [assets]
+# directory = "./dist"
+# binding = "ASSETS"
 
 # KV storage for session/cache data
-[[kv_namespaces]]
-binding = "HEALTH_KV"
-id = ""
-preview_id = ""
+# [[kv_namespaces]]
+# binding = "HEALTH_KV"
+# id = "<KV_NAMESPACE_ID>" # TODO: set via `wrangler kv namespace create HEALTH_KV`
+# preview_id = "<KV_NAMESPACE_PREVIEW_ID>"
 
 # R2 bucket for file storage
-[[r2_buckets]]
-binding = "HEALTH_STORAGE"
-bucket_name = ""
+# [[r2_buckets]]
+# binding = "HEALTH_STORAGE"
+# bucket_name = "<R2_BUCKET_NAME>" # TODO: create and set bucket name
 
 # WebSocket support
 [durable_objects]
@@ -40,9 +47,15 @@ bindings = [
   { name = "RATE_LIMITER", class_name = "RateLimiter" }
 ]
 
-# Analytics
-[analytics_engine_datasets]
-binding = "HEALTH_ANALYTICS"
+# Durable Objects migrations
+[[migrations]]
+tag = "v1"
+new_classes = ["HealthWebSocket", "RateLimiter"]
+
+# Analytics (optional)
+# [[analytics_engine_datasets]]
+# binding = "HEALTH_ANALYTICS"
+# dataset = "health_analytics" # optional custom dataset name
 
 # Custom domain configuration (to be set up later)
 # [env.production.routes]

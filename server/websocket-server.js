@@ -10,7 +10,10 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 // Middleware
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')
+const ALLOWED_ORIGINS = (
+  process.env.ALLOWED_ORIGINS ||
+  'http://localhost:5173,http://localhost:5000,http://127.0.0.1:5000'
+)
   .split(',')
   .map((s) => s.trim());
 app.use(
