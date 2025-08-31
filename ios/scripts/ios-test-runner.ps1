@@ -73,11 +73,27 @@ function Get-AvailableSimulators {
     }
 }
 
+function Initialize-TestEnvironment {
+    Write-Host "🔧 Initializing test environment..." -ForegroundColor Yellow
+
+    # Run environment setup
+    $setupScript = Join-Path $PSScriptRoot "test-environment-setup.ps1"
+    if (Test-Path $setupScript) {
+        & $setupScript -ValidateEnvironment -Verbose:$Verbose
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "❌ Environment validation failed" -ForegroundColor Red
+            return $false
+        }
+    }
+
+    return $true
+}
+
 function Run-UnitTests {
     Write-Host "🧪 Running Unit Tests..." -ForegroundColor Cyan
     Write-Host ""
 
-    $testScheme = "HealthKitBridge"
+    $testScheme = "HealthKitBridge-UnitTests"
     $destination = if ($Device) { "generic/platform=iOS" } else { "platform=iOS Simulator,name=$Simulator" }
 
     $testCommand = @(
@@ -86,7 +102,8 @@ function Run-UnitTests {
         "-project", "ios/HealthKitBridge.xcodeproj",
         "-scheme", $testScheme,
         "-destination", $destination,
-        "-testPlan", "UnitTests"
+        "-testPlan", "HealthKitBridge.xctestplan",
+        "-only-testing", "HealthKitBridgeTests"
     )
 
     if ($Coverage) {
@@ -124,7 +141,7 @@ function Run-UITests {
     Write-Host "🖥️  Running UI Tests..." -ForegroundColor Cyan
     Write-Host ""
 
-    $testScheme = "HealthKitBridge"
+    $testScheme = "HealthKitBridge-UITests"
     $destination = if ($Device) { "generic/platform=iOS" } else { "platform=iOS Simulator,name=$Simulator" }
 
     $testCommand = @(
@@ -259,6 +276,12 @@ Write-Host ""
 # Check prerequisites
 if (-not (Test-XcodeBuildTools)) {
     Write-Host "❌ Xcode build tools are required for iOS testing" -ForegroundColor Red
+    exit 1
+}
+
+# Initialize test environment
+if (-not (Initialize-TestEnvironment)) {
+    Write-Host "❌ Test environment initialization failed" -ForegroundColor Red
     exit 1
 }
 
