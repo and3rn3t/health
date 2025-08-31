@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node websocket-server.js",
     "dev": "nodemon websocket-server.js",
+    "test-ws": "node test-websocket-server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

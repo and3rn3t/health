@@ -5,8 +5,8 @@
     <key>userId</key>
     <string>matt_test_user</string>
     <key>apiBaseURL</key>
-    <string>https://api.andernet.dev</string>
+    <string>http://127.0.0.1:8789</string>
     <key>webSocketURL</key>
-    <string>wss://api.andernet.dev/ws</string>
+    <string>ws://localhost:3001</string>
 </dict>
 </plist>
