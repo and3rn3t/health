@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "github.copilot",
+    "github.copilot-chat",
+    "ms-vscode.swift",
+    "ms-vscode.vscode-ios",
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-json",
+    "redhat.vscode-yaml",
+    "ms-python.python",
+    "ms-vscode.vscode-typescript-next"
+  ]
+}

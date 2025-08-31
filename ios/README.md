@@ -1,39 +1,150 @@
-# iOS Bridge (HealthKit -> WebSocket)
+# HealthKit Bridge
 
-This folder contains a minimal Swift scaffolding to collect HealthKit data and stream to the local WebSocket bridge.
+A Swift iOS application that bridges HealthKit data to external systems via WebSocket connections.
 
-What’s included:
+## Features
 
-- HealthKitManager.swift: reads heart rate, walking steadiness, and steps; enables background delivery; streams to WS.
-- WebSocketManager.swift: lightweight URLSessionWebSocket wrapper.
-- ApiClient.swift: issues short-lived device tokens from the Worker (`/api/device/auth`).
-- AppConfig.swift: loads `Config.plist` with API and WS URLs plus a test `USER_ID`.
-- Config.sample.plist: copy to `Config.plist` and edit values.
+- **HealthKit Integration**: Reads health data including heart rate, step count, walking distance, and energy expenditure
+- **Real-time Data Streaming**: WebSocket-based real-time data transmission
+- **Connection Quality Monitoring**: Tracks latency, packet loss, and connection stability
+- **Fallback Mock Mode**: Graceful degradation when WebSocket server is unavailable
+- **Privacy-First Design**: Respects user permissions and HealthKit privacy requirements
 
-Prerequisites on a Mac:
+## Prerequisites
 
-1. Xcode with a new iOS App target (Swift, iOS 16+ recommended). Add these files to the project.
-2. Add HealthKit capability and required keys in Info.plist:
-   - `NSHealthShareUsageDescription`
-3. Add `Config.plist` to the app target with keys: `API_BASE_URL`, `WS_URL`, `USER_ID`.
-4. Run backend locally:
-   - Cloudflare Worker: `wrangler dev` (serves API and static app)
-   - WS server: `node server/websocket-server.js`
-5. Set secrets/bindings (Worker):
-   - `wrangler secret put DEVICE_JWT_SECRET`
-   - `wrangler secret put ENC_KEY` (optional, 32-byte base64 for KV encryption)
-   - Configure KV/R2 ids in `wrangler.toml` for full persistence.
+- iOS 14.0+
+- Xcode 15.0+
+- Swift 5.9+
+- HealthKit-enabled device (iPhone/Apple Watch)
 
-App flow:
+## Setup
 
-- App requests HealthKit authorization.
-- App calls `/api/device/auth` to get a short-lived HS256 token.
-- App opens `WS_URL?token=...` and identifies as `ios_app` with `userId`.
-- Live samples are sent as `{ type: 'live_health_data', data: { type, value, unit } }`.
-- Historical batches are sent as `{ type: 'historical_data', data: { type, samples: [...] } }`.
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd HealthKitBridge
+   ```
 
-Notes:
+2. **Run the setup script:**
+   ```bash
+   ./setup-enhanced-dev-env.sh
+   ```
 
-- Keep PHI out of logs. Only minimal debug prints remain.
-- Background delivery is enabled for key metrics; background execution limits still apply.
-- If you prefer not to use WS tokens in dev, set `WS_BEARER` on the Node server and remove token from the URL.
+3. **Configure the app:**
+   - Edit `HealthKitBridge/Config.plist` to set your API endpoints
+   - Update `USER_ID`, `API_BASE_URL`, and `WS_URL` as needed
+
+4. **Open in Xcode:**
+   ```bash
+   open HealthKitBridge.xcodeproj
+   ```
+
+## Configuration
+
+The app uses `Config.plist` for configuration:
+
+```xml
+<dict>
+    <key>USER_ID</key>
+    <string>your-user-id</string>
+    <key>API_BASE_URL</key>
+    <string>https://your-api-server.com</string>
+    <key>WS_URL</key>
+    <string>wss://your-websocket-server.com/ws</string>
+</dict>
+```
+
+## Health Data Types
+
+The app requests permission for:
+- Heart Rate
+- Step Count
+- Walking/Running Distance
+- Active Energy Burned
+- Basal Energy Burned
+
+## Architecture
+
+- **HealthKitManager**: Handles HealthKit authorization and data queries
+- **WebSocketManager**: Manages WebSocket connections with automatic reconnection
+- **AppConfig**: Centralized configuration management
+- **ConnectionQualityMonitor**: Tracks connection performance metrics
+
+## Building and Running
+
+### Using Xcode
+1. Open `HealthKitBridge.xcodeproj`
+2. Select your target device
+3. Build and run (⌘+R)
+
+### Using Scripts
+```bash
+# Build and run on device
+./scripts/build-and-run.sh
+
+# Deploy to specific device
+./deploy-to-device.sh
+```
+
+## Testing
+
+The app includes comprehensive test coverage:
+
+```bash
+# Run unit tests
+xcodebuild test -scheme HealthKitBridge -destination 'platform=iOS Simulator,name=iPhone 15'
+
+# Run UI tests
+xcodebuild test -scheme HealthKitBridgeUITests -destination 'platform=iOS Simulator,name=iPhone 15'
+```
+
+## WebSocket Protocol
+
+The app communicates using JSON messages:
+
+```json
+{
+  "type": "health_data",
+  "data": {
+    "type": "heart_rate",
+    "value": 72.0,
+    "unit": "count/min",
+    "timestamp": "2025-08-31T12:00:00Z",
+    "deviceId": "device-uuid",
+    "userId": "user-id"
+  }
+}
+```
+
+## Privacy & Permissions
+
+This app:
+- Requests minimal necessary HealthKit permissions
+- Only accesses data when actively monitoring
+- Respects user privacy settings
+- Provides clear permission dialogs
+
+## Development Tools
+
+- **SwiftLint**: Code style and quality enforcement
+- **Build Scripts**: Automated building and deployment
+- **Xcode Optimizations**: Performance tuning for faster builds
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and SwiftLint
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For issues and questions:
+- Create an issue on GitHub
+- Check the documentation in the `docs/` folder
+- Review the code comments for implementation details

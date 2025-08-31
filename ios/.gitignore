@@ -1,0 +1,77 @@
+# Git ignore file optimized for iOS/Swift development
+# HealthKit Bridge specific exclusions
+
+# Xcode
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+DerivedData/
+build/
+.build/
+
+# Swift Package Manager
+Packages/
+Package.pins
+Package.resolved
+.swiftpm/
+
+# CocoaPods
+Pods/
+*.podspec
+Podfile.lock
+
+# Carthage
+Carthage/Build/
+
+# Accio dependency management
+Dependencies/
+.accio/
+
+# iOS/macOS
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Simulators
+*.app
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment and config files
+.env
+Config.local.plist
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Build artifacts
+*.o
+*.a
+*.so
+*.dylib
+
+# SwiftLint
+.swiftlint.yml.backup
+
+# Custom exclusions
+test-output/
+debug-logs/

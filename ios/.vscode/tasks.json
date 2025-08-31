@@ -1,0 +1,112 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build HealthKit Bridge",
+      "type": "shell",
+      "command": "xcodebuild",
+      "args": [
+        "build",
+        "-project",
+        "HealthKitBridge.xcodeproj",
+        "-scheme",
+        "HealthKitBridge",
+        "-configuration",
+        "Debug"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": {
+        "owner": "swift",
+        "fileLocation": "absolute",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
+    },
+    {
+      "label": "Clean Build",
+      "type": "shell",
+      "command": "xcodebuild",
+      "args": ["clean", "-project", "HealthKitBridge.xcodeproj"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Run on Simulator",
+      "type": "shell",
+      "command": "./scripts/build-and-run.sh",
+      "args": ["iPhone 15 Pro", "Debug"],
+      "group": "build",
+      "dependsOn": "Build HealthKit Bridge",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Run Tests",
+      "type": "shell",
+      "command": "xcodebuild",
+      "args": [
+        "test",
+        "-project",
+        "HealthKitBridge.xcodeproj",
+        "-scheme",
+        "HealthKitBridge",
+        "-destination",
+        "platform=iOS Simulator,name=iPhone 15 Pro"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "SwiftLint",
+      "type": "shell",
+      "command": "swiftlint",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Start WebSocket Server",
+      "type": "shell",
+      "command": "node",
+      "args": ["test-websocket-server.js"],
+      "group": "build",
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "new"
+      }
+    }
+  ]
+}

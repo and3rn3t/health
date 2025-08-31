@@ -1,0 +1,124 @@
+# Enhanced .zshrc additions for iOS/Swift development
+# Add these lines to your ~/.zshrc file for better terminal experience
+
+# ============= iOS Development Aliases =============
+alias xcode="open -a Xcode"
+alias simulator="open -a Simulator"
+alias ios-sim="xcrun simctl"
+alias devices="xcrun simctl list devices"
+alias reset-sim="xcrun simctl erase all"
+
+# Project-specific aliases
+alias hkb="cd /Users/ma55700/Documents/GitHub/HealthKitBridge"
+alias hkb-build="cd /Users/ma55700/Documents/GitHub/HealthKitBridge && ./scripts/build-and-run.sh"
+alias hkb-clean="cd /Users/ma55700/Documents/GitHub/HealthKitBridge && xcodebuild clean -project HealthKitBridge.xcodeproj"
+alias hkb-test="cd /Users/ma55700/Documents/GitHub/HealthKitBridge && xcodebuild test -project HealthKitBridge.xcodeproj -scheme HealthKitBridge -destination 'platform=iOS Simulator,name=iPhone 15 Pro'"
+
+# ============= Git Enhancements =============
+alias gs="git status"
+alias ga="git add"
+alias gc="git commit -m"
+alias gp="git push"
+alias gl="git pull"
+alias gd="git diff"
+alias gb="git branch"
+alias gco="git checkout"
+alias glog="git log --oneline --graph --decorate --all"
+
+# ============= Development Utilities =============
+# Quick project overview
+alias project-info="echo 'HealthKit Bridge Project Info:' && echo '=========================' && git status && echo '' && echo 'Recent commits:' && git log --oneline -5"
+
+# Swift/iOS specific functions
+swiftlint-fix() {
+    if command -v swiftlint &> /dev/null; then
+        swiftlint --fix
+        echo "✅ SwiftLint auto-fixes applied"
+    else
+        echo "⚠️  SwiftLint not installed. Run: brew install swiftlint"
+    fi
+}
+
+# Enhanced ls with colors and icons (if exa is installed)
+if command -v exa &> /dev/null; then
+    alias ls="exa --icons"
+    alias ll="exa -l --icons"
+    alias la="exa -la --icons"
+    alias lt="exa --tree --icons"
+else
+    alias ll="ls -la"
+    alias la="ls -la"
+fi
+
+# ============= Development Server Functions =============
+start-websocket-test() {
+    echo "🚀 Starting WebSocket test server..."
+    cd /Users/ma55700/Documents/GitHub/HealthKitBridge
+    if [ -f "test-websocket-server.js" ]; then
+        node test-websocket-server.js
+    elif [ -f "test-websocket-server.py" ]; then
+        python3 test-websocket-server.py
+    else
+        echo "❌ No test server found"
+    fi
+}
+
+# ============= Enhanced Prompt (Optional) =============
+# Git branch in prompt
+parse_git_branch() {
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+
+# If using Oh My Zsh, these are already included
+# Otherwise, uncomment the line below for git branch in prompt
+# PS1="%~ \$(parse_git_branch) $ "
+
+# ============= Useful Development Functions =============
+# Quick commit with timestamp
+quick-commit() {
+    if [ -z "$1" ]; then
+        echo "Usage: quick-commit 'commit message'"
+        return 1
+    fi
+    git add .
+    git commit -m "$1 - $(date)"
+    echo "✅ Quick commit completed"
+}
+
+# Open project in VS Code with useful extensions
+code-project() {
+    cd /Users/ma55700/Documents/GitHub/HealthKitBridge
+    code . \
+        --install-extension ms-vscode.vscode-ios \
+        --install-extension github.copilot \
+        --install-extension github.copilot-chat \
+        --install-extension ms-vscode.swift
+}
+
+# iOS Simulator quick actions
+boot-simulator() {
+    local device=${1:-"iPhone 15 Pro"}
+    echo "🚀 Booting $device..."
+    xcrun simctl boot "$device" 2>/dev/null || echo "Device already booted or not found"
+    open -a Simulator
+}
+
+shutdown-simulators() {
+    echo "🛑 Shutting down all simulators..."
+    xcrun simctl shutdown all
+}
+
+# ============= Performance Monitoring =============
+# Monitor Xcode processes
+xcode-processes() {
+    echo "Xcode-related processes:"
+    ps aux | grep -E "(Xcode|xcodebuild|simulator)" | grep -v grep
+}
+
+# Check build times
+build-time() {
+    local start_time=$(date +%s)
+    "$@"
+    local end_time=$(date +%s)
+    echo "⏱️  Command completed in $((end_time - start_time)) seconds"
+}

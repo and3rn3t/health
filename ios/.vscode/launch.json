@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug iOS App",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/Build/Products/Debug-iphonesimulator/HealthKitBridge.app/HealthKitBridge",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "Build HealthKit Bridge",
+      "console": "integratedTerminal",
+      "environment": []
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+# Makefile for HealthKit Bridge Development
+# Provides easy commands for common development tasks
+
+.PHONY: help build clean test install lint setup run simulator device deploy
+
+# Default target
+help:
+	@echo "HealthKit Bridge Development Commands"
+	@echo "====================================="
+	@echo "setup          - Initial project setup and optimization"
+	@echo "build          - Build the project"
+	@echo "run            - Build and run on simulator"
+	@echo "test           - Run all tests"
+	@echo "lint           - Run SwiftLint"
+	@echo "lint-fix       - Auto-fix SwiftLint issues"
+	@echo "clean          - Clean build artifacts"
+	@echo "simulator      - Open iOS Simulator"
+	@echo "devices        - List available devices"
+	@echo "install-tools  - Install development tools"
+	@echo "optimize       - Optimize Xcode settings"
+	@echo "reset-sim      - Reset all simulators"
+	@echo "deploy         - Deploy to connected device"
+
+# Project configuration
+PROJECT = HealthKitBridge.xcodeproj
+SCHEME = HealthKitBridge
+DEVICE = "iPhone 15 Pro"
+CONFIG = Debug
+
+# Setup and optimization
+setup: install-tools optimize
+	@echo "✅ Development environment setup complete"
+
+install-tools:
+	@echo "🛠️  Installing development tools..."
+	@./scripts/setup-dev-env.sh
+
+optimize:
+	@echo "⚡ Optimizing Xcode..."
+	@./scripts/optimize-xcode.sh
+
+# Build commands
+build:
+	@echo "🔨 Building $(SCHEME) for physical device..."
+	@echo "📱 Target device: $(DEVICE)"
+	@xcodebuild build -project $(PROJECT) -scheme $(SCHEME) -configuration $(CONFIG) -destination 'platform=iOS,id=$(DEVICE_ID)'
+
+# Fallback build for simulator (when device isn't available)
+build-sim:
+	@echo "🔨 Building $(SCHEME) for iOS Simulator..."
+	@xcodebuild build -project $(PROJECT) -scheme $(SCHEME) -configuration $(CONFIG) -destination 'platform=iOS Simulator,name=$(SIM_DEVICE)'
+
+clean:
+	@echo "🧹 Cleaning build artifacts..."
+	@xcodebuild clean -project $(PROJECT) -scheme $(SCHEME)
+	@rm -rf build/
+
+# Run commands - Updated for physical device
+run:
+	@echo "🚀 Building and running on physical device..."
+	@echo "📱 Target device: $(DEVICE)"
+	@./scripts/build-and-run.sh "$(DEVICE)" $(CONFIG)
+
+# Run on simulator (fallback)
+run-sim:
+	@echo "🚀 Building and running on iOS Simulator..."
+	@./scripts/build-and-run.sh "iPhone 16 Pro" $(CONFIG)
+
+simulator:
+	@echo "📱 Opening iOS Simulator..."
+	@open -a Simulator
+
+# Testing - Updated for physical device (HealthKit tests need real device)
+test:
+	@echo "🧪 Running tests on physical device..."
+	@echo "📱 Target device: $(DEVICE)"
+	@xcodebuild test -project $(PROJECT) -scheme $(SCHEME) -destination 'platform=iOS,id=$(DEVICE_ID)'
+
+# Testing on simulator (for UI tests that don't need HealthKit)
+test-sim:
+	@echo "🧪 Running UI tests on iOS Simulator..."
+	@xcodebuild test -project $(PROJECT) -scheme $(SCHEME) -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
+
+# Code quality
+lint:
+	@echo "📝 Running SwiftLint..."
+	@if command -v swiftlint >/dev/null 2>&1; then \
+		swiftlint; \
+	else \
+		echo "❌ SwiftLint not installed. Run: brew install swiftlint"; \
+	fi
+
+lint-fix:
+	@echo "🔧 Auto-fixing SwiftLint issues..."
+	@if command -v swiftlint >/dev/null 2>&1; then \
+		swiftlint --fix; \
+	else \
+		echo "❌ SwiftLint not installed. Run: brew install swiftlint"; \
+	fi
+
+# Device management
+devices:
+	@echo "📱 Available iOS devices:"
+	@xcrun simctl list devices iOS | grep -E "iPhone|iPad"
+
+reset-sim:
+	@echo "🔄 Resetting all simulators..."
+	@xcrun simctl erase all
+
+# Deployment
+deploy:
+	@echo "📤 Deploying to connected device..."
+	@./deploy-to-device.sh
+
+# Development server
+start-server:
+	@echo "🌐 Starting WebSocket test server..."
+	@if [ -f test-websocket-server.js ]; then \
+		node test-websocket-server.js; \
+	elif [ -f test-websocket-server.py ]; then \
+		python3 test-websocket-server.py; \
+	else \
+		echo "❌ No test server found"; \
+	fi
+
+# Quick development workflow
+dev: clean build run
+	@echo "🎉 Development build complete!"
+
+# Production build
+release:
+	@echo "🚀 Building release version..."
+	@xcodebuild build -project $(PROJECT) -scheme $(SCHEME) -configuration Release
+
+# Archive for distribution
+archive:
+	@echo "📦 Creating archive..."
+	@xcodebuild archive -project $(PROJECT) -scheme $(SCHEME) -archivePath ./build/$(SCHEME).xcarchive
