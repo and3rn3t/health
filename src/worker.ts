@@ -596,3 +596,20 @@ export class RateLimiter {
     );
   }
 }
+
+// Durable Object: HealthWebSocket (stub to satisfy binding; actual WS served by local Node bridge)
+// This DO currently returns 426 to indicate WS not available in the Worker.
+// When ready to migrate WS to Workers Durable Objects, implement upgrade handling here.
+export class HealthWebSocket {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  constructor(_state: DurableObjectState, _env?: Env) {}
+  async fetch(_request: Request): Promise<Response> {
+    return new Response(
+      'WebSocket not available on Worker. Use local bridge.',
+      {
+        status: 426,
+        headers: { 'content-type': 'text/plain' },
+      }
+    );
+  }
+}

@@ -173,6 +173,43 @@ export function WSTokenSettings() {
     }
   };
 
+  const onGetIosToken = async () => {
+    setLoading(true);
+    try {
+      const resp = await fetch('/api/device/auth', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          userId: draftUser || 'default-user',
+          clientType: 'ios_app',
+          ttlSec: clampTtl(ttlSec),
+        }),
+      });
+      if (!resp.ok) {
+        if (resp.status === 401) {
+          toast.error('Sign-in required to issue a device token');
+          return;
+        }
+        throw new Error(`Failed: ${resp.status}`);
+      }
+      const json = (await resp.json()) as {
+        token?: string;
+        expiresIn?: number;
+      };
+      if (json?.token) {
+        setDraft(json.token);
+        setStoredToken(json.token);
+        toast.success('iOS token issued');
+      } else {
+        toast.error('No token returned');
+      }
+    } catch {
+      toast.error('Failed to get iOS token');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Silent auto-refresh when token is near expiry (< 2 minutes)
   useEffect(() => {
     if (!expiresAt) return;
@@ -332,7 +369,14 @@ export function WSTokenSettings() {
                 Test connection
               </Button>
               <Button variant="outline" onClick={onGetToken} disabled={loading}>
-                {loading ? 'Issuing…' : 'Get token'}
+                {loading ? 'Issuing…' : 'Get web token'}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={onGetIosToken}
+                disabled={loading}
+              >
+                {loading ? 'Issuing…' : 'Get iOS token'}
               </Button>
               <Button variant="ghost" onClick={() => setOpen(false)}>
                 Close

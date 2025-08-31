@@ -40,6 +40,7 @@ const envelopeSchema = z.object({
     'emergency_alert',
     'error',
     'pong',
+    'client_presence',
   ]),
   data: z.unknown().optional(),
   timestamp: z.string().datetime().optional(),
@@ -216,6 +217,17 @@ wss.on('connection', (ws, req) => {
   ws.on('close', () => {
     connections.delete(clientId);
     console.log(`Client disconnected: ${clientId}`);
+    // Presence off for user if this was an iOS client
+    const uid = clientInfo.userId;
+    if (uid && clientInfo.type === 'ios_app') {
+      broadcastToAllClients(uid, (ws) =>
+        sendEnvelope(ws, 'client_presence', {
+          userId: uid,
+          clientType: 'ios_app',
+          status: 'offline',
+        })
+      );
+    }
   });
 
   ws.on('error', (error) => {
@@ -264,6 +276,15 @@ function handleMessage(clientId, data) {
       info.type = data.clientType; // 'ios_app' or 'web_dashboard'
       info.userId = data.userId;
       console.log(`Client identified: ${clientId} as ${data.clientType}`);
+      if (info.userId && info.type === 'ios_app') {
+        broadcastToAllClients(info.userId, (ws) =>
+          sendEnvelope(ws, 'client_presence', {
+            userId: info.userId,
+            clientType: 'ios_app',
+            status: 'online',
+          })
+        );
+      }
       break;
     }
 

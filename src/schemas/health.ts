@@ -7,6 +7,7 @@ export const messageEnvelopeSchema = z.object({
     'live_health_update',
     'historical_data_update',
     'emergency_alert',
+    'client_presence',
     'error',
     'pong',
   ]),

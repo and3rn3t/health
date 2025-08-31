@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useKV } from '@github/spark/hooks';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -92,6 +92,7 @@ import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import RealtimeStatusBar from '@/components/health/RealtimeStatusBar';
 import EmergencyTriggerButton from '@/components/health/EmergencyTriggerButton';
 import WSTokenSettings from '@/components/health/WSTokenSettings';
+import { getLiveHealthDataSync } from '@/lib/liveHealthDataSync';
 
 function App() {
   const [healthData, setHealthData] = useKV<ProcessedHealthData | null>(
@@ -112,6 +113,9 @@ function App() {
     'theme-mode',
     'system'
   );
+  const [wsUserId] = useKV<string>('ws-user-id', 'default-user');
+  const [iosOnline, setIosOnline] = useState<boolean>(false);
+  const prevIosOnline = useRef<boolean | null>(null);
 
   // Apply theme based on mode and system preference using [data-appearance]
   useEffect(() => {
@@ -146,6 +150,43 @@ function App() {
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
   }, [themeMode]);
+
+  // Poll iOS presence via LiveHealthDataSync
+  useEffect(() => {
+    const i = setInterval(() => {
+      try {
+        const sync = getLiveHealthDataSync(wsUserId || 'default-user');
+        const online = sync.isIosOnline();
+        setIosOnline(online);
+        if (
+          prevIosOnline.current !== null &&
+          prevIosOnline.current !== online
+        ) {
+          if (online) toast.success('iOS connected');
+          else toast('iOS disconnected');
+        }
+        prevIosOnline.current = online;
+
+        // Also track WS connection changes and toast
+        const status = sync.getConnectionStatus();
+        const nowConnected = !!status.connected;
+        if (
+          (prevWsConnected as React.MutableRefObject<boolean | null>)
+            .current !== null &&
+          (prevWsConnected as React.MutableRefObject<boolean | null>)
+            .current !== nowConnected
+        ) {
+          if (nowConnected) toast.success('Realtime connected');
+          else toast('Realtime disconnected');
+        }
+        (prevWsConnected as React.MutableRefObject<boolean | null>).current =
+          nowConnected;
+      } catch {
+        /* noop */
+      }
+    }, 2000);
+    return () => clearInterval(i);
+  }, [wsUserId]);
 
   const toggleThemeMode = () => {
     const modes: Array<'light' | 'dark' | 'system'> = [
@@ -306,6 +347,11 @@ function App() {
                   <p className="text-muted-foreground text-xs">
                     Health Monitor
                   </p>
+                  <div className="mt-1">
+                    <Badge variant={iosOnline ? 'secondary' : 'outline'}>
+                      iOS {iosOnline ? 'online' : 'offline'}
+                    </Badge>
+                  </div>
                 </div>
               </div>
             )}

@@ -82,6 +82,7 @@ export class LiveHealthDataSync {
   private pendingEmergencyTimer: ReturnType<typeof setTimeout> | null = null;
   private pendingEmergencyExpiresAt: number | null = null;
   private pendingEmergencyData: EmergencyPayload | null = null;
+  private iosOnline: boolean = false;
 
   constructor(userId: string, config?: Partial<WebSocketConfig>) {
     this.userId = userId;
@@ -271,6 +272,17 @@ export class LiveHealthDataSync {
         this.processHistoricalData(message.data);
         break;
 
+      case 'client_presence':
+        {
+          const d = message.data as
+            | { userId?: string; clientType?: string; status?: string }
+            | undefined;
+          if (d && d.clientType === 'ios_app') {
+            this.iosOnline = d.status === 'online';
+          }
+        }
+        break;
+
       case 'emergency_alert':
         {
           const d = message.data;
@@ -448,6 +460,11 @@ export class LiveHealthDataSync {
 
   getConnectionStatus(): ConnectionStatus {
     return { ...this.connectionStatus };
+  }
+
+  // Presence helpers used by UI
+  isIosOnline(): boolean {
+    return this.iosOnline;
   }
 
   // Request emergency services
