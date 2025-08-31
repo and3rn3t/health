@@ -117,3 +117,53 @@ These instructions guide GitHub Copilot Chat/Edits to produce code and docs that
 ---
 
 By following these rules, Copilot should generate code that compiles with Vite + TS, runs in Cloudflare Workers where expected, and matches our UI/UX and privacy standards.
+
+## iOS Development Patterns (Swift/HealthKit)
+
+- Always use singleton pattern for manager classes: `AppConfig.shared`, `ApiClient.shared`, `HealthKitManager.shared`
+- Never access initializers directly - they should be private with static shared instances
+- Handle HealthKit permissions properly with usage descriptions in Info.plist
+- Design for background execution - implement proper background task management
+- Use dependency injection for testability (especially for HealthKit which doesn't work in simulator)
+- WebSocket connections need proper ATS configuration for development
+
+## WebSocket & Networking Resilience
+
+- Implement message queuing and retry logic - network is unreliable
+- Use exponential backoff for reconnection attempts
+- Buffer messages client-side during connection issues
+- Always validate message schemas with `zod` before processing
+- Plan for connection cleanup to prevent port conflicts (especially on Windows)
+
+## Build and Configuration Management
+
+- Maintain separate Vite configs for app (`vite.config.ts`) and worker (`vite.worker.config.ts`)
+- Use environment-specific configurations in `wrangler.toml`
+- Set up KV/R2 bindings before deployment, not after
+- Configure CORS early in development to prevent browser issues
+- Plan for key rotation and data migration from the start
+
+## Common Pitfalls to Avoid
+
+1. **Private Initializer Errors**: Use singleton pattern with `static shared` instance
+2. **Node.js in Workers**: Stick to Web APIs, avoid Node-specific modules
+3. **Missing Capabilities**: Configure iOS capabilities and permissions before coding
+4. **Network Reliability**: Always implement retry logic and message buffering
+5. **Environment Config**: Use environment-specific secrets, never hardcode
+6. **Data Retention**: Implement TTL and cleanup from the beginning
+7. **Testing Strategy**: Plan for iOS physical device testing early
+
+## Problem-Solving References
+
+- Check `docs/PROBLEM_SOLUTIONS_DATABASE.md` for comprehensive issue catalog
+- See `docs/BUILD_TROUBLESHOOTING.md` for specific Swift/TypeScript build issues
+- Reference `docs/LESSONS_LEARNED.md` for architectural insights
+- Use `docs/README.md` as navigation hub for all documentation
+
+## AI Assistant Optimization
+
+- Always specify file paths and project context in prompts
+- Include complete error messages when asking for help
+- Request full file contents rather than snippets to avoid context loss
+- Ask for security review of any code handling health data
+- Reference the problem database before implementing solutions to avoid known issues
