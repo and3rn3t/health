@@ -25,6 +25,7 @@
     "pretest": "vite build --config vite.worker.config.ts",
     "test": "vitest run",
     "test:watch": "vitest",
+    "hooks:setup": "pwsh -NoProfile -File scripts/setup-git-hooks.ps1",
     "ios:setup": "pwsh -NoProfile -File ios/scripts/setup-ios-dev-windows.ps1 -All",
     "ios:lint": "pwsh -NoProfile -File ios/scripts/swift-lint-windows.ps1",
     "ios:format": "pwsh -NoProfile -File ios/scripts/swift-format-windows.ps1",
