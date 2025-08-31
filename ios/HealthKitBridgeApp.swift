@@ -3,16 +3,14 @@ import HealthKit
 
 @main
 struct HealthKitBridgeApp: App {
-    @StateObject private var healthManager = HealthKitManager()
-    @StateObject private var webSocketManager = WebSocketManager()
-    @StateObject private var appConfig = AppConfig()
+    @StateObject private var healthManager = HealthKitManager.shared
+    @StateObject private var webSocketManager = WebSocketManager.shared
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(healthManager)
                 .environmentObject(webSocketManager)
-                .environmentObject(appConfig)
                 .onAppear {
                     setupHealthMonitoring()
                 }
@@ -29,6 +27,8 @@ struct HealthKitBridgeApp: App {
 
             // Get device token and connect to WebSocket
             print("🔐 Getting device token...")
+            let appConfig = AppConfig.shared
+
             if let token = await ApiClient.shared.getDeviceToken(
                 userId: appConfig.userId,
                 deviceType: "ios_app"
@@ -38,7 +38,7 @@ struct HealthKitBridgeApp: App {
 
                 // Start health data streaming
                 print("📊 Starting health data streaming...")
-                healthManager.startLiveDataStreaming(webSocketManager: webSocketManager)
+                await healthManager.startLiveDataStreaming(webSocketManager: webSocketManager)
             } else {
                 print("❌ Failed to get device token")
             }

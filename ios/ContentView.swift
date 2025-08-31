@@ -7,11 +7,15 @@
 
 import SwiftUI
 import HealthKit
+import Foundation
 
 struct ContentView: View {
     @EnvironmentObject var healthManager: HealthKitManager
     @EnvironmentObject var webSocketManager: WebSocketManager
-    @EnvironmentObject var appConfig: AppConfig
+
+    private var appConfig: AppConfig {
+        AppConfig.shared
+    }
 
     var body: some View {
         NavigationView {
@@ -197,7 +201,6 @@ enum ConnectionStatus {
 
 #Preview {
     ContentView()
-        .environmentObject(HealthKitManager())
-        .environmentObject(WebSocketManager())
-        .environmentObject(AppConfig())
+        .environmentObject(HealthKitManager.shared)
+        .environmentObject(WebSocketManager.shared)
 }
