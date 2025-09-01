@@ -1,54 +1,129 @@
 param(
-  [string]$HostUrl = "http://127.0.0.1",
+  [string]$HostUrl = 'http://127.0.0.1',
   [int]$Port = 8787,
-  [string]$UserId = "demo-user",
-  [string]$ClientType = "ios_app",
-  [int]$TtlSec = 600
+  [string]$UserId = 'demo-user',
+  [string]$ClientType = 'ios_app',
+  [int]$TtlSec = 600,
+  [switch]$Verbose,
+  [switch]$JSON
 )
+
+# Import VS Code integration utilities
+$scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+Import-Module (Join-Path $scriptRoot 'VSCodeIntegration.psm1') -Force
 
 $ErrorActionPreference = 'Stop'
 
-function Write-Info($msg) {
-  Write-Host "[info] $msg" -ForegroundColor Cyan
-}
-function Write-Ok($msg) {
-  Write-Host "[ok]   $msg" -ForegroundColor Green
-}
-function Write-Warn($msg) {
-  Write-Host "[warn] $msg" -ForegroundColor Yellow
-}
-function Write-Err($msg) {
-  Write-Host "[err]  $msg" -ForegroundColor Red
-}
+# Legacy function wrappers for backward compatibility
+function Write-Info($msg) { Write-Info $msg }
+function Write-Ok($msg) { Write-Success $msg }
+function Write-Warn($msg) { Write-Warning $msg }
+function Write-Err($msg) { Write-TaskError 'Probe' $msg }
 
 $base = "${HostUrl}:$Port"
 
+Write-TaskStart 'Health Probe' "Testing endpoints at $base"
+
+# Environment info for Copilot context
+if ($Verbose) {
+  $envInfo = Get-EnvironmentInfo
+  Write-Info "Environment: PowerShell $($envInfo.PowerShellVersion) on $($envInfo.Platform)"
+  Write-Info "Working Directory: $($envInfo.WorkingDirectory)"
+}
+
+$results = @{
+  timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+  baseUrl   = $base
+  tests     = @()
+}
+
 # Probe /health
 try {
-  Write-Info "GET $base/health"
-  $health = Invoke-RestMethod -Uri "$base/health" -TimeoutSec 5
-  $health | ConvertTo-Json -Depth 5 | Write-Output
-  Write-Ok "/health ok ($($health.environment))"
+  Write-TaskStart 'Health Check' "GET $base/health"
+  $health = Invoke-SafeRestMethod -Uri "$base/health" -TimeoutSec 5
+
+  $testResult = @{
+    endpoint = '/health'
+    method   = 'GET'
+    status   = 'success'
+    response = $health
+  }
+  $results.tests += $testResult
+
+  if ($JSON) {
+    $health | ConvertTo-Json -Depth 5 | Write-Output
+  }
+  Write-TaskComplete 'Health Check' "Environment: $($health.environment)"
 } catch {
-  Write-Err "GET /health failed: $($_.Exception.Message)"
-  exit 1
+  $testResult = @{
+    endpoint = '/health'
+    method   = 'GET'
+    status   = 'failed'
+    error    = $_.Exception.Message
+  }
+  $results.tests += $testResult
+
+  Write-TaskError 'Health Check' $_.Exception.Message
+  if (-not $JSON) { exit 1 }
 }
 
 # Probe /api/device/auth
 try {
-  Write-Info "POST $base/api/device/auth"
-  $body = @{ userId = $UserId; clientType = $ClientType; ttlSec = $TtlSec } | ConvertTo-Json
-  $resp = Invoke-RestMethod -Method Post -Uri "$base/api/device/auth" -ContentType 'application/json' -Body $body -TimeoutSec 10
-  $resp | ConvertTo-Json -Depth 5 | Write-Output
+  Write-TaskStart 'Device Auth' "POST $base/api/device/auth"
+  $body = @{
+    userId     = $UserId
+    clientType = $ClientType
+    ttlSec     = $TtlSec
+  }
+
+  $resp = Invoke-SafeRestMethod -Method Post -Uri "$base/api/device/auth" -Body $body -TimeoutSec 10
+
+  $testResult = @{
+    endpoint = '/api/device/auth'
+    method   = 'POST'
+    status   = 'success'
+    response = $resp
+  }
+  $results.tests += $testResult
+
+  if ($JSON) {
+    $resp | ConvertTo-Json -Depth 5 | Write-Output
+  }
+
   if (-not $resp.ok) {
-    Write-Warn "Device auth returned error: $($resp.error)"
-    exit 2
+    Write-Warning "Device auth returned error: $($resp.error)"
+    if (-not $JSON) { exit 2 }
   } else {
-    Write-Ok "Token received, expiresIn=$($resp.expiresIn)s"
+    Write-TaskComplete 'Device Auth' "Token received, expiresIn=$($resp.expiresIn)s"
   }
 } catch {
-  Write-Err "POST /api/device/auth failed: $($_.Exception.Message)"
-  exit 1
+  $testResult = @{
+    endpoint = '/api/device/auth'
+    method   = 'POST'
+    status   = 'failed'
+    error    = $_.Exception.Message
+  }
+  $results.tests += $testResult
+
+  Write-TaskError 'Device Auth' $_.Exception.Message
+  if (-not $JSON) { exit 1 }
 }
 
-Write-Ok "Probes completed"
+# Summary
+$successCount = ($results.tests | Where-Object { $_.status -eq 'success' }).Count
+$totalCount = $results.tests.Count
+
+Write-TaskComplete 'Probe Summary' "$successCount/$totalCount tests passed"
+
+if ($JSON) {
+  $results | ConvertTo-Json -Depth 10 | Write-Output
+}
+
+# Set exit code based on results
+if ($successCount -eq $totalCount) {
+  Write-Success 'All probes completed successfully'
+  exit 0
+} else {
+  Write-TaskError 'Probe Summary' 'Some tests failed'
+  exit 1
+}

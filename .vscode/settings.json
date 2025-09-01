@@ -98,10 +98,52 @@
 
   // Terminal configuration
   "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell",
+      "args": ["-NoLogo", "-NoProfile"]
+    },
+    "PowerShell (Profile)": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell"
+    }
+  },
+  "terminal.integrated.commandsToSkipShell": [
+    "workbench.action.terminal.sendSequence"
+  ],
+  "terminal.integrated.enableBell": false,
+  "terminal.integrated.showExitAlert": false,
+  "terminal.integrated.scrollback": 10000,
+
+  // PowerShell specific settings
+  "powershell.codeFormatting.preset": "OTBS",
+  "powershell.codeFormatting.useConstantStrings": true,
+  "powershell.codeFormatting.useCorrectCasing": true,
+  "powershell.integratedConsole.showOnStartup": false,
+  "powershell.debugging.createTemporaryIntegratedConsole": true,
+  "powershell.scriptAnalysis.enable": true,
+  "powershell.scriptAnalysis.settingsPath": ".vscode/PSScriptAnalyzerSettings.psd1",
+
+  // Task and command output optimization
+  "task.verboseLogging": true,
+  "task.allowAutomaticTasks": "on",
+  "task.reconnection": true,
 
   // Breadcrumbs
   "breadcrumbs.enabled": true,
 
   // Problems panel
-  "problems.decorations.enabled": true
+  "problems.decorations.enabled": true,
+
+  // Copilot optimization
+  "github.copilot.enable": {
+    "*": true,
+    "yaml": true,
+    "plaintext": true,
+    "markdown": true,
+    "powershell": true
+  },
+  "github.copilot.editor.enableCodeActions": true,
+  "github.copilot.chat.localeOverride": "en"
 }

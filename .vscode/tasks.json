@@ -9,7 +9,23 @@
         "-NoProfile",
         "-Command",
         "$u='http://127.0.0.1:8787/health'; try { (Invoke-RestMethod -Uri $u -TimeoutSec 5) | ConvertTo-Json -Depth 5 } catch { $_.Exception.Message }"
-      ]
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false,
+        "close": false
+      },
+      "options": {
+        "shell": {
+          "executable": "pwsh",
+          "args": ["-NoProfile", "-ExecutionPolicy", "Bypass"]
+        }
+      }
     },
     {
       "label": "wrangler-dev-8788",
@@ -18,7 +34,74 @@
       "args": ["dev", "--env", "development", "--port", "8788"],
       "isBackground": true,
       "problemMatcher": ["$eslint-stylish"],
-      "group": "build"
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "probe-health-8788",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "$u='http://127.0.0.1:8788/health'; try { (Invoke-RestMethod -Uri $u -TimeoutSec 5) | ConvertTo-Json -Depth 5 } catch { $_.Exception.Message }"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Enhanced Task Runner",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "scripts/run-task.ps1",
+        "-Task",
+        "${input:taskType}",
+        "-Verbose"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Get Copilot Context",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "scripts/get-copilot-context.ps1",
+        "-Full",
+        "-Clipboard"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
     },
     {
       "label": "probe-health-8788",
@@ -338,6 +421,39 @@
         "panel": "shared"
       },
       "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "taskType",
+      "description": "Select task to run",
+      "type": "pickString",
+      "options": [
+        {
+          "label": "Development Server",
+          "value": "dev"
+        },
+        {
+          "label": "Run Tests",
+          "value": "test"
+        },
+        {
+          "label": "Build Project",
+          "value": "build"
+        },
+        {
+          "label": "Health Probe",
+          "value": "probe"
+        },
+        {
+          "label": "Deploy Application",
+          "value": "deploy"
+        },
+        {
+          "label": "Clean Build",
+          "value": "clean"
+        }
+      ]
     }
   ]
 }

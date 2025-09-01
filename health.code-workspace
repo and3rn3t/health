@@ -1,0 +1,71 @@
+{
+  "folders": [
+    {
+      "name": "Health App (Root)",
+      "path": ".",
+    },
+    {
+      "name": "iOS App",
+      "path": "./ios",
+    },
+    {
+      "name": "Documentation",
+      "path": "./docs",
+    },
+    {
+      "name": "Scripts",
+      "path": "./scripts",
+    },
+  ],
+  "settings": {
+    // Workspace-specific overrides
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/dist-worker": true,
+      "**/.wrangler": true,
+      "**/DerivedData": true,
+      "**/*.xcuserdata": true,
+      "**/logs": true,
+    },
+
+    // PowerShell workspace settings
+    "powershell.enableProfileLoading": false,
+    "powershell.scriptAnalysis.enable": true,
+    "powershell.integratedConsole.suppressStartupBanner": true,
+
+    // Task and terminal optimization
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    "task.autoDetect": "on",
+    "task.showDecorations": true,
+
+    // Search optimization
+    "search.followSymlinks": false,
+    "search.smartCase": true,
+    "search.exclude": {
+      "**/logs/**": true,
+      "**/.wrangler/**": true,
+      "**/DerivedData/**": true,
+    },
+  },
+
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.powershell",
+      "github.copilot",
+      "github.copilot-chat",
+      "cloudflare.vscode-cloudflare-workers",
+      "ms-vscode.vscode-typescript-next",
+    ],
+  },
+
+  "tasks": {
+    "version": "2.0.0",
+    "options": {
+      "shell": {
+        "executable": "pwsh",
+        "args": ["-NoProfile", "-ExecutionPolicy", "Bypass"],
+      },
+    },
+  },
+}
