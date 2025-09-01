@@ -20,6 +20,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build application
+        run: npm run build:app
+
       - name: Start Worker (wrangler dev --local)
         run: |
           npx wrangler --version
