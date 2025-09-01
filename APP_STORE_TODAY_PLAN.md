@@ -20,10 +20,10 @@
 2. **Create New App**
    - Click "My Apps" → "+" → "New App"
    - **Platform**: iOS
-   - **Name**: `HealthGuard - Fall Risk Monitor`
+   - **Name**: `HealthGuard Sync`
    - **Primary Language**: English (US)
-   - **Bundle ID**: `dev.andernet.healthkitbridge`
-   - **SKU**: `HEALTHGUARD-001`
+   - **Bundle ID**: `dev.andernet.healthguard.sync`
+   - **SKU**: `HEALTHGUARD-SYNC-001`
 
 3. **Set Basic Information**
    - **Category**: Medical
@@ -50,34 +50,36 @@ cp terms-of-service.md /path/to/website/terms/
 **App Store Description** (Ready to copy/paste):
 
 ```text
-Transform your Apple Health data into actionable insights with HealthGuard - the comprehensive health monitoring app designed to keep you safe and informed.
+HealthGuard Sync seamlessly bridges your Apple Health data with the HealthGuard monitoring platform, providing secure health data synchronization and basic emergency detection.
 
-🏥 COMPREHENSIVE HEALTH ANALYSIS
-• Deep analysis of Apple Health data
-• Advanced correlation analysis across all metrics
-• Personalized health insights and trends
-• Medical-grade accuracy and reliability
+🔄 SEAMLESS DATA SYNC
+• Automatic Apple Health data synchronization
+• Real-time health metric streaming
+• Secure encrypted data transmission
+• Background monitoring and updates
 
-🚨 PROACTIVE FALL PREVENTION
-• AI-powered fall risk assessment
-• Real-time walking steadiness monitoring
-• Early warning system for mobility decline
-• Personalized safety recommendations
-
-⚡ EMERGENCY RESPONSE SYSTEM
-• Automatic fall detection technology
-• Instant emergency contact notifications
-• GPS location sharing during emergencies
-• Comprehensive incident documentation
-
-👨‍⚕️ CAREGIVER COORDINATION
-• Family dashboard for caregivers
-• Real-time health status sharing
-• Emergency alert distribution
-• Long-term health trend analysis
+🚨 BASIC EMERGENCY DETECTION
+• Fall detection algorithm
+• Emergency contact notifications
+• Location sharing during emergencies
+• Incident logging and tracking
 
 🔒 PRIVACY & SECURITY FIRST
 • End-to-end encryption for all health data
+• Local-first data processing
+• HIPAA-compliant data handling
+• Full user control over data sharing
+
+� HEALTH DATA INTEGRATION
+• Heart rate and rhythm analysis
+• Walking steadiness monitoring
+• Sleep pattern tracking
+• Activity and exercise metrics
+
+COMPANION APP
+HealthGuard Sync works with the HealthGuard web platform to provide comprehensive health monitoring. Use HealthGuard Sync to securely sync your health data, then access detailed insights and analytics through the web dashboard.
+
+Download HealthGuard Sync to start secure health data monitoring today.
 • HIPAA-compliant data handling
 • Local data processing when possible
 • Transparent privacy controls
@@ -85,7 +87,7 @@ Transform your Apple Health data into actionable insights with HealthGuard - the
 Download HealthGuard today and take control of your health journey.
 ```
 
-**Keywords**: `health,fall detection,HealthKit,monitoring,safety,caregiver,elderly,wellness,medical`
+**Keywords**: `health sync,HealthKit,medical data,health monitoring,emergency detection,clinical,healthcare`
 
 **Support URL**: `https://health.andernet.dev/support`
 **Privacy Policy URL**: `https://health.andernet.dev/privacy`
