@@ -86,7 +86,21 @@ function Invoke-SafeRestMethod {
     Write-Success "HTTP $Method $Uri - Success"
     return $response
   } catch {
-    Write-TaskError "HTTP $Method $Uri" $_.Exception.Message
+    $errorMessage = $_.Exception.Message
+
+    # Try to get the response body for better debugging
+    if ($_.Exception.Response) {
+      try {
+        $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
+        $responseBody = $reader.ReadToEnd()
+        $reader.Close()
+        Write-TaskError "HTTP $Method $Uri" "$errorMessage - Response: $responseBody"
+      } catch {
+        Write-TaskError "HTTP $Method $Uri" $errorMessage
+      }
+    } else {
+      Write-TaskError "HTTP $Method $Uri" $errorMessage
+    }
     throw
   }
 }

@@ -97,15 +97,33 @@ try {
     Write-TaskComplete 'Device Auth' "Token received, expiresIn=$($resp.expiresIn)s"
   }
 } catch {
+  $errorMessage = $_.Exception.Message
+  $responseBody = $null
+
+  # Try to get the response body from the error
+  if ($_.Exception.Response) {
+    try {
+      $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
+      $responseBody = $reader.ReadToEnd()
+      $reader.Close()
+    } catch {
+      $responseBody = 'Could not read response body'
+    }
+  }
+
   $testResult = @{
-    endpoint = '/api/device/auth'
-    method   = 'POST'
-    status   = 'failed'
-    error    = $_.Exception.Message
+    endpoint     = '/api/device/auth'
+    method       = 'POST'
+    status       = 'failed'
+    error        = $errorMessage
+    responseBody = $responseBody
   }
   $results.tests += $testResult
 
-  Write-TaskError 'Device Auth' $_.Exception.Message
+  Write-TaskError 'Device Auth' $errorMessage
+  if ($responseBody) {
+    Write-TaskError 'Response Body' $responseBody
+  }
   if (-not $JSON) { exit 1 }
 }
 
