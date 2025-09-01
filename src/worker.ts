@@ -344,6 +344,14 @@ app.get('/api/_audit', async (c) => {
 
 // Issue short-lived JWTs for device/WebSocket auth
 app.post('/api/device/auth', async (c) => {
+  // Debug: log environment info
+  console.log('[DEBUG] Environment:', c.env.ENVIRONMENT);
+  console.log('[DEBUG] Has DEVICE_JWT_SECRET:', !!c.env.DEVICE_JWT_SECRET);
+  console.log(
+    '[DEBUG] Request headers:',
+    Object.fromEntries(c.req.raw.headers)
+  );
+
   // In production require upstream authentication before minting
   if (!(await requireAuth(c))) return c.json({ error: 'unauthorized' }, 401);
   const secret = c.env.DEVICE_JWT_SECRET;
