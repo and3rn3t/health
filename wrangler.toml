@@ -48,6 +48,11 @@ EMERGENCY_RESPONSE_DELAY = "30"
 MAX_FILE_SIZE = "500MB"
 SESSION_TIMEOUT = "12h"
 
+# Production KV namespaces
+[[env.production.kv_namespaces]]
+binding = "HEALTH_KV"
+id = "c3501957dd2540ccb6f624a78df59936"
+
 # Production routes
 [[env.production.routes]]
 pattern = "health.andernet.dev/*"
