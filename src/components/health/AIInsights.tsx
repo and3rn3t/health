@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -6,18 +7,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
+import { Textarea } from '@/components/ui/textarea';
+import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import {
+  AlertTriangle,
   Brain,
+  CheckCircle,
   Lightbulb,
   TrendingUp,
-  AlertTriangle,
-  CheckCircle,
 } from '@phosphor-icons/react';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface AIInsightsProps {
@@ -39,47 +39,37 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
   const [customQuery, setCustomQuery] = useState('');
   const [customResponse, setCustomResponse] = useState('');
 
-  if (!healthData) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-muted-foreground text-center">
-            No health data available for AI analysis
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   const generateAIInsights = async () => {
+    if (!healthData) return;
+
     setIsGenerating(true);
 
     try {
       // Simulate AI analysis using the Spark LLM API
       const prompt = spark.llmPrompt`
         Analyze the following health data and provide personalized insights:
-        
+
         Health Score: ${healthData?.healthScore || 0}/100
         Walking Steadiness Average: ${healthData?.metrics?.walkingSteadiness?.average || 0}%
         Daily Steps Average: ${healthData?.metrics?.steps?.average || 0}
         Heart Rate Average: ${healthData?.metrics?.heartRate?.average || 0} bpm
         Sleep Average: ${healthData?.metrics?.sleepHours?.average || 0} hours
-        
+
         Data Quality: ${healthData?.dataQuality?.overall || 'Unknown'}
         Fall Risk Factors: ${healthData?.fallRiskFactors?.map((f) => `${f.factor} (${f.risk} risk)`).join(', ') || 'None identified'}
-        
+
         Current Trends:
         - Steps: ${healthData?.metrics?.steps?.trend || 'stable'}
         - Heart Rate: ${healthData?.metrics?.heartRate?.trend || 'stable'}
         - Walking Steadiness: ${healthData?.metrics?.walkingSteadiness?.trend || 'stable'}
         - Sleep: ${healthData?.metrics?.sleepHours?.trend || 'stable'}
-        
+
         Please provide:
         1. Key health insights and recommendations
         2. Specific areas of concern or improvement
         3. Actionable next steps
         4. Predictions for the next 30 days
-        
+
         Focus on fall risk assessment and overall health optimization.
       `;
 
@@ -168,6 +158,23 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
     }
   };
 
+  useEffect(() => {
+    // Auto-generate insights when component mounts
+    generateAIInsights();
+  }, [healthData]);
+
+  if (!healthData) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-muted-foreground text-center">
+            No health data available for AI analysis
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const handleCustomQuery = async () => {
     if (!customQuery.trim()) return;
 
@@ -180,9 +187,9 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
         - Daily Steps: ${healthData?.metrics?.steps?.average || 0}
         - Heart Rate: ${healthData?.metrics?.heartRate?.average || 0} bpm
         - Sleep: ${healthData?.metrics?.sleepHours?.average || 0} hours
-        
+
         User question: ${customQuery}
-        
+
         Please provide a helpful, personalized response based on their health data.
       `;
 
@@ -195,11 +202,6 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
       setIsGenerating(false);
     }
   };
-
-  useEffect(() => {
-    // Auto-generate insights when component mounts
-    generateAIInsights();
-  }, [healthData]);
 
   const getInsightIcon = (type: AIInsight['type']) => {
     switch (type) {

@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { useKV } from '@github/spark/hooks';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -19,22 +19,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Target,
-  Plus,
-  Calendar,
-  Trophy,
-  Users,
-  Clock,
-} from '@phosphor-icons/react';
+import { useKV } from '@github/spark/hooks';
+import { Clock, Plus, Target, Trophy } from '@phosphor-icons/react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface Challenge {
@@ -171,7 +158,7 @@ export default function ChallengeCreator({ onChallengeCreated }: Props) {
     },
   ];
 
-  const usePreset = (preset: (typeof challengePresets)[0]) => {
+  const applyPreset = (preset: (typeof challengePresets)[0]) => {
     setFormData({
       title: preset.title,
       description: preset.description,
@@ -215,7 +202,7 @@ export default function ChallengeCreator({ onChallengeCreated }: Props) {
                   key={index}
                   variant="outline"
                   size="sm"
-                  onClick={() => usePreset(preset)}
+                  onClick={() => applyPreset(preset)}
                   className="h-auto flex-col gap-1 p-2 text-xs"
                 >
                   <span className="font-medium">{preset.title}</span>
