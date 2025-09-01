@@ -1,0 +1,12 @@
+{
+  "Version": "1.0.0",
+  "BundleId": "dev.andernet.healthkitbridge",
+  "AppName": "HealthGuard - Fall Risk Monitor",
+  "Subtitle": "Health insights & fall safety",
+  "BuildNumber": "1",
+  "TermsURL": "https://health.andernet.dev/terms",
+  "Keywords": "health,fall detection,HealthKit,monitoring,safety,caregiver,elderly,wellness,medical",
+  "SupportURL": "https://health.andernet.dev/support",
+  "PrivacyURL": "https://health.andernet.dev/privacy",
+  "Category": "Medical"
+}
