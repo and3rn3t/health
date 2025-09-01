@@ -97,22 +97,28 @@
   "git.confirmSync": false,
 
   // Terminal configuration
-  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.defaultProfile.windows": "PowerShell 7",
   "terminal.integrated.profiles.windows": {
-    "PowerShell": {
-      "source": "PowerShell",
+    "PowerShell 7": {
+      "path": "pwsh.exe",
+      "icon": "terminal-powershell",
+      "args": ["-NoLogo"]
+    },
+    "PowerShell 5": {
+      "path": "powershell.exe",
       "icon": "terminal-powershell",
       "args": ["-NoLogo", "-NoProfile"]
     },
-    "PowerShell (Profile)": {
-      "source": "PowerShell",
-      "icon": "terminal-powershell"
+    "PowerShell 7 (No Profile)": {
+      "path": "pwsh.exe",
+      "icon": "terminal-powershell",
+      "args": ["-NoLogo", "-NoProfile"]
     }
   },
   "terminal.integrated.commandsToSkipShell": [
     "workbench.action.terminal.sendSequence"
   ],
-  "terminal.integrated.enableBell": false,
+  "terminal.integrated.enableVisualBell": false,
   "terminal.integrated.showExitAlert": false,
   "terminal.integrated.scrollback": 10000,
 

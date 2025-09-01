@@ -127,6 +127,23 @@ By following these rules, Copilot should generate code that compiles with Vite +
 - Use dependency injection for testability (especially for HealthKit which doesn't work in simulator)
 - WebSocket connections need proper ATS configuration for development
 
+### iOS Development Tools and Scripts
+
+- **iOS workspace**: `ios/` contains complete Xcode project with enhanced development tooling
+- **Build tools**: `ios/scripts/ios-build-simulator.ps1`, `ios/scripts/fast-build.sh` for optimized building
+- **Testing**: `ios/scripts/ios-test-runner.ps1`, comprehensive test suites in `HealthKitBridgeTests/`
+- **Code quality**: `ios/scripts/swift-lint-windows.ps1`, `ios/scripts/swift-format-windows.ps1`
+- **Performance**: `ios/scripts/swift-performance-analyzer.ps1`, `ios/scripts/swift-dependency-analyzer.ps1`
+- **Deployment**: `ios/scripts/main-app-deploy.ps1` for environment-specific deployments
+- **VS Code integration**: `ios/.vscode/` with iOS-specific tasks and settings
+
+### iOS Project Structure
+
+- **Main app**: `ios/HealthKitBridge/` - singleton managers, WebSocket integration, HealthKit bridge
+- **Core files**: `HealthKitManager.swift`, `WebSocketManager.swift`, `ApiClient.swift`, `AppConfig.swift`
+- **Configuration**: Environment-specific configs in `Config.plist`, `TestConfig.plist`
+- **Tests**: Unit tests in `HealthKitBridgeTests/`, UI tests in `HealthKitBridgeUITests/`
+
 ## WebSocket & Networking Resilience
 
 - Implement message queuing and retry logic - network is unreliable
@@ -155,10 +172,28 @@ By following these rules, Copilot should generate code that compiles with Vite +
 
 ## Problem-Solving References
 
-- Check `docs/PROBLEM_SOLUTIONS_DATABASE.md` for comprehensive issue catalog
-- See `docs/BUILD_TROUBLESHOOTING.md` for specific Swift/TypeScript build issues
-- Reference `docs/LESSONS_LEARNED.md` for architectural insights
+- Check `docs/troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md` for comprehensive issue catalog
+- See `docs/troubleshooting/BUILD_TROUBLESHOOTING.md` for specific Swift/TypeScript build issues
+- Reference `docs/project-management/LESSONS_LEARNED.md` for architectural insights
 - Use `docs/README.md` as navigation hub for all documentation
+
+### Documentation Structure
+
+- **Architecture**: `docs/architecture/` - PRD, API specs, WebSocket protocols, system design
+- **Development**: `docs/development/` - setup guides, IDE configuration, Copilot prompts, PowerShell integration
+- **iOS**: `docs/ios/` - iOS development on Windows, testing guides, deployment procedures
+- **Deployment**: `docs/deployment/` - Cloudflare setup, DNS configuration, infrastructure hardening
+- **Getting Started**: `docs/getting-started/` - quick start guides and setup instructions
+- **Security**: `docs/security/` - security baseline, retention policies, compliance guidelines
+- **Troubleshooting**: `docs/troubleshooting/` - problem database, build issues, common solutions
+
+### Key Reference Files for Development
+
+- `docs/development/POWERSHELL_VSCODE_INTEGRATION.md` - Complete PowerShell-VS Code integration guide
+- `docs/ios/IOS_DEVELOPMENT_WINDOWS.md` - iOS development setup and workflows on Windows
+- `docs/architecture/API.md` - Complete API documentation and endpoints
+- `docs/architecture/WEBSOCKETS.md` - WebSocket protocol and message types
+- `docs/troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md` - Comprehensive solutions database
 
 ## AI Assistant Optimization
 
@@ -167,3 +202,84 @@ By following these rules, Copilot should generate code that compiles with Vite +
 - Request full file contents rather than snippets to avoid context loss
 - Ask for security review of any code handling health data
 - Reference the problem database before implementing solutions to avoid known issues
+
+## PowerShell & Development Tooling Integration
+
+This project has enhanced PowerShell-VS Code-Copilot integration for optimal development experience:
+
+### PowerShell Scripts and Utilities
+
+- **Core utilities**: `scripts/VSCodeIntegration.psm1` - shared functions for logging, HTTP requests, process management
+- **Task runner**: `scripts/run-task.ps1` - unified task execution with progress tracking and background support
+- **Health probe**: `scripts/probe.ps1` - enhanced endpoint testing with JSON output and verbose modes
+- **Context gathering**: `scripts/get-copilot-context.ps1` - collects environment info for better Copilot interactions
+- **Enhanced profile**: `scripts/PowerShell-Profile.ps1` - development-optimized PowerShell profile
+
+### VS Code Configuration
+
+- **Settings**: `.vscode/settings.json` includes PowerShell-specific optimizations, terminal config, and Copilot settings
+- **Tasks**: `.vscode/tasks.json` has enhanced task definitions with proper presentation, timeouts, and instance limits
+- **Script analysis**: `.vscode/PSScriptAnalyzerSettings.psd1` ensures consistent PowerShell code quality
+- **Workspace**: `health.code-workspace` provides multi-folder workspace with optimized settings
+
+### Development Workflow Commands
+
+```powershell
+# Start development server with progress tracking
+./scripts/run-task.ps1 -Task dev -Background
+
+# Enhanced health checking with context
+./scripts/probe.ps1 -Verbose -JSON
+
+# Gather environment context for Copilot
+./scripts/get-copilot-context.ps1 -Full -Clipboard
+
+# Quick profile commands (when profile loaded)
+dev          # Start development server
+probe        # Health check endpoints
+Get-Context  # Environment information
+Kill-Port 8787  # Terminate processes on specific ports
+```
+
+### PowerShell Best Practices for This Project
+
+- Always use `scripts/VSCodeIntegration.psm1` utilities for consistent logging and error handling
+- Include `-Verbose` and `-JSON` parameters for debugging and automation
+- Use `Write-TaskStart`, `Write-TaskComplete`, `Write-TaskError` for status reporting
+- Implement proper timeout handling and background process management
+- Provide structured output that Copilot can parse and understand
+
+### Integration Features
+
+- **Consistent logging**: Timestamped, color-coded output that VS Code and Copilot can parse
+- **Background task management**: Proper process lifecycle management with cleanup
+- **Context awareness**: Scripts that gather and report development environment state
+- **Error resilience**: Timeout handling, retry logic, and graceful failure modes
+- **VS Code optimization**: Task presentation, terminal management, and output formatting
+
+### Troubleshooting Command Hanging Issues
+
+- Use `-NoProfile` flag in script execution to avoid slow profile loading
+- Check `.vscode/tasks.json` for proper timeout and presentation settings
+- Use background task management utilities instead of blocking commands
+- Monitor processes with `Get-Process` and clean up with utilities like `Kill-Port`
+
+When working with PowerShell scripts in this project, always consider VS Code integration and Copilot context. Reference `docs/development/POWERSHELL_VSCODE_INTEGRATION.md` for comprehensive usage guide.
+
+### Available VS Code Tasks
+
+The project includes comprehensive VS Code tasks accessible via `Ctrl+Shift+P` → "Tasks: Run Task":
+
+- **Health checking**: `probe-health`, `probe-health-8788`, `probe-health-8789` for endpoint testing
+- **Development servers**: `wrangler-dev-8788`, `wrangler-dev-8789` for Cloudflare Workers development
+- **Enhanced workflow**: `Enhanced Task Runner` with interactive task selection
+- **Context gathering**: `Get Copilot Context` for environment information
+- **iOS development**: Complete iOS build, test, lint, and deployment tasks
+- **Code quality**: Swift linting, formatting, performance analysis, and dependency checking
+
+### VS Code Workspace Features
+
+- Multi-folder workspace with `health.code-workspace` for organized development
+- Folder-specific settings for iOS, documentation, and scripts
+- Optimized search exclusions and file associations
+- PowerShell execution policy handling and terminal configuration

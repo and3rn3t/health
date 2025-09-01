@@ -7,8 +7,24 @@
       "command": "pwsh",
       "args": [
         "-NoProfile",
-        "-Command",
-        "$u='http://127.0.0.1:8787/health'; try { (Invoke-RestMethod -Uri $u -TimeoutSec 5) | ConvertTo-Json -Depth 5 } catch { $_.Exception.Message }"
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "scripts/simple-probe.ps1",
+        "-Port",
+        "8787"
+      ],
+      "label": "probe-health",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "scripts/simple-probe.ps1",
+        "-Port",
+        "8787"
       ],
       "group": "test",
       "presentation": {
@@ -50,11 +66,15 @@
     {
       "label": "probe-health-8788",
       "type": "shell",
-      "command": "pwsh",
+      "command": "powershell",
       "args": [
         "-NoProfile",
-        "-Command",
-        "$u='http://127.0.0.1:8788/health'; try { (Invoke-RestMethod -Uri $u -TimeoutSec 5) | ConvertTo-Json -Depth 5 } catch { $_.Exception.Message }"
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "scripts/simple-probe.ps1",
+        "-Port",
+        "8788"
       ],
       "group": "test",
       "presentation": {
@@ -87,13 +107,13 @@
     {
       "label": "Get Copilot Context",
       "type": "shell",
-      "command": "pwsh",
+      "command": "powershell",
       "args": [
         "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
         "-File",
-        "scripts/get-copilot-context.ps1",
-        "-Full",
-        "-Clipboard"
+        "scripts/simple-context.ps1"
       ],
       "group": "test",
       "presentation": {
