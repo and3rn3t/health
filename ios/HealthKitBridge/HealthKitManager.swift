@@ -1,6 +1,7 @@
 import Foundation
 import HealthKit
 import UIKit
+import SwiftUI
 
 // MARK: - Health Data Model
 struct HealthData {
@@ -18,18 +19,18 @@ class ConnectionQualityMonitor: ObservableObject {
     @Published var latency: TimeInterval = 0.0
     @Published var packetLoss: Double = 0.0
     @Published var reconnectCount: Int = 0
-    
+
     private var lastPingTime: Date?
-    
+
     func recordPing() {
         lastPingTime = Date()
     }
-    
+
     func recordPong() {
         guard let pingTime = lastPingTime else { return }
         latency = Date().timeIntervalSince(pingTime)
     }
-    
+
     func recordReconnect() {
         reconnectCount += 1
     }
@@ -43,14 +44,14 @@ class HealthKitManager: NSObject, ObservableObject {
     private var webSocketManager: WebSocketManager?
     private var deviceToken: String?
     private let userId: String
-    
+
     // Enhanced configuration using new config system
     private let config = EnhancedAppConfig.shared
 
     // Health data types we want to read - optimized based on config with safe initialization
     private lazy var healthDataTypes: Set<HKObjectType> = {
         var types: Set<HKObjectType> = []
-        
+
         // Safely add health data types with proper error handling
         if let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate) {
             types.insert(heartRateType)
@@ -67,14 +68,14 @@ class HealthKitManager: NSObject, ObservableObject {
         if let basalEnergyType = HKQuantityType.quantityType(forIdentifier: .basalEnergyBurned) {
             types.insert(basalEnergyType)
         }
-        
+
         // Add additional types for non-production environments
         if config.getCurrentEnvironment() != .production {
             if let walkingSteadiness = HKQuantityType.quantityType(forIdentifier: .appleWalkingSteadiness) {
                 types.insert(walkingSteadiness)
             }
         }
-        
+
         return types
     }()
 
@@ -86,7 +87,7 @@ class HealthKitManager: NSObject, ObservableObject {
     @Published var lastWalkingSteadiness: Double?
     @Published var lastActiveEnergy: Double?
     @Published var lastDistance: Double?
-    
+
     // Enhanced monitoring stats with performance optimizations
     @Published var totalDataPointsSent: Int = 0
     @Published var dataPointsPerMinute: Double = 0.0
@@ -99,10 +100,10 @@ class HealthKitManager: NSObject, ObservableObject {
     }
     @Published var connectionQuality = ConnectionQualityMonitor()
     @Published var healthDataFreshness: [String: Date] = [:]
-    
+
     // Performance tracking
     private var lastMinuteDataPoints: [Date] = []
-    
+
     var activeQueries: [HKQuery] = []
     private var dataPointTimer: Timer?
     private var performanceMonitor: PerformanceMonitor?
@@ -112,12 +113,12 @@ class HealthKitManager: NSObject, ObservableObject {
         // Use enhanced config
         self.userId = config.userId
         super.init()
-        
+
         // Initialize performance monitoring if enabled
         if config.enablePerformanceMonitoring {
             performanceMonitor = PerformanceMonitor()
         }
-        
+
         // Ensure initial state is properly set
         DispatchQueue.main.async {
             self.isMonitoringActive = false
@@ -126,11 +127,11 @@ class HealthKitManager: NSObject, ObservableObject {
                 print("🔧 Configuration: \(self.config.getConfigurationSummary())")
             }
         }
-        
+
         checkAuthorizationStatus()
         startDataPointTracking()
     }
-    
+
     private func startDataPointTracking() {
         // Use optimized sync interval from config
         let interval = config.getOptimalSyncInterval()
@@ -138,18 +139,18 @@ class HealthKitManager: NSObject, ObservableObject {
             self?.updateDataPointsPerMinute()
         }
     }
-    
+
     private func updateDataPointsPerMinute() {
         let now = Date()
         let oneMinuteAgo = now.addingTimeInterval(-60)
-        
+
         // Remove data points older than 1 minute
         lastMinuteDataPoints = lastMinuteDataPoints.filter { $0 > oneMinuteAgo }
-        
+
         // Update rate
         dataPointsPerMinute = Double(lastMinuteDataPoints.count)
     }
-    
+
     private func recordDataPoint() {
         lastMinuteDataPoints.append(Date())
         totalDataPointsSent += 1
@@ -159,7 +160,7 @@ class HealthKitManager: NSObject, ObservableObject {
     // Request HealthKit permissions with enhanced feedback
     func requestAuthorization() async {
         performanceMonitor?.startTiming("authorization")
-        
+
         if config.shouldLogDebugInfo() {
             print("📋 Requesting HealthKit authorization...")
         }
@@ -186,27 +187,27 @@ class HealthKitManager: NSObject, ObservableObject {
             return
         }
         let primaryTypes: Set<HKObjectType> = [stepType]
-        
+
         do {
             if config.shouldLogDebugInfo() {
                 print("📋 Requesting authorization for step count first...")
             }
             try await healthStore.requestAuthorization(toShare: [], read: primaryTypes)
-            
+
             // Test step count access immediately
             await testStepCountAccess()
-            
+
             // If step count worked, try additional types
             if isAuthorized {
                 if config.shouldLogDebugInfo() {
                     print("📋 Step count authorized, requesting additional health data types...")
                 }
                 try await healthStore.requestAuthorization(toShare: [], read: healthDataTypes)
-                
+
                 // Wait a moment for system to process - use config timeout
                 let waitTime = min(config.connectionTimeout, 2.0) // Cap at 2 seconds for responsiveness
                 try? await Task.sleep(nanoseconds: UInt64(waitTime * 1_000_000_000))
-                
+
                 // Update status after full request
                 await MainActor.run {
                     self.checkAuthorizationStatus()
@@ -215,11 +216,11 @@ class HealthKitManager: NSObject, ObservableObject {
                         print("✅ Full HealthKit authorization process completed")
                     }
                 }
-                
+
                 // Test all data types for better feedback
                 await testAllDataTypes()
             }
-            
+
         } catch {
             if config.shouldLogDebugInfo() {
                 print("❌ HealthKit authorization failed with error: \(error)")
@@ -230,10 +231,10 @@ class HealthKitManager: NSObject, ObservableObject {
                 self.lastError = "Authorization failed: \(error.localizedDescription)"
             }
         }
-        
+
         performanceMonitor?.endTiming("authorization")
     }
-    
+
     private func testAllDataTypes() async {
         let testTypes: [(String, HKQuantityType?)] = [
             ("Heart Rate", HKQuantityType.quantityType(forIdentifier: .heartRate)),
@@ -241,7 +242,7 @@ class HealthKitManager: NSObject, ObservableObject {
             ("Distance", HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)),
             ("Active Energy", HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned))
         ]
-        
+
         for (name, optionalType) in testTypes {
             guard let type = optionalType else {
                 print("📊 \(name): Not available on this system")
@@ -251,27 +252,27 @@ class HealthKitManager: NSObject, ObservableObject {
             print("📊 \(name): \(statusDescription(status))")
         }
     }
-    
+
     private func testStepCountAccess() async {
         print("🔬 Testing step count data access...")
-        
+
         guard let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount) else {
             print("🔬 Step count type not available on this system")
             return
         }
-        
+
         let calendar = Calendar.current
         let now = Date()
         let startOfDay = calendar.startOfDay(for: now)
         let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: now, options: .strictStartDate)
-        
+
         return await withCheckedContinuation { continuation in
             let query = HKStatisticsQuery(
                 quantityType: stepType,
                 quantitySamplePredicate: predicate,
                 options: .cumulativeSum
             ) { [weak self] query, result, error in
-                
+
                 if let error = error {
                     print("🔬 Step count access test failed: \(error)")
                     DispatchQueue.main.async {
@@ -283,7 +284,7 @@ class HealthKitManager: NSObject, ObservableObject {
                     DispatchQueue.main.async {
                         self?.isAuthorized = true
                         self?.authorizationStatus = .sharingAuthorized
-                        
+
                         if let sum = result.sumQuantity() {
                             let steps = sum.doubleValue(for: HKUnit.count())
                             self?.lastStepCount = steps
@@ -297,14 +298,14 @@ class HealthKitManager: NSObject, ObservableObject {
                         self?.authorizationStatus = .sharingAuthorized
                     }
                 }
-                
+
                 continuation.resume()
             }
-            
+
             self.healthStore.execute(query)
         }
     }
-    
+
     private func checkAuthorizationStatus() {
         // Check authorization for multiple key types to get a better picture with safe initialization
         let keyTypes: [HKQuantityType] = [
@@ -312,17 +313,17 @@ class HealthKitManager: NSObject, ObservableObject {
             HKQuantityType.quantityType(forIdentifier: .stepCount),
             HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)
         ].compactMap { $0 } // Remove any nil values safely
-        
+
         var statusMessages: [String] = []
         var authorizedCount = 0
         var deniedCount = 0
         var notDeterminedCount = 0
-        
+
         for type in keyTypes {
             let status = healthStore.authorizationStatus(for: type)
             let typeName = type.identifier.replacingOccurrences(of: "HKQuantityTypeIdentifier", with: "")
             statusMessages.append("\(typeName): \(statusDescription(status))")
-            
+
             switch status {
             case .sharingAuthorized:
                 authorizedCount += 1
@@ -334,19 +335,19 @@ class HealthKitManager: NSObject, ObservableObject {
                 notDeterminedCount += 1
             }
         }
-        
+
         // Use step count as the primary indicator since it's most commonly granted
         if let stepCountType = HKQuantityType.quantityType(forIdentifier: .stepCount) {
             authorizationStatus = healthStore.authorizationStatus(for: stepCountType)
         } else {
             print("⚠️ Step count type not available on this system")
         }
-        
+
         print("📊 HealthKit authorization status details:")
         for message in statusMessages {
             print("   \(message)")
         }
-        
+
         if authorizedCount > 0 {
             // If ANY data type is authorized, consider it a success
             isAuthorized = true
@@ -361,7 +362,7 @@ class HealthKitManager: NSObject, ObservableObject {
             testActualDataAccess()
         }
     }
-    
+
     private func statusDescription(_ status: HKAuthorizationStatus) -> String {
         switch status {
         case .notDetermined:
@@ -389,38 +390,38 @@ class HealthKitManager: NSObject, ObservableObject {
 
         // Send initial data snapshot
         try? await sendCurrentHealthData()
-        
+
         // Start periodic health checks
         startPeriodicHealthCheck()
     }
-    
+
     private func startPeriodicHealthCheck() {
         // Clean up existing timer first
         periodicHealthCheckTimer?.invalidate()
-        
+
         periodicHealthCheckTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
             Task {
                 await self?.performHealthCheck()
             }
         }
     }
-    
+
     private func performHealthCheck() async {
         print("🔍 Performing periodic health check...")
-        
+
         // Check data freshness
         let now = Date()
         let staleThreshold: TimeInterval = 300 // 5 minutes
-        
+
         for (dataType, lastUpdate) in healthDataFreshness {
             if now.timeIntervalSince(lastUpdate) > staleThreshold {
                 print("⚠️ \(dataType) data is stale (last update: \(lastUpdate))")
             }
         }
-        
+
         // Test connection quality
         connectionQuality.recordPing()
-        
+
         // Optionally fetch fresh data if needed
         if healthDataFreshness.isEmpty || healthDataFreshness.values.allSatisfy({ now.timeIntervalSince($0) > 60 }) {
             try? await sendCurrentHealthData()
@@ -435,7 +436,7 @@ class HealthKitManager: NSObject, ObservableObject {
         observeActiveEnergy()
         observeDistance()
     }
-    
+
     private func observeHeartRate() {
         guard let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate) else {
             print("⚠️ Heart rate type not available on this system")
@@ -511,7 +512,7 @@ class HealthKitManager: NSObject, ObservableObject {
         healthStore.execute(query)
         activeQueries.append(query)
     }
-    
+
     private func observeActiveEnergy() {
         guard let energyType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned) else {
             print("⚠️ Active energy type not available on this system")
@@ -534,7 +535,7 @@ class HealthKitManager: NSObject, ObservableObject {
         healthStore.execute(query)
         activeQueries.append(query)
     }
-    
+
     private func observeDistance() {
         guard let distanceType = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning) else {
             print("⚠️ Distance type not available on this system")
@@ -557,13 +558,13 @@ class HealthKitManager: NSObject, ObservableObject {
         healthStore.execute(query)
         activeQueries.append(query)
     }
-    
+
     private func fetchLatestActiveEnergy() async {
         guard let energyType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned) else {
             print("⚠️ Active energy type not available on this system")
             return
         }
-        
+
         let calendar = Calendar.current
         let now = Date()
         let startOfDay = calendar.startOfDay(for: now)
@@ -589,13 +590,13 @@ class HealthKitManager: NSObject, ObservableObject {
 
         healthStore.execute(query)
     }
-    
+
     private func fetchLatestDistance() async {
         guard let distanceType = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning) else {
             print("⚠️ Distance type not available on this system")
             return
         }
-        
+
         let calendar = Calendar.current
         let now = Date()
         let startOfDay = calendar.startOfDay(for: now)
@@ -706,7 +707,7 @@ class HealthKitManager: NSObject, ObservableObject {
 
         healthStore.execute(query)
     }
-    
+
     internal func sendHealthData(type: String, value: Double, unit: String, timestamp: Date) async {
         guard let webSocketManager = webSocketManager else {
             print("⚠️ WebSocket manager not available")
@@ -739,40 +740,40 @@ class HealthKitManager: NSObject, ObservableObject {
 
     func sendCurrentHealthData() async throws {
         print("📤 Sending comprehensive health data snapshot...")
-        
+
         // Verify we have WebSocket connection
         guard webSocketManager != nil else {
             throw NSError(domain: "HealthKitManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "WebSocket not connected"])
         }
-        
+
         // Verify HealthKit authorization
         guard isAuthorized else {
             throw NSError(domain: "HealthKitManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "HealthKit not authorized"])
         }
-        
+
         var errors: [String] = []
         var successCount = 0
-        
+
         // Fetch and send each health data type
         await fetchLatestHeartRate()
         successCount += 1
-        
+
         await fetchLatestStepCount()
         successCount += 1
-        
+
         await fetchLatestWalkingSteadiness()
         successCount += 1
-        
+
         await fetchLatestActiveEnergy()
         successCount += 1
-        
+
         await fetchLatestDistance()
         successCount += 1
-        
+
         await MainActor.run {
             self.healthDataFreshness["snapshot"] = Date()
         }
-        
+
         // Report results
         if errors.isEmpty {
             print("✅ Successfully refreshed all health data (5/5 metrics)")
@@ -787,7 +788,7 @@ class HealthKitManager: NSObject, ObservableObject {
 
     func sendTestData() async {
         print("🧪 Sending enhanced test health data...")
-        
+
         let testData = [
             HealthData(
                 type: "heart_rate",
@@ -833,7 +834,7 @@ class HealthKitManager: NSObject, ObservableObject {
                 print("❌ Failed to send test data: \(error)")
             }
         }
-        
+
         await MainActor.run {
             lastHeartRate = testData[0].value
             lastStepCount = testData[1].value
@@ -845,28 +846,28 @@ class HealthKitManager: NSObject, ObservableObject {
     // Enhanced monitoring stop with cleanup
     func stopMonitoring() {
         print("⏹️ Stopping comprehensive health data monitoring...")
-        
+
         for query in activeQueries {
             healthStore.stop(query)
         }
         activeQueries.removeAll()
-        
+
         // Clean up all timers
         dataPointTimer?.invalidate()
         dataPointTimer = nil
-        
+
         periodicHealthCheckTimer?.invalidate()
         periodicHealthCheckTimer = nil
-        
+
         isMonitoringActive = false
-        
+
         print("✅ Health monitoring stopped and cleaned up")
     }
-    
+
     deinit {
         print("🗑️ HealthKitManager deinitializing - cleaning up resources")
         stopMonitoring()
-        
+
         // Additional cleanup for observers
         for dataType in healthDataTypes {
             if let quantityType = dataType as? HKQuantityType {
@@ -874,14 +875,14 @@ class HealthKitManager: NSObject, ObservableObject {
             }
         }
     }
-    
+
     // MARK: - Utility Methods
-    
+
     func getConnectionSummary() -> String {
         let quality = connectionQuality.signalStrength > 0.8 ? "Excellent" :
                      connectionQuality.signalStrength > 0.6 ? "Good" :
                      connectionQuality.signalStrength > 0.4 ? "Fair" : "Poor"
-        
+
         return """
         Status: \(isMonitoringActive ? "Active" : "Inactive")
         Quality: \(quality)
@@ -890,10 +891,10 @@ class HealthKitManager: NSObject, ObservableObject {
         Latency: \(String(format: "%.0f", connectionQuality.latency * 1000))ms
         """
     }
-    
+
     func getHealthDataSummary() -> String {
         var summary: [String] = []
-        
+
         if let hr = lastHeartRate {
             summary.append("❤️ \(Int(hr)) BPM")
         }
@@ -906,29 +907,29 @@ class HealthKitManager: NSObject, ObservableObject {
         if let distance = lastDistance {
             summary.append("📏 \(String(format: "%.1f", distance/1000)) km")
         }
-        
+
         return summary.joined(separator: " • ")
     }
-    
+
     private func testActualDataAccess() {
         print("🔍 Testing actual HealthKit data access...")
-        
+
         guard let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount) else {
             print("🔍 Step count type not available on this system")
             return
         }
-        
+
         let calendar = Calendar.current
         let now = Date()
         let startOfDay = calendar.startOfDay(for: now)
         let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: now, options: .strictStartDate)
-        
+
         let query = HKStatisticsQuery(
             quantityType: stepType,
             quantitySamplePredicate: predicate,
             options: .cumulativeSum
         ) { [weak self] query, result, error in
-            
+
             if let error = error {
                 print("🔍 Data access test failed with error: \(error)")
                 DispatchQueue.main.async {
@@ -937,13 +938,13 @@ class HealthKitManager: NSObject, ObservableObject {
                 }
                 return
             }
-            
+
             if let result = result {
                 print("🔍 Data access test succeeded!")
                 DispatchQueue.main.async {
                     self?.isAuthorized = true
                     print("✅ Actual data access confirmed")
-                    
+
                     if let sum = result.sumQuantity() {
                         let steps = sum.doubleValue(for: HKUnit.count())
                         self?.lastStepCount = steps
@@ -955,27 +956,27 @@ class HealthKitManager: NSObject, ObservableObject {
                 self?.testHeartRateAccess()
             }
         }
-        
+
         healthStore.execute(query)
     }
-    
+
     private func testHeartRateAccess() {
         print("🔍 Testing heart rate data access as fallback...")
-        
+
         guard let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate) else {
             print("🔍 Heart rate type not available on this system")
             return
         }
-        
+
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        
+
         let query = HKSampleQuery(
             sampleType: heartRateType,
             predicate: nil,
             limit: 1,
             sortDescriptors: [sortDescriptor]
         ) { [weak self] query, samples, error in
-            
+
             if let error = error {
                 print("🔍 Heart rate access test failed: \(error)")
                 DispatchQueue.main.async {
@@ -984,13 +985,13 @@ class HealthKitManager: NSObject, ObservableObject {
                 }
                 return
             }
-            
+
             print("🔍 Heart rate access test completed")
-            
+
             DispatchQueue.main.async {
                 self?.isAuthorized = true
                 print("✅ Heart rate access confirmed")
-                
+
                 if let sample = samples?.first as? HKQuantitySample {
                     let heartRate = sample.quantity.doubleValue(for: HKUnit.count().unitDivided(by: .minute()))
                     self?.lastHeartRate = heartRate
@@ -998,7 +999,7 @@ class HealthKitManager: NSObject, ObservableObject {
                 }
             }
         }
-        
+
         healthStore.execute(query)
     }
 }

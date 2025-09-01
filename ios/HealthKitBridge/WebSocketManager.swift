@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 class WebSocketManager: NSObject, ObservableObject {
     static let shared = WebSocketManager()
@@ -9,7 +10,7 @@ class WebSocketManager: NSObject, ObservableObject {
     @Published var isConnected: Bool = false
     @Published var connectionStatus: String = "Disconnected"
     @Published var lastError: String?
-    
+
     private var reconnectTimer: Timer?
     private var reconnectAttempts = 0
     private let maxReconnectAttempts = 3
@@ -53,25 +54,25 @@ class WebSocketManager: NSObject, ObservableObject {
                 fatalError("Unable to create any valid WebSocket URL - critical configuration error")
             }
         }
-        
+
         super.init()
 
         let sessionConfig = URLSessionConfiguration.default
         sessionConfig.timeoutIntervalForRequest = 10
         sessionConfig.timeoutIntervalForResource = 30
         self.urlSession = URLSession(
-            configuration: sessionConfig, 
-            delegate: self, 
+            configuration: sessionConfig,
+            delegate: self,
             delegateQueue: OperationQueue()
         )
-        
+
         updateConnectionStatus("Ready to connect")
     }
 
     func connect(with token: String) async {
         print("🔌 Connecting to WebSocket with token...")
         currentToken = token
-        
+
         await MainActor.run {
             self.updateConnectionStatus("Connecting...")
         }
@@ -81,12 +82,12 @@ class WebSocketManager: NSObject, ObservableObject {
             print("✅ Real WebSocket connection successful")
             return
         }
-        
+
         // Fall back to mock connection
         print("🔄 Real connection failed, using mock connection for testing")
         await setupMockConnection()
     }
-    
+
     private func tryRealConnection(token: String) async -> Bool {
         var url = baseURL
         if var components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
@@ -95,15 +96,15 @@ class WebSocketManager: NSObject, ObservableObject {
             components.queryItems = queryItems
             url = components.url ?? baseURL
         }
-        
+
         print("🔌 Attempting real connection to: \(url.absoluteString)")
-        
+
         return await withCheckedContinuation { [weak self] continuation in
             var hasResumed = false
-            
+
             self?.task?.cancel()
             self?.task = self?.urlSession.webSocketTask(with: url)
-            
+
             // Set up a timeout to detect connection failure with proper cleanup
             let timeoutTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { _ in
                 if !hasResumed {
@@ -115,21 +116,21 @@ class WebSocketManager: NSObject, ObservableObject {
                     continuation.resume(returning: false)
                 }
             }
-            
+
             // Store timer reference for cleanup
             self?.connectionTimeoutTimer = timeoutTimer
-            
+
             // Start the connection
             self?.task?.resume()
-            
+
             // Try to send a ping to test connectivity
             self?.task?.sendPing { [weak self] error in
                 self?.connectionTimeoutTimer?.invalidate()
                 self?.connectionTimeoutTimer = nil
-                
+
                 if !hasResumed {
                     hasResumed = true
-                    
+
                     if let error = error {
                         print("❌ Real connection failed: \(error.localizedDescription)")
                         DispatchQueue.main.async {
@@ -151,62 +152,62 @@ class WebSocketManager: NSObject, ObservableObject {
             }
         }
     }
-    
+
     private func setupMockConnection() async {
         print("🧪 Setting up mock WebSocket connection for testing")
-        
+
         await MainActor.run {
             self.isMockMode = true
             self.isConnected = true
             self.updateConnectionStatus("Connected (Mock)")
             self.lastError = nil
         }
-        
+
         // Simulate connection delay
         try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-        
+
         print("✅ Mock WebSocket connection established")
     }
 
     func disconnect() {
         print("🔌 Disconnecting WebSocket...")
-        
+
         // Clean up timers
         connectionTimeoutTimer?.invalidate()
         connectionTimeoutTimer = nil
-        
+
         task?.cancel(with: .goingAway, reason: nil)
         task = nil
-        
+
         DispatchQueue.main.async {
             self.isConnected = false
             self.isMockMode = false
             self.updateConnectionStatus("Disconnected")
         }
-        
+
         stopReconnectTimer()
     }
 
     func sendHealthData(_ healthData: HealthData) async throws {
         print("📤 Sending health data: \(healthData.type) = \(healthData.value) \(healthData.unit)")
-        
+
         if isMockMode {
             print("🧪 Mock mode: Simulating data send successfully")
             // In mock mode, simulate success with better feedback
             await MainActor.run {
                 self.updateConnectionStatus("Connected (Mock) - Data sent ✓")
             }
-            
+
             // Simulate a brief sending delay for realism
             try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-            
+
             // Reset status after a moment
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 self.updateConnectionStatus("Connected (Mock)")
             }
             return
         }
-        
+
         // Check if we have a valid connection
         guard let task = task else {
             print("⚠️ No WebSocket connection, using mock mode for test data")
@@ -214,14 +215,14 @@ class WebSocketManager: NSObject, ObservableObject {
                 self.isMockMode = true
                 self.updateConnectionStatus("Mock mode: Test data sent ✓")
             }
-            
+
             // Reset to standard mock status
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 self.updateConnectionStatus("Connected (Mock)")
             }
             return
         }
-        
+
         // Real WebSocket sending
         let message: [String: Any] = [
             "type": "health_data",
@@ -234,13 +235,13 @@ class WebSocketManager: NSObject, ObservableObject {
                 "userId": healthData.userId
             ]
         ]
-        
+
         do {
             try await sendJSON(message)
             await MainActor.run {
                 self.updateConnectionStatus("Connected (Real) - Data sent ✓")
             }
-            
+
             // Reset status after a moment
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 self.updateConnectionStatus("Connected (Real)")
@@ -251,7 +252,7 @@ class WebSocketManager: NSObject, ObservableObject {
                 self.isMockMode = true
                 self.updateConnectionStatus("Mock mode: Test data sent ✓")
             }
-            
+
             // Reset to standard mock status
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 self.updateConnectionStatus("Connected (Mock)")
@@ -296,8 +297,8 @@ class WebSocketManager: NSObject, ObservableObject {
     }
 
     private func receive() {
-        guard let task = task, !isMockMode else { 
-            return 
+        guard let task = task, !isMockMode else {
+            return
         }
 
         task.receive { [weak self] result in
@@ -305,7 +306,7 @@ class WebSocketManager: NSObject, ObservableObject {
             case .success(let message):
                 print("📥 WebSocket message received")
                 self?.receive() // Continue receiving
-                
+
             case .failure(let error):
                 print("❌ WebSocket receive error: \(error)")
                 Task {
@@ -317,12 +318,12 @@ class WebSocketManager: NSObject, ObservableObject {
 
     private func handleConnectionLoss() async {
         print("🔄 Handling connection loss...")
-        
+
         await MainActor.run {
             self.isConnected = false
             self.updateConnectionStatus("Connection lost")
         }
-        
+
         // Try to reconnect if we have a token
         if let token = currentToken {
             reconnectAttempts += 1
@@ -348,7 +349,7 @@ class WebSocketManager: NSObject, ObservableObject {
         reconnectTimer = nil
         reconnectAttempts = 0
     }
-    
+
     deinit {
         print("🗑️ WebSocketManager deinitializing - cleaning up resources")
         disconnect()
@@ -360,8 +361,8 @@ class WebSocketManager: NSObject, ObservableObject {
 // MARK: - URLSessionWebSocketDelegate
 extension WebSocketManager: URLSessionWebSocketDelegate {
     func urlSession(
-        _ session: URLSession, 
-        webSocketTask: URLSessionWebSocketTask, 
+        _ session: URLSession,
+        webSocketTask: URLSessionWebSocketTask,
         didOpenWithProtocol protocol: String?
     ) {
         print("✅ WebSocket connection opened")
@@ -373,21 +374,21 @@ extension WebSocketManager: URLSessionWebSocketDelegate {
     }
 
     func urlSession(
-        _ session: URLSession, 
-        webSocketTask: URLSessionWebSocketTask, 
-        didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, 
+        _ session: URLSession,
+        webSocketTask: URLSessionWebSocketTask,
+        didCloseWith closeCode: URLSessionWebSocketTask.CloseCode,
         reason: Data?
     ) {
         print("🔌 WebSocket connection closed with code: \(closeCode)")
-        
+
         let reasonString = reason.flatMap { String(data: $0, encoding: .utf8) } ?? "No reason"
         print("🔌 Close reason: \(reasonString)")
-        
+
         DispatchQueue.main.async {
             self.isConnected = false
             self.updateConnectionStatus("Disconnected")
         }
-        
+
         Task {
             await self.handleConnectionLoss()
         }
@@ -397,8 +398,8 @@ extension WebSocketManager: URLSessionWebSocketDelegate {
 // MARK: - URLSessionDelegate
 extension WebSocketManager: URLSessionDelegate {
     func urlSession(
-        _ session: URLSession, 
-        didReceive challenge: URLAuthenticationChallenge, 
+        _ session: URLSession,
+        didReceive challenge: URLAuthenticationChallenge,
         completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
         completionHandler(.performDefaultHandling, nil)
@@ -410,7 +411,7 @@ enum WebSocketError: Error, LocalizedError {
     case notConnected
     case sendFailed(String)
     case messageSerializationFailed
-    
+
     var errorDescription: String? {
         switch self {
         case .notConnected:

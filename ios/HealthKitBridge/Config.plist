@@ -2,10 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>USER_ID</key>
+    <string>matt_test_user</string>
     <key>userId</key>
     <string>matt_test_user</string>
+    <key>API_BASE_URL</key>
+    <string>http://127.0.0.1:8789</string>
     <key>apiBaseURL</key>
     <string>http://127.0.0.1:8789</string>
+    <key>WS_URL</key>
+    <string>ws://localhost:3001</string>
     <key>webSocketURL</key>
     <string>ws://localhost:3001</string>
 </dict>

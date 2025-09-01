@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useKV } from '@github/spark/hooks';
+import { Contact } from '@/types';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Card,
@@ -20,26 +21,28 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import {
-  Heart,
+  Warning as AlertTriangle,
+  ChartBar as BarChart3,
+  TrendUp as TrendingUp,
+} from '@phosphor-icons/react';
+import {
   Activity,
+  Heart,
   Shield,
-  AlertTriangle,
   Upload,
   Users,
-  Gear,
-  Roadmap,
-  BarChart3,
-  House,
-  List,
+  Settings as Gear,
+  Map as Roadmap,
+  Home as House,
+  Menu as List,
   X,
   Clock,
   Share,
   Stethoscope,
   Trophy,
   Target,
-  MagnifyingGlass,
-  CloudArrowUp,
-  TrendingUp,
+  Search as MagnifyingGlass,
+  CloudUpload as CloudArrowUp,
   Bell,
   Brain,
   Moon,
@@ -49,7 +52,7 @@ import {
   Code,
   Lightbulb,
   Sparkle,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import HealthDashboard from '@/components/health/HealthDashboard';
@@ -78,6 +81,8 @@ import HealthAlertsConfig from '@/components/health/HealthAlertsConfig';
 import PredictiveHealthAlerts from '@/components/health/PredictiveHealthAlerts';
 import RealTimeHealthScoring from '@/components/health/RealTimeHealthScoring';
 import AdvancedAppleWatchIntegration from '@/components/health/AdvancedAppleWatchIntegration';
+import SystemStatusPanel from '@/components/SystemStatusPanel';
+import SimpleSystemStatus from '@/components/SimpleSystemStatus';
 import EnhancedHealthInsightsDashboard from '@/components/health/EnhancedHealthInsightsDashboard';
 import AppleWatchIntegrationChecklist from '@/components/health/AppleWatchIntegrationChecklist';
 import XcodeDevelopmentSetup from '@/components/health/XcodeDevelopmentSetup';
@@ -92,30 +97,31 @@ import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import RealtimeStatusBar from '@/components/health/RealtimeStatusBar';
 import EmergencyTriggerButton from '@/components/health/EmergencyTriggerButton';
 import WSTokenSettings from '@/components/health/WSTokenSettings';
-import { getLiveHealthDataSync } from '@/lib/liveHealthDataSync';
 
 function App() {
+  // Restored KV persistence for production use
   const [healthData, setHealthData] = useKV<ProcessedHealthData | null>(
     'health-data',
     null
   );
-  const [fallRiskScore, setFallRiskScore] = useKV('fall-risk-score', 0);
-  const [emergencyContacts, setEmergencyContacts] = useKV(
+  const [fallRiskScore, setFallRiskScore] = useKV<number>('fall-risk-score', 0);
+
+  const [emergencyContacts, setEmergencyContacts] = useKV<Contact[]>(
     'emergency-contacts',
     []
   );
+
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [sidebarCollapsed, setSidebarCollapsed] = useKV(
+
+  const [sidebarCollapsed, setSidebarCollapsed] = useKV<boolean>(
     'sidebar-collapsed',
     false
   );
+
   const [themeMode, setThemeMode] = useKV<'light' | 'dark' | 'system'>(
     'theme-mode',
     'system'
   );
-  const [wsUserId] = useKV<string>('ws-user-id', 'default-user');
-  const [iosOnline, setIosOnline] = useState<boolean>(false);
-  const prevIosOnline = useRef<boolean | null>(null);
 
   // Apply theme based on mode and system preference using [data-appearance]
   useEffect(() => {
@@ -151,50 +157,13 @@ function App() {
     }
   }, [themeMode]);
 
-  // Poll iOS presence via LiveHealthDataSync
-  useEffect(() => {
-    const i = setInterval(() => {
-      try {
-        const sync = getLiveHealthDataSync(wsUserId || 'default-user');
-        const online = sync.isIosOnline();
-        setIosOnline(online);
-        if (
-          prevIosOnline.current !== null &&
-          prevIosOnline.current !== online
-        ) {
-          if (online) toast.success('iOS connected');
-          else toast('iOS disconnected');
-        }
-        prevIosOnline.current = online;
-
-        // Also track WS connection changes and toast
-        const status = sync.getConnectionStatus();
-        const nowConnected = !!status.connected;
-        if (
-          (prevWsConnected as React.MutableRefObject<boolean | null>)
-            .current !== null &&
-          (prevWsConnected as React.MutableRefObject<boolean | null>)
-            .current !== nowConnected
-        ) {
-          if (nowConnected) toast.success('Realtime connected');
-          else toast('Realtime disconnected');
-        }
-        (prevWsConnected as React.MutableRefObject<boolean | null>).current =
-          nowConnected;
-      } catch {
-        /* noop */
-      }
-    }, 2000);
-    return () => clearInterval(i);
-  }, [wsUserId]);
-
   const toggleThemeMode = () => {
     const modes: Array<'light' | 'dark' | 'system'> = [
       'light',
       'dark',
       'system',
     ];
-    const currentIndex = modes.indexOf(themeMode);
+    const currentIndex = modes.indexOf(themeMode || 'system');
     const nextMode = modes[(currentIndex + 1) % modes.length];
     setThemeMode(nextMode);
 
@@ -215,14 +184,11 @@ function App() {
   // }
 
   const hasHealthData =
-    healthData &&
-    healthData.metrics &&
-    Object.keys(healthData.metrics).length > 0;
+    healthData?.metrics && Object.keys(healthData.metrics).length > 0;
   const isHighRisk =
     hasHealthData &&
     ((healthData.healthScore || 0) < 60 ||
-      (healthData.fallRiskFactors &&
-        healthData.fallRiskFactors.some((factor) => factor.risk === 'high')));
+      healthData.fallRiskFactors?.some((factor) => factor.risk === 'high'));
 
   // Define navigation structure with categories
   const navigationItems = {
@@ -243,6 +209,7 @@ function App() {
       { id: 'search', label: 'Search', icon: MagnifyingGlass },
     ],
     monitoring: [
+      { id: 'system-status', label: 'System Status', icon: Monitor },
       { id: 'realtime-scoring', label: 'Live Health Score', icon: Heart },
       { id: 'alerts', label: 'Health Alerts', icon: Bell },
       { id: 'predictive-alerts', label: 'Predictive Alerts', icon: Brain },
@@ -348,9 +315,7 @@ function App() {
                     Health Monitor
                   </p>
                   <div className="mt-1">
-                    <Badge variant={iosOnline ? 'secondary' : 'outline'}>
-                      iOS {iosOnline ? 'online' : 'offline'}
-                    </Badge>
+                    <Badge variant="outline">iOS ready</Badge>
                   </div>
                 </div>
               </div>
@@ -733,6 +698,15 @@ function App() {
                   </Badge>
                 )}
                 <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab('system-status')}
+                  className="flex items-center gap-2"
+                >
+                  <Monitor className="h-4 w-4" />
+                  System Status
+                </Button>
+                <Button
                   variant="ghost"
                   size="sm"
                   onClick={toggleThemeMode}
@@ -788,6 +762,10 @@ function App() {
                     currentPageInfo.label === 'Search' &&
                     'Find specific health insights and data'}
                   {currentPageInfo.category === 'Monitoring' &&
+                    currentPageInfo.label === 'System Status' &&
+                    'Real-time monitoring of system health and performance metrics'}
+                  {currentPageInfo.category === 'Monitoring' &&
+                    currentPageInfo.label !== 'System Status' &&
                     'Health monitoring and alert system'}
                   {currentPageInfo.category === 'AI & ML' &&
                     'Advanced AI analysis and machine learning'}
@@ -822,6 +800,25 @@ function App() {
 
         {/* Main Content */}
         <main className="px-6 py-6">
+          {/* EMERGENCY TEST BUTTON - placed here so you can see it */}
+          <div className="mb-4 space-y-2 text-center">
+            <div className="rounded bg-gray-100 p-2 font-mono text-sm">
+              Current activeTab: "{activeTab}"
+            </div>
+            <Button
+              onClick={() => {
+                console.log(
+                  'Button clicked, setting activeTab to simple-status'
+                );
+                setActiveTab('simple-status');
+                console.log('activeTab should now be simple-status');
+              }}
+              className="rounded-lg bg-red-600 px-6 py-3 text-lg font-bold text-white shadow-lg hover:bg-red-700"
+            >
+              🔴 CLICK HERE TO TEST SYSTEM STATUS PANEL 🔴
+            </Button>
+          </div>
+
           {!hasHealthData ? (
             <div className="mx-auto max-w-2xl">
               <Card>
@@ -1118,6 +1115,16 @@ function App() {
                 {activeTab === 'smart-notifications' && healthData && (
                   <SmartNotificationEngine healthData={healthData} />
                 )}
+                {activeTab === 'system-status' && <SystemStatusPanel />}
+                {activeTab === 'simple-status' && (
+                  <div>
+                    <div className="mb-4 rounded border border-green-400 bg-green-100 p-4">
+                      ✅ SimpleSystemStatus is rendering! activeTab = "
+                      {activeTab}"
+                    </div>
+                    <SimpleSystemStatus />
+                  </div>
+                )}
                 {activeTab === 'realtime-scoring' && <RealTimeHealthScoring />}
                 {activeTab === 'analytics' && healthData && (
                   <HealthAnalytics healthData={healthData} />
@@ -1125,7 +1132,7 @@ function App() {
                 {activeTab === 'fall-risk' && (
                   <FallRiskMonitor
                     healthData={healthData}
-                    fallRiskScore={fallRiskScore}
+                    fallRiskScore={fallRiskScore || 0}
                     setFallRiskScore={setFallRiskScore}
                   />
                 )}
@@ -1181,7 +1188,7 @@ function App() {
                 )}
                 {activeTab === 'contacts' && (
                   <EmergencyContacts
-                    contacts={emergencyContacts}
+                    contacts={emergencyContacts || []}
                     setContacts={setEmergencyContacts}
                   />
                 )}

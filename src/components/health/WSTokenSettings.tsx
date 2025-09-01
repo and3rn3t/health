@@ -27,8 +27,11 @@ import {
 } from '@/components/ui/tooltip';
 
 export function WSTokenSettings() {
+  // Restored KV persistence for production use
   const [storedToken, setStoredToken] = useKV<string>('ws-device-token', '');
+
   const [wsUrl, setWsUrl] = useKV<string>('ws-url', 'ws://localhost:3001');
+
   const [userId, setUserId] = useKV<string>('ws-user-id', 'default-user');
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState('');
@@ -63,10 +66,12 @@ export function WSTokenSettings() {
     }
   }, [storedToken, wsUrl]);
 
-  // Track token expiry and connected state
+  // Track token expiry and connected state - DISABLED for debugging
   useEffect(() => {
     const exp = storedToken ? decodeJwtExp(storedToken) : null;
     setExpiresAt(exp ? exp * 1000 : null);
+    // DISABLED aggressive polling that was causing console spam
+    /*
     const i = setInterval(() => {
       if (exp) {
         const remain = Math.floor(exp - Date.now() / 1000);
@@ -85,6 +90,7 @@ export function WSTokenSettings() {
       }
     }, 1000);
     return () => clearInterval(i);
+    */
   }, [storedToken, userId]);
 
   useEffect(() => {

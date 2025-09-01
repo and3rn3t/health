@@ -14,15 +14,18 @@ export function RealtimeStatusBar({ userId = 'default-user' }: Props) {
   const [iosOnline, setIosOnline] = useState<boolean>(false);
 
   useEffect(() => {
+    // DISABLED for debugging - was causing console spam
+    /*
     const i = setInterval(() => {
       try {
         const sync = getLiveHealthDataSync(userId);
         setIosOnline(sync.isIosOnline());
       } catch {
-        /* noop */
+        // noop
       }
     }, 2000);
     return () => clearInterval(i);
+    */
   }, [userId]);
 
   const remainingSec = useMemo(() => {
