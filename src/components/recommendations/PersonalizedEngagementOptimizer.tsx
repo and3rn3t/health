@@ -1,18 +1,24 @@
-import { useState, useEffect } from 'react'
-import { useKV } from '@github/spark/hooks'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Target, 
-  TrendingUp, 
-  Clock, 
-  Users, 
-  Brain, 
-  CheckCircle, 
+import { useState, useEffect } from 'react';
+import { useKV } from '@github/spark/hooks';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Target,
+  TrendingUp,
+  Clock,
+  Users,
+  Brain,
+  CheckCircle,
   AlertTriangle,
   Calendar,
   Activity,
@@ -24,66 +30,71 @@ import {
   Zap,
   Star,
   ArrowRight,
-  Sparkle
-} from '@phosphor-icons/react'
-import { toast } from 'sonner'
-import { ProcessedHealthData } from '@/lib/healthDataProcessor'
+  Sparkle,
+} from '@phosphor-icons/react';
+import { toast } from 'sonner';
+import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 interface EngagementPattern {
-  timeOfDay: string
-  frequency: number
-  duration: number
-  features: string[]
-  effectiveness: number
+  timeOfDay: string;
+  frequency: number;
+  duration: number;
+  features: string[];
+  effectiveness: number;
 }
 
 interface PersonalizationProfile {
-  preferredTime: string
-  engagementStyle: 'data-driven' | 'goal-oriented' | 'social' | 'gamified'
-  motivationTriggers: string[]
-  attentionSpan: 'short' | 'medium' | 'long'
-  learningPreference: 'visual' | 'analytical' | 'interactive'
+  preferredTime: string;
+  engagementStyle: 'data-driven' | 'goal-oriented' | 'social' | 'gamified';
+  motivationTriggers: string[];
+  attentionSpan: 'short' | 'medium' | 'long';
+  learningPreference: 'visual' | 'analytical' | 'interactive';
 }
 
 interface OptimizationRecommendation {
-  id: string
-  type: 'timing' | 'content' | 'interaction' | 'motivation' | 'workflow'
-  priority: 'high' | 'medium' | 'low'
-  title: string
-  description: string
-  expectedImpact: number
-  timeToImplement: string
-  actions: string[]
-  implemented: boolean
+  id: string;
+  type: 'timing' | 'content' | 'interaction' | 'motivation' | 'workflow';
+  priority: 'high' | 'medium' | 'low';
+  title: string;
+  description: string;
+  expectedImpact: number;
+  timeToImplement: string;
+  actions: string[];
+  implemented: boolean;
 }
 
 interface Props {
-  healthData: ProcessedHealthData
-  onNavigateToFeature: (featureId: string) => void
+  healthData: ProcessedHealthData;
+  onNavigateToFeature: (featureId: string) => void;
 }
 
-export default function PersonalizedEngagementOptimizer({ healthData, onNavigateToFeature }: Props) {
+export default function PersonalizedEngagementOptimizer({
+  healthData,
+  onNavigateToFeature,
+}: Props) {
   const [engagementData, setEngagementData] = useKV('engagement-data', {
     sessions: [],
     patterns: [],
-    profile: null
-  })
-  const [recommendations, setRecommendations] = useKV<OptimizationRecommendation[]>('engagement-recommendations', [])
-  const [selectedTab, setSelectedTab] = useState('overview')
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
+    profile: null,
+  });
+  const [recommendations, setRecommendations] = useKV<
+    OptimizationRecommendation[]
+  >('engagement-recommendations', []);
+  const [selectedTab, setSelectedTab] = useState('overview');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Simulate engagement pattern analysis
   useEffect(() => {
     if (!engagementData.patterns.length) {
-      generateEngagementPatterns()
+      generateEngagementPatterns();
     }
-  }, [])
+  }, []);
 
   const generateEngagementPatterns = async () => {
-    setIsAnalyzing(true)
+    setIsAnalyzing(true);
 
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     const patterns: EngagementPattern[] = [
       {
@@ -91,45 +102,52 @@ export default function PersonalizedEngagementOptimizer({ healthData, onNavigate
         frequency: 0.85,
         duration: 12,
         features: ['dashboard', 'insights', 'fall-risk'],
-        effectiveness: 0.92
+        effectiveness: 0.92,
       },
       {
         timeOfDay: 'afternoon',
         frequency: 0.45,
         duration: 6,
         features: ['analytics', 'search'],
-        effectiveness: 0.67
+        effectiveness: 0.67,
       },
       {
         timeOfDay: 'evening',
         frequency: 0.78,
         duration: 18,
         features: ['game-center', 'family', 'community'],
-        effectiveness: 0.88
-      }
-    ]
+        effectiveness: 0.88,
+      },
+    ];
 
     const profile: PersonalizationProfile = {
       preferredTime: 'morning',
       engagementStyle: 'data-driven',
-      motivationTriggers: ['progress tracking', 'health insights', 'achievement goals'],
+      motivationTriggers: [
+        'progress tracking',
+        'health insights',
+        'achievement goals',
+      ],
       attentionSpan: 'medium',
-      learningPreference: 'analytical'
-    }
+      learningPreference: 'analytical',
+    };
 
-    setEngagementData(current => ({
+    setEngagementData((current) => ({
       ...current,
       patterns,
-      profile
-    }))
+      profile,
+    }));
 
     // Generate personalized recommendations
-    await generateRecommendations(patterns, profile)
-    setIsAnalyzing(false)
-    toast.success('Engagement analysis complete!')
-  }
+    await generateRecommendations(patterns, profile);
+    setIsAnalyzing(false);
+    toast.success('Engagement analysis complete!');
+  };
 
-  const generateRecommendations = async (patterns: EngagementPattern[], profile: PersonalizationProfile) => {
+  const generateRecommendations = async (
+    patterns: EngagementPattern[],
+    profile: PersonalizationProfile
+  ) => {
     const prompt = spark.llmPrompt`
       Based on this user's engagement patterns and profile, generate 8-10 personalized optimization recommendations:
       
@@ -145,14 +163,14 @@ export default function PersonalizedEngagementOptimizer({ healthData, onNavigate
       5. Workflow optimization
       
       Return as JSON array with: id, type, priority, title, description, expectedImpact (0-100), timeToImplement, actions (array), implemented (false)
-    `
+    `;
 
     try {
-      const response = await spark.llm(prompt, 'gpt-4o', true)
-      const newRecommendations = JSON.parse(response)
-      setRecommendations(newRecommendations)
+      const response = await spark.llm(prompt, 'gpt-4o', true);
+      const newRecommendations = JSON.parse(response);
+      setRecommendations(newRecommendations);
     } catch (error) {
-      console.error('Error generating recommendations:', error)
+      console.error('Error generating recommendations:', error);
       // Fallback recommendations
       const fallbackRecommendations: OptimizationRecommendation[] = [
         {
@@ -160,92 +178,124 @@ export default function PersonalizedEngagementOptimizer({ healthData, onNavigate
           type: 'timing',
           priority: 'high',
           title: 'Optimize Morning Health Check',
-          description: 'Your engagement is highest in the morning. Set up automated daily health summaries at 8 AM.',
+          description:
+            'Your engagement is highest in the morning. Set up automated daily health summaries at 8 AM.',
           expectedImpact: 85,
           timeToImplement: '5 minutes',
-          actions: ['Enable morning notifications', 'Customize dashboard priority', 'Set health score alerts'],
-          implemented: false
+          actions: [
+            'Enable morning notifications',
+            'Customize dashboard priority',
+            'Set health score alerts',
+          ],
+          implemented: false,
         },
         {
           id: 'content-1',
           type: 'content',
           priority: 'high',
           title: 'Data-Driven Dashboard Focus',
-          description: 'Emphasize analytical insights and trends to match your data-driven engagement style.',
+          description:
+            'Emphasize analytical insights and trends to match your data-driven engagement style.',
           expectedImpact: 78,
           timeToImplement: '2 minutes',
-          actions: ['Prioritize analytics widgets', 'Add trend comparisons', 'Enable detailed metrics'],
-          implemented: false
+          actions: [
+            'Prioritize analytics widgets',
+            'Add trend comparisons',
+            'Enable detailed metrics',
+          ],
+          implemented: false,
         },
         {
           id: 'interaction-1',
           type: 'interaction',
           priority: 'medium',
           title: 'Medium-Depth Content Chunks',
-          description: 'Break complex analyses into 10-15 minute digestible sections for optimal attention span.',
+          description:
+            'Break complex analyses into 10-15 minute digestible sections for optimal attention span.',
           expectedImpact: 72,
           timeToImplement: '1 minute',
-          actions: ['Enable progressive disclosure', 'Add reading time estimates', 'Create summary cards'],
-          implemented: false
+          actions: [
+            'Enable progressive disclosure',
+            'Add reading time estimates',
+            'Create summary cards',
+          ],
+          implemented: false,
         },
         {
           id: 'motivation-1',
           type: 'motivation',
           priority: 'high',
           title: 'Progress Achievement System',
-          description: 'Activate achievement-based progress tracking to trigger your motivation patterns.',
+          description:
+            'Activate achievement-based progress tracking to trigger your motivation patterns.',
           expectedImpact: 82,
           timeToImplement: '3 minutes',
-          actions: ['Enable health score goals', 'Set weekly progress milestones', 'Activate achievement badges'],
-          implemented: false
-        }
-      ]
-      setRecommendations(fallbackRecommendations)
+          actions: [
+            'Enable health score goals',
+            'Set weekly progress milestones',
+            'Activate achievement badges',
+          ],
+          implemented: false,
+        },
+      ];
+      setRecommendations(fallbackRecommendations);
     }
-  }
+  };
 
   const implementRecommendation = (id: string) => {
-    setRecommendations(current => 
-      current.map(rec => 
+    setRecommendations((current) =>
+      current.map((rec) =>
         rec.id === id ? { ...rec, implemented: true } : rec
       )
-    )
-    
-    const recommendation = recommendations.find(r => r.id === id)
+    );
+
+    const recommendation = recommendations.find((r) => r.id === id);
     if (recommendation) {
-      toast.success(`Implemented: ${recommendation.title}`)
+      toast.success(`Implemented: ${recommendation.title}`);
     }
-  }
+  };
 
   const getEngagementScore = () => {
-    if (!engagementData.patterns.length) return 0
-    const avgEffectiveness = engagementData.patterns.reduce((sum, p) => sum + p.effectiveness, 0) / engagementData.patterns.length
-    return Math.round(avgEffectiveness * 100)
-  }
+    if (!engagementData.patterns.length) return 0;
+    const avgEffectiveness =
+      engagementData.patterns.reduce((sum, p) => sum + p.effectiveness, 0) /
+      engagementData.patterns.length;
+    return Math.round(avgEffectiveness * 100);
+  };
 
   const getRecommendationsByType = (type: string) => {
-    return recommendations.filter(rec => rec.type === type)
-  }
+    return recommendations.filter((rec) => rec.type === type);
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'text-destructive'
-      case 'medium': return 'text-accent'
-      case 'low': return 'text-muted-foreground'
-      default: return 'text-foreground'
+      case 'high':
+        return 'text-destructive';
+      case 'medium':
+        return 'text-accent';
+      case 'low':
+        return 'text-muted-foreground';
+      default:
+        return 'text-foreground';
     }
-  }
+  };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'timing': return Clock
-      case 'content': return BarChart3
-      case 'interaction': return Zap
-      case 'motivation': return Trophy
-      case 'workflow': return Target
-      default: return Lightbulb
+      case 'timing':
+        return Clock;
+      case 'content':
+        return BarChart3;
+      case 'interaction':
+        return Zap;
+      case 'motivation':
+        return Trophy;
+      case 'workflow':
+        return Target;
+      default:
+        return Lightbulb;
     }
-  }
+  };
 
   if (isAnalyzing) {
     return (
@@ -256,59 +306,76 @@ export default function PersonalizedEngagementOptimizer({ healthData, onNavigate
             Analyzing Engagement Patterns
           </CardTitle>
           <CardDescription>
-            Processing your interaction data to create personalized optimization recommendations...
+            Processing your interaction data to create personalized optimization
+            recommendations...
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <Progress value={66} className="w-full" />
-            <div className="text-sm text-muted-foreground text-center">
+            <div className="text-muted-foreground text-center text-sm">
               Analyzing usage patterns and generating personalized insights...
             </div>
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
     <div className="space-y-6">
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Engagement Score</p>
-                <p className="text-3xl font-bold text-primary">{getEngagementScore()}%</p>
-              </div>
-              <Activity className="h-8 w-8 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Active Recommendations</p>
-                <p className="text-3xl font-bold text-accent">{recommendations.filter(r => !r.implemented).length}</p>
-              </div>
-              <Lightbulb className="h-8 w-8 text-accent" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Potential Impact</p>
-                <p className="text-3xl font-bold text-accent">
-                  +{Math.round(recommendations.filter(r => !r.implemented).reduce((sum, r) => sum + r.expectedImpact, 0) / 10)}%
+                <p className="text-muted-foreground text-sm">
+                  Engagement Score
+                </p>
+                <p className="text-primary text-3xl font-bold">
+                  {getEngagementScore()}%
                 </p>
               </div>
-              <TrendingUp className="h-8 w-8 text-accent" />
+              <Activity className="text-primary h-8 w-8" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-muted-foreground text-sm">
+                  Active Recommendations
+                </p>
+                <p className="text-accent text-3xl font-bold">
+                  {recommendations.filter((r) => !r.implemented).length}
+                </p>
+              </div>
+              <Lightbulb className="text-accent h-8 w-8" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-muted-foreground text-sm">
+                  Potential Impact
+                </p>
+                <p className="text-accent text-3xl font-bold">
+                  +
+                  {Math.round(
+                    recommendations
+                      .filter((r) => !r.implemented)
+                      .reduce((sum, r) => sum + r.expectedImpact, 0) / 10
+                  )}
+                  %
+                </p>
+              </div>
+              <TrendingUp className="text-accent h-8 w-8" />
             </div>
           </CardContent>
         </Card>
@@ -327,7 +394,7 @@ export default function PersonalizedEngagementOptimizer({ healthData, onNavigate
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-2">
                 <p className="text-sm font-medium">Preferred Time</p>
                 <Badge variant="outline" className="capitalize">
@@ -382,124 +449,158 @@ export default function PersonalizedEngagementOptimizer({ healthData, onNavigate
             <TabsContent value="overview" className="space-y-4">
               <div className="grid gap-4">
                 {recommendations.slice(0, 6).map((rec) => {
-                  const IconComponent = getTypeIcon(rec.type)
+                  const IconComponent = getTypeIcon(rec.type);
                   return (
-                    <div key={rec.id} className="border rounded-lg p-4 space-y-3">
+                    <div
+                      key={rec.id}
+                      className="space-y-3 rounded-lg border p-4"
+                    >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3">
-                          <IconComponent className="h-5 w-5 mt-0.5 text-primary" />
+                          <IconComponent className="text-primary mt-0.5 h-5 w-5" />
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <h4 className="font-medium">{rec.title}</h4>
-                              <Badge 
-                                variant="outline" 
+                              <Badge
+                                variant="outline"
                                 className={`text-xs ${getPriorityColor(rec.priority)}`}
                               >
                                 {rec.priority} priority
                               </Badge>
                             </div>
-                            <p className="text-sm text-muted-foreground">{rec.description}</p>
+                            <p className="text-muted-foreground text-sm">
+                              {rec.description}
+                            </p>
                           </div>
                         </div>
-                        <div className="text-right space-y-1">
-                          <div className="text-sm font-medium text-primary">+{rec.expectedImpact}%</div>
-                          <div className="text-xs text-muted-foreground">{rec.timeToImplement}</div>
+                        <div className="space-y-1 text-right">
+                          <div className="text-primary text-sm font-medium">
+                            +{rec.expectedImpact}%
+                          </div>
+                          <div className="text-muted-foreground text-xs">
+                            {rec.timeToImplement}
+                          </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           {rec.implemented ? (
                             <Badge variant="default" className="text-xs">
-                              <CheckCircle className="h-3 w-3 mr-1" />
+                              <CheckCircle className="mr-1 h-3 w-3" />
                               Implemented
                             </Badge>
                           ) : (
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               onClick={() => implementRecommendation(rec.id)}
                               className="text-xs"
                             >
                               Implement Now
-                              <ArrowRight className="h-3 w-3 ml-1" />
+                              <ArrowRight className="ml-1 h-3 w-3" />
                             </Button>
                           )}
                         </div>
-                        <Badge variant="secondary" className="text-xs capitalize">
+                        <Badge
+                          variant="secondary"
+                          className="text-xs capitalize"
+                        >
                           {rec.type}
                         </Badge>
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             </TabsContent>
 
-            {(['timing', 'content', 'interaction', 'motivation', 'workflow'] as const).map((type) => (
+            {(
+              [
+                'timing',
+                'content',
+                'interaction',
+                'motivation',
+                'workflow',
+              ] as const
+            ).map((type) => (
               <TabsContent key={type} value={type} className="space-y-4">
                 <div className="grid gap-4">
                   {getRecommendationsByType(type).map((rec) => {
-                    const IconComponent = getTypeIcon(rec.type)
+                    const IconComponent = getTypeIcon(rec.type);
                     return (
-                      <div key={rec.id} className="border rounded-lg p-4 space-y-4">
+                      <div
+                        key={rec.id}
+                        className="space-y-4 rounded-lg border p-4"
+                      >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3">
-                            <IconComponent className="h-5 w-5 mt-0.5 text-primary" />
+                            <IconComponent className="text-primary mt-0.5 h-5 w-5" />
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
                                 <h4 className="font-medium">{rec.title}</h4>
-                                <Badge 
-                                  variant="outline" 
+                                <Badge
+                                  variant="outline"
                                   className={`text-xs ${getPriorityColor(rec.priority)}`}
                                 >
                                   {rec.priority}
                                 </Badge>
                               </div>
-                              <p className="text-sm text-muted-foreground">{rec.description}</p>
+                              <p className="text-muted-foreground text-sm">
+                                {rec.description}
+                              </p>
                             </div>
                           </div>
-                          <div className="text-right space-y-1">
-                            <div className="text-lg font-semibold text-primary">+{rec.expectedImpact}%</div>
-                            <div className="text-xs text-muted-foreground">Expected Impact</div>
+                          <div className="space-y-1 text-right">
+                            <div className="text-primary text-lg font-semibold">
+                              +{rec.expectedImpact}%
+                            </div>
+                            <div className="text-muted-foreground text-xs">
+                              Expected Impact
+                            </div>
                           </div>
                         </div>
 
                         <div className="space-y-3">
                           <div>
-                            <h5 className="text-sm font-medium mb-2">Implementation Steps:</h5>
+                            <h5 className="mb-2 text-sm font-medium">
+                              Implementation Steps:
+                            </h5>
                             <ul className="space-y-1">
                               {rec.actions.map((action, index) => (
-                                <li key={index} className="text-sm text-muted-foreground flex items-center gap-2">
-                                  <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+                                <li
+                                  key={index}
+                                  className="text-muted-foreground flex items-center gap-2 text-sm"
+                                >
+                                  <div className="bg-primary h-1.5 w-1.5 rounded-full" />
                                   {action}
                                 </li>
                               ))}
                             </ul>
                           </div>
 
-                          <div className="flex items-center justify-between pt-2 border-t">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="flex items-center justify-between border-t pt-2">
+                            <div className="text-muted-foreground flex items-center gap-2 text-sm">
                               <Timer className="h-4 w-4" />
                               {rec.timeToImplement}
                             </div>
                             {rec.implemented ? (
                               <Badge variant="default" className="text-xs">
-                                <CheckCircle className="h-3 w-3 mr-1" />
+                                <CheckCircle className="mr-1 h-3 w-3" />
                                 Implemented
                               </Badge>
                             ) : (
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 onClick={() => implementRecommendation(rec.id)}
                               >
                                 Implement Recommendation
-                                <ArrowRight className="h-4 w-4 ml-2" />
+                                <ArrowRight className="ml-2 h-4 w-4" />
                               </Button>
                             )}
                           </div>
                         </div>
                       </div>
-                    )
+                    );
                   })}
                 </div>
 
@@ -507,7 +608,8 @@ export default function PersonalizedEngagementOptimizer({ healthData, onNavigate
                   <Alert>
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>
-                      No {type} recommendations available at this time. Check back after more usage data is collected.
+                      No {type} recommendations available at this time. Check
+                      back after more usage data is collected.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -526,45 +628,51 @@ export default function PersonalizedEngagementOptimizer({ healthData, onNavigate
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Button 
-              variant="outline" 
-              className="h-auto p-4 flex flex-col items-start gap-2"
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Button
+              variant="outline"
+              className="flex h-auto flex-col items-start gap-2 p-4"
               onClick={() => onNavigateToFeature('usage-analytics')}
             >
-              <BarChart3 className="h-5 w-5 text-primary" />
+              <BarChart3 className="text-primary h-5 w-5" />
               <div className="text-left">
                 <div className="font-medium">View Usage Analytics</div>
-                <div className="text-xs text-muted-foreground">Detailed engagement insights</div>
+                <div className="text-muted-foreground text-xs">
+                  Detailed engagement insights
+                </div>
               </div>
             </Button>
 
-            <Button 
-              variant="outline" 
-              className="h-auto p-4 flex flex-col items-start gap-2"
+            <Button
+              variant="outline"
+              className="flex h-auto flex-col items-start gap-2 p-4"
               onClick={() => onNavigateToFeature('usage-predictions')}
             >
-              <Brain className="h-5 w-5 text-primary" />
+              <Brain className="text-primary h-5 w-5" />
               <div className="text-left">
                 <div className="font-medium">AI Usage Predictions</div>
-                <div className="text-xs text-muted-foreground">Forecast engagement trends</div>
+                <div className="text-muted-foreground text-xs">
+                  Forecast engagement trends
+                </div>
               </div>
             </Button>
 
-            <Button 
-              variant="outline" 
-              className="h-auto p-4 flex flex-col items-start gap-2"
+            <Button
+              variant="outline"
+              className="flex h-auto flex-col items-start gap-2 p-4"
               onClick={() => generateEngagementPatterns()}
             >
-              <Target className="h-5 w-5 text-primary" />
+              <Target className="text-primary h-5 w-5" />
               <div className="text-left">
                 <div className="font-medium">Refresh Analysis</div>
-                <div className="text-xs text-muted-foreground">Update recommendations</div>
+                <div className="text-muted-foreground text-xs">
+                  Update recommendations
+                </div>
               </div>
             </Button>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

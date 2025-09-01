@@ -44,8 +44,12 @@ Dependencies/
 ehthumbs.db
 Thumbs.db
 
-# IDE files
-.vscode/settings.json
+# IDE files - keep VS Code settings for consistency
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo

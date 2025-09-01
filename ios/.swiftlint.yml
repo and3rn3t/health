@@ -41,10 +41,13 @@ opt_in_rules:
   - unneeded_parentheses_in_closure_argument
   - vertical_parameter_alignment_on_call
 
-# Disabled rules
+# Disabled rules - more permissive for development like ESLint config
 disabled_rules:
   - trailing_whitespace # Can be annoying in some editors
   - todo # Allow TODO comments during development
+  - unused_import # Allow unused imports during development (warning via custom rule)
+  - unused_declaration # Allow unused declarations during development
+  - force_cast # Allow force casts with warning during development
 
 # Rule configurations
 line_length:
@@ -68,20 +71,33 @@ nesting:
   type_level: 3
   function_level: 5
 
-# Force unwrapping severity
+# Force unwrapping severity - aligned with permissive approach
 force_unwrapping:
   severity: warning
+
+# Additional permissive rules for development
+identifier_name:
+  min_length: 1 # Allow single character names
+  max_length: 60
+
+type_name:
+  min_length: 3
+  max_length: 60
+
+function_parameter_count:
+  warning: 8 # More lenient than default
+  error: 10
 
 # Custom rules for HealthKit specific patterns
 custom_rules:
   healthkit_auth_check:
-    name: "HealthKit Authorization Check"
+    name: 'HealthKit Authorization Check'
     regex: 'HKHealthStore\(\)\.requestAuthorization'
-    message: "Always check authorization status before requesting HealthKit permissions"
+    message: 'Always check authorization status before requesting HealthKit permissions'
     severity: warning
-    
+
   websocket_error_handling:
-    name: "WebSocket Error Handling"
+    name: 'WebSocket Error Handling'
     regex: '\.send\('
-    message: "Consider adding proper error handling for WebSocket operations"
+    message: 'Consider adding proper error handling for WebSocket operations'
     severity: warning

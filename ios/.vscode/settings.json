@@ -1,0 +1,73 @@
+{
+  // Swift-specific settings
+  "swift.buildOnSave": false,
+  "swift.SDK": "",
+  "swift.outputChannelLogLevel": "info",
+  "swift.path": "",
+
+  // Editor consistency with main project
+  "editor.detectIndentation": false,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "editor.rulers": [80, 120],
+  "editor.formatOnSave": true,
+
+  // File handling - consistent with main project
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "files.trimFinalNewlines": true,
+  "files.eol": "\n",
+
+  // Language-specific formatting
+  "[swift]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    },
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "swiftlang.swift-vscode",
+    "editor.tabSize": 2
+  },
+  "[powershell]": {
+    "editor.defaultFormatter": "ms-vscode.powershell",
+    "editor.tabSize": 2
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "files.trimTrailingWhitespace": false
+  },
+
+  // File associations
+  "files.associations": {
+    "*.plist": "xml",
+    "*.swift": "swift",
+    "*.xcconfig": "ini"
+  },
+
+  // Search exclusions - aligned with main project + iOS specific
+  "search.exclude": {
+    "**/build": true,
+    "**/.build": true,
+    "**/Pods": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.wrangler": true,
+    "**/coverage": true,
+    "**/*.xcuserdata": true,
+    "**/DerivedData": true,
+    "**/.cache": true,
+    "**/logs": true,
+    "**/*.log": true,
+    "**/Carthage/Build": true,
+    "**/Packages": true
+  },
+
+  // Git configuration
+  "git.autofetch": true,
+  "git.confirmSync": false,
+
+  // Problems panel
+  "problems.decorations.enabled": true
+}

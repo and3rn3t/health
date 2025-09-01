@@ -1,18 +1,24 @@
-import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Progress } from '@/components/ui/progress'
-import { 
+import { useState } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import {
   Play,
-  CheckCircle, 
-  Clock, 
-  Code, 
-  Database, 
-  Shield, 
-  Brain, 
+  CheckCircle,
+  Clock,
+  Code,
+  Database,
+  Shield,
+  Brain,
   Pulse,
   Warning,
   Users,
@@ -22,36 +28,37 @@ import {
   GearSix,
   Target,
   Lightning,
-  Star
-} from '@phosphor-icons/react'
-import Phase1Summary from '@/components/health/Phase1Summary'
+  Star,
+} from '@phosphor-icons/react';
+import Phase1Summary from '@/components/health/Phase1Summary';
 
 interface PhaseDetail {
-  id: string
-  title: string
-  description: string
-  duration: string
-  complexity: 'Low' | 'Medium' | 'High'
-  cost: string
-  prerequisites: string[]
-  deliverables: string[]
-  technologies: string[]
-  risks: string[]
-  icon: React.ReactNode
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  complexity: 'Low' | 'Medium' | 'High';
+  cost: string;
+  prerequisites: string[];
+  deliverables: string[];
+  technologies: string[];
+  risks: string[];
+  icon: React.ReactNode;
 }
 
 const implementationPhases: PhaseDetail[] = [
   {
     id: 'phase1',
     title: '✅ Foundation & Analytics (COMPLETED)',
-    description: 'Enhanced foundation with comprehensive health data processing and AI-powered analytics',
+    description:
+      'Enhanced foundation with comprehensive health data processing and AI-powered analytics',
     duration: 'COMPLETED',
     complexity: 'Medium',
     cost: 'DELIVERED',
     prerequisites: [
       '✅ Apple Health data access',
       '✅ Modern web browser support',
-      '✅ TypeScript/React foundation'
+      '✅ TypeScript/React foundation',
     ],
     deliverables: [
       '✅ Advanced health data processing engine',
@@ -60,33 +67,34 @@ const implementationPhases: PhaseDetail[] = [
       '✅ Interactive data visualizations',
       '✅ Health score calculation system',
       '✅ Data quality assessment framework',
-      '✅ Emergency contact management'
+      '✅ Emergency contact management',
     ],
     technologies: [
       '✅ React with TypeScript',
       '✅ Spark LLM API integration',
       '✅ Advanced data visualization',
       '✅ AI-powered insights engine',
-      '✅ Comprehensive health analytics'
+      '✅ Comprehensive health analytics',
     ],
     risks: [
       '✅ RESOLVED: Data format handling',
       '✅ RESOLVED: AI integration complexity',
-      '✅ RESOLVED: Visualization performance'
+      '✅ RESOLVED: Visualization performance',
     ],
-    icon: <CheckCircle className="h-5 w-5 text-green-500" />
+    icon: <CheckCircle className="h-5 w-5 text-green-500" />,
   },
   {
     id: 'phase2',
     title: '✅ Enhanced Analytics & Insights (COMPLETED)',
-    description: 'Comprehensive health data analysis and risk assessment with AI-powered insights',
+    description:
+      'Comprehensive health data analysis and risk assessment with AI-powered insights',
     duration: 'COMPLETED',
     complexity: 'Medium',
     cost: 'DELIVERED',
     prerequisites: [
       '✅ Phase 1 completed',
       '✅ Health data patterns identified',
-      '✅ Basic analytics framework'
+      '✅ Basic analytics framework',
     ],
     deliverables: [
       '✅ Advanced health insights dashboard',
@@ -95,33 +103,34 @@ const implementationPhases: PhaseDetail[] = [
       '✅ Personalized health recommendations via LLM',
       '✅ Historical data visualization and patterns',
       '✅ Comprehensive health metrics analysis',
-      '✅ AI-powered health insights generation'
+      '✅ AI-powered health insights generation',
     ],
     technologies: [
       '✅ Spark LLM API integration',
       '✅ Advanced data visualization components',
       '✅ Statistical analysis and health scoring',
       '✅ Real-time analytics processing',
-      '✅ Interactive chart components'
+      '✅ Interactive chart components',
     ],
     risks: [
       '✅ RESOLVED: Complex data modeling',
       '✅ RESOLVED: Performance with large datasets',
-      '✅ RESOLVED: Algorithm accuracy concerns'
+      '✅ RESOLVED: Algorithm accuracy concerns',
     ],
-    icon: <CheckCircle className="h-5 w-5 text-green-500" />
+    icon: <CheckCircle className="h-5 w-5 text-green-500" />,
   },
   {
     id: 'phase3',
     title: '✅ Basic Fall Detection (COMPLETED)',
-    description: 'Apple Watch integration implemented with real-time monitoring and emergency response',
+    description:
+      'Apple Watch integration implemented with real-time monitoring and emergency response',
     duration: 'COMPLETED',
     complexity: 'Medium',
     cost: 'DELIVERED',
     prerequisites: [
       '✅ Apple Watch Series 4+ access',
       '✅ Core Motion integration implemented',
-      '✅ Emergency response protocols designed'
+      '✅ Emergency response protocols designed',
     ],
     deliverables: [
       '✅ Apple Watch fall detection integration',
@@ -129,33 +138,34 @@ const implementationPhases: PhaseDetail[] = [
       '✅ Real-time sensor monitoring',
       '✅ Manual fall reporting interface',
       '✅ Advanced incident logging system',
-      '✅ Fall history tracking and analysis'
+      '✅ Fall history tracking and analysis',
     ],
     technologies: [
       '✅ Apple Watch Fall Detection API',
       '✅ Real-time sensor data processing',
       '✅ Emergency notification system',
       '✅ Emergency contact system',
-      '✅ Data persistence and tracking'
+      '✅ Data persistence and tracking',
     ],
     risks: [
       '✅ RESOLVED: False positive management',
       '✅ RESOLVED: Real-time processing performance',
-      '✅ RESOLVED: Emergency response reliability'
+      '✅ RESOLVED: Emergency response reliability',
     ],
-    icon: <CheckCircle className="h-5 w-5 text-green-500" />
+    icon: <CheckCircle className="h-5 w-5 text-green-500" />,
   },
   {
     id: 'phase4',
     title: '✅ AI-Powered Fall Prediction (COMPLETED)',
-    description: 'Advanced machine learning models implemented for movement pattern analysis and predictive fall assessment before falls occur',
+    description:
+      'Advanced machine learning models implemented for movement pattern analysis and predictive fall assessment before falls occur',
     duration: 'COMPLETED',
     complexity: 'High',
     cost: 'DELIVERED',
     prerequisites: [
       '✅ Large dataset of movement patterns',
       '✅ ML expertise and algorithms',
-      '✅ Training data collection system'
+      '✅ Training data collection system',
     ],
     deliverables: [
       '✅ Advanced ML ensemble models (Random Forest, Gradient Boosting, Neural Networks, LSTM)',
@@ -165,7 +175,7 @@ const implementationPhases: PhaseDetail[] = [
       '✅ AI-powered personalized recommendations',
       '✅ Advanced feature engineering for movement data',
       '✅ Model performance monitoring and accuracy tracking',
-      '✅ Comprehensive movement analysis dashboard'
+      '✅ Comprehensive movement analysis dashboard',
     ],
     technologies: [
       '✅ Advanced ML algorithms (Random Forest, Gradient Boosting, LSTM, Transformers)',
@@ -173,19 +183,20 @@ const implementationPhases: PhaseDetail[] = [
       '✅ Real-time feature extraction and anomaly detection',
       '✅ Ensemble model prediction system',
       '✅ Advanced temporal pattern recognition',
-      '✅ AI-powered insight generation and recommendations'
+      '✅ AI-powered insight generation and recommendations',
     ],
     risks: [
       '✅ RESOLVED: Model accuracy and validation',
       '✅ RESOLVED: Real-time processing performance',
-      '✅ RESOLVED: Sensor data quality and reliability'
+      '✅ RESOLVED: Sensor data quality and reliability',
     ],
-    icon: <CheckCircle className="h-5 w-5 text-green-500" />
+    icon: <CheckCircle className="h-5 w-5 text-green-500" />,
   },
   {
     id: 'phase5',
     title: '🔄 Real-Time Monitoring System (IN PROGRESS)',
-    description: 'Building comprehensive 24/7 monitoring infrastructure with cloud-based platform',
+    description:
+      'Building comprehensive 24/7 monitoring infrastructure with cloud-based platform',
     duration: '6-10 weeks (Started)',
     complexity: 'High',
     cost: '$75k - $150k',
@@ -193,7 +204,7 @@ const implementationPhases: PhaseDetail[] = [
       '✅ Basic fall detection completed',
       '🔄 Cloud infrastructure setup',
       '🔄 Real-time systems architecture',
-      '🔄 Scalability planning'
+      '🔄 Scalability planning',
     ],
     deliverables: [
       '🔄 Cloud-based monitoring platform foundation',
@@ -201,7 +212,7 @@ const implementationPhases: PhaseDetail[] = [
       '🔄 Multi-device synchronization framework',
       '⏳ Healthcare provider integration APIs',
       '⏳ Advanced family/caregiver dashboard',
-      '⏳ 24/7 uptime monitoring and failover systems'
+      '⏳ 24/7 uptime monitoring and failover systems',
     ],
     technologies: [
       '🔄 Real-time monitoring interface',
@@ -209,20 +220,21 @@ const implementationPhases: PhaseDetail[] = [
       '🔄 Alert management framework',
       '⏳ Cloud databases (Firebase/AWS)',
       '⏳ WebSocket connections',
-      '⏳ Microservices architecture'
+      '⏳ Microservices architecture',
     ],
     risks: [
       '🔄 System scalability challenges',
       '⏳ High operational costs',
       '⏳ Uptime reliability requirements',
-      '⏳ Data privacy compliance'
+      '⏳ Data privacy compliance',
     ],
-    icon: <Clock className="h-5 w-5 text-blue-500" />
+    icon: <Clock className="h-5 w-5 text-blue-500" />,
   },
   {
     id: 'phase6',
     title: '🔄 Production Apple Health Kit Integration (NEXT PRIORITY)',
-    description: 'Complete native iOS/watchOS applications with comprehensive HealthKit integration for production deployment',
+    description:
+      'Complete native iOS/watchOS applications with comprehensive HealthKit integration for production deployment',
     duration: '8-12 weeks',
     complexity: 'High',
     cost: '$45k - $65k',
@@ -230,7 +242,7 @@ const implementationPhases: PhaseDetail[] = [
       'Apple Developer Program enrollment ($99/year)',
       'Physical iPhone and Apple Watch devices for testing',
       'Healthcare data compliance review and HIPAA assessment',
-      'SSL/TLS certificates for production WebSocket server'
+      'SSL/TLS certificates for production WebSocket server',
     ],
     deliverables: [
       '🔄 Native iOS app with full HealthKit integration',
@@ -242,7 +254,7 @@ const implementationPhases: PhaseDetail[] = [
       '⏳ Background health monitoring with optimized battery usage',
       '⏳ App Store submission and approval process',
       '⏳ HIPAA-compliant data handling and storage',
-      '⏳ Multi-device synchronization and offline data queuing'
+      '⏳ Multi-device synchronization and offline data queuing',
     ],
     technologies: [
       '🔄 Swift & SwiftUI for native iOS development',
@@ -252,7 +264,7 @@ const implementationPhases: PhaseDetail[] = [
       '🔄 WebSocket server (Node.js/TypeScript) with JWT authentication',
       '⏳ CryptoKit for end-to-end encryption',
       '⏳ WatchConnectivity for iPhone-Watch communication',
-      '⏳ Background processing and app refresh capabilities'
+      '⏳ Background processing and app refresh capabilities',
     ],
     risks: [
       '⚠️ App Store review process delays (1-3 weeks typical)',
@@ -260,89 +272,92 @@ const implementationPhases: PhaseDetail[] = [
       '⚠️ Fall detection accuracy challenges requiring extensive testing',
       '⚠️ Battery optimization requirements for 24/7 monitoring',
       '⚠️ HIPAA compliance verification and legal review costs',
-      '⚠️ WebSocket infrastructure scaling and uptime requirements'
+      '⚠️ WebSocket infrastructure scaling and uptime requirements',
     ],
-    icon: <Smartphone className="h-5 w-5 text-orange-500" />
+    icon: <Smartphone className="h-5 w-5 text-orange-500" />,
   },
   {
     id: 'phase7',
     title: 'Smart Home Integration',
-    description: 'Extend monitoring beyond wearables with environmental sensors',
+    description:
+      'Extend monitoring beyond wearables with environmental sensors',
     duration: '4-8 weeks',
     complexity: 'Medium',
     cost: '$30k - $75k',
     prerequisites: [
       'HomeKit development experience',
       'IoT sensor integration knowledge',
-      'Network security expertise'
+      'Network security expertise',
     ],
     deliverables: [
       'HomeKit sensor integration',
       'Multi-sensor data fusion',
       'Room-level monitoring',
       'Environmental risk factors',
-      'Smart home automation triggers'
+      'Smart home automation triggers',
     ],
     technologies: [
       'HomeKit framework',
       'Matter/Thread protocols',
       'Sensor fusion algorithms',
       'Edge processing',
-      'Mesh networking'
+      'Mesh networking',
     ],
     risks: [
       'Device compatibility issues',
       'Network reliability dependencies',
       'Privacy concerns with cameras',
-      'Installation complexity'
+      'Installation complexity',
     ],
-    icon: <GearSix className="h-5 w-5" />
+    icon: <GearSix className="h-5 w-5" />,
   },
   {
     id: 'phase8',
     title: 'Advanced AI & Predictive Analytics',
-    description: 'Implement sophisticated AI for health trend prediction and intervention',
+    description:
+      'Implement sophisticated AI for health trend prediction and intervention',
     duration: '10-16 weeks',
     complexity: 'High',
     cost: '$100k - $200k',
     prerequisites: [
       'Large-scale health datasets',
       'AI/ML research capabilities',
-      'Medical advisory board'
+      'Medical advisory board',
     ],
     deliverables: [
       'Predictive health modeling',
       'Early intervention recommendations',
       'Personalized care plans',
       'Health trajectory forecasting',
-      'Medical professional alerts'
+      'Medical professional alerts',
     ],
     technologies: [
       'Advanced neural networks',
       'Federated learning',
       'Natural language processing',
       'Computer vision (for gait analysis)',
-      'Reinforcement learning'
+      'Reinforcement learning',
     ],
     risks: [
       'Regulatory approval challenges',
       'Clinical validation requirements',
       'Ethical AI considerations',
-      'Medical liability concerns'
+      'Medical liability concerns',
     ],
-    icon: <Star className="h-5 w-5" />
+    icon: <Star className="h-5 w-5" />,
   },
   {
     id: 'phase-gamification',
     title: '✅ Gamification & Family Competitions (COMPLETED)',
-    description: 'Implemented comprehensive gamification system with family challenges, achievements, and motivational features',
+    description:
+      'Implemented comprehensive gamification system with family challenges, achievements, and motivational features',
     duration: 'COMPLETED',
     complexity: 'Medium',
     cost: 'DELIVERED',
     prerequisites: [
       'Completed Phase 1',
       'UX/UI design expertise',
-      'Family engagement strategy'
+      'Family engagement strategy',
     ],
     deliverables: [
       '✅ Health Game Center with points, levels, and achievements',
@@ -350,75 +365,122 @@ const implementationPhases: PhaseDetail[] = [
       '✅ Challenge creation and management tools',
       '✅ Achievement tracking and badge system',
       '✅ Motivational progress visualization',
-      '✅ Family activity feed and social features'
+      '✅ Family activity feed and social features',
     ],
     technologies: [
       'React state management',
-      'Local storage persistence', 
+      'Local storage persistence',
       'Real-time updates',
       'Badge and achievement systems',
-      'Progress tracking algorithms'
+      'Progress tracking algorithms',
     ],
     risks: [
       'User engagement sustainability',
       'Balancing competition vs cooperation',
-      'Privacy in family sharing'
+      'Privacy in family sharing',
     ],
-    icon: <Target className="h-5 w-5" />
-  }
-]
+    icon: <Target className="h-5 w-5" />,
+  },
+];
 
 interface ImplementationTimeline {
-  phase: string
-  startWeek: number
-  duration: number
-  dependencies: string[]
+  phase: string;
+  startWeek: number;
+  duration: number;
+  dependencies: string[];
 }
 
 const timeline: ImplementationTimeline[] = [
-  { phase: '✅ Foundation & Basic Setup (DONE)', startWeek: 0, duration: 4, dependencies: [] },
-  { phase: '✅ Enhanced Analytics (DONE)', startWeek: 4, duration: 6, dependencies: ['Foundation'] },
-  { phase: '✅ Basic Fall Detection (DONE)', startWeek: 6, duration: 4, dependencies: ['Foundation'] },
-  { phase: '✅ AI Fall Prediction (DONE)', startWeek: 10, duration: 12, dependencies: ['Analytics', 'Basic Fall Detection'] },
-  { phase: '✅ Gamification & Family Competitions (DONE)', startWeek: 12, duration: 3, dependencies: ['Foundation'] },
-  { phase: '🔄 Real-Time Monitoring (IN PROGRESS)', startWeek: 14, duration: 10, dependencies: ['Basic Fall Detection'] },
-  { phase: 'Smart Home Integration', startWeek: 22, duration: 8, dependencies: ['Real-Time Monitoring'] },
-  { phase: 'Advanced AI & Predictive', startWeek: 24, duration: 16, dependencies: ['AI Fall Prediction', 'Real-Time Monitoring'] }
-]
+  {
+    phase: '✅ Foundation & Basic Setup (DONE)',
+    startWeek: 0,
+    duration: 4,
+    dependencies: [],
+  },
+  {
+    phase: '✅ Enhanced Analytics (DONE)',
+    startWeek: 4,
+    duration: 6,
+    dependencies: ['Foundation'],
+  },
+  {
+    phase: '✅ Basic Fall Detection (DONE)',
+    startWeek: 6,
+    duration: 4,
+    dependencies: ['Foundation'],
+  },
+  {
+    phase: '✅ AI Fall Prediction (DONE)',
+    startWeek: 10,
+    duration: 12,
+    dependencies: ['Analytics', 'Basic Fall Detection'],
+  },
+  {
+    phase: '✅ Gamification & Family Competitions (DONE)',
+    startWeek: 12,
+    duration: 3,
+    dependencies: ['Foundation'],
+  },
+  {
+    phase: '🔄 Real-Time Monitoring (IN PROGRESS)',
+    startWeek: 14,
+    duration: 10,
+    dependencies: ['Basic Fall Detection'],
+  },
+  {
+    phase: 'Smart Home Integration',
+    startWeek: 22,
+    duration: 8,
+    dependencies: ['Real-Time Monitoring'],
+  },
+  {
+    phase: 'Advanced AI & Predictive',
+    startWeek: 24,
+    duration: 16,
+    dependencies: ['AI Fall Prediction', 'Real-Time Monitoring'],
+  },
+];
 
 export default function ImplementationPhases() {
-  const [selectedPhase, setSelectedPhase] = useState<string>('phase1')
-  const [viewMode, setViewMode] = useState<'phases' | 'timeline' | 'comparison'>('phases')
+  const [selectedPhase, setSelectedPhase] = useState<string>('phase1');
+  const [viewMode, setViewMode] = useState<
+    'phases' | 'timeline' | 'comparison'
+  >('phases');
 
-  const currentPhase = implementationPhases.find(p => p.id === selectedPhase)
+  const currentPhase = implementationPhases.find((p) => p.id === selectedPhase);
 
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
-      case 'Low': return 'bg-green-100 text-green-800'
-      case 'Medium': return 'bg-yellow-100 text-yellow-800'
-      case 'High': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'Low':
+        return 'bg-green-100 text-green-800';
+      case 'Medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'High':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
-  }
+  };
 
-  const totalProjectCost = '$100k - $250k remaining'
-  const totalDuration = '24 weeks remaining (6 months)'
+  const totalProjectCost = '$100k - $250k remaining';
+  const totalDuration = '24 weeks remaining (6 months)';
 
   return (
     <div className="space-y-6">
       <Alert className="border-blue-200 bg-blue-50">
         <Clock className="h-4 w-4 text-blue-600" />
         <AlertDescription className="text-blue-800">
-          <strong>Phase 5 Started:</strong> Real-Time Monitoring System implementation is now in progress! 
-          Core monitoring infrastructure and alert management systems have been deployed. 
-          Next: Cloud platform integration and 24/7 monitoring capabilities.
+          <strong>Phase 5 Started:</strong> Real-Time Monitoring System
+          implementation is now in progress! Core monitoring infrastructure and
+          alert management systems have been deployed. Next: Cloud platform
+          integration and 24/7 monitoring capabilities.
         </AlertDescription>
       </Alert>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="mb-2 flex items-center gap-2">
               <Clock className="h-5 w-5 text-blue-500" />
               <span className="font-semibold">Remaining Duration</span>
             </div>
@@ -427,7 +489,7 @@ export default function ImplementationPhases() {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="mb-2 flex items-center gap-2">
               <Target className="h-5 w-5 text-green-500" />
               <span className="font-semibold">Remaining Investment</span>
             </div>
@@ -436,20 +498,26 @@ export default function ImplementationPhases() {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="mb-2 flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-500" />
               <span className="font-semibold">Project Progress</span>
             </div>
             <div className="space-y-2">
               <p className="text-2xl font-bold">5 of 7 phases</p>
               <Progress value={71.4} className="h-2" />
-              <p className="text-sm text-muted-foreground">Real-time monitoring in progress</p>
+              <p className="text-muted-foreground text-sm">
+                Real-time monitoring in progress
+              </p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as any)} className="space-y-6">
+      <Tabs
+        value={viewMode}
+        onValueChange={(value) => setViewMode(value as any)}
+        className="space-y-6"
+      >
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="phases">Phase Details</TabsTrigger>
           <TabsTrigger value="timeline">Timeline View</TabsTrigger>
@@ -463,8 +531,8 @@ export default function ImplementationPhases() {
               <Phase1Summary />
             </div>
           )}
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Phase Selection */}
             <Card>
               <CardHeader>
@@ -479,14 +547,16 @@ export default function ImplementationPhases() {
                     <Button
                       key={phase.id}
                       variant={selectedPhase === phase.id ? 'default' : 'ghost'}
-                      className="w-full justify-start h-auto p-3"
+                      className="h-auto w-full justify-start p-3"
                       onClick={() => setSelectedPhase(phase.id)}
                     >
                       <div className="flex items-center gap-3">
                         {phase.icon}
                         <div className="text-left">
                           <div className="font-medium">{phase.title}</div>
-                          <div className="text-xs text-muted-foreground">{phase.duration}</div>
+                          <div className="text-muted-foreground text-xs">
+                            {phase.duration}
+                          </div>
                         </div>
                       </div>
                     </Button>
@@ -496,7 +566,7 @@ export default function ImplementationPhases() {
             </Card>
 
             {/* Phase Details */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="space-y-6 lg:col-span-2">
               {currentPhase && (
                 <>
                   <Card>
@@ -507,52 +577,68 @@ export default function ImplementationPhases() {
                           {currentPhase.title}
                         </CardTitle>
                         <div className="flex gap-2">
-                          <Badge className={getComplexityColor(currentPhase.complexity)}>
+                          <Badge
+                            className={getComplexityColor(
+                              currentPhase.complexity
+                            )}
+                          >
                             {currentPhase.complexity} Complexity
                           </Badge>
-                          <Badge variant="outline">{currentPhase.duration}</Badge>
+                          <Badge variant="outline">
+                            {currentPhase.duration}
+                          </Badge>
                         </div>
                       </div>
-                      <CardDescription>{currentPhase.description}</CardDescription>
+                      <CardDescription>
+                        {currentPhase.description}
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
-                          <h4 className="font-semibold mb-3 flex items-center gap-2">
+                          <h4 className="mb-3 flex items-center gap-2 font-semibold">
                             <CheckCircle className="h-4 w-4" />
                             Prerequisites
                           </h4>
                           <ul className="space-y-2">
                             {currentPhase.prerequisites.map((prereq, index) => (
-                              <li key={index} className="text-sm flex items-start gap-2">
-                                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                              <li
+                                key={index}
+                                className="flex items-start gap-2 text-sm"
+                              >
+                                <div className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500" />
                                 {prereq}
                               </li>
                             ))}
                           </ul>
                         </div>
                         <div>
-                          <h4 className="font-semibold mb-3 flex items-center gap-2">
+                          <h4 className="mb-3 flex items-center gap-2 font-semibold">
                             <Target className="h-4 w-4" />
                             Key Deliverables
                           </h4>
                           <ul className="space-y-2">
-                            {currentPhase.deliverables.map((deliverable, index) => (
-                              <li key={index} className="text-sm flex items-start gap-2">
-                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0" />
-                                {deliverable}
-                              </li>
-                            ))}
+                            {currentPhase.deliverables.map(
+                              (deliverable, index) => (
+                                <li
+                                  key={index}
+                                  className="flex items-start gap-2 text-sm"
+                                >
+                                  <div className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-500" />
+                                  {deliverable}
+                                </li>
+                              )
+                            )}
                           </ul>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <Card>
                       <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
+                        <CardTitle className="flex items-center gap-2 text-lg">
                           <Code className="h-4 w-4" />
                           Technologies & Tools
                         </CardTitle>
@@ -560,7 +646,10 @@ export default function ImplementationPhases() {
                       <CardContent>
                         <div className="space-y-2">
                           {currentPhase.technologies.map((tech, index) => (
-                            <div key={index} className="flex items-center gap-2">
+                            <div
+                              key={index}
+                              className="flex items-center gap-2"
+                            >
                               <Badge variant="secondary" className="text-xs">
                                 {tech}
                               </Badge>
@@ -572,7 +661,7 @@ export default function ImplementationPhases() {
 
                     <Card>
                       <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
+                        <CardTitle className="flex items-center gap-2 text-lg">
                           <Warning className="h-4 w-4" />
                           Risk Factors
                         </CardTitle>
@@ -593,21 +682,30 @@ export default function ImplementationPhases() {
 
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-lg">Investment & Timeline</CardTitle>
+                      <CardTitle className="text-lg">
+                        Investment & Timeline
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-2 gap-6">
                         <div>
-                          <h4 className="font-semibold mb-2">Estimated Cost</h4>
-                          <p className="text-2xl font-bold text-primary">{currentPhase.cost}</p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Including development, testing, and initial deployment
+                          <h4 className="mb-2 font-semibold">Estimated Cost</h4>
+                          <p className="text-primary text-2xl font-bold">
+                            {currentPhase.cost}
+                          </p>
+                          <p className="text-muted-foreground mt-1 text-sm">
+                            Including development, testing, and initial
+                            deployment
                           </p>
                         </div>
                         <div>
-                          <h4 className="font-semibold mb-2">Development Time</h4>
-                          <p className="text-2xl font-bold text-primary">{currentPhase.duration}</p>
-                          <p className="text-sm text-muted-foreground mt-1">
+                          <h4 className="mb-2 font-semibold">
+                            Development Time
+                          </h4>
+                          <p className="text-primary text-2xl font-bold">
+                            {currentPhase.duration}
+                          </p>
+                          <p className="text-muted-foreground mt-1 text-sm">
                             With experienced development team
                           </p>
                         </div>
@@ -634,39 +732,54 @@ export default function ImplementationPhases() {
             <CardContent>
               <div className="space-y-6">
                 {timeline.map((item, index) => {
-                  const isCompleted = item.phase.includes('✅')
-                  const isInProgress = item.phase.includes('🔄')
-                  
+                  const isCompleted = item.phase.includes('✅');
+                  const isInProgress = item.phase.includes('🔄');
+
                   return (
                     <div key={index} className="relative">
                       <div className="flex items-center gap-4">
-                        <div className="w-24 text-sm text-muted-foreground">
-                          Week {item.startWeek + 1}-{item.startWeek + item.duration}
+                        <div className="text-muted-foreground w-24 text-sm">
+                          Week {item.startWeek + 1}-
+                          {item.startWeek + item.duration}
                         </div>
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h4 className={`font-semibold ${isCompleted ? 'text-green-700' : isInProgress ? 'text-blue-700' : ''}`}>
+                          <div className="mb-2 flex items-center gap-3">
+                            <h4
+                              className={`font-semibold ${isCompleted ? 'text-green-700' : isInProgress ? 'text-blue-700' : ''}`}
+                            >
                               {item.phase}
                             </h4>
-                            <Badge variant={isCompleted ? 'default' : isInProgress ? 'secondary' : 'outline'}>
+                            <Badge
+                              variant={
+                                isCompleted
+                                  ? 'default'
+                                  : isInProgress
+                                    ? 'secondary'
+                                    : 'outline'
+                              }
+                            >
                               {item.duration} weeks
                             </Badge>
-                            {isCompleted && <CheckCircle className="h-4 w-4 text-green-500" />}
-                            {isInProgress && <Clock className="h-4 w-4 text-blue-500" />}
+                            {isCompleted && (
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                            )}
+                            {isInProgress && (
+                              <Clock className="h-4 w-4 text-blue-500" />
+                            )}
                           </div>
-                          <Progress 
-                            value={isCompleted ? 100 : isInProgress ? 60 : 0} 
-                            className={`h-6 ${isCompleted ? '[&>div]:bg-green-500' : isInProgress ? '[&>div]:bg-blue-500' : ''}`} 
+                          <Progress
+                            value={isCompleted ? 100 : isInProgress ? 60 : 0}
+                            className={`h-6 ${isCompleted ? '[&>div]:bg-green-500' : isInProgress ? '[&>div]:bg-blue-500' : ''}`}
                           />
                           {item.dependencies.length > 0 && (
-                            <div className="mt-2 text-xs text-muted-foreground">
+                            <div className="text-muted-foreground mt-2 text-xs">
                               Depends on: {item.dependencies.join(', ')}
                             </div>
                           )}
                         </div>
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             </CardContent>
@@ -678,12 +791,14 @@ export default function ImplementationPhases() {
             {implementationPhases.map((phase) => (
               <Card key={phase.id} className="relative">
                 <CardContent className="pt-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-center">
+                  <div className="grid grid-cols-1 items-center gap-4 lg:grid-cols-5">
                     <div className="flex items-center gap-3">
                       {phase.icon}
                       <div>
                         <h3 className="font-semibold">{phase.title}</h3>
-                        <p className="text-sm text-muted-foreground">{phase.duration}</p>
+                        <p className="text-muted-foreground text-sm">
+                          {phase.duration}
+                        </p>
                       </div>
                     </div>
                     <div>
@@ -706,5 +821,5 @@ export default function ImplementationPhases() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

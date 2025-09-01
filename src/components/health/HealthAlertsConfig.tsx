@@ -1,51 +1,125 @@
-import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Bell, Plus, Trash, AlertTriangle, Heart, Activity, Clock, Shield, Stethoscope, Target } from '@phosphor-icons/react'
-import { toast } from 'sonner'
-import { ProcessedHealthData } from '@/lib/healthDataProcessor'
+import { useState } from 'react';
+import { useKV } from '@github/spark/hooks';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Bell,
+  Plus,
+  Trash,
+  AlertTriangle,
+  Heart,
+  Activity,
+  Clock,
+  Shield,
+  Stethoscope,
+  Target,
+} from '@phosphor-icons/react';
+import { toast } from 'sonner';
+import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 interface HealthAlert {
-  id: string
-  name: string
-  metric: string
-  condition: 'above' | 'below' | 'equal' | 'range_outside' | 'trend_up' | 'trend_down'
-  threshold: number
-  thresholdMax?: number // For range conditions
-  enabled: boolean
-  priority: 'low' | 'medium' | 'high' | 'critical'
-  frequency: 'immediate' | 'daily' | 'weekly'
-  createdAt: string
-  lastTriggered?: string
-  triggerCount: number
-  description?: string
+  id: string;
+  name: string;
+  metric: string;
+  condition:
+    | 'above'
+    | 'below'
+    | 'equal'
+    | 'range_outside'
+    | 'trend_up'
+    | 'trend_down';
+  threshold: number;
+  thresholdMax?: number; // For range conditions
+  enabled: boolean;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  frequency: 'immediate' | 'daily' | 'weekly';
+  createdAt: string;
+  lastTriggered?: string;
+  triggerCount: number;
+  description?: string;
 }
 
 interface AlertsConfigProps {
-  healthData: ProcessedHealthData
+  healthData: ProcessedHealthData;
 }
 
 const HEALTH_METRICS = [
-  { value: 'heart_rate', label: 'Heart Rate', unit: 'bpm', normalRange: [60, 100] },
-  { value: 'steps', label: 'Daily Steps', unit: 'steps', normalRange: [8000, 12000] },
-  { value: 'sleep_hours', label: 'Sleep Hours', unit: 'hours', normalRange: [7, 9] },
-  { value: 'blood_pressure_systolic', label: 'Blood Pressure (Systolic)', unit: 'mmHg', normalRange: [90, 120] },
-  { value: 'blood_pressure_diastolic', label: 'Blood Pressure (Diastolic)', unit: 'mmHg', normalRange: [60, 80] },
-  { value: 'walking_speed', label: 'Walking Speed', unit: 'mph', normalRange: [2.5, 4.0] },
-  { value: 'balance_score', label: 'Balance Score', unit: '%', normalRange: [80, 100] },
-  { value: 'fall_risk_score', label: 'Fall Risk Score', unit: '%', normalRange: [0, 30] },
-  { value: 'activity_level', label: 'Activity Level', unit: 'minutes', normalRange: [150, 300] },
+  {
+    value: 'heart_rate',
+    label: 'Heart Rate',
+    unit: 'bpm',
+    normalRange: [60, 100],
+  },
+  {
+    value: 'steps',
+    label: 'Daily Steps',
+    unit: 'steps',
+    normalRange: [8000, 12000],
+  },
+  {
+    value: 'sleep_hours',
+    label: 'Sleep Hours',
+    unit: 'hours',
+    normalRange: [7, 9],
+  },
+  {
+    value: 'blood_pressure_systolic',
+    label: 'Blood Pressure (Systolic)',
+    unit: 'mmHg',
+    normalRange: [90, 120],
+  },
+  {
+    value: 'blood_pressure_diastolic',
+    label: 'Blood Pressure (Diastolic)',
+    unit: 'mmHg',
+    normalRange: [60, 80],
+  },
+  {
+    value: 'walking_speed',
+    label: 'Walking Speed',
+    unit: 'mph',
+    normalRange: [2.5, 4.0],
+  },
+  {
+    value: 'balance_score',
+    label: 'Balance Score',
+    unit: '%',
+    normalRange: [80, 100],
+  },
+  {
+    value: 'fall_risk_score',
+    label: 'Fall Risk Score',
+    unit: '%',
+    normalRange: [0, 30],
+  },
+  {
+    value: 'activity_level',
+    label: 'Activity Level',
+    unit: 'minutes',
+    normalRange: [150, 300],
+  },
   { value: 'weight', label: 'Weight', unit: 'lbs', normalRange: [0, 0] }, // User-specific
-]
+];
 
 const CONDITION_LABELS = {
   above: 'Above threshold',
@@ -53,26 +127,26 @@ const CONDITION_LABELS = {
   equal: 'Equals threshold',
   range_outside: 'Outside normal range',
   trend_up: 'Trending upward',
-  trend_down: 'Trending downward'
-}
+  trend_down: 'Trending downward',
+};
 
 const PRIORITY_COLORS = {
   low: 'bg-blue-100 text-blue-800 border-blue-200',
   medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   high: 'bg-orange-100 text-orange-800 border-orange-200',
-  critical: 'bg-red-100 text-red-800 border-red-200'
-}
+  critical: 'bg-red-100 text-red-800 border-red-200',
+};
 
 export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
-  const [alerts, setAlerts] = useKV<HealthAlert[]>('health-alerts', [])
-  const [alertHistory, setAlertHistory] = useKV<any[]>('alert-history', [])
+  const [alerts, setAlerts] = useKV<HealthAlert[]>('health-alerts', []);
+  const [alertHistory, setAlertHistory] = useKV<any[]>('alert-history', []);
   const [globalSettings, setGlobalSettings] = useKV('alert-global-settings', {
     enabled: true,
     quietHours: { start: '22:00', end: '07:00' },
     maxAlertsPerDay: 10,
     emailNotifications: false,
-    pushNotifications: true
-  })
+    pushNotifications: true,
+  });
 
   const [newAlert, setNewAlert] = useState<Partial<HealthAlert>>({
     name: '',
@@ -82,15 +156,19 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
     priority: 'medium',
     frequency: 'immediate',
     enabled: true,
-    description: ''
-  })
+    description: '',
+  });
 
-  const [showNewAlertForm, setShowNewAlertForm] = useState(false)
+  const [showNewAlertForm, setShowNewAlertForm] = useState(false);
 
   const createAlert = () => {
-    if (!newAlert.name || !newAlert.metric || newAlert.threshold === undefined) {
-      toast.error('Please fill in all required fields')
-      return
+    if (
+      !newAlert.name ||
+      !newAlert.metric ||
+      newAlert.threshold === undefined
+    ) {
+      toast.error('Please fill in all required fields');
+      return;
     }
 
     const alert: HealthAlert = {
@@ -105,10 +183,10 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
       frequency: newAlert.frequency!,
       createdAt: new Date().toISOString(),
       triggerCount: 0,
-      description: newAlert.description
-    }
+      description: newAlert.description,
+    };
 
-    setAlerts(current => [...current, alert])
+    setAlerts((current) => [...current, alert]);
     setNewAlert({
       name: '',
       metric: '',
@@ -117,43 +195,41 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
       priority: 'medium',
       frequency: 'immediate',
       enabled: true,
-      description: ''
-    })
-    setShowNewAlertForm(false)
-    toast.success('Alert created successfully')
-  }
+      description: '',
+    });
+    setShowNewAlertForm(false);
+    toast.success('Alert created successfully');
+  };
 
   const deleteAlert = (alertId: string) => {
-    setAlerts(current => current.filter(alert => alert.id !== alertId))
-    toast.success('Alert deleted')
-  }
+    setAlerts((current) => current.filter((alert) => alert.id !== alertId));
+    toast.success('Alert deleted');
+  };
 
   const toggleAlert = (alertId: string) => {
-    setAlerts(current => 
-      current.map(alert => 
-        alert.id === alertId 
-          ? { ...alert, enabled: !alert.enabled }
-          : alert
+    setAlerts((current) =>
+      current.map((alert) =>
+        alert.id === alertId ? { ...alert, enabled: !alert.enabled } : alert
       )
-    )
-  }
+    );
+  };
 
   const getMetricLabel = (metric: string) => {
-    return HEALTH_METRICS.find(m => m.value === metric)?.label || metric
-  }
+    return HEALTH_METRICS.find((m) => m.value === metric)?.label || metric;
+  };
 
   const getMetricUnit = (metric: string) => {
-    return HEALTH_METRICS.find(m => m.value === metric)?.unit || ''
-  }
+    return HEALTH_METRICS.find((m) => m.value === metric)?.unit || '';
+  };
 
   const generateSmartAlert = (metric: string) => {
-    const metricInfo = HEALTH_METRICS.find(m => m.value === metric)
-    if (!metricInfo) return
+    const metricInfo = HEALTH_METRICS.find((m) => m.value === metric);
+    if (!metricInfo) return;
 
-    const [min, max] = metricInfo.normalRange
-    
+    const [min, max] = metricInfo.normalRange;
+
     // Create alerts based on the metric type
-    const smartAlerts: Partial<HealthAlert>[] = []
+    const smartAlerts: Partial<HealthAlert>[] = [];
 
     if (metric === 'fall_risk_score') {
       smartAlerts.push({
@@ -163,8 +239,8 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
         threshold: 70,
         priority: 'critical',
         frequency: 'immediate',
-        description: 'Alert when fall risk score indicates high danger'
-      })
+        description: 'Alert when fall risk score indicates high danger',
+      });
     } else if (metric === 'heart_rate') {
       smartAlerts.push(
         {
@@ -174,7 +250,7 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
           threshold: 120,
           priority: 'high',
           frequency: 'immediate',
-          description: 'Alert when heart rate exceeds safe threshold'
+          description: 'Alert when heart rate exceeds safe threshold',
         },
         {
           name: `Low Heart Rate Alert`,
@@ -183,9 +259,9 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
           threshold: 50,
           priority: 'high',
           frequency: 'immediate',
-          description: 'Alert when heart rate drops below safe threshold'
+          description: 'Alert when heart rate drops below safe threshold',
         }
-      )
+      );
     } else if (min > 0 && max > 0) {
       smartAlerts.push({
         name: `${metricInfo.label} Out of Range`,
@@ -195,12 +271,12 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
         thresholdMax: max,
         priority: 'medium',
         frequency: 'daily',
-        description: `Alert when ${metricInfo.label.toLowerCase()} is outside normal range`
-      })
+        description: `Alert when ${metricInfo.label.toLowerCase()} is outside normal range`,
+      });
     }
 
     // Add the smart alerts
-    smartAlerts.forEach(alertTemplate => {
+    smartAlerts.forEach((alertTemplate) => {
       const alert: HealthAlert = {
         id: `alert_${Date.now()}_${Math.random()}`,
         name: alertTemplate.name!,
@@ -213,27 +289,30 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
         frequency: alertTemplate.frequency!,
         createdAt: new Date().toISOString(),
         triggerCount: 0,
-        description: alertTemplate.description
-      }
-      
-      setAlerts(current => [...current, alert])
-    })
+        description: alertTemplate.description,
+      };
 
-    toast.success(`Smart alerts created for ${metricInfo.label}`)
-  }
+      setAlerts((current) => [...current, alert]);
+    });
 
-  const activeAlerts = alerts.filter(alert => alert.enabled)
-  const recentlyTriggered = alerts.filter(alert => 
-    alert.lastTriggered && 
-    new Date(alert.lastTriggered) > new Date(Date.now() - 24 * 60 * 60 * 1000)
-  )
+    toast.success(`Smart alerts created for ${metricInfo.label}`);
+  };
+
+  const activeAlerts = alerts.filter((alert) => alert.enabled);
+  const recentlyTriggered = alerts.filter(
+    (alert) =>
+      alert.lastTriggered &&
+      new Date(alert.lastTriggered) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+  );
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Health Alerts & Thresholds</h2>
+          <h2 className="text-3xl font-bold tracking-tight">
+            Health Alerts & Thresholds
+          </h2>
           <p className="text-muted-foreground">
             Configure personalized health monitoring alerts and thresholds
           </p>
@@ -244,22 +323,24 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
             {activeAlerts.length} Active Alerts
           </Badge>
           <Button onClick={() => setShowNewAlertForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Create Alert
           </Button>
         </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Alerts</p>
+                <p className="text-muted-foreground text-sm font-medium">
+                  Total Alerts
+                </p>
                 <p className="text-2xl font-bold">{alerts.length}</p>
               </div>
-              <Bell className="h-8 w-8 text-muted-foreground" />
+              <Bell className="text-muted-foreground h-8 w-8" />
             </div>
           </CardContent>
         </Card>
@@ -268,8 +349,12 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Active Alerts</p>
-                <p className="text-2xl font-bold text-green-600">{activeAlerts.length}</p>
+                <p className="text-muted-foreground text-sm font-medium">
+                  Active Alerts
+                </p>
+                <p className="text-2xl font-bold text-green-600">
+                  {activeAlerts.length}
+                </p>
               </div>
               <Shield className="h-8 w-8 text-green-600" />
             </div>
@@ -280,8 +365,12 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Triggered Today</p>
-                <p className="text-2xl font-bold text-orange-600">{recentlyTriggered.length}</p>
+                <p className="text-muted-foreground text-sm font-medium">
+                  Triggered Today
+                </p>
+                <p className="text-2xl font-bold text-orange-600">
+                  {recentlyTriggered.length}
+                </p>
               </div>
               <AlertTriangle className="h-8 w-8 text-orange-600" />
             </div>
@@ -292,9 +381,14 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Critical Alerts</p>
+                <p className="text-muted-foreground text-sm font-medium">
+                  Critical Alerts
+                </p>
                 <p className="text-2xl font-bold text-red-600">
-                  {alerts.filter(a => a.priority === 'critical' && a.enabled).length}
+                  {
+                    alerts.filter((a) => a.priority === 'critical' && a.enabled)
+                      .length
+                  }
                 </p>
               </div>
               <Heart className="h-8 w-8 text-red-600" />
@@ -318,26 +412,34 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
               <CardHeader>
                 <CardTitle>Create New Alert</CardTitle>
                 <CardDescription>
-                  Set up a custom health monitoring alert with specific thresholds
+                  Set up a custom health monitoring alert with specific
+                  thresholds
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="alert-name">Alert Name</Label>
                     <Input
                       id="alert-name"
                       placeholder="e.g., High Heart Rate Warning"
                       value={newAlert.name || ''}
-                      onChange={(e) => setNewAlert(prev => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) =>
+                        setNewAlert((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="alert-metric">Health Metric</Label>
-                    <Select 
-                      value={newAlert.metric || ''} 
-                      onValueChange={(value) => setNewAlert(prev => ({ ...prev, metric: value }))}
+                    <Select
+                      value={newAlert.metric || ''}
+                      onValueChange={(value) =>
+                        setNewAlert((prev) => ({ ...prev, metric: value }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select metric to monitor" />
@@ -354,54 +456,73 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
 
                   <div className="space-y-2">
                     <Label htmlFor="alert-condition">Condition</Label>
-                    <Select 
-                      value={newAlert.condition || 'above'} 
-                      onValueChange={(value: any) => setNewAlert(prev => ({ ...prev, condition: value }))}
+                    <Select
+                      value={newAlert.condition || 'above'}
+                      onValueChange={(value: any) =>
+                        setNewAlert((prev) => ({ ...prev, condition: value }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.entries(CONDITION_LABELS).map(([value, label]) => (
-                          <SelectItem key={value} value={value}>
-                            {label}
-                          </SelectItem>
-                        ))}
+                        {Object.entries(CONDITION_LABELS).map(
+                          ([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          )
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="alert-threshold">
-                      Threshold {newAlert.metric && `(${getMetricUnit(newAlert.metric)})`}
+                      Threshold{' '}
+                      {newAlert.metric && `(${getMetricUnit(newAlert.metric)})`}
                     </Label>
                     <Input
                       id="alert-threshold"
                       type="number"
                       value={newAlert.threshold || ''}
-                      onChange={(e) => setNewAlert(prev => ({ ...prev, threshold: parseFloat(e.target.value) }))}
+                      onChange={(e) =>
+                        setNewAlert((prev) => ({
+                          ...prev,
+                          threshold: parseFloat(e.target.value),
+                        }))
+                      }
                     />
                   </div>
 
                   {newAlert.condition === 'range_outside' && (
                     <div className="space-y-2">
                       <Label htmlFor="alert-threshold-max">
-                        Maximum Threshold {newAlert.metric && `(${getMetricUnit(newAlert.metric)})`}
+                        Maximum Threshold{' '}
+                        {newAlert.metric &&
+                          `(${getMetricUnit(newAlert.metric)})`}
                       </Label>
                       <Input
                         id="alert-threshold-max"
                         type="number"
                         value={newAlert.thresholdMax || ''}
-                        onChange={(e) => setNewAlert(prev => ({ ...prev, thresholdMax: parseFloat(e.target.value) }))}
+                        onChange={(e) =>
+                          setNewAlert((prev) => ({
+                            ...prev,
+                            thresholdMax: parseFloat(e.target.value),
+                          }))
+                        }
                       />
                     </div>
                   )}
 
                   <div className="space-y-2">
                     <Label htmlFor="alert-priority">Priority Level</Label>
-                    <Select 
-                      value={newAlert.priority || 'medium'} 
-                      onValueChange={(value: any) => setNewAlert(prev => ({ ...prev, priority: value }))}
+                    <Select
+                      value={newAlert.priority || 'medium'}
+                      onValueChange={(value: any) =>
+                        setNewAlert((prev) => ({ ...prev, priority: value }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -417,9 +538,11 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
 
                   <div className="space-y-2">
                     <Label htmlFor="alert-frequency">Alert Frequency</Label>
-                    <Select 
-                      value={newAlert.frequency || 'immediate'} 
-                      onValueChange={(value: any) => setNewAlert(prev => ({ ...prev, frequency: value }))}
+                    <Select
+                      value={newAlert.frequency || 'immediate'}
+                      onValueChange={(value: any) =>
+                        setNewAlert((prev) => ({ ...prev, frequency: value }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -434,12 +557,19 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="alert-description">Description (Optional)</Label>
+                  <Label htmlFor="alert-description">
+                    Description (Optional)
+                  </Label>
                   <Input
                     id="alert-description"
                     placeholder="Brief description of when this alert should trigger"
                     value={newAlert.description || ''}
-                    onChange={(e) => setNewAlert(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setNewAlert((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
                   />
                 </div>
 
@@ -447,14 +577,21 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                   <Switch
                     id="alert-enabled"
                     checked={newAlert.enabled || false}
-                    onCheckedChange={(checked) => setNewAlert(prev => ({ ...prev, enabled: checked }))}
+                    onCheckedChange={(checked) =>
+                      setNewAlert((prev) => ({ ...prev, enabled: checked }))
+                    }
                   />
-                  <Label htmlFor="alert-enabled">Enable alert immediately</Label>
+                  <Label htmlFor="alert-enabled">
+                    Enable alert immediately
+                  </Label>
                 </div>
 
                 <div className="flex items-center gap-2 pt-4">
                   <Button onClick={createAlert}>Create Alert</Button>
-                  <Button variant="outline" onClick={() => setShowNewAlertForm(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowNewAlertForm(false)}
+                  >
                     Cancel
                   </Button>
                 </div>
@@ -468,13 +605,16 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
             {alerts.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Alerts Configured</h3>
+                  <Bell className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                  <h3 className="mb-2 text-lg font-semibold">
+                    No Alerts Configured
+                  </h3>
                   <p className="text-muted-foreground mb-4">
-                    Create your first health monitoring alert to get started with personalized monitoring.
+                    Create your first health monitoring alert to get started
+                    with personalized monitoring.
                   </p>
                   <Button onClick={() => setShowNewAlertForm(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="mr-2 h-4 w-4" />
                     Create Your First Alert
                   </Button>
                 </CardContent>
@@ -484,7 +624,7 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                 {alerts.map((alert) => (
                   <Card key={alert.id}>
                     <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
+                      <div className="mb-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <Switch
                             checked={alert.enabled}
@@ -492,8 +632,9 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                           />
                           <div>
                             <h4 className="font-semibold">{alert.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {getMetricLabel(alert.metric)} • {CONDITION_LABELS[alert.condition]}
+                            <p className="text-muted-foreground text-sm">
+                              {getMetricLabel(alert.metric)} •{' '}
+                              {CONDITION_LABELS[alert.condition]}
                             </p>
                           </div>
                         </div>
@@ -515,33 +656,42 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                         <div className="flex items-center gap-4 text-sm">
                           <span className="font-medium">Threshold:</span>
                           <span>
-                            {alert.condition === 'range_outside' 
+                            {alert.condition === 'range_outside'
                               ? `${alert.threshold} - ${alert.thresholdMax} ${getMetricUnit(alert.metric)}`
-                              : `${alert.threshold} ${getMetricUnit(alert.metric)}`
-                            }
+                              : `${alert.threshold} ${getMetricUnit(alert.metric)}`}
                           </span>
                         </div>
-                        
+
                         <div className="flex items-center gap-4 text-sm">
                           <span className="font-medium">Frequency:</span>
                           <span className="capitalize">{alert.frequency}</span>
                         </div>
-                        
+
                         {alert.description && (
                           <div className="flex items-center gap-4 text-sm">
                             <span className="font-medium">Description:</span>
-                            <span className="text-muted-foreground">{alert.description}</span>
+                            <span className="text-muted-foreground">
+                              {alert.description}
+                            </span>
                           </div>
                         )}
-                        
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>Created: {new Date(alert.createdAt).toLocaleDateString()}</span>
+
+                        <div className="text-muted-foreground flex items-center gap-4 text-sm">
+                          <span>
+                            Created:{' '}
+                            {new Date(alert.createdAt).toLocaleDateString()}
+                          </span>
                           <span>•</span>
                           <span>Triggered: {alert.triggerCount} times</span>
                           {alert.lastTriggered && (
                             <>
                               <span>•</span>
-                              <span>Last: {new Date(alert.lastTriggered).toLocaleDateString()}</span>
+                              <span>
+                                Last:{' '}
+                                {new Date(
+                                  alert.lastTriggered
+                                ).toLocaleDateString()}
+                              </span>
                             </>
                           )}
                         </div>
@@ -559,27 +709,29 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
             <CardHeader>
               <CardTitle>Smart Alert Setup</CardTitle>
               <CardDescription>
-                Automatically create recommended alerts based on your health metrics and medical guidelines
+                Automatically create recommended alerts based on your health
+                metrics and medical guidelines
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {HEALTH_METRICS.map((metric) => (
                   <Card key={metric.value} className="p-4">
                     <div className="space-y-3">
                       <div>
                         <h4 className="font-semibold">{metric.label}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Normal range: {metric.normalRange[0]}-{metric.normalRange[1]} {metric.unit}
+                        <p className="text-muted-foreground text-sm">
+                          Normal range: {metric.normalRange[0]}-
+                          {metric.normalRange[1]} {metric.unit}
                         </p>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         className="w-full"
                         onClick={() => generateSmartAlert(metric.value)}
                       >
-                        <Target className="h-4 w-4 mr-2" />
+                        <Target className="mr-2 h-4 w-4" />
                         Create Smart Alerts
                       </Button>
                     </div>
@@ -595,22 +747,23 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
             <CardHeader>
               <CardTitle>Global Alert Settings</CardTitle>
               <CardDescription>
-                Configure system-wide alert preferences and notification settings
+                Configure system-wide alert preferences and notification
+                settings
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
                   <Label htmlFor="global-alerts">Enable All Alerts</Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Master switch for all health monitoring alerts
                   </p>
                 </div>
                 <Switch
                   id="global-alerts"
                   checked={globalSettings.enabled}
-                  onCheckedChange={(checked) => 
-                    setGlobalSettings(prev => ({ ...prev, enabled: checked }))
+                  onCheckedChange={(checked) =>
+                    setGlobalSettings((prev) => ({ ...prev, enabled: checked }))
                   }
                 />
               </div>
@@ -626,10 +779,13 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                       id="quiet-start"
                       type="time"
                       value={globalSettings.quietHours.start}
-                      onChange={(e) => 
-                        setGlobalSettings(prev => ({
+                      onChange={(e) =>
+                        setGlobalSettings((prev) => ({
                           ...prev,
-                          quietHours: { ...prev.quietHours, start: e.target.value }
+                          quietHours: {
+                            ...prev.quietHours,
+                            start: e.target.value,
+                          },
                         }))
                       }
                     />
@@ -640,10 +796,13 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                       id="quiet-end"
                       type="time"
                       value={globalSettings.quietHours.end}
-                      onChange={(e) => 
-                        setGlobalSettings(prev => ({
+                      onChange={(e) =>
+                        setGlobalSettings((prev) => ({
                           ...prev,
-                          quietHours: { ...prev.quietHours, end: e.target.value }
+                          quietHours: {
+                            ...prev.quietHours,
+                            end: e.target.value,
+                          },
                         }))
                       }
                     />
@@ -661,14 +820,14 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                   min="1"
                   max="50"
                   value={globalSettings.maxAlertsPerDay}
-                  onChange={(e) => 
-                    setGlobalSettings(prev => ({ 
-                      ...prev, 
-                      maxAlertsPerDay: parseInt(e.target.value) 
+                  onChange={(e) =>
+                    setGlobalSettings((prev) => ({
+                      ...prev,
+                      maxAlertsPerDay: parseInt(e.target.value),
                     }))
                   }
                 />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Prevent alert fatigue by limiting daily notifications
                 </p>
               </div>
@@ -677,35 +836,45 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
 
               <div className="space-y-4">
                 <h4 className="font-semibold">Notification Preferences</h4>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="email-notifications">Email Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <Label htmlFor="email-notifications">
+                      Email Notifications
+                    </Label>
+                    <p className="text-muted-foreground text-sm">
                       Receive alerts via email
                     </p>
                   </div>
                   <Switch
                     id="email-notifications"
                     checked={globalSettings.emailNotifications}
-                    onCheckedChange={(checked) => 
-                      setGlobalSettings(prev => ({ ...prev, emailNotifications: checked }))
+                    onCheckedChange={(checked) =>
+                      setGlobalSettings((prev) => ({
+                        ...prev,
+                        emailNotifications: checked,
+                      }))
                     }
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="push-notifications">Push Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <Label htmlFor="push-notifications">
+                      Push Notifications
+                    </Label>
+                    <p className="text-muted-foreground text-sm">
                       Receive immediate push notifications
                     </p>
                   </div>
                   <Switch
                     id="push-notifications"
                     checked={globalSettings.pushNotifications}
-                    onCheckedChange={(checked) => 
-                      setGlobalSettings(prev => ({ ...prev, pushNotifications: checked }))
+                    onCheckedChange={(checked) =>
+                      setGlobalSettings((prev) => ({
+                        ...prev,
+                        pushNotifications: checked,
+                      }))
                     }
                   />
                 </div>
@@ -724,26 +893,38 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
             </CardHeader>
             <CardContent>
               {alertHistory.length === 0 ? (
-                <div className="text-center py-8">
-                  <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Alert History</h3>
+                <div className="py-8 text-center">
+                  <Clock className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                  <h3 className="mb-2 text-lg font-semibold">
+                    No Alert History
+                  </h3>
                   <p className="text-muted-foreground">
-                    Alert activity will appear here once your monitoring system is active.
+                    Alert activity will appear here once your monitoring system
+                    is active.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {alertHistory.slice(0, 20).map((entry, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between rounded-lg border p-4"
+                    >
                       <div className="flex items-center gap-3">
-                        <div className={`w-3 h-3 rounded-full ${
-                          entry.priority === 'critical' ? 'bg-red-500' :
-                          entry.priority === 'high' ? 'bg-orange-500' :
-                          entry.priority === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'
-                        }`} />
+                        <div
+                          className={`h-3 w-3 rounded-full ${
+                            entry.priority === 'critical'
+                              ? 'bg-red-500'
+                              : entry.priority === 'high'
+                                ? 'bg-orange-500'
+                                : entry.priority === 'medium'
+                                  ? 'bg-yellow-500'
+                                  : 'bg-blue-500'
+                          }`}
+                        />
                         <div>
                           <p className="font-medium">{entry.alertName}</p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-muted-foreground text-sm">
                             {entry.metric}: {entry.value} {entry.unit}
                           </p>
                         </div>
@@ -752,7 +933,7 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                         <p className="text-sm font-medium">
                           {new Date(entry.timestamp).toLocaleDateString()}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           {new Date(entry.timestamp).toLocaleTimeString()}
                         </p>
                       </div>
@@ -765,5 +946,5 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

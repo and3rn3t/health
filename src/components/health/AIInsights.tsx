@@ -1,47 +1,59 @@
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Textarea } from '@/components/ui/textarea'
-import { Progress } from '@/components/ui/progress'
-import { Brain, Lightbulb, TrendingUp, AlertTriangle, CheckCircle } from '@phosphor-icons/react'
-import { ProcessedHealthData } from '@/lib/healthDataProcessor'
-import { toast } from 'sonner'
+import { useState, useEffect } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
+import {
+  Brain,
+  Lightbulb,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle,
+} from '@phosphor-icons/react';
+import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { toast } from 'sonner';
 
 interface AIInsightsProps {
-  healthData: ProcessedHealthData | null
+  healthData: ProcessedHealthData | null;
 }
 
 interface AIInsight {
-  type: 'recommendation' | 'warning' | 'achievement' | 'prediction'
-  title: string
-  content: string
-  confidence: number
-  priority: 'high' | 'medium' | 'low'
-  actionable: boolean
+  type: 'recommendation' | 'warning' | 'achievement' | 'prediction';
+  title: string;
+  content: string;
+  confidence: number;
+  priority: 'high' | 'medium' | 'low';
+  actionable: boolean;
 }
 
 export default function AIInsights({ healthData }: AIInsightsProps) {
-  const [insights, setInsights] = useState<AIInsight[]>([])
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [customQuery, setCustomQuery] = useState('')
-  const [customResponse, setCustomResponse] = useState('')
+  const [insights, setInsights] = useState<AIInsight[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [customQuery, setCustomQuery] = useState('');
+  const [customResponse, setCustomResponse] = useState('');
 
   if (!healthData) {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center text-muted-foreground">
+          <div className="text-muted-foreground text-center">
             No health data available for AI analysis
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   const generateAIInsights = async () => {
-    setIsGenerating(true)
-    
+    setIsGenerating(true);
+
     try {
       // Simulate AI analysis using the Spark LLM API
       const prompt = spark.llmPrompt`
@@ -54,7 +66,7 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
         Sleep Average: ${healthData?.metrics?.sleepHours?.average || 0} hours
         
         Data Quality: ${healthData?.dataQuality?.overall || 'Unknown'}
-        Fall Risk Factors: ${healthData?.fallRiskFactors?.map(f => `${f.factor} (${f.risk} risk)`).join(', ') || 'None identified'}
+        Fall Risk Factors: ${healthData?.fallRiskFactors?.map((f) => `${f.factor} (${f.risk} risk)`).join(', ') || 'None identified'}
         
         Current Trends:
         - Steps: ${healthData?.metrics?.steps?.trend || 'stable'}
@@ -69,10 +81,10 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
         4. Predictions for the next 30 days
         
         Focus on fall risk assessment and overall health optimization.
-      `
-      
-      const aiResponse = await spark.llm(prompt, 'gpt-4o')
-      
+      `;
+
+      const aiResponse = await spark.llm(prompt, 'gpt-4o');
+
       // Parse the AI response into structured insights
       const generatedInsights: AIInsight[] = [
         {
@@ -80,8 +92,11 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
           title: 'Walking Steadiness Improvement',
           content: `Your walking steadiness is at ${Math.round(healthData?.metrics?.walkingSteadiness?.average || 0)}%. Consider daily balance exercises like tai chi or yoga to improve stability and reduce fall risk.`,
           confidence: 85,
-          priority: (healthData?.metrics?.walkingSteadiness?.average || 100) < 60 ? 'high' : 'medium',
-          actionable: true
+          priority:
+            (healthData?.metrics?.walkingSteadiness?.average || 100) < 60
+              ? 'high'
+              : 'medium',
+          actionable: true,
         },
         {
           type: 'achievement',
@@ -89,9 +104,9 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
           content: `Great job maintaining ${Math.round(healthData?.metrics?.steps?.average || 0).toLocaleString()} steps daily! This is ${(healthData?.metrics?.steps?.average || 0) > 8000 ? 'above' : 'approaching'} recommended activity levels.`,
           confidence: 95,
           priority: 'medium',
-          actionable: false
-        }
-      ]
+          actionable: false,
+        },
+      ];
 
       // Add specific insights based on data patterns
       if ((healthData?.metrics?.sleepHours?.average || 0) < 7) {
@@ -101,8 +116,8 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
           content: `Your average sleep of ${(healthData?.metrics?.sleepHours?.average || 0).toFixed(1)} hours is below the recommended 7-9 hours. Poor sleep can increase fall risk and affect balance.`,
           confidence: 90,
           priority: 'high',
-          actionable: true
-        })
+          actionable: true,
+        });
       }
 
       if ((healthData?.healthScore || 0) > 80) {
@@ -112,8 +127,8 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
           content: `Your health score of ${healthData?.healthScore || 0}/100 indicates excellent overall health management. Keep up the great work!`,
           confidence: 95,
           priority: 'low',
-          actionable: false
-        })
+          actionable: false,
+        });
       }
 
       // Add trend-based insights
@@ -121,39 +136,42 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
         generatedInsights.push({
           type: 'warning',
           title: 'Declining Balance Metrics',
-          content: 'Walking steadiness has been decreasing. This could indicate increased fall risk. Consider consulting with a physical therapist.',
+          content:
+            'Walking steadiness has been decreasing. This could indicate increased fall risk. Consider consulting with a physical therapist.',
           confidence: 80,
           priority: 'high',
-          actionable: true
-        })
+          actionable: true,
+        });
       }
 
-      if (healthData?.fallRiskFactors && healthData.fallRiskFactors.length > 0) {
+      if (
+        healthData?.fallRiskFactors &&
+        healthData.fallRiskFactors.length > 0
+      ) {
         generatedInsights.push({
           type: 'prediction',
           title: 'Fall Risk Assessment',
           content: `Based on current metrics, ${healthData.fallRiskFactors.length} risk factor(s) identified. With proper interventions, risk can be reduced by 30-50% over the next 60 days.`,
           confidence: 75,
           priority: 'high',
-          actionable: true
-        })
+          actionable: true,
+        });
       }
 
-      setInsights(generatedInsights)
-      toast.success('AI insights generated successfully!')
-      
+      setInsights(generatedInsights);
+      toast.success('AI insights generated successfully!');
     } catch (error) {
-      console.error('Error generating insights:', error)
-      toast.error('Failed to generate AI insights. Please try again.')
+      console.error('Error generating insights:', error);
+      toast.error('Failed to generate AI insights. Please try again.');
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
   const handleCustomQuery = async () => {
-    if (!customQuery.trim()) return
-    
-    setIsGenerating(true)
+    if (!customQuery.trim()) return;
+
+    setIsGenerating(true);
     try {
       const prompt = spark.llmPrompt`
         Based on this health data:
@@ -166,60 +184,62 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
         User question: ${customQuery}
         
         Please provide a helpful, personalized response based on their health data.
-      `
-      
-      const response = await spark.llm(prompt, 'gpt-4o-mini')
-      setCustomResponse(response)
-      toast.success('Got your personalized answer!')
-      
+      `;
+
+      const response = await spark.llm(prompt, 'gpt-4o-mini');
+      setCustomResponse(response);
+      toast.success('Got your personalized answer!');
     } catch (error) {
-      toast.error('Failed to get response. Please try again.')
+      toast.error('Failed to get response. Please try again.');
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
   useEffect(() => {
     // Auto-generate insights when component mounts
-    generateAIInsights()
-  }, [healthData])
+    generateAIInsights();
+  }, [healthData]);
 
   const getInsightIcon = (type: AIInsight['type']) => {
     switch (type) {
       case 'recommendation':
-        return <Lightbulb className="h-5 w-5 text-blue-500" />
+        return <Lightbulb className="h-5 w-5 text-blue-500" />;
       case 'warning':
-        return <AlertTriangle className="h-5 w-5 text-red-500" />
+        return <AlertTriangle className="h-5 w-5 text-red-500" />;
       case 'achievement':
-        return <CheckCircle className="h-5 w-5 text-green-500" />
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'prediction':
-        return <TrendingUp className="h-5 w-5 text-purple-500" />
+        return <TrendingUp className="h-5 w-5 text-purple-500" />;
     }
-  }
+  };
 
   const getPriorityColor = (priority: AIInsight['priority']) => {
     switch (priority) {
-      case 'high': return 'border-red-200 bg-red-50'
-      case 'medium': return 'border-yellow-200 bg-yellow-50'
-      case 'low': return 'border-green-200 bg-green-50'
+      case 'high':
+        return 'border-red-200 bg-red-50';
+      case 'medium':
+        return 'border-yellow-200 bg-yellow-50';
+      case 'low':
+        return 'border-green-200 bg-green-50';
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Brain className="h-6 w-6 text-primary" />
+          <h2 className="flex items-center gap-2 text-2xl font-bold">
+            <Brain className="text-primary h-6 w-6" />
             AI Health Insights
           </h2>
           <p className="text-muted-foreground">
             Personalized analysis and recommendations based on your health data
           </p>
         </div>
-        <Button 
-          onClick={generateAIInsights} 
+        <Button
+          onClick={generateAIInsights}
           disabled={isGenerating}
           className="flex items-center gap-2"
         >
@@ -234,10 +254,12 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <Brain className="h-5 w-5 animate-pulse text-primary" />
+                <Brain className="text-primary h-5 w-5 animate-pulse" />
                 <div>
-                  <div className="font-medium">Analyzing your health data...</div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="font-medium">
+                    Analyzing your health data...
+                  </div>
+                  <div className="text-muted-foreground text-sm">
                     This may take a few moments
                   </div>
                 </div>
@@ -247,17 +269,25 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
           </Card>
         ) : (
           insights.map((insight, index) => (
-            <Card key={index} className={`border-l-4 ${getPriorityColor(insight.priority)}`}>
+            <Card
+              key={index}
+              className={`border-l-4 ${getPriorityColor(insight.priority)}`}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-lg">
                     {getInsightIcon(insight.type)}
                     {insight.title}
                   </CardTitle>
                   <div className="flex items-center gap-2">
-                    <Badge 
-                      variant={insight.priority === 'high' ? 'destructive' : 
-                              insight.priority === 'medium' ? 'secondary' : 'default'}
+                    <Badge
+                      variant={
+                        insight.priority === 'high'
+                          ? 'destructive'
+                          : insight.priority === 'medium'
+                            ? 'secondary'
+                            : 'default'
+                      }
                     >
                       {insight.priority} priority
                     </Badge>
@@ -270,7 +300,7 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
               <CardContent>
                 <p className="text-sm leading-relaxed">{insight.content}</p>
                 {insight.actionable && (
-                  <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="text-muted-foreground mt-3 flex items-center gap-2 text-xs">
                     <CheckCircle className="h-3 w-3" />
                     Actionable recommendation
                   </div>
@@ -299,19 +329,19 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
             onChange={(e) => setCustomQuery(e.target.value)}
             rows={3}
           />
-          <Button 
+          <Button
             onClick={handleCustomQuery}
             disabled={isGenerating || !customQuery.trim()}
             className="w-full"
           >
             {isGenerating ? 'Thinking...' : 'Get AI Answer'}
           </Button>
-          
+
           {customResponse && (
-            <div className="mt-4 p-4 bg-muted/30 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Brain className="h-4 w-4 text-primary" />
-                <span className="font-medium text-sm">AI Response:</span>
+            <div className="bg-muted/30 mt-4 rounded-lg p-4">
+              <div className="mb-2 flex items-center gap-2">
+                <Brain className="text-primary h-4 w-4" />
+                <span className="text-sm font-medium">AI Response:</span>
               </div>
               <p className="text-sm leading-relaxed">{customResponse}</p>
             </div>
@@ -325,34 +355,38 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
           <CardTitle>Insight Summary</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-2 gap-4 text-center md:grid-cols-4">
             <div>
               <div className="text-2xl font-bold text-red-500">
-                {insights.filter(i => i.priority === 'high').length}
+                {insights.filter((i) => i.priority === 'high').length}
               </div>
-              <div className="text-sm text-muted-foreground">High Priority</div>
+              <div className="text-muted-foreground text-sm">High Priority</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-yellow-500">
-                {insights.filter(i => i.priority === 'medium').length}
+                {insights.filter((i) => i.priority === 'medium').length}
               </div>
-              <div className="text-sm text-muted-foreground">Medium Priority</div>
+              <div className="text-muted-foreground text-sm">
+                Medium Priority
+              </div>
             </div>
             <div>
               <div className="text-2xl font-bold text-green-500">
-                {insights.filter(i => i.type === 'achievement').length}
+                {insights.filter((i) => i.type === 'achievement').length}
               </div>
-              <div className="text-sm text-muted-foreground">Achievements</div>
+              <div className="text-muted-foreground text-sm">Achievements</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-blue-500">
-                {insights.filter(i => i.actionable).length}
+                {insights.filter((i) => i.actionable).length}
               </div>
-              <div className="text-sm text-muted-foreground">Actionable Items</div>
+              <div className="text-muted-foreground text-sm">
+                Actionable Items
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

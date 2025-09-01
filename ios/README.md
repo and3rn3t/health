@@ -20,12 +20,14 @@ A Swift iOS application that bridges HealthKit data to external systems via WebS
 ## Setup
 
 1. **Clone the repository:**
+
    ```bash
    git clone <repository-url>
    cd HealthKitBridge
    ```
 
 2. **Run the setup script:**
+
    ```bash
    ./setup-enhanced-dev-env.sh
    ```
@@ -57,6 +59,7 @@ The app uses `Config.plist` for configuration:
 ## Health Data Types
 
 The app requests permission for:
+
 - Heart Rate
 - Step Count
 - Walking/Running Distance
@@ -73,11 +76,13 @@ The app requests permission for:
 ## Building and Running
 
 ### Using Xcode
+
 1. Open `HealthKitBridge.xcodeproj`
 2. Select your target device
 3. Build and run (⌘+R)
 
 ### Using Scripts
+
 ```bash
 # Build and run on device
 ./scripts/build-and-run.sh
@@ -119,6 +124,7 @@ The app communicates using JSON messages:
 ## Privacy & Permissions
 
 This app:
+
 - Requests minimal necessary HealthKit permissions
 - Only accesses data when actively monitoring
 - Respects user privacy settings
@@ -145,6 +151,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Support
 
 For issues and questions:
+
 - Create an issue on GitHub
 - Check the documentation in the `docs/` folder
 - Review the code comments for implementation details

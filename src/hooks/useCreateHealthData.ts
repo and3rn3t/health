@@ -1,9 +1,9 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { processedHealthDataSchema } from '@/schemas/health'
-import { z } from 'zod'
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { processedHealthDataSchema } from '@/schemas/health';
+import { z } from 'zod';
 
 export function useCreateHealthData() {
-  const qc = useQueryClient()
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async (payload: z.infer<typeof processedHealthDataSchema>) => {
@@ -11,12 +11,12 @@ export function useCreateHealthData() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      })
-      if (!res.ok) throw new Error('Failed to save health data')
-      return res.json()
+      });
+      if (!res.ok) throw new Error('Failed to save health data');
+      return res.json();
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['health-data'] })
+      qc.invalidateQueries({ queryKey: ['health-data'] });
     },
-  })
+  });
 }

@@ -2,10 +2,16 @@
 build
 coverage
 dist
+dist-worker
 .wrangler
 
 # Ignore all JS/TS files in node_modules
 node_modules
+
+# Ignore iOS build outputs
+ios/build
+ios/.build
+ios/DerivedData
 
 # Ignore package files
 package-lock.json
@@ -16,3 +22,8 @@ pnpm-lock.yaml
 *.generated.*
 *.min.js
 *.min.css
+
+# Ignore documentation that shouldn't be formatted
+CHANGELOG.md
+LICENSES
+*.log

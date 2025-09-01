@@ -4,11 +4,7 @@
       "problemMatcher": [],
       "command": "pwsh",
       "type": "shell",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/swift-lint-windows.ps1"
-      ],
+      "args": ["-NoProfile", "-File", "scripts/swift-lint-windows.ps1"],
       "group": "build",
       "label": "Swift Lint",
       "presentation": {
@@ -21,11 +17,7 @@
     {
       "command": "pwsh",
       "type": "shell",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/swift-format-windows.ps1"
-      ],
+      "args": ["-NoProfile", "-File", "scripts/swift-format-windows.ps1"],
       "group": "build",
       "label": "Swift Format",
       "presentation": {

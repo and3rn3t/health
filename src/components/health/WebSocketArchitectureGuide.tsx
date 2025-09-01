@@ -1,15 +1,21 @@
-import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Separator } from '@/components/ui/separator'
-import { 
-  CloudArrowUp, 
-  Code, 
+import { useState } from 'react';
+import { useKV } from '@github/spark/hooks';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import {
+  CloudArrowUp,
+  Code,
   Database,
   Shield,
   Terminal,
@@ -26,36 +32,45 @@ import {
   Lightbulb,
   Timer,
   Lock,
-  Eye
-} from '@phosphor-icons/react'
+  Eye,
+} from '@phosphor-icons/react';
 
 interface WebSocketComponent {
-  id: string
-  title: string
-  description: string
-  category: 'backend' | 'ios' | 'web' | 'security' | 'deployment' | 'monitoring'
-  language: 'Swift' | 'TypeScript' | 'JavaScript' | 'Docker' | 'Config'
-  estimatedHours: number
-  complexity: 'basic' | 'intermediate' | 'advanced'
-  completed: boolean
-  codeExample?: string
-  documentation?: string
-  notes?: string[]
+  id: string;
+  title: string;
+  description: string;
+  category:
+    | 'backend'
+    | 'ios'
+    | 'web'
+    | 'security'
+    | 'deployment'
+    | 'monitoring';
+  language: 'Swift' | 'TypeScript' | 'JavaScript' | 'Docker' | 'Config';
+  estimatedHours: number;
+  complexity: 'basic' | 'intermediate' | 'advanced';
+  completed: boolean;
+  codeExample?: string;
+  documentation?: string;
+  notes?: string[];
 }
 
 export default function WebSocketArchitectureGuide() {
-  const [components, setComponents] = useKV<WebSocketComponent[]>('websocket-components', [
-    // Backend Infrastructure
-    {
-      id: 'websocket-server',
-      title: 'WebSocket Server Setup',
-      description: 'Node.js WebSocket server with authentication and health data routing',
-      category: 'backend',
-      language: 'TypeScript',
-      estimatedHours: 8,
-      complexity: 'intermediate',
-      completed: false,
-      codeExample: `// server.ts
+  const [components, setComponents] = useKV<WebSocketComponent[]>(
+    'websocket-components',
+    [
+      // Backend Infrastructure
+      {
+        id: 'websocket-server',
+        title: 'WebSocket Server Setup',
+        description:
+          'Node.js WebSocket server with authentication and health data routing',
+        category: 'backend',
+        language: 'TypeScript',
+        estimatedHours: 8,
+        complexity: 'intermediate',
+        completed: false,
+        codeExample: `// server.ts
 import { WebSocketServer } from 'ws'
 import jwt from 'jsonwebtoken'
 import express from 'express'
@@ -175,23 +190,24 @@ class HealthWebSocketServer {
     }
   }
 }`,
-      notes: [
-        'Use secure WebSocket (WSS) for production',
-        'Implement proper authentication with JWT tokens',
-        'Handle client reconnection gracefully',
-        'Rate limiting to prevent abuse'
-      ]
-    },
-    {
-      id: 'data-persistence',
-      title: 'Health Data Persistence Layer',
-      description: 'Database design and APIs for storing real-time health data',
-      category: 'backend',
-      language: 'TypeScript',
-      estimatedHours: 6,
-      complexity: 'intermediate',
-      completed: false,
-      codeExample: `// healthDataService.ts
+        notes: [
+          'Use secure WebSocket (WSS) for production',
+          'Implement proper authentication with JWT tokens',
+          'Handle client reconnection gracefully',
+          'Rate limiting to prevent abuse',
+        ],
+      },
+      {
+        id: 'data-persistence',
+        title: 'Health Data Persistence Layer',
+        description:
+          'Database design and APIs for storing real-time health data',
+        category: 'backend',
+        language: 'TypeScript',
+        estimatedHours: 6,
+        complexity: 'intermediate',
+        completed: false,
+        codeExample: `// healthDataService.ts
 import { PrismaClient } from '@prisma/client'
 
 interface HealthMetrics {
@@ -254,25 +270,26 @@ class HealthDataService {
     // Trigger alerts if thresholds exceeded
   }
 }`,
-      notes: [
-        'Use time-series database for optimal performance',
-        'Implement data retention policies',
-        'Consider HIPAA compliance for health data',
-        'Index on userId and timestamp for fast queries'
-      ]
-    },
+        notes: [
+          'Use time-series database for optimal performance',
+          'Implement data retention policies',
+          'Consider HIPAA compliance for health data',
+          'Index on userId and timestamp for fast queries',
+        ],
+      },
 
-    // iOS Client Implementation
-    {
-      id: 'ios-websocket-client',
-      title: 'iOS WebSocket Client',
-      description: 'Native iOS WebSocket client for real-time health data streaming',
-      category: 'ios',
-      language: 'Swift',
-      estimatedHours: 10,
-      complexity: 'advanced',
-      completed: false,
-      codeExample: `// HealthWebSocketManager.swift
+      // iOS Client Implementation
+      {
+        id: 'ios-websocket-client',
+        title: 'iOS WebSocket Client',
+        description:
+          'Native iOS WebSocket client for real-time health data streaming',
+        category: 'ios',
+        language: 'Swift',
+        estimatedHours: 10,
+        complexity: 'advanced',
+        completed: false,
+        codeExample: `// HealthWebSocketManager.swift
 import Foundation
 import HealthKit
 import Network
@@ -412,25 +429,26 @@ class HealthWebSocketManager: ObservableObject {
         sendFallAlert(alert)
     }
 }`,
-      notes: [
-        'Implement robust reconnection logic',
-        'Handle background app states properly',
-        'Queue data when connection is unavailable',
-        'Optimize for battery usage'
-      ]
-    },
+        notes: [
+          'Implement robust reconnection logic',
+          'Handle background app states properly',
+          'Queue data when connection is unavailable',
+          'Optimize for battery usage',
+        ],
+      },
 
-    // Web Client Implementation
-    {
-      id: 'web-client-integration',
-      title: 'Web Application WebSocket Client',
-      description: 'JavaScript/TypeScript client for receiving real-time health updates',
-      category: 'web',
-      language: 'TypeScript',
-      estimatedHours: 6,
-      complexity: 'intermediate',
-      completed: false,
-      codeExample: `// healthWebSocketClient.ts
+      // Web Client Implementation
+      {
+        id: 'web-client-integration',
+        title: 'Web Application WebSocket Client',
+        description:
+          'JavaScript/TypeScript client for receiving real-time health updates',
+        category: 'web',
+        language: 'TypeScript',
+        estimatedHours: 6,
+        complexity: 'intermediate',
+        completed: false,
+        codeExample: `// healthWebSocketClient.ts
 interface HealthDataUpdate {
   type: 'health_update' | 'emergency_alert' | 'connection_status'
   data: any
@@ -591,25 +609,25 @@ export function useHealthWebSocket(userId: string, authToken: string) {
 
   return { isConnected, lastUpdate, client }
 }`,
-      notes: [
-        'Implement proper error boundaries',
-        'Handle browser tab visibility changes',
-        'Use service workers for background updates',
-        'Implement offline data queuing'
-      ]
-    },
+        notes: [
+          'Implement proper error boundaries',
+          'Handle browser tab visibility changes',
+          'Use service workers for background updates',
+          'Implement offline data queuing',
+        ],
+      },
 
-    // Security Components
-    {
-      id: 'authentication-system',
-      title: 'WebSocket Authentication & Authorization',
-      description: 'Secure authentication system for WebSocket connections',
-      category: 'security',
-      language: 'TypeScript',
-      estimatedHours: 8,
-      complexity: 'advanced',
-      completed: false,
-      codeExample: `// authenticationService.ts
+      // Security Components
+      {
+        id: 'authentication-system',
+        title: 'WebSocket Authentication & Authorization',
+        description: 'Secure authentication system for WebSocket connections',
+        category: 'security',
+        language: 'TypeScript',
+        estimatedHours: 8,
+        complexity: 'advanced',
+        completed: false,
+        codeExample: `// authenticationService.ts
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import rateLimit from 'express-rate-limit'
@@ -707,25 +725,25 @@ class WebSocketAuthService {
     }
   }
 }`,
-      notes: [
-        'Use strong JWT secrets and rotate regularly',
-        'Implement session management and cleanup',
-        'Add rate limiting to prevent brute force attacks',
-        'Consider OAuth2 for third-party integrations'
-      ]
-    },
+        notes: [
+          'Use strong JWT secrets and rotate regularly',
+          'Implement session management and cleanup',
+          'Add rate limiting to prevent brute force attacks',
+          'Consider OAuth2 for third-party integrations',
+        ],
+      },
 
-    // Deployment & Monitoring
-    {
-      id: 'docker-deployment',
-      title: 'Production Docker Deployment',
-      description: 'Containerized deployment with load balancing and scaling',
-      category: 'deployment',
-      language: 'Docker',
-      estimatedHours: 6,
-      complexity: 'intermediate',
-      completed: false,
-      codeExample: `# Dockerfile
+      // Deployment & Monitoring
+      {
+        id: 'docker-deployment',
+        title: 'Production Docker Deployment',
+        description: 'Containerized deployment with load balancing and scaling',
+        category: 'deployment',
+        language: 'Docker',
+        estimatedHours: 6,
+        complexity: 'intermediate',
+        completed: false,
+        codeExample: `# Dockerfile
 FROM node:18-alpine
 
 WORKDIR /app
@@ -799,25 +817,26 @@ services:
 
 volumes:
   postgres_data:`,
-      notes: [
-        'Use SSL/TLS certificates for production',
-        'Implement health checks for containers',
-        'Set up log aggregation and monitoring',
-        'Configure auto-scaling based on connection count'
-      ]
-    },
+        notes: [
+          'Use SSL/TLS certificates for production',
+          'Implement health checks for containers',
+          'Set up log aggregation and monitoring',
+          'Configure auto-scaling based on connection count',
+        ],
+      },
 
-    // Monitoring & Analytics
-    {
-      id: 'monitoring-system',
-      title: 'Real-time Monitoring & Analytics',
-      description: 'System monitoring, performance metrics, and health data analytics',
-      category: 'monitoring',
-      language: 'TypeScript',
-      estimatedHours: 10,
-      complexity: 'advanced',
-      completed: false,
-      codeExample: `// monitoringService.ts
+      // Monitoring & Analytics
+      {
+        id: 'monitoring-system',
+        title: 'Real-time Monitoring & Analytics',
+        description:
+          'System monitoring, performance metrics, and health data analytics',
+        category: 'monitoring',
+        language: 'TypeScript',
+        estimatedHours: 10,
+        complexity: 'advanced',
+        completed: false,
+        codeExample: `// monitoringService.ts
 import { EventEmitter } from 'events'
 
 interface SystemMetrics {
@@ -951,72 +970,108 @@ class HealthMonitoringService extends EventEmitter {
     return 'healthy'
   }
 }`,
-      notes: [
-        'Integrate with monitoring tools like Grafana/Prometheus',
-        'Set up alerting for critical system events',
-        'Track health data trends and patterns',
-        'Monitor fall detection accuracy metrics'
-      ]
-    }
-  ])
+        notes: [
+          'Integrate with monitoring tools like Grafana/Prometheus',
+          'Set up alerting for critical system events',
+          'Track health data trends and patterns',
+          'Monitor fall detection accuracy metrics',
+        ],
+      },
+    ]
+  );
 
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const toggleComponent = (componentId: string) => {
-    setComponents(currentComponents => 
-      currentComponents.map(comp => 
+    setComponents((currentComponents) =>
+      currentComponents.map((comp) =>
         comp.id === componentId ? { ...comp, completed: !comp.completed } : comp
       )
-    )
-  }
+    );
+  };
 
   const getComponentsByCategory = (category: string) => {
-    if (category === 'all') return components
-    return components.filter(comp => comp.category === category)
-  }
+    if (category === 'all') return components;
+    return components.filter((comp) => comp.category === category);
+  };
 
   const calculateProgress = (category?: string) => {
-    const relevantComponents = category ? components.filter(c => c.category === category) : components
-    const completedComponents = relevantComponents.filter(c => c.completed).length
-    return Math.round((completedComponents / relevantComponents.length) * 100)
-  }
+    const relevantComponents = category
+      ? components.filter((c) => c.category === category)
+      : components;
+    const completedComponents = relevantComponents.filter(
+      (c) => c.completed
+    ).length;
+    return Math.round((completedComponents / relevantComponents.length) * 100);
+  };
 
   const getTotalHours = (category?: string) => {
-    const relevantComponents = category ? components.filter(c => c.category === category) : components
-    return relevantComponents.reduce((total, comp) => total + comp.estimatedHours, 0)
-  }
+    const relevantComponents = category
+      ? components.filter((c) => c.category === category)
+      : components;
+    return relevantComponents.reduce(
+      (total, comp) => total + comp.estimatedHours,
+      0
+    );
+  };
 
   const getLanguageColor = (language: string) => {
     switch (language) {
-      case 'Swift': return 'bg-orange-500'
-      case 'TypeScript': return 'bg-blue-500'
-      case 'JavaScript': return 'bg-yellow-500'
-      case 'Docker': return 'bg-blue-600'
-      case 'Config': return 'bg-gray-500'
-      default: return 'bg-gray-500'
+      case 'Swift':
+        return 'bg-orange-500';
+      case 'TypeScript':
+        return 'bg-blue-500';
+      case 'JavaScript':
+        return 'bg-yellow-500';
+      case 'Docker':
+        return 'bg-blue-600';
+      case 'Config':
+        return 'bg-gray-500';
+      default:
+        return 'bg-gray-500';
     }
-  }
+  };
 
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
-      case 'basic': return 'text-green-600'
-      case 'intermediate': return 'text-yellow-600'
-      case 'advanced': return 'text-red-600'
-      default: return 'text-gray-600'
+      case 'basic':
+        return 'text-green-600';
+      case 'intermediate':
+        return 'text-yellow-600';
+      case 'advanced':
+        return 'text-red-600';
+      default:
+        return 'text-gray-600';
     }
-  }
+  };
 
   const categories = [
-    { id: 'all', label: 'All Components', icon: <Network className="h-4 w-4" /> },
+    {
+      id: 'all',
+      label: 'All Components',
+      icon: <Network className="h-4 w-4" />,
+    },
     { id: 'backend', label: 'Backend', icon: <Database className="h-4 w-4" /> },
-    { id: 'ios', label: 'iOS Client', icon: <Smartphone className="h-4 w-4" /> },
+    {
+      id: 'ios',
+      label: 'iOS Client',
+      icon: <Smartphone className="h-4 w-4" />,
+    },
     { id: 'web', label: 'Web Client', icon: <Globe className="h-4 w-4" /> },
     { id: 'security', label: 'Security', icon: <Shield className="h-4 w-4" /> },
-    { id: 'deployment', label: 'Deployment', icon: <CloudArrowUp className="h-4 w-4" /> },
-    { id: 'monitoring', label: 'Monitoring', icon: <Eye className="h-4 w-4" /> }
-  ]
+    {
+      id: 'deployment',
+      label: 'Deployment',
+      icon: <CloudArrowUp className="h-4 w-4" />,
+    },
+    {
+      id: 'monitoring',
+      label: 'Monitoring',
+      icon: <Eye className="h-4 w-4" />,
+    },
+  ];
 
-  const overallProgress = calculateProgress()
+  const overallProgress = calculateProgress();
 
   return (
     <div className="space-y-6">
@@ -1028,26 +1083,39 @@ class HealthMonitoringService extends EventEmitter {
             WebSocket Bridge Architecture Guide
           </CardTitle>
           <CardDescription>
-            Complete real-time health data streaming architecture between iOS app and web application
+            Complete real-time health data streaming architecture between iOS
+            app and web application
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{overallProgress}%</div>
-              <div className="text-sm text-muted-foreground">Implementation Progress</div>
+              <div className="text-primary text-2xl font-bold">
+                {overallProgress}%
+              </div>
+              <div className="text-muted-foreground text-sm">
+                Implementation Progress
+              </div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">{getTotalHours()}h</div>
-              <div className="text-sm text-muted-foreground">Total Development Time</div>
+              <div className="text-muted-foreground text-sm">
+                Total Development Time
+              </div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">{components.length}</div>
-              <div className="text-sm text-muted-foreground">Total Components</div>
+              <div className="text-muted-foreground text-sm">
+                Total Components
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{components.filter(c => c.complexity === 'advanced').length}</div>
-              <div className="text-sm text-muted-foreground">Advanced Components</div>
+              <div className="text-2xl font-bold">
+                {components.filter((c) => c.complexity === 'advanced').length}
+              </div>
+              <div className="text-muted-foreground text-sm">
+                Advanced Components
+              </div>
             </div>
           </div>
           <Progress value={overallProgress} className="w-full" />
@@ -1068,38 +1136,46 @@ class HealthMonitoringService extends EventEmitter {
         <CardContent>
           <div className="space-y-6">
             {/* Architecture Diagram */}
-            <div className="bg-muted p-6 rounded-lg">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+            <div className="bg-muted rounded-lg p-6">
+              <div className="grid grid-cols-1 gap-4 text-center md:grid-cols-4">
                 <div className="space-y-2">
-                  <div className="w-16 h-16 bg-blue-500 rounded-full mx-auto flex items-center justify-center">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-500">
                     <Smartphone className="h-8 w-8 text-white" />
                   </div>
                   <h4 className="font-medium">Apple Watch</h4>
-                  <p className="text-xs text-muted-foreground">Health sensors & fall detection</p>
+                  <p className="text-muted-foreground text-xs">
+                    Health sensors & fall detection
+                  </p>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <div className="w-16 h-16 bg-orange-500 rounded-full mx-auto flex items-center justify-center">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-500">
                     <Smartphone className="h-8 w-8 text-white" />
                   </div>
                   <h4 className="font-medium">iOS App</h4>
-                  <p className="text-xs text-muted-foreground">HealthKit integration & WebSocket client</p>
+                  <p className="text-muted-foreground text-xs">
+                    HealthKit integration & WebSocket client
+                  </p>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <div className="w-16 h-16 bg-green-500 rounded-full mx-auto flex items-center justify-center">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500">
                     <CloudArrowUp className="h-8 w-8 text-white" />
                   </div>
                   <h4 className="font-medium">WebSocket Server</h4>
-                  <p className="text-xs text-muted-foreground">Real-time data routing & storage</p>
+                  <p className="text-muted-foreground text-xs">
+                    Real-time data routing & storage
+                  </p>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <div className="w-16 h-16 bg-purple-500 rounded-full mx-auto flex items-center justify-center">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-purple-500">
                     <Globe className="h-8 w-8 text-white" />
                   </div>
                   <h4 className="font-medium">Web Dashboard</h4>
-                  <p className="text-xs text-muted-foreground">Real-time health monitoring</p>
+                  <p className="text-muted-foreground text-xs">
+                    Real-time health monitoring
+                  </p>
                 </div>
               </div>
             </div>
@@ -1108,8 +1184,10 @@ class HealthMonitoringService extends EventEmitter {
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                <strong>Data Flow:</strong> Apple Watch sensors → HealthKit → iOS App → WebSocket Bridge → 
-                Web Dashboard. Fall detection triggers immediate emergency alerts across all connected devices.
+                <strong>Data Flow:</strong> Apple Watch sensors → HealthKit →
+                iOS App → WebSocket Bridge → Web Dashboard. Fall detection
+                triggers immediate emergency alerts across all connected
+                devices.
               </AlertDescription>
             </Alert>
           </div>
@@ -1117,33 +1195,58 @@ class HealthMonitoringService extends EventEmitter {
       </Card>
 
       {/* Implementation Components */}
-      <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-4">
+      <Tabs
+        value={selectedCategory}
+        onValueChange={setSelectedCategory}
+        className="space-y-4"
+      >
         <TabsList className="grid w-full grid-cols-7">
           {categories.map((category) => (
-            <TabsTrigger key={category.id} value={category.id} className="flex items-center gap-1 text-xs">
+            <TabsTrigger
+              key={category.id}
+              value={category.id}
+              className="flex items-center gap-1 text-xs"
+            >
               {category.icon}
-              <span className="hidden sm:inline">{category.label.split(' ')[0]}</span>
+              <span className="hidden sm:inline">
+                {category.label.split(' ')[0]}
+              </span>
             </TabsTrigger>
           ))}
         </TabsList>
 
         {categories.map((category) => (
-          <TabsContent key={category.id} value={category.id} className="space-y-4">
+          <TabsContent
+            key={category.id}
+            value={category.id}
+            className="space-y-4"
+          >
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">{category.label}</h3>
               <div className="flex items-center gap-4">
                 <Badge variant="outline">
-                  {getComponentsByCategory(category.id).filter(c => c.completed).length} / {getComponentsByCategory(category.id).length} completed
+                  {
+                    getComponentsByCategory(category.id).filter(
+                      (c) => c.completed
+                    ).length
+                  }{' '}
+                  / {getComponentsByCategory(category.id).length} completed
                 </Badge>
                 <Badge variant="secondary">
-                  {getTotalHours(category.id === 'all' ? undefined : category.id)}h estimated
+                  {getTotalHours(
+                    category.id === 'all' ? undefined : category.id
+                  )}
+                  h estimated
                 </Badge>
               </div>
             </div>
 
             <div className="space-y-4">
               {getComponentsByCategory(category.id).map((component) => (
-                <Card key={component.id} className={component.completed ? 'opacity-75' : ''}>
+                <Card
+                  key={component.id}
+                  className={component.completed ? 'opacity-75' : ''}
+                >
                   <CardContent className="p-6">
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
@@ -1152,31 +1255,43 @@ class HealthMonitoringService extends EventEmitter {
                             type="checkbox"
                             checked={component.completed}
                             onChange={() => toggleComponent(component.id)}
-                            className="h-4 w-4 text-primary"
+                            className="text-primary h-4 w-4"
                           />
-                          <h4 className={`font-medium ${component.completed ? 'line-through text-muted-foreground' : ''}`}>
+                          <h4
+                            className={`font-medium ${component.completed ? 'text-muted-foreground line-through' : ''}`}
+                          >
                             {component.title}
                           </h4>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${getLanguageColor(component.language)}`} />
-                          <span className="text-xs text-muted-foreground">{component.language}</span>
-                          <span className="text-xs text-muted-foreground">{component.estimatedHours}h</span>
-                          <span className={`text-xs font-medium ${getComplexityColor(component.complexity)}`}>
+                          <div
+                            className={`h-2 w-2 rounded-full ${getLanguageColor(component.language)}`}
+                          />
+                          <span className="text-muted-foreground text-xs">
+                            {component.language}
+                          </span>
+                          <span className="text-muted-foreground text-xs">
+                            {component.estimatedHours}h
+                          </span>
+                          <span
+                            className={`text-xs font-medium ${getComplexityColor(component.complexity)}`}
+                          >
                             {component.complexity}
                           </span>
                         </div>
                       </div>
-                      
-                      <p className="text-sm text-muted-foreground">{component.description}</p>
+
+                      <p className="text-muted-foreground text-sm">
+                        {component.description}
+                      </p>
 
                       {component.codeExample && (
                         <div className="space-y-2">
-                          <h5 className="text-sm font-medium flex items-center gap-2">
+                          <h5 className="flex items-center gap-2 text-sm font-medium">
                             <Code className="h-4 w-4" />
                             Implementation Example:
                           </h5>
-                          <div className="bg-muted p-4 rounded-lg text-xs font-mono overflow-x-auto max-h-96">
+                          <div className="bg-muted max-h-96 overflow-x-auto rounded-lg p-4 font-mono text-xs">
                             <pre>{component.codeExample}</pre>
                           </div>
                         </div>
@@ -1184,11 +1299,11 @@ class HealthMonitoringService extends EventEmitter {
 
                       {component.notes && component.notes.length > 0 && (
                         <div className="space-y-2">
-                          <h5 className="text-sm font-medium flex items-center gap-2">
+                          <h5 className="flex items-center gap-2 text-sm font-medium">
                             <Lightbulb className="h-4 w-4" />
                             Implementation Notes:
                           </h5>
-                          <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                          <ul className="text-muted-foreground list-inside list-disc space-y-1 text-sm">
                             {component.notes.map((note, index) => (
                               <li key={index}>{note}</li>
                             ))}
@@ -1199,11 +1314,11 @@ class HealthMonitoringService extends EventEmitter {
                       {component.documentation && (
                         <div className="flex items-center gap-2">
                           <Terminal className="h-4 w-4" />
-                          <a 
-                            href={component.documentation} 
-                            target="_blank" 
+                          <a
+                            href={component.documentation}
+                            target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm text-primary hover:underline"
+                            className="text-primary text-sm hover:underline"
                           >
                             Technical Documentation
                           </a>
@@ -1230,7 +1345,7 @@ class HealthMonitoringService extends EventEmitter {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-3">
               <h4 className="font-medium">Data Protection</h4>
               <div className="space-y-2 text-sm">
@@ -1281,12 +1396,13 @@ class HealthMonitoringService extends EventEmitter {
           <Alert className="border-amber-200 bg-amber-50">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Important:</strong> Health data requires special handling. Ensure proper encryption, 
-              access controls, and compliance with healthcare regulations before deploying to production.
+              <strong>Important:</strong> Health data requires special handling.
+              Ensure proper encryption, access controls, and compliance with
+              healthcare regulations before deploying to production.
             </AlertDescription>
           </Alert>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

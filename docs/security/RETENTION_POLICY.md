@@ -4,7 +4,6 @@ This file documents baseline retention targets for health data. Values should be
 
 Summary (by type)
 
-
 - heart_rate: 30 days
 - steps: 30 days
 - walking_steadiness: 180 days
@@ -14,12 +13,10 @@ Summary (by type)
 
 Implementation
 
-
 - The Worker uses `getTtlSecondsForType(type, ENVIRONMENT)` to set `expirationTtl` on KV writes.
 - Non-production TTLs are capped at 2 days for safety.
 - For long-lived storage (beyond KV TTL), use R2 with server-side and app-level encryption, and document retention windows per object class.
 
 Review cadence
-
 
 - Quarterly or on material changes to processing activities, regulatory guidance, or customer agreements.

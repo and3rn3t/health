@@ -3,16 +3,19 @@
 A comprehensive health data analysis platform that transforms Apple Health data into actionable insights while providing proactive fall risk monitoring and emergency response capabilities.
 
 **Experience Qualities**:
+
 1. **Trustworthy** - Medical-grade accuracy and privacy with clear data visualizations that users can rely on for health decisions
 2. **Proactive** - Intelligent monitoring that anticipates health risks and provides early warnings before issues become critical
 3. **Empowering** - Transforms complex health data into clear, actionable insights that help users take control of their wellness journey
 
 **Complexity Level**: Complex Application (advanced functionality, accounts)
+
 - Requires sophisticated data processing, real-time monitoring, emergency response systems, and comprehensive health analytics with multi-user coordination for caregivers.
 
 ## Essential Features
 
 ### Health Data Import & Analysis
+
 - **Functionality**: Import comprehensive Apple Health data and perform deep analysis across all metrics
 - **Purpose**: Unlock insights Apple Health doesn't provide through advanced correlation analysis and trend detection
 - **Trigger**: User uploads Apple Health export file or connects via HealthKit
@@ -20,6 +23,7 @@ A comprehensive health data analysis platform that transforms Apple Health data 
 - **Success criteria**: Successfully parses all health data types, identifies meaningful patterns, and presents actionable insights
 
 ### Fall Risk Assessment
+
 - **Functionality**: Analyze gait, balance, and mobility metrics to calculate personalized fall risk scores
 - **Purpose**: Prevent falls through early detection of declining mobility and balance patterns
 - **Trigger**: Continuous monitoring of walking steadiness, step variability, and other mobility metrics
@@ -27,6 +31,7 @@ A comprehensive health data analysis platform that transforms Apple Health data 
 - **Success criteria**: Accurately identifies high-risk periods and provides specific interventions to reduce fall probability
 
 ### Emergency Fall Detection & Response
+
 - **Functionality**: Detect falls in real-time and automatically notify designated emergency contacts
 - **Purpose**: Ensure rapid response when falls occur to minimize injury impact and provide immediate assistance
 - **Trigger**: Fall detection algorithm triggered by sudden movement patterns or manual emergency activation
@@ -34,6 +39,7 @@ A comprehensive health data analysis platform that transforms Apple Health data 
 - **Success criteria**: Minimizes false positives while ensuring all actual falls trigger appropriate emergency response
 
 ### Post-Fall Documentation & Tracking
+
 - **Functionality**: Comprehensive fall incident reporting and long-term trend analysis
 - **Purpose**: Learn from fall patterns to improve prevention and track recovery progress
 - **Trigger**: After fall detection or manual incident reporting
@@ -41,6 +47,7 @@ A comprehensive health data analysis platform that transforms Apple Health data 
 - **Success criteria**: Creates detailed fall history that identifies triggers and patterns to prevent future incidents
 
 ### Caregiver Dashboard
+
 - **Functionality**: Real-time monitoring dashboard for family members and healthcare providers
 - **Purpose**: Enable remote monitoring and support for at-risk individuals
 - **Trigger**: Caregiver invitation accepted or emergency situation activated
@@ -65,7 +72,7 @@ The design should feel medical-grade professional yet approachable - clinical ac
 Complementary (opposite colors) - Using medical blue and warm orange to balance trust with approachability, creating clear distinction between monitoring/analysis features and emergency/alert functions.
 
 - **Primary Color**: Medical Blue (oklch(0.45 0.15 250)) - Communicates clinical trust, reliability, and medical expertise
-- **Secondary Colors**: 
+- **Secondary Colors**:
   - Soft Gray (oklch(0.85 0.02 250)) - Supporting neutral for data backgrounds
   - Deep Navy (oklch(0.25 0.08 250)) - Text and emphasis elements
 - **Accent Color**: Warm Orange (oklch(0.70 0.15 45)) - Emergency alerts, fall risks, and call-to-action elements that require immediate attention
@@ -82,7 +89,7 @@ Typefaces should convey medical precision and modern accessibility - clear, high
 
 - **Typographic Hierarchy**:
   - H1 (Dashboard Title): Inter Bold/32px/tight letter spacing
-  - H2 (Section Headers): Inter SemiBold/24px/normal spacing  
+  - H2 (Section Headers): Inter SemiBold/24px/normal spacing
   - H3 (Metric Labels): Inter Medium/18px/normal spacing
   - Body (Data Values): Inter Regular/16px/relaxed spacing
   - Caption (Timestamps): Inter Regular/14px/wide spacing
@@ -93,14 +100,14 @@ Typefaces should convey medical precision and modern accessibility - clear, high
 Animations should be medically appropriate - purposeful and calming rather than playful, with special attention to emergency states where motion should be urgent but not anxiety-inducing.
 
 - **Purposeful Meaning**: Smooth data transitions convey reliability, while emergency animations create appropriate urgency without panic
-- **Hierarchy of Movement**: 
+- **Hierarchy of Movement**:
   - Critical alerts: Immediate, attention-grabbing but controlled pulsing
   - Data updates: Gentle transitions that don't disrupt analysis
   - Navigation: Smooth, professional transitions between health sections
 
 ## Component Selection
 
-- **Components**: 
+- **Components**:
   - Cards for health metric displays with subtle shadows
   - Dialogs for emergency contact setup and fall incident reporting
   - Charts (Recharts) for comprehensive health data visualization
@@ -109,32 +116,32 @@ Animations should be medically appropriate - purposeful and calming rather than 
   - Progress indicators for health trend improvements
   - Badges for risk levels and health status indicators
 
-- **Customizations**: 
+- **Customizations**:
   - Emergency button component with special styling and haptic feedback
   - Health metric cards with sparkline trends
   - Fall risk gauge component with color-coded zones
   - Timeline component for fall incident history
 
-- **States**: 
+- **States**:
   - Emergency button: Normal (prominent), Active (pulsing), Triggered (confirmed state)
   - Health metrics: Normal, Warning (elevated risk), Critical (immediate attention needed)
   - Connection status: Connected, Syncing, Offline
 
-- **Icon Selection**: 
+- **Icon Selection**:
   - Heart for cardiovascular metrics
-  - Activity for movement and exercise data  
+  - Activity for movement and exercise data
   - Shield for fall risk and safety features
   - Phone for emergency contacts
   - TrendingUp/TrendingDown for health trends
   - AlertTriangle for warnings and risk indicators
 
-- **Spacing**: 
+- **Spacing**:
   - Generous padding (p-6) for main content areas
   - Tight spacing (gap-2) for related metric groups
   - Medium spacing (gap-4) for section separation
   - Emergency elements get extra spacing for touch accessibility
 
-- **Mobile**: 
+- **Mobile**:
   - Priority to emergency button accessibility on mobile
   - Simplified dashboard with swipeable metric cards
   - Bottom navigation for core features

@@ -2,49 +2,104 @@ name = "health-app"
 main = "dist-worker/index.js"
 compatibility_date = "2024-08-30"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
 
 [build]
 command = "npm run build:worker"
 cwd = "."
 watch_dir = "src"
 
+# Assets configuration for React app
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+# Include HTML, CSS, JS, images for React SPA
+include = ["**/*"]
+exclude = ["node_modules/**/*", "src/**/*"]
+
 # Development environment
 [env.development]
 name = "health-app-dev"
-vars = { ENVIRONMENT = "development", ALLOWED_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5000,http://127.0.0.1:5000" }
 
-[env.development.durable_objects]
-bindings = [
-  { name = "HEALTH_WEBSOCKET", class_name = "HealthWebSocket" },
-  { name = "RATE_LIMITER", class_name = "RateLimiter" }
-]
+[env.development.vars]
+ENVIRONMENT = "development"
+ALLOWED_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5000,http://127.0.0.1:5000"
+BASE_URL = "http://localhost:8789"
+API_BASE_URL = "http://localhost:8789/api"
+WEBSOCKET_URL = "ws://localhost:3001"
+FILES_BASE_URL = "http://localhost:8789/files"
+LOG_LEVEL = "debug"
+FALL_DETECTION_THRESHOLD = "0.75"
+EMERGENCY_RESPONSE_DELAY = "30"
+MAX_FILE_SIZE = "100MB"
+SESSION_TIMEOUT = "24h"
 
 # Production environment
 [env.production]
 name = "health-app-prod"
-vars = { ENVIRONMENT = "production", ALLOWED_ORIGINS = "https://yourdomain.example" }
 
-# Assets configuration for static files (temporarily disabled for debugging)
-# [assets]
-# directory = "./dist"
-# binding = "ASSETS"
+[env.production.vars]
+ENVIRONMENT = "production"
+ALLOWED_ORIGINS = "https://health.andernet.dev"
+BASE_URL = "https://health.andernet.dev"
+API_BASE_URL = "https://api.health.andernet.dev"
+WEBSOCKET_URL = "wss://ws.health.andernet.dev"
+EMERGENCY_API_URL = "https://emergency.health.andernet.dev"
+CAREGIVER_API_URL = "https://caregiver.health.andernet.dev"
+FILES_BASE_URL = "https://files.health.andernet.dev"
+LOG_LEVEL = "info"
+FALL_DETECTION_THRESHOLD = "0.85"
+EMERGENCY_RESPONSE_DELAY = "30"
+MAX_FILE_SIZE = "500MB"
+SESSION_TIMEOUT = "12h"
 
-# KV storage for session/cache data
-# [[kv_namespaces]]
-# binding = "HEALTH_KV"
-# id = "<KV_NAMESPACE_ID>" # TODO: set via `wrangler kv namespace create HEALTH_KV`
-# preview_id = "<KV_NAMESPACE_PREVIEW_ID>"
+# Production routes (commented out for initial deployment)
+# [[env.production.routes]]
+# pattern = "health.andernet.dev/*"
+# zone_name = "andernet.dev"
 
-# R2 bucket for file storage
-# [[r2_buckets]]
-# binding = "HEALTH_STORAGE"
-# bucket_name = "<R2_BUCKET_NAME>" # TODO: create and set bucket name
+# KV storage namespaces for health data
+[[kv_namespaces]]
+binding = "HEALTH_KV"
+id = "health_data_production"
+preview_id = "health_data_preview"
 
-# WebSocket support
+[[kv_namespaces]]
+binding = "USER_SESSIONS"
+id = "user_sessions_production"
+preview_id = "user_sessions_preview"
+
+[[kv_namespaces]]
+binding = "FALL_INCIDENTS"
+id = "fall_incidents_production"
+preview_id = "fall_incidents_preview"
+
+[[kv_namespaces]]
+binding = "CAREGIVER_ACCESS"
+id = "caregiver_access_production"
+preview_id = "caregiver_access_preview"
+
+# R2 storage buckets for health data files
+[[r2_buckets]]
+binding = "HEALTH_FILES"
+bucket_name = "health-data-files"
+
+[[r2_buckets]]
+binding = "HEALTH_EXPORTS"
+bucket_name = "health-exports"
+
+[[r2_buckets]]
+binding = "EMERGENCY_RECORDINGS"
+bucket_name = "emergency-recordings"
+
+# Durable Objects for real-time features
 [durable_objects]
 bindings = [
   { name = "HEALTH_WEBSOCKET", class_name = "HealthWebSocket" },
-  { name = "RATE_LIMITER", class_name = "RateLimiter" }
+  { name = "RATE_LIMITER", class_name = "RateLimiter" },
+  { name = "FALL_MONITOR", class_name = "FallMonitor" },
+  { name = "EMERGENCY_RESPONDER", class_name = "EmergencyResponder" },
+  { name = "CAREGIVER_SESSION", class_name = "CaregiverSession" }
 ]
 
 # Durable Objects migrations
@@ -52,25 +107,68 @@ bindings = [
 tag = "v1"
 new_classes = ["HealthWebSocket", "RateLimiter"]
 
-# Analytics (optional)
-# [[analytics_engine_datasets]]
-# binding = "HEALTH_ANALYTICS"
-# dataset = "health_analytics" # optional custom dataset name
+[[migrations]]
+tag = "v2"
+new_classes = ["FallMonitor", "EmergencyResponder"]
 
-# Custom domain configuration (to be set up later)
-# [env.production.routes]
-# pattern = "health.yourdomain.com/*"
-# zone_name = "yourdomain.com"
+[[migrations]]
+tag = "v3"
+new_classes = ["CaregiverSession"]
 
-# Secrets to set via Wrangler (do not commit):
-# wrangler secret put ENC_KEY
-# wrangler secret put API_ISS
-# wrangler secret put API_AUD
-# wrangler secret put API_JWKS_URL
-# wrangler secret put DEVICE_JWT_SECRET
+# Analytics Engine for health metrics and fall detection
+[[analytics_engine_datasets]]
+binding = "HEALTH_ANALYTICS"
+dataset = "health_metrics"
 
-# Note: For distributed rate limiting and session management, prefer Durable Objects.
+[[analytics_engine_datasets]]
+binding = "FALL_ANALYTICS"
+dataset = "fall_detection_metrics"
 
-# Cron trigger for scheduled purge
+[[analytics_engine_datasets]]
+binding = "EMERGENCY_ANALYTICS"
+dataset = "emergency_response_metrics"
+
+# Scheduled triggers for maintenance and monitoring
 [triggers]
-crons = ["0 * * * *"] # hourly
+crons = [
+  "0 * * * *",    # Hourly: data cleanup and aggregation
+  "0 0 * * *",    # Daily: health trend analysis
+  "0 0 * * 1",    # Weekly: fall risk assessment updates
+  "0 2 * * *"     # Daily at 2 AM: emergency contact verification
+]
+
+# Queue bindings for async processing
+[[queues]]
+binding = "HEALTH_PROCESSING_QUEUE"
+queue_name = "health-data-processing"
+
+[[queues]]
+binding = "EMERGENCY_QUEUE"
+queue_name = "emergency-alerts"
+
+[[queues]]
+binding = "NOTIFICATION_QUEUE"
+queue_name = "user-notifications"
+
+# Environment-specific KV namespace configuration for development
+[env.development.kv_namespaces]
+HEALTH_KV = "health_data_dev"
+USER_SESSIONS = "user_sessions_dev"
+FALL_INCIDENTS = "fall_incidents_dev"
+CAREGIVER_ACCESS = "caregiver_access_dev"
+
+# Compatibility flags
+[env.development.compatibility_flags]
+nodejs_compat = true
+streams_enable_constructors = true
+
+[env.production.compatibility_flags]
+nodejs_compat = true
+streams_enable_constructors = true
+
+# Rate limiting configuration
+[env.development.limits]
+cpu_ms = 100000  # Extended for development debugging
+
+[env.production.limits]
+cpu_ms = 50000   # Production optimized

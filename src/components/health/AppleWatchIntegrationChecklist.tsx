@@ -1,24 +1,44 @@
-import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Progress } from '@/components/ui/progress'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { CheckCircle, Circle, Clock, AlertTriangle, Apple, Watch, Smartphone, Shield, Code, TestTube, Upload, Gear, FileText } from '@phosphor-icons/react'
+import { useState } from 'react';
+import { useKV } from '@github/spark/hooks';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  CheckCircle,
+  Circle,
+  Clock,
+  AlertTriangle,
+  Apple,
+  Watch,
+  Smartphone,
+  Shield,
+  Code,
+  TestTube,
+  Upload,
+  Gear,
+  FileText,
+} from '@phosphor-icons/react';
 
 interface IntegrationTask {
-  id: string
-  title: string
-  description: string
-  category: 'setup' | 'development' | 'testing' | 'deployment'
-  priority: 'high' | 'medium' | 'low'
-  estimatedHours: number
-  dependencies: string[]
-  completed: boolean
-  notes?: string
+  id: string;
+  title: string;
+  description: string;
+  category: 'setup' | 'development' | 'testing' | 'deployment';
+  priority: 'high' | 'medium' | 'low';
+  estimatedHours: number;
+  dependencies: string[];
+  completed: boolean;
+  notes?: string;
 }
 
 export default function AppleWatchIntegrationChecklist() {
@@ -27,22 +47,24 @@ export default function AppleWatchIntegrationChecklist() {
     {
       id: 'apple-dev-account',
       title: 'Apple Developer Program Enrollment',
-      description: 'Register for Apple Developer Program and obtain necessary certificates',
+      description:
+        'Register for Apple Developer Program and obtain necessary certificates',
       category: 'setup',
       priority: 'high',
       estimatedHours: 4,
       dependencies: [],
-      completed: false
+      completed: false,
     },
     {
       id: 'healthkit-entitlements',
       title: 'HealthKit Entitlements Setup',
-      description: 'Configure app entitlements for HealthKit access and background processing',
+      description:
+        'Configure app entitlements for HealthKit access and background processing',
       category: 'setup',
       priority: 'high',
       estimatedHours: 2,
       dependencies: ['apple-dev-account'],
-      completed: false
+      completed: false,
     },
     {
       id: 'xcode-project',
@@ -52,7 +74,7 @@ export default function AppleWatchIntegrationChecklist() {
       priority: 'high',
       estimatedHours: 3,
       dependencies: ['apple-dev-account'],
-      completed: false
+      completed: false,
     },
     {
       id: 'watchos-target',
@@ -62,7 +84,7 @@ export default function AppleWatchIntegrationChecklist() {
       priority: 'high',
       estimatedHours: 2,
       dependencies: ['xcode-project'],
-      completed: false
+      completed: false,
     },
 
     // Development Phase
@@ -74,47 +96,51 @@ export default function AppleWatchIntegrationChecklist() {
       priority: 'high',
       estimatedHours: 16,
       dependencies: ['healthkit-entitlements'],
-      completed: false
+      completed: false,
     },
     {
       id: 'websocket-bridge',
       title: 'WebSocket Bridge Implementation',
-      description: 'Create bridge between native HealthKit data and web application',
+      description:
+        'Create bridge between native HealthKit data and web application',
       category: 'development',
       priority: 'high',
       estimatedHours: 12,
       dependencies: ['healthkit-manager'],
-      completed: false
+      completed: false,
     },
     {
       id: 'fall-detection',
       title: 'Advanced Fall Detection',
-      description: 'Implement multi-sensor fall detection using Apple Watch sensors',
+      description:
+        'Implement multi-sensor fall detection using Apple Watch sensors',
       category: 'development',
       priority: 'high',
       estimatedHours: 24,
       dependencies: ['watchos-target', 'healthkit-manager'],
-      completed: false
+      completed: false,
     },
     {
       id: 'background-processing',
       title: 'Background Health Monitoring',
-      description: 'Implement background app refresh for continuous health monitoring',
+      description:
+        'Implement background app refresh for continuous health monitoring',
       category: 'development',
       priority: 'medium',
       estimatedHours: 8,
       dependencies: ['healthkit-manager'],
-      completed: false
+      completed: false,
     },
     {
       id: 'watch-complications',
       title: 'Watch Face Complications',
-      description: 'Create watch face widgets for health score and emergency access',
+      description:
+        'Create watch face widgets for health score and emergency access',
       category: 'development',
       priority: 'medium',
       estimatedHours: 6,
       dependencies: ['watchos-target'],
-      completed: false
+      completed: false,
     },
     {
       id: 'emergency-response',
@@ -124,7 +150,7 @@ export default function AppleWatchIntegrationChecklist() {
       priority: 'high',
       estimatedHours: 10,
       dependencies: ['fall-detection'],
-      completed: false
+      completed: false,
     },
 
     // Testing Phase
@@ -136,7 +162,7 @@ export default function AppleWatchIntegrationChecklist() {
       priority: 'high',
       estimatedHours: 8,
       dependencies: ['websocket-bridge', 'fall-detection'],
-      completed: false
+      completed: false,
     },
     {
       id: 'device-testing',
@@ -146,7 +172,7 @@ export default function AppleWatchIntegrationChecklist() {
       priority: 'high',
       estimatedHours: 12,
       dependencies: ['simulator-testing'],
-      completed: false
+      completed: false,
     },
     {
       id: 'fall-simulation',
@@ -156,7 +182,7 @@ export default function AppleWatchIntegrationChecklist() {
       priority: 'high',
       estimatedHours: 6,
       dependencies: ['device-testing', 'emergency-response'],
-      completed: false
+      completed: false,
     },
     {
       id: 'data-accuracy',
@@ -166,7 +192,7 @@ export default function AppleWatchIntegrationChecklist() {
       priority: 'medium',
       estimatedHours: 4,
       dependencies: ['device-testing'],
-      completed: false
+      completed: false,
     },
 
     // Deployment Phase
@@ -178,7 +204,7 @@ export default function AppleWatchIntegrationChecklist() {
       priority: 'high',
       estimatedHours: 3,
       dependencies: [],
-      completed: false
+      completed: false,
     },
     {
       id: 'app-store-submission',
@@ -188,7 +214,7 @@ export default function AppleWatchIntegrationChecklist() {
       priority: 'high',
       estimatedHours: 6,
       dependencies: ['fall-simulation', 'privacy-policy'],
-      completed: false
+      completed: false,
     },
     {
       id: 'websocket-infrastructure',
@@ -198,7 +224,7 @@ export default function AppleWatchIntegrationChecklist() {
       priority: 'high',
       estimatedHours: 8,
       dependencies: ['websocket-bridge'],
-      completed: false
+      completed: false,
     },
     {
       id: 'security-audit',
@@ -208,72 +234,106 @@ export default function AppleWatchIntegrationChecklist() {
       priority: 'high',
       estimatedHours: 12,
       dependencies: ['websocket-infrastructure'],
-      completed: false
-    }
-  ])
+      completed: false,
+    },
+  ]);
 
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const toggleTask = (taskId: string) => {
-    setTasks(currentTasks => 
-      currentTasks.map(task => 
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
         task.id === taskId ? { ...task, completed: !task.completed } : task
       )
-    )
-  }
+    );
+  };
 
   const getTasksByCategory = (category: string) => {
-    if (category === 'all') return tasks
-    return tasks.filter(task => task.category === category)
-  }
+    if (category === 'all') return tasks;
+    return tasks.filter((task) => task.category === category);
+  };
 
   const calculateProgress = (category?: string) => {
-    const relevantTasks = category ? tasks.filter(t => t.category === category) : tasks
-    const completedTasks = relevantTasks.filter(t => t.completed).length
-    return Math.round((completedTasks / relevantTasks.length) * 100)
-  }
+    const relevantTasks = category
+      ? tasks.filter((t) => t.category === category)
+      : tasks;
+    const completedTasks = relevantTasks.filter((t) => t.completed).length;
+    return Math.round((completedTasks / relevantTasks.length) * 100);
+  };
 
   const getTotalHours = (category?: string) => {
-    const relevantTasks = category ? tasks.filter(t => t.category === category) : tasks
-    return relevantTasks.reduce((total, task) => total + task.estimatedHours, 0)
-  }
+    const relevantTasks = category
+      ? tasks.filter((t) => t.category === category)
+      : tasks;
+    return relevantTasks.reduce(
+      (total, task) => total + task.estimatedHours,
+      0
+    );
+  };
 
   const getCompletedHours = (category?: string) => {
-    const relevantTasks = category ? tasks.filter(t => t.category === category) : tasks
-    return relevantTasks.filter(t => t.completed).reduce((total, task) => total + task.estimatedHours, 0)
-  }
+    const relevantTasks = category
+      ? tasks.filter((t) => t.category === category)
+      : tasks;
+    return relevantTasks
+      .filter((t) => t.completed)
+      .reduce((total, task) => total + task.estimatedHours, 0);
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-500'
-      case 'medium': return 'bg-yellow-500'
-      case 'low': return 'bg-green-500'
-      default: return 'bg-gray-500'
+      case 'high':
+        return 'bg-red-500';
+      case 'medium':
+        return 'bg-yellow-500';
+      case 'low':
+        return 'bg-green-500';
+      default:
+        return 'bg-gray-500';
     }
-  }
+  };
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'setup': return <Gear className="h-4 w-4" />
-      case 'development': return <Code className="h-4 w-4" />
-      case 'testing': return <TestTube className="h-4 w-4" />
-      case 'deployment': return <Upload className="h-4 w-4" />
-      default: return <Circle className="h-4 w-4" />
+      case 'setup':
+        return <Gear className="h-4 w-4" />;
+      case 'development':
+        return <Code className="h-4 w-4" />;
+      case 'testing':
+        return <TestTube className="h-4 w-4" />;
+      case 'deployment':
+        return <Upload className="h-4 w-4" />;
+      default:
+        return <Circle className="h-4 w-4" />;
     }
-  }
+  };
 
   const categories = [
     { id: 'all', label: 'All Tasks', icon: <FileText className="h-4 w-4" /> },
-    { id: 'setup', label: 'Setup & Configuration', icon: <Gear className="h-4 w-4" /> },
-    { id: 'development', label: 'Development', icon: <Code className="h-4 w-4" /> },
+    {
+      id: 'setup',
+      label: 'Setup & Configuration',
+      icon: <Gear className="h-4 w-4" />,
+    },
+    {
+      id: 'development',
+      label: 'Development',
+      icon: <Code className="h-4 w-4" />,
+    },
     { id: 'testing', label: 'Testing', icon: <TestTube className="h-4 w-4" /> },
-    { id: 'deployment', label: 'Deployment', icon: <Upload className="h-4 w-4" /> }
-  ]
+    {
+      id: 'deployment',
+      label: 'Deployment',
+      icon: <Upload className="h-4 w-4" />,
+    },
+  ];
 
-  const overallProgress = calculateProgress()
+  const overallProgress = calculateProgress();
   const isBlockedTask = (task: IntegrationTask) => {
-    return task.dependencies.some(depId => !tasks.find(t => t.id === depId)?.completed)
-  }
+    return task.dependencies.some(
+      (depId) => !tasks.find((t) => t.id === depId)?.completed
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -285,26 +345,46 @@ export default function AppleWatchIntegrationChecklist() {
             Apple Watch & HealthKit Integration Checklist
           </CardTitle>
           <CardDescription>
-            Complete implementation guide for production-ready Apple Watch and HealthKit integration
+            Complete implementation guide for production-ready Apple Watch and
+            HealthKit integration
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{overallProgress}%</div>
-              <div className="text-sm text-muted-foreground">Overall Progress</div>
+              <div className="text-primary text-2xl font-bold">
+                {overallProgress}%
+              </div>
+              <div className="text-muted-foreground text-sm">
+                Overall Progress
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{getCompletedHours()}/{getTotalHours()}</div>
-              <div className="text-sm text-muted-foreground">Hours Complete</div>
+              <div className="text-2xl font-bold">
+                {getCompletedHours()}/{getTotalHours()}
+              </div>
+              <div className="text-muted-foreground text-sm">
+                Hours Complete
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{tasks.filter(t => t.completed).length}</div>
-              <div className="text-sm text-muted-foreground">Tasks Complete</div>
+              <div className="text-2xl font-bold">
+                {tasks.filter((t) => t.completed).length}
+              </div>
+              <div className="text-muted-foreground text-sm">
+                Tasks Complete
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{tasks.filter(t => t.priority === 'high' && !t.completed).length}</div>
-              <div className="text-sm text-muted-foreground">High Priority Remaining</div>
+              <div className="text-2xl font-bold">
+                {
+                  tasks.filter((t) => t.priority === 'high' && !t.completed)
+                    .length
+                }
+              </div>
+              <div className="text-muted-foreground text-sm">
+                High Priority Remaining
+              </div>
             </div>
           </div>
           <Progress value={overallProgress} className="w-full" />
@@ -312,10 +392,10 @@ export default function AppleWatchIntegrationChecklist() {
       </Card>
 
       {/* Integration Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
               <Smartphone className="h-5 w-5" />
               iOS App Development
             </CardTitle>
@@ -327,8 +407,9 @@ export default function AppleWatchIntegrationChecklist() {
                 <span>{calculateProgress('development')}%</span>
               </div>
               <Progress value={calculateProgress('development')} />
-              <div className="text-xs text-muted-foreground">
-                {getCompletedHours('development')}/{getTotalHours('development')} hours
+              <div className="text-muted-foreground text-xs">
+                {getCompletedHours('development')}/
+                {getTotalHours('development')} hours
               </div>
             </div>
           </CardContent>
@@ -336,7 +417,7 @@ export default function AppleWatchIntegrationChecklist() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
               <Watch className="h-5 w-5" />
               Apple Watch Integration
             </CardTitle>
@@ -348,7 +429,7 @@ export default function AppleWatchIntegrationChecklist() {
                 <span>{calculateProgress('setup')}%</span>
               </div>
               <Progress value={calculateProgress('setup')} />
-              <div className="text-xs text-muted-foreground">
+              <div className="text-muted-foreground text-xs">
                 Foundation & configuration
               </div>
             </div>
@@ -357,7 +438,7 @@ export default function AppleWatchIntegrationChecklist() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
               <Shield className="h-5 w-5" />
               Production Deployment
             </CardTitle>
@@ -369,7 +450,7 @@ export default function AppleWatchIntegrationChecklist() {
                 <span>{calculateProgress('deployment')}%</span>
               </div>
               <Progress value={calculateProgress('deployment')} />
-              <div className="text-xs text-muted-foreground">
+              <div className="text-muted-foreground text-xs">
                 Security & App Store
               </div>
             </div>
@@ -378,30 +459,51 @@ export default function AppleWatchIntegrationChecklist() {
       </div>
 
       {/* Task Management */}
-      <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-4">
+      <Tabs
+        value={selectedCategory}
+        onValueChange={setSelectedCategory}
+        className="space-y-4"
+      >
         <TabsList className="grid w-full grid-cols-5">
           {categories.map((category) => (
-            <TabsTrigger key={category.id} value={category.id} className="flex items-center gap-1 text-xs">
+            <TabsTrigger
+              key={category.id}
+              value={category.id}
+              className="flex items-center gap-1 text-xs"
+            >
               {category.icon}
-              <span className="hidden sm:inline">{category.label.split(' ')[0]}</span>
+              <span className="hidden sm:inline">
+                {category.label.split(' ')[0]}
+              </span>
             </TabsTrigger>
           ))}
         </TabsList>
 
         {categories.map((category) => (
-          <TabsContent key={category.id} value={category.id} className="space-y-4">
+          <TabsContent
+            key={category.id}
+            value={category.id}
+            className="space-y-4"
+          >
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">{category.label}</h3>
               <Badge variant="outline">
-                {getTasksByCategory(category.id).filter(t => t.completed).length} / {getTasksByCategory(category.id).length} completed
+                {
+                  getTasksByCategory(category.id).filter((t) => t.completed)
+                    .length
+                }{' '}
+                / {getTasksByCategory(category.id).length} completed
               </Badge>
             </div>
 
             <div className="space-y-3">
               {getTasksByCategory(category.id).map((task) => {
-                const blocked = isBlockedTask(task)
+                const blocked = isBlockedTask(task);
                 return (
-                  <Card key={task.id} className={`${task.completed ? 'opacity-75' : ''} ${blocked && !task.completed ? 'border-yellow-200 bg-yellow-50' : ''}`}>
+                  <Card
+                    key={task.id}
+                    className={`${task.completed ? 'opacity-75' : ''} ${blocked && !task.completed ? 'border-yellow-200 bg-yellow-50' : ''}`}
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <Checkbox
@@ -412,33 +514,51 @@ export default function AppleWatchIntegrationChecklist() {
                         />
                         <div className="flex-1 space-y-2">
                           <div className="flex items-center justify-between">
-                            <h4 className={`font-medium ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
+                            <h4
+                              className={`font-medium ${task.completed ? 'text-muted-foreground line-through' : ''}`}
+                            >
                               {task.title}
                             </h4>
                             <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)}`} />
-                              <span className="text-xs text-muted-foreground">{task.estimatedHours}h</span>
+                              <div
+                                className={`h-2 w-2 rounded-full ${getPriorityColor(task.priority)}`}
+                              />
+                              <span className="text-muted-foreground text-xs">
+                                {task.estimatedHours}h
+                              </span>
                               {getCategoryIcon(task.category)}
                             </div>
                           </div>
-                          <p className="text-sm text-muted-foreground">{task.description}</p>
-                          
+                          <p className="text-muted-foreground text-sm">
+                            {task.description}
+                          </p>
+
                           {task.dependencies.length > 0 && (
                             <div className="flex items-center gap-2 text-xs">
-                              <span className="text-muted-foreground">Depends on:</span>
+                              <span className="text-muted-foreground">
+                                Depends on:
+                              </span>
                               {task.dependencies.map((depId) => {
-                                const depTask = tasks.find(t => t.id === depId)
-                                const depCompleted = depTask?.completed
+                                const depTask = tasks.find(
+                                  (t) => t.id === depId
+                                );
+                                const depCompleted = depTask?.completed;
                                 return (
-                                  <Badge 
-                                    key={depId} 
-                                    variant={depCompleted ? "default" : "secondary"}
+                                  <Badge
+                                    key={depId}
+                                    variant={
+                                      depCompleted ? 'default' : 'secondary'
+                                    }
                                     className="text-xs"
                                   >
-                                    {depCompleted ? <CheckCircle className="h-3 w-3 mr-1" /> : <Clock className="h-3 w-3 mr-1" />}
+                                    {depCompleted ? (
+                                      <CheckCircle className="mr-1 h-3 w-3" />
+                                    ) : (
+                                      <Clock className="mr-1 h-3 w-3" />
+                                    )}
                                     {depTask?.title}
                                   </Badge>
-                                )
+                                );
                               })}
                             </div>
                           )}
@@ -455,7 +575,7 @@ export default function AppleWatchIntegrationChecklist() {
                       </div>
                     </CardContent>
                   </Card>
-                )
+                );
               })}
             </div>
           </TabsContent>
@@ -471,25 +591,40 @@ export default function AppleWatchIntegrationChecklist() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-3">
               <h4 className="font-medium">Immediate Actions</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
                   <Circle className="h-3 w-3" />
-                  <a href="https://developer.apple.com/programs/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                  <a
+                    href="https://developer.apple.com/programs/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
                     Register for Apple Developer Program
                   </a>
                 </div>
                 <div className="flex items-center gap-2">
                   <Circle className="h-3 w-3" />
-                  <a href="https://developer.apple.com/documentation/healthkit" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                  <a
+                    href="https://developer.apple.com/documentation/healthkit"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
                     Review HealthKit Documentation
                   </a>
                 </div>
                 <div className="flex items-center gap-2">
                   <Circle className="h-3 w-3" />
-                  <a href="https://developer.apple.com/documentation/watchos" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                  <a
+                    href="https://developer.apple.com/documentation/watchos"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
                     Study WatchOS Development Guide
                   </a>
                 </div>
@@ -517,5 +652,5 @@ export default function AppleWatchIntegrationChecklist() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

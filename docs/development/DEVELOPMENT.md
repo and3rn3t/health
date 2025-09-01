@@ -5,11 +5,13 @@ This guide covers the complete development and deployment setup for the Health A
 ## Quick Start
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 2. **Start development server:**
+
    ```bash
    npm run dev
    ```
@@ -22,11 +24,13 @@ This guide covers the complete development and deployment setup for the Health A
 ## Environment Configuration
 
 ### Development Environment
+
 - Copy `.env.development` to `.env.local` and update values
 - Set your Cloudflare Account ID and API Token
 - Configure database URLs for local development
 
 ### Production Environment
+
 - Set environment variables in GitHub Secrets:
   - `CLOUDFLARE_ACCOUNT_ID`
   - `CLOUDFLARE_API_TOKEN`
@@ -43,27 +47,32 @@ This guide covers the complete development and deployment setup for the Health A
 ## Deployment
 
 ### Development Deployment
+
 ```bash
 npm run deploy:dev
 ```
 
 ### Production Deployment
+
 ```bash
 npm run deploy:prod
 ```
 
 ### Automatic Deployment
+
 - Push to `develop` branch → deploys to development environment
 - Push to `main` branch → deploys to production environment
 
 ## Cloudflare Workers Setup
 
 1. **Install Wrangler CLI:**
+
    ```bash
    npm install -g wrangler
    ```
 
 2. **Login to Cloudflare:**
+
    ```bash
    wrangler login
    ```
@@ -76,6 +85,7 @@ npm run deploy:prod
 ## IDE Setup
 
 The project includes optimized VS Code settings:
+
 - Auto-formatting on save
 - ESLint integration
 - Tailwind CSS IntelliSense

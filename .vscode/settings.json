@@ -1,29 +1,60 @@
 {
+  // TypeScript & JavaScript settings
   "typescript.preferences.quoteStyle": "single",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.quoteStyle": "single",
+
+  // Editor formatting and behavior
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.rulers": [80, 120],
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+
+  // File handling
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.eol": "\n",
+
+  // File associations
   "files.associations": {
     "*.tsx": "typescriptreact",
-    "*.ts": "typescript"
+    "*.ts": "typescript",
+    "*.plist": "xml"
   },
+
+  // Emmet configuration
   "emmet.includeLanguages": {
     "typescript": "html",
     "typescriptreact": "html"
   },
-  "typescript.updateImportsOnFileMove.enabled": "always",
-  "editor.rulers": [80, 120],
-  "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true,
+
+  // Search exclusions - aligned with gitignore
   "search.exclude": {
     "**/node_modules": true,
     "**/dist": true,
+    "**/dist-worker": true,
     "**/.wrangler": true,
-    "**/coverage": true
+    "**/coverage": true,
+    "**/build": true,
+    "**/.build": true,
+    "**/Pods": true,
+    "**/DerivedData": true,
+    "**/*.xcuserdata": true,
+    "**/.cache": true,
+    "**/.tsbuildinfo": true,
+    "**/logs": true,
+    "**/*.log": true
   },
-  "typescript.preferences.importModuleSpecifier": "relative",
+
+  // Tailwind CSS configuration
   "tailwindCSS.includeLanguages": {
     "typescript": "html",
     "typescriptreact": "html"
@@ -32,7 +63,45 @@
     "clsx\\(([^)]*)\\)",
     "cn\\(([^)]*)\\)"
   ],
+
+  // Language-specific formatting
   "[powershell]": {
-    "editor.defaultFormatter": "ms-vscode.powershell"
-  }
+    "editor.defaultFormatter": "ms-vscode.powershell",
+    "editor.tabSize": 2
+  },
+  "[swift]": {
+    "editor.defaultFormatter": "swiftlang.swift-vscode",
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "files.trimTrailingWhitespace": false
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // ESLint configuration
+  "eslint.workingDirectories": [".", "./ios"],
+  "eslint.validate": ["javascript", "typescript", "typescriptreact"],
+
+  // Git configuration
+  "git.autofetch": true,
+  "git.confirmSync": false,
+
+  // Terminal configuration
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+
+  // Breadcrumbs
+  "breadcrumbs.enabled": true,
+
+  // Problems panel
+  "problems.decorations.enabled": true
 }

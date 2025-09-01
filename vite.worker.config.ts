@@ -7,17 +7,17 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/worker.ts'),
       name: 'worker',
       fileName: 'index',
-      formats: ['es']
+      formats: ['es'],
     },
     rollupOptions: {
-      external: ['cloudflare:workers']
+      external: ['cloudflare:workers'],
     },
     outDir: 'dist-worker',
-    sourcemap: true
+    sourcemap: true,
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
-    }
-  }
+      '@': resolve(__dirname, 'src'),
+    },
+  },
 });

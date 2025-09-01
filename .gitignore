@@ -38,6 +38,7 @@ dist-ssr
 .wrangler/
 wrangler.toml.bak
 worker-configuration.d.ts
+dist-worker/
 
 # Build outputs
 build/
@@ -49,10 +50,23 @@ out/
 .cache/
 .parcel-cache/
 .nx/cache/
+.tsbuildinfo
 
 # Testing
 coverage/
 .nyc_output
+test-results/
+test-output/
+
+# IDE temporary files
+.vscode/settings.json.backup
+.idea/
+*.swp
+*.swo
+*~
+
+# Linting
+.eslintcache
 
 # Misc
 .DS_Store

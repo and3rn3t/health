@@ -1,0 +1,114 @@
+# DNS Configuration for andernet.dev Health Platform
+# This file defines all subdomains and their deployment phases
+
+domain: 'andernet.dev'
+zone_id: '' # Auto-detected or set manually
+
+# Deployment phases with corresponding DNS records
+phases:
+  1: # MVP - Single Worker
+    description: 'Initial deployment with main health app'
+    records:
+      - subdomain: 'health'
+        target: 'health-app.workers.dev'
+        priority: 'critical'
+        description: 'Main React SPA + API endpoints'
+
+  2: # API Separation
+    description: 'Separate API and WebSocket services'
+    records:
+      - subdomain: 'api.health'
+        target: 'health-api.workers.dev'
+        priority: 'high'
+        description: 'Core health data APIs'
+      - subdomain: 'ws.health'
+        target: 'health-ws.workers.dev'
+        priority: 'high'
+        description: 'Real-time WebSocket connections'
+
+  3: # Specialized Services
+    description: 'Emergency response and file handling'
+    records:
+      - subdomain: 'emergency.health'
+        target: 'health-emergency.workers.dev'
+        priority: 'critical'
+        description: 'Emergency response APIs for fall detection'
+      - subdomain: 'files.health'
+        target: 'health-files.workers.dev'
+        priority: 'medium'
+        description: 'File uploads/downloads (Apple Health exports)'
+      - subdomain: 'caregiver.health'
+        target: 'health-caregiver.workers.dev'
+        priority: 'high'
+        description: 'Caregiver dashboard APIs'
+
+# Worker deployment mapping
+workers:
+  health-app:
+    name: 'health-app-prod'
+    script: 'dist-worker/index.js'
+    routes:
+      - 'health.andernet.dev/*'
+
+  health-api:
+    name: 'health-api-prod'
+    script: 'dist-worker/api.js'
+    routes:
+      - 'api.health.andernet.dev/*'
+
+  health-ws:
+    name: 'health-ws-prod'
+    script: 'dist-worker/websocket.js'
+    routes:
+      - 'ws.health.andernet.dev/*'
+
+  health-emergency:
+    name: 'health-emergency-prod'
+    script: 'dist-worker/emergency.js'
+    routes:
+      - 'emergency.health.andernet.dev/*'
+
+  health-files:
+    name: 'health-files-prod'
+    script: 'dist-worker/files.js'
+    routes:
+      - 'files.health.andernet.dev/*'
+
+  health-caregiver:
+    name: 'health-caregiver-prod'
+    script: 'dist-worker/caregiver.js'
+    routes:
+      - 'caregiver.health.andernet.dev/*'
+
+# Environment variables per subdomain
+environments:
+  health:
+    ENVIRONMENT: 'production'
+    LOG_LEVEL: 'info'
+    PRIMARY_DOMAIN: true
+
+  api.health:
+    ENVIRONMENT: 'production'
+    LOG_LEVEL: 'info'
+    API_RATE_LIMIT: '1000'
+
+  ws.health:
+    ENVIRONMENT: 'production'
+    LOG_LEVEL: 'debug'
+    WEBSOCKET_TIMEOUT: '30000'
+
+  emergency.health:
+    ENVIRONMENT: 'production'
+    LOG_LEVEL: 'error'
+    PRIORITY: 'critical'
+    RESPONSE_TIME_TARGET: '500ms'
+
+  files.health:
+    ENVIRONMENT: 'production'
+    LOG_LEVEL: 'info'
+    MAX_FILE_SIZE: '500MB'
+
+  caregiver.health:
+    ENVIRONMENT: 'production'
+    LOG_LEVEL: 'info'
+    MULTI_TENANT: true
