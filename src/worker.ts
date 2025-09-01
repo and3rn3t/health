@@ -3,30 +3,30 @@
  * This file handles the worker logic and serves the built application
  */
 
-import { Hono, type Context } from 'hono';
-import { z } from 'zod';
-import {
-  processedHealthDataSchema,
-  healthMetricSchema,
-  type ProcessedHealthData,
-} from '@/schemas/health';
-import {
-  corsHeaders,
-  getAesKey,
-  encryptJSON,
-  log,
-  validateBearerJWT,
-  verifyJwtWithJwks,
-  writeAudit,
-  decodeJwtPayload,
-  decryptJSON,
-  signJwtHS256,
-} from '@/lib/security';
 import {
   getTtlSecondsForType,
   purgeOldHealthData,
   type KVNamespaceLite,
 } from '@/lib/retention';
+import {
+  corsHeaders,
+  decodeJwtPayload,
+  decryptJSON,
+  encryptJSON,
+  getAesKey,
+  log,
+  signJwtHS256,
+  validateBearerJWT,
+  verifyJwtWithJwks,
+  writeAudit,
+} from '@/lib/security';
+import {
+  healthMetricSchema,
+  processedHealthDataSchema,
+  type ProcessedHealthData,
+} from '@/schemas/health';
+import { Hono, type Context } from 'hono';
+import { z } from 'zod';
 
 type Env = {
   ENVIRONMENT?: string;
@@ -361,14 +361,18 @@ app.post('/api/device/auth', async (c) => {
   let parsed: z.infer<typeof bodySchema>;
   try {
     const json = await c.req.json();
+    console.log('[DEBUG] Device auth request body:', JSON.stringify(json));
     const res = bodySchema.safeParse(json);
-    if (!res.success)
+    if (!res.success) {
+      console.log('[DEBUG] Validation failed:', res.error.flatten());
       return c.json(
         { error: 'validation_error', details: res.error.flatten() },
         400
       );
+    }
     parsed = res.data;
-  } catch {
+  } catch (e) {
+    console.log('[DEBUG] JSON parse failed:', e.message);
     return c.json({ error: 'invalid_json' }, 400);
   }
 
@@ -614,7 +618,6 @@ export class RateLimiter {
 // This DO currently returns 426 to indicate WS not available in the Worker.
 // When ready to migrate WS to Workers Durable Objects, implement upgrade handling here.
 export class HealthWebSocket {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(_state: DurableObjectState, _env?: Env) {}
   async fetch(_request: Request): Promise<Response> {
     return new Response(
