@@ -1,0 +1,216 @@
+name = "health-app"
+main = "dist-worker/index.js"
+compatibility_date = "2024-08-30"
+compatibility_flags = ["nodejs_compat", "streams_enable_constructors"]
+workers_dev = true
+
+[build]
+command = "npm run build:worker"
+cwd = "."
+watch_dir = "src"
+
+# Assets configuration for React app
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# Development environment
+[env.development]
+name = "health-app-dev"
+
+[env.development.vars]
+ENVIRONMENT = "development"
+ALLOWED_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5000,http://127.0.0.1:5000"
+BASE_URL = "http://localhost:8789"
+API_BASE_URL = "http://localhost:8789/api"
+WEBSOCKET_URL = "ws://localhost:3001"
+FILES_BASE_URL = "http://localhost:8789/files"
+LOG_LEVEL = "debug"
+FALL_DETECTION_THRESHOLD = "0.75"
+EMERGENCY_RESPONSE_DELAY = "30"
+MAX_FILE_SIZE = "100MB"
+SESSION_TIMEOUT = "24h"
+
+# Development KV namespaces
+[[env.development.kv_namespaces]]
+binding = "HEALTH_KV"
+id = "health_data_dev"
+preview_id = "health_data_dev_preview"
+
+[[env.development.kv_namespaces]]
+binding = "USER_SESSIONS"
+id = "user_sessions_dev"
+preview_id = "user_sessions_dev_preview"
+
+[[env.development.kv_namespaces]]
+binding = "FALL_INCIDENTS"
+id = "fall_incidents_dev"
+preview_id = "fall_incidents_dev_preview"
+
+[[env.development.kv_namespaces]]
+binding = "CAREGIVER_ACCESS"
+id = "caregiver_access_dev"
+preview_id = "caregiver_access_dev_preview"
+
+# Development R2 buckets
+[[env.development.r2_buckets]]
+binding = "HEALTH_FILES"
+bucket_name = "health-data-files-dev"
+
+[[env.development.r2_buckets]]
+binding = "HEALTH_EXPORTS"
+bucket_name = "health-exports-dev"
+
+[[env.development.r2_buckets]]
+binding = "EMERGENCY_RECORDINGS"
+bucket_name = "emergency-recordings-dev"
+
+# Development Durable Objects
+[env.development.durable_objects]
+bindings = [
+  { name = "HEALTH_WEBSOCKET", class_name = "HealthWebSocket" },
+  { name = "RATE_LIMITER", class_name = "RateLimiter" },
+  { name = "FALL_MONITOR", class_name = "FallMonitor" },
+  { name = "EMERGENCY_RESPONDER", class_name = "EmergencyResponder" },
+  { name = "CAREGIVER_SESSION", class_name = "CaregiverSession" }
+]
+
+# Development queues
+[[env.development.queues]]
+binding = "HEALTH_PROCESSING_QUEUE"
+queue_name = "health-data-processing-dev"
+
+[[env.development.queues]]
+binding = "EMERGENCY_QUEUE"
+queue_name = "emergency-alerts-dev"
+
+[[env.development.queues]]
+binding = "NOTIFICATION_QUEUE"
+queue_name = "user-notifications-dev"
+
+# Development Analytics Engine
+[[env.development.analytics_engine_datasets]]
+binding = "HEALTH_ANALYTICS"
+dataset = "health_metrics_dev"
+
+[[env.development.analytics_engine_datasets]]
+binding = "FALL_ANALYTICS"
+dataset = "fall_detection_metrics_dev"
+
+[[env.development.analytics_engine_datasets]]
+binding = "EMERGENCY_ANALYTICS"
+dataset = "emergency_response_metrics_dev"
+
+# Production environment
+[env.production]
+name = "health-app-prod"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+ALLOWED_ORIGINS = "https://health.andernet.dev"
+BASE_URL = "https://health.andernet.dev"
+API_BASE_URL = "https://health.andernet.dev/api"
+WEBSOCKET_URL = "wss://health.andernet.dev/ws"
+FILES_BASE_URL = "https://health.andernet.dev/files"
+LOG_LEVEL = "info"
+FALL_DETECTION_THRESHOLD = "0.85"
+EMERGENCY_RESPONSE_DELAY = "30"
+MAX_FILE_SIZE = "500MB"
+SESSION_TIMEOUT = "12h"
+
+# Production routes
+[[env.production.routes]]
+pattern = "health.andernet.dev/*"
+zone_name = "andernet.dev"
+
+# Production KV namespaces
+[[env.production.kv_namespaces]]
+binding = "HEALTH_KV"
+id = "health_data_production"
+preview_id = "health_data_preview"
+
+[[env.production.kv_namespaces]]
+binding = "USER_SESSIONS"
+id = "user_sessions_production"
+preview_id = "user_sessions_preview"
+
+[[env.production.kv_namespaces]]
+binding = "FALL_INCIDENTS"
+id = "fall_incidents_production"
+preview_id = "fall_incidents_preview"
+
+[[env.production.kv_namespaces]]
+binding = "CAREGIVER_ACCESS"
+id = "caregiver_access_production"
+preview_id = "caregiver_access_preview"
+
+# Production R2 buckets
+[[env.production.r2_buckets]]
+binding = "HEALTH_FILES"
+bucket_name = "health-data-files"
+
+[[env.production.r2_buckets]]
+binding = "HEALTH_EXPORTS"
+bucket_name = "health-exports"
+
+[[env.production.r2_buckets]]
+binding = "EMERGENCY_RECORDINGS"
+bucket_name = "emergency-recordings"
+
+# Production Durable Objects
+[env.production.durable_objects]
+bindings = [
+  { name = "HEALTH_WEBSOCKET", class_name = "HealthWebSocket" },
+  { name = "RATE_LIMITER", class_name = "RateLimiter" },
+  { name = "FALL_MONITOR", class_name = "FallMonitor" },
+  { name = "EMERGENCY_RESPONDER", class_name = "EmergencyResponder" },
+  { name = "CAREGIVER_SESSION", class_name = "CaregiverSession" }
+]
+
+# Production queues
+[[env.production.queues]]
+binding = "HEALTH_PROCESSING_QUEUE"
+queue_name = "health-data-processing"
+
+[[env.production.queues]]
+binding = "EMERGENCY_QUEUE"
+queue_name = "emergency-alerts"
+
+[[env.production.queues]]
+binding = "NOTIFICATION_QUEUE"
+queue_name = "user-notifications"
+
+# Production Analytics Engine
+[[env.production.analytics_engine_datasets]]
+binding = "HEALTH_ANALYTICS"
+dataset = "health_metrics"
+
+[[env.production.analytics_engine_datasets]]
+binding = "FALL_ANALYTICS"
+dataset = "fall_detection_metrics"
+
+[[env.production.analytics_engine_datasets]]
+binding = "EMERGENCY_ANALYTICS"
+dataset = "emergency_response_metrics"
+
+# Durable Objects migrations
+[[migrations]]
+tag = "v1"
+new_classes = ["HealthWebSocket", "RateLimiter"]
+
+[[migrations]]
+tag = "v2"
+new_classes = ["FallMonitor", "EmergencyResponder"]
+
+[[migrations]]
+tag = "v3"
+new_classes = ["CaregiverSession"]
+
+# Scheduled triggers for maintenance and monitoring
+[triggers]
+crons = [
+  "0 * * * *",    # Hourly: data cleanup and aggregation
+  "0 0 * * *",    # Daily: health trend analysis
+  "0 0 * * 1",    # Weekly: fall risk assessment updates
+  "0 2 * * *"     # Daily at 2 AM: emergency contact verification
+]
