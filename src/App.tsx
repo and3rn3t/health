@@ -1,7 +1,14 @@
-import { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
-import { Contact } from '@/types';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {} from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -9,17 +16,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {} from '@/components/ui/alert';
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Contact } from '@/types';
+import { useKV } from '@github/spark/hooks';
 import {
   Warning as AlertTriangle,
   ChartBar as BarChart3,
@@ -27,76 +26,77 @@ import {
 } from '@phosphor-icons/react';
 import {
   Activity,
-  Heart,
-  Shield,
-  Upload,
-  Users,
-  Settings as Gear,
-  Map as Roadmap,
-  Home as House,
-  Menu as List,
-  X,
-  Clock,
-  Share,
-  Stethoscope,
-  Trophy,
-  Target,
-  Search as MagnifyingGlass,
-  CloudUpload as CloudArrowUp,
+  Apple,
   Bell,
   Brain,
-  Moon,
-  Sun,
-  Monitor,
-  Apple,
+  Clock,
+  CloudUpload as CloudArrowUp,
   Code,
+  Settings as Gear,
+  Heart,
+  Home as House,
   Lightbulb,
+  Menu as List,
+  Search as MagnifyingGlass,
+  Monitor,
+  Moon,
+  Map as Roadmap,
+  Share,
+  Shield,
   Sparkle,
+  Stethoscope,
+  Sun,
+  Target,
+  Trophy,
+  Upload,
+  Users,
+  X,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import HealthDashboard from '@/components/health/HealthDashboard';
-import HealthAnalytics from '@/components/health/HealthAnalytics';
-import FallRiskMonitor from '@/components/health/FallRiskMonitor';
 import EmergencyContacts from '@/components/health/EmergencyContacts';
 import FallHistory from '@/components/health/FallHistory';
+import FallRiskMonitor from '@/components/health/FallRiskMonitor';
+import HealthAnalytics from '@/components/health/HealthAnalytics';
+import HealthDashboard from '@/components/health/HealthDashboard';
 import HealthDataImport from '@/components/health/HealthDataImport';
 // import FallMonitoringTooling from '@/components/health/FallMonitoringTooling'
-import RealTimeFallDetection from '@/components/health/RealTimeFallDetection';
-import ImplementationPhases from '@/components/health/ImplementationPhases';
-import MovementPatternAnalysis from '@/components/health/MovementPatternAnalysis';
-import MLPredictionsDashboard from '@/components/health/MLPredictionsDashboard';
-import AIRecommendations from '@/components/health/AIRecommendations';
-import CommunityShare from '@/components/health/CommunityShare';
-import HealthcarePortal from '@/components/health/HealthcarePortal';
-import FamilyDashboard from '@/components/health/FamilyDashboard';
-import HealthGameCenter from '@/components/gamification/HealthGameCenter';
 import FamilyGameification from '@/components/gamification/FamilyGameification';
-import HealthSearch from '@/components/health/HealthSearch';
-import RealTimeMonitoringHub from '@/components/health/RealTimeMonitoringHub';
+import HealthGameCenter from '@/components/gamification/HealthGameCenter';
+import AIRecommendations from '@/components/health/AIRecommendations';
 import CloudInfrastructureStatus from '@/components/health/CloudInfrastructureStatus';
+import CommunityShare from '@/components/health/CommunityShare';
+import FamilyDashboard from '@/components/health/FamilyDashboard';
+import HealthcarePortal from '@/components/health/HealthcarePortal';
+import HealthSearch from '@/components/health/HealthSearch';
+import ImplementationPhases from '@/components/health/ImplementationPhases';
 import LiveHealthDataIntegration from '@/components/health/LiveHealthDataIntegration';
+import MLPredictionsDashboard from '@/components/health/MLPredictionsDashboard';
+import MovementPatternAnalysis from '@/components/health/MovementPatternAnalysis';
+import RealTimeFallDetection from '@/components/health/RealTimeFallDetection';
+import RealTimeMonitoringHub from '@/components/health/RealTimeMonitoringHub';
 // import HealthInsightsDashboard from '@/components/health/HealthInsightsDashboard'
+import AIUsagePredictions from '@/components/analytics/AIUsagePredictions';
+import UsageAnalyticsDashboard from '@/components/analytics/UsageAnalyticsDashboard';
+import AdvancedAppleWatchIntegration from '@/components/health/AdvancedAppleWatchIntegration';
+import AppleWatchIntegrationChecklist from '@/components/health/AppleWatchIntegrationChecklist';
+import ComprehensiveAppleHealthKitGuide from '@/components/health/ComprehensiveAppleHealthKitGuide';
+import EmergencyTriggerButton from '@/components/health/EmergencyTriggerButton';
+import EnhancedHealthInsightsDashboard from '@/components/health/EnhancedHealthInsightsDashboard';
 import HealthAlertsConfig from '@/components/health/HealthAlertsConfig';
 import PredictiveHealthAlerts from '@/components/health/PredictiveHealthAlerts';
 import RealTimeHealthScoring from '@/components/health/RealTimeHealthScoring';
-import AdvancedAppleWatchIntegration from '@/components/health/AdvancedAppleWatchIntegration';
-import SystemStatusPanel from '@/components/SystemStatusPanel';
-import SimpleSystemStatus from '@/components/SimpleSystemStatus';
-import EnhancedHealthInsightsDashboard from '@/components/health/EnhancedHealthInsightsDashboard';
-import AppleWatchIntegrationChecklist from '@/components/health/AppleWatchIntegrationChecklist';
-import XcodeDevelopmentSetup from '@/components/health/XcodeDevelopmentSetup';
-import ComprehensiveAppleHealthKitGuide from '@/components/health/ComprehensiveAppleHealthKitGuide';
-import WebSocketArchitectureGuide from '@/components/health/WebSocketArchitectureGuide';
-import SmartFeatureRecommendations from '@/components/recommendations/SmartFeatureRecommendations';
-import PersonalizedEngagementOptimizer from '@/components/recommendations/PersonalizedEngagementOptimizer';
-import UsageAnalyticsDashboard from '@/components/analytics/UsageAnalyticsDashboard';
-import AIUsagePredictions from '@/components/analytics/AIUsagePredictions';
-import SmartNotificationEngine from '@/components/notifications/SmartNotificationEngine';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import RealtimeStatusBar from '@/components/health/RealtimeStatusBar';
-import EmergencyTriggerButton from '@/components/health/EmergencyTriggerButton';
+import WebSocketArchitectureGuide from '@/components/health/WebSocketArchitectureGuide';
 import WSTokenSettings from '@/components/health/WSTokenSettings';
+import XcodeDevelopmentSetup from '@/components/health/XcodeDevelopmentSetup';
+import SmartNotificationEngine from '@/components/notifications/SmartNotificationEngine';
+import PersonalizedEngagementOptimizer from '@/components/recommendations/PersonalizedEngagementOptimizer';
+import SmartFeatureRecommendations from '@/components/recommendations/SmartFeatureRecommendations';
+import SimpleSystemStatus from '@/components/SimpleSystemStatus';
+import SystemStatusPanel from '@/components/SystemStatusPanel';
+import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 function App() {
   // Restored KV persistence for production use
@@ -672,7 +672,7 @@ function App() {
                 </div>
                 <div>
                   <h1 className="text-foreground text-2xl font-bold">
-                    HealthGuard
+                    VitalSense
                   </h1>
                   <p className="text-muted-foreground text-sm">
                     Apple Health Insights & Fall Risk Monitor
@@ -742,7 +742,7 @@ function App() {
                     'Deep analysis of your health metrics'}
                   {currentPageInfo.category === 'Main' &&
                     currentPageInfo.label === 'Usage Analytics' &&
-                    'Discover how AI optimizes your HealthGuard experience'}
+                    'Discover how AI optimizes your VitalSense experience'}
                   {currentPageInfo.category === 'Main' &&
                     currentPageInfo.label === 'Usage Predictions' &&
                     'AI-powered forecasts of your health engagement trends'}

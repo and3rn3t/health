@@ -1,6 +1,6 @@
 # 🚀 App Store Submission - TODAY'S ACTION PLAN
 
-**Target**: Submit HealthGuard to App Store by end of week  
+**Target**: Submit VitalSense to App Store by end of week  
 **Current Status**: 100% technically ready ✅  
 **Time Investment**: 4-6 hours total
 
@@ -20,10 +20,10 @@
 2. **Create New App**
    - Click "My Apps" → "+" → "New App"
    - **Platform**: iOS
-   - **Name**: `HealthGuard Sync`
+   - **Name**: `VitalSense Sync`
    - **Primary Language**: English (US)
-   - **Bundle ID**: `dev.andernet.healthguard.sync`
-   - **SKU**: `HEALTHGUARD-SYNC-001`
+   - **Bundle ID**: `dev.andernet.vitalsense.sync`
+   - **SKU**: `VITALSENSE-SYNC-001`
 
 3. **Set Basic Information**
    - **Category**: Medical

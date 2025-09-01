@@ -1,4 +1,4 @@
-# 🏥 HealthGuard - Apple Health Insights & Fall Risk Monitor
+# 🏥 VitalSense - Apple Health Insights & Fall Risk Monitor
 
 > **A comprehensive health data analysis platform that transforms Apple Health data into actionable insights while providing proactive fall risk monitoring and emergency response capabilities.**
 
