@@ -51,8 +51,8 @@ $envConfigs = @{
         )
     }
     production = @{
-        ApiBaseUrl = "https://api.andernet.dev"
-        WebSocketUrl = "wss://api.andernet.dev/ws"
+        ApiBaseUrl = "https://health.andernet.dev/api"
+        WebSocketUrl = "wss://health.andernet.dev/ws"
         WranglerEnv = "production"
         Description = "Production environment"
         SetupSteps = @(

@@ -7,12 +7,13 @@
     <key>userId</key>
     <string>matt_test_user</string>
     <key>API_BASE_URL</key>
-    <string>http://127.0.0.1:8789</string>
+    <string>https://health.andernet.dev/api</string>
     <key>apiBaseURL</key>
-    <string>http://127.0.0.1:8789</string>
+    <string>https://health.andernet.dev/api</string>
     <key>WS_URL</key>
-    <string>ws://localhost:3001</string>
+    <string>wss://health.andernet.dev/ws</string>
     <key>webSocketURL</key>
-    <string>ws://localhost:3001</string>
+    <string>wss://health.andernet.dev/ws</string>
 </dict>
 </plist>
+
