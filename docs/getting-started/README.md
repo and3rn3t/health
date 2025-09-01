@@ -6,7 +6,7 @@ Quick setup guides and initial project onboarding.
 
 ### [README_QUICK_START.md](README_QUICK_START.md)
 
-**🎯 Start here!** Complete HealthGuard system setup in 15 minutes.
+**🎯 Start here!** Complete VitalSense system setup in 15 minutes.
 
 - Web application setup (5 minutes)
 - iOS application setup (10 minutes)

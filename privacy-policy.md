@@ -1,17 +1,17 @@
-# Privacy Policy - HealthGuard App
+# Privacy Policy - VitalSense App
 
 **Effective Date**: September 1, 2025  
 **Last Updated**: September 1, 2025
 
 ## Overview
 
-HealthGuard ("we," "our," or "us") respects your privacy and is committed to protecting your personal health information. This Privacy Policy explains how we collect, use, and safeguard your health data when you use our iOS application.
+VitalSense ("we," "our," or "us") respects your privacy and is committed to protecting your personal health information. This Privacy Policy explains how we collect, use, and safeguard your health data when you use our iOS application.
 
 ## Health Data We Collect
 
 ### HealthKit Integration
 
-With your explicit permission, HealthGuard accesses the following health data from Apple HealthKit:
+With your explicit permission, VitalSense accesses the following health data from Apple HealthKit:
 
 - **Heart Rate Data**: For cardiovascular health monitoring
 - **Walking Steadiness**: For fall risk assessment
@@ -113,7 +113,7 @@ With your explicit permission, HealthGuard accesses the following health data fr
 ### Apple HealthKit
 
 - We integrate with Apple HealthKit following Apple's strict privacy guidelines
-- Apple does not have access to your HealthGuard data
+- Apple does not have access to your VitalSense data
 - You control all HealthKit permissions through iOS Settings
 
 ### CloudFlare Security
@@ -124,11 +124,11 @@ With your explicit permission, HealthGuard accesses the following health data fr
 
 ## Children's Privacy
 
-HealthGuard is not intended for children under 13. We do not knowingly collect health information from children under 13. If you become aware that a child has provided health data, please contact us immediately.
+VitalSense is not intended for children under 13. We do not knowingly collect health information from children under 13. If you become aware that a child has provided health data, please contact us immediately.
 
 ## International Users
 
-If you use HealthGuard outside the United States, your data may be transferred to and processed in the United States. We ensure the same level of protection regardless of location.
+If you use VitalSense outside the United States, your data may be transferred to and processed in the United States. We ensure the same level of protection regardless of location.
 
 ## Data Retention
 
@@ -157,7 +157,7 @@ We may update this Privacy Policy periodically. We will notify you of significan
 ### Privacy Questions
 
 **Email**: <privacy@andernet.dev>  
-**Address**: HealthGuard Privacy Team, [Your Address]  
+**Address**: VitalSense Privacy Team, [Your Address]  
 **Phone**: [Your Phone Number]
 
 ### Data Protection Officer
@@ -173,7 +173,7 @@ For urgent privacy or security concerns:
 
 ## Compliance
 
-HealthGuard complies with:
+VitalSense complies with:
 
 - **HIPAA Privacy Rule** (Health Insurance Portability and Accountability Act)
 - **GDPR** (General Data Protection Regulation) for EU users
@@ -182,7 +182,7 @@ HealthGuard complies with:
 
 ## Consent
 
-By using HealthGuard, you consent to the collection, use, and sharing of your information as described in this Privacy Policy. You may withdraw consent at any time by discontinuing use of the app and requesting account deletion.
+By using VitalSense, you consent to the collection, use, and sharing of your information as described in this Privacy Policy. You may withdraw consent at any time by discontinuing use of the app and requesting account deletion.
 
 ---
 

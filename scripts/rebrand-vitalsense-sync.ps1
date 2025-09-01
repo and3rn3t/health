@@ -1,5 +1,5 @@
 #!/usr/bin/env pwsh
-# HealthGuard Sync Rebranding Script
+# VitalSense Sync Rebranding Script
 # Updates all project files to reflect new app name and bundle ID
 
 param(
@@ -7,10 +7,10 @@ param(
   [switch]$Verbose = $false
 )
 
-Write-Host '🔄 HealthGuard Sync Rebranding Tool' -ForegroundColor Cyan
+Write-Host '🔄 VitalSense Sync Rebranding Tool' -ForegroundColor Cyan
 Write-Host '===================================' -ForegroundColor Cyan
-Write-Host 'Converting: HealthKitBridge → HealthGuard Sync' -ForegroundColor White
-Write-Host 'Bundle ID: dev.andernet.HealthKitBridge → dev.andernet.healthguard.sync' -ForegroundColor White
+Write-Host 'Converting: HealthKitBridge → VitalSense Sync' -ForegroundColor White
+Write-Host 'Bundle ID: dev.andernet.HealthKitBridge → dev.andernet.VitalSense.sync' -ForegroundColor White
 Write-Host "Dry Run: $DryRun" -ForegroundColor $(if ($DryRun) { 'Yellow' } else { 'Green' })
 Write-Host ''
 
@@ -78,19 +78,19 @@ function Update-FileContent {
 
 # Define all text replacements
 $AppNameReplacements = @{
-  'HealthKit Bridge'                = 'HealthGuard Sync'
-  'HealthKitBridge'                 = 'HealthGuard Sync'
-  'HealthGuard - Fall Risk Monitor' = 'HealthGuard Sync'
-  'HealthGuard - Health Monitor'    = 'HealthGuard Sync'
+  'HealthKit Bridge'                = 'VitalSense Sync'
+  'HealthKitBridge'                 = 'VitalSense Sync'
+  'VitalSense - Fall Risk Monitor' = 'VitalSense Sync'
+  'VitalSense - Health Monitor'    = 'VitalSense Sync'
 }
 
 $BundleIdReplacements = @{
-  'dev.andernet.HealthKitBridge' = 'dev.andernet.healthguard.sync'
-  'dev.andernet.healthkitbridge' = 'dev.andernet.healthguard.sync'
+  'dev.andernet.HealthKitBridge' = 'dev.andernet.VitalSense.sync'
+  'dev.andernet.healthkitbridge' = 'dev.andernet.VitalSense.sync'
 }
 
 $DescriptionReplacements = @{
-  'Transform your Apple Health data into actionable insights with HealthGuard - the comprehensive health monitoring app designed to keep you safe and informed.' = 'HealthGuard Sync seamlessly bridges your Apple Health data with the HealthGuard monitoring platform, providing secure health data synchronization and basic emergency detection.'
+  'Transform your Apple Health data into actionable insights with VitalSense - the comprehensive health monitoring app designed to keep you safe and informed.' = 'VitalSense Sync seamlessly bridges your Apple Health data with the VitalSense monitoring platform, providing secure health data synchronization and basic emergency detection.'
 }
 
 Write-Host '📱 Updating iOS Project Files' -ForegroundColor Cyan
@@ -108,7 +108,7 @@ Update-FileContent $xcodeProjFile $xcodeReplacements 'Xcode project bundle ident
 # Update Swift app file
 $appSwiftFile = Join-Path $ProjectRoot 'ios\HealthKitBridge\HealthKitBridgeApp.swift'
 $swiftReplacements = @{
-  'struct HealthKitBridgeApp' = 'struct HealthGuardSyncApp'
+  'struct HealthKitBridgeApp' = 'struct VitalSenseSyncApp'
 }
 Update-FileContent $appSwiftFile $swiftReplacements 'Swift app struct name'
 
@@ -119,7 +119,7 @@ Write-Host '===============================' -ForegroundColor Cyan
 # Update App Store submission guide
 $submissionGuide = Join-Path $ProjectRoot 'APP_STORE_SUBMISSION_GUIDE.md'
 $guideReplacements = $AppNameReplacements + $BundleIdReplacements + @{
-  'HealthGuard - Fall Risk Monitor' = 'HealthGuard Sync'
+  'VitalSense - Fall Risk Monitor' = 'VitalSense Sync'
   'Health insights & fall safety'   = 'Health Data Bridge'
 }
 Update-FileContent $submissionGuide $guideReplacements 'App Store submission guide'
@@ -127,7 +127,7 @@ Update-FileContent $submissionGuide $guideReplacements 'App Store submission gui
 # Update today's action plan
 $todayPlan = Join-Path $ProjectRoot 'APP_STORE_TODAY_PLAN.md'
 $planReplacements = $AppNameReplacements + $BundleIdReplacements + @{
-  'HealthGuard - Fall Risk Monitor' = 'HealthGuard Sync'
+  'VitalSense - Fall Risk Monitor' = 'VitalSense Sync'
   'Fall Risk Monitor'               = 'Sync'
 }
 Update-FileContent $todayPlan $planReplacements "Today's action plan"
@@ -135,7 +135,7 @@ Update-FileContent $todayPlan $planReplacements "Today's action plan"
 # Update app store prep script
 $prepScript = Join-Path $ProjectRoot 'scripts\app-store-prep.ps1'
 $scriptReplacements = $AppNameReplacements + $BundleIdReplacements + @{
-  'HealthGuard - Fall Risk Monitor' = 'HealthGuard Sync'
+  'VitalSense - Fall Risk Monitor' = 'VitalSense Sync'
   'Health insights & fall safety'   = 'Health Data Bridge'
 }
 Update-FileContent $prepScript $scriptReplacements 'App store prep script'
@@ -148,9 +148,9 @@ Write-Host '===========================' -ForegroundColor Cyan
 $metadataFile = Join-Path $ProjectRoot 'app-store-metadata.json'
 if (Test-Path $metadataFile) {
   $metadataReplacements = $AppNameReplacements + $BundleIdReplacements + @{
-    '"AppName": "HealthGuard - Fall Risk Monitor"' = '"AppName": "HealthGuard Sync"'
+    '"AppName": "VitalSense - Fall Risk Monitor"' = '"AppName": "VitalSense Sync"'
     '"Subtitle": "Health insights & fall safety"'  = '"Subtitle": "Health Data Bridge"'
-    '"BundleId": "dev.andernet.healthkitbridge"'   = '"BundleId": "dev.andernet.healthguard.sync"'
+    '"BundleId": "dev.andernet.healthkitbridge"'   = '"BundleId": "dev.andernet.VitalSense.sync"'
     '"Category": "Medical"'                        = '"Category": "Medical"'
   }
   Update-FileContent $metadataFile $metadataReplacements 'App metadata JSON'
@@ -184,13 +184,13 @@ Write-Host '=============' -ForegroundColor Cyan
 
 if ($DryRun) {
   Write-Host '💡 This was a dry run. To apply changes, run:' -ForegroundColor Yellow
-  Write-Host '   pwsh -File scripts/rebrand-healthguard-sync.ps1' -ForegroundColor White
+  Write-Host '   pwsh -File scripts/rebrand-VitalSense-sync.ps1' -ForegroundColor White
 } else {
   Write-Host '✅ Rebranding complete! Updated app name and bundle ID.' -ForegroundColor Green
   Write-Host ''
   Write-Host '📱 Updated App Identity:' -ForegroundColor White
-  Write-Host '   Name: HealthGuard Sync' -ForegroundColor Green
-  Write-Host '   Bundle ID: dev.andernet.healthguard.sync' -ForegroundColor Green
+  Write-Host '   Name: VitalSense Sync' -ForegroundColor Green
+  Write-Host '   Bundle ID: dev.andernet.VitalSense.sync' -ForegroundColor Green
   Write-Host '   Category: Medical' -ForegroundColor Green
   Write-Host '   Purpose: Health data sync and basic monitoring' -ForegroundColor Green
   Write-Host ''
@@ -201,4 +201,4 @@ if ($DryRun) {
 }
 
 Write-Host ''
-Write-Host '📋 For complete ecosystem plan, see: HEALTHGUARD_ECOSYSTEM_PLAN.md' -ForegroundColor Cyan
+Write-Host '📋 For complete ecosystem plan, see: VitalSense_ECOSYSTEM_PLAN.md' -ForegroundColor Cyan

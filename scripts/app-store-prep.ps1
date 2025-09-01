@@ -115,7 +115,7 @@ function New-AppStoreMetadata {
   Write-Step 'Generating App Store metadata...' 'INFO'
 
   $metadata = @{
-    AppName     = 'HealthGuard - Fall Risk Monitor'
+    AppName     = 'VitalSense - Fall Risk Monitor'
     Subtitle    = 'Health insights & fall safety'
     BundleId    = 'dev.andernet.healthkitbridge'
     Version     = '1.0.0'

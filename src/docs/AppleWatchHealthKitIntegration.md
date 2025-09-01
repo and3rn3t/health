@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the complete requirements and implementation strategy for integrating HealthGuard with Apple Watch and Apple HealthKit to enable real-time health monitoring and fall detection.
+This document outlines the complete requirements and implementation strategy for integrating VitalSense with Apple Watch and Apple HealthKit to enable real-time health monitoring and fall detection.
 
 ## Current Implementation Status
 
@@ -100,7 +100,7 @@ import BackgroundTasks
 
 class HealthDataProcessor {
     func scheduleBackgroundRefresh() {
-        let request = BGAppRefreshTaskRequest(identifier: "com.healthguard.data-sync")
+        let request = BGAppRefreshTaskRequest(identifier: "com.VitalSense.data-sync")
         request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60) // 15 minutes
 
         try? BGTaskScheduler.shared.submit(request)
@@ -126,7 +126,7 @@ import HealthKit
 import WatchKit
 
 @main
-struct HealthGuardWatchApp: App {
+struct VitalSenseWatchApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -214,7 +214,7 @@ class HealthKitWebSocketBridge {
     }
 
     func startRealTimeStreaming() {
-        // Connect to HealthGuard WebSocket server
+        // Connect to VitalSense WebSocket server
         // Stream continuous health data
         // Handle connection failures
     }

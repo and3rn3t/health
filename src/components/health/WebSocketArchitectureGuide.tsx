@@ -792,7 +792,7 @@ services:
   postgres:
     image: postgres:15
     environment:
-      POSTGRES_DB: healthguard
+      POSTGRES_DB: vitalsense
       POSTGRES_USER: healthapp
       POSTGRES_PASSWORD: \${DB_PASSWORD}
     volumes:

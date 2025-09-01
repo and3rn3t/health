@@ -744,7 +744,7 @@ export default function LiveHealthDataIntegration() {
                   <div className="flex items-center justify-between text-sm">
                     <span>Endpoint</span>
                     <code className="bg-muted rounded px-2 py-1 text-xs">
-                      wss://healthguard-live.example.com/stream
+                      wss://vitalsense-live.example.com/stream
                     </code>
                   </div>
                   <div className="flex items-center justify-between text-sm">

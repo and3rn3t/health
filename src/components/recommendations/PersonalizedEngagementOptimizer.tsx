@@ -432,7 +432,7 @@ export default function PersonalizedEngagementOptimizer({
             Personalized Optimization Recommendations
           </CardTitle>
           <CardDescription>
-            AI-powered suggestions to improve your HealthGuard experience
+            AI-powered suggestions to improve your VitalSense experience
           </CardDescription>
         </CardHeader>
         <CardContent>

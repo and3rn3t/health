@@ -1,4 +1,4 @@
-# HealthGuard: Apple Health Insights & Fall Risk Monitor - Product Requirements Document
+# VitalSense: Apple Health Insights & Fall Risk Monitor - Product Requirements Document
 
 ## Core Purpose & Success
 

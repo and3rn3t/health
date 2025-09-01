@@ -1,6 +1,6 @@
-# 🚀 HealthGuard - Quick Start Guide
+# 🚀 VitalSense - Quick Start Guide
 
-> **Get up and running in 15 minutes with the complete HealthGuard system**
+> **Get up and running in 15 minutes with the complete VitalSense system**
 
 ## ✅ Prerequisites
 

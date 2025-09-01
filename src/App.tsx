@@ -310,7 +310,7 @@ function App() {
                   <Shield className="text-primary-foreground h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-foreground font-semibold">HealthGuard</h2>
+                  <h2 className="text-foreground font-semibold">VitalSense</h2>
                   <p className="text-muted-foreground text-xs">
                     Health Monitor
                   </p>
@@ -849,7 +849,7 @@ function App() {
                         className="flex cursor-pointer items-center gap-1"
                       >
                         <House className="h-4 w-4" />
-                        HealthGuard
+                        VitalSense
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />

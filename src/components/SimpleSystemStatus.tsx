@@ -158,7 +158,7 @@ const SystemStatusPanel: React.FC = () => {
             🧪 System Status Panel - Working!
           </CardTitle>
           <CardDescription className="text-blue-600">
-            ✅ This panel is successfully loaded and monitoring your HealthGuard
+            ✅ This panel is successfully loaded and monitoring your VitalSense
             system in real-time!
             <br />
             🔄 API health checks happen every 10 seconds

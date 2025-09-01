@@ -207,9 +207,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Security**: Report security issues via [SECURITY.md](SECURITY.md)
 - **Discussions**: [GitHub Discussions](https://github.com/and3rn3t/health/discussions) for questions and ideas
 
-## 🏥 About HealthGuard
+## 🏥 About VitalSense
 
-HealthGuard represents the next generation of proactive health monitoring, combining the power of Apple's HealthKit with advanced analytics and machine learning to provide unprecedented insights into health trends and fall risk assessment. Built with privacy-first principles and clinical-grade security, it empowers individuals and their care teams to make informed decisions about health and safety.
+VitalSense represents the next generation of proactive health monitoring, combining the power of Apple's HealthKit with advanced analytics and machine learning to provide unprecedented insights into health trends and fall risk assessment. Built with privacy-first principles and clinical-grade security, it empowers individuals and their care teams to make informed decisions about health and safety.
 
 **Key Principles:**
 

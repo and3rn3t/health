@@ -194,4 +194,4 @@ This application handles sensitive health data and implements:
 
 ---
 
-**🏥 HealthGuard** - Empowering proactive health management through intelligent monitoring and emergency response.
+**🏥 VitalSense** - Empowering proactive health management through intelligent monitoring and emergency response.

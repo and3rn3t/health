@@ -93,7 +93,7 @@ export default function UptimeMonitoringSystem() {
           uptime: 99.98,
           responseTime: 145,
           lastChecked: new Date().toISOString(),
-          description: 'Main HealthGuard web application',
+          description: 'Main VitalSense web application',
         },
         {
           component: 'Health Data API',
