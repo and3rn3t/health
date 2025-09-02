@@ -213,6 +213,9 @@ app.use('/api/*', async (c, next) => {
 
 // Serve static assets via Wrangler [assets] binding; fallback to next on 404
 app.use('/*', async (c, next) => {
+  // Only try to serve assets for GET requests to avoid consuming request body
+  if (c.req.method !== 'GET') return next();
+
   const res = await c.env.ASSETS?.fetch(c.req.raw);
   if (!res || res.status === 404) return next();
   return res;
@@ -225,9 +228,7 @@ app.get('/health', (c) => {
     timestamp: new Date().toISOString(),
     environment: c.env.ENVIRONMENT || 'unknown',
   });
-});
-
-// WebSocket endpoint for real-time health data (not implemented in Worker yet)
+}); // WebSocket endpoint for real-time health data (not implemented in Worker yet)
 app.get('/ws', (c) => {
   return c.text(
     'WebSocket endpoint not available on Worker. Use local bridge server.',
@@ -344,14 +345,6 @@ app.get('/api/_audit', async (c) => {
 
 // Issue short-lived JWTs for device/WebSocket auth
 app.post('/api/device/auth', async (c) => {
-  // Debug: log environment info
-  console.log('[DEBUG] Environment:', c.env.ENVIRONMENT);
-  console.log('[DEBUG] Has DEVICE_JWT_SECRET:', !!c.env.DEVICE_JWT_SECRET);
-  console.log(
-    '[DEBUG] Request headers:',
-    Object.fromEntries(c.req.raw.headers)
-  );
-
   // Authentication is already handled by middleware
   const secret = c.env.DEVICE_JWT_SECRET;
   if (!secret) return c.json({ error: 'not_configured' }, 500);
@@ -368,10 +361,8 @@ app.post('/api/device/auth', async (c) => {
   let parsed: z.infer<typeof bodySchema>;
   try {
     const json = await c.req.json();
-    console.log('[DEBUG] Device auth request body:', JSON.stringify(json));
     const res = bodySchema.safeParse(json);
     if (!res.success) {
-      console.log('[DEBUG] Validation failed:', res.error.flatten());
       return c.json(
         { error: 'validation_error', details: res.error.flatten() },
         400
@@ -379,7 +370,6 @@ app.post('/api/device/auth', async (c) => {
     }
     parsed = res.data;
   } catch (e) {
-    console.log('[DEBUG] JSON parse failed:', e.message);
     return c.json({ error: 'invalid_json' }, 400);
   }
 
