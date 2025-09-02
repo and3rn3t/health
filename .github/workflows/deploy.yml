@@ -32,6 +32,8 @@ jobs:
         run: npm run lint
 
       - name: Build project
+        env:
+          ROLLUP_FORCE_JS: true
         run: npm run build
 
       - name: Verify build outputs

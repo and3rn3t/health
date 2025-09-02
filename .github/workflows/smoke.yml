@@ -25,6 +25,8 @@ jobs:
           npm install rollup@3.29.5 --save-dev --no-save
 
       - name: Build application
+        env:
+          ROLLUP_FORCE_JS: true
         run: npm run build
 
       - name: Start Worker (wrangler dev --local)
