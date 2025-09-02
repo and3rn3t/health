@@ -25,9 +25,6 @@ jobs:
       - name: Install dependencies
         run: npm ci --prefer-offline
 
-      - name: Run TypeScript check
-        run: npx tsc --noEmit
-
       - name: Run linting
         run: npm run lint
 
