@@ -3,6 +3,7 @@
  * This file handles the worker logic and serves the built application
  */
 
+import { HealthDataProcessor } from '@/lib/enhancedHealthProcessor';
 import {
   getTtlSecondsForType,
   purgeOldHealthData,
@@ -21,6 +22,7 @@ import {
   writeAudit,
 } from '@/lib/security';
 import {
+  healthMetricBatchSchema,
   healthMetricSchema,
   processedHealthDataSchema,
   type ProcessedHealthData,
@@ -413,6 +415,376 @@ app.post('/api/_purge', async (c) => {
   const res = await purgeOldHealthData(c.env, kv, { limit, prefix });
   return c.json({ ok: true, ...res });
 });
+
+// Enhanced health data processing endpoints
+
+// Process raw health metrics with analytics
+app.post('/api/health-data/process', async (c) => {
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'invalid_json' }, 400);
+  }
+
+  const parsed = healthMetricSchema.safeParse(body);
+  if (!parsed.success) {
+    return c.json(
+      { error: 'validation_error', details: parsed.error.flatten() },
+      400
+    );
+  }
+
+  try {
+    // Get historical data for context
+    const historicalData = await getHistoricalData(
+      c,
+      parsed.data.type,
+      parsed.data.userId
+    );
+
+    // Process the metric with enhanced analytics
+    const processedData = await HealthDataProcessor.processHealthMetric(
+      parsed.data,
+      historicalData
+    );
+
+    // Store the processed data
+    const kv = c.env.HEALTH_KV;
+    if (kv) {
+      const key = `health:${processedData.type}:${processedData.processedAt}`;
+      const encKey = c.env.ENC_KEY ? await getAesKey(c.env.ENC_KEY) : null;
+      const payload = encKey
+        ? await encryptJSON(encKey, processedData)
+        : JSON.stringify(processedData);
+      const ttl = getTtlSecondsForType(processedData.type, c.env.ENVIRONMENT);
+      await kv.put(key, payload, { expirationTtl: ttl });
+    }
+
+    // Audit trail
+    const corr = c.res.headers.get('X-Correlation-Id') || '';
+    await writeAudit(c.env as unknown as Parameters<typeof writeAudit>[0], {
+      type: 'health_data_processed',
+      actor: 'enhanced_processor',
+      resource: 'kv:health',
+      meta: {
+        type: processedData.type,
+        correlationId: corr,
+        healthScore: processedData.healthScore,
+        fallRisk: processedData.fallRisk,
+        hasAlert: !!processedData.alert,
+      },
+    });
+
+    return c.json(
+      {
+        ok: true,
+        data: processedData,
+        analytics: {
+          healthScore: processedData.healthScore,
+          fallRisk: processedData.fallRisk,
+          anomalyScore: processedData.anomalyScore,
+          dataQuality: processedData.dataQuality,
+          alert: processedData.alert,
+        },
+      },
+      201
+    );
+  } catch (error) {
+    log.error('Health data processing failed', {
+      error: (error as Error).message,
+      metric: parsed.data.type,
+    });
+    return c.json({ error: 'processing_failed' }, 500);
+  }
+});
+
+// Process batch of health metrics
+app.post('/api/health-data/batch', async (c) => {
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'invalid_json' }, 400);
+  }
+
+  const parsed = healthMetricBatchSchema.safeParse(body);
+  if (!parsed.success) {
+    return c.json(
+      { error: 'validation_error', details: parsed.error.flatten() },
+      400
+    );
+  }
+
+  try {
+    const batchResults: ProcessedHealthData[] = [];
+    const errors: string[] = [];
+
+    for (const metric of parsed.data.metrics) {
+      try {
+        // Get historical data for each metric type
+        const historicalData = await getHistoricalData(
+          c,
+          metric.type,
+          metric.userId
+        );
+
+        // Process the metric
+        const processedData = await HealthDataProcessor.processHealthMetric(
+          metric,
+          historicalData
+        );
+
+        // Store the processed data
+        const kv = c.env.HEALTH_KV;
+        if (kv) {
+          const key = `health:${processedData.type}:${processedData.processedAt}`;
+          const encKey = c.env.ENC_KEY ? await getAesKey(c.env.ENC_KEY) : null;
+          const payload = encKey
+            ? await encryptJSON(encKey, processedData)
+            : JSON.stringify(processedData);
+          const ttl = getTtlSecondsForType(
+            processedData.type,
+            c.env.ENVIRONMENT
+          );
+          await kv.put(key, payload, { expirationTtl: ttl });
+        }
+
+        batchResults.push(processedData);
+      } catch (metricError) {
+        errors.push(`${metric.type}: ${(metricError as Error).message}`);
+      }
+    }
+
+    // Audit trail for batch
+    const corr = c.res.headers.get('X-Correlation-Id') || '';
+    await writeAudit(c.env as unknown as Parameters<typeof writeAudit>[0], {
+      type: 'health_data_batch_processed',
+      actor: 'enhanced_processor',
+      resource: 'kv:health',
+      meta: {
+        correlationId: corr,
+        totalMetrics: parsed.data.metrics.length,
+        successCount: batchResults.length,
+        errorCount: errors.length,
+      },
+    });
+
+    return c.json(
+      {
+        ok: true,
+        processed: batchResults.length,
+        total: parsed.data.metrics.length,
+        data: batchResults,
+        errors: errors.length > 0 ? errors : undefined,
+      },
+      201
+    );
+  } catch (error) {
+    log.error('Batch processing failed', {
+      error: (error as Error).message,
+      batchSize: parsed.data.metrics.length,
+    });
+    return c.json({ error: 'batch_processing_failed' }, 500);
+  }
+});
+
+// Get health analytics summary
+app.get('/api/health-data/analytics/:userId', async (c) => {
+  const userId = c.req.param('userId');
+  if (!userId) {
+    return c.json({ error: 'user_id_required' }, 400);
+  }
+
+  try {
+    const kv = c.env.HEALTH_KV;
+    if (!kv || typeof kv.list !== 'function' || typeof kv.get !== 'function') {
+      return c.json({ ok: true, analytics: null });
+    }
+
+    // Get recent health data for analytics
+    const prefix = 'health:';
+    const listing = await kv.list({ prefix, limit: 100 });
+    const encKeyB64 = c.env.ENC_KEY;
+    const keyObj = encKeyB64 ? await getAesKey(encKeyB64) : null;
+
+    const recentData: ProcessedHealthData[] = [];
+    for (const k of listing.keys) {
+      const raw = await kv.get(k.name);
+      if (!raw) continue;
+
+      const objUnknown = keyObj
+        ? await (async () => {
+            try {
+              return await decryptJSON<unknown>(keyObj, raw);
+            } catch {
+              return null;
+            }
+          })()
+        : (() => {
+            try {
+              return JSON.parse(raw) as unknown;
+            } catch {
+              return null;
+            }
+          })();
+
+      if (!objUnknown) continue;
+
+      const parsedRow = processedHealthDataSchema.safeParse(objUnknown);
+      if (!parsedRow.success) continue;
+
+      const obj = parsedRow.data;
+      if (obj.source.userId === userId) {
+        recentData.push(obj);
+      }
+    }
+
+    // Calculate analytics summary
+    const analytics = calculateHealthAnalytics(recentData);
+
+    return c.json({ ok: true, analytics });
+  } catch (error) {
+    log.error('Analytics calculation failed', {
+      error: (error as Error).message,
+      userId,
+    });
+    return c.json({ error: 'analytics_failed' }, 500);
+  }
+});
+
+// Helper function to get historical data
+async function getHistoricalData(
+  c: Context<{ Bindings: Env }>,
+  metricType: string,
+  userId?: string
+): Promise<ProcessedHealthData[]> {
+  const kv = (c.env as Env).HEALTH_KV;
+  if (
+    !kv ||
+    !userId ||
+    typeof kv.list !== 'function' ||
+    typeof kv.get !== 'function'
+  )
+    return [];
+
+  try {
+    const prefix = `health:${metricType}:`;
+    const listing = await kv.list({ prefix, limit: 30 }); // Last 30 readings
+    const encKeyB64 = (c.env as Env).ENC_KEY;
+    const keyObj = encKeyB64 ? await getAesKey(encKeyB64) : null;
+
+    const historicalData: ProcessedHealthData[] = [];
+    for (const k of listing.keys) {
+      const raw = await kv.get(k.name);
+      if (!raw) continue;
+
+      const objUnknown = keyObj
+        ? await (async () => {
+            try {
+              return await decryptJSON<unknown>(keyObj, raw);
+            } catch {
+              return null;
+            }
+          })()
+        : (() => {
+            try {
+              return JSON.parse(raw) as unknown;
+            } catch {
+              return null;
+            }
+          })();
+
+      if (!objUnknown) continue;
+
+      const parsedRow = processedHealthDataSchema.safeParse(objUnknown);
+      if (!parsedRow.success) continue;
+
+      const obj = parsedRow.data;
+      if (obj.source.userId === userId) {
+        historicalData.push(obj);
+      }
+    }
+
+    return historicalData.sort(
+      (a, b) =>
+        new Date(b.processedAt).getTime() - new Date(a.processedAt).getTime()
+    );
+  } catch {
+    return [];
+  }
+}
+
+// Helper function to calculate health analytics summary
+function calculateHealthAnalytics(data: ProcessedHealthData[]) {
+  const now = Date.now();
+  const last24h = data.filter(
+    (d) => now - new Date(d.processedAt).getTime() < 24 * 60 * 60 * 1000
+  );
+  const last7d = data.filter(
+    (d) => now - new Date(d.processedAt).getTime() < 7 * 24 * 60 * 60 * 1000
+  );
+
+  const averageHealthScore =
+    data.length > 0
+      ? data
+          .filter((d) => d.healthScore !== undefined)
+          .reduce((sum, d) => sum + (d.healthScore || 0), 0) /
+        data.filter((d) => d.healthScore !== undefined).length
+      : 0;
+
+  const criticalAlerts = data.filter(
+    (d) => d.alert?.level === 'critical'
+  ).length;
+  const warningAlerts = data.filter((d) => d.alert?.level === 'warning').length;
+
+  const fallRiskDistribution = {
+    low: data.filter((d) => d.fallRisk === 'low').length,
+    moderate: data.filter((d) => d.fallRisk === 'moderate').length,
+    high: data.filter((d) => d.fallRisk === 'high').length,
+    critical: data.filter((d) => d.fallRisk === 'critical').length,
+  };
+
+  const metricTypes = [...new Set(data.map((d) => d.type))];
+  const dataQualityAverage =
+    data.length > 0 && data.some((d) => d.dataQuality)
+      ? data
+          .filter((d) => d.dataQuality)
+          .reduce(
+            (sum, d) =>
+              sum +
+              (d.dataQuality!.completeness +
+                d.dataQuality!.accuracy +
+                d.dataQuality!.timeliness +
+                d.dataQuality!.consistency) /
+                4,
+            0
+          ) / data.filter((d) => d.dataQuality).length
+      : 0;
+
+  return {
+    totalDataPoints: data.length,
+    last24Hours: last24h.length,
+    last7Days: last7d.length,
+    averageHealthScore: Math.round(averageHealthScore * 10) / 10,
+    alerts: {
+      critical: criticalAlerts,
+      warning: warningAlerts,
+      total: criticalAlerts + warningAlerts,
+    },
+    fallRiskDistribution,
+    metricTypes,
+    dataQualityScore: Math.round(dataQualityAverage * 10) / 10,
+    lastUpdated:
+      data.length > 0
+        ? data.sort(
+            (a, b) =>
+              new Date(b.processedAt).getTime() -
+              new Date(a.processedAt).getTime()
+          )[0].processedAt
+        : null,
+  };
+}
 
 // API routes for health data
 app.get('/api/health-data', async (c) => {

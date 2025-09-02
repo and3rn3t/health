@@ -78,10 +78,10 @@ class ApiClient: ObservableObject {
     }
 
     func sendHealthData(_ healthData: HealthData) async -> Bool {
-        print("📤 Sending health data via API: \(healthData.type)")
+        print("📤 Sending health data with enhanced processing: \(healthData.type)")
 
         let config = AppConfig.shared
-        guard let url = URL(string: "\(config.apiBaseURL)/health/data") else {
+        guard let url = URL(string: "\(config.apiBaseURL)/health-data/process") else {
             print("❌ Invalid API URL")
             return false
         }
@@ -92,7 +92,9 @@ class ApiClient: ObservableObject {
             "unit": healthData.unit,
             "timestamp": ISO8601DateFormatter().string(from: healthData.timestamp),
             "deviceId": healthData.deviceId,
-            "userId": healthData.userId
+            "userId": healthData.userId,
+            "source": "Apple HealthKit",
+            "confidence": 0.95
         ]
 
         var request = URLRequest(url: url)
@@ -102,14 +104,103 @@ class ApiClient: ObservableObject {
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
 
-            let (_, response) = try await session.data(for: request)
+            let (data, response) = try await session.data(for: request)
 
             if let httpResponse = response as? HTTPURLResponse {
-                print("📤 Health data API response: \(httpResponse.statusCode)")
+                print("📤 Enhanced processing API response: \(httpResponse.statusCode)")
+
+                // Parse the enhanced response to get analytics
+                if httpResponse.statusCode == 201, let responseData = data {
+                    if let json = try? JSONSerialization.jsonObject(with: responseData) as? [String: Any],
+                       let analytics = json["analytics"] as? [String: Any] {
+
+                        if let healthScore = analytics["healthScore"] as? Double {
+                            print("📊 Health Score: \(healthScore)")
+                        }
+
+                        if let fallRisk = analytics["fallRisk"] as? String {
+                            print("🚨 Fall Risk: \(fallRisk)")
+                        }
+
+                        if let alert = analytics["alert"] as? [String: Any],
+                           let level = alert["level"] as? String,
+                           let message = alert["message"] as? String {
+                            print("⚠️ Alert (\(level)): \(message)")
+                        }
+                    }
+                }
+
                 return httpResponse.statusCode == 200 || httpResponse.statusCode == 201
             }
         } catch {
-            print("❌ Health data API request failed: \(error)")
+            print("❌ Enhanced processing API request failed: \(error)")
+        }
+
+        return false
+    }
+
+    func sendHealthDataBatch(_ healthDataArray: [HealthData]) async -> Bool {
+        print("📤 Sending health data batch with \(healthDataArray.count) metrics")
+
+        let config = AppConfig.shared
+        guard let url = URL(string: "\(config.apiBaseURL)/health-data/batch") else {
+            print("❌ Invalid batch API URL")
+            return false
+        }
+
+        let metrics = healthDataArray.map { healthData in
+            return [
+                "type": healthData.type,
+                "value": healthData.value,
+                "unit": healthData.unit,
+                "timestamp": ISO8601DateFormatter().string(from: healthData.timestamp),
+                "deviceId": healthData.deviceId,
+                "userId": healthData.userId,
+                "source": "Apple HealthKit",
+                "confidence": 0.95
+            ]
+        }
+
+        let requestBody: [String: Any] = [
+            "metrics": metrics,
+            "uploadedAt": ISO8601DateFormatter().string(from: Date()),
+            "deviceInfo": [
+                "deviceId": healthDataArray.first?.deviceId ?? "unknown",
+                "deviceType": "iOS",
+                "osVersion": UIDevice.current.systemVersion,
+                "appVersion": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+            ]
+        ]
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+
+            let (data, response) = try await session.data(for: request)
+
+            if let httpResponse = response as? HTTPURLResponse {
+                print("📤 Batch processing API response: \(httpResponse.statusCode)")
+
+                if httpResponse.statusCode == 201, let responseData = data {
+                    if let json = try? JSONSerialization.jsonObject(with: responseData) as? [String: Any] {
+                        if let processed = json["processed"] as? Int,
+                           let total = json["total"] as? Int {
+                            print("📊 Batch processed: \(processed)/\(total) metrics")
+                        }
+
+                        if let errors = json["errors"] as? [String], !errors.isEmpty {
+                            print("⚠️ Batch errors: \(errors.joined(separator: ", "))")
+                        }
+                    }
+                }
+
+                return httpResponse.statusCode == 200 || httpResponse.statusCode == 201
+            }
+        } catch {
+            print("❌ Batch processing API request failed: \(error)")
         }
 
         return false

@@ -87,6 +87,7 @@ import AdvancedAppleWatchIntegration from '@/components/health/AdvancedAppleWatc
 import AppleWatchIntegrationChecklist from '@/components/health/AppleWatchIntegrationChecklist';
 import ComprehensiveAppleHealthKitGuide from '@/components/health/ComprehensiveAppleHealthKitGuide';
 import EmergencyTriggerButton from '@/components/health/EmergencyTriggerButton';
+import { EnhancedHealthDataUpload } from '@/components/health/EnhancedHealthDataUpload';
 import EnhancedHealthInsightsDashboard from '@/components/health/EnhancedHealthInsightsDashboard';
 import HealthAlertsConfig from '@/components/health/HealthAlertsConfig';
 import PredictiveHealthAlerts from '@/components/health/PredictiveHealthAlerts';
@@ -243,6 +244,7 @@ function App() {
     ],
     management: [
       { id: 'contacts', label: 'Emergency Contacts', icon: Users },
+      { id: 'enhanced-upload', label: 'Enhanced Upload', icon: CloudUpload },
       { id: 'import', label: 'Import Data', icon: Upload },
       { id: 'export', label: 'Export Data', icon: Upload },
       { id: 'devices', label: 'Connected Devices', icon: Smartphone },
@@ -1173,6 +1175,20 @@ function App() {
                     contacts={emergencyContacts || []}
                     setContacts={setEmergencyContacts}
                   />
+                )}
+                {activeTab === 'enhanced-upload' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Enhanced Health Data Processing</CardTitle>
+                      <CardDescription>
+                        Submit health metrics for advanced analytics, trend
+                        analysis, and anomaly detection.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <EnhancedHealthDataUpload />
+                    </CardContent>
+                  </Card>
                 )}
                 {activeTab === 'import' && (
                   <Card>
