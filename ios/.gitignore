@@ -5,6 +5,7 @@
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
 *.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcuserdata
 DerivedData/
 build/
 .build/

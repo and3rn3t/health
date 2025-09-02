@@ -1,0 +1,62 @@
+# ESLint ignore patterns
+# These complement the ignores in eslint.config.js
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+dist-worker/
+build/
+.next/
+out/
+.cache/
+coverage/
+
+# Cloudflare Workers
+.wrangler/
+worker-configuration.d.ts
+
+# iOS specific
+ios/build/
+ios/.build/
+ios/DerivedData/
+ios/Pods/
+
+# Server/Node.js
+server/node_modules/
+server/dist/
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
+.tsbuildinfo
+
+# Environment files
+.env*
+
+# Generated files
+**/*.generated.*
+**/*.min.js
+**/*.bundle.js
+
+# Test outputs
+test-results/
+test-output/
+.nyc_output/
+
+# VS Code and IDE
+.vscode/settings.json.backup
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "kill": "fuser -k 5000/tcp",
-    "build": "tsc -b --noCheck && vite build && vite build --config vite.worker.config.ts",
-    "build:app": "tsc -b --noCheck && vite build",
+    "build": "tsc --noEmit && vite build && vite build --config vite.worker.config.ts",
+    "build:app": "tsc --noEmit && vite build",
     "build:worker": "vite build --config vite.worker.config.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -158,6 +158,10 @@
     "vite": "^6.3.5",
     "vitest": "^2.1.4",
     "miniflare": "^3.2024.11.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   },
   "workspaces": {
     "packages": [

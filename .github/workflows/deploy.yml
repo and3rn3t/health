@@ -19,17 +19,25 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline
+
+      - name: Run TypeScript check
+        run: npx tsc --noEmit
 
       - name: Run linting
         run: npm run lint
 
       - name: Build project
         run: npm run build
+
+      - name: Verify build outputs
+        run: |
+          ls -la dist/
+          ls -la dist-worker/
 
   deploy-dev:
     if: github.ref == 'refs/heads/develop'
@@ -43,11 +51,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline
 
       - name: Build for development
         run: npm run build
@@ -60,6 +68,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --env development
+          packageManager: npm
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
@@ -73,11 +82,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline
 
       - name: Build for production
         run: npm run build
@@ -90,3 +99,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --env production
+          packageManager: npm

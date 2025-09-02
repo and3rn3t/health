@@ -37,6 +37,7 @@ dist-ssr
 # Cloudflare Workers
 .wrangler/
 wrangler.toml.bak
+wrangler.*.toml.bak
 worker-configuration.d.ts
 dist-worker/
 
@@ -84,3 +85,24 @@ pids
 .file-manifest
 .devcontainer/
 .spark-workbench-id
+
+# npm and package management
+.npmrc.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# TypeScript
+*.tsbuildinfo
+.tsbuildinfo
+
+# SonarLint
+.sonarlint/
+!.sonarlint/settings.json
+
+# Health monitoring specific
+*.health-data
+*.vitals-backup
+test-health-data.json.backup

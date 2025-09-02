@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -38,14 +39,14 @@ interface Contact {
 }
 
 interface EmergencyContactsProps {
-  contacts: Contact[];
-  setContacts: (contacts: Contact[]) => void;
+  readonly contacts: Contact[];
+  readonly setContacts: (contacts: Contact[]) => void;
 }
 
 export default function EmergencyContacts({
   contacts,
   setContacts,
-}: EmergencyContactsProps) {
+}: Readonly<EmergencyContactsProps>) {
   const [isAddingContact, setIsAddingContact] = useState(false);
   const [newContact, setNewContact] = useState({
     name: '',
@@ -209,17 +210,15 @@ export default function EmergencyContacts({
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       id="is-primary"
                       checked={newContact.isPrimary}
-                      onChange={(e) =>
+                      onCheckedChange={(checked) =>
                         setNewContact({
                           ...newContact,
-                          isPrimary: e.target.checked,
+                          isPrimary: checked === true,
                         })
                       }
-                      className="h-4 w-4"
                     />
                     <Label htmlFor="is-primary" className="text-sm">
                       Set as primary contact (first to be notified)
