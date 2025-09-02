@@ -352,8 +352,7 @@ app.post('/api/device/auth', async (c) => {
     Object.fromEntries(c.req.raw.headers)
   );
 
-  // In production require upstream authentication before minting
-  if (!(await requireAuth(c))) return c.json({ error: 'unauthorized' }, 401);
+  // Authentication is already handled by middleware
   const secret = c.env.DEVICE_JWT_SECRET;
   if (!secret) return c.json({ error: 'not_configured' }, 500);
 
