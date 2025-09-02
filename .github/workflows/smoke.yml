@@ -21,12 +21,8 @@ jobs:
         run: |
           rm -rf package-lock.json node_modules
           npm install
-          # Install compatible rollup version that doesn't require native binaries
-          npm install rollup@3.29.5 --save-dev --no-save
 
       - name: Build application
-        env:
-          ROLLUP_FORCE_JS: true
         run: npm run build
 
       - name: Start Worker (wrangler dev --local)

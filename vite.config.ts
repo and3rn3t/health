@@ -22,10 +22,4 @@ export default defineConfig({
       '@': resolve(projectRoot, 'src'),
     },
   },
-  build: {
-    rollupOptions: {
-      // Force rollup to use JS implementation
-      maxParallelFileOps: 1,
-    },
-  },
 });
