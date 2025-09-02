@@ -25,6 +25,7 @@ jobs:
         run: |
           rm -rf package-lock.json node_modules
           npm install
+          npm install @rollup/rollup-linux-x64-gnu --no-save
 
       - name: Run linting
         run: npm run lint

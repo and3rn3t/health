@@ -21,6 +21,7 @@ jobs:
         run: |
           rm -rf package-lock.json node_modules
           npm install
+          npm install @rollup/rollup-linux-x64-gnu --no-save
 
       - name: Build application
         run: npm run build
