@@ -25,7 +25,8 @@ jobs:
         run: |
           rm -rf package-lock.json node_modules
           npm install
-          npm install @rollup/rollup-linux-x64-gnu --no-save
+          # Install compatible rollup version that doesn't require native binaries
+          npm install rollup@3.29.5 --save-dev --no-save
 
       - name: Run linting
         run: npm run lint
