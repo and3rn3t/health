@@ -21,8 +21,10 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Clean and install dependencies
+        run: |
+          rm -rf package-lock.json node_modules
+          npm install
 
       - name: Run linting
         run: npm run lint
