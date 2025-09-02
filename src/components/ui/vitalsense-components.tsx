@@ -118,7 +118,7 @@ const getStatusColor = (
       return (
         HealthColorMap.fallRisk[
           status as keyof typeof HealthColorMap.fallRisk
-        ] || getVitalSenseClasses.text.warning
+        ] || getVitalSenseClasses.text.AlertTriangle
       );
 
     default:
@@ -181,7 +181,7 @@ interface VitalSenseBrandHeaderProps {
   subtitle?: string;
   icon?: React.ReactNode;
   children?: React.ReactNode;
-  variant?: 'primary' | 'teal' | 'success' | 'warning' | 'error';
+  variant?: 'primary' | 'teal' | 'success' | 'AlertTriangle' | 'error';
 }
 
 export function VitalSenseBrandHeader({
@@ -205,11 +205,11 @@ export function VitalSenseBrandHeader({
           text: getVitalSenseClasses.text.successContrast,
           accent: getVitalSenseClasses.text.success,
         };
-      case 'warning':
+      case 'AlertTriangle':
         return {
-          bg: getVitalSenseClasses.bg.warning,
+          bg: getVitalSenseClasses.bg.AlertTriangle,
           text: getVitalSenseClasses.text.warningContrast,
-          accent: getVitalSenseClasses.text.warning,
+          accent: getVitalSenseClasses.text.AlertTriangle,
         };
       case 'error':
         return {

@@ -11,21 +11,21 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  DeviceMobile,
+  Smartphone,
   WifiHigh,
   Cloud,
-  Pulse,
-  Gear,
-  Lightning,
+  Activity,
+  Settings,
+  Zap,
   Shield,
-  Warning,
+  AlertTriangle,
   CheckCircle,
   Clock,
-  BellRinging,
+  Bell,
   Heart,
   Activity,
   Phone,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 
 interface ToolingRequirement {
   name: string;
@@ -163,7 +163,7 @@ const monitoringFlow: MonitoringFlow[] = [
       'ML model analyzes motion data to distinguish falls from normal activities',
     technology: 'Core ML + Custom Algorithm',
     timing: 'Real-time (~100ms)',
-    icon: <Pulse className="h-5 w-5" />,
+    icon: <Activity className="h-5 w-5" />,
   },
   {
     step: 3,
@@ -171,7 +171,7 @@ const monitoringFlow: MonitoringFlow[] = [
     description: 'System confirms fall detection and prompts user for response',
     technology: 'Local Processing + UI Alert',
     timing: '1-2 seconds',
-    icon: <Warning className="h-5 w-5" />,
+    icon: <AlertTriangle className="h-5 w-5" />,
   },
   {
     step: 4,
@@ -189,7 +189,7 @@ const monitoringFlow: MonitoringFlow[] = [
       'Precise GPS coordinates shared with emergency contacts and responders',
     technology: 'Core Location + Cloud Sync',
     timing: 'Immediate',
-    icon: <Lightning className="h-5 w-5" />,
+    icon: <Zap className="h-5 w-5" />,
   },
   {
     step: 6,
@@ -228,9 +228,9 @@ export default function FallMonitoringTooling() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'hardware':
-        return <DeviceMobile className="h-4 w-4" />;
+        return <Smartphone className="h-4 w-4" />;
       case 'software':
-        return <Gear className="h-4 w-4" />;
+        return <Settings className="h-4 w-4" />;
       case 'service':
         return <Cloud className="h-4 w-4" />;
       default:
@@ -241,7 +241,7 @@ export default function FallMonitoringTooling() {
   return (
     <div className="space-y-6">
       <Alert className="border-blue-200 bg-blue-50">
-        <Warning className="h-4 w-4 text-blue-600" />
+        <AlertTriangle className="h-4 w-4 text-blue-600" />
         <AlertDescription className="text-blue-800">
           <strong>
             Real-time fall monitoring requires comprehensive infrastructure.
@@ -286,7 +286,7 @@ export default function FallMonitoringTooling() {
                   size="sm"
                   onClick={() => setSelectedCategory('hardware')}
                 >
-                  <DeviceMobile className="mr-1 h-4 w-4" />
+                  <Smartphone className="mr-1 h-4 w-4" />
                   Hardware
                 </Button>
                 <Button
@@ -296,7 +296,7 @@ export default function FallMonitoringTooling() {
                   size="sm"
                   onClick={() => setSelectedCategory('software')}
                 >
-                  <Gear className="mr-1 h-4 w-4" />
+                  <Settings className="mr-1 h-4 w-4" />
                   Software
                 </Button>
                 <Button
@@ -349,7 +349,7 @@ export default function FallMonitoringTooling() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Lightning className="h-5 w-5" />
+                <Zap className="h-5 w-5" />
                 Fall Detection Workflow
               </CardTitle>
               <CardDescription>
@@ -382,7 +382,7 @@ export default function FallMonitoringTooling() {
                         {step.description}
                       </p>
                       <div className="flex items-center gap-2">
-                        <Gear className="text-muted-foreground h-4 w-4" />
+                        <Settings className="text-muted-foreground h-4 w-4" />
                         <span className="text-sm font-medium">
                           {step.technology}
                         </span>
@@ -432,7 +432,7 @@ export default function FallMonitoringTooling() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Lightning className="h-5 w-5" />
+                  <Zap className="h-5 w-5" />
                   Phase 2: Advanced Monitoring
                 </CardTitle>
               </CardHeader>
@@ -496,14 +496,14 @@ export default function FallMonitoringTooling() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <BellRinging className="h-5 w-5" />
+                  <Bell className="h-5 w-5" />
                   Critical Considerations
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <Alert>
-                    <Warning className="h-4 w-4" />
+                    <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>
                       <strong>Medical Device Regulations:</strong> Fall
                       detection systems may require FDA approval for medical

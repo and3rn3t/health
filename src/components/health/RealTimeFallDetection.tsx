@@ -25,9 +25,9 @@ import {
   Phone,
   Heart,
   Zap,
-  TrendUp,
+  TrendingUp,
   Wifi,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { toast } from 'sonner';
 import {
   LineChart,
@@ -410,7 +410,7 @@ export default function RealTimeFallDetection() {
                   connectionStatus === 'connected'
                     ? 'bg-green-500'
                     : connectionStatus === 'connecting'
-                      ? 'animate-pulse bg-yellow-500'
+                      ? 'animate-Activity bg-yellow-500'
                       : 'bg-gray-400'
                 }`}
               />
@@ -547,7 +547,7 @@ export default function RealTimeFallDetection() {
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2">
-                    <TrendUp className="h-4 w-4" />
+                    <TrendingUp className="h-4 w-4" />
                     Gyroscope
                   </CardTitle>
                 </CardHeader>

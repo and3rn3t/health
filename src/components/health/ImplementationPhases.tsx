@@ -19,17 +19,17 @@ import {
   Database,
   Shield,
   Brain,
-  Pulse,
-  Warning,
+  Activity,
+  AlertTriangle,
   Users,
   Monitor,
   Smartphone,
-  CloudArrowUp,
-  GearSix,
+  CloudUpload,
+  Settings,
   Target,
-  Lightning,
+  Zap,
   Star,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import Phase1Summary from '@/components/health/Phase1Summary';
 
 interface PhaseDetail {
@@ -309,7 +309,7 @@ const implementationPhases: PhaseDetail[] = [
       'Privacy concerns with cameras',
       'Installation complexity',
     ],
-    icon: <GearSix className="h-5 w-5" />,
+    icon: <Settings className="h-5 w-5" />,
   },
   {
     id: 'phase8',
@@ -662,7 +662,7 @@ export default function ImplementationPhases() {
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                          <Warning className="h-4 w-4" />
+                          <AlertTriangle className="h-4 w-4" />
                           Risk Factors
                         </CardTitle>
                       </CardHeader>

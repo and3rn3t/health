@@ -26,21 +26,21 @@ import {
   Bell,
   Brain,
   Clock,
-  CloudUpload as CloudArrowUp,
+  CloudUpload as CloudUpload,
   Code,
-  Settings as Gear,
+  Settings as Settings,
   Heart,
   Home as House,
   Lightbulb,
   Menu as List,
-  Search as MagnifyingGlass,
+  Search as Search,
   Monitor,
   Moon,
   Map as Roadmap,
   Share,
   Shield,
-  Sparkle,
-  Stethoscope,
+  Sparkles,
+  Heart,
   Sun,
   Target,
   TrendingUp,
@@ -191,11 +191,11 @@ function App() {
   const navigationItems = {
     main: [
       { id: 'dashboard', label: 'Dashboard', icon: Heart },
-      { id: 'vitalsense-brand', label: 'Brand Colors', icon: Sparkle },
+      { id: 'vitalsense-brand', label: 'Brand Colors', icon: Sparkles },
       { id: 'insights', label: 'Insights', icon: TrendingUp },
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'usage-analytics', label: 'Usage Analytics', icon: Brain },
-      { id: 'usage-predictions', label: 'Usage Predictions', icon: Sparkle },
+      { id: 'usage-predictions', label: 'Usage Predictions', icon: Sparkles },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
       { id: 'recommendations', label: 'Recommendations', icon: Lightbulb },
       {
@@ -204,7 +204,7 @@ function App() {
         icon: Target,
       },
       { id: 'smart-notifications', label: 'Smart Notifications', icon: Bell },
-      { id: 'search', label: 'Search', icon: MagnifyingGlass },
+      { id: 'search', label: 'Search', icon: Search },
     ],
     monitoring: [
       { id: 'system-status', label: 'System Status', icon: Monitor },
@@ -221,8 +221,8 @@ function App() {
     ],
     advanced: [
       { id: 'monitoring-hub', label: 'Monitoring Hub', icon: Activity },
-      { id: 'live-integration', label: 'Live Integration', icon: CloudArrowUp },
-      { id: 'advanced-watch', label: 'Watch Integration', icon: Activity },
+      { id: 'live-integration', label: 'Live Integration', icon: CloudUpload },
+      { id: 'advanced-Watch', label: 'Watch Integration', icon: Activity },
     ],
     gamification: [
       { id: 'game-center', label: 'Game Center', icon: Trophy },
@@ -231,7 +231,7 @@ function App() {
     community: [
       { id: 'family', label: 'Family Dashboard', icon: Users },
       { id: 'community', label: 'Community Share', icon: Share },
-      { id: 'healthcare', label: 'Healthcare Portal', icon: Stethoscope },
+      { id: 'healthcare', label: 'Healthcare Portal', icon: Heart },
     ],
     management: [
       { id: 'contacts', label: 'Emergency Contacts', icon: Users },
@@ -240,14 +240,14 @@ function App() {
     setup: [
       { id: 'phases', label: 'Implementation', icon: Roadmap },
       { id: 'healthkit-guide', label: 'HealthKit Guide', icon: Apple },
-      { id: 'websocket-guide', label: 'WebSocket Bridge', icon: CloudArrowUp },
+      { id: 'websocket-guide', label: 'WebSocket Bridge', icon: CloudUpload },
       {
         id: 'integration-checklist',
         label: 'Integration Checklist',
         icon: Apple,
       },
       { id: 'xcode-setup', label: 'Xcode Development Setup', icon: Code },
-      { id: 'infrastructure', label: 'Cloud Infrastructure', icon: Gear },
+      { id: 'infrastructure', label: 'Cloud Infrastructure', icon: Settings },
     ],
   };
 
@@ -1137,7 +1137,7 @@ function App() {
                 {activeTab === 'live-integration' && (
                   <LiveHealthDataIntegration />
                 )}
-                {activeTab === 'advanced-watch' && (
+                {activeTab === 'advanced-Watch' && (
                   <AdvancedAppleWatchIntegration />
                 )}
                 {activeTab === 'history' && <FallHistory />}

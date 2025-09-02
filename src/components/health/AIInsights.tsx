@@ -16,7 +16,7 @@ import {
   CheckCircle,
   Lightbulb,
   TrendingUp,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -25,7 +25,7 @@ interface AIInsightsProps {
 }
 
 interface AIInsight {
-  type: 'recommendation' | 'warning' | 'achievement' | 'prediction';
+  type: 'recommendation' | 'AlertTriangle' | 'achievement' | 'prediction';
   title: string;
   content: string;
   confidence: number;
@@ -101,7 +101,7 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
       // Add specific insights based on data patterns
       if ((healthData?.metrics?.sleepHours?.average || 0) < 7) {
         generatedInsights.push({
-          type: 'warning',
+          type: 'AlertTriangle',
           title: 'Sleep Duration Concern',
           content: `Your average sleep of ${(healthData?.metrics?.sleepHours?.average || 0).toFixed(1)} hours is below the recommended 7-9 hours. Poor sleep can increase fall risk and affect balance.`,
           confidence: 90,
@@ -124,7 +124,7 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
       // Add trend-based insights
       if (healthData?.metrics?.walkingSteadiness?.trend === 'decreasing') {
         generatedInsights.push({
-          type: 'warning',
+          type: 'AlertTriangle',
           title: 'Declining Balance Metrics',
           content:
             'Walking steadiness has been decreasing. This could indicate increased fall risk. Consider consulting with a physical therapist.',
@@ -207,7 +207,7 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
     switch (type) {
       case 'recommendation':
         return <Lightbulb className="h-5 w-5 text-blue-500" />;
-      case 'warning':
+      case 'AlertTriangle':
         return <AlertTriangle className="h-5 w-5 text-red-500" />;
       case 'achievement':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
@@ -256,7 +256,7 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <Brain className="text-primary h-5 w-5 animate-pulse" />
+                <Brain className="text-primary h-5 w-5 animate-Activity" />
                 <div>
                   <div className="font-medium">
                     Analyzing your health data...

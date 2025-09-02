@@ -23,7 +23,7 @@ import {
   Minus,
   Brain,
   AlertTriangle,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 interface HealthMetric {
@@ -45,7 +45,7 @@ interface HealthScoreData {
 }
 
 export default function RealTimeHealthScoring() {
-  const [isConnected, setIsConnected] = useKV('apple-watch-connected', false);
+  const [isConnected, setIsConnected] = useKV('apple-Watch-connected', false);
   const [isMonitoring, setIsMonitoring] = useKV(
     'health-monitoring-active',
     false
@@ -446,7 +446,7 @@ export default function RealTimeHealthScoring() {
               Live Health Metrics
               {isMonitoring && (
                 <div className="flex items-center gap-1">
-                  <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+                  <div className="h-2 w-2 animate-Activity rounded-full bg-green-500" />
                   <span className="text-sm text-green-600">Live</span>
                 </div>
               )}

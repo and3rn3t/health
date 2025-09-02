@@ -34,11 +34,11 @@ import {
   Zap,
   Clock,
   Target,
-  ChartLine,
-  Warning,
+  LineChart,
+  AlertTriangle,
   CheckCircle,
   XCircle,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { toast } from 'sonner';
 
@@ -196,7 +196,7 @@ export default function PredictiveHealthAlerts({
 
       if (newAlerts.length > 0) {
         setAlerts((current) => [...current, ...newAlerts]);
-        toast.warning(
+        toast.AlertTriangle(
           `${newAlerts.length} new predictive health alerts generated`
         );
       } else {
@@ -299,7 +299,7 @@ export default function PredictiveHealthAlerts({
             Predictive Health Alerts
           </h2>
           <p className="text-muted-foreground">
-            AI-powered trend analysis and early warning system for health
+            AI-powered trend analysis and early AlertTriangle system for health
             decline
           </p>
         </div>
@@ -315,7 +315,7 @@ export default function PredictiveHealthAlerts({
             </>
           ) : (
             <>
-              <ChartLine className="h-4 w-4" />
+              <LineChart className="h-4 w-4" />
               Run Analysis
             </>
           )}
@@ -404,7 +404,7 @@ export default function PredictiveHealthAlerts({
             Alerts ({unacknowledgedAlerts.length})
           </TabsTrigger>
           <TabsTrigger value="trends" className="flex items-center gap-2">
-            <ChartLine className="h-4 w-4" />
+            <LineChart className="h-4 w-4" />
             Trend Analysis
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
@@ -538,7 +538,7 @@ export default function PredictiveHealthAlerts({
           {trendAnalysis.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <ChartLine className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                <LineChart className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
                 <h3 className="mb-2 text-lg font-semibold">
                   No Trend Analysis Available
                 </h3>

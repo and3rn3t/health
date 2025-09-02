@@ -23,11 +23,11 @@ import {
   Smartphone,
   Shield,
   Code,
-  TestTube,
+  FlaskConical,
   Upload,
-  Gear,
+  Settings,
   FileText,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 
 interface IntegrationTask {
   id: string;
@@ -132,10 +132,10 @@ export default function AppleWatchIntegrationChecklist() {
       completed: false,
     },
     {
-      id: 'watch-complications',
+      id: 'Watch-complications',
       title: 'Watch Face Complications',
       description:
-        'Create watch face widgets for health score and emergency access',
+        'Create Watch face widgets for health score and emergency access',
       category: 'development',
       priority: 'medium',
       estimatedHours: 6,
@@ -296,11 +296,11 @@ export default function AppleWatchIntegrationChecklist() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'setup':
-        return <Gear className="h-4 w-4" />;
+        return <Settings className="h-4 w-4" />;
       case 'development':
         return <Code className="h-4 w-4" />;
       case 'testing':
-        return <TestTube className="h-4 w-4" />;
+        return <FlaskConical className="h-4 w-4" />;
       case 'deployment':
         return <Upload className="h-4 w-4" />;
       default:
@@ -313,14 +313,14 @@ export default function AppleWatchIntegrationChecklist() {
     {
       id: 'setup',
       label: 'Setup & Configuration',
-      icon: <Gear className="h-4 w-4" />,
+      icon: <Settings className="h-4 w-4" />,
     },
     {
       id: 'development',
       label: 'Development',
       icon: <Code className="h-4 w-4" />,
     },
-    { id: 'testing', label: 'Testing', icon: <TestTube className="h-4 w-4" /> },
+    { id: 'testing', label: 'Testing', icon: <FlaskConical className="h-4 w-4" /> },
     {
       id: 'deployment',
       label: 'Deployment',

@@ -16,9 +16,9 @@ import {
   Brain,
   CheckCircle,
   Clock,
-  Sparkle,
+  Sparkles,
   Target,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -303,7 +303,7 @@ export default function AIUsagePredictions({
         >
           {isGenerating ? (
             <>
-              <Sparkle className="mr-2 h-4 w-4 animate-spin" />
+              <Sparkles className="mr-2 h-4 w-4 animate-spin" />
               Generating...
             </>
           ) : (
@@ -460,7 +460,7 @@ export default function AIUsagePredictions({
       <Card className="border-primary/20 from-primary/5 to-accent/5 border-2 bg-gradient-to-br">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkle className="text-primary h-5 w-5" />
+            <Sparkles className="text-primary h-5 w-5" />
             AI-Powered Insights
           </CardTitle>
         </CardHeader>

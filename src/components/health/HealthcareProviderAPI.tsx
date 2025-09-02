@@ -15,12 +15,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Stethoscope,
+  Heart,
   Plus,
   Trash,
   Send,
   CheckCircle,
-  Warning,
+  AlertTriangle,
   Clock,
   Shield,
   Database,
@@ -31,7 +31,7 @@ import {
   Bell,
   FileText,
   Activity,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 interface HealthcareProvider {
@@ -274,7 +274,7 @@ export default function HealthcareProviderAPI() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="flex items-center gap-2 text-2xl font-bold">
-            <Stethoscope className="h-6 w-6" />
+            <Heart className="h-6 w-6" />
             Healthcare Provider Integration
           </h2>
           <p className="text-muted-foreground">

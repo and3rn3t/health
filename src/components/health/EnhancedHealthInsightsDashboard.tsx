@@ -23,7 +23,7 @@ import {
   Target,
   Zap,
   Shield,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 interface HealthTrend {
@@ -39,7 +39,7 @@ interface HealthInsight {
   id: string;
   title: string;
   description: string;
-  type: 'positive' | 'warning' | 'critical' | 'info';
+  type: 'positive' | 'AlertTriangle' | 'critical' | 'info';
   priority: number;
   category: string;
   actionable: boolean;
@@ -84,7 +84,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
           id: 'hr-elevated',
           title: 'Elevated Resting Heart Rate',
           description: `Your average heart rate of ${avgHeartRate} bpm is above the typical range (60-80 bpm).`,
-          type: 'warning',
+          type: 'AlertTriangle',
           priority: 8,
           category: 'Cardiovascular',
           actionable: true,
@@ -106,7 +106,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
           id: 'low-activity',
           title: 'Below Recommended Activity Level',
           description: `Your daily average of ${avgSteps} steps is below the recommended 8,000-10,000 steps.`,
-          type: 'warning',
+          type: 'AlertTriangle',
           priority: 6,
           category: 'Activity',
           actionable: true,
@@ -162,7 +162,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
           id: 'insufficient-sleep',
           title: 'Insufficient Sleep Duration',
           description: `Your average sleep of ${avgSleep.toFixed(1)} hours is below the recommended 7-9 hours.`,
-          type: 'warning',
+          type: 'AlertTriangle',
           priority: 7,
           category: 'Recovery',
           actionable: true,
@@ -277,7 +277,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
     switch (type) {
       case 'positive':
         return <Heart className="h-4 w-4 text-green-600" />;
-      case 'warning':
+      case 'AlertTriangle':
         return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
       case 'critical':
         return <AlertTriangle className="h-4 w-4 text-red-600" />;
@@ -290,7 +290,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
     switch (type) {
       case 'positive':
         return 'default';
-      case 'warning':
+      case 'AlertTriangle':
         return 'secondary';
       case 'critical':
         return 'destructive';

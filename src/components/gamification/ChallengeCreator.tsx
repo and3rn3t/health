@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useKV } from '@github/spark/hooks';
-import { Clock, Plus, Target, Trophy } from '@phosphor-icons/react';
+import { Clock, Plus, Target, Trophy } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 

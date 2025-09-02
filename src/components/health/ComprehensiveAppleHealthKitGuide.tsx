@@ -21,9 +21,9 @@ import {
   Shield,
   Code,
   Database,
-  CloudArrowUp,
-  Gear,
-  TestTube,
+  CloudUpload,
+  Settings,
+  FlaskConical,
   FileText,
   Key,
   Download,
@@ -33,9 +33,9 @@ import {
   AlertTriangle,
   Info,
   Lightbulb,
-  Warning,
+  AlertTriangle,
   Clock,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 
 interface HealthKitComponent {
   id: string;
@@ -404,7 +404,7 @@ class HealthDataWebSocketBridge: ObservableObject {
     }
 }`,
         notes: [
-          'Implement reconnection logic for network interruptions',
+          'Implement reconnection logic for Network interruptions',
           'Handle authentication for secure WebSocket connections',
           'Consider using Socket.IO for more robust messaging',
         ],
@@ -614,7 +614,7 @@ class HealthDataWebSocketBridge: ObservableObject {
       label: 'All Components',
       icon: <FileText className="h-4 w-4" />,
     },
-    { id: 'setup', label: 'Setup', icon: <Gear className="h-4 w-4" /> },
+    { id: 'setup', label: 'Setup', icon: <Settings className="h-4 w-4" /> },
     {
       id: 'data',
       label: 'Data Management',
@@ -628,10 +628,10 @@ class HealthDataWebSocketBridge: ObservableObject {
     {
       id: 'realtime',
       label: 'Real-time',
-      icon: <CloudArrowUp className="h-4 w-4" />,
+      icon: <CloudUpload className="h-4 w-4" />,
     },
     { id: 'security', label: 'Security', icon: <Key className="h-4 w-4" /> },
-    { id: 'testing', label: 'Testing', icon: <TestTube className="h-4 w-4" /> },
+    { id: 'testing', label: 'Testing', icon: <FlaskConical className="h-4 w-4" /> },
   ];
 
   const overallProgress = calculateProgress();
@@ -737,7 +737,7 @@ class HealthDataWebSocketBridge: ObservableObject {
                       <Watch className="h-4 w-4 text-blue-600" />
                     )}
                     {dataType.backgroundDelivery && (
-                      <CloudArrowUp className="h-4 w-4 text-green-600" />
+                      <CloudUpload className="h-4 w-4 text-green-600" />
                     )}
                     {dataType.requiredForFallRisk && (
                       <AlertTriangle className="h-4 w-4 text-red-600" />
@@ -774,7 +774,7 @@ class HealthDataWebSocketBridge: ObservableObject {
                     <span>Available on Apple Watch</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CloudArrowUp className="h-4 w-4" />
+                    <CloudUpload className="h-4 w-4" />
                     <span>Supports background delivery</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1038,7 +1038,7 @@ class HealthDataWebSocketBridge: ObservableObject {
             <Separator />
 
             <Alert>
-              <Warning className="h-4 w-4" />
+              <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
                 <strong>Important:</strong> Apple HealthKit integration requires
                 physical iOS devices for full testing. Budget for iPhone and

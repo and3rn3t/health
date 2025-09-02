@@ -18,7 +18,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Activity,
-  TrendUp,
+  TrendingUp,
   Brain,
   AlertTriangle,
   CheckCircle,
@@ -28,8 +28,8 @@ import {
   Zap,
   Waves,
   Eye,
-  ArrowsClockwise,
-} from '@phosphor-icons/react';
+  RotateCcw,
+} from 'lucide-react';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import {
   movementPatternAnalyzer,
@@ -131,7 +131,7 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5 animate-pulse" />
+              <Brain className="h-5 w-5 animate-Activity" />
               Analyzing Movement Patterns...
             </CardTitle>
             <CardDescription>
@@ -184,7 +184,7 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={analyzeMovementPatterns} variant="outline" size="sm">
-            <ArrowsClockwise className="mr-2 h-4 w-4" />
+            <RotateCcw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
         </div>

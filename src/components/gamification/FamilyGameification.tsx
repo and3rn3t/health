@@ -22,7 +22,7 @@ import {
   TrendingUp,
   Calendar,
   Users,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 interface FamilyMember {

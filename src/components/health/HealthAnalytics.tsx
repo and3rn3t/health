@@ -1,3 +1,9 @@
+import AIInsights from '@/components/health/AIInsights';
+import DataVisualization, {
+  CorrelationChart,
+} from '@/components/health/DataVisualization';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -5,26 +11,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import {
-  TrendingUp,
-  TrendingDown,
-  Activity,
-  Heart,
-  Moon,
-  Calendar,
-  BarChart3,
-  Download,
-  Brain,
-} from '@phosphor-icons/react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
-import DataVisualization, {
-  CorrelationChart,
-} from '@/components/health/DataVisualization';
-import AIInsights from '@/components/health/AIInsights';
+import {
+  Activity,
+  BarChart3,
+  Calendar,
+  Download,
+  Heart,
+  TrendingDown,
+  TrendingUp,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 interface HealthAnalyticsProps {
@@ -361,9 +359,9 @@ export default function HealthAnalytics({ healthData }: HealthAnalyticsProps) {
                       </div>
                       <div className="flex items-center gap-2">
                         {metric.trend === 'increasing' ? (
-                          <TrendUp className="h-4 w-4 text-green-500" />
+                          <TrendingUp className="h-4 w-4 text-green-500" />
                         ) : metric.trend === 'decreasing' ? (
-                          <TrendDown className="h-4 w-4 text-red-500" />
+                          <TrendingDown className="h-4 w-4 text-red-500" />
                         ) : (
                           <div className="h-4 w-4 rounded-full bg-gray-400" />
                         )}

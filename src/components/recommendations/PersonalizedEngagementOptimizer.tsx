@@ -30,8 +30,8 @@ import {
   Zap,
   Star,
   ArrowRight,
-  Sparkle,
-} from '@phosphor-icons/react';
+  Sparkles,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
@@ -302,7 +302,7 @@ export default function PersonalizedEngagementOptimizer({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5 animate-pulse" />
+            <Brain className="h-5 w-5 animate-Activity" />
             Analyzing Engagement Patterns
           </CardTitle>
           <CardDescription>
@@ -428,7 +428,7 @@ export default function PersonalizedEngagementOptimizer({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkle className="h-5 w-5" />
+            <Sparkles className="h-5 w-5" />
             Personalized Optimization Recommendations
           </CardTitle>
           <CardDescription>

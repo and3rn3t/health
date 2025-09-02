@@ -18,7 +18,7 @@ import {
   Rocket,
   Code,
   Lightbulb,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 
 export default function Phase1Summary() {
   const completedFeatures = [

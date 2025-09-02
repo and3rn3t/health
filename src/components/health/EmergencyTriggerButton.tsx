@@ -33,7 +33,7 @@ export default function EmergencyTriggerButton({
         size="lg"
         onClick={onTrigger}
         disabled={!!pendingEmergency}
-        className={pendingEmergency ? 'animate-pulse' : ''}
+        className={pendingEmergency ? 'animate-Activity' : ''}
       >
         {pendingEmergency ? (
           <>

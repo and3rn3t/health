@@ -1,10 +1,8 @@
-import { useMemo, useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle } from '@phosphor-icons/react';
-import { Wifi } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useLiveHealthData } from '@/hooks/useLiveHealthData';
-import { getLiveHealthDataSync } from '@/lib/liveHealthDataSync';
+import { AlertTriangle, Wifi } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
 type Props = { readonly userId?: string };
 

@@ -18,19 +18,19 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import {
-  MagnifyingGlass,
+  Search,
   X,
-  TrendUp,
-  TrendDown,
+  TrendingUp,
+  TrendingDown,
   Heart,
   Activity,
   Shield,
   Clock,
   Target,
-  FunnelSimple,
-  CalendarBlank,
-  ChartLine,
-} from '@phosphor-icons/react';
+  Filter,
+  Calendar,
+  LineChart,
+} from 'lucide-react';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 interface HealthSearchProps {
@@ -335,7 +335,7 @@ export default function HealthSearch({
 
   const categoryIcons = {
     metrics: Heart,
-    trends: TrendUp,
+    trends: TrendingUp,
     'risk-factors': Shield,
     recommendations: Target,
     achievements: Activity,
@@ -376,7 +376,7 @@ export default function HealthSearch({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <MagnifyingGlass className="h-5 w-5" />
+            <Search className="h-5 w-5" />
             Search Health Insights
           </CardTitle>
           <CardDescription>
@@ -388,7 +388,7 @@ export default function HealthSearch({
         <CardContent className="space-y-4">
           {/* Search Input */}
           <div className="relative">
-            <MagnifyingGlass className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
+            <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
             <Input
               placeholder="Search for metrics, trends, recommendations..."
               value={searchQuery}
@@ -415,7 +415,7 @@ export default function HealthSearch({
             >
               <CollapsibleTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
-                  <FunnelSimple className="h-4 w-4" />
+                  <Filter className="h-4 w-4" />
                   Advanced Filters
                   {activeFiltersCount > 0 && (
                     <Badge
@@ -449,7 +449,7 @@ export default function HealthSearch({
                             }
                             className="border-border rounded"
                           />
-                          <CalendarBlank className="h-4 w-4" />
+                          <Calendar className="h-4 w-4" />
                           Filter by Date Range
                         </Label>
                         {filters.dateRange.enabled && (
@@ -531,7 +531,7 @@ export default function HealthSearch({
                           }
                           className="border-border rounded"
                         />
-                        <ChartLine className="h-4 w-4" />
+                        <LineChart className="h-4 w-4" />
                         Filter by Health Score
                       </Label>
 
@@ -645,7 +645,7 @@ export default function HealthSearch({
                 Metrics
               </TabsTrigger>
               <TabsTrigger value="trends" className="text-xs">
-                <TrendUp className="mr-1 h-3 w-3" />
+                <TrendingUp className="mr-1 h-3 w-3" />
                 Trends
               </TabsTrigger>
               <TabsTrigger value="risk-factors" className="text-xs">
@@ -670,7 +670,7 @@ export default function HealthSearch({
         {filteredResults.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <MagnifyingGlass className="text-muted-foreground mb-4 h-12 w-12" />
+              <Search className="text-muted-foreground mb-4 h-12 w-12" />
               <h3 className="text-foreground mb-2 text-lg font-semibold">
                 {searchQuery || activeFiltersCount > 0
                   ? 'No results found'
@@ -748,10 +748,10 @@ export default function HealthSearch({
                             {result.trend && (
                               <div className="flex items-center">
                                 {result.trend === 'up' && (
-                                  <TrendUp className="h-3 w-3 text-green-500" />
+                                  <TrendingUp className="h-3 w-3 text-green-500" />
                                 )}
                                 {result.trend === 'down' && (
-                                  <TrendDown className="h-3 w-3 text-red-500" />
+                                  <TrendingDown className="h-3 w-3 text-red-500" />
                                 )}
                               </div>
                             )}
@@ -795,7 +795,7 @@ export default function HealthSearch({
 
                             {result.healthScore && (
                               <Badge variant="outline" className="text-xs">
-                                <ChartLine className="mr-1 h-3 w-3" />
+                                <LineChart className="mr-1 h-3 w-3" />
                                 Score: {result.healthScore}
                               </Badge>
                             )}

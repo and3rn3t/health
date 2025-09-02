@@ -22,14 +22,14 @@ import {
   Heart,
   Bell,
   Database,
-  CloudArrowUp,
+  CloudUpload,
   Monitor,
   Wifi,
   Server,
   HardDrives,
   Globe,
   Lock,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 interface SystemStatus {
@@ -54,7 +54,7 @@ interface FailoverSystem {
   primary: boolean;
   status: 'active' | 'standby' | 'failed';
   lastFailover: string | null;
-  healthCheck: 'passing' | 'warning' | 'critical';
+  healthCheck: 'passing' | 'AlertTriangle' | 'critical';
 }
 
 interface MonitoringAlert {
@@ -292,7 +292,7 @@ export default function UptimeMonitoringSystem() {
         return 'bg-green-100 text-green-800';
       case 'degraded':
       case 'standby':
-      case 'warning':
+      case 'AlertTriangle':
         return 'bg-yellow-100 text-yellow-800';
       case 'outage':
       case 'failed':

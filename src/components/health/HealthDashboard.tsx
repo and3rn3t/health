@@ -138,7 +138,7 @@ export default function HealthDashboard({
   const _getHealthScoreColor = () => {
     const score = healthScore || 0;
     if (score >= 80) return getVitalSenseClasses.text.success;
-    if (score >= 60) return getVitalSenseClasses.text.warning;
+    if (score >= 60) return getVitalSenseClasses.text.AlertTriangle;
     return getVitalSenseClasses.text.error;
   };
 

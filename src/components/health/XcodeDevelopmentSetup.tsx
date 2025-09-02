@@ -17,9 +17,9 @@ import { Separator } from '@/components/ui/separator';
 import {
   Apple,
   Download,
-  Gear,
+  Settings,
   Code,
-  TestTube,
+  FlaskConical,
   Shield,
   Watch,
   Smartphone,
@@ -30,12 +30,12 @@ import {
   FileText,
   Key,
   Database,
-  CloudArrowUp,
+  CloudUpload,
   Terminal,
   Folder,
   Play,
   Bug,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 
 interface SetupStep {
   id: string;
@@ -303,11 +303,11 @@ export default function XcodeDevelopmentSetup() {
       tips: [
         'Watch app Bundle ID should be iOS app Bundle ID + .watchkitapp',
         'Watch apps automatically inherit some iOS app capabilities',
-        'Consider watch-specific features like complications',
+        'Consider Watch-specific features like complications',
       ],
     },
     {
-      id: 'watch-healthkit',
+      id: 'Watch-healthkit',
       title: 'Configure Watch HealthKit',
       description: 'Set up HealthKit for watchOS target',
       category: 'watchos',
@@ -328,7 +328,7 @@ export default function XcodeDevelopmentSetup() {
       ],
     },
     {
-      id: 'watch-connectivity',
+      id: 'Watch-connectivity',
       title: 'Set Up Watch Connectivity',
       description: 'Enable communication between iOS and watchOS apps',
       category: 'watchos',
@@ -443,7 +443,7 @@ export default function XcodeDevelopmentSetup() {
       case 'watchos':
         return <Watch className="h-4 w-4" />;
       case 'testing':
-        return <TestTube className="h-4 w-4" />;
+        return <FlaskConical className="h-4 w-4" />;
       default:
         return <Circle className="h-4 w-4" />;
     }
@@ -468,7 +468,7 @@ export default function XcodeDevelopmentSetup() {
       icon: <Shield className="h-4 w-4" />,
     },
     { id: 'watchos', label: 'watchOS', icon: <Watch className="h-4 w-4" /> },
-    { id: 'testing', label: 'Testing', icon: <TestTube className="h-4 w-4" /> },
+    { id: 'testing', label: 'Testing', icon: <FlaskConical className="h-4 w-4" /> },
   ];
 
   const overallProgress = calculateProgress();
@@ -564,7 +564,7 @@ export default function XcodeDevelopmentSetup() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Gear className="h-5 w-5" />
+              <Settings className="h-5 w-5" />
               Configuration Phase
             </CardTitle>
           </CardHeader>

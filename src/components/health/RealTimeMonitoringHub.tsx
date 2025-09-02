@@ -16,7 +16,7 @@ import { useLiveHealthData } from '@/hooks/useLiveHealthData';
 import {
   Monitor,
   WifiHigh,
-  WifiX,
+  WifiOff,
   Phone,
   Users,
   AlertTriangle,
@@ -24,16 +24,16 @@ import {
   X,
   Play,
   Pause,
-  BellRinging,
+  Bell,
   Clock,
   Activity,
   Shield,
   Globe,
-  CloudArrowUp,
+  CloudUpload,
   Heart,
-  Lightning,
   Zap,
-} from '@phosphor-icons/react';
+  Zap,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
@@ -65,7 +65,7 @@ interface ConnectedDevice {
   id: string;
   name: string;
   type: 'apple_watch' | 'iphone' | 'smart_home' | 'sensor';
-  status: 'online' | 'offline' | 'warning';
+  status: 'online' | 'offline' | 'AlertTriangle';
   lastSeen: string;
   batteryLevel?: number;
 }
@@ -157,7 +157,7 @@ export default function RealTimeMonitoringHub({
     if (devices.length === 0) {
       const defaultDevices: ConnectedDevice[] = [
         {
-          id: 'apple-watch-1',
+          id: 'apple-Watch-1',
           name: 'Apple Watch Series 9',
           type: 'apple_watch',
           status: 'online',
@@ -215,7 +215,7 @@ export default function RealTimeMonitoringHub({
     };
 
     setAlerts((currentAlerts) => [newAlert, ...currentAlerts]);
-    toast.warning('New alert generated for testing');
+    toast.AlertTriangle('New alert generated for testing');
   };
 
   const resolveAlert = (alertId: string) => {
@@ -246,7 +246,7 @@ export default function RealTimeMonitoringHub({
     switch (status) {
       case 'online':
         return 'text-green-500';
-      case 'warning':
+      case 'AlertTriangle':
         return 'text-yellow-500';
       case 'offline':
         return 'text-red-500';
@@ -273,7 +273,7 @@ export default function RealTimeMonitoringHub({
   const unreadAlerts = alerts.filter((alert) => !alert.resolved).length;
 
   const getConnectionIcon = () => {
-    if (!liveDataConnected) return <WifiX className="h-5 w-5 text-red-500" />;
+    if (!liveDataConnected) return <WifiOff className="h-5 w-5 text-red-500" />;
     if (liveConnectionStatus.dataQuality === 'excellent')
       return <WifiHigh className="h-5 w-5 text-green-500" />;
     return <WifiHigh className="h-5 w-5 text-yellow-500" />;
@@ -392,7 +392,7 @@ export default function RealTimeMonitoringHub({
                   {unreadAlerts}
                 </p>
               </div>
-              <BellRinging className="text-muted-foreground h-8 w-8" />
+              <Bell className="text-muted-foreground h-8 w-8" />
             </div>
           </CardContent>
         </Card>
@@ -438,7 +438,7 @@ export default function RealTimeMonitoringHub({
                       <div
                         className={`h-2 w-2 rounded-full ${
                           currentHeartRate
-                            ? 'animate-pulse bg-green-500'
+                            ? 'animate-Activity bg-green-500'
                             : 'bg-gray-300'
                         }`}
                       />
@@ -544,7 +544,7 @@ export default function RealTimeMonitoringHub({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Lightning className="h-5 w-5" />
+                <Zap className="h-5 w-5" />
                 System Performance
               </CardTitle>
             </CardHeader>
@@ -754,7 +754,7 @@ export default function RealTimeMonitoringHub({
 
         <TabsContent value="infrastructure" className="space-y-6">
           <Alert className="border-blue-200 bg-blue-50">
-            <CloudArrowUp className="h-4 w-4" />
+            <CloudUpload className="h-4 w-4" />
             <AlertDescription>
               <strong>Infrastructure Status:</strong> This represents the
               planned cloud-based monitoring infrastructure for Phase 5. Current

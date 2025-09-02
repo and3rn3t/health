@@ -401,7 +401,7 @@ export function RecentHealthData() {
           )}
         </div>
         {isLoading && (
-          <div className="animate-pulse space-y-2">
+          <div className="animate-Activity space-y-2">
             <div className="bg-muted h-4 rounded" />
             <div className="bg-muted h-4 w-2/3 rounded" />
           </div>

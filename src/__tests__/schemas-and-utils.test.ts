@@ -3,7 +3,7 @@ import { messageEnvelopeSchema } from '../schemas/health';
 import { cn } from '../lib/utils';
 
 describe('schemas', () => {
-  it('validates message envelope types', () => {
+  it('validates message Mail types', () => {
     const ok = messageEnvelopeSchema.safeParse({
       type: 'live_health_update',
       data: { x: 1 },

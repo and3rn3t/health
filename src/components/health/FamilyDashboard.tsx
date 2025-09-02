@@ -30,7 +30,7 @@ import {
   Zap,
   MapPin,
   Bell,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 interface FamilyMember {

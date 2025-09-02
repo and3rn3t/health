@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -6,25 +8,22 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useKV } from '@github/spark/hooks';
 import {
-  CloudArrowUp,
-  WifiHigh,
-  Shield,
-  Clock,
+  Activity,
+  AlertTriangle,
   CheckCircle,
-  Warning,
+  Clock,
+  CloudUpload,
   Database,
   Globe,
-  Lightning,
   Monitor,
-  Activity,
-  Gear,
-} from '@phosphor-icons/react';
+  Settings,
+  Shield,
+  Zap,
+} from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface CloudService {
@@ -40,7 +39,7 @@ interface InfrastructureMetric {
   label: string;
   value: string | number;
   unit: string;
-  status: 'good' | 'warning' | 'critical';
+  status: 'good' | 'AlertTriangle' | 'critical';
   trend: 'up' | 'down' | 'stable';
 }
 
@@ -200,7 +199,7 @@ export default function CloudInfrastructureStatus() {
     switch (status) {
       case 'good':
         return 'text-green-600';
-      case 'warning':
+      case 'AlertTriangle':
         return 'text-yellow-600';
       case 'critical':
         return 'text-red-600';
@@ -219,7 +218,7 @@ export default function CloudInfrastructureStatus() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
-            <CloudArrowUp className="h-6 w-6" />
+            <CloudUpload className="h-6 w-6" />
             Cloud Infrastructure Status
           </h2>
           <p className="text-muted-foreground">
@@ -236,7 +235,7 @@ export default function CloudInfrastructureStatus() {
 
       {/* Phase 5 Status Alert */}
       <Alert className="border-blue-200 bg-blue-50">
-        <Gear className="h-4 w-4" />
+        <Settings className="h-4 w-4" />
         <AlertDescription>
           <strong>Phase 5 Infrastructure:</strong> This represents the planned
           cloud infrastructure for 24/7 monitoring. Implementation includes
@@ -304,7 +303,7 @@ export default function CloudInfrastructureStatus() {
                 </p>
                 <p className="text-2xl font-bold">52ms</p>
               </div>
-              <Lightning className="text-muted-foreground h-8 w-8" />
+              <Zap className="text-muted-foreground h-8 w-8" />
             </div>
           </CardContent>
         </Card>
@@ -487,7 +486,7 @@ export default function CloudInfrastructureStatus() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Lightning className="h-5 w-5" />
+                  <Zap className="h-5 w-5" />
                   Processing Layer
                 </CardTitle>
                 <CardDescription>
@@ -601,7 +600,7 @@ export default function CloudInfrastructureStatus() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Warning className="h-5 w-5" />
+            <AlertTriangle className="h-5 w-5" />
             Implementation Requirements
           </CardTitle>
           <CardDescription>

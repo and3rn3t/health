@@ -22,7 +22,7 @@ import {
   Heart,
   Palette,
   Shield,
-  Sparkle,
+  Sparkles,
 } from 'lucide-react';
 
 export default function VitalSenseBrandShowcase() {
@@ -159,17 +159,17 @@ export default function VitalSenseBrandShowcase() {
 
         <Card>
           <CardHeader>
-            <CardTitle className={getVitalSenseClasses.text.warning}>
-              Warning Amber
+            <CardTitle className={getVitalSenseClasses.text.AlertTriangle}>
+              AlertTriangle Amber
             </CardTitle>
             <CardDescription>Caution and attention</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div
-              className={`h-12 rounded-lg ${getVitalSenseClasses.bg.warning} flex items-center justify-center`}
+              className={`h-12 rounded-lg ${getVitalSenseClasses.bg.AlertTriangle} flex items-center justify-center`}
             >
               <span className={getVitalSenseClasses.text.warningContrast}>
-                {VitalSenseColors.warning.main}
+                {VitalSenseColors.AlertTriangle.main}
               </span>
             </div>
             <div className="flex space-x-2">
@@ -178,7 +178,7 @@ export default function VitalSenseBrandShowcase() {
                 title="Light"
               />
               <div
-                className={`h-8 w-8 rounded ${getVitalSenseClasses.bg.warning}`}
+                className={`h-8 w-8 rounded ${getVitalSenseClasses.bg.AlertTriangle}`}
                 title="Main"
               />
               <div
@@ -187,9 +187,9 @@ export default function VitalSenseBrandShowcase() {
               />
             </div>
             <Button
-              className={`${getVitalSenseClasses.bg.warning} ${getVitalSenseClasses.text.warningContrast} ${getVitalSenseClasses.hover.bgWarning}`}
+              className={`${getVitalSenseClasses.bg.AlertTriangle} ${getVitalSenseClasses.text.warningContrast} ${getVitalSenseClasses.hover.bgWarning}`}
             >
-              Warning Button
+              AlertTriangle Button
             </Button>
           </CardContent>
         </Card>
@@ -329,7 +329,7 @@ export default function VitalSenseBrandShowcase() {
           title="Fall Risk Alert"
           subtitle="Elevated risk detected"
           icon={<AlertTriangle className="h-6 w-6" />}
-          variant="warning"
+          variant="AlertTriangle"
         >
           <Badge variant="destructive">Alert</Badge>
         </VitalSenseBrandHeader>
@@ -348,7 +348,7 @@ export default function VitalSenseBrandShowcase() {
       <Card>
         <CardHeader>
           <CardTitle className={getVitalSenseClasses.text.primary}>
-            <Sparkle className="mr-2 inline h-5 w-5" />
+            <Sparkles className="mr-2 inline h-5 w-5" />
             Usage Guidelines
           </CardTitle>
           <CardDescription>
@@ -369,7 +369,7 @@ export default function VitalSenseBrandShowcase() {
                 <li>• Use Primary Blue for main actions and navigation</li>
                 <li>• Use Teal for secondary highlights and accents</li>
                 <li>• Use Success Green for positive health indicators</li>
-                <li>• Use Warning Amber for cautionary messages</li>
+                <li>• Use AlertTriangle Amber for cautionary messages</li>
                 <li>• Use Error Red for critical alerts only</li>
               </ul>
             </div>

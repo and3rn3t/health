@@ -26,11 +26,11 @@ import {
   AlertTriangle,
   Watch,
   Bluetooth,
-  Signal,
+  Radio,
   Battery,
-  Pulse,
+  Activity,
   Timer,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AppleWatchStatus {
@@ -83,7 +83,7 @@ interface HealthScoreBreakdown {
 
 export default function AdvancedAppleWatchIntegration() {
   const [watchStatus, setWatchStatus] = useKV<AppleWatchStatus>(
-    'watch-status',
+    'Watch-status',
     {
       connected: false,
       batteryLevel: 85,
@@ -325,7 +325,7 @@ export default function AdvancedAppleWatchIntegration() {
         timestamp: new Date(),
       }));
 
-      // Update watch status
+      // Update Watch status
       setWatchStatus((current) => ({
         ...current,
         batteryLevel: Math.max(0, current.batteryLevel - 0.1),
@@ -396,7 +396,7 @@ export default function AdvancedAppleWatchIntegration() {
                     <span>{Math.round(watchStatus.batteryLevel)}%</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Signal className="h-4 w-4" />
+                    <Radio className="h-4 w-4" />
                     <span>{watchStatus.signalStrength}/5</span>
                   </div>
                   <div className="text-muted-foreground">
@@ -448,7 +448,7 @@ export default function AdvancedAppleWatchIntegration() {
               {
                 label: 'Respiratory',
                 value: healthScore.respiratory,
-                icon: Pulse,
+                icon: Activity,
               },
               {
                 label: 'Movement',

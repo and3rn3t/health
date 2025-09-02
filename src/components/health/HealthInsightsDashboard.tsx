@@ -26,7 +26,7 @@ import {
   CheckCircle,
   Info,
   Minus,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { toast } from 'sonner';
 
@@ -46,7 +46,7 @@ interface HealthTrend {
   trend: 'up' | 'down' | 'stable';
   category: string;
   unit: string;
-  status: 'good' | 'warning' | 'critical' | 'neutral';
+  status: 'good' | 'AlertTriangle' | 'critical' | 'neutral';
   insight: string;
   recommendation?: string;
 }
@@ -55,7 +55,7 @@ interface LiveInsight {
   id: string;
   title: string;
   description: string;
-  severity: 'info' | 'warning' | 'critical' | 'success';
+  severity: 'info' | 'AlertTriangle' | 'critical' | 'success';
   timestamp: number;
   category: string;
   actionable: boolean;
@@ -148,7 +148,7 @@ export default function HealthInsightsDashboard({
             id: `hr-elevated-${now}`,
             title: 'Elevated Heart Rate Detected',
             description: `Your average heart rate is ${avgHR} BPM, which is above normal resting range.`,
-            severity: 'warning',
+            severity: 'AlertTriangle',
             timestamp: now,
             category: 'cardiovascular',
             actionable: true,
@@ -176,7 +176,7 @@ export default function HealthInsightsDashboard({
             id: `steps-low-${now}`,
             title: 'Activity Goal Not Met',
             description: `You've taken ${dailySteps.toLocaleString()} steps today. Aim for 8,000+ steps for optimal health.`,
-            severity: 'warning',
+            severity: 'AlertTriangle',
             timestamp: now,
             category: 'activity',
             actionable: true,
@@ -204,7 +204,7 @@ export default function HealthInsightsDashboard({
             id: `sleep-insufficient-${now}`,
             title: 'Insufficient Sleep Detected',
             description: `You got ${sleepHours.toFixed(1)} hours of sleep. Adults need 7-9 hours for optimal recovery.`,
-            severity: 'warning',
+            severity: 'AlertTriangle',
             timestamp: now,
             category: 'recovery',
             actionable: true,
@@ -261,7 +261,7 @@ export default function HealthInsightsDashboard({
             id: `health-score-needs-attention-${now}`,
             title: 'Health Score Needs Attention',
             description: `Your health score of ${healthData.healthScore}/100 suggests areas for improvement.`,
-            severity: 'warning',
+            severity: 'AlertTriangle',
             timestamp: now,
             category: 'overall',
             actionable: true,
@@ -325,7 +325,7 @@ export default function HealthInsightsDashboard({
           current >= 60 && current <= 80
             ? 'good'
             : current > 100
-              ? 'warning'
+              ? 'AlertTriangle'
               : 'neutral',
         insight:
           current >= 60 && current <= 80
@@ -364,7 +364,7 @@ export default function HealthInsightsDashboard({
         category: 'activity',
         unit: 'steps',
         status:
-          current >= 8000 ? 'good' : current < 5000 ? 'warning' : 'neutral',
+          current >= 8000 ? 'good' : current < 5000 ? 'AlertTriangle' : 'neutral',
         insight:
           current >= 10000
             ? 'Excellent activity level!'
@@ -407,7 +407,7 @@ export default function HealthInsightsDashboard({
           current >= 7 && current <= 9
             ? 'good'
             : current < 6
-              ? 'warning'
+              ? 'AlertTriangle'
               : 'neutral',
         insight:
           current >= 7 && current <= 9
@@ -433,7 +433,7 @@ export default function HealthInsightsDashboard({
     switch (severity) {
       case 'critical':
         return <AlertTriangle className="h-4 w-4" />;
-      case 'warning':
+      case 'AlertTriangle':
         return <AlertTriangle className="h-4 w-4" />;
       case 'success':
         return <CheckCircle className="h-4 w-4" />;
@@ -446,7 +446,7 @@ export default function HealthInsightsDashboard({
     switch (severity) {
       case 'critical':
         return 'destructive';
-      case 'warning':
+      case 'AlertTriangle':
         return 'default';
       case 'success':
         return 'default';
@@ -470,7 +470,7 @@ export default function HealthInsightsDashboard({
     switch (status) {
       case 'good':
         return 'bg-green-100 text-green-800 border-green-200';
-      case 'warning':
+      case 'AlertTriangle':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'critical':
         return 'bg-red-100 text-red-800 border-red-200';
@@ -553,7 +553,7 @@ export default function HealthInsightsDashboard({
                     >
                       {trend.status === 'good'
                         ? 'Optimal'
-                        : trend.status === 'warning'
+                        : trend.status === 'AlertTriangle'
                           ? 'Needs Attention'
                           : 'Monitor'}
                     </Badge>
@@ -640,7 +640,7 @@ export default function HealthInsightsDashboard({
                         className={`rounded-full p-2 ${
                           insight.severity === 'critical'
                             ? 'bg-red-100'
-                            : insight.severity === 'warning'
+                            : insight.severity === 'AlertTriangle'
                               ? 'bg-yellow-100'
                               : insight.severity === 'success'
                                 ? 'bg-green-100'

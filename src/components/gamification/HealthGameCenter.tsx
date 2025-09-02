@@ -23,7 +23,7 @@ import {
   Crown,
   Zap,
   TrendingUp,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { toast } from 'sonner';
 

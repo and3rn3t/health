@@ -23,9 +23,9 @@ import {
   Eye,
   Phone,
   Calendar,
-  Stethoscope,
+  Heart,
   TrendingUp,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import RecentHealthHistory from '@/components/health/RecentHealthHistory';
 import { useCreateHealthData } from '@/hooks/useCreateHealthData';
@@ -355,7 +355,7 @@ export default function AdvancedFamilyCaregiverDashboard({
       case 'emergency-contact':
         return <Phone className="h-4 w-4" />;
       case 'health-partner':
-        return <Stethoscope className="h-4 w-4" />;
+        return <Heart className="h-4 w-4" />;
       case 'viewer':
         return <Eye className="h-4 w-4" />;
       default:
@@ -872,7 +872,7 @@ export default function AdvancedFamilyCaregiverDashboard({
                           <Activity className="h-5 w-5 text-blue-600" />
                         )}
                         {task.type === 'checkup' && (
-                          <Stethoscope className="h-5 w-5 text-blue-600" />
+                          <Heart className="h-5 w-5 text-blue-600" />
                         )}
                         {task.type === 'emergency-drill' && (
                           <Shield className="h-5 w-5 text-blue-600" />

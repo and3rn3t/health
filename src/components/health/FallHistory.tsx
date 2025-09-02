@@ -33,7 +33,7 @@ import {
   MapPin,
   Clock,
   Activity,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 interface FallIncident {

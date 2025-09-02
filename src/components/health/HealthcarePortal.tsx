@@ -24,7 +24,7 @@ import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  Stethoscope,
+  Heart,
   Calendar,
   Clock,
   FileText,
@@ -42,7 +42,7 @@ import {
   Archive,
   Flag,
   MessageCircle,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
@@ -311,7 +311,7 @@ export default function HealthcarePortal({
       {/* Navigation Tabs */}
       <div className="bg-muted flex space-x-1 rounded-lg p-1">
         {[
-          { id: 'providers', label: 'Care Team', icon: Stethoscope },
+          { id: 'providers', label: 'Care Team', icon: Heart },
           { id: 'notes', label: 'Medical Notes', icon: FileText },
           { id: 'tasks', label: 'Care Tasks', icon: CheckCircle },
           { id: 'timeline', label: 'Timeline', icon: Clock },
@@ -491,7 +491,7 @@ export default function HealthcarePortal({
                     <div className="flex-1">
                       <div className="mb-2 flex items-center gap-3">
                         <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full">
-                          <Stethoscope className="text-primary h-5 w-5" />
+                          <Heart className="text-primary h-5 w-5" />
                         </div>
                         <div>
                           <h4 className="font-medium">{provider.name}</h4>

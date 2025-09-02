@@ -14,16 +14,16 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import {
-  CloudArrowUp,
+  CloudUpload,
   Code,
   Database,
   Shield,
   Terminal,
-  Gear,
+  Settings,
   Network,
   Key,
   Bug,
-  TestTube,
+  FlaskConical,
   Smartphone,
   Globe,
   CheckCircle,
@@ -33,7 +33,7 @@ import {
   Timer,
   Lock,
   Eye,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 
 interface WebSocketComponent {
   id: string;
@@ -921,7 +921,7 @@ class HealthMonitoringService extends EventEmitter {
       this.emit('alert', {
         type: 'high_load',
         message: 'High connection count detected',
-        severity: 'warning'
+        severity: 'AlertTriangle'
       })
     }
 
@@ -939,7 +939,7 @@ class HealthMonitoringService extends EventEmitter {
       this.emit('alert', {
         type: 'high_memory',
         message: 'Memory usage above 1GB',
-        severity: 'warning'
+        severity: 'AlertTriangle'
       })
     }
   }
@@ -1062,7 +1062,7 @@ class HealthMonitoringService extends EventEmitter {
     {
       id: 'deployment',
       label: 'Deployment',
-      icon: <CloudArrowUp className="h-4 w-4" />,
+      icon: <CloudUpload className="h-4 w-4" />,
     },
     {
       id: 'monitoring',
@@ -1079,7 +1079,7 @@ class HealthMonitoringService extends EventEmitter {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <CloudArrowUp className="h-6 w-6" />
+            <CloudUpload className="h-6 w-6" />
             WebSocket Bridge Architecture Guide
           </CardTitle>
           <CardDescription>
@@ -1160,7 +1160,7 @@ class HealthMonitoringService extends EventEmitter {
 
                 <div className="space-y-2">
                   <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500">
-                    <CloudArrowUp className="h-8 w-8 text-white" />
+                    <CloudUpload className="h-8 w-8 text-white" />
                   </div>
                   <h4 className="font-medium">WebSocket Server</h4>
                   <p className="text-muted-foreground text-xs">

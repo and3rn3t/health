@@ -16,7 +16,7 @@ import { useKV } from '@github/spark/hooks';
 import {
   Wifi,
   WifiHigh,
-  WifiX,
+  WifiOff,
   Activity,
   Heart,
   Clock,
@@ -26,13 +26,13 @@ import {
   Play,
   Pause,
   Zap,
-  CloudArrowUp,
+  CloudUpload,
   Globe,
   Monitor,
   Bluetooth,
-  BatteryHigh,
-  Signal,
-} from '@phosphor-icons/react';
+  BatteryFull,
+  Radio,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import {
   LiveHealthDataSync,
@@ -85,7 +85,7 @@ export default function LiveHealthDataIntegration() {
 
   const [devices, setDevices] = useState<DeviceStatus[]>([
     {
-      id: 'apple-watch-series-9',
+      id: 'apple-Watch-series-9',
       name: 'Apple Watch Series 9',
       type: 'apple_watch',
       isConnected: false,
@@ -237,12 +237,12 @@ export default function LiveHealthDataIntegration() {
   };
 
   const getConnectionIcon = () => {
-    if (!isConnected) return <WifiX className="h-5 w-5 text-red-500" />;
+    if (!isConnected) return <WifiOff className="h-5 w-5 text-red-500" />;
     if (connectionStatus.dataQuality === 'excellent')
       return <WifiHigh className="h-5 w-5 text-green-500" />;
     if (connectionStatus.dataQuality === 'good')
       return <Wifi className="h-5 w-5 text-yellow-500" />;
-    return <WifiX className="h-5 w-5 text-red-500" />;
+    return <WifiOff className="h-5 w-5 text-red-500" />;
   };
 
   const getDataQualityColor = (quality: string) => {
@@ -267,7 +267,7 @@ export default function LiveHealthDataIntegration() {
       case 'steps':
         return <Activity className="h-4 w-4 text-blue-500" />;
       case 'walking_steadiness':
-        return <Signal className="h-4 w-4 text-green-500" />;
+        return <Radio className="h-4 w-4 text-green-500" />;
       case 'activity':
         return <Zap className="h-4 w-4 text-yellow-500" />;
       case 'sleep':
@@ -296,7 +296,7 @@ export default function LiveHealthDataIntegration() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
-            <CloudArrowUp className="h-6 w-6" />
+            <CloudUpload className="h-6 w-6" />
             Live Apple Health Integration
           </h2>
           <p className="text-muted-foreground">
@@ -378,7 +378,7 @@ export default function LiveHealthDataIntegration() {
                 </p>
                 <p className="text-muted-foreground text-xs">this session</p>
               </div>
-              <CloudArrowUp className="text-muted-foreground h-8 w-8" />
+              <CloudUpload className="text-muted-foreground h-8 w-8" />
             </div>
           </CardContent>
         </Card>
@@ -592,7 +592,7 @@ export default function LiveHealthDataIntegration() {
                       <div className="flex items-center justify-between text-sm">
                         <span>Battery</span>
                         <div className="flex items-center gap-2">
-                          <BatteryHigh className="h-4 w-4" />
+                          <BatteryFull className="h-4 w-4" />
                           <span className="font-medium">
                             {device.batteryLevel}%
                           </span>
@@ -601,7 +601,7 @@ export default function LiveHealthDataIntegration() {
                     )}
 
                     <div className="flex items-center justify-between text-sm">
-                      <span>Signal</span>
+                      <span>Radio</span>
                       <div className="flex items-center gap-2">
                         <Progress
                           value={device.signalStrength}
@@ -635,7 +635,7 @@ export default function LiveHealthDataIntegration() {
 
         <TabsContent value="configuration" className="space-y-6">
           <Alert className="border-blue-200 bg-blue-50">
-            <CloudArrowUp className="h-4 w-4" />
+            <CloudUpload className="h-4 w-4" />
             <AlertDescription>
               <strong>Live Data Configuration:</strong> These settings control
               how your Apple Health data is synchronized in real-time. Ensure
@@ -718,7 +718,7 @@ export default function LiveHealthDataIntegration() {
 
         <TabsContent value="technical" className="space-y-6">
           <Alert className="border-blue-200 bg-blue-50">
-            <CloudArrowUp className="h-4 w-4" />
+            <CloudUpload className="h-4 w-4" />
             <AlertDescription>
               <strong>Technical Implementation:</strong> This shows the
               WebSocket-based architecture for real-time Apple Health data

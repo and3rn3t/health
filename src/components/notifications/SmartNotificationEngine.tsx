@@ -22,19 +22,19 @@ import {
 import { Input } from '@/components/ui/input';
 import {
   Bell,
-  BellRinging,
+  Bell,
   Clock,
   Brain,
-  TrendUp,
+  TrendingUp,
   CheckCircle,
-  Warning,
+  AlertTriangle,
   Info,
   Calendar,
-  Envelope,
-  DeviceMobile,
+  Mail,
+  Smartphone,
   Phone,
-  Gear,
-} from '@phosphor-icons/react';
+  Settings,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
@@ -533,15 +533,15 @@ export default function SmartNotificationEngine({
       case 'health':
         return <Bell className="h-4 w-4 text-blue-500" />;
       case 'exercise':
-        return <TrendUp className="h-4 w-4 text-green-500" />;
+        return <TrendingUp className="h-4 w-4 text-green-500" />;
       case 'fall':
-        return <Warning className="h-4 w-4 text-red-500" />;
+        return <AlertTriangle className="h-4 w-4 text-red-500" />;
       case 'achievement':
         return <CheckCircle className="h-4 w-4 text-purple-500" />;
       case 'reminder':
         return <Clock className="h-4 w-4 text-orange-500" />;
       case 'emergency':
-        return <Warning className="h-4 w-4 text-red-600" />;
+        return <AlertTriangle className="h-4 w-4 text-red-600" />;
       default:
         return <Info className="h-4 w-4 text-gray-500" />;
     }
@@ -569,7 +569,7 @@ export default function SmartNotificationEngine({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
-            <BellRinging className="h-6 w-6" />
+            <Bell className="h-6 w-6" />
             Smart Notifications
           </h2>
           <p className="text-muted-foreground">
@@ -627,7 +627,7 @@ export default function SmartNotificationEngine({
                   %
                 </p>
               </div>
-              <TrendUp className="h-8 w-8 text-purple-500" />
+              <TrendingUp className="h-8 w-8 text-purple-500" />
             </div>
           </CardContent>
         </Card>
@@ -1009,7 +1009,7 @@ export default function SmartNotificationEngine({
                             }
                           />
                           <div className="flex items-center gap-1">
-                            <DeviceMobile className="h-4 w-4" />
+                            <Smartphone className="h-4 w-4" />
                             <span className="text-sm">Push</span>
                           </div>
                         </div>
@@ -1031,7 +1031,7 @@ export default function SmartNotificationEngine({
                             }
                           />
                           <div className="flex items-center gap-1">
-                            <Envelope className="h-4 w-4" />
+                            <Mail className="h-4 w-4" />
                             <span className="text-sm">Email</span>
                           </div>
                         </div>
@@ -1053,7 +1053,7 @@ export default function SmartNotificationEngine({
                             }
                           />
                           <div className="flex items-center gap-1">
-                            <DeviceMobile className="h-4 w-4" />
+                            <Smartphone className="h-4 w-4" />
                             <span className="text-sm">SMS</span>
                           </div>
                         </div>
@@ -1271,11 +1271,11 @@ export default function SmartNotificationEngine({
                               const getMethodIcon = (method: string) => {
                                 switch (method) {
                                   case 'push':
-                                    return <DeviceMobile className="h-3 w-3" />;
+                                    return <Smartphone className="h-3 w-3" />;
                                   case 'email':
-                                    return <Envelope className="h-3 w-3" />;
+                                    return <Mail className="h-3 w-3" />;
                                   case 'sms':
-                                    return <DeviceMobile className="h-3 w-3" />;
+                                    return <Smartphone className="h-3 w-3" />;
                                   case 'phone':
                                     return <Phone className="h-3 w-3" />;
                                   default:

@@ -17,7 +17,7 @@ import {
   CheckCircle,
   Brain,
   Activity,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { toast } from 'sonner';
 import {
   HealthDataProcessor,
@@ -143,7 +143,7 @@ export default function HealthDataImport({
             {isProcessing && (
               <div className="space-y-3">
                 <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                  <Brain className="h-4 w-4 animate-pulse" />
+                  <Brain className="h-4 w-4 animate-Activity" />
                   {processingStage}
                 </div>
                 <Progress value={processingProgress} className="w-full" />

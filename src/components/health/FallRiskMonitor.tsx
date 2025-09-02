@@ -71,8 +71,8 @@ function FallRiskGauge({ score }: { score: number }) {
     if (score < 70)
       return {
         level: 'Moderate',
-        color: getVitalSenseClasses.text.warning,
-        bgColor: getVitalSenseClasses.bg.warning + ' bg-opacity-10',
+        color: getVitalSenseClasses.text.AlertTriangle,
+        bgColor: getVitalSenseClasses.bg.AlertTriangle + ' bg-opacity-10',
       };
     return {
       level: 'High',
@@ -195,7 +195,7 @@ export default function FallRiskMonitor({
         subtitle="Advanced fall risk assessment and prevention insights"
         icon={<Shield className="h-6 w-6" />}
         variant={
-          isHighRisk ? 'error' : fallRiskScore > 50 ? 'warning' : 'success'
+          isHighRisk ? 'error' : fallRiskScore > 50 ? 'AlertTriangle' : 'success'
         }
       >
         <VitalSenseStatusCard
@@ -218,7 +218,7 @@ export default function FallRiskMonitor({
         <Alert
           className={`border-l-4 ${getVitalSenseClasses.border.error} ${getVitalSenseClasses.bg.error} bg-opacity-10`}
         >
-          <Warning className={`${getVitalSenseClasses.text.error} h-4 w-4`} />
+          <AlertTriangle className={`${getVitalSenseClasses.text.error} h-4 w-4`} />
           <AlertDescription className={getVitalSenseClasses.text.error}>
             <strong>High fall risk detected.</strong> Consider consulting with
             your healthcare provider and review the recommendations below.

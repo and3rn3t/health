@@ -16,7 +16,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Brain,
   Target,
-  TrendUp,
+  TrendingUp,
   Clock,
   Heart,
   Activity,
@@ -27,7 +27,7 @@ import {
   Calendar,
   Zap,
   Award,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { useKV } from '@github/spark/hooks';
 import { toast } from 'sonner';
@@ -289,7 +289,7 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-blue-100 p-2">
-                <TrendUp className="h-5 w-5 text-blue-600" />
+                <TrendingUp className="h-5 w-5 text-blue-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold">

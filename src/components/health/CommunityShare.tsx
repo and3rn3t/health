@@ -43,7 +43,7 @@ import {
   Eye,
   Lock,
   Globe,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 

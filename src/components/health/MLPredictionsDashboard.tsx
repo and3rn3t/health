@@ -3,7 +3,9 @@
  * Displays machine learning fall risk predictions and model insights
  */
 
-import { useState, useEffect } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -11,30 +13,27 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Brain,
-  TrendUp,
-  Target,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  BarChart3,
-  Lightbulb,
-  Shield,
-  Activity,
-  Zap,
-} from '@phosphor-icons/react';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import {
   mlFallRiskPredictor,
-  RiskPrediction,
   ModelPerformance,
+  RiskPrediction,
 } from '@/lib/mlFallRiskPredictor';
+import {
+  AlertTriangle,
+  BarChart3,
+  Brain,
+  CheckCircle,
+  Clock,
+  Lightbulb,
+  Shield,
+  Target,
+  TrendingUp,
+  Zap,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface MLPredictionsDashboardProps {
@@ -129,15 +128,15 @@ function MLPredictionsDashboard({ healthData }: MLPredictionsDashboardProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5 animate-pulse" />
+              <Brain className="h-5 w-5 animate-Activity" />
               Generating ML Predictions...
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="bg-muted h-4 animate-pulse rounded" />
-              <div className="bg-muted h-4 w-3/4 animate-pulse rounded" />
-              <div className="bg-muted h-4 w-1/2 animate-pulse rounded" />
+              <div className="bg-muted h-4 animate-Activity rounded" />
+              <div className="bg-muted h-4 w-3/4 animate-Activity rounded" />
+              <div className="bg-muted h-4 w-1/2 animate-Activity rounded" />
             </div>
           </CardContent>
         </Card>
@@ -301,7 +300,7 @@ function MLPredictionsDashboard({ healthData }: MLPredictionsDashboardProps) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendUp className="h-5 w-5" />
+                  <TrendingUp className="h-5 w-5" />
                   Primary Risk Factors
                 </CardTitle>
                 <CardDescription>

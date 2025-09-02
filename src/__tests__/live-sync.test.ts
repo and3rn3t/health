@@ -70,7 +70,7 @@ describe('LiveHealthDataSync (WebSocket client)', () => {
       callback: (d) => received.push(d),
       filters: { deviceId: 'watch-1', minConfidence: 0.8 },
     });
-    // Simulate server message (valid envelope)
+    // Simulate server message (valid Mail)
     const payload: LiveHealthMetric = {
       timestamp: new Date().toISOString(),
       metricType: 'heart_rate',

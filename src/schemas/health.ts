@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Envelope used for WebSocket messages
+// Mail used for WebSocket messages
 export const messageEnvelopeSchema = z.object({
   type: z.enum([
     'connection_established',

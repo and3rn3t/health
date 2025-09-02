@@ -31,9 +31,9 @@ import {
   Activity,
   Clock,
   Shield,
-  Stethoscope,
+  Heart,
   Target,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
@@ -422,7 +422,7 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                     <Label htmlFor="alert-name">Alert Name</Label>
                     <Input
                       id="alert-name"
-                      placeholder="e.g., High Heart Rate Warning"
+                      placeholder="e.g., High Heart Rate AlertTriangle"
                       value={newAlert.name || ''}
                       onChange={(e) =>
                         setNewAlert((prev) => ({
