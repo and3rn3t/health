@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
     <key>USER_ID</key>
-    <string>test_user_local</string>
+    <string>production_user</string>
     <key>API_BASE_URL</key>
-    <string>http://127.0.0.1:8789/api</string>
+    <string>https://health.andernet.dev/api</string>
     <key>WS_URL</key>
-    <string>ws://localhost:3001</string>
+    <string>wss://health.andernet.dev/ws</string>
     <key>userId</key>
     <string>test_user_local</string>
     <key>apiBaseURL</key>

@@ -1,0 +1,22 @@
+{
+  "name": "vitalsense-websocket-server",
+  "title": "VitalSense WebSocket Server",
+  "description": "Real-time health data WebSocket server for VitalSense iOS app",
+  "version": "1.0.0",
+  "image": "node:18",
+  "healthcheck": {
+    "path": "/api",
+    "intervalSeconds": 30
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": "3001",
+    "ALLOWED_ORIGINS": "https://health.andernet.dev,https://vitalsense.app,wss://health.andernet.dev"
+  },
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "deploy": {
+    "restartPolicy": "always"
+  }
+}

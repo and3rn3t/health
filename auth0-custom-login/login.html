@@ -340,6 +340,68 @@
         }
       }
 
+      /* Demo Section Styles */
+      .demo-section {
+        margin: 1.5rem 0;
+        text-align: center;
+      }
+
+      .demo-divider {
+        position: relative;
+        margin-bottom: 1rem;
+      }
+
+      .demo-divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: var(--vs-gray-200);
+      }
+
+      .demo-divider span {
+        background: var(--vs-white);
+        padding: 0 1rem;
+        color: var(--vs-gray-500);
+        font-size: 0.875rem;
+      }
+
+      .demo-button {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: var(--vs-accent);
+        color: var(--vs-white);
+        border: none;
+        border-radius: var(--vs-radius);
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .demo-button:hover,
+      .demo-button:focus {
+        background: var(--vs-primary);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+
+      .demo-button:active {
+        transform: translateY(1px);
+      }
+
+      .demo-description {
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        color: var(--vs-gray-500);
+      }
+
       .footer-enterprise-text {
         margin-top: 1rem;
       }
@@ -425,6 +487,20 @@
           <!-- Auth0 Lock Widget Container -->
           <div class="auth0-lock-container" id="auth0-lock-container">
             <!-- Lock widget will be mounted here -->
+          </div>
+
+          <!-- Demo Mode Button -->
+          <div class="demo-section">
+            <div class="demo-divider">
+              <span>or</span>
+            </div>
+            <button id="demo-button" type="button" class="demo-button">
+              <span>🚀</span>
+              Try Demo Mode
+            </button>
+            <p class="demo-description">
+              Explore VitalSense with sample health data
+            </p>
           </div>
 
           <!-- Security Notice -->
@@ -513,6 +589,13 @@
       }
 
       // Auth0 Lock Configuration
+      var auth0Config = {
+        domain: 'dev-qjdpc81dzr7xrnlu.us.auth0.com',
+        clientID: '3SWqx7E8dFSIWapIikjppEKQ5ksNxRAQ',
+        redirectUri: 'https://health.andernet.dev/callback',
+        audience: 'https://dev-qjdpc81dzr7xrnlu.us.auth0.com/api/v2/',
+      };
+
       var config = {
         theme: {
           logo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIwLjg0IDQuNjFhNS41IDUuNSAwIDAgMC03Ljc4IDBMMTIgNS42N2wtMS4wNi0xLjA2YTUuNSA1LjUgMCAwIDAtNy43OCAwIDUuNSA1LjUgMCAwIDAgMCA3Ljc4bDguODQgOC44NGE2IDYgMCAwIDAgOC40OSAwbDguNDktOC40OWE1LjUgNS41IDAgMCAwIDAtNy43OFoiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+',
@@ -534,10 +617,11 @@
           autoclose: true,
           redirect: true,
           responseType: 'code',
+          redirectUrl: auth0Config.redirectUri,
           params: {
             scope:
               'openid profile email read:health_data write:health_data manage:emergency_contacts',
-            audience: '{config.audience}', // This will be replaced by Auth0
+            audience: auth0Config.audience,
           },
         },
         socialButtonStyle: 'big',
@@ -559,23 +643,50 @@
       };
 
       // Initialize Auth0 Lock
-      var lock = new Auth0Lock(config.clientID, config.auth0Domain, config);
+      var lock = new Auth0Lock(
+        auth0Config.clientID,
+        auth0Config.domain,
+        config
+      );
+
+      console.log('🔐 VitalSense Auth0 Lock initialized with:', {
+        domain: auth0Config.domain,
+        clientID: auth0Config.clientID,
+        redirectUri: auth0Config.redirectUri,
+      });
 
       // Show the lock widget
       lock.show();
 
       // Handle authentication events
       lock.on('authenticated', function (authResult) {
-        console.log('Authentication successful');
+        console.log('✅ Authentication successful:', authResult);
+        console.log('🔄 Redirecting to application...');
         // The redirect will be handled automatically
       });
 
       lock.on('authorization_error', function (error) {
-        console.error('Authentication error:', error);
+        console.error('❌ Authentication error:', error);
+        alert(
+          'Authentication failed: ' +
+            (error.error_description || error.error || 'Unknown error')
+        );
       });
 
       lock.on('unrecoverable_error', function (error) {
-        console.error('Unrecoverable error:', error);
+        console.error('💥 Unrecoverable error:', error);
+        alert(
+          'Login system error: ' +
+            (error.error_description || error.error || 'Unknown error')
+        );
+      });
+
+      lock.on('hide', function () {
+        console.log('🔒 Auth0 Lock widget hidden');
+      });
+
+      lock.on('show', function () {
+        console.log('👁️ Auth0 Lock widget shown');
       });
 
       // Add loading state to submit button
@@ -596,6 +707,24 @@
           }, 10000);
         }
       });
+
+      // Handle demo button click
+      document
+        .getElementById('demo-button')
+        .addEventListener('click', function () {
+          console.log('🚀 Demo Mode requested');
+
+          // Add loading state to demo button
+          var demoButton = this;
+          demoButton.innerHTML =
+            '<span class="loading-spinner"></span> Starting Demo...';
+          demoButton.disabled = true;
+
+          // Redirect to demo mode
+          setTimeout(function () {
+            window.location.href = 'https://health.andernet.dev/?demo=true';
+          }, 1000);
+        });
     </script>
   </body>
 </html>

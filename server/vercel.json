@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "name": "vitalsense-websocket",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/node",
+      "config": { "maxLambdaSize": "50mb" }
+    }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/websocket-server.js" },
+    { "src": "/(.*)", "dest": "/websocket-server.js" }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "ALLOWED_ORIGINS": "https://health.andernet.dev,https://vitalsense.app"
+  },
+  "functions": {
+    "websocket-server.js": {
+      "maxDuration": 60
+    }
+  }
+}

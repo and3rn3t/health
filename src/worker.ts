@@ -3,6 +3,71 @@
  * This file handles the worker logic and serves the built application
  */
 
+// Cloudflare Worker types
+declare global {
+  const WebSocketPair: {
+    new (): {
+      0: WebSocket;
+      1: WebSocket;
+    };
+  };
+}
+
+interface DurableObjectNamespace {
+  get(id: DurableObjectId): DurableObjectStub;
+  idFromName(name: string): DurableObjectId;
+  idFromString(id: string): DurableObjectId;
+  newUniqueId(): DurableObjectId;
+}
+
+interface DurableObjectId {
+  toString(): string;
+  equals(other: DurableObjectId): boolean;
+}
+
+interface DurableObjectStub {
+  fetch(request: Request): Promise<Response>;
+}
+
+interface KVNamespace {
+  get(
+    key: string,
+    options?: { type?: 'text' | 'json' | 'arrayBuffer' | 'stream' }
+  ): Promise<any>;
+  put(
+    key: string,
+    value: string | ReadableStream | ArrayBuffer,
+    options?: { expirationTtl?: number; expiration?: number; metadata?: any }
+  ): Promise<void>;
+  delete(key: string): Promise<void>;
+  list(options?: {
+    prefix?: string;
+    limit?: number;
+    cursor?: string;
+  }): Promise<{
+    keys: { name: string; metadata?: any }[];
+    list_complete: boolean;
+    cursor?: string;
+  }>;
+}
+
+interface CloudflareWebSocket extends WebSocket {
+  accept(): void;
+}
+
+interface WebSocketMessage {
+  type: string;
+  [key: string]: unknown;
+}
+
+interface HealthMetric {
+  type: string;
+  value: number | string;
+  timestamp: string;
+  unit?: string;
+  source?: string;
+}
+
 import { HealthDataProcessor } from '@/lib/enhancedHealthProcessor';
 import {
   getTtlSecondsForType,
@@ -82,6 +147,7 @@ type Env = {
   AUTH0_DOMAIN?: string;
   AUTH0_CLIENT_ID?: string;
   BASE_URL?: string;
+  HEALTH_WEBSOCKET?: DurableObjectNamespace; // Durable Object namespace
 };
 
 const app = new Hono<{ Bindings: Env }>();
@@ -244,12 +310,25 @@ app.get('/health', (c) => {
     timestamp: new Date().toISOString(),
     environment: c.env.ENVIRONMENT || 'unknown',
   });
-}); // WebSocket endpoint for real-time health data (not implemented in Worker yet)
-app.get('/ws', (c) => {
-  return c.text(
-    'WebSocket endpoint not available on Worker. Use local bridge server.',
-    426
-  );
+});
+
+// WebSocket endpoint for real-time health data
+app.get('/ws', async (c) => {
+  const upgradeHeader = c.req.header('upgrade');
+  if (upgradeHeader !== 'websocket') {
+    return c.text('Expected Upgrade: websocket', 426);
+  }
+
+  if (!c.env.HEALTH_WEBSOCKET) {
+    return c.text('WebSocket service not available', 503);
+  }
+
+  // Get or create Durable Object instance
+  const id = c.env.HEALTH_WEBSOCKET.newUniqueId();
+  const obj = c.env.HEALTH_WEBSOCKET.get(id);
+
+  // Forward the request to the Durable Object
+  return obj.fetch(c.req.raw);
 });
 // Non-production self-test for crypto/auth
 app.get('/api/_selftest', async (c) => {
@@ -385,7 +464,7 @@ app.post('/api/device/auth', async (c) => {
       );
     }
     parsed = res.data;
-  } catch (e) {
+  } catch (_e) {
     return c.json({ error: 'invalid_json' }, 400);
   }
 
@@ -1475,30 +1554,67 @@ app.get('/login', async (c) => {
 
     <script src="https://cdn.auth0.com/js/auth0/9.23.2/auth0.min.js"></script>
     <script>
-        const auth0 = new auth0.WebAuth({
-            domain: '${auth0Domain}',
-            clientID: '${auth0ClientId}',
-            redirectUri: '${redirectUri}',
-            responseType: 'code',
-            scope: 'openid profile email'
-        });
+        // Wait for Auth0 to load before initializing
+        function initializeAuth0() {
+            if (typeof auth0 === 'undefined') {
+                console.log('⏳ Waiting for Auth0 to load...');
+                setTimeout(initializeAuth0, 100);
+                return;
+            }
+
+            console.log('🔐 Initializing Auth0 WebAuth...');
+
+            window.vitalsenseAuth = new auth0.WebAuth({
+                domain: '${auth0Domain}',
+                clientID: '${auth0ClientId}',
+                redirectUri: '${redirectUri}',
+                responseType: 'code',
+                scope: 'openid profile email'
+            });
+
+            console.log('✅ Auth0 WebAuth initialized successfully');
+        }
+
+        // Start initialization
+        initializeAuth0();
 
         function loginWithAuth0() {
+            console.log('🔐 Auth0 login button clicked');
+
+            // For now, skip Auth0 and go directly to demo mode
+            // since the current Auth0 domain is not accessible
+            console.log('🚀 Using demo mode (Auth0 domain not accessible)');
+            loginDemo();
+
+            /*
+            // Uncomment this when Auth0 is properly configured:
+
+            // Check if Auth0 is initialized
+            if (!window.vitalsenseAuth) {
+                console.log('⚠️ Auth0 not initialized yet, trying demo mode...');
+                loginDemo();
+                return;
+            }
+
             // Check if Auth0 is properly configured
             fetch('https://' + '${auth0Domain}' + '/.well-known/openid_configuration')
                 .then(response => {
                     if (response.ok) {
+                        console.log('✅ Auth0 configuration valid, starting authorization...');
                         // Auth0 is working, proceed with normal auth
-                        auth0.authorize();
+                        window.vitalsenseAuth.authorize();
                     } else {
+                        console.log('⚠️ Auth0 configuration invalid, using demo mode...');
                         // Auth0 not configured, use demo mode
                         loginDemo();
                     }
                 })
-                .catch(() => {
+                .catch(error => {
+                    console.log('❌ Auth0 not accessible, using demo mode...', error);
                     // Auth0 not accessible, use demo mode
                     loginDemo();
                 });
+            */
         }
 
         function loginDemo() {
@@ -1513,12 +1629,22 @@ app.get('/login', async (c) => {
                 console.log('Redirecting to static demo...');
                 window.location.href = '/demo-static';
             }, 500);
-        }        // Auto-redirect if already logged in
-        auth0.parseHash((err, authResult) => {
-            if (authResult && authResult.accessToken) {
-                window.location.href = '/';
+        }
+
+        // Auto-redirect if already logged in (after Auth0 is initialized)
+        function checkExistingAuth() {
+            if (window.vitalsenseAuth) {
+                window.vitalsenseAuth.parseHash((err, authResult) => {
+                    if (authResult && authResult.accessToken) {
+                        console.log('✅ User already authenticated, redirecting...');
+                        window.location.href = '/';
+                    }
+                });
             }
-        });
+        }
+
+        // Check for existing auth after a short delay to ensure Auth0 is loaded
+        setTimeout(checkExistingAuth, 1000);
     </script>
 </body>
 </html>`;
@@ -1635,18 +1761,406 @@ export class RateLimiter {
   }
 }
 
-// Durable Object: HealthWebSocket (stub to satisfy binding; actual WS served by local Node bridge)
-// This DO currently returns 426 to indicate WS not available in the Worker.
-// When ready to migrate WS to Workers Durable Objects, implement upgrade handling here.
+// Durable Object: HealthWebSocket - Enhanced real-time health data streaming
 export class HealthWebSocket {
-  constructor(_state: DurableObjectState, _env?: Env) {}
-  async fetch(_request: Request): Promise<Response> {
-    return new Response(
-      'WebSocket not available on Worker. Use local bridge.',
-      {
-        status: 426,
-        headers: { 'content-type': 'text/plain' },
-      }
-    );
+  private state: DurableObjectState;
+  private env?: Env;
+  private sessions: Map<WebSocket, SessionInfo>;
+  private heartbeatInterval?: ReturnType<typeof setInterval>;
+
+  constructor(state: DurableObjectState, env?: Env) {
+    this.state = state;
+    this.env = env;
+    this.sessions = new Map();
+    this.startHeartbeat();
   }
+
+  async fetch(request: Request): Promise<Response> {
+    const upgradeHeader = request.headers.get('Upgrade');
+    if (upgradeHeader !== 'websocket') {
+      return new Response('Expected WebSocket Upgrade', { status: 426 });
+    }
+
+    try {
+      // Create WebSocket pair
+      const webSocketPair = new WebSocketPair();
+      const [client, server] = Object.values(webSocketPair) as [
+        WebSocket,
+        WebSocket,
+      ];
+
+      // Parse connection parameters
+      const url = new URL(request.url);
+      const userId = url.searchParams.get('userId') || `user_${Date.now()}`;
+      const deviceId =
+        url.searchParams.get('deviceId') || `device_${Date.now()}`;
+      const token = url.searchParams.get('token') || 'anonymous';
+
+      // Accept WebSocket connection
+      (server as CloudflareWebSocket).accept();
+
+      // Create session info
+      const sessionInfo: SessionInfo = {
+        userId,
+        deviceId,
+        token,
+        connectedAt: new Date(),
+        lastActivity: new Date(),
+        messageCount: 0,
+        bytesReceived: 0,
+        bytesSent: 0,
+        latency: 0,
+      };
+
+      this.sessions.set(server, sessionInfo);
+
+      // Set up event handlers
+      server.addEventListener('message', async (event: MessageEvent) => {
+        await this.handleMessage(server, event, sessionInfo);
+      });
+
+      server.addEventListener('close', (event: CloseEvent) => {
+        this.handleDisconnection(server, sessionInfo, event);
+      });
+
+      server.addEventListener('error', (event: ErrorEvent) => {
+        console.error('WebSocket error:', event);
+        this.sessions.delete(server);
+      });
+
+      // Send welcome message
+      await this.sendMessage(server, {
+        type: 'connection_established',
+        message: 'Connected to VitalSense WebSocket',
+        userId,
+        deviceId,
+        serverTime: new Date().toISOString(),
+        sessionId: this.generateSessionId(),
+      });
+
+      console.log(`WebSocket connected: ${userId} from ${deviceId}`);
+
+      // Return successful WebSocket upgrade
+      return new Response(null, {
+        status: 101,
+        webSocket: client,
+      } as ResponseInit & { webSocket: WebSocket });
+    } catch (error) {
+      console.error('WebSocket connection error:', error);
+      return new Response('WebSocket connection failed', { status: 500 });
+    }
+  }
+
+  private async handleMessage(
+    ws: WebSocket,
+    event: MessageEvent,
+    session: SessionInfo
+  ) {
+    try {
+      // Update session activity
+      session.lastActivity = new Date();
+      session.messageCount++;
+      session.bytesReceived += new Blob([event.data]).size;
+
+      const data = JSON.parse(event.data as string);
+      console.log(`Message from ${session.userId}:`, data.type);
+
+      switch (data.type) {
+        case 'health_data':
+          await this.processHealthData(ws, data, session);
+          break;
+
+        case 'health_batch':
+          await this.processHealthBatch(ws, data, session);
+          break;
+
+        case 'ping':
+          await this.handlePing(ws, data, session);
+          break;
+
+        case 'client_info':
+          await this.updateClientInfo(ws, data, session);
+          break;
+
+        case 'get_status':
+          await this.sendStatus(ws, session);
+          break;
+
+        default:
+          await this.sendMessage(ws, {
+            type: 'error',
+            message: `Unknown message type: ${data.type}`,
+            timestamp: new Date().toISOString(),
+          });
+      }
+    } catch (error) {
+      console.error('Message handling error:', error);
+      await this.sendMessage(ws, {
+        type: 'error',
+        message: 'Failed to process message',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  private async processHealthData(
+    ws: WebSocket,
+    data: any,
+    session: SessionInfo
+  ) {
+    try {
+      // Validate health data
+      if (!data.metrics || !Array.isArray(data.metrics)) {
+        throw new Error('Invalid health data format - missing metrics array');
+      }
+
+      // Process each metric
+      const processedMetrics: Record<string, unknown>[] = [];
+      for (const metric of data.metrics) {
+        processedMetrics.push({
+          ...metric,
+          userId: session.userId,
+          deviceId: session.deviceId,
+          receivedAt: new Date().toISOString(),
+          sessionId: this.generateSessionId(),
+        });
+      }
+
+      // Store in KV with optimized batching
+      if (this.env?.HEALTH_KV && processedMetrics.length > 0) {
+        const batchKey = `health:${session.userId}:${Date.now()}`;
+        const batchData = {
+          userId: session.userId,
+          deviceId: session.deviceId,
+          metrics: processedMetrics,
+          processedAt: new Date().toISOString(),
+          metricCount: processedMetrics.length,
+        };
+
+        await this.env.HEALTH_KV.put(
+          batchKey,
+          JSON.stringify(batchData),
+          { expirationTtl: 86400 } // 24 hours
+        );
+      }
+
+      // Send acknowledgment with performance stats
+      await this.sendMessage(ws, {
+        type: 'health_data_ack',
+        message: 'Health data processed successfully',
+        metricsProcessed: processedMetrics.length,
+        processingTime:
+          Date.now() - new Date(data.timestamp || Date.now()).getTime(),
+        timestamp: new Date().toISOString(),
+      });
+
+      // Broadcast to other sessions if needed
+      await this.broadcastToUserSessions(session.userId, {
+        type: 'live_health_update',
+        userId: session.userId,
+        deviceId: session.deviceId,
+        metricsCount: processedMetrics.length,
+        lastMetric: processedMetrics[processedMetrics.length - 1],
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Health data processing error:', error);
+      await this.sendMessage(ws, {
+        type: 'health_data_error',
+        message: 'Failed to process health data',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  private async processHealthBatch(
+    ws: WebSocket,
+    data: any,
+    session: SessionInfo
+  ) {
+    try {
+      if (!data.batch || !Array.isArray(data.batch)) {
+        throw new Error('Invalid batch format');
+      }
+
+      const processedBatches: Record<string, unknown>[] = [];
+      let totalMetrics = 0;
+
+      for (const batchItem of data.batch) {
+        if (batchItem.metrics && Array.isArray(batchItem.metrics)) {
+          totalMetrics += batchItem.metrics.length;
+          processedBatches.push({
+            ...batchItem,
+            userId: session.userId,
+            deviceId: session.deviceId,
+            processedAt: new Date().toISOString(),
+          });
+        }
+      }
+
+      // Optimized batch storage
+      if (this.env?.HEALTH_KV && processedBatches.length > 0) {
+        const batchKey = `health:batch:${session.userId}:${Date.now()}`;
+        await this.env.HEALTH_KV.put(
+          batchKey,
+          JSON.stringify({
+            userId: session.userId,
+            deviceId: session.deviceId,
+            batches: processedBatches,
+            totalMetrics,
+            processedAt: new Date().toISOString(),
+          }),
+          { expirationTtl: 86400 } // 24 hours
+        );
+      }
+
+      await this.sendMessage(ws, {
+        type: 'health_batch_ack',
+        message: 'Health batch processed successfully',
+        batchesProcessed: processedBatches.length,
+        totalMetrics,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Health batch processing error:', error);
+      await this.sendMessage(ws, {
+        type: 'health_batch_error',
+        message: 'Failed to process health batch',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  private async handlePing(ws: WebSocket, data: any, session: SessionInfo) {
+    const now = Date.now();
+    const pingTime = data.timestamp ? new Date(data.timestamp).getTime() : now;
+    const latency = now - pingTime;
+
+    session.latency = latency;
+
+    await this.sendMessage(ws, {
+      type: 'pong',
+      timestamp: new Date().toISOString(),
+      latency,
+      serverTime: now,
+    });
+  }
+
+  private async updateClientInfo(
+    ws: WebSocket,
+    data: any,
+    session: SessionInfo
+  ) {
+    // Update session with client information
+    if (data.deviceInfo) {
+      session.deviceInfo = data.deviceInfo;
+    }
+    if (data.appVersion) {
+      session.appVersion = data.appVersion;
+    }
+
+    await this.sendMessage(ws, {
+      type: 'client_info_ack',
+      message: 'Client information updated',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  private async sendStatus(ws: WebSocket, session: SessionInfo) {
+    const sessionCount = this.sessions.size;
+    const uptime = Date.now() - session.connectedAt.getTime();
+
+    await this.sendMessage(ws, {
+      type: 'status_response',
+      sessionInfo: {
+        userId: session.userId,
+        deviceId: session.deviceId,
+        connectedAt: session.connectedAt.toISOString(),
+        uptime,
+        messageCount: session.messageCount,
+        bytesReceived: session.bytesReceived,
+        bytesSent: session.bytesSent,
+        latency: session.latency,
+      },
+      serverInfo: {
+        activeSessions: sessionCount,
+        serverTime: new Date().toISOString(),
+      },
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  private async sendMessage(ws: WebSocket, message: Record<string, unknown>) {
+    if (ws.readyState === 1) {
+      // WebSocket.OPEN
+      const messageStr = JSON.stringify(message);
+      ws.send(messageStr);
+
+      // Update bytes sent
+      const session = this.sessions.get(ws);
+      if (session) {
+        session.bytesSent += new Blob([messageStr]).size;
+      }
+    }
+  }
+
+  private async broadcastToUserSessions(
+    userId: string,
+    message: Record<string, unknown>
+  ) {
+    for (const [ws, session] of this.sessions) {
+      if (session.userId === userId && ws.readyState === 1) {
+        await this.sendMessage(ws, message);
+      }
+    }
+  }
+
+  private handleDisconnection(
+    ws: WebSocket,
+    session: SessionInfo,
+    event: CloseEvent
+  ) {
+    console.log(
+      `WebSocket disconnected: ${session.userId} (${event.code}: ${event.reason})`
+    );
+    this.sessions.delete(ws);
+  }
+
+  private generateSessionId(): string {
+    return Math.random().toString(36).substring(2, 15);
+  }
+
+  private startHeartbeat() {
+    // Clean up inactive sessions every 30 seconds
+    this.heartbeatInterval = setInterval(() => {
+      const now = Date.now();
+      for (const [ws, session] of this.sessions) {
+        const inactiveTime = now - session.lastActivity.getTime();
+        if (inactiveTime > 300000) {
+          // 5 minutes of inactivity
+          console.log(`Closing inactive session: ${session.userId}`);
+          ws.close(1000, 'Session timeout');
+          this.sessions.delete(ws);
+        }
+      }
+    }, 30000);
+  }
+}
+
+// Type definitions for enhanced WebSocket messages
+interface SessionInfo {
+  userId: string;
+  deviceId: string;
+  token: string;
+  connectedAt: Date;
+  lastActivity: Date;
+  messageCount: number;
+  bytesReceived: number;
+  bytesSent: number;
+  latency: number;
+  deviceInfo?: Record<string, unknown>;
+  appVersion?: string;
 }
