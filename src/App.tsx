@@ -26,21 +26,22 @@ import {
   Bell,
   Brain,
   Clock,
-  CloudUpload as CloudUpload,
+  CloudUpload,
   Code,
-  Settings as Settings,
   Heart,
   Home as House,
   Lightbulb,
   Menu as List,
-  Search as Search,
   Monitor,
   Moon,
+  Pill,
   Map as Roadmap,
+  Search,
+  Settings,
   Share,
   Shield,
+  Smartphone,
   Sparkles,
-  Heart,
   Sun,
   Target,
   TrendingUp,
@@ -52,12 +53,18 @@ import {
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import ConnectedDevices from '@/components/health/ConnectedDevices';
 import EmergencyContacts from '@/components/health/EmergencyContacts';
+import EmergencyTrigger from '@/components/health/EmergencyTrigger';
+import ExportData from '@/components/health/ExportData';
 import FallHistory from '@/components/health/FallHistory';
 import FallRiskMonitor from '@/components/health/FallRiskMonitor';
 import HealthAnalytics from '@/components/health/HealthAnalytics';
 import HealthDashboard from '@/components/health/HealthDashboard';
 import HealthDataImport from '@/components/health/HealthDataImport';
+import HealthSettings from '@/components/health/HealthSettings';
+import MedicationTracker from '@/components/health/MedicationTracker';
+import WorkoutTracker from '@/components/health/WorkoutTracker';
 // import FallMonitoringTooling from '@/components/health/FallMonitoringTooling'
 import FamilyGameification from '@/components/gamification/FamilyGameification';
 import HealthGameCenter from '@/components/gamification/HealthGameCenter';
@@ -197,6 +204,7 @@ function App() {
       { id: 'usage-analytics', label: 'Usage Analytics', icon: Brain },
       { id: 'usage-predictions', label: 'Usage Predictions', icon: Sparkles },
       { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
+      { id: 'emergency', label: 'Emergency Alert', icon: AlertTriangle },
       { id: 'recommendations', label: 'Recommendations', icon: Lightbulb },
       {
         id: 'engagement-optimizer',
@@ -236,6 +244,11 @@ function App() {
     management: [
       { id: 'contacts', label: 'Emergency Contacts', icon: Users },
       { id: 'import', label: 'Import Data', icon: Upload },
+      { id: 'export', label: 'Export Data', icon: Upload },
+      { id: 'devices', label: 'Connected Devices', icon: Smartphone },
+      { id: 'medications', label: 'Medications', icon: Pill },
+      { id: 'workouts', label: 'Workouts', icon: Activity },
+      { id: 'settings', label: 'Health Settings', icon: Settings },
     ],
     setup: [
       { id: 'phases', label: 'Implementation', icon: Roadmap },
@@ -304,14 +317,14 @@ function App() {
           <div className="flex items-center justify-between">
             {!sidebarCollapsed && (
               <div className="flex items-center gap-3">
-                <div className="bg-vitalsense-primary flex h-8 w-8 items-center justify-center rounded-lg">
-                  <Shield className="text-vitalsense-primary-contrast h-5 w-5" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-vitalsense-primary">
+                  <Shield className="h-5 w-5 text-vitalsense-primary-contrast" />
                 </div>
                 <div>
-                  <h2 className="text-vitalsense-text-primary font-semibold">
+                  <h2 className="font-semibold text-vitalsense-text-primary">
                     VitalSense
                   </h2>
-                  <p className="text-vitalsense-text-muted text-xs">
+                  <p className="text-xs text-vitalsense-text-muted">
                     Health Monitor
                   </p>
                   <div className="mt-1">
@@ -1104,6 +1117,7 @@ function App() {
                     setFallRiskScore={setFallRiskScore}
                   />
                 )}
+                {activeTab === 'emergency' && <EmergencyTrigger />}
                 {activeTab === 'alerts' && healthData && (
                   <HealthAlertsConfig healthData={healthData} />
                 )}
@@ -1174,6 +1188,13 @@ function App() {
                     </CardContent>
                   </Card>
                 )}
+                {activeTab === 'export' && (
+                  <ExportData healthData={healthData} />
+                )}
+                {activeTab === 'devices' && <ConnectedDevices />}
+                {activeTab === 'medications' && <MedicationTracker />}
+                {activeTab === 'workouts' && <WorkoutTracker />}
+                {activeTab === 'settings' && <HealthSettings />}
                 {activeTab === 'phases' && <ImplementationPhases />}
                 {activeTab === 'healthkit-guide' && (
                   <ComprehensiveAppleHealthKitGuide />

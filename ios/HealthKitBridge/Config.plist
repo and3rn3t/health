@@ -11,8 +11,9 @@
     <key>userId</key>
     <string>test_user_local</string>
     <key>apiBaseURL</key>
-    <string>http://127.0.0.1:8789/api</string>
+    <string>https://health.andernet.dev/api</string>
     <key>webSocketURL</key>
-    <string>ws://localhost:3001</string>
+    <string>wss://health.andernet.dev/ws</string>
 </dict>
 </plist>
+
