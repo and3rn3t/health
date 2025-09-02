@@ -203,35 +203,81 @@
     --color-neutral-a12: var(--slate-a12);
     --color-neutral-contrast: var(--slate-contrast);
 
-    /* Accent colors */
+    /* VitalSense Brand Colors - Primary Blue (#2563eb) */
+    --color-vitalsense-primary: #2563eb;
+    --color-vitalsense-primary-light: #3b82f6;
+    --color-vitalsense-primary-dark: #1d4ed8;
+    --color-vitalsense-primary-contrast: #ffffff;
+
+    /* VitalSense Brand Colors - Accent Teal (#0891b2) */
+    --color-vitalsense-teal: #0891b2;
+    --color-vitalsense-teal-light: #06b6d4;
+    --color-vitalsense-teal-dark: #0e7490;
+    --color-vitalsense-teal-contrast: #ffffff;
+
+    /* VitalSense Brand Colors - Success Green (#059669) */
+    --color-vitalsense-success: #059669;
+    --color-vitalsense-success-light: #10b981;
+    --color-vitalsense-success-dark: #047857;
+    --color-vitalsense-success-contrast: #ffffff;
+
+    /* VitalSense Brand Colors - Warning Amber (#d97706) */
+    --color-vitalsense-warning: #d97706;
+    --color-vitalsense-warning-light: #f59e0b;
+    --color-vitalsense-warning-dark: #b45309;
+    --color-vitalsense-warning-contrast: #000000;
+
+    /* VitalSense Brand Colors - Error Red (#dc2626) */
+    --color-vitalsense-error: #dc2626;
+    --color-vitalsense-error-light: #ef4444;
+    --color-vitalsense-error-dark: #b91c1c;
+    --color-vitalsense-error-contrast: #ffffff;
+
+    /* VitalSense Brand Colors - Supporting */
+    --color-vitalsense-text-primary: #111827;
+    --color-vitalsense-text-muted: #6b7280;
+    --color-vitalsense-bg-light: #ffffff;
+    --color-vitalsense-bg-dark: #1f2937;
+    --color-vitalsense-card-light: #f9fafb;
+    --color-vitalsense-card-dark: #374151;
+
+    /* Accent colors - Using VitalSense Primary Blue */
     --color-accent-1: var(--blue-1);
     --color-accent-2: var(--blue-2);
     --color-accent-3: var(--blue-3);
     --color-accent-4: var(--blue-4);
     --color-accent-5: var(--blue-5);
-    --color-accent-6: var(--blue-6);
+    --color-accent-6: var(
+      --color-vitalsense-primary
+    ); /* VitalSense Primary Blue */
     --color-accent-7: var(--blue-7);
     --color-accent-8: var(--blue-8);
-    --color-accent-9: var(--blue-9);
+    --color-accent-9: var(
+      --color-vitalsense-primary
+    ); /* VitalSense Primary Blue */
     --color-accent-10: var(--blue-10);
     --color-accent-11: var(--blue-11);
     --color-accent-12: var(--blue-12);
-    --color-accent-contrast: var(--blue-contrast);
+    --color-accent-contrast: var(--color-vitalsense-primary-contrast);
 
-    /* Secondary accent colors */
-    --color-accent-secondary-1: var(--violet-1);
-    --color-accent-secondary-2: var(--violet-2);
-    --color-accent-secondary-3: var(--violet-3);
-    --color-accent-secondary-4: var(--violet-4);
-    --color-accent-secondary-5: var(--violet-5);
-    --color-accent-secondary-6: var(--violet-6);
-    --color-accent-secondary-7: var(--violet-7);
-    --color-accent-secondary-8: var(--violet-8);
-    --color-accent-secondary-9: var(--violet-9);
-    --color-accent-secondary-10: var(--violet-10);
-    --color-accent-secondary-11: var(--violet-11);
-    --color-accent-secondary-12: var(--violet-12);
-    --color-accent-secondary-contrast: var(--violet-contrast);
+    /* Secondary accent colors - Using VitalSense Teal */
+    --color-accent-secondary-1: var(--cyan-1);
+    --color-accent-secondary-2: var(--cyan-2);
+    --color-accent-secondary-3: var(--cyan-3);
+    --color-accent-secondary-4: var(--cyan-4);
+    --color-accent-secondary-5: var(--cyan-5);
+    --color-accent-secondary-6: var(
+      --color-vitalsense-teal
+    ); /* VitalSense Teal */
+    --color-accent-secondary-7: var(--cyan-7);
+    --color-accent-secondary-8: var(--cyan-8);
+    --color-accent-secondary-9: var(
+      --color-vitalsense-teal
+    ); /* VitalSense Teal */
+    --color-accent-secondary-10: var(--cyan-10);
+    --color-accent-secondary-11: var(--cyan-11);
+    --color-accent-secondary-12: var(--cyan-12);
+    --color-accent-secondary-contrast: var(--color-vitalsense-teal-contrast);
 
     /* Foreground colors */
     --color-fg: var(--color-neutral-12);
@@ -260,5 +306,18 @@
     --color-bg: var(--color-neutral-1);
     --color-bg-inset: #000000;
     --color-bg-overlay: var(--color-neutral-3);
+
+    /* VitalSense Dark Mode Adjustments */
+    --color-vitalsense-text-primary: #f9fafb;
+    --color-vitalsense-text-muted: #d1d5db;
+    --color-vitalsense-bg-light: var(--color-vitalsense-bg-dark);
+    --color-vitalsense-card-light: var(--color-vitalsense-card-dark);
+
+    /* Slightly muted brand colors for dark mode */
+    --color-vitalsense-primary: #3b82f6;
+    --color-vitalsense-teal: #06b6d4;
+    --color-vitalsense-success: #10b981;
+    --color-vitalsense-warning: #f59e0b;
+    --color-vitalsense-error: #ef4444;
   }
 }

@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -6,22 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Shield,
-  AlertTriangle,
-  TrendingDown,
-  Activity,
-  Heart,
-  Phone,
-  Brain,
-  BarChart3,
-} from '@phosphor-icons/react';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { Brain, Heart, Phone, Shield } from '@phosphor-icons/react';
+import { useEffect } from 'react';
 import MLPredictionsDashboard from './MLPredictionsDashboard';
 
 interface FallRiskMonitorProps {
@@ -72,14 +63,22 @@ function RiskFactor({
 function FallRiskGauge({ score }: { score: number }) {
   const getRiskLevel = (score: number) => {
     if (score < 30)
-      return { level: 'Low', color: 'text-green-600', bgColor: 'bg-green-100' };
+      return {
+        level: 'Low',
+        color: getVitalSenseClasses.text.success,
+        bgColor: getVitalSenseClasses.bg.success + ' bg-opacity-10',
+      };
     if (score < 70)
       return {
         level: 'Moderate',
-        color: 'text-yellow-600',
-        bgColor: 'bg-yellow-100',
+        color: getVitalSenseClasses.text.warning,
+        bgColor: getVitalSenseClasses.bg.warning + ' bg-opacity-10',
       };
-    return { level: 'High', color: 'text-red-600', bgColor: 'bg-red-100' };
+    return {
+      level: 'High',
+      color: getVitalSenseClasses.text.error,
+      bgColor: getVitalSenseClasses.bg.error + ' bg-opacity-10',
+    };
   };
 
   const risk = getRiskLevel(score);
@@ -190,10 +189,37 @@ export default function FallRiskMonitor({
 
   return (
     <div className="space-y-6">
+      {/* VitalSense Branded Header */}
+      <VitalSenseBrandHeader
+        title="Fall Risk Monitor"
+        subtitle="Advanced fall risk assessment and prevention insights"
+        icon={<Shield className="h-6 w-6" />}
+        variant={
+          isHighRisk ? 'error' : fallRiskScore > 50 ? 'warning' : 'success'
+        }
+      >
+        <VitalSenseStatusCard
+          type="fallRisk"
+          status={
+            fallRiskScore > 70
+              ? 'high'
+              : fallRiskScore > 50
+                ? 'moderate'
+                : 'low'
+          }
+          title="Risk Level"
+          value={`${fallRiskScore}%`}
+          subtitle="Based on current metrics"
+          className="w-64"
+        />
+      </VitalSenseBrandHeader>
+
       {isHighRisk && (
-        <Alert className="border-accent bg-accent/10">
-          <AlertTriangle className="text-accent h-4 w-4" />
-          <AlertDescription className="text-accent-foreground">
+        <Alert
+          className={`border-l-4 ${getVitalSenseClasses.border.error} ${getVitalSenseClasses.bg.error} bg-opacity-10`}
+        >
+          <Warning className={`${getVitalSenseClasses.text.error} h-4 w-4`} />
+          <AlertDescription className={getVitalSenseClasses.text.error}>
             <strong>High fall risk detected.</strong> Consider consulting with
             your healthcare provider and review the recommendations below.
           </AlertDescription>
@@ -204,7 +230,7 @@ export default function FallRiskMonitor({
       <Tabs defaultValue="traditional" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="traditional" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
+            <Brain className="h-4 w-4" />
             Traditional Assessment
           </TabsTrigger>
           <TabsTrigger value="ml" className="flex items-center gap-2">

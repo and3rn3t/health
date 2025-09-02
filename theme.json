@@ -1,1 +1,18 @@
-{}
+{
+  "vitalsense": {
+    "brand": {
+      "name": "VitalSense",
+      "tagline": "Apple Health Insights & Fall Risk Monitor",
+      "primaryColor": "#2563eb",
+      "accentColor": "#0891b2",
+      "successColor": "#059669",
+      "warningColor": "#d97706",
+      "errorColor": "#dc2626"
+    },
+    "theme": {
+      "primaryFont": "Inter",
+      "radiusFactor": 1,
+      "sizeFactor": 1
+    }
+  }
+}

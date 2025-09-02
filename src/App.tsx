@@ -95,6 +95,7 @@ import PersonalizedEngagementOptimizer from '@/components/recommendations/Person
 import SmartFeatureRecommendations from '@/components/recommendations/SmartFeatureRecommendations';
 import SimpleSystemStatus from '@/components/SimpleSystemStatus';
 import SystemStatusPanel from '@/components/SystemStatusPanel';
+import VitalSenseBrandShowcase from '@/components/VitalSenseBrandShowcase';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 function App() {
@@ -193,6 +194,7 @@ function App() {
   const navigationItems = {
     main: [
       { id: 'dashboard', label: 'Dashboard', icon: Heart },
+      { id: 'vitalsense-brand', label: 'Brand Colors', icon: Sparkle },
       { id: 'insights', label: 'Insights', icon: TrendingUp },
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'usage-analytics', label: 'Usage Analytics', icon: Brain },
@@ -305,16 +307,23 @@ function App() {
           <div className="flex items-center justify-between">
             {!sidebarCollapsed && (
               <div className="flex items-center gap-3">
-                <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-lg">
-                  <Shield className="text-primary-foreground h-5 w-5" />
+                <div className="bg-vitalsense-primary flex h-8 w-8 items-center justify-center rounded-lg">
+                  <Shield className="text-vitalsense-primary-contrast h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-foreground font-semibold">VitalSense</h2>
-                  <p className="text-muted-foreground text-xs">
+                  <h2 className="text-vitalsense-text-primary font-semibold">
+                    VitalSense
+                  </h2>
+                  <p className="text-vitalsense-text-muted text-xs">
                     Health Monitor
                   </p>
                   <div className="mt-1">
-                    <Badge variant="outline">iOS ready</Badge>
+                    <Badge
+                      variant="outline"
+                      className="border-vitalsense-teal text-vitalsense-teal"
+                    >
+                      iOS ready
+                    </Badge>
                   </div>
                 </div>
               </div>
@@ -354,7 +363,7 @@ function App() {
                     className={`
                       h-10 w-full justify-start
                       ${sidebarCollapsed ? 'px-3' : 'px-3'}
-                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
                   >
@@ -386,7 +395,7 @@ function App() {
                     className={`
                       h-10 w-full justify-start
                       ${sidebarCollapsed ? 'px-3' : 'px-3'}
-                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
                   >
@@ -418,7 +427,7 @@ function App() {
                     className={`
                       h-10 w-full justify-start
                       ${sidebarCollapsed ? 'px-3' : 'px-3'}
-                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
                   >
@@ -450,7 +459,7 @@ function App() {
                     className={`
                       h-10 w-full justify-start
                       ${sidebarCollapsed ? 'px-3' : 'px-3'}
-                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
                   >
@@ -482,7 +491,7 @@ function App() {
                     className={`
                       h-10 w-full justify-start
                       ${sidebarCollapsed ? 'px-3' : 'px-3'}
-                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
                   >
@@ -514,7 +523,7 @@ function App() {
                     className={`
                       h-10 w-full justify-start
                       ${sidebarCollapsed ? 'px-3' : 'px-3'}
-                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
                   >
@@ -546,7 +555,7 @@ function App() {
                     className={`
                       h-10 w-full justify-start
                       ${sidebarCollapsed ? 'px-3' : 'px-3'}
-                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
                   >
@@ -578,7 +587,7 @@ function App() {
                     className={`
                       h-10 w-full justify-start
                       ${sidebarCollapsed ? 'px-3' : 'px-3'}
-                      ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
+                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
                   >
@@ -1089,6 +1098,9 @@ function App() {
               <div className="space-y-6">
                 {activeTab === 'dashboard' && healthData && (
                   <HealthDashboard healthData={healthData} />
+                )}
+                {activeTab === 'vitalsense-brand' && (
+                  <VitalSenseBrandShowcase />
                 )}
                 {activeTab === 'insights' && healthData && (
                   <EnhancedHealthInsightsDashboard healthData={healthData} />
