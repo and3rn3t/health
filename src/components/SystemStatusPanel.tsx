@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -6,23 +8,28 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Activity,
-  Shield,
   AlertTriangle,
+  CheckCircle,
   Clock,
-  TrendingUp,
+  Database,
   Monitor,
-} from '@phosphor-icons/react';
+  RefreshCw,
+  Server,
+  TrendingUp,
+  Wifi,
+  XCircle,
+} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
+type HealthStatus = 'healthy' | 'degraded' | 'down';
 
 interface SystemHealth {
-  webApp: 'healthy' | 'degraded' | 'down';
-  apiWorker: 'healthy' | 'degraded' | 'down';
-  webSocket: 'healthy' | 'degraded' | 'down';
-  database: 'healthy' | 'degraded' | 'down';
+  webApp: HealthStatus;
+  apiWorker: HealthStatus;
+  webSocket: HealthStatus;
+  database: HealthStatus;
   lastUpdated: Date;
   responseTime: number;
   uptime: string;
@@ -77,8 +84,8 @@ const SystemStatusPanel: React.FC = () => {
 
         setSystemHealth((prev) => ({
           ...prev,
-          apiWorker: apiHealth as 'healthy' | 'degraded' | 'down',
-          webSocket: wsHealth as 'healthy' | 'degraded' | 'down',
+          apiWorker: apiHealth as HealthStatus,
+          webSocket: wsHealth as HealthStatus,
           lastUpdated: new Date(),
           responseTime: Math.floor(Math.random() * 100) + 20,
           activeConnections: Math.floor(Math.random() * 10) + 1,
@@ -131,7 +138,7 @@ const SystemStatusPanel: React.FC = () => {
     setIsRefreshing(false);
   };
 
-  const getStatusIcon = (status: 'healthy' | 'degraded' | 'down') => {
+  const getStatusIcon = (status: HealthStatus) => {
     switch (status) {
       case 'healthy':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
@@ -142,7 +149,7 @@ const SystemStatusPanel: React.FC = () => {
     }
   };
 
-  const getStatusBadge = (status: 'healthy' | 'degraded' | 'down') => {
+  const getStatusBadge = (status: HealthStatus) => {
     switch (status) {
       case 'healthy':
         return (

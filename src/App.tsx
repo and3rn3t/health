@@ -19,13 +19,10 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Contact } from '@/types';
 import { useKV } from '@github/spark/hooks';
 import {
-  Warning as AlertTriangle,
-  ChartBar as BarChart3,
-  TrendUp as TrendingUp,
-} from '@phosphor-icons/react';
-import {
   Activity,
+  AlertTriangle,
   Apple,
+  BarChart3,
   Bell,
   Brain,
   Clock,
@@ -46,6 +43,7 @@ import {
   Stethoscope,
   Sun,
   Target,
+  TrendingUp,
   Trophy,
   Upload,
   Users,
@@ -93,7 +91,6 @@ import XcodeDevelopmentSetup from '@/components/health/XcodeDevelopmentSetup';
 import SmartNotificationEngine from '@/components/notifications/SmartNotificationEngine';
 import PersonalizedEngagementOptimizer from '@/components/recommendations/PersonalizedEngagementOptimizer';
 import SmartFeatureRecommendations from '@/components/recommendations/SmartFeatureRecommendations';
-import SimpleSystemStatus from '@/components/SimpleSystemStatus';
 import SystemStatusPanel from '@/components/SystemStatusPanel';
 import VitalSenseBrandShowcase from '@/components/VitalSenseBrandShowcase';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
@@ -362,7 +359,7 @@ function App() {
                     variant={isActive ? 'default' : 'ghost'}
                     className={`
                       h-10 w-full justify-start
-                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      px-3
                       ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
@@ -394,7 +391,7 @@ function App() {
                     variant={isActive ? 'default' : 'ghost'}
                     className={`
                       h-10 w-full justify-start
-                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      px-3
                       ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
@@ -426,7 +423,7 @@ function App() {
                     variant={isActive ? 'default' : 'ghost'}
                     className={`
                       h-10 w-full justify-start
-                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      px-3
                       ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
@@ -458,7 +455,7 @@ function App() {
                     variant={isActive ? 'default' : 'ghost'}
                     className={`
                       h-10 w-full justify-start
-                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      px-3
                       ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
@@ -490,7 +487,7 @@ function App() {
                     variant={isActive ? 'default' : 'ghost'}
                     className={`
                       h-10 w-full justify-start
-                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      px-3
                       ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
@@ -522,7 +519,7 @@ function App() {
                     variant={isActive ? 'default' : 'ghost'}
                     className={`
                       h-10 w-full justify-start
-                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      px-3
                       ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
@@ -554,7 +551,7 @@ function App() {
                     variant={isActive ? 'default' : 'ghost'}
                     className={`
                       h-10 w-full justify-start
-                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      px-3
                       ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
@@ -586,7 +583,7 @@ function App() {
                     variant={isActive ? 'default' : 'ghost'}
                     className={`
                       h-10 w-full justify-start
-                      ${sidebarCollapsed ? 'px-3' : 'px-3'}
+                      px-3
                       ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                     `}
                     onClick={() => setActiveTab(item.id)}
@@ -611,9 +608,9 @@ function App() {
               size="sm"
               onClick={toggleThemeMode}
               className={`
-                h-8 w-full justify-start
-                ${sidebarCollapsed ? 'px-3' : 'px-3'}
-                hover:bg-muted
+                hover:bg-muted h-8 w-full
+                justify-start
+                px-3
               `}
             >
               {themeMode === 'dark' && (
@@ -705,15 +702,6 @@ function App() {
                     High Fall Risk
                   </Badge>
                 )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setActiveTab('system-status')}
-                  className="flex items-center gap-2"
-                >
-                  <Monitor className="h-4 w-4" />
-                  System Status
-                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -808,25 +796,6 @@ function App() {
 
         {/* Main Content */}
         <main className="px-6 py-6">
-          {/* EMERGENCY TEST BUTTON - placed here so you can see it */}
-          <div className="mb-4 space-y-2 text-center">
-            <div className="rounded bg-gray-100 p-2 font-mono text-sm">
-              Current activeTab: "{activeTab}"
-            </div>
-            <Button
-              onClick={() => {
-                console.log(
-                  'Button clicked, setting activeTab to simple-status'
-                );
-                setActiveTab('simple-status');
-                console.log('activeTab should now be simple-status');
-              }}
-              className="rounded-lg bg-red-600 px-6 py-3 text-lg font-bold text-white shadow-lg hover:bg-red-700"
-            >
-              🔴 CLICK HERE TO TEST SYSTEM STATUS PANEL 🔴
-            </Button>
-          </div>
-
           {!hasHealthData ? (
             <div className="mx-auto max-w-2xl">
               <Card>
@@ -1106,16 +1075,13 @@ function App() {
                   <EnhancedHealthInsightsDashboard healthData={healthData} />
                 )}
                 {activeTab === 'usage-analytics' && healthData && (
-                  <UsageAnalyticsDashboard healthData={healthData} />
+                  <UsageAnalyticsDashboard />
                 )}
                 {activeTab === 'usage-predictions' && healthData && (
                   <AIUsagePredictions healthData={healthData} />
                 )}
                 {activeTab === 'recommendations' && healthData && (
-                  <SmartFeatureRecommendations
-                    healthData={healthData}
-                    onNavigateToFeature={setActiveTab}
-                  />
+                  <SmartFeatureRecommendations />
                 )}
                 {activeTab === 'engagement-optimizer' && healthData && (
                   <PersonalizedEngagementOptimizer
@@ -1127,15 +1093,6 @@ function App() {
                   <SmartNotificationEngine healthData={healthData} />
                 )}
                 {activeTab === 'system-status' && <SystemStatusPanel />}
-                {activeTab === 'simple-status' && (
-                  <div>
-                    <div className="mb-4 rounded border border-green-400 bg-green-100 p-4">
-                      ✅ SimpleSystemStatus is rendering! activeTab = "
-                      {activeTab}"
-                    </div>
-                    <SimpleSystemStatus />
-                  </div>
-                )}
                 {activeTab === 'realtime-scoring' && <RealTimeHealthScoring />}
                 {activeTab === 'analytics' && healthData && (
                   <HealthAnalytics healthData={healthData} />

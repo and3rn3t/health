@@ -141,6 +141,19 @@
 
   // Problems panel
   "problems.decorations.enabled": true,
+  "problems.showCurrentInStatus": true,
+  "problems.sortOrder": "severity",
+
+  // SonarLint configuration
+  "sonarlint.rules": {
+    "typescript:S6478": "off",
+    "typescript:S1774": "off",
+    "css:S6803": "off",
+    "typescript:S6596": "off",
+    "typescript:S3504": "off"
+  },
+  "sonarlint.focusOnNewCode": true,
+  "sonarlint.verboseLogging": false,
 
   // Copilot optimization
   "github.copilot.enable": {

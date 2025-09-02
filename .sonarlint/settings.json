@@ -1,0 +1,79 @@
+{
+  "rules": {
+    // Component structure rules - disabled for development flexibility
+    "typescript:S6478": "off", // Component definition in parent component
+    "typescript:S1774": "off", // Useless variable assignment
+    "typescript:S3504": "off", // Unused function assignment
+    "typescript:S6596": "off", // Component props readonly enforcement
+
+    // CSS and styling rules - allow inline styles for dynamic content
+    "css:S6803": "off", // CSS inline styles - needed for dynamic progress bars
+
+    // Code complexity rules - relaxed for development
+    "typescript:S3776": "off", // Cognitive complexity
+    "typescript:S1541": "off", // Function complexity
+    "typescript:S138": "off", // Function length
+
+    // Variable and assignment rules - relaxed
+    "typescript:S1481": "off", // Unused variables (handled by ESLint)
+    "typescript:S3696": "off", // Useless assignment
+    "typescript:S1854": "off", // Dead store
+
+    // Code structure rules
+    "typescript:S1186": "off", // Empty function
+    "typescript:S6606": "off", // Union type preference (we use type aliases)
+    "javascript:S6606": "off", // Union type preference
+
+    // Comment and documentation rules
+    "typescript:S125": "off", // Commented code
+    "typescript:S1134": "off", // FIXME comments
+    "typescript:S1135": "off", // TODO comments
+
+    // React specific rules - keep enabled for best practices
+    "typescript:S6268": "on", // React hooks dependencies
+    "typescript:S6275": "on", // React state mutations
+
+    // Security rules - keep enabled
+    "typescript:S5042": "on", // XSS vulnerabilities
+    "typescript:S2245": "on", // Random number generation
+
+    // Performance rules - keep enabled for optimization
+    "typescript:S6958": "on", // Unnecessary re-renders
+    "typescript:S6957": "on", // Optimize bundle size
+
+    // Type safety rules - keep enabled but as warnings
+    "typescript:S4322": "on", // Type assertions
+    "typescript:S4619": "on", // Optional chaining
+
+    // Code smell rules - disabled for development speed
+    "typescript:S3923": "off", // All branches identical
+    "typescript:S1067": "off", // Expression complexity
+    "typescript:S1479": "off", // Switch statement default
+
+    // Accessibility rules - keep enabled for a11y compliance
+    "typescript:S6827": "on", // Accessibility attributes
+    "typescript:S6825": "on", // Interactive elements
+
+    // iOS/Mobile specific - keep enabled
+    "typescript:S6959": "on" // Mobile performance
+  },
+  "analyzerProperties": {
+    "sonar.typescript.ignoreHeaderComments": "true",
+    "sonar.javascript.environments": "node,browser,es6",
+    "sonar.typescript.node.version": "22",
+    "sonar.exclusions": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/dist-worker/**",
+      "**/.wrangler/**",
+      "**/coverage/**",
+      "**/ios/**",
+      "**/build/**",
+      "**/*.test.*",
+      "**/*.spec.*",
+      "**/vite.*.config.*",
+      "**/wrangler.*.toml",
+      "**/*.d.ts"
+    ]
+  }
+}

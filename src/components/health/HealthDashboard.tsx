@@ -24,7 +24,7 @@ import {
   Shield,
   TrendingDown,
   TrendingUp,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 
 interface HealthDashboardProps {
   healthData: ProcessedHealthData | null;
@@ -50,7 +50,7 @@ function MetricCard({
   description,
   progress,
   className,
-}: MetricCardProps) {
+}: Readonly<MetricCardProps>) {
   const getTrendIcon = () => {
     switch (trend) {
       case 'increasing':
@@ -112,10 +112,12 @@ function MetricCard({
   );
 }
 
-export default function HealthDashboard({ healthData }: HealthDashboardProps) {
-  const { trackAction } = useUsageTracking('dashboard');
+export default function HealthDashboard({
+  healthData,
+}: Readonly<HealthDashboardProps>) {
+  const { trackAction: _trackAction } = useUsageTracking('dashboard');
 
-  if (!healthData || !healthData.metrics) {
+  if (!healthData?.metrics) {
     return (
       <div className="py-8 text-center">
         <p className="text-muted-foreground">No health data available</p>
@@ -126,20 +128,37 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
   const { metrics, insights, dataQuality, healthScore, fallRiskFactors } =
     healthData;
 
-  const getDataQualityColor = () => {
+  const _getDataQualityColor = () => {
     const quality = dataQuality?.overall || 'poor';
     return (
-      HealthColorMap.dataQuality[
-        quality as keyof typeof HealthColorMap.dataQuality
-      ] || getVitalSenseClasses.text.error
+      HealthColorMap.dataQuality[quality] || getVitalSenseClasses.text.error
     );
   };
 
-  const getHealthScoreColor = () => {
+  const _getHealthScoreColor = () => {
     const score = healthScore || 0;
     if (score >= 80) return getVitalSenseClasses.text.success;
     if (score >= 60) return getVitalSenseClasses.text.warning;
     return getVitalSenseClasses.text.error;
+  };
+
+  const getHealthScoreStatus = (score: number) => {
+    if (score >= 80) return 'excellent';
+    if (score >= 60) return 'good';
+    if (score >= 40) return 'fair';
+    return 'poor';
+  };
+
+  const getFallRiskStatus = (riskFactors: typeof fallRiskFactors) => {
+    if (riskFactors?.some((f) => f.risk === 'high')) return 'high';
+    if (riskFactors?.some((f) => f.risk === 'moderate')) return 'moderate';
+    return 'low';
+  };
+
+  const getBadgeVariant = (risk: string) => {
+    if (risk === 'high') return 'destructive';
+    if (risk === 'moderate') return 'secondary';
+    return 'default';
   };
 
   return (
@@ -163,15 +182,7 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <VitalSenseStatusCard
           type="health"
-          status={
-            healthScore >= 80
-              ? 'excellent'
-              : healthScore >= 60
-                ? 'good'
-                : healthScore >= 40
-                  ? 'fair'
-                  : 'poor'
-          }
+          status={getHealthScoreStatus(healthScore || 0)}
           title="Health Score"
           value={healthScore || 0}
           subtitle={`Based on ${Object.keys(metrics).length} metrics`}
@@ -179,10 +190,7 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
 
         <VitalSenseStatusCard
           type="system"
-          status={
-            (dataQuality?.overall as 'excellent' | 'good' | 'fair' | 'poor') ||
-            'poor'
-          }
+          status={dataQuality?.overall || 'poor'}
           title="Data Quality"
           value={dataQuality?.overall || 'Unknown'}
           subtitle={`${dataQuality?.completeness || 0}% complete data`}
@@ -190,13 +198,7 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
 
         <VitalSenseStatusCard
           type="fallRisk"
-          status={
-            fallRiskFactors?.some((f) => f.risk === 'high')
-              ? 'high'
-              : fallRiskFactors?.some((f) => f.risk === 'moderate')
-                ? 'moderate'
-                : 'low'
-          }
+          status={getFallRiskStatus(fallRiskFactors)}
           title="Fall Risk"
           value={fallRiskFactors?.length || 0}
           subtitle="Risk factors identified"
@@ -206,7 +208,7 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
           type="activity"
           status="moderate"
           title="Activity Level"
-          value={metrics.steps?.value || 0}
+          value={metrics.steps?.lastValue || 0}
           subtitle="Steps today"
         />
       </div>
@@ -286,7 +288,7 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
               <div className="space-y-3">
                 {insights?.map((insight: string, index: number) => (
                   <div
-                    key={index}
+                    key={`insight-${insight.substring(0, 20)}-${index}`}
                     className="bg-muted/30 flex items-start gap-3 rounded-lg p-3"
                   >
                     <div className="bg-primary mt-2 h-2 w-2 flex-shrink-0 rounded-full" />
@@ -314,20 +316,15 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
             <CardContent>
               <div className="space-y-3">
                 {fallRiskFactors?.map((factor, index) => (
-                  <div key={index} className="space-y-2 rounded-lg border p-3">
+                  <div
+                    key={`risk-${factor.factor}-${index}`}
+                    className="space-y-2 rounded-lg border p-3"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">
                         {factor.factor}
                       </span>
-                      <Badge
-                        variant={
-                          factor.risk === 'high'
-                            ? 'destructive'
-                            : factor.risk === 'moderate'
-                              ? 'secondary'
-                              : 'default'
-                        }
-                      >
+                      <Badge variant={getBadgeVariant(factor.risk)}>
                         {factor.risk} risk
                       </Badge>
                     </div>
@@ -356,7 +353,10 @@ export default function HealthDashboard({ healthData }: HealthDashboardProps) {
           <CardContent>
             <div className="space-y-4">
               {metrics.steps?.daily?.slice(-14)?.map((day, index) => (
-                <div key={index} className="flex items-center justify-between">
+                <div
+                  key={`day-${day.date}-${index}`}
+                  className="flex items-center justify-between"
+                >
                   <span className="text-muted-foreground w-16 text-sm">
                     {new Date(day.date).toLocaleDateString('en-US', {
                       month: 'short',

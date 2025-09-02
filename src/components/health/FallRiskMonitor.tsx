@@ -11,7 +11,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
-import { Brain, Heart, Phone, Shield } from '@phosphor-icons/react';
+import { Brain, Heart, Phone, Shield } from 'lucide-react';
 import { useEffect } from 'react';
 import MLPredictionsDashboard from './MLPredictionsDashboard';
 

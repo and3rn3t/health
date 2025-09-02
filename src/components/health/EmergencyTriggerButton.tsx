@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Phone, Warning } from '@phosphor-icons/react';
 import { useLiveHealthData } from '@/hooks/useLiveHealthData';
+import { AlertTriangle, Phone } from 'lucide-react';
+import { useMemo } from 'react';
 
 type Props = { userId?: string; size?: 'sm' | 'lg' | 'default' };
 
@@ -37,7 +37,7 @@ export default function EmergencyTriggerButton({
       >
         {pendingEmergency ? (
           <>
-            <Warning className="mr-2 h-5 w-5" />
+            <AlertTriangle className="mr-2 h-5 w-5" />
             Cancel window: {remainingSec}s
           </>
         ) : (
