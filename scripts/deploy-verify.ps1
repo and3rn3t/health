@@ -53,7 +53,7 @@ function Test-DeploymentPrerequisites {
 
   # Check if .nvmrc matches
   if (Test-Path '.nvmrc') {
-    $nvmrcVersion = Get-Content '.nvmrc' -Raw | Trim
+    $nvmrcVersion = (Get-Content '.nvmrc' -Raw).Trim()
     Write-Status ".nvmrc specifies: v$nvmrcVersion" 'Info'
   }
 

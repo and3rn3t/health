@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,27 +8,19 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { useKV } from '@github/spark/hooks';
 import {
   Brain,
-  TrendingUp,
-  TrendingDown,
-  Calendar,
-  Clock,
-  Target,
-  Activity,
-  Zap,
-  AlertTriangle,
   CheckCircle,
-  ArrowRight,
+  Clock,
   Sparkle,
+  Target,
 } from '@phosphor-icons/react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 interface UsagePrediction {
   metric: string;
@@ -75,18 +68,18 @@ export default function AIUsagePredictions({
       // Create comprehensive usage analysis prompt
       const prompt = spark.llmPrompt`
         Based on the following health data, generate detailed usage predictions and engagement forecasts:
-        
+
         Health Score: ${healthData.healthScore || 0}
         Fall Risk Factors: ${JSON.stringify(healthData.fallRiskFactors || [])}
         Key Metrics: ${JSON.stringify(healthData.metrics || {})}
-        
+
         Generate predictions for:
         1. Health monitoring engagement patterns
         2. Feature usage trends
         3. Data upload frequency
         4. Alert response rates
         5. Goal achievement likelihood
-        
+
         Consider seasonal patterns, health trends, and behavioral indicators.
         Focus on actionable insights that can improve health outcomes.
       `;

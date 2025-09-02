@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import app from '../worker';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   LiveHealthDataSync,
   type LiveHealthMetric,
 } from '../lib/liveHealthDataSync';
+import app from '../worker';
 
 // Helper to call Hono handlers directly via fetch
 async function call(
@@ -18,7 +18,7 @@ async function call(
       ...(init?.ip ? { 'CF-Connecting-IP': init.ip } : {}),
     },
   });
-  // @ts-expect-error hono app has fetch
+  // hono app has fetch method
   return app.fetch(req, {
     ENVIRONMENT: 'development',
     ASSETS: { fetch: () => new Response(null, { status: 404 }) },
