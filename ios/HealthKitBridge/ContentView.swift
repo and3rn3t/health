@@ -13,7 +13,7 @@ struct ContentView: View {
     @StateObject private var webSocketManager = WebSocketManager.shared
     @StateObject private var healthManager = HealthKitManager.shared
     @StateObject private var apiClient = ApiClient.shared
-    
+
     @State private var isInitialized = false
     @State private var showingAlert = false
     @State private var alertMessage = ""
@@ -24,26 +24,26 @@ struct ContentView: View {
     @State private var testDataSendStatus: String = "" // New state for test data feedback
     @State private var refreshDataStatus: String = "" // New state for refresh data feedback
     @State private var forceRefresh = false // Force UI refresh trigger
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
                     // Header with live stats
                     headerSection
-                    
+
                     // Connection Status Card (Enhanced)
                     connectionStatusCard
-                    
+
                     // Health Data Summary Card (New)
                     healthDataSummaryCard
-                    
+
                     // Performance Stats Card (New)
                     performanceStatsCard
-                    
+
                     // Manual Controls
                     controlButtonsSection
-                    
+
                     // Debug Information (Expandable)
                     debugSection
                 }
@@ -63,53 +63,68 @@ struct ContentView: View {
         }
         .id(forceRefresh) // Force refresh when needed
     }
-    
+
     private var headerSection: some View {
         VStack {
-            Text("HealthKit Bridge")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-            
+            // VitalSense branding
+            HStack {
+                Image(systemName: "heart.circle.fill")
+                    .font(.largeTitle)
+                    .foregroundColor(Color("VitalSensePrimary"))
+
+                VStack(alignment: .leading) {
+                    Text("VitalSense")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color("VitalSensePrimary"))
+
+                    Text("Health Monitoring")
+                        .font(.subheadline)
+                        .foregroundColor(Color("VitalSenseTeal"))
+                }
+            }
+
             if healthManager.isMonitoringActive {
                 Text("📊 \(String(format: "%.1f", healthManager.dataPointsPerMinute)) data points/min")
                     .font(.caption)
-                    .foregroundColor(.blue)
+                    .foregroundColor(Color("VitalSenseTeal"))
                     .animation(.easeInOut, value: healthManager.dataPointsPerMinute)
             }
         }
     }
-    
+
     private var connectionStatusCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Circle()
-                    .fill(webSocketManager.isConnected ? Color.green : Color.red)
+                    .fill(webSocketManager.isConnected ? Color("VitalSenseSuccess") : Color.red)
                     .frame(width: 12, height: 12)
                     .animation(.easeInOut, value: webSocketManager.isConnected)
-                
+
                 Text("WebSocket Status")
                     .font(.headline)
-                
+                    .foregroundColor(Color("VitalSensePrimary"))
+
                 Spacer()
-                
+
                 if healthManager.connectionQuality.latency > 0 {
                     Text("\(Int(healthManager.connectionQuality.latency * 1000))ms")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color("VitalSenseTeal"))
                 }
             }
-            
+
             Text(webSocketManager.connectionStatus)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
-            
+
             if let error = webSocketManager.lastError {
                 Text("Error: \(error)")
                     .font(.caption)
                     .foregroundColor(.red)
                     .padding(.top, 5)
             }
-            
+
             // Connection quality indicator
             if webSocketManager.isConnected {
                 HStack {
@@ -125,26 +140,31 @@ struct ContentView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(10)
+        .background(Color("VitalSenseBackground"))
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color("VitalSenseTeal").opacity(0.2), lineWidth: 1)
+        )
     }
-    
+
     private var healthDataSummaryCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text("Health Data")
                     .font(.headline)
-                
+                    .foregroundColor(Color("VitalSensePrimary"))
+
                 Spacer()
-                
+
                 if healthManager.isMonitoringActive {
                     Circle()
-                        .fill(Color.green)
+                        .fill(Color("VitalSenseSuccess"))
                         .frame(width: 8, height: 8)
                         .opacity(0.8)
                 }
             }
-            
+
             let summary = healthManager.getHealthDataSummary()
             if !summary.isEmpty {
                 Text(summary)
@@ -155,34 +175,39 @@ struct ContentView: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
-            
+
             // Individual health metrics
             if let heartRate = healthManager.lastHeartRate {
-                healthMetricRow(icon: "heart.fill", title: "Heart Rate", value: "\(Int(heartRate)) BPM", color: .red)
+                healthMetricRow(icon: "heart.fill", title: "Heart Rate", value: "\(Int(heartRate)) BPM", color: Color("VitalSensePrimary"))
             }
-            
+
             if let steps = healthManager.lastStepCount {
-                healthMetricRow(icon: "figure.walk", title: "Steps", value: "\(Int(steps))", color: .blue)
+                healthMetricRow(icon: "figure.walk", title: "Steps", value: "\(Int(steps))", color: Color("VitalSenseTeal"))
             }
-            
+
             if let energy = healthManager.lastActiveEnergy {
                 healthMetricRow(icon: "flame.fill", title: "Active Energy", value: "\(Int(energy)) kcal", color: .orange)
             }
-            
+
             if let distance = healthManager.lastDistance {
-                healthMetricRow(icon: "location.fill", title: "Distance", value: String(format: "%.1f km", distance/1000), color: .green)
+                healthMetricRow(icon: "location.fill", title: "Distance", value: String(format: "%.1f km", distance/1000), color: Color("VitalSenseSuccess"))
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(10)
+        .background(Color("VitalSenseBackground"))
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color("VitalSenseTeal").opacity(0.2), lineWidth: 1)
+        )
     }
-    
+
     private var performanceStatsCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Performance")
                 .font(.headline)
-            
+                .foregroundColor(Color("VitalSensePrimary"))
+
             HStack {
                 statItem(title: "Total Sent", value: "\(healthManager.totalDataPointsSent)")
                 Spacer()
@@ -190,12 +215,12 @@ struct ContentView: View {
                 Spacer()
                 statItem(title: "Reconnects", value: "\(healthManager.connectionQuality.reconnectCount)")
             }
-            
+
             if !healthManager.healthDataFreshness.isEmpty {
                 Text("Last Updates:")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                
+
                 ForEach(Array(healthManager.healthDataFreshness.keys.sorted()), id: \.self) { key in
                     if let date = healthManager.healthDataFreshness[key] {
                         HStack {
@@ -211,10 +236,14 @@ struct ContentView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(10)
+        .background(Color("VitalSenseBackground"))
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color("VitalSenseTeal").opacity(0.2), lineWidth: 1)
+        )
     }
-    
+
     private var controlButtonsSection: some View {
         VStack(spacing: 15) {
             // Step 1: Connect to WebSocket first
@@ -225,7 +254,8 @@ struct ContentView: View {
             }
             .disabled(webSocketManager.isConnected)
             .buttonStyle(.borderedProminent)
-            
+            .tint(Color("VitalSenseTeal"))
+
             // Step 2: Start/Stop Health Monitoring (most important action)
             Button(action: {
                 Task {
@@ -242,7 +272,7 @@ struct ContentView: View {
             }
             .disabled(!webSocketManager.isConnected)
             .buttonStyle(.borderedProminent)
-            .tint(healthManager.isMonitoringActive ? .red : .blue) // Use tint instead of foregroundColor
+            .tint(healthManager.isMonitoringActive ? .red : Color("VitalSensePrimary")) // Use VitalSense primary
             .animation(.easeInOut(duration: 0.2), value: healthManager.isMonitoringActive)
             .onAppear {
                 print("🔘 Monitoring button appeared - isMonitoringActive: \(healthManager.isMonitoringActive)")
@@ -250,13 +280,13 @@ struct ContentView: View {
             .onChange(of: healthManager.isMonitoringActive) { oldValue, newValue in
                 print("🔘 isMonitoringActive changed from \(oldValue) to \(newValue)")
             }
-            
+
             // Step 3: Manual actions section
             VStack(spacing: 8) {
                 Text("Manual Actions")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                
+
                 HStack(spacing: 15) {
                     Button("Send Test Data") {
                         Task {
@@ -265,7 +295,8 @@ struct ContentView: View {
                     }
                     .disabled(!webSocketManager.isConnected)
                     .buttonStyle(.bordered)
-                    
+                    .tint(Color("VitalSenseTeal"))
+
                     Button("Refresh Health Data") {
                         Task {
                             await refreshHealthData()
@@ -273,14 +304,15 @@ struct ContentView: View {
                     }
                     .disabled(!webSocketManager.isConnected) // Change condition to only require WebSocket connection
                     .buttonStyle(.bordered)
+                    .tint(Color("VitalSenseTeal"))
                 }
-                
+
                 // Visual feedback for test data sending
                 if !testDataSendStatus.isEmpty {
                     HStack {
                         if testDataSendStatus.contains("successfully") {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
+                                .foregroundColor(Color("VitalSenseSuccess"))
                         } else if testDataSendStatus.contains("Failed") {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundColor(.red)
@@ -288,11 +320,11 @@ struct ContentView: View {
                             ProgressView()
                                 .scaleEffect(0.8)
                         }
-                        
+
                         Text(testDataSendStatus)
                             .font(.caption)
-                            .foregroundColor(testDataSendStatus.contains("successfully") ? .green : 
-                                           testDataSendStatus.contains("Failed") ? .red : .blue)
+                            .foregroundColor(testDataSendStatus.contains("successfully") ? Color("VitalSenseSuccess") :
+                                           testDataSendStatus.contains("Failed") ? .red : Color("VitalSenseTeal"))
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 4)
@@ -300,13 +332,13 @@ struct ContentView: View {
                     .cornerRadius(8)
                     .transition(.opacity.combined(with: .scale))
                 }
-                
+
                 // Visual feedback for refresh status
                 if !refreshDataStatus.isEmpty {
                     HStack {
                         if refreshDataStatus.contains("successfully") {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
+                                .foregroundColor(Color("VitalSenseSuccess"))
                         } else if refreshDataStatus.contains("Failed") {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundColor(.red)
@@ -314,11 +346,11 @@ struct ContentView: View {
                             ProgressView()
                                 .scaleEffect(0.8)
                         }
-                        
+
                         Text(refreshDataStatus)
                             .font(.caption)
-                            .foregroundColor(refreshDataStatus.contains("successfully") ? .green : 
-                                             refreshDataStatus.contains("Failed") ? .red : .blue)
+                            .foregroundColor(refreshDataStatus.contains("successfully") ? Color("VitalSenseSuccess") :
+                                             refreshDataStatus.contains("Failed") ? .red : Color("VitalSenseTeal"))
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 4)
@@ -329,7 +361,7 @@ struct ContentView: View {
             }
         }
     }
-    
+
     private var debugSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             Button(action: {
@@ -343,11 +375,11 @@ struct ContentView: View {
                     Text("Debug Information")
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(.primary)
+                        .foregroundColor(Color("VitalSensePrimary"))
                     Spacer()
                     Image(systemName: showingDebugInfo ? "chevron.down" : "chevron.right")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color("VitalSensePrimary"))
                         .rotationEffect(.degrees(showingDebugInfo ? 0 : -90))
                         .animation(.easeInOut(duration: 0.3), value: showingDebugInfo)
                 }
@@ -357,7 +389,7 @@ struct ContentView: View {
             }
             .buttonStyle(PlainButtonStyle())
             .background(Color(.systemGray6))
-            
+
             if showingDebugInfo {
                 VStack(alignment: .leading, spacing: 8) {
                     debugRow(label: "User ID", value: AppConfig.shared.userId)
@@ -367,11 +399,11 @@ struct ContentView: View {
                     debugRow(label: "HealthKit Status", value: healthManager.isAuthorized ? "Authorized" : "Not Authorized")
                     debugRow(label: "Monitoring", value: healthManager.isMonitoringActive ? "Active" : "Inactive")
                     debugRow(label: "WebSocket Mode", value: webSocketManager.isConnected ? "Connected" : "Disconnected")
-                    
+
                     if let error = healthManager.lastError {
                         debugRow(label: "Last Error", value: error)
                     }
-                    
+
                     if let wsError = webSocketManager.lastError {
                         debugRow(label: "WebSocket Error", value: wsError)
                     }
@@ -384,26 +416,26 @@ struct ContentView: View {
         .cornerRadius(10)
         .clipped()
     }
-    
+
     // Helper Views
     private func healthMetricRow(icon: String, title: String, value: String, color: Color) -> some View {
         HStack {
             Image(systemName: icon)
                 .foregroundColor(color)
                 .frame(width: 20)
-            
+
             Text(title)
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
+
             Spacer()
-            
+
             Text(value)
                 .font(.caption)
                 .fontWeight(.medium)
         }
     }
-    
+
     private func statItem(title: String, value: String) -> some View {
         VStack {
             Text(value)
@@ -414,22 +446,22 @@ struct ContentView: View {
                 .foregroundColor(.secondary)
         }
     }
-    
+
     private func debugRow(label: String, value: String) -> some View {
         HStack {
             Text("\(label):")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
+
             Spacer()
-            
+
             Text(value)
                 .font(.caption)
                 .fontWeight(.medium)
                 .multilineTextAlignment(.trailing)
         }
     }
-    
+
     // Computed Properties
     private var qualityColor: Color {
         let strength = healthManager.connectionQuality.signalStrength
@@ -438,7 +470,7 @@ struct ContentView: View {
         if strength > 0.4 { return .orange }
         return .red
     }
-    
+
     private var qualityDescription: String {
         let strength = healthManager.connectionQuality.signalStrength
         if strength > 0.8 { return "Excellent" }
@@ -446,7 +478,7 @@ struct ContentView: View {
         if strength > 0.4 { return "Fair" }
         return "Poor"
     }
-    
+
     // Helper Functions
     private func timeAgo(from date: Date) -> String {
         let interval = Date().timeIntervalSince(date)
@@ -458,23 +490,23 @@ struct ContentView: View {
             return "\(Int(interval/3600))h ago"
         }
     }
-    
+
     private func initializeApp() async {
         print("🚀 Initializing app...")
-        
+
         // Request HealthKit authorization first
         await healthManager.requestAuthorization()
-        
+
         // Auto-connect WebSocket
         await connectWebSocket()
     }
-    
+
     private func connectWebSocket() async {
         print("🔌 Connecting WebSocket...")
         sendStatus = "Connecting..."
-        
+
         let appConfig = AppConfig.shared
-        
+
         if let token = await apiClient.getDeviceToken(
             userId: appConfig.userId,
             deviceType: "ios_app"
@@ -486,14 +518,14 @@ struct ContentView: View {
             showAlert("Failed to get device token")
         }
     }
-    
+
     private func sendTestData() async {
         print("📤 Sending test data...")
         await MainActor.run {
             sendStatus = "Sending..."
             testDataSendStatus = "Sending test data..." // Show immediate feedback
         }
-        
+
         let testData = HealthData(
             type: "heart_rate",
             value: 75.0,
@@ -502,7 +534,7 @@ struct ContentView: View {
             deviceId: UIDevice.current.identifierForVendor?.uuidString ?? "unknown",
             userId: AppConfig.shared.userId
         )
-        
+
         do {
             try await webSocketManager.sendHealthData(testData)
             await MainActor.run {
@@ -510,11 +542,11 @@ struct ContentView: View {
                 lastSentData = "Heart Rate: 75 bpm"
                 testDataSendStatus = "✓ Test data sent successfully (Mock mode)" // Show mock mode clearly
             }
-            
+
             // Show success alert for better feedback
             let mode = webSocketManager.connectionStatus.contains("Mock") ? " (Mock mode)" : ""
             showAlert("Test data sent successfully: Heart Rate 75 BPM\(mode)")
-            
+
             // Clear status after 4 seconds (longer to see the feedback)
             await MainActor.run {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
@@ -528,7 +560,7 @@ struct ContentView: View {
                 testDataSendStatus = "✗ Failed to send test data" // Update test data status
             }
             showAlert("Failed to send test data: \(error.localizedDescription)")
-            
+
             // Clear error status after 4 seconds
             await MainActor.run {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
@@ -537,44 +569,44 @@ struct ContentView: View {
             }
         }
     }
-    
+
     private func startHealthMonitoring() async {
         print("📊 Starting health monitoring...")
         await MainActor.run {
             isInitialized = true
             sendStatus = "Monitoring active"
         }
-        
+
         await healthManager.startLiveDataStreaming(webSocketManager: webSocketManager)
         showAlert("Health monitoring started successfully")
     }
-    
+
     private func refreshHealthData() async {
         print("🔄 Manually refreshing health data...")
         await MainActor.run {
             refreshDataStatus = "Refreshing health data..."
         }
-        
+
         do {
             try await healthManager.sendCurrentHealthData()
             await MainActor.run {
                 refreshDataStatus = "✓ Health data refreshed successfully"
             }
-            
+
             // Provide detailed feedback about what was refreshed
             let summary = healthManager.getHealthDataSummary()
-            let message = summary.isEmpty ? 
-                "Health data refresh completed" : 
+            let message = summary.isEmpty ?
+                "Health data refresh completed" :
                 "Health data refreshed: \(summary)"
             showAlert(message)
-            
+
         } catch {
             await MainActor.run {
                 refreshDataStatus = "✗ Failed to refresh health data"
             }
             showAlert("Failed to refresh health data: \(error.localizedDescription)")
         }
-        
+
         // Clear refresh status after 4 seconds
         await MainActor.run {
             DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
@@ -582,13 +614,13 @@ struct ContentView: View {
             }
         }
     }
-    
+
     private func stopHealthMonitoring() async {
         print("⏹️ Stopping health monitoring...")
         healthManager.stopMonitoring()
         showAlert("Health monitoring stopped")
     }
-    
+
     private func showAlert(_ message: String) {
         Task { @MainActor in
             alertMessage = message

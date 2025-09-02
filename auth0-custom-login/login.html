@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>VitalSense Health - Secure Sign In</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="https://health.andernet.dev/favicon.ico"
+    />
+
+    <!-- Inter Font from Google Fonts with fallback -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+
+    <style>
+      /* VitalSense Theme Variables */
+      :root {
+        --vs-primary: #2563eb;
+        --vs-primary-dark: #1d4ed8;
+        --vs-accent: #0891b2;
+        --vs-success: #059669;
+        --vs-warning: #d97706;
+        --vs-error: #dc2626;
+        --vs-gray-50: #f8fafc;
+        --vs-gray-100: #f1f5f9;
+        --vs-gray-200: #e2e8f0;
+        --vs-gray-300: #cbd5e1;
+        --vs-gray-400: #94a3b8;
+        --vs-gray-500: #64748b;
+        --vs-gray-600: #475569;
+        --vs-gray-700: #334155;
+        --vs-gray-800: #1e293b;
+        --vs-gray-900: #0f172a;
+        --vs-white: #ffffff;
+        --vs-radius: 0.5rem;
+        --vs-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        --vs-shadow-lg:
+          0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          'Inter',
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        background: linear-gradient(135deg, var(--vs-gray-50) 0%, #e0e7ff 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--vs-gray-900);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .login-container {
+        width: 100%;
+        max-width: 480px;
+        padding: 2rem;
+      }
+
+      .brand-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .brand-logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 80px;
+        height: 80px;
+        background: var(--vs-primary);
+        border-radius: 50%;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--vs-shadow-lg);
+      }
+
+      .brand-logo svg {
+        width: 40px;
+        height: 40px;
+        color: var(--vs-white);
+      }
+
+      .brand-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--vs-gray-900);
+        margin-bottom: 0.5rem;
+      }
+
+      .brand-tagline {
+        font-size: 1.125rem;
+        color: var(--vs-gray-600);
+        font-weight: 400;
+      }
+
+      .login-card {
+        background: var(--vs-white);
+        border-radius: var(--vs-radius);
+        box-shadow: var(--vs-shadow);
+        overflow: hidden;
+        border: 1px solid var(--vs-gray-200);
+      }
+
+      .card-header {
+        padding: 2rem 2rem 1rem;
+        text-align: center;
+        border-bottom: 1px solid var(--vs-gray-100);
+      }
+
+      .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--vs-gray-900);
+        margin-bottom: 0.5rem;
+      }
+
+      .card-description {
+        color: var(--vs-gray-600);
+        font-size: 0.875rem;
+      }
+
+      .card-content {
+        padding: 2rem;
+      }
+
+      .security-features {
+        margin-bottom: 2rem;
+      }
+
+      .security-feature {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 0;
+        font-size: 0.875rem;
+        color: var(--vs-gray-600);
+      }
+
+      .security-feature svg {
+        width: 20px;
+        height: 20px;
+        color: var(--vs-success);
+        margin-right: 0.75rem;
+        flex-shrink: 0;
+      }
+
+      .auth0-lock-container {
+        margin: 1.5rem 0;
+      }
+
+      /* Auth0 Lock Widget Customizations */
+      .auth0-lock.auth0-lock .auth0-lock-overlay {
+        background: rgba(15, 23, 42, 0.8);
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-widget {
+        background: var(--vs-white);
+        border-radius: var(--vs-radius);
+        box-shadow: var(--vs-shadow);
+        border: none;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-header {
+        background: var(--vs-white);
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-header .auth0-lock-header-logo {
+        display: none;
+      }
+
+      .auth0-lock.auth0-lock
+        .auth0-lock-form
+        .auth0-lock-input-wrap
+        .auth0-lock-input {
+        border: 2px solid var(--vs-gray-200);
+        border-radius: calc(var(--vs-radius) * 0.75);
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+      }
+
+      .auth0-lock.auth0-lock
+        .auth0-lock-form
+        .auth0-lock-input-wrap
+        .auth0-lock-input:focus {
+        border-color: var(--vs-primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        outline: none;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-submit {
+        background: var(--vs-primary);
+        border: none;
+        border-radius: calc(var(--vs-radius) * 0.75);
+        padding: 0.875rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--vs-white);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        width: 100%;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-submit:hover {
+        background: var(--vs-primary-dark);
+        transform: translateY(-1px);
+        box-shadow: var(--vs-shadow-lg);
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-social-button {
+        border: 2px solid var(--vs-gray-200);
+        border-radius: calc(var(--vs-radius) * 0.75);
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s ease;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-social-button:hover {
+        border-color: var(--vs-primary);
+        transform: translateY(-1px);
+      }
+
+      .security-notice {
+        background: var(--vs-gray-50);
+        border: 1px solid var(--vs-gray-200);
+        border-radius: calc(var(--vs-radius) * 0.75);
+        padding: 1rem;
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .security-notice svg {
+        width: 16px;
+        height: 16px;
+        color: var(--vs-gray-500);
+        margin-right: 0.75rem;
+        margin-top: 0.125rem;
+        flex-shrink: 0;
+      }
+
+      .security-notice-text {
+        font-size: 0.75rem;
+        color: var(--vs-gray-600);
+        line-height: 1.5;
+      }
+
+      .footer-notice {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--vs-gray-200);
+      }
+
+      .footer-notice p {
+        font-size: 0.75rem;
+        color: var(--vs-gray-500);
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+      }
+
+      .footer-notice a {
+        color: var(--vs-primary);
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .footer-notice a:hover {
+        text-decoration: underline;
+      }
+
+      .compliance-badges {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .compliance-badge {
+        display: flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        background: var(--vs-gray-100);
+        border-radius: calc(var(--vs-radius) * 0.5);
+        font-size: 0.625rem;
+        font-weight: 600;
+        color: var(--vs-gray-700);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .compliance-badge svg {
+        width: 12px;
+        height: 12px;
+        margin-right: 0.25rem;
+      }
+
+      /* Loading State */
+      .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--vs-gray-300);
+        border-radius: 50%;
+        border-top-color: var(--vs-white);
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .footer-enterprise-text {
+        margin-top: 1rem;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 640px) {
+        .login-container {
+          padding: 1rem;
+        }
+
+        .brand-title {
+          font-size: 2rem;
+        }
+
+        .card-content {
+          padding: 1.5rem;
+        }
+
+        .compliance-badges {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+      }
+
+      /* Dark mode support */
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --vs-gray-50: #0f172a;
+          --vs-gray-100: #1e293b;
+          --vs-gray-200: #334155;
+          --vs-gray-900: #f8fafc;
+          --vs-white: #1e293b;
+        }
+
+        body {
+          background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <!-- Brand Header -->
+      <div class="brand-header">
+        <div class="brand-logo">
+          <i data-lucide="heart">♥</i>
+        </div>
+        <h1 class="brand-title">VitalSense</h1>
+        <p class="brand-tagline">Apple Health Insights & Fall Risk Monitor</p>
+      </div>
+
+      <!-- Login Card -->
+      <div class="login-card">
+        <div class="card-header">
+          <h2 class="card-title">Secure Access</h2>
+          <p class="card-description">
+            Sign in to access your health dashboard with enterprise-grade
+            security
+          </p>
+        </div>
+
+        <div class="card-content">
+          <!-- Security Features -->
+          <div class="security-features">
+            <div class="security-feature">
+              <i data-lucide="shield-check">🛡</i>
+              <span>HIPAA-compliant authentication</span>
+            </div>
+            <div class="security-feature">
+              <i data-lucide="lock">🔒</i>
+              <span>End-to-end encrypted data protection</span>
+            </div>
+            <div class="security-feature">
+              <i data-lucide="check-circle">✓</i>
+              <span>Multi-factor authentication support</span>
+            </div>
+            <div class="security-feature">
+              <i data-lucide="users">👥</i>
+              <span>Role-based access control</span>
+            </div>
+          </div>
+
+          <!-- Auth0 Lock Widget Container -->
+          <div class="auth0-lock-container" id="auth0-lock-container">
+            <!-- Lock widget will be mounted here -->
+          </div>
+
+          <!-- Security Notice -->
+          <div class="security-notice">
+            <i data-lucide="shield">🛡</i>
+            <div class="security-notice-text">
+              Your health data is protected by industry-leading security
+              measures including encryption at rest and in transit, HIPAA
+              compliance, and zero-trust architecture.
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Notice -->
+        <div class="footer-notice">
+          <p>
+            By signing in, you agree to our
+            <a
+              href="https://health.andernet.dev/terms"
+              target="_blank"
+              rel="noopener"
+              >Terms of Service</a
+            >
+            and
+            <a
+              href="https://health.andernet.dev/privacy"
+              target="_blank"
+              rel="noopener"
+              >Privacy Policy</a
+            >
+          </p>
+
+          <div class="compliance-badges">
+            <div class="compliance-badge">
+              <i data-lucide="shield">🛡</i>
+              HIPAA
+            </div>
+            <div class="compliance-badge">
+              <i data-lucide="check-circle-2">✓</i>
+              SOC 2 Type II
+            </div>
+            <div class="compliance-badge">
+              <i data-lucide="lock">🔒</i>
+              ISO 27001
+            </div>
+          </div>
+
+          <p class="footer-enterprise-text">
+            Enterprise-grade security for your health data.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auth0 Lock Script -->
+    <script src="https://cdn.auth0.com/js/lock/12.3.2/lock.min.js"></script>
+
+    <!-- Lucide Icons (non-blocking) -->
+    <script
+      async
+      src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"
+      onerror="console.log('Lucide icons failed to load, using fallback icons')"
+    ></script>
+
+    <script>
+      // Initialize Lucide icons with fallback
+      function initializeIcons() {
+        if (typeof lucide !== 'undefined') {
+          try {
+            lucide.createIcons();
+            console.log('✅ Lucide icons loaded successfully');
+          } catch (error) {
+            console.log('⚠️ Lucide icons failed to initialize:', error);
+          }
+        } else {
+          console.log('ℹ️ Using fallback emoji icons');
+        }
+      }
+
+      // Try to initialize icons immediately, or wait for them to load
+      if (typeof lucide !== 'undefined') {
+        initializeIcons();
+      } else {
+        // Wait for Lucide to load, but don't block the page
+        setTimeout(initializeIcons, 1000);
+      }
+
+      // Auth0 Lock Configuration
+      var config = {
+        theme: {
+          logo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIwLjg0IDQuNjFhNS41IDUuNSAwIDAgMC03Ljc4IDBMMTIgNS42N2wtMS4wNi0xLjA2YTUuNSA1LjUgMCAwIDAtNy43OCAwIDUuNSA1LjUgMCAwIDAgMCA3Ljc4bDguODQgOC44NGE2IDYgMCAwIDAgOC40OSAwbDguNDktOC40OWE1LjUgNS41IDAgMCAwIDAtNy43OFoiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+',
+          primaryColor: '#2563eb',
+          authButtons: {
+            primaryColor: '#2563eb',
+            foregroundColor: '#ffffff',
+          },
+        },
+        languageDictionary: {
+          title: 'VitalSense Health',
+          signUpTerms:
+            "By signing up, you agree to our <a href='https://health.andernet.dev/terms' target='_blank'>Terms of Service</a> and <a href='https://health.andernet.dev/privacy' target='_blank'>Privacy Policy</a>.",
+          passwordPlaceholder: 'Enter your secure password',
+          emailInputPlaceholder: 'Enter your email address',
+          usernameInputPlaceholder: 'Enter your username or email',
+        },
+        auth: {
+          autoclose: true,
+          redirect: true,
+          responseType: 'code',
+          params: {
+            scope:
+              'openid profile email read:health_data write:health_data manage:emergency_contacts',
+            audience: '{config.audience}', // This will be replaced by Auth0
+          },
+        },
+        socialButtonStyle: 'big',
+        usernameStyle: 'email',
+        allowedConnections: [
+          'Username-Password-Authentication',
+          'google-oauth2',
+          'apple',
+        ],
+        allowSignUp: true,
+        allowForgotPassword: true,
+        allowLogin: true,
+        container: 'auth0-lock-container',
+        closable: false,
+        popupOptions: {
+          width: 400,
+          height: 600,
+        },
+      };
+
+      // Initialize Auth0 Lock
+      var lock = new Auth0Lock(config.clientID, config.auth0Domain, config);
+
+      // Show the lock widget
+      lock.show();
+
+      // Handle authentication events
+      lock.on('authenticated', function (authResult) {
+        console.log('Authentication successful');
+        // The redirect will be handled automatically
+      });
+
+      lock.on('authorization_error', function (error) {
+        console.error('Authentication error:', error);
+      });
+
+      lock.on('unrecoverable_error', function (error) {
+        console.error('Unrecoverable error:', error);
+      });
+
+      // Add loading state to submit button
+      lock.on('signin submit', function () {
+        var submitButton = document.querySelector('.auth0-lock-submit');
+        if (submitButton) {
+          var originalText = submitButton.innerHTML;
+          submitButton.innerHTML =
+            '<span class="loading-spinner"></span> Signing In...';
+          submitButton.disabled = true;
+
+          // Reset button state after 10 seconds if still loading
+          setTimeout(function () {
+            if (submitButton.disabled) {
+              submitButton.innerHTML = originalText;
+              submitButton.disabled = false;
+            }
+          }, 10000);
+        }
+      });
+    </script>
+  </body>
+</html>

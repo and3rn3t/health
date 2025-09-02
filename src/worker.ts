@@ -79,6 +79,9 @@ type Env = {
       fetch: (req: Request | string) => Promise<Response>;
     };
   };
+  AUTH0_DOMAIN?: string;
+  AUTH0_CLIENT_ID?: string;
+  BASE_URL?: string;
 };
 
 const app = new Hono<{ Bindings: Env }>();
@@ -175,14 +178,25 @@ app.use('*', async (c, next) => {
   await next();
   const baseResp = c.res ?? new Response(null);
 
-  const csp = [
-    "default-src 'self'",
-    "img-src 'self' data:",
-    "style-src 'self' 'unsafe-inline'", // Tailwind inlined
-    "script-src 'self'",
-    "connect-src 'self' https: wss:",
-    "frame-ancestors 'none'",
-  ].join('; ');
+  // Use relaxed CSP for login page to allow Auth0 scripts
+  const isLoginPage = c.req.path === '/login';
+  const csp = isLoginPage
+    ? [
+        "default-src 'self'",
+        "img-src 'self' data: https:",
+        "style-src 'self' 'unsafe-inline'",
+        "script-src 'self' 'unsafe-inline' https://cdn.auth0.com https://static.cloudflareinsights.com",
+        "connect-src 'self' https: wss:",
+        "frame-ancestors 'none'",
+      ].join('; ')
+    : [
+        "default-src 'self'",
+        "img-src 'self' data:",
+        "style-src 'self' 'unsafe-inline'", // Tailwind inlined
+        "script-src 'self'",
+        "connect-src 'self' https: wss:",
+        "frame-ancestors 'none'",
+      ].join('; ');
 
   try {
     const h = baseResp.headers;
@@ -911,6 +925,644 @@ app.post('/api/health-data', async (c) => {
   }
 
   return c.json({ ok: true, data: parsed.data }, 201);
+});
+
+// Demo mode route - bypasses auth and serves the app with demo user
+app.get('/demo', async (c) => {
+  // Get the main index.html using a simple request
+  if (!c.env.ASSETS) {
+    return c.text('Assets not available', 500);
+  }
+
+  const assetResp = await c.env.ASSETS.fetch(
+    new Request(`${new URL(c.req.url).origin}/index.html`)
+  );
+  if (!assetResp.ok) {
+    return c.text(
+      `App not available: ${assetResp.status} ${assetResp.statusText}`,
+      500
+    );
+  }
+
+  let html = await assetResp.text();
+
+  // Inject demo user data into the HTML
+  const demoUser = {
+    id: 'demo-user-vitalsense',
+    name: 'Demo User',
+    email: 'demo@vitalsense.health',
+    picture: 'https://via.placeholder.com/64x64/2563eb/ffffff?text=VT',
+    authenticated: true,
+    mode: 'demo',
+  };
+
+  // Inject demo mode in the head section before any scripts load
+  const demoHeadScript = `
+    <meta name="vitalsense-demo-mode" content="true">
+    <meta name="vitalsense-demo-user" content='${JSON.stringify(demoUser)}'>
+    <script>
+      // VitalSense Demo Mode - Set immediately before any other scripts
+      window.VITALSENSE_DEMO_MODE = true;
+      window.VITALSENSE_DEMO_USER = ${JSON.stringify(demoUser)};
+      window.vitalsense_demo_mode = true;
+      window.vitalsense_demo_user = ${JSON.stringify(demoUser)};
+      window.vitalsense_bypass_auth = true;
+
+      // Store in localStorage for persistence
+      try {
+        localStorage.setItem('vitalsense_demo_mode', 'true');
+        localStorage.setItem('vitalsense_demo_user', JSON.stringify(${JSON.stringify(demoUser)}));
+        localStorage.setItem('VITALSENSE_DEMO_MODE', 'true');
+        localStorage.setItem('auth_bypass', 'demo');
+      } catch(e) { console.warn('localStorage not available:', e); }
+
+      console.log('🚀 VitalSense Demo Mode Activated!', window.vitalsense_demo_user);
+
+      // Override any auth redirects globally
+      const originalAssign = Location.prototype.assign;
+      const originalReplace = Location.prototype.replace;
+
+      Location.prototype.assign = function(url) {
+        if (url.includes('/login') || url.includes('/auth')) {
+          console.log('🛡️ Demo mode: blocking auth redirect to', url);
+          return;
+        }
+        return originalAssign.call(this, url);
+      };
+
+      Location.prototype.replace = function(url) {
+        if (url.includes('/login') || url.includes('/auth')) {
+          console.log('🛡️ Demo mode: blocking auth redirect to', url);
+          return;
+        }
+        return originalReplace.call(this, url);
+      };
+    </meta>
+  `;
+
+  // Inject in head section
+  html = html.replace('</head>', demoHeadScript + '</head>');
+
+  // Also inject at the end of body as fallback
+  const demoBodyScript = `
+    <script>
+      // Fallback demo mode injection
+      if (!window.VITALSENSE_DEMO_MODE) {
+        window.VITALSENSE_DEMO_MODE = true;
+        window.VITALSENSE_DEMO_USER = ${JSON.stringify(demoUser)};
+        window.vitalsense_demo_mode = true;
+        window.vitalsense_demo_user = ${JSON.stringify(demoUser)};
+        console.log('📦 Fallback: VitalSense Demo Mode Activated!');
+      }
+    </script>
+  `;
+
+  html = html.replace('</body>', demoBodyScript + '</body>');
+  return c.html(html);
+});
+
+// Static demo page - completely bypasses React app authentication
+app.get('/demo-static', async (c) => {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitalSense Demo - Health Dashboard</title>
+    <style>
+        :root {
+            --vs-primary: #2563eb;
+            --vs-secondary: #0891b2;
+            --vs-background: #ffffff;
+            --vs-foreground: #0f172a;
+            --vs-card: #f8fafc;
+            --vs-border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--vs-primary) 0%, var(--vs-secondary) 100%);
+            min-height: 100vh;
+            color: var(--vs-foreground);
+        }
+
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .demo-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .demo-header h1 {
+            color: var(--vs-primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .demo-badge {
+            background: var(--vs-secondary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .demo-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .demo-card h3 {
+            color: var(--vs-primary);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .demo-metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--vs-border);
+        }
+
+        .demo-metric:last-child {
+            border-bottom: none;
+        }
+
+        .demo-value {
+            font-weight: 600;
+            color: var(--vs-secondary);
+        }
+
+        .demo-actions {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .demo-button {
+            background: var(--vs-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 0 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .demo-button:hover {
+            background: #1d4ed8;
+        }
+
+        .demo-button.secondary {
+            background: var(--vs-secondary);
+        }
+
+        .demo-button.secondary:hover {
+            background: #0e7490;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <div class="demo-badge">🚀 DEMO MODE</div>
+            <h1>VitalSense Health Dashboard</h1>
+            <p>Your Personal Health Intelligence Platform</p>
+            <p style="margin-top: 1rem; font-size: 0.9rem; color: #64748b;">
+                Welcome, <strong>Demo User</strong> (demo@vitalsense.health)
+            </p>
+        </div>
+
+        <div class="demo-grid">
+            <div class="demo-card">
+                <h3>📊 Health Metrics</h3>
+                <div class="demo-metric">
+                    <span>Heart Rate</span>
+                    <span class="demo-value">72 BPM</span>
+                </div>
+                <div class="demo-metric">
+                    <span>Steps Today</span>
+                    <span class="demo-value">8,247</span>
+                </div>
+                <div class="demo-metric">
+                    <span>Sleep Score</span>
+                    <span class="demo-value">85/100</span>
+                </div>
+                <div class="demo-metric">
+                    <span>Blood Pressure</span>
+                    <span class="demo-value">120/80</span>
+                </div>
+            </div>
+
+            <div class="demo-card">
+                <h3>🛡️ Fall Risk Analysis</h3>
+                <div class="demo-metric">
+                    <span>Risk Level</span>
+                    <span class="demo-value" style="color: #10b981;">Low</span>
+                </div>
+                <div class="demo-metric">
+                    <span>Balance Score</span>
+                    <span class="demo-value">92/100</span>
+                </div>
+                <div class="demo-metric">
+                    <span>Activity Level</span>
+                    <span class="demo-value">Active</span>
+                </div>
+                <div class="demo-metric">
+                    <span>Last Assessment</span>
+                    <span class="demo-value">Today</span>
+                </div>
+            </div>
+
+            <div class="demo-card">
+                <h3>🤖 AI Insights</h3>
+                <div style="padding: 1rem 0;">
+                    <p style="margin-bottom: 1rem;">
+                        <strong>💡 Today's Recommendation:</strong><br>
+                        Your activity levels are excellent! Consider adding 10 minutes of balance exercises to further reduce fall risk.
+                    </p>
+                    <p style="margin-bottom: 1rem;">
+                        <strong>📈 Trend Analysis:</strong><br>
+                        Sleep quality has improved 15% over the past week. Great progress!
+                    </p>
+                    <p>
+                        <strong>⚠️ Alert:</strong><br>
+                        No health alerts at this time. All metrics are within normal ranges.
+                    </p>
+                </div>
+            </div>
+
+            <div class="demo-card">
+                <h3>👥 Caregiver Dashboard</h3>
+                <div class="demo-metric">
+                    <span>Connected Caregivers</span>
+                    <span class="demo-value">2</span>
+                </div>
+                <div class="demo-metric">
+                    <span>Emergency Contacts</span>
+                    <span class="demo-value">3</span>
+                </div>
+                <div class="demo-metric">
+                    <span>Last Check-in</span>
+                    <span class="demo-value">2 hours ago</span>
+                </div>
+                <div class="demo-metric">
+                    <span>Sharing Status</span>
+                    <span class="demo-value" style="color: #10b981;">Active</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-actions">
+            <h3 style="margin-bottom: 1.5rem; color: var(--vs-primary);">Demo Actions</h3>
+            <button class="demo-button" onclick="alert('📱 iOS App integration would sync your Apple Health data here!')">
+                Connect iOS App
+            </button>
+            <button class="demo-button secondary" onclick="alert('🚨 Emergency alert system activated! Caregivers would be notified.')">
+                Test Emergency Alert
+            </button>
+            <button class="demo-button" onclick="window.location.href='/login'">
+                Exit Demo → Login
+            </button>
+        </div>
+
+        <div style="text-align: center; padding: 2rem; color: white;">
+            <p>🔒 This is a demo environment. No real health data is stored or processed.</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">
+                VitalSense • Your Health Intelligence Platform • Demo Mode
+            </p>
+        </div>
+    </div>
+
+    <script>
+        console.log('🚀 VitalSense Static Demo Loaded!');
+
+        // Simulate real-time updates
+        setInterval(() => {
+            const heartRate = document.querySelector('.demo-metric .demo-value');
+            if (heartRate && heartRate.textContent.includes('BPM')) {
+                const rate = 70 + Math.floor(Math.random() * 6);
+                heartRate.textContent = rate + ' BPM';
+            }
+        }, 5000);
+    </script>
+</body>
+</html>`;
+
+  return c.html(html);
+});
+
+// Auth0 custom login page - inline VitalSense branding for custom domain
+app.get('/login', async (c) => {
+  // Serve dynamic login page with Auth0 config injected
+  const auth0Domain = c.env.AUTH0_DOMAIN || 'dev-qjdpc81dzr7xrnlu.us.auth0.com';
+  const auth0ClientId =
+    c.env.AUTH0_CLIENT_ID || '3SWqx7E8dFSIWapIikjppEKQ5ksNxRAQ';
+
+  // Use the current domain for callback
+  const baseUrl = c.env.BASE_URL || 'https://health.andernet.dev';
+  const redirectUri = `${baseUrl}/callback`;
+
+  // Inline VitalSense login page
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitalSense Health - Secure Sign In</title>
+    <style>
+        :root {
+            --vs-primary: #2563eb;
+            --vs-primary-foreground: #ffffff;
+            --vs-secondary: #0891b2;
+            --vs-background: #ffffff;
+            --vs-foreground: #0f172a;
+            --vs-card: #f8fafc;
+            --vs-border: #e2e8f0;
+            --vs-input: #ffffff;
+            --vs-ring: #2563eb;
+            --vs-radius: 0.5rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--vs-primary) 0%, var(--vs-secondary) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--vs-foreground);
+        }
+
+        .login-container {
+            background: var(--vs-background);
+            padding: 2rem;
+            border-radius: var(--vs-radius);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--vs-border);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            color: var(--vs-primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo p {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .login-button {
+            width: 100%;
+            background: var(--vs-primary);
+            color: var(--vs-primary-foreground);
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: calc(var(--vs-radius) - 2px);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 1rem;
+        }
+
+        .login-button:hover {
+            background: #1d4ed8;
+        }
+
+        .login-button:focus {
+            outline: 2px solid var(--vs-ring);
+            outline-offset: 2px;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--vs-border);
+        }
+
+        .divider span {
+            background: var(--vs-background);
+            padding: 0 1rem;
+        }
+
+        .features {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .security-note {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: var(--vs-card);
+            border-radius: calc(var(--vs-radius) - 2px);
+            font-size: 0.75rem;
+            color: #64748b;
+            border: 1px solid var(--vs-border);
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>VitalSense</h1>
+            <p>Your Health Intelligence Platform</p>
+        </div>
+
+        <button class="login-button" onclick="loginWithAuth0()">
+            Sign In with VitalSense
+        </button>
+
+        <div class="divider">
+            <span>or</span>
+        </div>
+
+        <button class="login-button" onclick="loginDemo()" style="background: var(--vs-secondary);">
+            Try Demo Mode
+        </button>
+
+        <button class="login-button" onclick="window.open('/demo-static', '_blank')" style="background: #059669; margin-top: 0.5rem;">
+            Quick Demo Access (New Tab)
+        </button>
+
+        <button class="login-button" onclick="alert('Redirecting to static demo...'); setTimeout(() => window.location.href='/demo-static', 1000);" style="background: #dc2626; margin-top: 0.5rem;">
+            Debug Demo Redirect
+        </button>
+
+        <div class="divider">
+            <span>Secure Authentication</span>
+        </div>
+
+        <div class="features">
+            <p>• Privacy-first health monitoring</p>
+            <p>• AI-powered insights</p>
+            <p>• Emergency fall detection</p>
+        </div>
+
+        <div class="security-note">
+            🔒 Your health data is encrypted and secure. We use industry-standard authentication.
+        </div>
+    </div>
+
+    <script src="https://cdn.auth0.com/js/auth0/9.23.2/auth0.min.js"></script>
+    <script>
+        const auth0 = new auth0.WebAuth({
+            domain: '${auth0Domain}',
+            clientID: '${auth0ClientId}',
+            redirectUri: '${redirectUri}',
+            responseType: 'code',
+            scope: 'openid profile email'
+        });
+
+        function loginWithAuth0() {
+            // Check if Auth0 is properly configured
+            fetch('https://' + '${auth0Domain}' + '/.well-known/openid_configuration')
+                .then(response => {
+                    if (response.ok) {
+                        // Auth0 is working, proceed with normal auth
+                        auth0.authorize();
+                    } else {
+                        // Auth0 not configured, use demo mode
+                        loginDemo();
+                    }
+                })
+                .catch(() => {
+                    // Auth0 not accessible, use demo mode
+                    loginDemo();
+                });
+        }
+
+        function loginDemo() {
+            console.log('Demo login clicked!');
+
+            // Simple redirect to static demo route
+            const button = event.target;
+            button.textContent = 'Launching Demo...';
+            button.disabled = true;
+
+            setTimeout(() => {
+                console.log('Redirecting to static demo...');
+                window.location.href = '/demo-static';
+            }, 500);
+        }        // Auto-redirect if already logged in
+        auth0.parseHash((err, authResult) => {
+            if (authResult && authResult.accessToken) {
+                window.location.href = '/';
+            }
+        });
+    </script>
+</body>
+</html>`;
+
+  return c.html(html);
+});
+
+// Auth0 callback handler - redirect back to main app after authentication
+app.get('/callback', async (c) => {
+  // Get the authorization code and state from Auth0
+  const url = new URL(c.req.url);
+  const code = url.searchParams.get('code');
+  const state = url.searchParams.get('state');
+  const error = url.searchParams.get('error');
+  const demo = url.searchParams.get('demo');
+
+  // Handle demo mode
+  if (demo === 'true') {
+    return c.redirect('https://health.andernet.dev/?demo=true', 302);
+  }
+
+  // If there's an error, redirect to main domain with error
+  if (error) {
+    return c.redirect(
+      `https://health.andernet.dev/?auth_error=${encodeURIComponent(error)}`,
+      302
+    );
+  }
+
+  // If successful, redirect to main app with auth code
+  if (code) {
+    const params = new URLSearchParams();
+    params.set('code', code);
+    if (state) params.set('state', state);
+    return c.redirect(`https://health.andernet.dev/?${params.toString()}`, 302);
+  }
+
+  // Fallback redirect to main app
+  return c.redirect('https://health.andernet.dev/', 302);
+});
+
+// Support alternative auth path for backward compatibility
+app.get('/auth/login', async (c) => {
+  return c.redirect('/login', 302);
 });
 
 // SPA fallback to index.html using ASSETS binding

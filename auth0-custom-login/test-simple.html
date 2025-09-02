@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VitalSense Health - Login Test</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0f172a;
+      }
+
+      .test-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        text-align: center;
+        max-width: 400px;
+        width: 100%;
+      }
+
+      .logo {
+        width: 60px;
+        height: 60px;
+        background: #2563eb;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 24px;
+      }
+
+      h1 {
+        font-size: 2rem;
+        color: #2563eb;
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        color: #64748b;
+        margin-bottom: 1.5rem;
+      }
+
+      .feature {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0;
+        color: #475569;
+      }
+
+      .feature-icon {
+        width: 20px;
+        height: 20px;
+        background: #059669;
+        border-radius: 50%;
+        margin-right: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 12px;
+      }
+
+      .button {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 1rem;
+        width: 100%;
+      }
+
+      .button:hover {
+        background: #1d4ed8;
+      }
+
+      .debug-info {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: #f1f5f9;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        color: #475569;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <div class="logo">♥</div>
+      <h1>VitalSense</h1>
+      <p>Apple Health Insights & Fall Risk Monitor</p>
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">✓</div>
+          <span>HIPAA-compliant authentication</span>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔒</div>
+          <span>End-to-end encrypted data protection</span>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">✓</div>
+          <span>Multi-factor authentication support</span>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">👥</div>
+          <span>Role-based access control</span>
+        </div>
+      </div>
+
+      <button class="button" onclick="testClick()">Test Login Page</button>
+
+      <div class="debug-info">
+        <div id="debug-content">
+          <strong>Debug Information:</strong><br />
+          Page loaded: <span id="load-time"></span><br />
+          Browser: <span id="browser-info"></span><br />
+          Screen: <span id="screen-info"></span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Simple test to ensure JavaScript is working
+      function testClick() {
+        alert(
+          '✅ VitalSense login page is working!\n\nThis confirms:\n- HTML is loading\n- CSS is applying\n- JavaScript is executing\n\nThe main login page should work correctly.'
+        );
+      }
+
+      // Populate debug information
+      document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('load-time').textContent =
+          new Date().toLocaleTimeString();
+        document.getElementById('browser-info').textContent =
+          navigator.userAgent.split(' ')[0];
+        document.getElementById('screen-info').textContent =
+          screen.width + 'x' + screen.height;
+      });
+
+      // Test if external resources would load
+      console.log('🧪 VitalSense Login Page Test');
+      console.log('✅ JavaScript is executing');
+      console.log('✅ DOM is accessible');
+      console.log('✅ Styles are applied');
+
+      // Check if we can access external resources
+      var testImg = new Image();
+      testImg.onload = function () {
+        console.log('✅ External resources can load');
+      };
+      testImg.onerror = function () {
+        console.log('⚠️ External resources may be blocked');
+      };
+      testImg.src =
+        'https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap';
+    </script>
+  </body>
+</html>

@@ -1,0 +1,163 @@
+name = "vitalsense-health-prod"
+main = "dist-worker/index.js"
+compatibility_date = "2024-08-30"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+
+[build]
+command = "npm run build:worker"
+cwd = "."
+watch_dir = "src"
+
+# Assets configuration for React app
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# Production environment with full observability
+[env.production]
+name = "vitalsense-health-prod"
+
+# Observability & Analytics Configuration
+[env.production.analytics_engine_datasets]
+# Health metrics analytics
+[[env.production.analytics_engine_datasets]]
+binding = "HEALTH_ANALYTICS"
+
+# Security events analytics
+[[env.production.analytics_engine_datasets]]
+binding = "SECURITY_ANALYTICS"
+
+# Performance metrics analytics
+[[env.production.analytics_engine_datasets]]
+binding = "PERFORMANCE_ANALYTICS"
+
+# Logpush configuration for enhanced logging
+[env.production.logpush]
+# Enable logpush to external analytics (optional)
+# destination = "https://your-analytics-endpoint.com"
+
+# Production environment variables
+[env.production.vars]
+ENVIRONMENT = "production"
+ALLOWED_ORIGINS = "https://health.andernet.dev,https://vitalsense.andernet.dev"
+BASE_URL = "https://health.andernet.dev"
+API_BASE_URL = "https://health.andernet.dev/api"
+WEBSOCKET_URL = "wss://health.andernet.dev/ws"
+FILES_BASE_URL = "https://health.andernet.dev/files"
+LOG_LEVEL = "info"
+FALL_DETECTION_THRESHOLD = "0.85"
+EMERGENCY_RESPONSE_DELAY = "30"
+MAX_FILE_SIZE = "500MB"
+SESSION_TIMEOUT = "12h"
+ENABLE_ANALYTICS = "true"
+ENABLE_SECURITY_LOGGING = "true"
+ENABLE_PERFORMANCE_MONITORING = "true"
+
+# Production KV namespaces
+[[env.production.kv_namespaces]]
+binding = "HEALTH_KV"
+id = "c3501957dd2540ccb6f624a78df59936"
+
+# Session storage KV
+[[env.production.kv_namespaces]]
+binding = "SESSION_KV"
+id = "92783e42b1f54805be49a882bc0ef525"
+
+# Cache KV for performance
+[[env.production.kv_namespaces]]
+binding = "CACHE_KV"
+id = "327f94aec89b473db9a4d90baa9a2923"# Production R2 buckets for file storage
+[[env.production.r2_buckets]]
+binding = "HEALTH_FILES"
+bucket_name = "vitalsense-health-files"
+
+# Audit log storage with Object Lock
+[[env.production.r2_buckets]]
+binding = "AUDIT_LOGS"
+bucket_name = "vitalsense-audit-logs"
+
+# Production routes with zone configuration
+[[env.production.routes]]
+pattern = "health.andernet.dev/*"
+zone_name = "andernet.dev"
+
+[[env.production.routes]]
+pattern = "vitalsense.andernet.dev/*"
+zone_name = "andernet.dev"
+
+# Durable Objects for real-time features
+[[durable_objects.bindings]]
+name = "WEBSOCKET_ROOMS"
+class_name = "WebSocketRoom"
+
+[[durable_objects.bindings]]
+name = "RATE_LIMITER"
+class_name = "RateLimiter"
+
+[[durable_objects.bindings]]
+name = "HEALTH_SESSIONS"
+class_name = "HealthSession"
+
+# Migrations for Durable Objects
+[[migrations]]
+tag = "v1"
+new_classes = ["WebSocketRoom", "RateLimiter", "HealthSession"]
+
+# Rules for enhanced security and performance
+[env.production.rules]
+# Custom headers for security
+[[env.production.rules.headers]]
+name = "Security Headers"
+action = "set"
+expression = "true"
+headers = [
+    "X-Content-Type-Options: nosniff",
+    "X-Frame-Options: DENY",
+    "X-XSS-Protection: 1; mode=block",
+    "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload",
+    "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' wss: https:; font-src 'self'; object-src 'none'; media-src 'self'; frame-src 'none';"
+]
+
+# Rate limiting rules
+[[env.production.rules.rate_limit]]
+name = "API Rate Limit"
+expression = "http.request.uri.path matches \"/api/.*\""
+action = "rate_limit"
+rate_limit = {
+    threshold = 100,
+    period = 60,
+    action = "challenge"
+}
+
+[[env.production.rules.rate_limit]]
+name = "Auth Rate Limit"
+expression = "http.request.uri.path matches \"/(login|register|auth)/.*\""
+action = "rate_limit"
+rate_limit = {
+    threshold = 10,
+    period = 60,
+    action = "block"
+}
+
+# Cache rules for performance
+[[env.production.rules.cache]]
+name = "Static Asset Cache"
+expression = "http.request.uri.path matches \"\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2)$\""
+action = "cache"
+cache = {
+    edge_ttl = 86400,
+    browser_ttl = 3600,
+    serve_stale = true
+}
+
+# Transform rules for optimization
+[[env.production.rules.transform]]
+name = "Minify Assets"
+expression = "http.request.uri.path matches \"\\.(js|css|html)$\""
+action = "minify"
+minify = {
+    javascript = true,
+    css = true,
+    html = true
+}

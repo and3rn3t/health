@@ -74,6 +74,7 @@ import CommunityShare from '@/components/health/CommunityShare';
 import FamilyDashboard from '@/components/health/FamilyDashboard';
 import HealthcarePortal from '@/components/health/HealthcarePortal';
 import HealthSearch from '@/components/health/HealthSearch';
+import HealthSystemIntegration from '@/components/health/HealthSystemIntegration';
 import ImplementationPhases from '@/components/health/ImplementationPhases';
 import LiveHealthDataIntegration from '@/components/health/LiveHealthDataIntegration';
 import MLPredictionsDashboard from '@/components/health/MLPredictionsDashboard';
@@ -83,6 +84,7 @@ import RealTimeMonitoringHub from '@/components/health/RealTimeMonitoringHub';
 // import HealthInsightsDashboard from '@/components/health/HealthInsightsDashboard'
 import AIUsagePredictions from '@/components/analytics/AIUsagePredictions';
 import UsageAnalyticsDashboard from '@/components/analytics/UsageAnalyticsDashboard';
+import UserProfile from '@/components/auth/UserProfile';
 import AdvancedAppleWatchIntegration from '@/components/health/AdvancedAppleWatchIntegration';
 import AppleWatchIntegrationChecklist from '@/components/health/AppleWatchIntegrationChecklist';
 import ComprehensiveAppleHealthKitGuide from '@/components/health/ComprehensiveAppleHealthKitGuide';
@@ -229,6 +231,11 @@ function App() {
       { id: 'realtime', label: 'Fall Detection', icon: Activity },
     ],
     advanced: [
+      {
+        id: 'enhanced-health-system',
+        label: 'Enhanced Health System',
+        icon: Brain,
+      },
       { id: 'monitoring-hub', label: 'Monitoring Hub', icon: Activity },
       { id: 'live-integration', label: 'Live Integration', icon: CloudUpload },
       { id: 'advanced-Watch', label: 'Watch Integration', icon: Activity },
@@ -264,6 +271,7 @@ function App() {
       { id: 'xcode-setup', label: 'Xcode Development Setup', icon: Code },
       { id: 'infrastructure', label: 'Cloud Infrastructure', icon: Settings },
     ],
+    profile: [{ id: 'user-profile', label: 'User Profile', icon: Users }],
   };
 
   // Get current page details for breadcrumb
@@ -277,6 +285,7 @@ function App() {
       ...navigationItems.community,
       ...navigationItems.management,
       ...navigationItems.setup,
+      ...navigationItems.profile,
     ];
     const currentItem = allItems.find((item) => item.id === activeTab);
 
@@ -297,6 +306,8 @@ function App() {
       category = 'Management';
     if (navigationItems.setup.find((item) => item.id === activeTab))
       category = 'Setup';
+    if (navigationItems.profile.find((item) => item.id === activeTab))
+      category = 'Profile';
 
     return { label: currentItem.label, category };
   };
@@ -581,6 +592,38 @@ function App() {
             </div>
           </div>
 
+          {/* Profile */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
+                User Profile
+              </h3>
+            )}
+            <div className="space-y-1">
+              {navigationItems.profile.map((item) => {
+                const IconComponent = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                      h-10 w-full justify-start
+                      px-3
+                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
+                    `}
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Setup */}
           <div>
             {!sidebarCollapsed && (
@@ -790,6 +833,8 @@ function App() {
                     'Data and contact management'}
                   {currentPageInfo.category === 'Setup' &&
                     'Configuration and setup guides'}
+                  {currentPageInfo.category === 'Profile' &&
+                    'User account and security settings'}
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -903,7 +948,8 @@ function App() {
                           navigationItems.gamification.length +
                           navigationItems.community.length +
                           navigationItems.management.length +
-                          navigationItems.setup.length}{' '}
+                          navigationItems.setup.length +
+                          navigationItems.profile.length}{' '}
                         more
                       </Badge>
                     </div>
@@ -1083,6 +1129,7 @@ function App() {
                 {activeTab === 'dashboard' && healthData && (
                   <HealthDashboard healthData={healthData} />
                 )}
+                {activeTab === 'user-profile' && <UserProfile />}
                 {activeTab === 'vitalsense-brand' && (
                   <VitalSenseBrandShowcase />
                 )}
@@ -1147,6 +1194,12 @@ function App() {
                   <MovementPatternAnalysis healthData={healthData} />
                 )}
                 {activeTab === 'realtime' && <RealTimeFallDetection />}
+                {activeTab === 'enhanced-health-system' && (
+                  <HealthSystemIntegration
+                    userId="demo-user"
+                    initialData={healthData ? [healthData] : undefined}
+                  />
+                )}
                 {activeTab === 'monitoring-hub' && healthData && (
                   <RealTimeMonitoringHub healthData={healthData} />
                 )}

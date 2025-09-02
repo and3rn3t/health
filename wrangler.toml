@@ -47,13 +47,16 @@ FALL_DETECTION_THRESHOLD = "0.85"
 EMERGENCY_RESPONSE_DELAY = "30"
 MAX_FILE_SIZE = "500MB"
 SESSION_TIMEOUT = "12h"
+# Auth0 Configuration
+AUTH0_DOMAIN = "dev-qjdpc81dzr7xrnlu.us.auth0.com"
+AUTH0_CLIENT_ID = "3SWqx7E8dFSIWapIikjppEKQ5ksNxRAQ"
 
 # Production KV namespaces
 [[env.production.kv_namespaces]]
 binding = "HEALTH_KV"
 id = "c3501957dd2540ccb6f624a78df59936"
 
-# Production routes
-[[env.production.routes]]
-pattern = "health.andernet.dev/*"
-zone_name = "andernet.dev"
+# Production routes - using zone_name
+# [[env.production.routes]]
+# pattern = "health.andernet.dev/*"
+# zone_name = "andernet.dev"
