@@ -1,12 +1,40 @@
 {
   "name": "health-scripts",
-  "version": "1.0.0",
+  "version": "1.4.0",
   "type": "module",
   "description": "Cross-platform Node.js scripts for VitalSense Health App",
   "main": "index.js",
   "scripts": {
     "simple-probe": "node health/simple-probe.js",
-    "probe": "node health/probe.js", 
-    "task-runner": "node dev/task-runner.js"
-  }
+    "probe": "node health/probe.js",
+    "task-runner": "node dev/task-runner.js",
+    "test-all-endpoints": "node test/test-all-endpoints.js",
+    "test-integration": "node test/test-integration.js", 
+    "setup-infrastructure": "node infrastructure/setup-production-infrastructure.js",
+    "auth0-setup": "node auth/auth0-setup.js",
+    "test": "npm run test-integration && npm run test-all-endpoints",
+    "deploy": "npm run setup-infrastructure -- --all",
+    "deploy-dry-run": "npm run setup-infrastructure -- --dry-run --all"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "chalk": "^5.3.0",
+    "dotenv": "^16.3.0",
+    "execa": "^8.0.1",
+    "yaml": "^2.3.4"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  },
+  "keywords": [
+    "health-monitoring",
+    "vitalsense",
+    "cloudflare-workers",
+    "testing",
+    "infrastructure",
+    "auth0",
+    "deployment"
+  ],
+  "author": "VitalSense Team",
+  "license": "MIT"
 }

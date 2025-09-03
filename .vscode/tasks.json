@@ -949,6 +949,104 @@
         "showReuseMessage": true,
         "clear": false
       }
+    },
+    {
+      "label": "🧪 Comprehensive API Testing",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/test/test-all-endpoints.js",
+        "--verbose",
+        "--timeout=${input:testTimeout}",
+        "--save=test-results.json"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiMagenta"
+      },
+      "detail": "Phase 4: Comprehensive API endpoint testing with results export"
+    },
+    {
+      "label": "🔍 Integration Test Suite",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/test/test-integration.js",
+        "--verbose",
+        "--save=integration-results.json"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "icon": {
+        "id": "pulse",
+        "color": "terminal.ansiCyan"
+      },
+      "detail": "Phase 4: Full system integration testing with health checks"
+    },
+    {
+      "label": "🏗️ Production Infrastructure Setup",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/infrastructure/setup-production-infrastructure.js",
+        "--${input:deploymentMode}",
+        "--verbose"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "icon": {
+        "id": "cloud-upload",
+        "color": "terminal.ansiBlue"
+      },
+      "detail": "Phase 4: Complete production infrastructure deployment with safety checks"
+    },
+    {
+      "label": "🔐 Auth0 Configuration Manager",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/auth/auth0-setup.js",
+        "--update-config",
+        "--test",
+        "--verbose"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "icon": {
+        "id": "shield",
+        "color": "terminal.ansiYellow"
+      },
+      "detail": "Phase 4: Auth0 authentication setup and configuration management"
     }
   ],
   "inputs": [
@@ -1054,6 +1152,48 @@
         {
           "label": "🌍 All - All supported file types",
           "value": "all"
+        }
+      ]
+    },
+    {
+      "id": "testTimeout",
+      "description": "Test timeout in milliseconds",
+      "type": "pickString",
+      "options": [
+        {
+          "label": "⚡ Fast (5 seconds)",
+          "value": "5000"
+        },
+        {
+          "label": "🔄 Normal (10 seconds)",
+          "value": "10000"
+        },
+        {
+          "label": "🐌 Slow (30 seconds)",
+          "value": "30000"
+        }
+      ]
+    },
+    {
+      "id": "deploymentMode",
+      "description": "Deployment mode",
+      "type": "pickString",
+      "options": [
+        {
+          "label": "🧪 Dry Run (Preview only)",
+          "value": "dry-run"
+        },
+        {
+          "label": "🚀 Deploy All",
+          "value": "all"
+        },
+        {
+          "label": "🏗️ Build Only",
+          "value": "build"
+        },
+        {
+          "label": "🌐 DNS Only",
+          "value": "dns"
         }
       ]
     }
