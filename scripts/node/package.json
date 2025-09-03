@@ -1,0 +1,12 @@
+{
+  "name": "health-scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Cross-platform Node.js scripts for VitalSense Health App",
+  "main": "index.js",
+  "scripts": {
+    "simple-probe": "node health/simple-probe.js",
+    "probe": "node health/probe.js", 
+    "task-runner": "node dev/task-runner.js"
+  }
+}

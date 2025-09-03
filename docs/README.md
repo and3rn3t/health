@@ -1,8 +1,12 @@
-# 🏥 Health App Documentation Hub
+# 🏥 VitalSense Health App - Documentation Hub
 
 > **Apple Health Insights & Fall Risk Monitor** - A comprehensive health data analysis platform that transforms Apple Health data into actionable insights while providing proactive fall risk monitoring and emergency response capabilities.
 
-## � Documentation Structure
+## 📚 Complete Documentation Index
+
+**➡️ [View Complete Documentation Index](DOCUMENTATION_INDEX.md)** - Comprehensive index of all 60+ documentation files
+
+## � Main Documentation Structure
 
 The documentation is organized into topic-based folders for easy navigation:
 

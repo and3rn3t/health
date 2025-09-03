@@ -2,6 +2,436 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "probe-health-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/health/simple-probe.js", "--port", "8787"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "options": {
+        "shell": {
+          "executable": "node"
+        }
+      }
+    },
+    {
+      "label": "probe-health-8788-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/health/simple-probe.js", "--port", "8788"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "enhanced-probe-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/health/probe.js", "--port", "8787", "--verbose"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "task-runner-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/dev/task-runner.js", "${input:taskType}"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "start-dev-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/dev/start-dev.js"],
+      "group": "build",
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "lint-typescript-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/dev/lint-runner.js", "--typescript"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "lint-all-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/dev/lint-runner.js", "--all"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "config-validate-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/utils/config-validator.js", "--verbose"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "test-dev-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/test/test-runner.js", "--dev", "--verbose"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "test-full-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/test/test-runner.js", "--full", "--verbose"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "deploy-platform-dry-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/deploy/platform-deploy.js",
+        "--dry-run",
+        "--verbose"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "deploy-platform-phase1-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/deploy/platform-deploy.js", "--phase", "1"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "dns-setup-dry-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/deploy/dns-setup.js",
+        "--dry-run",
+        "--verbose",
+        "--api-token",
+        "${input:cloudflareApiToken}"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "dns-setup-phase1-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/deploy/dns-setup.js",
+        "--phase",
+        "1",
+        "--api-token",
+        "${input:cloudflareApiToken}"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "🚀 Node.js Development Workflow",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/dev/start-dev.js", "--interactive"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting development server",
+          "endsPattern": "Server ready"
+        }
+      },
+      "dependsOrder": "sequence",
+      "dependsOn": ["config-validate-nodejs", "lint-quick-nodejs"],
+      "icon": {
+        "id": "rocket",
+        "color": "terminal.ansiBlue"
+      },
+      "detail": "Start development server with pre-checks (config validation + quick lint)"
+    },
+    {
+      "label": "⚡ Quick Health Check",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/test/test-runner.js", "--quick", "--verbose"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "icon": {
+        "id": "pulse",
+        "color": "terminal.ansiGreen"
+      },
+      "detail": "Fast health check of development environment"
+    },
+    {
+      "label": "🧪 Full Test Suite",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/test/test-runner.js", "--full", "--verbose"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "dependsOn": ["config-validate-nodejs"],
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiMagenta"
+      },
+      "detail": "Comprehensive test suite with config validation"
+    },
+    {
+      "label": "🔧 Fix All Issues",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/dev/lint-runner.js", "--all", "--fix"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "dependsOrder": "sequence",
+      "dependsOn": ["config-validate-nodejs"],
+      "icon": {
+        "id": "tools",
+        "color": "terminal.ansiYellow"
+      },
+      "detail": "Auto-fix linting issues and validate configuration"
+    },
+    {
+      "label": "🚀 Deploy (Dry Run)",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/deploy/platform-deploy.js",
+        "--dry-run",
+        "--verbose"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "dependsOrder": "sequence",
+      "dependsOn": ["🧪 Full Test Suite"],
+      "icon": {
+        "id": "cloud-upload",
+        "color": "terminal.ansiCyan"
+      },
+      "detail": "Preview deployment changes (safe dry-run after full tests)"
+    },
+    {
+      "label": "🌐 DNS Setup (Preview)",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/deploy/dns-setup.js",
+        "--dry-run",
+        "--verbose",
+        "--api-token",
+        "${input:cloudflareApiToken}"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "icon": {
+        "id": "globe",
+        "color": "terminal.ansiBlue"
+      },
+      "detail": "Preview DNS configuration changes"
+    },
+    {
+      "label": "💎 VitalSense Deploy",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/deploy/vitalsense-deploy.js", "--verbose"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "dependsOrder": "sequence",
+      "dependsOn": ["🔧 Fix All Issues"],
+      "icon": {
+        "id": "heart",
+        "color": "terminal.ansiRed"
+      },
+      "detail": "VitalSense branding verification and deployment"
+    },
+    {
+      "label": "lint-quick-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/dev/lint-runner.js", "--typescript", "--quick"],
+      "group": "build",
+      "presentation": {
+        "echo": false,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": false
+      },
+      "icon": {
+        "id": "check",
+        "color": "terminal.ansiGreen"
+      },
+      "detail": "Quick TypeScript linting (internal task)"
+    },
+    {
       "label": "probe-health",
       "type": "shell",
       "command": "pwsh",
@@ -524,32 +954,106 @@
   "inputs": [
     {
       "id": "taskType",
-      "description": "Select task to run",
+      "description": "Select development task to run",
       "type": "pickString",
       "options": [
         {
-          "label": "Development Server",
+          "label": "🚀 Development Server - Start local development environment",
           "value": "dev"
         },
         {
-          "label": "Run Tests",
+          "label": "🧪 Run Tests - Execute test suite",
           "value": "test"
         },
         {
-          "label": "Build Project",
+          "label": "🔨 Build Project - Compile and bundle application",
           "value": "build"
         },
         {
-          "label": "Health Probe",
+          "label": "🔍 Health Probe - Check endpoint health",
           "value": "probe"
         },
         {
-          "label": "Deploy Application",
+          "label": "🚀 Deploy Application - Deploy to cloud platform",
           "value": "deploy"
         },
         {
-          "label": "Clean Build",
+          "label": "🧹 Clean Build - Remove build artifacts and rebuild",
           "value": "clean"
+        },
+        {
+          "label": "🔧 Fix Issues - Auto-fix linting and formatting issues",
+          "value": "fix"
+        },
+        {
+          "label": "📋 Validate Config - Check all configuration files",
+          "value": "validate"
+        }
+      ]
+    },
+    {
+      "id": "cloudflareApiToken",
+      "description": "🔐 Enter Cloudflare API Token (get from: https://dash.cloudflare.com/profile/api-tokens)",
+      "type": "promptString"
+    },
+    {
+      "id": "deploymentPhase",
+      "description": "Select deployment phase",
+      "type": "pickString",
+      "options": [
+        {
+          "label": "Phase 1 - Core Platform (health.andernet.dev)",
+          "value": "1"
+        },
+        {
+          "label": "Phase 2 - API & WebSocket (api.health, ws.health)",
+          "value": "2"
+        },
+        {
+          "label": "Phase 3 - Emergency & Files (emergency.health, files.health, caregiver.health)",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "id": "testScope",
+      "description": "Select test scope",
+      "type": "pickString",
+      "options": [
+        {
+          "label": "⚡ Quick - Basic health checks only",
+          "value": "quick"
+        },
+        {
+          "label": "🔍 API - API endpoint testing",
+          "value": "api"
+        },
+        {
+          "label": "🌐 Full - Comprehensive test suite",
+          "value": "full"
+        },
+        {
+          "label": "🏭 Production - Test production endpoints",
+          "value": "prod"
+        }
+      ]
+    },
+    {
+      "id": "lintScope",
+      "description": "Select linting scope",
+      "type": "pickString",
+      "options": [
+        {
+          "label": "📝 TypeScript - TypeScript files only",
+          "value": "typescript"
+        },
+        {
+          "label": "🍎 Swift - iOS Swift files only",
+          "value": "swift"
+        },
+        {
+          "label": "🌍 All - All supported file types",
+          "value": "all"
         }
       ]
     }

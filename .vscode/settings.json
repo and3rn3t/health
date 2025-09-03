@@ -27,7 +27,12 @@
   "files.associations": {
     "*.tsx": "typescriptreact",
     "*.ts": "typescript",
-    "*.plist": "xml"
+    "*.plist": "xml",
+    "*.toml": "toml",
+    "scripts/node/**/*.js": "javascript",
+    "scripts/**/*.ps1": "powershell",
+    "wrangler.toml": "toml",
+    ".env*": "properties"
   },
 
   // Emmet configuration
@@ -89,8 +94,13 @@
   },
 
   // ESLint configuration
-  "eslint.workingDirectories": [".", "./ios"],
-  "eslint.validate": ["javascript", "typescript", "typescriptreact"],
+  "eslint.workingDirectories": [".", "./ios", "./scripts/node"],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
 
   // Git configuration
   "git.autofetch": true,
@@ -161,8 +171,39 @@
     "yaml": true,
     "plaintext": true,
     "markdown": true,
-    "powershell": true
+    "powershell": true,
+    "jsonc": true,
+    "shellscript": true
   },
   "github.copilot.editor.enableCodeActions": true,
-  "github.copilot.chat.localeOverride": "en"
+  "github.copilot.chat.localeOverride": "en",
+  "github.copilot.advanced": {
+    "debug.overrideEngine": "codex",
+    "debug.testOverrideProxyUrl": "",
+    "debug.overrideProxyUrl": ""
+  },
+
+  // Enhanced IntelliSense for Node.js scripts
+  "typescript.suggest.autoImports": true,
+  "typescript.suggest.completeFunctionCalls": true,
+  "typescript.suggest.includeAutomaticOptionalChainCompletions": true,
+
+  // Task execution optimization
+  "task.quickOpen.history": 10,
+  "task.quickOpen.detail": true,
+  "task.quickOpen.skip": false,
+
+  // Enhanced terminal for script debugging
+  "terminal.integrated.enablePersistentSessions": true,
+  "terminal.integrated.persistentSessionReviveProcess": "onExitAndWindowClose",
+
+  // Better file watching for our Node.js scripts
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/dist/**": true,
+    "**/dist-worker/**": true,
+    "**/.wrangler/**": true
+  }
 }

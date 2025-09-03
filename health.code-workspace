@@ -47,6 +47,7 @@
       "**/.wrangler/**": true,
       "**/DerivedData/**": true,
     },
+    "powershell.cwd": "Health App (Root)",
   },
 
   "extensions": {
