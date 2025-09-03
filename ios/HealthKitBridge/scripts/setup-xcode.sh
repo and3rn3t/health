@@ -2,7 +2,7 @@
 # iOS Project Setup Script
 # Run this on your Mac after creating the Xcode project
 
-echo "🍎 HealthKit Bridge - iOS Project Setup"
+echo "🍎 VitalSense Monitor - iOS Project Setup"
 echo "======================================="
 echo ""
 

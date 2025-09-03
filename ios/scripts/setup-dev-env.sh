@@ -1,6 +1,8 @@
 #!/bin/bash
 
-# Development environment setup and enhancement script
+#!/bin/bash
+
+# VitalSense Monitor Development Environment Setup
 # This script sets up optimal terminal, git, and development workflows
 
 set -e

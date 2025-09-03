@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Enhanced build and run script for HealthKit Bridge
+# Enhanced build and run script for VitalSense Monitor
 # Usage: ./scripts/build-and-run.sh [device_name] [configuration]
 
 set -e
@@ -19,7 +19,7 @@ WORKSPACE_PATH="HealthKitBridge.xcodeproj"
 CONFIGURATION=${2:-"Debug"}
 DEVICE_NAME=${1:-""}
 
-echo -e "${BLUE}🚀 HealthKit Bridge Build & Deploy Script${NC}"
+echo -e "${BLUE}🚀 VitalSense Monitor Build & Deploy Script${NC}"
 echo "================================================"
 
 # Function to print colored output

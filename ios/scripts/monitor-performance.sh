@@ -17,7 +17,7 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-echo -e "${BLUE}📊 HealthKit Bridge Performance Monitor${NC}"
+echo -e "${BLUE}📊 VitalSense Monitor Performance Monitor${NC}"
 echo "========================================"
 
 # Create logs directory
@@ -111,7 +111,7 @@ generate_report() {
     local report_file="logs/performance-report-$(date +%Y%m%d-%H%M%S).txt"
     
     cat > "$report_file" << EOF
-HealthKit Bridge Performance Report
+VitalSense Monitor Performance Report
 Generated: $(date)
 
 BUILD PERFORMANCE:

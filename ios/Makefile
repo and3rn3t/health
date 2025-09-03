@@ -1,184 +1,70 @@
-# Makefile for HealthKit Bridge Development
-# Provides easy commands for common development tasks
+# Makefile for VitalSense Monitor
+# Provides convenient commands for common development tasks
 
-.PHONY: help build build-sim clean test test-sim install lint setup run run-sim simulator device deploy
+.PHONY: help setup build test clean lint format install-deps
 
-# Default target
-help:
-	@echo "HealthKit Bridge Development Commands"
-	@echo "====================================="
-	@echo "setup          - Initial project setup and optimization"
-	@echo "build          - Build for Matt's iPhone (HealthKit requires physical device)"
-	@echo "build-sim      - Build for iOS Simulator (fallback)"
-	@echo "run            - Build and run on Matt's iPhone"
-	@echo "run-sim        - Build and run on iOS Simulator"
-	@echo "test           - Run tests on Matt's iPhone"
-	@echo "test-sim       - Run UI tests on iOS Simulator"
-	@echo "lint           - Run SwiftLint"
-	@echo "lint-fix       - Auto-fix SwiftLint issues"
-	@echo "clean          - Clean build artifacts"
-	@echo "simulator      - Open iOS Simulator"
-	@echo "devices        - List available devices"
-	@echo "check-device   - Check if Matt's iPhone is connected"
-	@echo "install-tools  - Install development tools"
-	@echo "optimize       - Optimize Xcode settings"
-	@echo "reset-sim      - Reset all simulators"
-	@echo "deploy         - Deploy to connected device"
+help: ## Show this help message
+	@echo "Available commands:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-# Project configuration - Updated for Matt's iPhone (HealthKit requires physical device)
-PROJECT = HealthKitBridge.xcodeproj
-SCHEME = HealthKitBridge
-DEVICE = "Matt's iPhone"
-DEVICE_ID = "00008130-000859EC0AD1001C"
-SIM_DEVICE = "iPhone 16 Pro"
-CONFIG = Debug
+setup: ## Setup development environment
+	@echo "Setting up development environment..."
+	./scripts/setup-dev-env.sh
+	npm install
 
-# Setup and optimization
-setup: install-tools optimize
-	@echo "✅ Development environment setup complete"
+build: ## Build the iOS project
+	@echo "Building VitalSense Monitor..."
+	xcodebuild clean build \
+		-project VitalSenseMonitor.xcodeproj \
+		-scheme VitalSenseMonitor \
+		-configuration Debug
 
-install-tools:
-	@echo "🛠️  Installing development tools..."
-	@./scripts/setup-dev-env.sh
+test: ## Run tests
+	@echo "Running tests..."
+	xcodebuild test \
+		-project VitalSenseMonitor.xcodeproj \
+		-scheme VitalSenseMonitor \
+		-destination 'platform=iOS Simulator,name=iPhone 15 Pro'
 
-optimize:
-	@echo "⚡ Optimizing Xcode..."
-	@./scripts/optimize-xcode.sh
+clean: ## Clean build artifacts
+	@echo "Cleaning build artifacts..."
+	xcodebuild clean -project VitalSenseMonitor.xcodeproj
+	rm -rf build/
+	rm -rf DerivedData/
 
-# Build commands - Default to physical device for HealthKit compatibility
-build:
-	@echo "🔨 Building $(SCHEME) for physical device..."
-	@echo "📱 Target device: $(DEVICE)"
-	@echo "⚠️  Note: HealthKit only works on physical devices, not simulators"
-	@xcodebuild build -project $(PROJECT) -scheme $(SCHEME) -configuration $(CONFIG) -destination 'platform=iOS,id=$(DEVICE_ID)'
+lint: ## Run Swift linting
+	@echo "Running SwiftLint..."
+	swiftlint lint
 
-# Fallback build for simulator (when device isn't available)
-build-sim:
-	@echo "🔨 Building $(SCHEME) for iOS Simulator..."
-	@echo "⚠️  Note: HealthKit features will not work in simulator"
-	@xcodebuild build -project $(PROJECT) -scheme $(SCHEME) -configuration $(CONFIG) -destination 'platform=iOS Simulator,name=$(SIM_DEVICE)'
+format: ## Format Swift code
+	@echo "Formatting Swift code..."
+	swiftlint --fix
 
-clean:
-	@echo "🧹 Cleaning build artifacts..."
-	@xcodebuild clean -project $(PROJECT) -scheme $(SCHEME)
-	@rm -rf build/
+install-deps: ## Install development dependencies
+	@echo "Installing dependencies..."
+	brew install swiftlint
+	npm install
 
-# Run commands - Default to physical device for HealthKit
-run:
-	@echo "🚀 Building and running on physical device..."
-	@echo "📱 Target device: $(DEVICE)"
-	@echo "⚠️  Make sure $(DEVICE) is connected and unlocked"
-	@./scripts/build-and-run.sh "$(DEVICE)" $(CONFIG)
+simulator: ## Start iOS Simulator
+	@echo "Starting iOS Simulator..."
+	open -a Simulator
 
-# Run on simulator (fallback)
-run-sim:
-	@echo "🚀 Building and running on iOS Simulator..."
-	@echo "⚠️  HealthKit features will not work in simulator"
-	@./scripts/build-and-run.sh "$(SIM_DEVICE)" $(CONFIG)
+watch: ## Watch for changes and rebuild
+	@echo "Watching for changes..."
+	fswatch -o HealthKitBridge/ | xargs -n1 -I{} make build
 
-simulator:
-	@echo "📱 Opening iOS Simulator..."
-	@open -a Simulator
+dev-server: ## Start development WebSocket server
+	@echo "Starting development server..."
+	npm start
 
-# Testing - Default to physical device for HealthKit tests
-test:
-	@echo "🧪 Running tests on physical device..."
-	@echo "📱 Target device: $(DEVICE)"
-	@echo "⚠️  Make sure $(DEVICE) is connected and unlocked"
-	@xcodebuild test -project $(PROJECT) -scheme $(SCHEME) -destination 'platform=iOS,id=$(DEVICE_ID)'
+backend-services: ## Start backend services with Docker
+	@echo "Starting backend services (WebSocket, Redis, PostgreSQL)..."
+	docker-compose up -d
 
-# Testing on simulator (for UI tests that don't need HealthKit)
-test-sim:
-	@echo "🧪 Running UI tests on iOS Simulator..."
-	@echo "⚠️  HealthKit tests will be skipped in simulator"
-	@xcodebuild test -project $(PROJECT) -scheme $(SCHEME) -destination 'platform=iOS Simulator,name=$(SIM_DEVICE)'
+stop-services: ## Stop backend services
+	@echo "Stopping backend services..."
+	docker-compose down
 
-# Code quality
-lint:
-	@echo "📝 Running SwiftLint..."
-	@if command -v swiftlint >/dev/null 2>&1; then \
-		swiftlint; \
-	else \
-		echo "❌ SwiftLint not installed. Run: brew install swiftlint"; \
-	fi
-
-lint-fix:
-	@echo "🔧 Auto-fixing SwiftLint issues..."
-	@if command -v swiftlint >/dev/null 2>&1; then \
-		swiftlint --fix; \
-	else \
-		echo "❌ SwiftLint not installed. Run: brew install swiftlint"; \
-	fi
-
-# Device management
-devices:
-	@echo "📱 Available devices:"
-	@echo ""
-	@echo "Physical Devices:"
-	@xcrun xctrace list devices | grep -E "iPhone|iPad" | grep -v "Simulator" || echo "  No physical devices found"
-	@echo ""
-	@echo "Simulators:"
-	@xcrun simctl list devices iOS | grep -E "iPhone|iPad" | head -5
-
-check-device:
-	@echo "🔍 Checking if $(DEVICE) is available..."
-	@if xcrun xctrace list devices | grep -q "$(DEVICE)"; then \
-		echo "✅ $(DEVICE) is available"; \
-		xcrun xctrace list devices | grep "$(DEVICE)"; \
-	else \
-		echo "❌ $(DEVICE) not found or not connected"; \
-		echo "💡 Please connect and unlock your iPhone, then try again"; \
-		echo ""; \
-		echo "Available devices:"; \
-		xcrun xctrace list devices | grep -E "iPhone|iPad" | grep -v "Simulator"; \
-	fi
-
-reset-sim:
-	@echo "🔄 Resetting all simulators..."
-	@xcrun simctl erase all
-
-# Deployment
-deploy:
-	@echo "📤 Deploying to connected device..."
-	@./deploy-to-device.sh
-
-# Development server
-start-server:
-	@echo "🌐 Starting WebSocket test server..."
-	@if [ -f test-websocket-server.js ]; then \
-		node test-websocket-server.js; \
-	elif [ -f test-websocket-server.py ]; then \
-		python3 test-websocket-server.py; \
-	else \
-		echo "❌ No test server found"; \
-	fi
-
-# Quick development workflow (with device check)
-dev: check-device clean build run
-	@echo "🎉 Development build complete!"
-
-# Production build
-release:
-	@echo "🚀 Building release version for $(DEVICE)..."
-	@xcodebuild build -project $(PROJECT) -scheme $(SCHEME) -configuration Release -destination 'platform=iOS,id=$(DEVICE_ID)'
-
-# Archive for distribution
-archive:
-	@echo "📦 Creating archive..."
-	@xcodebuild archive -project $(PROJECT) -scheme $(SCHEME) -archivePath ./build/$(SCHEME).xcarchive
-
-# HealthKit specific commands
-healthkit-test:
-	@echo "🏥 Running HealthKit-specific tests on $(DEVICE)..."
-	@echo "⚠️  This requires a physical device with HealthKit data"
-	@xcodebuild test -project $(PROJECT) -scheme $(SCHEME) -destination 'platform=iOS,id=$(DEVICE_ID)' -only-testing:HealthKitBridgeTests/HealthKitManagerTests
-
-# Show current configuration
-config:
-	@echo "🔧 Current Configuration:"
-	@echo "  Project: $(PROJECT)"
-	@echo "  Scheme: $(SCHEME)"
-	@echo "  Default Device: $(DEVICE)"
-	@echo "  Device ID: $(DEVICE_ID)"
-	@echo "  Simulator Fallback: $(SIM_DEVICE)"
-	@echo "  Build Configuration: $(CONFIG)"
+logs: ## View backend service logs
+	@echo "Viewing service logs..."
+	docker-compose logs -f

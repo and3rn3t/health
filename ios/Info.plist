@@ -4,8 +4,6 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>CFBundleDisplayName</key>
-	<string>VitalSense Sync</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,38 +13,41 @@
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
-	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>VitalSense Monitor needs access to your health data to monitor and analyze your movement patterns, fall risk indicators, and overall health metrics for comprehensive health tracking and analysis.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>VitalSense Monitor may write health data to help track your wellness activities and measurements.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>VitalSense Monitor needs access to motion and fitness activity to analyze gait patterns, walking stability, and fall risk assessment for comprehensive mobility monitoring.</string>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.healthkitbridge.healthsync</string>
+		<string>com.healthkitbridge.analytics</string>
+		<string>com.healthkitbridge.gaitmonitoring</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>background-app-refresh</string>
+		<string>background-processing</string>
+		<string>location</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
-		<false/>
-		<key>UISceneConfigurations</key>
-		<dict>
-			<key>UIWindowSceneSessionRoleApplication</key>
-			<array>
-				<dict>
-					<key>UISceneConfigurationName</key>
-					<string>Default Configuration</string>
-					<key>UISceneDelegateClassName</key>
-					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
-				</dict>
-			</array>
-		</dict>
+		<true/>
 	</dict>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>
-		<string>healthkit</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
@@ -61,11 +62,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>NSHealthShareUsageDescription</key>
-	<string>This app needs access to your health data to monitor and stream your heart rate, step count, and walking steadiness to your health dashboard for real-time health monitoring.</string>
-	<key>NSHealthUpdateUsageDescription</key>
-	<string>This app may need to update your health data for comprehensive health monitoring and data synchronization.</string>
-	<key>NSHealthClinicalHealthRecordsShareUsageDescription</key>
-	<string>This app accesses your health records to provide comprehensive health monitoring and analysis.</string>
 </dict>
 </plist>

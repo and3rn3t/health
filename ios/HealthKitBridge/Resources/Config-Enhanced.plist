@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>userId</key>
+    <string>matt_test_user</string>
+    <key>apiBaseURL</key>
+    <string>https://api.andernet.dev</string>
+    <key>webSocketURL</key>
+    <string>wss://api.andernet.dev/ws</string>
+    
+    <!-- Fall Risk Analysis Configuration -->
+    <key>fallRiskAssessmentInterval</key>
+    <real>1800.0</real>
+    <key>fallRiskThresholds</key>
+    <dict>
+        <key>walkingSpeedCritical</key>
+        <real>0.6</real>
+        <key>walkingSteadinessCritical</key>
+        <real>25.0</real>
+        <key>heartRateVariabilityLow</key>
+        <real>15.0</real>
+        <key>oxygenSaturationCritical</key>
+        <real>90.0</real>
+        <key>bloodPressureHypotensive</key>
+        <dict>
+            <key>systolic</key>
+            <real>90.0</real>
+            <key>diastolic</key>
+            <real>60.0</real>
+        </dict>
+        <key>flightsClimbedMinimum</key>
+        <real>3.0</real>
+        <key>vo2MaxLowThreshold</key>
+        <real>25.0</real>
+        <key>runningGroundContactTimeHigh</key>
+        <real>300.0</real>
+        <key>respiratoryRateAbnormal</key>
+        <dict>
+            <key>high</key>
+            <real>24.0</real>
+            <key>low</key>
+            <real>10.0</real>
+        </dict>
+        <key>bodyTemperatureAbnormal</key>
+        <dict>
+            <key>high</key>
+            <real>38.0</real>
+            <key>low</key>
+            <real>35.0</real>
+        </dict>
+        <key>timeInDaylightMinimum</key>
+        <real>120.0</real>
+    </dict>
+    
+    <!-- Battery Optimization Settings -->
+    <key>batteryOptimization</key>
+    <dict>
+        <key>normalSyncInterval</key>
+        <real>5.0</real>
+        <key>batterySavingSyncInterval</key>
+        <real>15.0</real>
+        <key>lowPowerSyncInterval</key>
+        <real>30.0</real>
+        <key>criticalBatteryThreshold</key>
+        <real>0.15</real>
+        <key>lowBatteryThreshold</key>
+        <real>0.20</real>
+        <key>enableAdaptiveSync</key>
+        <true/>
+    </dict>
+    
+    <!-- Health Data Quality Control -->
+    <key>dataValidation</key>
+    <dict>
+        <key>enableDataValidation</key>
+        <true/>
+        <key>maxHeartRate</key>
+        <real>220.0</real>
+        <key>minHeartRate</key>
+        <real>30.0</real>
+        <key>maxStepsPerDay</key>
+        <real>50000.0</real>
+        <key>maxWalkingSpeed</key>
+        <real>5.0</real>
+        <key>dataFreshnessThreshold</key>
+        <real>300.0</real>
+        <key>outlierDetectionEnabled</key>
+        <true/>
+        <key>bloodPressureValidation</key>
+        <dict>
+            <key>maxSystolic</key>
+            <real>250.0</real>
+            <key>minSystolic</key>
+            <real>50.0</real>
+            <key>maxDiastolic</key>
+            <real>150.0</real>
+            <key>minDiastolic</key>
+            <real>30.0</real>
+        </dict>
+    </dict>
+    
+    <!-- Performance Monitoring & WebSocket Configuration -->
+    <key>enablePerformanceMonitoring</key>
+    <true/>
+    <key>healthDataBatchSize</key>
+    <integer>50</integer>
+    <key>maxRetryAttempts</key>
+    <integer>3</integer>
+    <key>connectionTimeout</key>
+    <real>15.0</real>
+    <key>enableDataCaching</key>
+    <true/>
+    <key>cacheExpiryDuration</key>
+    <real>30.0</real>
+    <key>maxCacheSize</key>
+    <integer>100</integer>
+    
+    <!-- Analytics & Smart Features Configuration -->
+    <key>analyticsSettings</key>
+    <dict>
+        <key>enableTrendAnalysis</key>
+        <true/>
+        <key>trendAnalysisWindow</key>
+        <real>3600.0</real>
+        <key>anomalyDetectionSensitivity</key>
+        <real>0.8</real>
+        <key>healthScoreWeights</key>
+        <dict>
+            <key>walkingSteadiness</key>
+            <real>0.25</real>
+            <key>gaitSpeed</key>
+            <real>0.20</real>
+            <key>balanceStability</key>
+            <real>0.20</real>
+            <key>cardiovascularFitness</key>
+            <real>0.15</real>
+            <key>muscleWeakness</key>
+            <real>0.10</real>
+            <key>medicationEffects</key>
+            <real>0.10</real>
+        </dict>
+    </dict>
+    
+    <key>notificationSettings</key>
+    <dict>
+        <key>enableSmartNotifications</key>
+        <true/>
+        <key>minimumNotificationInterval</key>
+        <real>3600.0</real>
+        <key>criticalAlertEnabled</key>
+        <true/>
+        <key>dailySummaryTime</key>
+        <string>20:00</string>
+        <key>anomalyAlertThreshold</key>
+        <string>high</string>
+    </dict>
+    
+    <!-- Development Environment Overrides -->
+    <key>development</key>
+    <dict>
+        <key>enableDebugLogging</key>
+        <true/>
+        <key>mockHealthData</key>
+        <true/>
+        <key>dataSyncInterval</key>
+        <real>2.0</real>
+        <key>fallRiskAssessmentInterval</key>
+        <real>300.0</real>
+        <key>showConnectionStats</key>
+        <true/>
+    </dict>
+</dict>
+</plist>

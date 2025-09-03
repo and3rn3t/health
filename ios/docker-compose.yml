@@ -1,0 +1,81 @@
+version: '3.8'
+
+# Docker Compose for VitalSense Monitor Backend Services
+# This provides supporting services for iOS development, NOT the iOS app itself
+# The iOS app must be built and run on macOS with Xcode
+
+services:
+  # WebSocket test server for VitalSense Monitor iOS app
+  websocket-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:8080"  # WebSocket port for iOS app to connect to
+      - "3000:3000"  # HTTP API port
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - WEBSOCKET_PORT=8080
+      - ENABLE_HEALTH_DATA_MOCK=true
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+    restart: unless-stopped
+    networks:
+      - vitalsense-network
+
+  # Redis for caching health analytics
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - vitalsense-network
+
+  # PostgreSQL for health data analytics (optional)
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: vitalsense_analytics
+      POSTGRES_USER: developer
+      POSTGRES_PASSWORD: development
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    networks:
+      - vitalsense-network
+
+  # NGINX for local API gateway (optional)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - websocket-server
+    restart: unless-stopped
+    networks:
+      - vitalsense-network
+
+networks:
+  vitalsense-network:
+    driver: bridge
+
+volumes:
+  redis_data:
+  postgres_data:
+
+# Usage Instructions:
+# 1. Start services: docker-compose up -d
+# 2. Build iOS app in Xcode on macOS
+# 3. Configure iOS app to connect to localhost:8080 (WebSocket)
+# 4. iOS app connects to these backend services for data transmission

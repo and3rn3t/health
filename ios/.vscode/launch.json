@@ -2,15 +2,31 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug iOS App",
-      "type": "lldb",
+      "name": "Start WebSocket Server",
+      "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/build/Build/Products/Debug-iphonesimulator/HealthKitBridge.app/HealthKitBridge",
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "preLaunchTask": "Build HealthKit Bridge",
+      "program": "${workspaceFolder}/test-websocket-server.js",
       "console": "integratedTerminal",
-      "environment": []
+      "env": {
+        "NODE_ENV": "development",
+        "PORT": "3000",
+        "WEBSOCKET_PORT": "8080",
+        "DEBUG_LOGGING": "true"
+      },
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "name": "Build iOS Project",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/build-and-run.sh",
+      "console": "integratedTerminal",
+      "windows": {
+        "program": "pwsh.exe",
+        "args": ["-File", "${workspaceFolder}/scripts/build-and-run.sh"]
+      }
     }
   ]
 }

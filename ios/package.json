@@ -1,0 +1,26 @@
+{
+  "name": "vitalsense-monitor-dev",
+  "version": "1.0.0",
+  "description": "Development tools for VitalSense Monitor",
+  "scripts": {
+    "start": "node test-websocket-server.js",
+    "dev": "nodemon test-websocket-server.js",
+    "test": "jest",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "build:ios": "xcodebuild -project VitalSenseMonitor.xcodeproj -scheme VitalSenseMonitor -configuration Debug",
+    "test:ios": "xcodebuild test -project VitalSenseMonitor.xcodeproj -scheme VitalSenseMonitor -destination 'platform=iOS Simulator,name=iPhone 15 Pro'",
+    "lint:swift": "swiftlint",
+    "setup": "./scripts/setup-dev-env.sh"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "ws": "^8.14.0",
+    "jest": "^29.7.0",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0"
+  },
+  "keywords": ["ios", "healthkit", "swift", "websocket", "vitalsense"],
+  "author": "and3rn3t",
+  "license": "MIT"
+}

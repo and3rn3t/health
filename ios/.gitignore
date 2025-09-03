@@ -1,11 +1,10 @@
 # Git ignore file optimized for iOS/Swift development
-# HealthKit Bridge specific exclusions
+# VitalSense Monitor specific exclusions
 
 # Xcode
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
 *.xcodeproj/project.xcworkspace/xcuserdata/
-*.xcuserdata
 DerivedData/
 build/
 .build/
@@ -45,12 +44,8 @@ Dependencies/
 ehthumbs.db
 Thumbs.db
 
-# IDE files - keep VS Code settings for consistency
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+# IDE files
+.vscode/settings.json
 .idea/
 *.swp
 *.swo
@@ -72,6 +67,22 @@ logs/
 *.o
 *.a
 *.so
+
+# Sensitive files (Medical data security)
+secrets.json
+*.p12
+*.mobileprovision
+.certificates/
+health_data_exports/
+patient_data/
+medical_reports/
+*.csv
+*.xlsx
+test_data/personal/
+
+# Backup files
+*.backup
+*.bak
 *.dylib
 
 # SwiftLint

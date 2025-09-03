@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# HealthKit Bridge - Xcode Project Creation Script
+# VitalSense Monitor - Xcode Project Creation Script
 # Run this script on your Mac to create the iOS project
 
-echo "🍎 Creating HealthKit Bridge iOS Project..."
+echo "🍎 Creating VitalSense Monitor iOS Project..."
 
 # Project configuration
 PROJECT_NAME="HealthKitBridge"
-BUNDLE_ID="com.healthapp.healthkitbridge"
+BUNDLE_ID="dev.andernet.vitalsense.monitor"
 TEAM_ID="YOUR_TEAM_ID"  # Replace with your Apple Developer Team ID
 
 # Create project directory

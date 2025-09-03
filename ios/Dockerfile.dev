@@ -1,0 +1,30 @@
+# Dockerfile for VitalSense Monitor Backend Services
+# This provides WebSocket server and API services for the iOS app
+# The iOS app itself must be built and run on macOS with Xcode
+
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install basic development tools
+RUN apk add --no-cache git curl
+
+# Copy package files first for better Docker layer caching
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source code
+COPY test-websocket-server.js ./
+COPY test-websocket-server.py ./
+
+# Expose ports for iOS app to connect to
+EXPOSE 3000 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# Development command
+CMD ["npm", "run", "dev"]
