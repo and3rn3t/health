@@ -183,7 +183,7 @@
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@rollup/rollup-win32-x64-msvc": "4.50.0",
-    "@types/node": "^22.7.4",
+    "@types/node": "^24.3.0",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
