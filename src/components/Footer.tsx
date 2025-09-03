@@ -87,7 +87,7 @@ export default function Footer({
   ];
 
   return (
-    <footer className="bg-card/95 supports-[backdrop-filter]:bg-card/60 border-border mt-auto border-t backdrop-blur">
+    <footer className="bg-card/95 supports-[backdrop-filter]:bg-card/60 mt-auto border-t border-border backdrop-blur">
       <div className="px-4 py-3 lg:px-6">
         {/* Main Footer Content */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

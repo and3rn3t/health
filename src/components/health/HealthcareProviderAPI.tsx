@@ -653,7 +653,7 @@ export default function HealthcareProviderAPI() {
                   <Label htmlFor="provider-type">Provider Type</Label>
                   <select
                     id="provider-type"
-                    className="bg-background w-full rounded-md border p-2"
+                    className="w-full rounded-md border bg-background p-2"
                     value={newProvider.type}
                     onChange={(e) =>
                       setNewProvider((prev) => ({
@@ -771,7 +771,7 @@ export default function HealthcareProviderAPI() {
                     <Label htmlFor="api-protocol">Protocol</Label>
                     <select
                       id="api-protocol"
-                      className="bg-background w-full rounded-md border p-2"
+                      className="w-full rounded-md border bg-background p-2"
                       value={newProvider.apiConfig?.protocol}
                       onChange={(e) =>
                         setNewProvider((prev) => ({

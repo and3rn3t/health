@@ -34,11 +34,11 @@ Based on the documentation consolidation and project evolution, here are files i
 
 7. **Multiple Wrangler Config Files**:
    - `wrangler.fixed.toml`
-   - `wrangler.minimal.toml` 
+   - `wrangler.minimal.toml`
    - `wrangler.production.final.toml`
    - `wrangler.production.simple.toml`
    - `wrangler.simple.toml`
-   
+
    **Action**: Keep only `wrangler.toml` and `wrangler.production.toml`, remove the rest
 
 8. **`vite.config.simple.ts`**
@@ -66,6 +66,7 @@ Based on the documentation consolidation and project evolution, here are files i
 ## ✅ **Recommended Cleanup Actions**
 
 ### Immediate Removal (Safe)
+
 ```powershell
 # Remove development/debug files
 Remove-Item auth0-debug.html, auth0-test-dashboard.html, test-auth0-quick.html, ci-lint-output.txt, test-health-data.json
@@ -78,6 +79,7 @@ Remove-Item vite.config.simple.ts
 ```
 
 ### Move to Proper Locations
+
 ```powershell
 # Move debug script to scripts folder
 Move-Item debug-device-auth.ps1 scripts/
@@ -87,6 +89,7 @@ Move-Item auth0-config-summary.txt docs/auth0-custom-login/
 ```
 
 ### Review & Decide
+
 - **`app-store-metadata.json`**: Populate with real data or remove
 - Verify no external references exist to files being removed
 
@@ -97,7 +100,8 @@ Move-Item auth0-config-summary.txt docs/auth0-custom-login/
 **Files to Remove**: 9 files  
 **Space Saved**: ~800+ lines of code/config  
 **Risk Level**: Low (development artifacts)  
-**Benefits**: 
+**Benefits**:
+
 - Cleaner project root
 - Reduced confusion
 - Better organization
@@ -110,19 +114,24 @@ Move-Item auth0-config-summary.txt docs/auth0-custom-login/
 These files should **NOT** be removed from project root:
 
 ✅ **Core Configuration**
+
 - `package.json`, `tsconfig.json`, `vite.config.ts`, `wrangler.toml`
 - `.env.example`, `.gitignore`, `.prettierrc`, `eslint.config.js`
 
 ✅ **Entry Points**
+
 - `index.html`, `README.md`
 
-✅ **Project Files** 
+✅ **Project Files**
+
 - `components.json`, `tailwind.config.js`, `theme.json`
 - `LICENSE`, `health.code-workspace`
 
 ✅ **Active Configs**
+
 - `runtime.config.json`, `spark.meta.json`
 - `vitalsense-sync-metadata.json` (iOS deployment)
 
 ✅ **Key Folders**
+
 - `src/`, `docs/`, `scripts/`, `ios/`, `.vscode/`, `.github/`

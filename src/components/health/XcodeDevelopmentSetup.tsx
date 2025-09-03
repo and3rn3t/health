@@ -468,7 +468,11 @@ export default function XcodeDevelopmentSetup() {
       icon: <Shield className="h-4 w-4" />,
     },
     { id: 'watchos', label: 'watchOS', icon: <Watch className="h-4 w-4" /> },
-    { id: 'testing', label: 'Testing', icon: <FlaskConical className="h-4 w-4" /> },
+    {
+      id: 'testing',
+      label: 'Testing',
+      icon: <FlaskConical className="h-4 w-4" />,
+    },
   ];
 
   const overallProgress = calculateProgress();

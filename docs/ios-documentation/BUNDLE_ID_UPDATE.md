@@ -6,11 +6,11 @@ All bundle identifiers have been successfully updated to use the `dev.andernet.v
 
 ### ✅ **Updated Bundle IDs**
 
-| Component | Old Bundle ID | New Bundle ID |
-|-----------|---------------|---------------|
-| **Main App** | `dev.andernet.HealthKitBridge` | `dev.andernet.vitalsense.monitor` |
-| **Unit Tests** | `dev.andernet.HealthKitBridgeTests` | `dev.andernet.vitalsense.monitor.tests` |
-| **UI Tests** | `dev.andernet.HealthKitBridgeUITests` | `dev.andernet.vitalsense.monitor.uitests` |
+| Component      | Old Bundle ID                         | New Bundle ID                             |
+| -------------- | ------------------------------------- | ----------------------------------------- |
+| **Main App**   | `dev.andernet.HealthKitBridge`        | `dev.andernet.vitalsense.monitor`         |
+| **Unit Tests** | `dev.andernet.HealthKitBridgeTests`   | `dev.andernet.vitalsense.monitor.tests`   |
+| **UI Tests**   | `dev.andernet.HealthKitBridgeUITests` | `dev.andernet.vitalsense.monitor.uitests` |
 
 ### 📁 **Files Updated**
 

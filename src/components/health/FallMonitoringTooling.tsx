@@ -366,7 +366,7 @@ export default function FallMonitoringTooling() {
                         {step.step}
                       </div>
                       {index < monitoringFlow.length - 1 && (
-                        <div className="bg-border mt-2 h-16 w-px" />
+                        <div className="mt-2 h-16 w-px bg-border" />
                       )}
                     </div>
                     <div className="flex-1 pb-8">

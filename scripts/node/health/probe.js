@@ -6,15 +6,15 @@
  */
 
 import { program } from 'commander';
-import { 
-  writeTaskStart, 
-  writeTaskComplete, 
+import {
+  writeTaskStart,
+  writeTaskComplete,
   writeTaskError,
   writeInfo,
   makeHttpRequest,
   getEnvironmentInfo,
   exitWithError,
-  exitWithSuccess 
+  exitWithSuccess,
 } from '../core/logger.js';
 
 program
@@ -34,14 +34,14 @@ const baseUrl = `${options.hostUrl}:${options.port}`;
 
 async function testEndpoint(endpoint, description, requestOptions = {}) {
   const url = `${baseUrl}${endpoint}`;
-  
+
   if (options.verbose) {
     writeInfo(`Testing: ${url}`);
   }
 
   const result = await makeHttpRequest(url, {
     timeout: 5000,
-    ...requestOptions
+    ...requestOptions,
   });
 
   return {
@@ -52,7 +52,7 @@ async function testEndpoint(endpoint, description, requestOptions = {}) {
     status: result.status,
     data: result.data,
     error: result.error,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 }
 
@@ -62,7 +62,9 @@ async function main() {
   // Environment info for Copilot context
   if (options.verbose) {
     const envInfo = await getEnvironmentInfo();
-    writeInfo(`Environment: Node.js ${envInfo.nodeVersion} on ${envInfo.platform}`);
+    writeInfo(
+      `Environment: Node.js ${envInfo.nodeVersion} on ${envInfo.platform}`
+    );
     writeInfo(`Working Directory: ${envInfo.workingDirectory}`);
     if (envInfo.gitBranch !== 'unknown') {
       writeInfo(`Git Branch: ${envInfo.gitBranch}`);
@@ -73,7 +75,7 @@ async function main() {
     timestamp: new Date().toISOString(),
     baseUrl,
     environment: options.verbose ? await getEnvironmentInfo() : null,
-    tests: []
+    tests: [],
   };
 
   // Test /health endpoint
@@ -91,8 +93,8 @@ async function main() {
   const apiTest = await testEndpoint('/api/health-data', 'Health data API', {
     params: {
       userId: options.userId,
-      limit: 5
-    }
+      limit: 5,
+    },
   });
   results.tests.push(apiTest);
 
@@ -104,14 +106,18 @@ async function main() {
   }
 
   // Test device authentication
-  const authTest = await testEndpoint('/api/auth/device', 'Device authentication', {
-    method: 'POST',
-    data: {
-      clientType: options.clientType,
-      deviceId: 'test-device-id',
-      ttlSec: parseInt(options.ttlSec)
+  const authTest = await testEndpoint(
+    '/api/auth/device',
+    'Device authentication',
+    {
+      method: 'POST',
+      data: {
+        clientType: options.clientType,
+        deviceId: 'test-device-id',
+        ttlSec: parseInt(options.ttlSec),
+      },
     }
-  });
+  );
   results.tests.push(authTest);
 
   if (!authTest.success) {
@@ -123,14 +129,14 @@ async function main() {
 
   // Summary
   const totalTests = results.tests.length;
-  const passedTests = results.tests.filter(t => t.success).length;
+  const passedTests = results.tests.filter((t) => t.success).length;
   const failedTests = totalTests - passedTests;
 
   results.summary = {
     total: totalTests,
     passed: passedTests,
     failed: failedTests,
-    success: failedTests === 0
+    success: failedTests === 0,
   };
 
   if (options.json) {
@@ -143,10 +149,16 @@ async function main() {
   }
 
   if (results.summary.success) {
-    writeTaskComplete('Enhanced Health Probe', `All ${totalTests} tests passed`);
+    writeTaskComplete(
+      'Enhanced Health Probe',
+      `All ${totalTests} tests passed`
+    );
     exitWithSuccess();
   } else {
-    writeTaskError('Enhanced Health Probe', `${failedTests} of ${totalTests} tests failed`);
+    writeTaskError(
+      'Enhanced Health Probe',
+      `${failedTests} of ${totalTests} tests failed`
+    );
     exitWithError(`${failedTests} tests failed`, 1);
   }
 }
@@ -157,7 +169,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 
 if (process.argv[1] === __filename) {
-  main().catch(error => {
+  main().catch((error) => {
     writeTaskError('Enhanced Health Probe', error.message);
     process.exit(1);
   });

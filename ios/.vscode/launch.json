@@ -13,9 +13,7 @@
         "WEBSOCKET_PORT": "8080",
         "DEBUG_LOGGING": "true"
       },
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "skipFiles": ["<node_internals>/**"]
     },
     {
       "name": "Build iOS Project",

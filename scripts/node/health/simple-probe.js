@@ -6,13 +6,13 @@
  */
 
 import { program } from 'commander';
-import { 
-  writeTaskStart, 
-  writeTaskComplete, 
+import {
+  writeTaskStart,
+  writeTaskComplete,
   writeTaskError,
   makeHttpRequest,
   exitWithError,
-  exitWithSuccess 
+  exitWithSuccess,
 } from '../core/logger.js';
 
 program
@@ -35,9 +35,9 @@ async function main() {
   writeTaskStart('Health Probe', `Testing endpoint: ${url}`);
 
   try {
-    const result = await makeHttpRequest(url, { 
+    const result = await makeHttpRequest(url, {
       timeout,
-      method: 'GET'
+      method: 'GET',
     });
 
     if (result.success) {
@@ -63,7 +63,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 if (process.argv[1] === __filename) {
-  main().catch(error => {
+  main().catch((error) => {
     writeTaskError('Health Probe', error.message);
     process.exit(1);
   });

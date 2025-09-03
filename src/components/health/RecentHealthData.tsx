@@ -313,7 +313,7 @@ export function RecentHealthData() {
               Metric
             </label>
             <select
-              className="bg-background h-9 rounded-md border px-2"
+              className="h-9 rounded-md border bg-background px-2"
               value={metric}
               onChange={(e) => setMetric(e.target.value as MetricType | '')}
               aria-label="Metric filter"
@@ -335,7 +335,7 @@ export function RecentHealthData() {
             </label>
             <input
               type="date"
-              className="bg-background h-9 rounded-md border px-2"
+              className="h-9 rounded-md border bg-background px-2"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
               aria-label="From date"
@@ -348,7 +348,7 @@ export function RecentHealthData() {
             </label>
             <input
               type="date"
-              className="bg-background h-9 rounded-md border px-2"
+              className="h-9 rounded-md border bg-background px-2"
               value={to}
               onChange={(e) => setTo(e.target.value)}
               aria-label="To date"

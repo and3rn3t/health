@@ -11,8 +11,8 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     ports:
-      - "8080:8080"  # WebSocket port for iOS app to connect to
-      - "3000:3000"  # HTTP API port
+      - '8080:8080' # WebSocket port for iOS app to connect to
+      - '3000:3000' # HTTP API port
     environment:
       - NODE_ENV=development
       - PORT=3000
@@ -30,7 +30,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -45,7 +45,7 @@ services:
       POSTGRES_USER: developer
       POSTGRES_PASSWORD: development
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./sql/init:/docker-entrypoint-initdb.d
@@ -57,7 +57,7 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"
+      - '80:80'
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -73,7 +73,6 @@ networks:
 volumes:
   redis_data:
   postgres_data:
-
 # Usage Instructions:
 # 1. Start services: docker-compose up -d
 # 2. Build iOS app in Xcode on macOS

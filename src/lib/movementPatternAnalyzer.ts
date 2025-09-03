@@ -305,7 +305,7 @@ export class MovementPatternAnalyzer {
     let riskLevel: 'low' | 'moderate' | 'high' | 'critical' = 'low';
     let indicators: string[] = [];
     let recommendations: string[] = [];
-    let confidence = 0.8;
+    const confidence = 0.8;
 
     if (walkingSteadiness < 0.3) {
       patternType = 'Unsteady Gait';
@@ -478,7 +478,7 @@ export class MovementPatternAnalyzer {
 
     // Calculate base probability using weighted factors
     let probability = 0.1; // Base probability
-    let confidence = 0.7;
+    const confidence = 0.7;
 
     const factors = [
       {

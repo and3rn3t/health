@@ -250,7 +250,7 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-foreground text-2xl font-bold">
+          <h2 className="text-2xl font-bold text-foreground">
             Community & Sharing
           </h2>
           <p className="text-muted-foreground">
@@ -644,7 +644,7 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
                             return member ? (
                               <Avatar
                                 key={memberId}
-                                className="border-background h-6 w-6 border-2"
+                                className="h-6 w-6 border-2 border-background"
                               >
                                 <AvatarFallback className="text-xs">
                                   {member.name
@@ -656,7 +656,7 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
                             ) : null;
                           })}
                           {report.sharedWith.length > 3 && (
-                            <div className="bg-muted border-background flex h-6 w-6 items-center justify-center rounded-full border-2">
+                            <div className="bg-muted flex h-6 w-6 items-center justify-center rounded-full border-2 border-background">
                               <span className="text-xs">
                                 +{report.sharedWith.length - 3}
                               </span>

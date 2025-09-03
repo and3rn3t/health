@@ -1,9 +1,9 @@
+import {
+  healthMetricSchema,
+  processedHealthDataSchema,
+} from '@/schemas/health';
 import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
-import {
-  processedHealthDataSchema,
-  healthMetricSchema,
-} from '@/schemas/health';
 
 const listSchema = z.array(processedHealthDataSchema);
 
@@ -30,10 +30,22 @@ export function useHealthDataQuery(params: HealthDataQueryParams) {
       const json = await res.json();
 
       // Allow either array data or top-level object with data array
-      const payload = Array.isArray(json) ? json : json.data;
+      // Ensure we always return an array, even if the API returns an error
+      let payload;
+      if (Array.isArray(json)) {
+        payload = json;
+      } else if (json && Array.isArray(json.data)) {
+        payload = json.data;
+      } else {
+        // If the API returns an error or malformed data, return empty array
+        console.warn('Health data API returned unexpected format:', json);
+        payload = [];
+      }
+
       const parsed = listSchema.safeParse(payload);
       if (!parsed.success) {
-        throw new Error('Schema validation failed');
+        console.warn('Health data schema validation failed:', parsed.error);
+        return []; // Return empty array instead of throwing
       }
       return parsed.data;
     },

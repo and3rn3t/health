@@ -42,7 +42,7 @@ jobs:
     if: github.ref == 'refs/heads/develop'
     needs: test
     runs-on: ubuntu-latest
-    environment: Development
+    environment: development
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

@@ -320,7 +320,11 @@ export default function AppleWatchIntegrationChecklist() {
       label: 'Development',
       icon: <Code className="h-4 w-4" />,
     },
-    { id: 'testing', label: 'Testing', icon: <FlaskConical className="h-4 w-4" /> },
+    {
+      id: 'testing',
+      label: 'Testing',
+      icon: <FlaskConical className="h-4 w-4" />,
+    },
     {
       id: 'deployment',
       label: 'Deployment',

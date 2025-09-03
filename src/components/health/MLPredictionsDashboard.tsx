@@ -128,15 +128,15 @@ function MLPredictionsDashboard({ healthData }: MLPredictionsDashboardProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5 animate-Activity" />
+              <Brain className="animate-Activity h-5 w-5" />
               Generating ML Predictions...
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="bg-muted h-4 animate-Activity rounded" />
-              <div className="bg-muted h-4 w-3/4 animate-Activity rounded" />
-              <div className="bg-muted h-4 w-1/2 animate-Activity rounded" />
+              <div className="bg-muted animate-Activity h-4 rounded" />
+              <div className="bg-muted animate-Activity h-4 w-3/4 rounded" />
+              <div className="bg-muted animate-Activity h-4 w-1/2 rounded" />
             </div>
           </CardContent>
         </Card>
@@ -149,7 +149,7 @@ function MLPredictionsDashboard({ healthData }: MLPredictionsDashboardProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
             <Brain className="text-primary h-6 w-6" />
             Machine Learning Predictions
           </h2>
@@ -219,7 +219,7 @@ function MLPredictionsDashboard({ healthData }: MLPredictionsDashboardProps) {
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-foreground text-2xl font-bold">
+                      <div className="text-2xl font-bold text-foreground">
                         {Math.round(currentPrediction.riskScore * 100)}
                       </div>
                       <div className="text-muted-foreground text-xs">
@@ -258,7 +258,7 @@ function MLPredictionsDashboard({ healthData }: MLPredictionsDashboardProps) {
 
             {/* Time Horizon Selector */}
             <div className="space-y-3">
-              <h4 className="text-foreground font-medium">Time Horizon</h4>
+              <h4 className="font-medium text-foreground">Time Horizon</h4>
               <div className="grid grid-cols-5 gap-2">
                 {(
                   ['1hour', '4hours', '12hours', '24hours', '7days'] as const
@@ -312,7 +312,7 @@ function MLPredictionsDashboard({ healthData }: MLPredictionsDashboardProps) {
                   {currentPrediction.primaryFactors.map((factor, index) => (
                     <div key={index} className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-foreground font-medium">
+                        <span className="font-medium text-foreground">
                           {factor.factor}
                         </span>
                         <span className="text-muted-foreground text-sm">
@@ -386,7 +386,7 @@ function MLPredictionsDashboard({ healthData }: MLPredictionsDashboardProps) {
                   ([horizon, prediction]) => (
                     <div key={horizon} className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-foreground font-medium capitalize">
+                        <span className="font-medium capitalize text-foreground">
                           {horizon}
                         </span>
                         <div className="flex items-center gap-2">

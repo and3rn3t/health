@@ -19,11 +19,11 @@ const execAsync = promisify(exec);
  */
 
 export function getTimestamp() {
-  return new Date().toLocaleTimeString('en-US', { 
+  return new Date().toLocaleTimeString('en-US', {
     hour12: false,
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit'
+    second: '2-digit',
   });
 }
 
@@ -73,7 +73,7 @@ export async function getEnvironmentInfo() {
   const nodeVersion = process.version;
   const platform = `${os.type()} ${os.release()} (${os.arch()})`;
   const workingDirectory = process.cwd();
-  
+
   let gitBranch = 'unknown';
   try {
     const { stdout } = await execAsync('git branch --show-current');
@@ -87,7 +87,7 @@ export async function getEnvironmentInfo() {
     platform,
     workingDirectory,
     gitBranch,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 }
 
@@ -97,30 +97,30 @@ export async function getEnvironmentInfo() {
 
 export async function makeHttpRequest(url, options = {}) {
   const { default: axios } = await import('axios');
-  
+
   const defaultOptions = {
     timeout: 5000,
-    validateStatus: () => true // Don't throw on non-2xx status codes
+    validateStatus: () => true, // Don't throw on non-2xx status codes
   };
 
   try {
     const response = await axios({
       url,
       ...defaultOptions,
-      ...options
+      ...options,
     });
 
     return {
       success: response.status >= 200 && response.status < 300,
       status: response.status,
       data: response.data,
-      headers: response.headers
+      headers: response.headers,
     };
   } catch (error) {
     return {
       success: false,
       error: error.message,
-      status: error.response?.status || 0
+      status: error.response?.status || 0,
     };
   }
 }
@@ -131,25 +131,25 @@ export async function makeHttpRequest(url, options = {}) {
 
 export async function runCommand(command, args = [], options = {}) {
   const { execa } = await import('execa');
-  
+
   try {
     const result = await execa(command, args, {
       stdio: options.quiet ? 'pipe' : 'inherit',
-      ...options
+      ...options,
     });
 
     return {
       success: true,
       exitCode: result.exitCode,
       stdout: result.stdout,
-      stderr: result.stderr
+      stderr: result.stderr,
     };
   } catch (error) {
     return {
       success: false,
       exitCode: error.exitCode || 1,
       stdout: error.stdout || '',
-      stderr: error.stderr || error.message
+      stderr: error.stderr || error.message,
     };
   }
 }
@@ -202,7 +202,7 @@ export async function writeJsonFile(filePath, data) {
 
 export async function loadConfig(configPath = 'package.json') {
   const fullPath = path.resolve(configPath);
-  
+
   if (!(await fileExists(fullPath))) {
     writeError(`Configuration file not found: ${fullPath}`);
     return null;
@@ -217,9 +217,9 @@ export async function loadConfig(configPath = 'package.json') {
 
 export async function withSpinner(message, asyncFn) {
   const { default: ora } = await import('ora');
-  
+
   const spinner = ora(message).start();
-  
+
   try {
     const result = await asyncFn();
     spinner.succeed();
@@ -281,5 +281,5 @@ export default {
   resolvePath,
   joinPath,
   exitWithError,
-  exitWithSuccess
+  exitWithSuccess,
 };

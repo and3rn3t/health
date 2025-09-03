@@ -877,7 +877,7 @@ export class MLFallRiskPredictor {
   ): { risk: number; confidence: number } {
     // Simplified decision tree implementation
     let risk = 0.5;
-    let confidence = 0.7;
+    const confidence = 0.7;
 
     // Walking steadiness is most important
     if (features[0] < 0.3) risk += 0.3;
@@ -1082,7 +1082,7 @@ export class MLFallRiskPredictor {
 
     // Add model-specific enhancements
     let enhancedScore = basicResult.riskScore;
-    let confidence = basicResult.confidence;
+    const confidence = basicResult.confidence;
     let explanation = `${model.type} model prediction`;
 
     switch (model.type) {

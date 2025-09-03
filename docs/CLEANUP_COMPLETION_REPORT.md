@@ -17,7 +17,7 @@
 ### Duplicate Configuration Files Removed
 
 - ✅ `wrangler.fixed.toml` (6,068 bytes)
-- ✅ `wrangler.minimal.toml` (677 bytes)  
+- ✅ `wrangler.minimal.toml` (677 bytes)
 - ✅ `wrangler.production.final.toml` (1,658 bytes)
 - ✅ `wrangler.production.simple.toml` (1,922 bytes)
 - ✅ `wrangler.simple.toml` (1,508 bytes)

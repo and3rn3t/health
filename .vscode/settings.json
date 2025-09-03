@@ -75,7 +75,7 @@
     "editor.tabSize": 2
   },
   "[swift]": {
-    "editor.defaultFormatter": "swiftlang.swift-vscode",
+    "editor.defaultFormatter": "vknabel.vscode-apple-swift-format",
     "editor.tabSize": 2,
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {

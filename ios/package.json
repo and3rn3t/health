@@ -20,7 +20,13 @@
     "eslint": "^8.54.0",
     "prettier": "^3.1.0"
   },
-  "keywords": ["ios", "healthkit", "swift", "websocket", "vitalsense"],
+  "keywords": [
+    "ios",
+    "healthkit",
+    "swift",
+    "websocket",
+    "vitalsense"
+  ],
   "author": "and3rn3t",
   "license": "MIT"
 }

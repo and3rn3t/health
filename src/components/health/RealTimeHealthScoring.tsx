@@ -446,7 +446,7 @@ export default function RealTimeHealthScoring() {
               Live Health Metrics
               {isMonitoring && (
                 <div className="flex items-center gap-1">
-                  <div className="h-2 w-2 animate-Activity rounded-full bg-green-500" />
+                  <div className="animate-Activity h-2 w-2 rounded-full bg-green-500" />
                   <span className="text-sm text-green-600">Live</span>
                 </div>
               )}

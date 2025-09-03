@@ -295,7 +295,7 @@ export default function LiveHealthDataIntegration() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
             <CloudUpload className="h-6 w-6" />
             Live Apple Health Integration
           </h2>

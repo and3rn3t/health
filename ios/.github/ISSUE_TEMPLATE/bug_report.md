@@ -1,10 +1,9 @@
 ---
 name: Bug Report
 about: Create a report to help us improve VitalSense Monitor
-title: "[BUG] "
+title: '[BUG] '
 labels: bug
 assignees: ''
-
 ---
 
 ## 🐛 **Bug Description**

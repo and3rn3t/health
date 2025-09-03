@@ -119,6 +119,9 @@ const defaultTheme = {
         inset: 'var(--color-bg-inset)',
         overlay: 'var(--color-bg-overlay)',
       },
+      background: 'var(--color-bg)',
+      foreground: 'var(--color-fg)',
+      border: 'var(--color-border)',
       'focus-ring': 'var(--color-focus-ring)',
     },
     borderRadius: {

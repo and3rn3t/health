@@ -111,4 +111,4 @@ All documentation files are interconnected and cross-referenced:
 
 ---
 
-*All documentation files are located in `Documentation/` and maintain consistent cross-references and links.*
+_All documentation files are located in `Documentation/` and maintain consistent cross-references and links._

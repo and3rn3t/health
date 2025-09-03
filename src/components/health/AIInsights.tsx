@@ -256,7 +256,7 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <Brain className="text-primary h-5 w-5 animate-Activity" />
+                <Brain className="text-primary animate-Activity h-5 w-5" />
                 <div>
                   <div className="font-medium">
                     Analyzing your health data...

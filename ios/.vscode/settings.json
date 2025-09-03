@@ -1,29 +1,29 @@
 {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.fixAll": "explicit"
-    },
-    "files.associations": {
-        "*.swift": "swift",
-        "*.plist": "xml"
-    },
-    "swift.path": "/usr/bin/swift",
-    "swift.outputChannelLogLevel": "info",
-    "search.exclude": {
-        "**/build": true,
-        "**/DerivedData": true,
-        "**/.build": true,
-        "**/Pods": true
-    },
-    "files.exclude": {
-        "**/.DS_Store": true,
-        "**/build": true,
-        "**/DerivedData": true
-    },
-    "terminal.integrated.env.osx": {
-        "PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
-    },
-    "git.ignoreLimitWarning": true,
-    "swiftlint.enable": true,
-    "swiftlint.configPath": ".swiftlint.yml"
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "files.associations": {
+    "*.swift": "swift",
+    "*.plist": "xml"
+  },
+  "swift.path": "/usr/bin/swift",
+  "swift.outputChannelLogLevel": "info",
+  "search.exclude": {
+    "**/build": true,
+    "**/DerivedData": true,
+    "**/.build": true,
+    "**/Pods": true
+  },
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/build": true,
+    "**/DerivedData": true
+  },
+  "terminal.integrated.env.osx": {
+    "PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
+  },
+  "git.ignoreLimitWarning": true,
+  "swiftlint.enable": true,
+  "swiftlint.configPath": ".swiftlint.yml"
 }

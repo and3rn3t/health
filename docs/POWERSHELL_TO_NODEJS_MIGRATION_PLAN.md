@@ -51,16 +51,16 @@ Converting 45+ PowerShell scripts to Node.js for cross-platform compatibility wh
 ```json
 // Additional dependencies needed
 {
-  "commander": "^11.0.0",      // CLI argument parsing
-  "chalk": "^5.3.0",           // Colored output
-  "axios": "^1.5.0",           // HTTP requests
-  "fs-extra": "^11.1.1",       // Enhanced file system
-  "execa": "^8.0.1",           // Process execution
-  "ora": "^7.0.1",             // Progress spinners
-  "inquirer": "^9.2.10",       // Interactive prompts
-  "dotenv": "^16.3.1",         // Environment variables
-  "yaml": "^2.3.2",            // YAML parsing
-  "semver": "^7.5.4"           // Version management
+  "commander": "^11.0.0", // CLI argument parsing
+  "chalk": "^5.3.0", // Colored output
+  "axios": "^1.5.0", // HTTP requests
+  "fs-extra": "^11.1.1", // Enhanced file system
+  "execa": "^8.0.1", // Process execution
+  "ora": "^7.0.1", // Progress spinners
+  "inquirer": "^9.2.10", // Interactive prompts
+  "dotenv": "^16.3.1", // Environment variables
+  "yaml": "^2.3.2", // YAML parsing
+  "semver": "^7.5.4" // Version management
 }
 ```
 
@@ -139,7 +139,7 @@ scripts/
 // After (Node.js)
 {
   "label": "probe-health",
-  "type": "shell", 
+  "type": "shell",
   "command": "node",
   "args": ["scripts/node/health/simple-probe.js", "--port", "8787"]
 }
@@ -151,7 +151,7 @@ scripts/
 // Before
 "probe:dev": "pwsh -NoProfile -File scripts/probe.ps1 -HostUrl http://127.0.0.1 -Port 8787",
 
-// After  
+// After
 "probe:dev": "node scripts/node/health/probe.js --host http://127.0.0.1 --port 8787"
 ```
 
@@ -229,9 +229,7 @@ import { program } from 'commander';
 import chalk from 'chalk';
 import axios from 'axios';
 
-program
-  .option('-p, --port <port>', 'Port number', '8787')
-  .parse();
+program.option('-p, --port <port>', 'Port number', '8787').parse();
 
 const { port } = program.opts();
 const url = `http://127.0.0.1:${port}/health`;

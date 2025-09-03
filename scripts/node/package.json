@@ -9,7 +9,7 @@
     "probe": "node health/probe.js",
     "task-runner": "node dev/task-runner.js",
     "test-all-endpoints": "node test/test-all-endpoints.js",
-    "test-integration": "node test/test-integration.js", 
+    "test-integration": "node test/test-integration.js",
     "setup-infrastructure": "node infrastructure/setup-production-infrastructure.js",
     "auth0-setup": "node auth/auth0-setup.js",
     "test": "npm run test-integration && npm run test-all-endpoints",

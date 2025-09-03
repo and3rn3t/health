@@ -125,7 +125,7 @@ node scripts/node/test/test-runner.js --quick --verbose
 
 ### 📋 Phase 3 Pending (Deployment Scripts)
 
-- Deploy scripts (deploy-*.ps1)
+- Deploy scripts (deploy-\*.ps1)
 - DNS setup scripts
 - Platform deployment automation
 - Production infrastructure setup

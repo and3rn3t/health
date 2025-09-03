@@ -6,9 +6,9 @@
  */
 
 import { program } from 'commander';
-import { 
-  writeTaskStart, 
-  writeTaskComplete, 
+import {
+  writeTaskStart,
+  writeTaskComplete,
   writeTaskError,
   writeInfo,
   writeSuccess,
@@ -16,7 +16,7 @@ import {
   fileExists,
   readJsonFile,
   exitWithError,
-  exitWithSuccess 
+  exitWithSuccess,
 } from '../core/logger.js';
 import fs from 'fs-extra';
 import path from 'path';
@@ -26,7 +26,9 @@ const __filename = fileURLToPath(import.meta.url);
 
 program
   .name('config-validator')
-  .description('Validates and ensures all configuration files are properly set up')
+  .description(
+    'Validates and ensures all configuration files are properly set up'
+  )
   .option('--fix', 'Automatically fix any issues found')
   .option('-v, --verbose', 'Show detailed output')
   .parse();
@@ -40,44 +42,44 @@ const requiredConfigs = [
     file: 'package.json',
     type: 'json',
     required: true,
-    checks: ['name', 'version', 'scripts']
+    checks: ['name', 'version', 'scripts'],
   },
   {
     file: 'tsconfig.json',
     type: 'json',
     required: true,
-    checks: ['compilerOptions']
+    checks: ['compilerOptions'],
   },
   {
     file: 'vite.config.ts',
     type: 'file',
-    required: true
+    required: true,
   },
   {
     file: 'wrangler.toml',
     type: 'file',
-    required: true
+    required: true,
   },
   {
     file: '.gitignore',
     type: 'file',
-    required: true
+    required: true,
   },
   {
     file: '.eslintrc.json',
     type: 'json',
-    required: false
+    required: false,
   },
   {
     file: 'eslint.config.js',
     type: 'file',
-    required: false
+    required: false,
   },
   {
     file: '.prettierrc',
     type: 'json',
-    required: true
-  }
+    required: true,
+  },
 ];
 
 const requiredGitignoreEntries = [
@@ -87,18 +89,18 @@ const requiredGitignoreEntries = [
   '.env',
   '.env.local',
   '.DS_Store',
-  '*.log'
+  '*.log',
 ];
 
 async function checkConfigFile(config) {
   const { file, type, required, checks } = config;
-  
+
   if (options.verbose) {
     writeInfo(`Checking ${file}...`);
   }
 
   const exists = await fileExists(file);
-  
+
   if (!exists) {
     return handleMissingFile(file, required);
   }
@@ -106,7 +108,7 @@ async function checkConfigFile(config) {
   if (type === 'json') {
     return await validateJsonFile(file, checks);
   }
-  
+
   writeSuccess(`✓ ${file} exists`);
   return true;
 }
@@ -125,7 +127,7 @@ function handleMissingFile(file, required) {
 async function validateJsonFile(file, checks) {
   try {
     const content = await readJsonFile(file);
-    
+
     if (!content) {
       issuesFound = true;
       writeTaskError('Config Check', `Failed to parse JSON in ${file}`);
@@ -133,7 +135,7 @@ async function validateJsonFile(file, checks) {
     }
 
     validateJsonProperties(file, content, checks);
-    
+
     writeSuccess(`✓ ${file} is valid`);
     return true;
   } catch (error) {
@@ -148,7 +150,10 @@ function validateJsonProperties(file, content, checks) {
     for (const check of checks) {
       if (!(check in content)) {
         issuesFound = true;
-        writeTaskError('Config Check', `Missing required property '${check}' in ${file}`);
+        writeTaskError(
+          'Config Check',
+          `Missing required property '${check}' in ${file}`
+        );
       }
     }
   }
@@ -156,14 +161,17 @@ function validateJsonProperties(file, content, checks) {
 
 async function checkGitignore() {
   writeInfo('Checking .gitignore...');
-  
+
   if (!(await fileExists('.gitignore'))) {
     issuesFound = true;
     writeTaskError('Config Check', '.gitignore file is missing');
-    
+
     if (options.fix) {
       writeInfo('Creating .gitignore file...');
-      await fs.writeFile('.gitignore', requiredGitignoreEntries.join('\n') + '\n');
+      await fs.writeFile(
+        '.gitignore',
+        requiredGitignoreEntries.join('\n') + '\n'
+      );
       writeSuccess('Created .gitignore file');
     }
     return;
@@ -171,19 +179,26 @@ async function checkGitignore() {
 
   try {
     const gitignoreContent = await fs.readFile('.gitignore', 'utf8');
-    const lines = gitignoreContent.split('\n').map(line => line.trim());
-    
-    const missingEntries = requiredGitignoreEntries.filter(entry => 
-      !lines.some(line => line === entry || line.includes(entry.replace('/', '')))
+    const lines = gitignoreContent.split('\n').map((line) => line.trim());
+
+    const missingEntries = requiredGitignoreEntries.filter(
+      (entry) =>
+        !lines.some(
+          (line) => line === entry || line.includes(entry.replace('/', ''))
+        )
     );
 
     if (missingEntries.length > 0) {
       issuesFound = true;
-      writeTaskError('Config Check', `Missing entries in .gitignore: ${missingEntries.join(', ')}`);
-      
+      writeTaskError(
+        'Config Check',
+        `Missing entries in .gitignore: ${missingEntries.join(', ')}`
+      );
+
       if (options.fix) {
         writeInfo('Adding missing entries to .gitignore...');
-        const newContent = gitignoreContent + '\n' + missingEntries.join('\n') + '\n';
+        const newContent =
+          gitignoreContent + '\n' + missingEntries.join('\n') + '\n';
         await fs.writeFile('.gitignore', newContent);
         writeSuccess('Updated .gitignore with missing entries');
       }
@@ -192,13 +207,16 @@ async function checkGitignore() {
     }
   } catch (error) {
     issuesFound = true;
-    writeTaskError('Config Check', `Failed to read .gitignore: ${error.message}`);
+    writeTaskError(
+      'Config Check',
+      `Failed to read .gitignore: ${error.message}`
+    );
   }
 }
 
 async function checkVSCodeSettings() {
   writeInfo('Checking VS Code configuration...');
-  
+
   const vscodeDir = '.vscode';
   const settingsFile = path.join(vscodeDir, 'settings.json');
   const tasksFile = path.join(vscodeDir, 'tasks.json');
@@ -231,7 +249,7 @@ async function checkVSCodeSettings() {
 
 async function checkEnvironmentFiles() {
   writeInfo('Checking environment configuration...');
-  
+
   if (await fileExists('.env.example')) {
     writeSuccess('✓ .env.example exists');
   } else {
@@ -249,7 +267,7 @@ async function checkEnvironmentFiles() {
 
 async function validatePackageScripts() {
   writeInfo('Validating package.json scripts...');
-  
+
   const pkg = await readJsonFile('package.json');
   if (!pkg?.scripts) {
     issuesFound = true;
@@ -258,18 +276,26 @@ async function validatePackageScripts() {
   }
 
   const requiredScripts = ['dev', 'build', 'lint', 'test'];
-  const missingScripts = requiredScripts.filter(script => !(script in pkg.scripts));
+  const missingScripts = requiredScripts.filter(
+    (script) => !(script in pkg.scripts)
+  );
 
   if (missingScripts.length > 0) {
     issuesFound = true;
-    writeTaskError('Config Check', `Missing package.json scripts: ${missingScripts.join(', ')}`);
+    writeTaskError(
+      'Config Check',
+      `Missing package.json scripts: ${missingScripts.join(', ')}`
+    );
   } else {
     writeSuccess('✓ All required npm scripts are present');
   }
 }
 
 async function main() {
-  writeTaskStart('Config Validation', 'Validating and ensuring all configuration files are properly set up');
+  writeTaskStart(
+    'Config Validation',
+    'Validating and ensuring all configuration files are properly set up'
+  );
 
   try {
     // Check all configuration files
@@ -284,13 +310,19 @@ async function main() {
     await validatePackageScripts();
 
     if (issuesFound) {
-      writeTaskError('Config Validation', 'Configuration validation completed with issues');
+      writeTaskError(
+        'Config Validation',
+        'Configuration validation completed with issues'
+      );
       if (!options.fix) {
         writeInfo('Run with --fix to automatically fix some issues');
       }
       exitWithError('Configuration issues found', 1);
     } else {
-      writeTaskComplete('Config Validation', 'All configuration files are valid!');
+      writeTaskComplete(
+        'Config Validation',
+        'All configuration files are valid!'
+      );
       exitWithSuccess();
     }
   } catch (error) {
@@ -301,7 +333,7 @@ async function main() {
 
 // Only run if this file is executed directly
 if (process.argv[1] === __filename) {
-  main().catch(error => {
+  main().catch((error) => {
     writeTaskError('Config Validator', error.message);
     process.exit(1);
   });

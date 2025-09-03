@@ -4,7 +4,6 @@
  */
 
 import { Hono } from 'hono';
-import { serveStatic } from 'hono/cloudflare-workers';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
@@ -12,18 +11,73 @@ import { timing } from 'hono/timing';
 
 // Types for Cloudflare bindings
 interface Env {
-  ASSETS: Fetcher;
-  HEALTH_KV: KVNamespace;
-  SESSION_KV: KVNamespace;
-  CACHE_KV: KVNamespace;
-  HEALTH_FILES: R2Bucket;
-  AUDIT_LOGS: R2Bucket;
-  HEALTH_ANALYTICS: AnalyticsEngineDataset;
-  SECURITY_ANALYTICS: AnalyticsEngineDataset;
-  PERFORMANCE_ANALYTICS: AnalyticsEngineDataset;
-  WEBSOCKET_ROOMS: DurableObjectNamespace;
-  RATE_LIMITER: DurableObjectNamespace;
-  HEALTH_SESSIONS: DurableObjectNamespace;
+  ASSETS: { fetch: (request: Request) => Promise<Response> };
+  HEALTH_KV: {
+    get: (key: string) => Promise<string | null>;
+    put: (
+      key: string,
+      value: string,
+      options?: Record<string, unknown>
+    ) => Promise<void>;
+  };
+  SESSION_KV: {
+    get: (key: string) => Promise<string | null>;
+    put: (
+      key: string,
+      value: string,
+      options?: Record<string, unknown>
+    ) => Promise<void>;
+  };
+  CACHE_KV: {
+    get: (key: string) => Promise<string | null>;
+    put: (
+      key: string,
+      value: string,
+      options?: Record<string, unknown>
+    ) => Promise<void>;
+  };
+  HEALTH_FILES: {
+    head: (key: string) => Promise<unknown>;
+    put: (
+      key: string,
+      value: ReadableStream,
+      options?: Record<string, unknown>
+    ) => Promise<void>;
+  };
+  AUDIT_LOGS: {
+    put: (
+      key: string,
+      value: string,
+      options?: Record<string, unknown>
+    ) => Promise<void>;
+  };
+  HEALTH_ANALYTICS: {
+    writeDataPoint: (data: HealthAnalyticsEvent) => Promise<void>;
+  };
+  SECURITY_ANALYTICS: {
+    writeDataPoint: (data: SecurityAnalyticsEvent) => Promise<void>;
+  };
+  PERFORMANCE_ANALYTICS: {
+    writeDataPoint: (data: PerformanceAnalyticsEvent) => Promise<void>;
+  };
+  WEBSOCKET_ROOMS: {
+    idFromName: (name: string) => { toString: () => string };
+    get: (id: { toString: () => string }) => {
+      fetch: (request: Request) => Promise<Response>;
+    };
+  };
+  RATE_LIMITER: {
+    idFromName: (name: string) => { toString: () => string };
+    get: (id: { toString: () => string }) => {
+      fetch: (request: Request) => Promise<Response>;
+    };
+  };
+  HEALTH_SESSIONS: {
+    idFromName: (name: string) => { toString: () => string };
+    get: (id: { toString: () => string }) => {
+      fetch: (request: Request) => Promise<Response>;
+    };
+  };
 
   // Environment variables
   ENVIRONMENT: string;
@@ -36,6 +90,12 @@ interface Env {
   DEVICE_JWT_SECRET: string;
 }
 
+// Context variables for Hono
+type Variables = {
+  userId?: string;
+  rateLimitRemaining?: number;
+};
+
 // Analytics event types
 interface HealthAnalyticsEvent {
   timestamp: number;
@@ -46,7 +106,7 @@ interface HealthAnalyticsEvent {
     | 'emergency_alert'
     | 'user_login'
     | 'data_export';
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   value?: number;
 }
 
@@ -61,7 +121,7 @@ interface SecurityAnalyticsEvent {
     | 'data_access'
     | 'permission_denied';
   userId?: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   severity: 'low' | 'medium' | 'high' | 'critical';
 }
 
@@ -72,10 +132,10 @@ interface PerformanceAnalyticsEvent {
   responseTime: number;
   statusCode: number;
   userId?: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
-const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 // Enhanced middleware stack with observability
 app.use('*', logger());
@@ -102,9 +162,9 @@ app.use(
 app.use(
   '*',
   cors({
-    origin: (origin) => {
+    origin: (origin, _c) => {
       // Allow configured origins
-      return origin || true; // Update with specific origins in production
+      return origin || '*'; // Return string instead of boolean
     },
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -131,7 +191,7 @@ app.use('*', async (c, next) => {
       metadata: {
         userAgent: c.req.header('User-Agent') || '',
         referer: c.req.header('Referer') || '',
-        cf: c.req.raw.cf || {},
+        cf: (c.req.raw as { cf?: unknown }).cf || {},
       },
     };
 
@@ -218,6 +278,7 @@ app.get('/health', async (c) => {
     );
     healthData.services.kv = 'operational';
   } catch (error) {
+    console.error('KV health check failed:', error);
     healthData.services.kv = 'degraded';
   }
 
@@ -226,6 +287,10 @@ app.get('/health', async (c) => {
     await c.env.HEALTH_FILES.head('health-check-test');
     healthData.services.r2 = 'operational';
   } catch (error) {
+    console.debug(
+      'R2 head request failed (expected for non-existent objects):',
+      error
+    );
     healthData.services.r2 = 'operational'; // R2 head requests may fail on non-existent objects
   }
 
@@ -281,6 +346,31 @@ app.post('/api/health-data', async (c) => {
 
 // Analytics dashboard endpoint
 app.get('/api/analytics/health', async (c) => {
+  // Check if this is a demo mode request
+  const referer = c.req.header('Referer') || '';
+  const isDemoRequest =
+    referer.includes('/demo') || c.req.header('X-Demo-Mode') === 'true';
+
+  if (isDemoRequest) {
+    // Return enhanced demo analytics data
+    return c.json({
+      period: '24h',
+      metrics: {
+        totalEvents: 234,
+        uniqueUsers: 1,
+        avgResponseTime: 67,
+        errorRate: 0.01,
+      },
+      topEvents: [
+        { type: 'health_data_sync', count: 142 },
+        { type: 'user_login', count: 8 },
+        { type: 'fall_detection', count: 1 },
+        { type: 'demo_session', count: 83 },
+      ],
+      demoMode: true,
+    });
+  }
+
   // This would typically query Analytics Engine data
   // For now, return mock data structure
   return c.json({
@@ -301,6 +391,25 @@ app.get('/api/analytics/health', async (c) => {
 
 // Security analytics endpoint
 app.get('/api/analytics/security', async (c) => {
+  // Check if this is a demo mode request
+  const referer = c.req.header('Referer') || '';
+  const isDemoRequest =
+    referer.includes('/demo') || c.req.header('X-Demo-Mode') === 'true';
+
+  if (isDemoRequest) {
+    return c.json({
+      period: '24h',
+      metrics: {
+        totalRequests: 89,
+        blockedRequests: 2,
+        suspiciousActivity: 0,
+        authFailures: 1,
+      },
+      alerts: [{ type: 'demo_activity', severity: 'info', count: 1 }],
+      demoMode: true,
+    });
+  }
+
   return c.json({
     period: '24h',
     metrics: {
@@ -366,7 +475,7 @@ app.post('/api/audit/log', async (c) => {
   try {
     const auditEvent = await c.req.json();
     const timestamp = Date.now();
-    const auditKey = `audit/${timestamp}-${Math.random().toString(36).substr(2, 9)}.json`;
+    const auditKey = `audit/${timestamp}-${Math.random().toString(36).substring(2, 11)}.json`;
 
     const auditData = {
       ...auditEvent,
@@ -389,58 +498,7 @@ app.post('/api/audit/log', async (c) => {
   }
 });
 
-// Serve static assets
-app.get('*', serveStatic({ root: './', path: '/index.html' }));
-
-// Export Durable Object classes
-export class WebSocketRoom {
-  constructor(
-    private state: DurableObjectState,
-    private env: Env
-  ) {}
-
-  async fetch(request: Request): Promise<Response> {
-    // WebSocket room implementation
-    return new Response('WebSocket room not implemented', { status: 501 });
-  }
-}
-
-export class RateLimiter {
-  constructor(
-    private state: DurableObjectState,
-    private env: Env
-  ) {}
-
-  async fetch(request: Request): Promise<Response> {
-    const now = Date.now();
-    const window = 60000; // 1 minute window
-    const limit = 100; // 100 requests per minute
-
-    const windowStart = Math.floor(now / window) * window;
-    const key = `rate_limit:${windowStart}`;
-
-    let count = (await this.state.storage.get<number>(key)) || 0;
-    count++;
-
-    await this.state.storage.put(key, count, { expirationTtl: window / 1000 });
-
-    const allowed = count <= limit;
-    const remaining = Math.max(0, limit - count);
-
-    return Response.json({ allowed, remaining, limit, window });
-  }
-}
-
-export class HealthSession {
-  constructor(
-    private state: DurableObjectState,
-    private env: Env
-  ) {}
-
-  async fetch(request: Request): Promise<Response> {
-    // Health session management implementation
-    return new Response('Health session not implemented', { status: 501 });
-  }
-}
+// Serve static assets - disable for now due to manifest requirement
+// Serve static assets disabled - requires manifest
 
 export default app;

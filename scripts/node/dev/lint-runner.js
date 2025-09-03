@@ -6,9 +6,9 @@
  */
 
 import { program } from 'commander';
-import { 
-  writeTaskStart, 
-  writeTaskComplete, 
+import {
+  writeTaskStart,
+  writeTaskComplete,
   writeTaskError,
   writeInfo,
   writeSuccess,
@@ -16,7 +16,7 @@ import {
   runCommand,
   fileExists,
   exitWithError,
-  exitWithSuccess 
+  exitWithSuccess,
 } from '../core/logger.js';
 import { fileURLToPath } from 'url';
 
@@ -41,9 +41,9 @@ async function runESLint() {
   if (options.fix) {
     writeInfo('🔧 Auto-fixing ESLint issues...');
     const result = await runCommand('npm', ['run', 'lint', '--', '--fix'], {
-      quiet: !options.verbose
+      quiet: !options.verbose,
     });
-    
+
     if (!result.success) {
       hasErrors = true;
       writeTaskError('ESLint Fix', 'ESLint auto-fix encountered issues');
@@ -52,9 +52,9 @@ async function runESLint() {
     }
   } else {
     const result = await runCommand('npm', ['run', 'lint'], {
-      quiet: !options.verbose
+      quiet: !options.verbose,
     });
-    
+
     if (!result.success) {
       hasErrors = true;
       writeTaskError('ESLint', 'ESLint found issues');
@@ -66,12 +66,12 @@ async function runESLint() {
 
 async function runPrettier() {
   writeInfo('🎨 Checking Prettier formatting...');
-  
+
   if (options.fix) {
     const result = await runCommand('npm', ['run', 'format'], {
-      quiet: !options.verbose
+      quiet: !options.verbose,
     });
-    
+
     if (!result.success) {
       hasErrors = true;
       writeTaskError('Prettier Fix', 'Prettier formatting failed');
@@ -80,9 +80,9 @@ async function runPrettier() {
     }
   } else {
     const result = await runCommand('npm', ['run', 'format:check'], {
-      quiet: !options.verbose
+      quiet: !options.verbose,
     });
-    
+
     if (!result.success) {
       hasErrors = true;
       writeTaskError('Prettier', 'Code formatting issues found');
@@ -96,9 +96,9 @@ async function runPrettier() {
 async function runTypeScriptCheck() {
   writeInfo('🔍 Checking TypeScript compilation...');
   const tscResult = await runCommand('npx', ['tsc', '--noEmit'], {
-    quiet: !options.verbose
+    quiet: !options.verbose,
   });
-  
+
   if (!tscResult.success) {
     hasErrors = true;
     writeTaskError('TypeScript', 'TypeScript compilation errors found');
@@ -125,7 +125,7 @@ async function runSwiftLinting() {
   }
 
   const swiftLintScript = 'ios/scripts/swift-lint-windows.ps1';
-  
+
   if (!(await fileExists(swiftLintScript))) {
     writeWarning('Swift linting script not found, skipping Swift checks');
     return;
@@ -134,14 +134,13 @@ async function runSwiftLinting() {
   writeInfo('🍎 Checking Swift code...');
 
   const swiftArgs = options.fix ? ['-Fix'] : [];
-  const result = await runCommand('pwsh', [
-    '-NoProfile', 
-    '-File', 
-    swiftLintScript,
-    ...swiftArgs
-  ], {
-    quiet: !options.verbose
-  });
+  const result = await runCommand(
+    'pwsh',
+    ['-NoProfile', '-File', swiftLintScript, ...swiftArgs],
+    {
+      quiet: !options.verbose,
+    }
+  );
 
   if (!result.success) {
     hasErrors = true;
@@ -159,18 +158,22 @@ async function runAdditionalChecks() {
   writeInfo('🔍 Running additional strict checks...');
 
   // Search for development comments that should be addressed
-  const todoResult = await runCommand('grep', [
-    '-r', 
-    '--include=*.ts', 
-    '--include=*.tsx', 
-    '--include=*.js', 
-    '--include=*.jsx',
-    '-n',
-    'TODO\\|FIXME\\|XXX',
-    options.path
-  ], {
-    quiet: true
-  });
+  const todoResult = await runCommand(
+    'grep',
+    [
+      '-r',
+      '--include=*.ts',
+      '--include=*.tsx',
+      '--include=*.js',
+      '--include=*.jsx',
+      '-n',
+      'TODO\\|FIXME\\|XXX',
+      options.path,
+    ],
+    {
+      quiet: true,
+    }
+  );
 
   if (todoResult.success && todoResult.stdout.trim()) {
     writeWarning('TODO/FIXME comments found:');
@@ -178,27 +181,36 @@ async function runAdditionalChecks() {
   }
 
   // Check for console.log statements (excluding this file)
-  const consoleResult = await runCommand('grep', [
-    '-r',
-    '--include=*.ts',
-    '--include=*.tsx', 
-    '--exclude-dir=node_modules',
-    '--exclude-dir=dist',
-    '-n',
-    'console\\.log',
-    options.path
-  ], {
-    quiet: true
-  });
+  const consoleResult = await runCommand(
+    'grep',
+    [
+      '-r',
+      '--include=*.ts',
+      '--include=*.tsx',
+      '--exclude-dir=node_modules',
+      '--exclude-dir=dist',
+      '-n',
+      'console\\.log',
+      options.path,
+    ],
+    {
+      quiet: true,
+    }
+  );
 
   if (consoleResult.success && consoleResult.stdout.trim()) {
-    writeWarning('console.log statements found (consider using proper logging):');
+    writeWarning(
+      'console.log statements found (consider using proper logging):'
+    );
     console.log(consoleResult.stdout);
   }
 }
 
 async function main() {
-  writeTaskStart('Unified Linting', '🔍 Running unified linting across project...');
+  writeTaskStart(
+    'Unified Linting',
+    '🔍 Running unified linting across project...'
+  );
 
   try {
     await runTypeScriptLinting();
@@ -220,7 +232,7 @@ async function main() {
 
 // Only run if this file is executed directly
 if (process.argv[1] === __filename) {
-  main().catch(error => {
+  main().catch((error) => {
     writeTaskError('Lint Runner', error.message);
     process.exit(1);
   });

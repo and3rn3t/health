@@ -143,7 +143,7 @@ export function VitalSenseStatusCard({
       style={{ borderLeftColor: 'var(--color-vitalsense-primary)' }}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-vitalsense-text-primary text-sm font-medium">
+        <CardTitle className="text-sm font-medium text-vitalsense-text-primary">
           {title}
         </CardTitle>
         {icon}
@@ -165,7 +165,7 @@ export function VitalSenseStatusCard({
           </Badge>
         </div>
         {subtitle && (
-          <p className="text-vitalsense-text-muted mt-1 text-xs">{subtitle}</p>
+          <p className="mt-1 text-xs text-vitalsense-text-muted">{subtitle}</p>
         )}
       </CardContent>
     </Card>

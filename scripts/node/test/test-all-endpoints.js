@@ -14,23 +14,63 @@ class HealthAPITester {
     this.timeout = options.timeout || 10000;
     this.retries = options.retries || 2;
     this.outputFormat = options.format || 'console'; // console, json, junit
-    
+
     // Production worker URLs
     this.workerUrls = [
       'https://health-app-prod.workers.dev',
-      'https://health.andernet.dev'
+      'https://health.andernet.dev',
     ];
 
     // All API endpoints from worker and documentation
     this.endpoints = [
-      { path: '/health', method: 'GET', description: 'Health check endpoint', expectStatus: 200 },
-      { path: '/', method: 'GET', description: 'React app main page', expectStatus: 200 },
-      { path: '/api/health-data', method: 'GET', description: 'Get health data (with pagination)', expectStatus: 200 },
-      { path: '/api/health-data?limit=10', method: 'GET', description: 'Health data with limit', expectStatus: 200 },
-      { path: '/api/health-data?metric=heart_rate', method: 'GET', description: 'Filter by heart rate metric', expectStatus: 200 },
-      { path: '/api/_selftest', method: 'GET', description: 'Crypto/auth self-test (non-prod)', expectStatus: 200 },
-      { path: '/api/_admin/purge-health', method: 'POST', description: 'Admin purge endpoint (non-prod)', expectStatus: 200 },
-      { path: '/ws', method: 'GET', description: 'WebSocket endpoint info', expectStatus: 200 }
+      {
+        path: '/health',
+        method: 'GET',
+        description: 'Health check endpoint',
+        expectStatus: 200,
+      },
+      {
+        path: '/',
+        method: 'GET',
+        description: 'React app main page',
+        expectStatus: 200,
+      },
+      {
+        path: '/api/health-data',
+        method: 'GET',
+        description: 'Get health data (with pagination)',
+        expectStatus: 200,
+      },
+      {
+        path: '/api/health-data?limit=10',
+        method: 'GET',
+        description: 'Health data with limit',
+        expectStatus: 200,
+      },
+      {
+        path: '/api/health-data?metric=heart_rate',
+        method: 'GET',
+        description: 'Filter by heart rate metric',
+        expectStatus: 200,
+      },
+      {
+        path: '/api/_selftest',
+        method: 'GET',
+        description: 'Crypto/auth self-test (non-prod)',
+        expectStatus: 200,
+      },
+      {
+        path: '/api/_admin/purge-health',
+        method: 'POST',
+        description: 'Admin purge endpoint (non-prod)',
+        expectStatus: 200,
+      },
+      {
+        path: '/ws',
+        method: 'GET',
+        description: 'WebSocket endpoint info',
+        expectStatus: 200,
+      },
     ];
 
     // POST test endpoints with sample payloads
@@ -45,12 +85,12 @@ class HealthAPITester {
           value: 72,
           unit: 'bpm',
           timestamp: new Date().toISOString(),
-          source: 'test_client'
-        }
+          source: 'test_client',
+        },
       },
       {
         path: '/api/health-data',
-        method: 'POST', 
+        method: 'POST',
         description: 'Submit steps data',
         expectStatus: 201,
         body: {
@@ -58,9 +98,9 @@ class HealthAPITester {
           value: 5000,
           unit: 'count',
           timestamp: new Date().toISOString(),
-          source: 'test_client'
-        }
-      }
+          source: 'test_client',
+        },
+      },
     ];
 
     this.results = {
@@ -69,7 +109,7 @@ class HealthAPITester {
       failed: 0,
       skipped: 0,
       errors: [],
-      details: []
+      details: [],
     };
   }
 
@@ -88,8 +128,8 @@ class HealthAPITester {
         validateStatus: () => true, // Don't throw on non-2xx status
         headers: {
           'User-Agent': 'VitalSense-API-Tester/1.0',
-          'Accept': 'application/json'
-        }
+          Accept: 'application/json',
+        },
       };
 
       if (endpoint.body) {
@@ -103,12 +143,16 @@ class HealthAPITester {
         status: response.status,
         data: response.data,
         headers: response.headers,
-        responseTime: response.config.metadata?.endTime - response.config.metadata?.startTime || 0
+        responseTime:
+          response.config.metadata?.endTime -
+            response.config.metadata?.startTime || 0,
       };
-
     } catch (error) {
       if (retryCount < this.retries) {
-        this.log(`⚠️ Retry ${retryCount + 1}/${this.retries} for ${endpoint.path}`, 'yellow');
+        this.log(
+          `⚠️ Retry ${retryCount + 1}/${this.retries} for ${endpoint.path}`,
+          'yellow'
+        );
         await setTimeout(1000 * (retryCount + 1));
         return this.makeRequest(url, endpoint, retryCount + 1);
       }
@@ -117,7 +161,7 @@ class HealthAPITester {
         success: false,
         error: error.message,
         code: error.code,
-        status: error.response?.status
+        status: error.response?.status,
       };
     }
   }
@@ -127,7 +171,7 @@ class HealthAPITester {
     this.results.total++;
 
     this.log(`🔍 Testing ${endpoint.method} ${endpoint.path}`, 'cyan');
-    
+
     const result = await this.makeRequest(baseUrl, endpoint);
     const responseTime = Date.now() - startTime;
 
@@ -137,7 +181,7 @@ class HealthAPITester {
       method: endpoint.method,
       description: endpoint.description,
       responseTime,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     if (!result.success) {
@@ -145,33 +189,39 @@ class HealthAPITester {
       this.results.errors.push({
         endpoint: endpoint.path,
         error: result.error,
-        url: baseUrl
+        url: baseUrl,
       });
-      
+
       testResult.status = 'FAILED';
       testResult.error = result.error;
       this.log(`❌ FAILED: ${endpoint.description} - ${result.error}`, 'red');
     } else {
       const statusMatch = result.status === endpoint.expectStatus;
-      
+
       if (statusMatch) {
         this.results.passed++;
         testResult.status = 'PASSED';
         testResult.httpStatus = result.status;
         testResult.responseData = result.data;
-        this.log(`✅ PASSED: ${endpoint.description} (${result.status}) [${responseTime}ms]`, 'green');
+        this.log(
+          `✅ PASSED: ${endpoint.description} (${result.status}) [${responseTime}ms]`,
+          'green'
+        );
       } else {
         this.results.failed++;
         this.results.errors.push({
           endpoint: endpoint.path,
           error: `Expected status ${endpoint.expectStatus}, got ${result.status}`,
-          url: baseUrl
+          url: baseUrl,
         });
-        
+
         testResult.status = 'FAILED';
         testResult.httpStatus = result.status;
         testResult.expectedStatus = endpoint.expectStatus;
-        this.log(`❌ FAILED: ${endpoint.description} - Expected ${endpoint.expectStatus}, got ${result.status}`, 'red');
+        this.log(
+          `❌ FAILED: ${endpoint.description} - Expected ${endpoint.expectStatus}, got ${result.status}`,
+          'red'
+        );
       }
     }
 
@@ -181,14 +231,14 @@ class HealthAPITester {
 
   async testWebSocketEndpoint(baseUrl) {
     this.log(`🔌 Testing WebSocket connectivity`, 'cyan');
-    
+
     try {
       // Test WebSocket upgrade endpoint
       // For now, just test the HTTP endpoint that provides WS info
       const result = await this.makeRequest(baseUrl, {
         path: '/ws',
         method: 'GET',
-        description: 'WebSocket endpoint info'
+        description: 'WebSocket endpoint info',
       });
 
       if (result.success) {
@@ -207,7 +257,7 @@ class HealthAPITester {
   async runComprehensiveTest() {
     this.log('🏥 Comprehensive Health Platform API Test', 'green');
     this.log('============================================', 'cyan');
-    
+
     const startTime = Date.now();
 
     for (const baseUrl of this.workerUrls) {
@@ -220,7 +270,8 @@ class HealthAPITester {
       }
 
       // Test POST endpoints (only on non-production if detected)
-      const isProduction = baseUrl.includes('workers.dev') || baseUrl.includes('andernet.dev');
+      const isProduction =
+        baseUrl.includes('workers.dev') || baseUrl.includes('andernet.dev');
       if (!isProduction) {
         this.log(`\n📤 Testing POST endpoints (non-production)`, 'yellow');
         for (const endpoint of this.postEndpoints) {
@@ -237,7 +288,7 @@ class HealthAPITester {
 
     const totalTime = Date.now() - startTime;
     this.printSummary(totalTime);
-    
+
     return this.results;
   }
 
@@ -249,23 +300,28 @@ class HealthAPITester {
     this.log(`✅ Passed: ${this.results.passed}`, 'green');
     this.log(`❌ Failed: ${this.results.failed}`, 'red');
     this.log(`⏭️  Skipped: ${this.results.skipped}`, 'yellow');
-    
-    const successRate = this.results.total > 0 ? 
-      ((this.results.passed / this.results.total) * 100).toFixed(1) : 0;
-    
+
+    const successRate =
+      this.results.total > 0
+        ? ((this.results.passed / this.results.total) * 100).toFixed(1)
+        : 0;
+
     let successColor = 'red';
     if (successRate >= 90) {
       successColor = 'green';
     } else if (successRate >= 70) {
       successColor = 'yellow';
     }
-    
+
     this.log(`📈 Success Rate: ${successRate}%`, successColor);
 
     if (this.results.errors.length > 0) {
       this.log('\n🚨 Errors:', 'red');
       this.results.errors.forEach((error, index) => {
-        this.log(`${index + 1}. ${error.endpoint} on ${error.url}: ${error.error}`, 'red');
+        this.log(
+          `${index + 1}. ${error.endpoint} on ${error.url}: ${error.error}`,
+          'red'
+        );
       });
     }
 
@@ -275,19 +331,21 @@ class HealthAPITester {
 
   async saveResults(filename) {
     const fs = await import('node:fs/promises');
-    
+
     const output = {
       summary: {
         total: this.results.total,
         passed: this.results.passed,
         failed: this.results.failed,
         skipped: this.results.skipped,
-        successRate: this.results.total > 0 ? 
-          ((this.results.passed / this.results.total) * 100).toFixed(1) : 0
+        successRate:
+          this.results.total > 0
+            ? ((this.results.passed / this.results.total) * 100).toFixed(1)
+            : 0,
       },
       errors: this.results.errors,
       details: this.results.details,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     await fs.writeFile(filename, JSON.stringify(output, null, 2));
@@ -300,12 +358,20 @@ async function main() {
   const args = process.argv.slice(2);
   const options = {
     verbose: args.includes('--verbose') || args.includes('-v'),
-    timeout: parseInt(args.find(arg => arg.startsWith('--timeout='))?.split('=')[1]) || 10000,
-    retries: parseInt(args.find(arg => arg.startsWith('--retries='))?.split('=')[1]) || 2,
-    format: args.find(arg => arg.startsWith('--format='))?.split('=')[1] || 'console'
+    timeout:
+      parseInt(
+        args.find((arg) => arg.startsWith('--timeout='))?.split('=')[1]
+      ) || 10000,
+    retries:
+      parseInt(
+        args.find((arg) => arg.startsWith('--retries='))?.split('=')[1]
+      ) || 2,
+    format:
+      args.find((arg) => arg.startsWith('--format='))?.split('=')[1] ||
+      'console',
   };
 
-  const saveFile = args.find(arg => arg.startsWith('--save='))?.split('=')[1];
+  const saveFile = args.find((arg) => arg.startsWith('--save='))?.split('=')[1];
 
   if (args.includes('--help') || args.includes('-h')) {
     console.log(`
@@ -332,11 +398,11 @@ Examples:
   try {
     const tester = new HealthAPITester(options);
     const results = await tester.runComprehensiveTest();
-    
+
     if (saveFile) {
       await tester.saveResults(saveFile);
     }
-    
+
     return results;
   } catch (error) {
     console.error(chalk.red(`💥 Test suite failed: ${error.message}`));
@@ -348,7 +414,10 @@ Examples:
 }
 
 // Run if called directly
-if (process.argv[1] === new URL(import.meta.url).pathname || process.argv[1].endsWith('test-all-endpoints.js')) {
+if (
+  process.argv[1] === new URL(import.meta.url).pathname ||
+  process.argv[1].endsWith('test-all-endpoints.js')
+) {
   main();
 }
 

@@ -17,16 +17,16 @@ class ProductionInfrastructureManager {
     this.verbose = options.verbose || false;
     this.dryRun = options.dryRun || false;
     this.environment = options.environment || 'production';
-    
+
     this.config = {
       workerName: 'vitalsense-health-app',
       domain: 'andernet.dev',
       subdomain: 'health',
       zones: {
         production: process.env.CLOUDFLARE_ZONE_ID,
-        development: process.env.CLOUDFLARE_DEV_ZONE_ID
+        development: process.env.CLOUDFLARE_DEV_ZONE_ID,
       },
-      apiToken: process.env.CLOUDFLARE_API_TOKEN
+      apiToken: process.env.CLOUDFLARE_API_TOKEN,
     };
 
     this.deploymentSteps = {
@@ -35,7 +35,7 @@ class ProductionInfrastructureManager {
       dns: false,
       waf: false,
       observability: false,
-      secrets: false
+      secrets: false,
     };
   }
 
@@ -47,7 +47,7 @@ class ProductionInfrastructureManager {
 
   async executeCommand(command, description) {
     this.log(`🔧 ${description}`, 'cyan');
-    
+
     if (this.dryRun) {
       this.log(`Would execute: ${command}`, 'yellow');
       return { success: true, output: 'DRY RUN - Command not executed' };
@@ -57,12 +57,12 @@ class ProductionInfrastructureManager {
       if (this.verbose) {
         this.log(`Executing: ${command}`, 'gray');
       }
-      
-      const output = execSync(command, { 
+
+      const output = execSync(command, {
         encoding: 'utf8',
-        stdio: this.verbose ? 'inherit' : 'pipe'
+        stdio: this.verbose ? 'inherit' : 'pipe',
       });
-      
+
       this.log(`✅ ${description} completed`, 'green');
       return { success: true, output };
     } catch (error) {
@@ -73,10 +73,10 @@ class ProductionInfrastructureManager {
 
   async buildApplication() {
     this.log('🏗️ Building VitalSense Application', 'blue');
-    
+
     const buildSteps = [
       { cmd: 'npm run build', desc: 'Building React application' },
-      { cmd: 'npm run build:worker', desc: 'Building Cloudflare Worker' }
+      { cmd: 'npm run build:worker', desc: 'Building Cloudflare Worker' },
     ];
 
     for (const step of buildSteps) {
@@ -92,39 +92,45 @@ class ProductionInfrastructureManager {
 
   async deployToCloudflare() {
     this.log('🚀 Deploying to Cloudflare Workers', 'blue');
-    
-    const wranglerConfig = this.environment === 'production' 
-      ? 'wrangler.production.toml' 
-      : 'wrangler.toml';
-    
+
+    const wranglerConfig =
+      this.environment === 'production'
+        ? 'wrangler.production.toml'
+        : 'wrangler.toml';
+
     const deployCmd = `wrangler deploy --config ${wranglerConfig} --env ${this.environment}`;
-    const result = await this.executeCommand(deployCmd, 'Deploying to Cloudflare Workers');
-    
+    const result = await this.executeCommand(
+      deployCmd,
+      'Deploying to Cloudflare Workers'
+    );
+
     if (!result.success && !this.dryRun) {
       throw new Error(`Deployment failed: ${result.error}`);
     }
 
     this.deploymentSteps.deploy = true;
-    
+
     // Wait for deployment to propagate
     if (!this.dryRun) {
       this.log('⏳ Waiting for deployment to propagate...', 'yellow');
       await setTimeout(5000);
     }
-    
+
     this.log('🎉 Deployment completed successfully', 'green');
   }
 
   async configureDNS() {
     this.log('🌐 Configuring DNS Records', 'blue');
-    
+
     if (!this.config.apiToken) {
       throw new Error('CLOUDFLARE_API_TOKEN environment variable is required');
     }
 
     const zoneId = this.config.zones[this.environment];
     if (!zoneId) {
-      throw new Error(`Zone ID not configured for environment: ${this.environment}`);
+      throw new Error(
+        `Zone ID not configured for environment: ${this.environment}`
+      );
     }
 
     const dnsRecords = [
@@ -132,8 +138,8 @@ class ProductionInfrastructureManager {
         type: 'CNAME',
         name: this.config.subdomain,
         content: `${this.config.workerName}.${this.config.domain}.workers.dev`,
-        proxied: true
-      }
+        proxied: true,
+      },
     ];
 
     for (const record of dnsRecords) {
@@ -146,7 +152,10 @@ class ProductionInfrastructureManager {
 
   async createOrUpdateDNSRecord(zoneId, record) {
     if (this.dryRun) {
-      this.log(`Would create/update DNS record: ${record.name} -> ${record.content}`, 'yellow');
+      this.log(
+        `Would create/update DNS record: ${record.name} -> ${record.content}`,
+        'yellow'
+      );
       return;
     }
 
@@ -156,9 +165,9 @@ class ProductionInfrastructureManager {
         `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?name=${record.name}.${this.config.domain}`,
         {
           headers: {
-            'Authorization': `Bearer ${this.config.apiToken}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${this.config.apiToken}`,
+            'Content-Type': 'application/json',
+          },
         }
       );
 
@@ -172,9 +181,9 @@ class ProductionInfrastructureManager {
           record,
           {
             headers: {
-              'Authorization': `Bearer ${this.config.apiToken}`,
-              'Content-Type': 'application/json'
-            }
+              Authorization: `Bearer ${this.config.apiToken}`,
+              'Content-Type': 'application/json',
+            },
           }
         );
       } else {
@@ -185,15 +194,14 @@ class ProductionInfrastructureManager {
           record,
           {
             headers: {
-              'Authorization': `Bearer ${this.config.apiToken}`,
-              'Content-Type': 'application/json'
-            }
+              Authorization: `Bearer ${this.config.apiToken}`,
+              'Content-Type': 'application/json',
+            },
           }
         );
       }
 
       this.log(`✅ DNS record configured: ${record.name}`, 'green');
-      
     } catch (error) {
       this.log(`❌ DNS configuration failed: ${error.message}`, 'red');
       throw error;
@@ -202,7 +210,7 @@ class ProductionInfrastructureManager {
 
   async setupWAF() {
     this.log('🛡️ Configuring Web Application Firewall', 'blue');
-    
+
     if (this.dryRun) {
       this.log('Would configure WAF rules and rate limiting', 'yellow');
       this.deploymentSteps.waf = true;
@@ -211,13 +219,19 @@ class ProductionInfrastructureManager {
 
     const wafCommands = [
       'wrangler kv:namespace create "RATE_LIMIT_KV" --env production',
-      'wrangler kv:namespace create "SECURITY_LOG_KV" --env production'
+      'wrangler kv:namespace create "SECURITY_LOG_KV" --env production',
     ];
 
     for (const cmd of wafCommands) {
-      const result = await this.executeCommand(cmd, 'Creating WAF KV namespaces');
+      const result = await this.executeCommand(
+        cmd,
+        'Creating WAF KV namespaces'
+      );
       if (!result.success) {
-        this.log(`⚠️ WAF command failed (may already exist): ${result.error}`, 'yellow');
+        this.log(
+          `⚠️ WAF command failed (may already exist): ${result.error}`,
+          'yellow'
+        );
       }
     }
 
@@ -227,16 +241,19 @@ class ProductionInfrastructureManager {
 
   async setupObservability() {
     this.log('📊 Setting up Observability', 'blue');
-    
+
     const observabilitySteps = [
       'wrangler analytics create --name vitalsense-analytics',
-      'wrangler logpush create --name vitalsense-logs'
+      'wrangler logpush create --name vitalsense-logs',
     ];
 
     for (const cmd of observabilitySteps) {
       const result = await this.executeCommand(cmd, 'Setting up observability');
       if (!result.success) {
-        this.log(`⚠️ Observability setup failed (may already exist): ${result.error}`, 'yellow');
+        this.log(
+          `⚠️ Observability setup failed (may already exist): ${result.error}`,
+          'yellow'
+        );
       }
     }
 
@@ -246,11 +263,11 @@ class ProductionInfrastructureManager {
 
   async setupSecrets() {
     this.log('🔐 Configuring Production Secrets', 'blue');
-    
+
     const secrets = [
       { name: 'DEVICE_JWT_SECRET', value: process.env.DEVICE_JWT_SECRET },
       { name: 'AUTH0_DOMAIN', value: process.env.AUTH0_DOMAIN },
-      { name: 'AUTH0_CLIENT_ID', value: process.env.AUTH0_CLIENT_ID }
+      { name: 'AUTH0_CLIENT_ID', value: process.env.AUTH0_CLIENT_ID },
     ];
 
     for (const secret of secrets) {
@@ -258,7 +275,10 @@ class ProductionInfrastructureManager {
         const cmd = `echo "${secret.value}" | wrangler secret put ${secret.name} --env ${this.environment}`;
         await this.executeCommand(cmd, `Setting secret: ${secret.name}`);
       } else {
-        this.log(`⚠️ Secret ${secret.name} not found in environment variables`, 'yellow');
+        this.log(
+          `⚠️ Secret ${secret.name} not found in environment variables`,
+          'yellow'
+        );
       }
     }
 
@@ -268,15 +288,18 @@ class ProductionInfrastructureManager {
 
   async verifyDeployment() {
     this.log('🔍 Verifying Deployment', 'blue');
-    
+
     const healthUrl = `https://${this.config.subdomain}.${this.config.domain}/health`;
-    
+
     try {
       const response = await axios.get(healthUrl, { timeout: 10000 });
-      
+
       if (response.status === 200) {
         this.log(`✅ Health check passed: ${healthUrl}`, 'green');
-        this.log(`📊 Response: ${JSON.stringify(response.data, null, 2)}`, 'cyan');
+        this.log(
+          `📊 Response: ${JSON.stringify(response.data, null, 2)}`,
+          'cyan'
+        );
         return true;
       } else {
         this.log(`❌ Health check failed: ${response.status}`, 'red');
@@ -291,26 +314,38 @@ class ProductionInfrastructureManager {
   printSummary() {
     this.log('\n📊 Deployment Summary', 'blue');
     this.log('═'.repeat(50), 'blue');
-    
+
     const steps = Object.entries(this.deploymentSteps);
     const completed = steps.filter(([, status]) => status).length;
     const total = steps.length;
-    
+
     this.log(`📈 Progress: ${completed}/${total} steps completed`, 'cyan');
-    
+
     steps.forEach(([step, status]) => {
       const icon = status ? '✅' : '❌';
       const color = status ? 'green' : 'red';
-      this.log(`${icon} ${step.charAt(0).toUpperCase() + step.slice(1)}`, color);
+      this.log(
+        `${icon} ${step.charAt(0).toUpperCase() + step.slice(1)}`,
+        color
+      );
     });
 
     if (completed === total) {
-      this.log('\n🎉 Production infrastructure setup completed successfully!', 'green');
-      this.log(`🌐 Application URL: https://${this.config.subdomain}.${this.config.domain}`, 'blue');
+      this.log(
+        '\n🎉 Production infrastructure setup completed successfully!',
+        'green'
+      );
+      this.log(
+        `🌐 Application URL: https://${this.config.subdomain}.${this.config.domain}`,
+        'blue'
+      );
     } else {
-      this.log('\n⚠️ Some steps failed. Check the logs above for details.', 'yellow');
+      this.log(
+        '\n⚠️ Some steps failed. Check the logs above for details.',
+        'yellow'
+      );
     }
-    
+
     return { completed, total, success: completed === total };
   }
 
@@ -322,17 +357,17 @@ class ProductionInfrastructureManager {
       waf = true,
       observability = true,
       secrets = true,
-      verify = true
+      verify = true,
     } = options;
 
     this.log('🚀 Starting Production Infrastructure Setup', 'green');
     this.log(`Environment: ${this.environment}`, 'cyan');
     this.log(`Domain: ${this.config.subdomain}.${this.config.domain}`, 'cyan');
-    
+
     if (this.dryRun) {
       this.log('🧪 DRY RUN MODE - No actual changes will be made', 'yellow');
     }
-    
+
     this.log('═'.repeat(60), 'blue');
 
     try {
@@ -342,13 +377,12 @@ class ProductionInfrastructureManager {
       if (waf) await this.setupWAF();
       if (observability) await this.setupObservability();
       if (secrets) await this.setupSecrets();
-      
+
       if (verify && !this.dryRun) {
         await this.verifyDeployment();
       }
-      
+
       return this.printSummary();
-      
     } catch (error) {
       this.log(`💥 Setup failed: ${error.message}`, 'red');
       if (this.verbose) {
@@ -365,7 +399,9 @@ async function main() {
   const options = {
     verbose: args.includes('--verbose') || args.includes('-v'),
     dryRun: args.includes('--dry-run') || args.includes('--test'),
-    environment: args.find(arg => arg.startsWith('--env='))?.split('=')[1] || 'production'
+    environment:
+      args.find((arg) => arg.startsWith('--env='))?.split('=')[1] ||
+      'production',
   };
 
   // Parse step options
@@ -376,7 +412,7 @@ async function main() {
     waf: args.includes('--waf') || args.includes('--all'),
     observability: args.includes('--observability') || args.includes('--all'),
     secrets: args.includes('--secrets') || args.includes('--all'),
-    verify: args.includes('--verify') || args.includes('--all')
+    verify: args.includes('--verify') || args.includes('--all'),
   };
 
   if (args.includes('--help') || args.includes('-h')) {
@@ -412,10 +448,9 @@ Examples:
   try {
     const manager = new ProductionInfrastructureManager(options);
     const result = await manager.runFullSetup(stepOptions);
-    
+
     process.exitCode = result.success ? 0 : 1;
     return result;
-    
   } catch (error) {
     console.error(chalk.red(`💥 Setup failed: ${error.message}`));
     if (options.verbose) {

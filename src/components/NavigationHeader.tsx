@@ -105,7 +105,7 @@ export default function NavigationHeader({
   };
 
   return (
-    <header className="bg-card/95 supports-[backdrop-filter]:bg-card/60 border-border sticky top-0 z-30 w-full border-b backdrop-blur">
+    <header className="bg-card/95 supports-[backdrop-filter]:bg-card/60 sticky top-0 z-30 w-full border-b border-border backdrop-blur">
       <div className="flex h-16 items-center justify-between px-4 lg:px-6">
         {/* Left Section - Sidebar Toggle & Breadcrumbs */}
         <div className="flex items-center gap-4">

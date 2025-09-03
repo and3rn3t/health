@@ -12,13 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { useKV } from '@github/spark/hooks';
-import {
-  Brain,
-  CheckCircle,
-  Clock,
-  Sparkles,
-  Target,
-} from 'lucide-react';
+import { Brain, CheckCircle, Clock, Sparkles, Target } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -288,7 +282,7 @@ export default function AIUsagePredictions({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
             <Brain className="text-primary h-6 w-6" />
             AI Usage Predictions
           </h2>
@@ -396,7 +390,7 @@ export default function AIUsagePredictions({
                       <div className="mb-3 flex items-start justify-between">
                         <div className="flex items-center gap-2">
                           {getTrendIcon(prediction.currentTrend)}
-                          <h4 className="text-foreground font-semibold">
+                          <h4 className="font-semibold text-foreground">
                             {prediction.metric}
                           </h4>
                         </div>
@@ -421,7 +415,7 @@ export default function AIUsagePredictions({
                           />
 
                           <div className="space-y-2">
-                            <h5 className="text-foreground text-sm font-medium">
+                            <h5 className="text-sm font-medium text-foreground">
                               Key Factors:
                             </h5>
                             <div className="flex flex-wrap gap-1">
@@ -506,7 +500,7 @@ export default function AIUsagePredictions({
 
           {/* Model Performance Metrics */}
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="border-border rounded-lg border p-4 text-center">
+            <div className="rounded-lg border border-border p-4 text-center">
               <div className="text-primary text-2xl font-bold">92%</div>
               <div className="text-muted-foreground text-sm">
                 Prediction Accuracy
@@ -516,7 +510,7 @@ export default function AIUsagePredictions({
               </div>
             </div>
 
-            <div className="border-border rounded-lg border p-4 text-center">
+            <div className="rounded-lg border border-border p-4 text-center">
               <div className="text-2xl font-bold text-green-600">2.3ms</div>
               <div className="text-muted-foreground text-sm">
                 Prediction Speed
@@ -526,7 +520,7 @@ export default function AIUsagePredictions({
               </div>
             </div>
 
-            <div className="border-border rounded-lg border p-4 text-center">
+            <div className="rounded-lg border border-border p-4 text-center">
               <div className="text-2xl font-bold text-blue-600">1,247</div>
               <div className="text-muted-foreground text-sm">
                 Predictions Made
@@ -537,10 +531,10 @@ export default function AIUsagePredictions({
             </div>
           </div>
 
-          <div className="border-border border-t pt-4">
+          <div className="border-t border-border pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-foreground font-medium">
+                <h4 className="font-medium text-foreground">
                   Machine Learning Model Status
                 </h4>
                 <p className="text-muted-foreground text-sm">

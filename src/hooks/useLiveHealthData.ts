@@ -46,7 +46,7 @@ export interface ConnectionStatus {
   dataQuality: 'realtime' | 'delayed' | 'offline';
 }
 
-export function useLiveHealthData(userId: string = 'demo-user') {
+export function useLiveHealthData(_userId: string = 'demo-user') {
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
     connected: false,
     lastHeartbeat: '',
@@ -68,7 +68,7 @@ export function useLiveHealthData(userId: string = 'demo-user') {
   const handlers: MessageHandlers = {
     onLiveHealthUpdate: useCallback((data: unknown) => {
       const healthData = data as LiveHealthMetric;
-      setLiveMetrics((prev) => [...prev.slice(-99), healthData]); // Keep last 100 metrics
+      setLiveMetrics((prev) => [...(prev || []).slice(-99), healthData]); // Keep last 100 metrics
       setLatestMetrics((prev) => ({
         ...prev,
         [healthData.metricType]: healthData,
@@ -83,12 +83,14 @@ export function useLiveHealthData(userId: string = 'demo-user') {
 
     onHistoricalDataUpdate: useCallback((data: unknown) => {
       const histUpdate = data as HistoricalDataUpdate;
-      setLiveMetrics((prev) => [...histUpdate.samples, ...prev].slice(0, 1000)); // Keep last 1000
+      setLiveMetrics((prev) =>
+        [...(histUpdate.samples || []), ...(prev || [])].slice(0, 1000)
+      ); // Keep last 1000
     }, []),
 
     onEmergencyAlert: useCallback((data: unknown) => {
       const alert = data as EmergencyAlert;
-      setAlerts((prev) => [alert, ...prev.slice(0, 19)]); // Keep last 20 alerts
+      setAlerts((prev) => [alert, ...(prev || []).slice(0, 19)]); // Keep last 20 alerts
 
       // Show browser notification for critical alerts
       if (alert.alert_level === 'critical' && 'Notification' in window) {
@@ -129,7 +131,8 @@ export function useLiveHealthData(userId: string = 'demo-user') {
       }));
     }, []),
 
-    onError: useCallback((error: string) => {
+    onError: useCallback((data: unknown) => {
+      const error = data as string;
       console.error('Live health data error:', error);
       setConnectionStatus((prev) => ({
         ...prev,
@@ -178,7 +181,8 @@ export function useLiveHealthData(userId: string = 'demo-user') {
     (metrics: string[] = []) => {
       sendMessage({
         type: 'subscribe_health_updates',
-        metrics,
+        data: { metrics },
+        timestamp: new Date().toISOString(),
       });
     },
     [sendMessage]
@@ -188,7 +192,8 @@ export function useLiveHealthData(userId: string = 'demo-user') {
     (cursor?: string) => {
       sendMessage({
         type: 'start_historical_backfill',
-        cursor,
+        data: { cursor },
+        timestamp: new Date().toISOString(),
       });
     },
     [sendMessage]
@@ -218,12 +223,12 @@ export function useLiveHealthData(userId: string = 'demo-user') {
   }, [clientPresence]);
 
   const getCriticalAlerts = useCallback(() => {
-    return alerts.filter((alert) => alert.alert_level === 'critical');
+    return (alerts || []).filter((alert) => alert.alert_level === 'critical');
   }, [alerts]);
 
   const getRecentData = useCallback(
     (type: string, limit = 10) => {
-      return liveMetrics
+      return (liveMetrics || [])
         .filter((data) => data.metricType === type)
         .slice(0, limit);
     },

@@ -6,9 +6,9 @@
  */
 
 import { program } from 'commander';
-import { 
-  writeTaskStart, 
-  writeTaskComplete, 
+import {
+  writeTaskStart,
+  writeTaskComplete,
   writeTaskError,
   writeInfo,
   writeSuccess,
@@ -16,7 +16,7 @@ import {
   runCommand,
   fileExists,
   exitWithError,
-  exitWithSuccess 
+  exitWithSuccess,
 } from '../core/logger.js';
 import { fileURLToPath } from 'url';
 
@@ -50,7 +50,7 @@ async function ensureDependencies() {
   if (!(await fileExists('node_modules'))) {
     writeInfo('📦 Installing project dependencies...');
     const result = await runCommand('npm', ['install']);
-    
+
     if (!result.success) {
       writeTaskError('Start Dev', 'Failed to install dependencies');
       exitWithError('npm install failed', result.exitCode);
@@ -63,11 +63,15 @@ async function ensureDependencies() {
 
 function showStartupInfo() {
   console.log('');
-  writeSuccess('🌐 Web dashboard will be available at: http://localhost:' + options.port);
+  writeSuccess(
+    '🌐 Web dashboard will be available at: http://localhost:' + options.port
+  );
   console.log('');
   writeInfo('💡 Make sure the WebSocket server is running on port 3001');
   writeInfo('   Use: node server/websocket-server.js in another terminal');
-  writeInfo('   Optionally: set window.__WS_DEVICE_TOKEN__=\'<jwt>\' in DevTools');
+  writeInfo(
+    "   Optionally: set window.__WS_DEVICE_TOKEN__='<jwt>' in DevTools"
+  );
   console.log('');
   writeInfo('Press Ctrl+C to stop the development server');
   console.log('');
@@ -82,8 +86,8 @@ async function startDevServer() {
     stdio: 'inherit',
     env: {
       ...process.env,
-      PORT: options.port
-    }
+      PORT: options.port,
+    },
   });
 
   if (!result.success) {
@@ -95,13 +99,16 @@ async function startDevServer() {
 }
 
 async function main() {
-  writeTaskStart('VitalSense Dev Server', '🌐 Starting Health Monitoring Web Dashboard...');
+  writeTaskStart(
+    'VitalSense Dev Server',
+    '🌐 Starting Health Monitoring Web Dashboard...'
+  );
 
   try {
     await checkProjectRoot();
     await ensureDependencies();
     await startDevServer();
-    
+
     exitWithSuccess();
   } catch (error) {
     writeTaskError('Start Dev', `Unexpected error: ${error.message}`);
@@ -111,7 +118,7 @@ async function main() {
 
 // Only run if this file is executed directly
 if (process.argv[1] === __filename) {
-  main().catch(error => {
+  main().catch((error) => {
     writeTaskError('Start Dev', error.message);
     process.exit(1);
   });

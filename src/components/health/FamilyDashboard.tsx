@@ -220,7 +220,7 @@ export default function FamilyDashboard({ healthData }: FamilyDashboardProps) {
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-foreground text-2xl font-bold">
+          <h2 className="text-2xl font-bold text-foreground">
             Family Dashboard
           </h2>
           <p className="text-muted-foreground">

@@ -598,7 +598,7 @@ export default function SmartNotificationEngine({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
             <Bell className="h-6 w-6" />
             Smart Notifications
           </h2>
@@ -717,7 +717,10 @@ export default function SmartNotificationEngine({
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 rounded-full bg-green-500"></div>
                   <span className="text-sm">
-                    Recent: {notifications?.slice(-5).length || 0}
+                    Recent:{' '}
+                    {Array.isArray(notifications)
+                      ? notifications.slice(-5).length
+                      : 0}
                   </span>
                 </div>
               </div>
@@ -1239,7 +1242,7 @@ export default function SmartNotificationEngine({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {notifications && notifications.length > 0 ? (
+          {Array.isArray(notifications) && notifications.length > 0 ? (
             <div className="space-y-3">
               {notifications
                 .slice(-10)

@@ -1,10 +1,9 @@
 ---
 name: Feature Request
 about: Suggest an idea for VitalSense Monitor
-title: "[FEATURE] "
+title: '[FEATURE] '
 labels: enhancement
 assignees: ''
-
 ---
 
 ## 🚀 **Feature Description**

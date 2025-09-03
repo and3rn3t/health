@@ -364,7 +364,11 @@ export default function HealthInsightsDashboard({
         category: 'activity',
         unit: 'steps',
         status:
-          current >= 8000 ? 'good' : current < 5000 ? 'AlertTriangle' : 'neutral',
+          current >= 8000
+            ? 'good'
+            : current < 5000
+              ? 'AlertTriangle'
+              : 'neutral',
         insight:
           current >= 10000
             ? 'Excellent activity level!'
@@ -484,7 +488,7 @@ export default function HealthInsightsDashboard({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-foreground text-2xl font-bold">
+          <h2 className="text-2xl font-bold text-foreground">
             Health Insights Dashboard
           </h2>
           <p className="text-muted-foreground">
@@ -528,7 +532,7 @@ export default function HealthInsightsDashboard({
             {trends.map((trend) => (
               <div key={trend.metric} className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-foreground font-medium">
+                  <h4 className="font-medium text-foreground">
                     {trend.metric}
                   </h4>
                   {getTrendIcon(trend.trend)}
@@ -536,7 +540,7 @@ export default function HealthInsightsDashboard({
 
                 <div className="space-y-2">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-foreground text-2xl font-bold">
+                    <span className="text-2xl font-bold text-foreground">
                       {trend.metric === 'Sleep Duration'
                         ? trend.current.toFixed(1)
                         : Math.round(trend.current).toLocaleString()}
@@ -634,7 +638,7 @@ export default function HealthInsightsDashboard({
                   .map((insight) => (
                     <div
                       key={insight.id}
-                      className="border-border bg-card flex items-start gap-3 rounded-lg border p-4"
+                      className="bg-card flex items-start gap-3 rounded-lg border border-border p-4"
                     >
                       <div
                         className={`rounded-full p-2 ${
@@ -652,7 +656,7 @@ export default function HealthInsightsDashboard({
 
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-foreground font-medium">
+                          <h4 className="font-medium text-foreground">
                             {insight.title}
                           </h4>
                           <div className="flex items-center gap-2">
@@ -707,7 +711,7 @@ export default function HealthInsightsDashboard({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Current Score</span>
-                <span className="text-foreground text-2xl font-bold">
+                <span className="text-2xl font-bold text-foreground">
                   {healthData.healthScore}/100
                 </span>
               </div>

@@ -447,7 +447,7 @@ export default function HealthSearch({
                                 },
                               }))
                             }
-                            className="border-border rounded"
+                            className="rounded border-border"
                           />
                           <Calendar className="h-4 w-4" />
                           Filter by Date Range
@@ -529,7 +529,7 @@ export default function HealthSearch({
                               },
                             }))
                           }
-                          className="border-border rounded"
+                          className="rounded border-border"
                         />
                         <LineChart className="h-4 w-4" />
                         Filter by Health Score
@@ -582,7 +582,7 @@ export default function HealthSearch({
                               },
                             }))
                           }
-                          className="border-border rounded"
+                          className="rounded border-border"
                         />
                         <Target className="h-4 w-4" />
                         Filter by Metric Values
@@ -671,7 +671,7 @@ export default function HealthSearch({
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <Search className="text-muted-foreground mb-4 h-12 w-12" />
-              <h3 className="text-foreground mb-2 text-lg font-semibold">
+              <h3 className="mb-2 text-lg font-semibold text-foreground">
                 {searchQuery || activeFiltersCount > 0
                   ? 'No results found'
                   : 'Start searching'}
@@ -697,7 +697,7 @@ export default function HealthSearch({
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-foreground text-sm font-medium">
+              <h3 className="text-sm font-medium text-foreground">
                 Search Results ({filteredResults.length})
                 {activeFiltersCount > 0 && (
                   <span className="text-muted-foreground font-normal">
@@ -742,7 +742,7 @@ export default function HealthSearch({
                         <div className="flex-1 space-y-2">
                           <div className="flex items-center gap-2">
                             <IconComponent className="text-muted-foreground h-4 w-4" />
-                            <h4 className="text-foreground font-medium">
+                            <h4 className="font-medium text-foreground">
                               {result.title}
                             </h4>
                             {result.trend && (

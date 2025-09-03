@@ -48,7 +48,7 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
   const showTechnicalDetails = !isProductionBuild;
 
   return (
-    <div className="bg-background flex min-h-screen items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <Alert variant="destructive" className="mb-6">
           <AlertTriangleIcon className="h-4 w-4" />
@@ -139,7 +139,7 @@ export const HealthDataErrorFallback: React.FC<ErrorFallbackProps> = ({
   }, [appError]);
 
   return (
-    <div className="bg-background rounded-lg border p-6">
+    <div className="rounded-lg border bg-background p-6">
       <Alert variant="destructive" className="mb-4">
         <AlertTriangleIcon className="h-4 w-4" />
         <AlertTitle>Health Data Error</AlertTitle>
@@ -181,7 +181,7 @@ export const NetworkErrorFallback: React.FC<ErrorFallbackProps> = ({
     error.message.includes('timeout');
 
   return (
-    <div className="bg-background rounded-lg border p-6">
+    <div className="rounded-lg border bg-background p-6">
       <Alert variant="destructive" className="mb-4">
         <AlertTriangleIcon className="h-4 w-4" />
         <AlertTitle>Connection Error</AlertTitle>

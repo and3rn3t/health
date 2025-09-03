@@ -56,7 +56,7 @@
    ```swift
    // ✅ Navigation to gait dashboard
    NavigationLink(destination: FallRiskGaitDashboardView())
-   
+
    // ✅ Environment object injection
    @EnvironmentObject private var fallRiskGaitManager: FallRiskGaitManager
    ```
@@ -93,7 +93,7 @@
 ```
 Apple Watch CoreMotion → Real-time Gait Metrics
         ↓
-iPhone HealthKit → Comprehensive Gait Analysis  
+iPhone HealthKit → Comprehensive Gait Analysis
         ↓
 Fall Risk Algorithm → Clinical Risk Assessment
         ↓
@@ -104,7 +104,7 @@ WebSocket Transmission → External Medical Systems
 
 - **Walking Speed**: 1.2-1.4 m/s normal range, fall risk assessment
 - **Gait Asymmetry**: <3% normal, balance disorder detection
-- **Double Support Time**: 20-25% normal, stability assessment  
+- **Double Support Time**: 20-25% normal, stability assessment
 - **Step Length**: 0.6-0.8m normal, mobility evaluation
 - **Fall Risk Score**: 1.0-4.0 scale (Low/Moderate/High/Critical)
 

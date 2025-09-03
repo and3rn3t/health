@@ -1,3 +1,4 @@
+@import '@radix-ui/colors/sage.css' layer(base);
 @import '@radix-ui/colors/sage-dark.css' layer(base);
 @import '@radix-ui/colors/olive.css' layer(base);
 @import '@radix-ui/colors/olive-dark.css' layer(base);
@@ -62,9 +63,7 @@
 @import '@radix-ui/colors/slate-alpha.css' layer(base);
 @import '@radix-ui/colors/slate-dark-alpha.css' layer(base);
 
-@import 'tailwindcss/theme' layer(theme);
-
-@import 'tailwindcss/preflight' layer(base);
+@tailwind base;
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,

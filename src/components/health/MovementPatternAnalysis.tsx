@@ -131,7 +131,7 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5 animate-Activity" />
+              <Brain className="animate-Activity h-5 w-5" />
               Analyzing Movement Patterns...
             </CardTitle>
             <CardDescription>
@@ -174,7 +174,7 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
             <Waves className="text-primary h-6 w-6" />
             Movement Pattern Analysis
           </h2>
@@ -398,7 +398,7 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center">
-                          <div className="text-foreground text-2xl font-bold">
+                          <div className="text-2xl font-bold text-foreground">
                             {Math.round(gaitMetrics.overallScore * 100)}
                           </div>
                           <div className="text-muted-foreground text-xs">
@@ -455,7 +455,7 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <h4 className="text-foreground text-sm font-medium">
+                    <h4 className="text-sm font-medium text-foreground">
                       Key Indicators:
                     </h4>
                     <ul className="text-muted-foreground space-y-1 text-sm">
@@ -470,7 +470,7 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
 
                   {pattern.recommendations.length > 0 && (
                     <div className="space-y-2">
-                      <h4 className="text-foreground text-sm font-medium">
+                      <h4 className="text-sm font-medium text-foreground">
                         Recommendations:
                       </h4>
                       <ul className="text-muted-foreground space-y-1 text-sm">
@@ -532,7 +532,7 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <h4 className="text-foreground text-sm font-medium">
+                    <h4 className="text-sm font-medium text-foreground">
                       Contributing Factors:
                     </h4>
                     <div className="space-y-2">
@@ -557,7 +557,7 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
 
                   {prediction.interventions.length > 0 && (
                     <div className="space-y-2">
-                      <h4 className="text-foreground text-sm font-medium">
+                      <h4 className="text-sm font-medium text-foreground">
                         Suggested Interventions:
                       </h4>
                       <ul className="text-muted-foreground space-y-1 text-sm">
@@ -622,7 +622,7 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div>
-                        <h4 className="text-foreground mb-2 text-sm font-medium">
+                        <h4 className="mb-2 text-sm font-medium text-foreground">
                           Affected Metrics:
                         </h4>
                         <ul className="text-muted-foreground space-y-1 text-sm">
@@ -637,7 +637,7 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
 
                       {anomaly.actions.length > 0 && (
                         <div>
-                          <h4 className="text-foreground mb-2 text-sm font-medium">
+                          <h4 className="mb-2 text-sm font-medium text-foreground">
                             Recommended Actions:
                           </h4>
                           <ul className="text-muted-foreground space-y-1 text-sm">
@@ -659,7 +659,7 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
             <Card>
               <CardContent className="py-8 text-center">
                 <CheckCircle className="mx-auto mb-4 h-12 w-12 text-green-500" />
-                <h3 className="text-foreground mb-2 text-lg font-medium">
+                <h3 className="mb-2 text-lg font-medium text-foreground">
                   No Anomalies Detected
                 </h3>
                 <p className="text-muted-foreground">

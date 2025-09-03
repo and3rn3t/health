@@ -155,7 +155,7 @@ node scripts/node/deploy/vitalsense-deploy.js --skip-build --verbose
 
 - logger.js - Core logging utilities ⚡ 2-3x faster
 - simple-probe.js - Basic health checking
-- probe.js - Enhanced health checking with authentication  
+- probe.js - Enhanced health checking with authentication
 - task-runner.js - Generic task execution framework
 
 ### ✅ Phase 2 Complete (Development & Testing)
@@ -201,7 +201,7 @@ npm run dns:dry                    # Preview DNS changes
 npm run dns:setup:phase1:node      # Deploy Phase 1 DNS (requires API token)
 npm run dns:cleanup:node           # Clean up all health DNS records
 
-# Platform Deployment  
+# Platform Deployment
 npm run deploy:platform:dry        # Preview full deployment
 npm run deploy:platform:phase1:node # Deploy Phase 1 platform
 
@@ -212,7 +212,7 @@ npm run deploy:vitalsense:dev      # Build and start dev server
 
 # VS Code Tasks (Ctrl+Shift+P -> "Tasks: Run Task")
 # - deploy-platform-dry-nodejs
-# - dns-setup-dry-nodejs  
+# - dns-setup-dry-nodejs
 # - deploy-platform-phase1-nodejs
 ```
 
@@ -243,7 +243,7 @@ npm run deploy:vitalsense:dev      # Build and start dev server
 
 - ✅ **Cross-platform deployment**: Deploy from any OS with consistent behavior
 - ✅ **Faster execution**: 2-3x performance improvement across all scripts
-- ✅ **Enhanced reliability**: Better error handling and recovery mechanisms  
+- ✅ **Enhanced reliability**: Better error handling and recovery mechanisms
 - ✅ **Production-ready**: Comprehensive dry-run, verification, and rollback capabilities
 - ✅ **Developer experience**: Unified CLI interface with comprehensive help and VS Code integration
 - ✅ **Security**: Secure token handling and environment isolation

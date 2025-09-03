@@ -10,12 +10,12 @@ The HealthKit Bridge project has been successfully reorganized to follow Swift a
 
 **New Location**: `Documentation/`
 
-| Old Location | New Location | Purpose |
-|--------------|--------------|---------|
-| `CHANGELOG.md` | `Documentation/CHANGELOG.md` | Version history |
-| `WATCH_INTEGRATION_GUIDE.md` | `Documentation/WATCH_INTEGRATION_GUIDE.md` | Apple Watch setup |
-| `.github/instructions/copilot-instructions.md` | `Documentation/copilot-instructions.md` | Development guidelines |
-| *(Created)* | `Documentation/PROJECT_STRUCTURE.md` | Project organization guide |
+| Old Location                                   | New Location                               | Purpose                    |
+| ---------------------------------------------- | ------------------------------------------ | -------------------------- |
+| `CHANGELOG.md`                                 | `Documentation/CHANGELOG.md`               | Version history            |
+| `WATCH_INTEGRATION_GUIDE.md`                   | `Documentation/WATCH_INTEGRATION_GUIDE.md` | Apple Watch setup          |
+| `.github/instructions/copilot-instructions.md` | `Documentation/copilot-instructions.md`    | Development guidelines     |
+| _(Created)_                                    | `Documentation/PROJECT_STRUCTURE.md`       | Project organization guide |
 
 ### ✅ Swift Source Code Organization
 
@@ -23,30 +23,30 @@ The HealthKit Bridge project has been successfully reorganized to follow Swift a
 
 #### Managers (`Core/Managers/`)
 
-| File | Purpose |
-|------|---------|
-| `HealthKitManager.swift` | HealthKit data access and authorization |
-| `WebSocketManager.swift` | Real-time data transmission |
-| `BackgroundTaskManager.swift` | Background processing coordination |
-| `BatteryOptimizationManager.swift` | Power management and optimization |
-| `DataCacheManager.swift` | Local data caching and persistence |
-| `OfflineDataSyncManager.swift` | Offline sync handling |
-| `PerformanceMonitor.swift` | App performance tracking |
-| `SmartNotificationManager.swift` | Intelligent notification system |
-| `SecurityManager.swift` | Security and encryption |
-| `ApiClient.swift` | External API communication |
+| File                               | Purpose                                 |
+| ---------------------------------- | --------------------------------------- |
+| `HealthKitManager.swift`           | HealthKit data access and authorization |
+| `WebSocketManager.swift`           | Real-time data transmission             |
+| `BackgroundTaskManager.swift`      | Background processing coordination      |
+| `BatteryOptimizationManager.swift` | Power management and optimization       |
+| `DataCacheManager.swift`           | Local data caching and persistence      |
+| `OfflineDataSyncManager.swift`     | Offline sync handling                   |
+| `PerformanceMonitor.swift`         | App performance tracking                |
+| `SmartNotificationManager.swift`   | Intelligent notification system         |
+| `SecurityManager.swift`            | Security and encryption                 |
+| `ApiClient.swift`                  | External API communication              |
 
 #### Models (`Core/Models/`)
 
-| File | Purpose |
-|------|---------|
-| `GaitAnalysisModels.swift` | Gait analysis data structures |
-| `AdvancedHealthMetrics.swift` | Health metrics models |
+| File                          | Purpose                       |
+| ----------------------------- | ----------------------------- |
+| `GaitAnalysisModels.swift`    | Gait analysis data structures |
+| `AdvancedHealthMetrics.swift` | Health metrics models         |
 
 #### Extensions (`Core/Extensions/`)
 
-| File | Purpose |
-|------|---------|
+| File                        | Purpose                        |
+| --------------------------- | ------------------------------ |
 | `HealthKitExtensions.swift` | HealthKit framework extensions |
 
 ### ✅ Feature-Based Organization
@@ -55,34 +55,34 @@ The HealthKit Bridge project has been successfully reorganized to follow Swift a
 
 #### Fall Risk Assessment (`Features/FallRisk/`)
 
-| File | Purpose |
-|------|---------|
+| File                           | Purpose                      |
+| ------------------------------ | ---------------------------- |
 | `FallRiskAnalysisEngine.swift` | Fall risk calculation engine |
-| `FallRiskDashboardView.swift` | Fall risk UI dashboard |
+| `FallRiskDashboardView.swift`  | Fall risk UI dashboard       |
 
 #### Gait Analysis (`Features/GaitAnalysis/`)
 
-| File | Purpose |
-|------|---------|
-| `FallRiskGaitManager.swift` | Main gait analysis coordinator |
-| `FallRiskGaitDashboardView.swift` | Gait analysis UI |
+| File                              | Purpose                        |
+| --------------------------------- | ------------------------------ |
+| `FallRiskGaitManager.swift`       | Main gait analysis coordinator |
+| `FallRiskGaitDashboardView.swift` | Gait analysis UI               |
 
 #### Health Dashboard (`Features/HealthDashboard/`)
 
-| File | Purpose |
-|------|---------|
-| `AdvancedHealthDashboardView.swift` | Main health dashboard |
-| `HealthAnalyticsEngine.swift` | Health data analytics |
-| `AdvancedHealthAnalytics.swift` | Advanced analytics |
-| `AdvancedHealthIntegration.swift` | Health data integration |
+| File                                | Purpose                 |
+| ----------------------------------- | ----------------------- |
+| `AdvancedHealthDashboardView.swift` | Main health dashboard   |
+| `HealthAnalyticsEngine.swift`       | Health data analytics   |
+| `AdvancedHealthAnalytics.swift`     | Advanced analytics      |
+| `AdvancedHealthIntegration.swift`   | Health data integration |
 
 #### Apple Watch Integration (`Features/AppleWatch/`)
 
-| File | Purpose |
-|------|---------|
+| File                          | Purpose                     |
+| ----------------------------- | --------------------------- |
 | `AppleWatchGaitMonitor.swift` | Watch-based gait monitoring |
-| `iPhoneWatchBridge.swift` | iPhone-Watch communication |
-| `WatchApp.swift` | Watch app main structure |
+| `iPhoneWatchBridge.swift`     | iPhone-Watch communication  |
+| `WatchApp.swift`              | Watch app main structure    |
 
 ### ✅ User Interface Organization
 
@@ -90,63 +90,63 @@ The HealthKit Bridge project has been successfully reorganized to follow Swift a
 
 #### Views (`UI/Views/`)
 
-| File | Purpose |
-|------|---------|
+| File                | Purpose                      |
+| ------------------- | ---------------------------- |
 | `ContentView.swift` | Main app view and navigation |
 
 #### Components (`UI/Components/`)
 
-| File | Purpose |
-|------|---------|
-| `ModernDesignSystem.swift` | Design system components |
-| `AppShortcuts.swift` | iOS app shortcuts |
+| File                          | Purpose                   |
+| ----------------------------- | ------------------------- |
+| `ModernDesignSystem.swift`    | Design system components  |
+| `AppShortcuts.swift`          | iOS app shortcuts         |
 | `HealthKitBridgeWidget.swift` | iOS widget implementation |
 
 ### ✅ Configuration & Resources
 
 #### Configuration (`HealthKitBridge/Configuration/`)
 
-| File | Purpose |
-|------|---------|
-| `AppConfig.swift` | Basic app configuration |
-| `EnhancedAppConfig.swift` | Advanced configuration |
+| File                      | Purpose                 |
+| ------------------------- | ----------------------- |
+| `AppConfig.swift`         | Basic app configuration |
+| `EnhancedAppConfig.swift` | Advanced configuration  |
 
 #### Resources (`HealthKitBridge/Resources/`)
 
-| File | Purpose |
-|------|---------|
-| `Config.plist` | Basic configuration settings |
-| `Config-Enhanced.plist` | Enhanced configuration |
-| `HealthKitBridge.entitlements` | App capabilities and permissions |
-| `Assets.xcassets/` | Images, colors, and visual assets |
+| File                           | Purpose                           |
+| ------------------------------ | --------------------------------- |
+| `Config.plist`                 | Basic configuration settings      |
+| `Config-Enhanced.plist`        | Enhanced configuration            |
+| `HealthKitBridge.entitlements` | App capabilities and permissions  |
+| `Assets.xcassets/`             | Images, colors, and visual assets |
 
 ### ✅ Build & Development Tools
 
 #### Build Configuration (`Build/`)
 
-| File | Purpose |
-|------|---------|
+| File                          | Purpose                   |
+| ----------------------------- | ------------------------- |
 | `BuildOptimizations.xcconfig` | Xcode build optimizations |
-| `Makefile` | Build automation |
+| `Makefile`                    | Build automation          |
 
 #### Development Tools (`Tools/`)
 
-| File | Purpose |
-|------|---------|
-| `generate_app_icons.py` | App icon generation script |
-| `test-websocket-server.js` | Node.js test server |
-| `test-websocket-server.py` | Python test server |
-| `deploy-to-device.sh` | Device deployment automation |
+| File                        | Purpose                       |
+| --------------------------- | ----------------------------- |
+| `generate_app_icons.py`     | App icon generation script    |
+| `test-websocket-server.js`  | Node.js test server           |
+| `test-websocket-server.py`  | Python test server            |
+| `deploy-to-device.sh`       | Device deployment automation  |
 | `setup-enhanced-dev-env.sh` | Development environment setup |
 
 #### Backup Files (`Backup/`)
 
-| File | Purpose |
-|------|---------|
-| `Info.plist.backup` | Configuration backups |
-| `Makefile.backup` | Build file backups |
-| `Info.plist.original.backup` | Original configuration |
-| `Info.plist.simple.backup` | Simple configuration backup |
+| File                         | Purpose                     |
+| ---------------------------- | --------------------------- |
+| `Info.plist.backup`          | Configuration backups       |
+| `Makefile.backup`            | Build file backups          |
+| `Info.plist.original.backup` | Original configuration      |
+| `Info.plist.simple.backup`   | Simple configuration backup |
 
 ## 🔧 Xcode Project Maintenance
 

@@ -75,13 +75,13 @@ force_unwrapping:
 # Custom rules for HealthKit specific patterns
 custom_rules:
   healthkit_auth_check:
-    name: "HealthKit Authorization Check"
+    name: 'HealthKit Authorization Check'
     regex: 'HKHealthStore\(\)\.requestAuthorization'
-    message: "Always check authorization status before requesting HealthKit permissions"
+    message: 'Always check authorization status before requesting HealthKit permissions'
     severity: warning
-    
+
   websocket_error_handling:
-    name: "WebSocket Error Handling"
+    name: 'WebSocket Error Handling'
     regex: '\.send\('
-    message: "Consider adding proper error handling for WebSocket operations"
+    message: 'Consider adding proper error handling for WebSocket operations'
     severity: warning

@@ -11,13 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import {
-  Upload,
-  FileText,
-  CheckCircle,
-  Brain,
-  Activity,
-} from 'lucide-react';
+import { Upload, FileText, CheckCircle, Brain, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   HealthDataProcessor,
@@ -104,7 +98,7 @@ export default function HealthDataImport({
         </AlertDescription>
       </Alert>
 
-      <div className="border-border rounded-lg border-2 border-dashed p-8 text-center">
+      <div className="rounded-lg border-2 border-dashed border-border p-8 text-center">
         <div className="flex flex-col items-center gap-4">
           {uploadedFile ? (
             <>
@@ -143,7 +137,7 @@ export default function HealthDataImport({
             {isProcessing && (
               <div className="space-y-3">
                 <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                  <Brain className="h-4 w-4 animate-Activity" />
+                  <Brain className="animate-Activity h-4 w-4" />
                   {processingStage}
                 </div>
                 <Progress value={processingProgress} className="w-full" />

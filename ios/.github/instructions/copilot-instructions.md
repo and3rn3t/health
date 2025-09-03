@@ -11,6 +11,7 @@ HealthKit Bridge is a **medical-grade iOS application** specializing in fall ris
 ## 🏗️ Architecture & Tech Stack
 
 ### Core Technologies
+
 - **Language**: Swift 5.9+
 - **UI Framework**: SwiftUI (iOS 16.0+)
 - **Health Framework**: HealthKit + CoreMotion
@@ -20,12 +21,14 @@ HealthKit Bridge is a **medical-grade iOS application** specializing in fall ris
 - **Security**: End-to-end encryption, privacy-first design
 
 ### Architecture Pattern
+
 - **MVVM**: SwiftUI views with ObservableObject view models
 - **Singleton Managers**: Shared managers for core functionality (`ManagerName.shared`)
 - **Dependency Injection**: Environment objects for SwiftUI views
 - **Reactive Programming**: Published properties with Combine framework
 
 ### Key Frameworks Used
+
 ```swift
 import SwiftUI           // UI layer
 import HealthKit         // Health data access
@@ -40,21 +43,22 @@ import Foundation        // Core Swift functionality
 ### Swift Code Style
 
 #### 1. Manager Classes (Singleton Pattern)
+
 ```swift
 class ManagerName: ObservableObject {
     static let shared = ManagerName()
-    
+
     @Published var property: Type = defaultValue
-    
+
     private init() {
         // Initialization logic
     }
-    
+
     // MARK: - Public Methods
     func publicMethod() async {
         // Implementation
     }
-    
+
     // MARK: - Private Methods
     private func privateMethod() {
         // Implementation
@@ -63,16 +67,17 @@ class ManagerName: ObservableObject {
 ```
 
 #### 2. SwiftUI Views
+
 ```swift
 struct ViewName: View {
     @StateObject private var manager = Manager.shared
     @EnvironmentObject private var environmentManager: EnvironmentManager
     @State private var localState = false
-    
+
     var body: some View {
         // View implementation
     }
-    
+
     // MARK: - Helper Methods
     private func helperMethod() {
         // Implementation
@@ -81,6 +86,7 @@ struct ViewName: View {
 ```
 
 #### 3. Data Models (Medical Data)
+
 ```swift
 struct MedicalDataModel: Codable {
     let timestamp: Date
@@ -88,7 +94,7 @@ struct MedicalDataModel: Codable {
     let unit: String
     let userId: String
     let deviceId: String
-    
+
     // Medical thresholds as static constants
     static let normalRange = 1.2...1.4
     static let criticalThreshold = 0.8
@@ -96,12 +102,13 @@ struct MedicalDataModel: Codable {
 ```
 
 #### 4. Error Handling
+
 ```swift
 enum HealthKitError: Error, LocalizedError {
     case authorizationDenied
     case dataUnavailable(String)
     case queryFailed(String)
-    
+
     var errorDescription: String? {
         switch self {
         case .authorizationDenied:
@@ -118,12 +125,14 @@ enum HealthKitError: Error, LocalizedError {
 ### Naming Conventions
 
 #### Files & Classes
+
 - **Managers**: `HealthKitManager.swift`, `WebSocketManager.swift`
 - **Views**: `ContentView.swift`, `FallRiskDashboardView.swift`
 - **Models**: `GaitAnalysisModels.swift`, `HealthData.swift`
 - **Extensions**: `HealthKitExtensions.swift`, `DateExtensions.swift`
 
 #### Properties & Methods
+
 ```swift
 // Published properties (camelCase)
 @Published var isMonitoring = false
@@ -137,6 +146,7 @@ func sendHealthDataToServer(_ data: HealthData) async throws
 ```
 
 #### Constants
+
 ```swift
 // Medical thresholds (uppercase with underscores)
 static let NORMAL_WALKING_SPEED_MIN = 1.2
@@ -151,6 +161,7 @@ private let GAIT_MONITORING_IDENTIFIER = "com.healthkitbridge.gaitmonitoring"
 ## 🏥 Medical Data Handling
 
 ### HealthKit Data Types
+
 ```swift
 // Core gait analysis types
 let gaitDataTypes: Set<HKObjectType> = [
@@ -164,6 +175,7 @@ let gaitDataTypes: Set<HKObjectType> = [
 ```
 
 ### Clinical Thresholds
+
 ```swift
 // Walking speed assessment (m/s)
 // Normal: 1.2-1.4, Concerning: 1.0-1.2, High Risk: <1.0
@@ -185,6 +197,7 @@ func assessGaitAsymmetryRisk(_ asymmetry: Double) -> FallRiskLevel {
 ```
 
 ### Data Transmission Format
+
 ```json
 {
   "type": "gait_analysis",
@@ -211,6 +224,7 @@ func assessGaitAsymmetryRisk(_ asymmetry: Double) -> FallRiskLevel {
 ## 🔧 Project-Specific Patterns
 
 ### Environment Object Injection
+
 ```swift
 // Always inject managers as environment objects in App.swift
 @StateObject private var fallRiskGaitManager = FallRiskGaitManager.shared
@@ -224,6 +238,7 @@ WindowGroup {
 ```
 
 ### Background Task Registration
+
 ```swift
 // Register all background tasks during app initialization
 private func registerBackgroundTasks() {
@@ -237,6 +252,7 @@ private func registerBackgroundTasks() {
 ```
 
 ### WebSocket Data Transmission
+
 ```swift
 // Always provide structured data transmission methods
 func sendGaitAnalysis(_ payload: GaitAnalysisPayload) async throws {
@@ -249,14 +265,15 @@ func sendGaitAnalysis(_ payload: GaitAnalysisPayload) async throws {
 ```
 
 ### Apple Watch Communication
+
 ```swift
 // iPhone-Watch bridge pattern for real-time data
 func sendMessageToWatch(_ type: String, data: [String: Any] = [:]) {
     guard let session = session, session.isReachable else { return }
-    
+
     var message = data
     message["type"] = type
-    
+
     session.sendMessage(message, replyHandler: nil) { error in
         print("❌ Failed to send message to watch: \(error)")
     }
@@ -266,6 +283,7 @@ func sendMessageToWatch(_ type: String, data: [String: Any] = [:]) {
 ## 📁 File Organization
 
 ### Core Managers
+
 - `HealthKitManager.swift` - HealthKit data collection and authorization
 - `FallRiskGaitManager.swift` - Gait analysis and fall risk assessment
 - `WebSocketManager.swift` - Real-time data transmission
@@ -273,22 +291,26 @@ func sendMessageToWatch(_ type: String, data: [String: Any] = [:]) {
 - `iPhoneWatchBridge.swift` - iPhone-Apple Watch communication
 
 ### Data Models
+
 - `GaitAnalysisModels.swift` - Medical data structures and transmission payloads
 - `HealthData.swift` - Core health data models
 - `AppConfig.swift` - Configuration management
 
 ### UI Components
+
 - `ContentView.swift` - Main dashboard interface
 - `FallRiskGaitDashboardView.swift` - Detailed medical analysis view
 - `ModernDesignSystem.swift` - Reusable UI components
 
 ### Apple Watch
+
 - `WatchApp.swift` - Watch app main structure and UI
 - `AppleWatchGaitMonitor.swift` - Real-time gait monitoring on watch
 
 ## 🔒 Security & Privacy
 
 ### HealthKit Authorization
+
 ```swift
 // Always request specific permissions with clear usage descriptions
 func requestGaitAuthorization() async {
@@ -296,7 +318,7 @@ func requestGaitAuthorization() async {
         HKQuantityType.quantityType(forIdentifier: .walkingSpeed)!,
         // ... other gait types
     ]
-    
+
     do {
         try await healthStore.requestAuthorization(toShare: [], read: gaitTypes)
     } catch {
@@ -306,12 +328,14 @@ func requestGaitAuthorization() async {
 ```
 
 ### Data Privacy
+
 - **Local Processing First**: Perform analysis on-device when possible
 - **Minimal Data Transmission**: Only send essential medical data
 - **User Consent**: Explicit consent for all data sharing
 - **Encryption**: All WebSocket communications encrypted
 
 ### Info.plist Privacy Descriptions
+
 ```xml
 <key>NSHealthShareUsageDescription</key>
 <string>HealthKitBridge needs access to your health data to monitor and analyze your movement patterns, fall risk indicators, and overall health metrics for comprehensive health tracking and analysis.</string>
@@ -323,15 +347,16 @@ func requestGaitAuthorization() async {
 ## 🧪 Testing Guidelines
 
 ### Unit Testing Patterns
+
 ```swift
 class HealthKitManagerTests: XCTestCase {
     var healthManager: HealthKitManager!
-    
+
     override func setUp() {
         super.setUp()
         healthManager = HealthKitManager.shared
     }
-    
+
     func testGaitDataCollection() async {
         // Test gait data collection logic
         await healthManager.fetchGaitMetrics()
@@ -341,6 +366,7 @@ class HealthKitManagerTests: XCTestCase {
 ```
 
 ### Mock Data for Testing
+
 ```swift
 // Provide realistic medical test data
 static let mockGaitMetrics = GaitMetrics(
@@ -355,10 +381,11 @@ static let mockGaitMetrics = GaitMetrics(
 ## 🚀 Performance Optimization
 
 ### Battery Optimization
+
 ```swift
 // Adaptive monitoring based on battery level
 func shouldReduceMonitoring() -> Bool {
-    return UIDevice.current.batteryLevel < 0.2 && 
+    return UIDevice.current.batteryLevel < 0.2 &&
            UIDevice.current.batteryState != .charging
 }
 
@@ -369,20 +396,21 @@ var optimizedSyncInterval: TimeInterval {
 ```
 
 ### Background Efficiency
+
 ```swift
 // Efficient background data processing
 private func handleGaitMonitoring(task: BGAppRefreshTask) {
     task.expirationHandler = {
         queue.cancelAllOperations()
     }
-    
+
     let gaitOperation = BlockOperation {
         Task {
             await FallRiskGaitManager.shared.fetchGaitMetrics()
             await FallRiskGaitManager.shared.assessFallRisk()
         }
     }
-    
+
     gaitOperation.completionBlock = {
         task.setTaskCompleted(success: !gaitOperation.isCancelled)
     }
@@ -392,6 +420,7 @@ private func handleGaitMonitoring(task: BGAppRefreshTask) {
 ## 🐛 Debugging & Logging
 
 ### Consistent Logging
+
 ```swift
 // Use emoji prefixes for easy log filtering
 print("🏃‍♂️ Starting gait monitoring")
@@ -402,6 +431,7 @@ print("⚠️ Warning: Low battery, reducing monitoring")
 ```
 
 ### Error Handling Pattern
+
 ```swift
 do {
     try await riskyOperation()
@@ -418,6 +448,7 @@ do {
 ## 📚 Documentation Standards
 
 ### Code Comments
+
 ```swift
 // MARK: - Fall Risk Assessment
 /// Calculates fall risk score based on multiple gait parameters
@@ -429,7 +460,9 @@ func assessFallRisk() async -> FallRiskScore {
 ```
 
 ### README Updates
+
 When adding new features, update:
+
 1. Core Features section with medical capabilities
 2. Integration status in `INTEGRATION_STATUS.md`
 3. API documentation for WebSocket payloads
@@ -438,28 +471,33 @@ When adding new features, update:
 ## 🎯 Medical Domain Knowledge
 
 ### Fall Risk Factors
+
 - **Walking Speed**: Primary predictor of fall risk in older adults
 - **Gait Asymmetry**: Indicates balance or neurological issues
 - **Double Support Time**: Increased time suggests instability
 - **Step Length**: Reduced length indicates caution or mobility limitation
 
 ### Clinical Assessment Scales
+
 - **Fall Risk Score**: 1.0-4.0 scale (Low/Moderate/High/Critical)
 - **Balance Assessment**: 0-10 clinical scale
 - **Mobility Status**: Categorical assessment (Excellent/Good/Concerning/Impaired)
 
 ### Evidence-Based Thresholds
+
 All medical thresholds in the app are based on published geriatric medicine research. When modifying thresholds, reference clinical literature and document sources.
 
 ## 🔄 Continuous Integration
 
 ### Code Quality
+
 - Follow Swift API Design Guidelines
 - Use SwiftLint for consistent formatting
 - Maintain >80% test coverage for critical health logic
 - Document all public APIs with proper Swift documentation
 
 ### Deployment
+
 - Test on physical devices (iPhone + Apple Watch)
 - Validate HealthKit permissions on iOS
 - Test real-time data transmission

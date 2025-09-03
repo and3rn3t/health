@@ -186,10 +186,10 @@ This project follows Swift best practices with a feature-based architecture. For
    ```bash
    # For iOS Simulator
    make build-ios
-   
+
    # For Apple Watch Simulator
    make build-watch
-   
+
    # For device deployment
    make deploy-device
    ```
@@ -203,7 +203,7 @@ This project follows Swift best practices with a feature-based architecture. For
   "type": "gait_analysis",
   "data": {
     "userId": "user-identifier",
-    "deviceId": "device-identifier", 
+    "deviceId": "device-identifier",
     "timestamp": "2024-01-15T10:30:00Z",
     "gaitMetrics": {
       "averageWalkingSpeed": 1.25,
@@ -280,7 +280,7 @@ make test-watch-connectivity
 ### Performance Monitoring
 
 - **Battery Optimization**: Adaptive sampling rates based on device state
-- **Data Efficiency**: Compressed transmission for bandwidth optimization  
+- **Data Efficiency**: Compressed transmission for bandwidth optimization
 - **Background Processing**: Efficient HealthKit background app refresh
 
 ## 🔒 Privacy & Compliance
@@ -325,12 +325,12 @@ For medical application support or integration questions:
 ---
 
 **Built for medical professionals, researchers, and healthcare organizations focused on fall prevention and mobility assessment.**
-    <string>https://your-api-server.com</string>
-    <key>WS_URL</key>
-    <string>wss://your-websocket-server.com/ws</string>
+<string>https://your-api-server.com</string>
+<key>WS_URL</key>
+<string>wss://your-websocket-server.com/ws</string>
 </dict>
 
-```
+````
 
 ## Health Data Types
 
@@ -362,7 +362,7 @@ The app requests permission for:
 
 # Deploy to specific device
 ./deploy-to-device.sh
-```
+````
 
 ## Testing
 

@@ -295,7 +295,7 @@ export default function HealthGameCenter({ healthData }: Props) {
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="bg-secondary/50 rounded-lg p-2">
-                <Medal className="text-foreground h-6 w-6" />
+                <Medal className="h-6 w-6 text-foreground" />
               </div>
               <div>
                 <p className="text-2xl font-bold">

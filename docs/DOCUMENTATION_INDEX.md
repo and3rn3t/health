@@ -8,7 +8,7 @@ This document provides a comprehensive index of all documentation in the project
 
 - [`architecture/`](./architecture/) - System architecture, API specs, and design documents
   - [`API.md`](./architecture/API.md) - Complete API documentation
-  - [`ARCHITECTURE.md`](./architecture/ARCHITECTURE.md) - System architecture overview  
+  - [`ARCHITECTURE.md`](./architecture/ARCHITECTURE.md) - System architecture overview
   - [`PRD.md`](./architecture/PRD.md) - Product Requirements Document
   - [`WEBSOCKETS.md`](./architecture/WEBSOCKETS.md) - WebSocket protocol specification
 

@@ -55,7 +55,7 @@ $ node scripts/node/health/simple-probe.js --port 9999 --timeout 2
 $ node scripts/node/dev/task-runner.js
 📋 Available Tasks:
   dev        - Start Wrangler development server
-  test       - Execute test suite  
+  test       - Execute test suite
   build      - Build application and worker
   probe      - Run health checks
   deploy     - Deploy to development
@@ -65,7 +65,7 @@ $ node scripts/node/dev/task-runner.js
 ### ✅ Dependencies Installed Successfully
 
 - ✅ `axios` ^1.7.0 - HTTP requests
-- ✅ `chalk` ^5.3.0 - Colored terminal output  
+- ✅ `chalk` ^5.3.0 - Colored terminal output
 - ✅ `commander` ^12.0.0 - CLI argument parsing
 - ✅ `execa` ^9.0.0 - Process execution
 - ✅ `ora` ^8.0.0 - Progress spinners
@@ -81,7 +81,7 @@ $ node scripts/node/dev/task-runner.js
    - `lint-all.ps1` → `scripts/node/dev/lint-runner.js`
    - `validate-configs.ps1` → `scripts/node/utils/config-validator.js`
 
-### Deployment Scripts (Medium Priority)  
+### Deployment Scripts (Medium Priority)
 
 2. **Deployment & Setup Scripts**
    - `deploy-*.ps1` (8 scripts) → `scripts/node/deploy/`
@@ -100,9 +100,9 @@ $ node scripts/node/dev/task-runner.js
   "args": ["-NoProfile", "-File", "scripts/simple-probe.ps1", "-Port", "8787"]
 }
 
-// NEW (Node.js) 
+// NEW (Node.js)
 {
-  "label": "probe-health-nodejs", 
+  "label": "probe-health-nodejs",
   "command": "node",
   "args": ["scripts/node/health/simple-probe.js", "--port", "8787"]
 }
@@ -116,7 +116,7 @@ $ node scripts/node/dev/task-runner.js
 - ✅ No PowerShell dependency required
 - ✅ Consistent behavior across platforms
 
-### ✅ Enhanced Developer Experience  
+### ✅ Enhanced Developer Experience
 
 - ✅ Faster startup (no PowerShell initialization)
 - ✅ Better error messages with colored output

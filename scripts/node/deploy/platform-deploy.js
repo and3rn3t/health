@@ -6,15 +6,15 @@
  */
 
 import { program } from 'commander';
-import { 
-  writeTaskStart, 
-  writeTaskComplete, 
+import {
+  writeTaskStart,
+  writeTaskComplete,
   writeTaskError,
   writeInfo,
   writeSuccess,
   writeWarning,
   exitWithError,
-  exitWithSuccess 
+  exitWithSuccess,
 } from '../core/logger.js';
 import fs from 'fs-extra';
 import yaml from 'yaml';
@@ -27,7 +27,10 @@ const __filename = fileURLToPath(import.meta.url);
 program
   .name('deploy-platform')
   .description('Comprehensive DNS + Worker deployment for Health Platform')
-  .option('--api-token <token>', 'Cloudflare API token (or set CLOUDFLARE_API_TOKEN)')
+  .option(
+    '--api-token <token>',
+    'Cloudflare API token (or set CLOUDFLARE_API_TOKEN)'
+  )
   .option('--phase <number>', 'Deployment phase (1, 2, 3)', '1')
   .option('--dry-run', 'Preview changes without applying them')
   .option('--dns-only', 'Deploy DNS records only')
@@ -49,7 +52,7 @@ function addDeploymentResult(component, status, details = '') {
     component,
     status,
     details,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 }
 
@@ -67,18 +70,26 @@ async function readYamlConfig(configPath) {
     return {
       domain: 'andernet.dev',
       subdomains: {
-        '1': [{ name: 'health', target: 'health-app.workers.dev', priority: 'critical' }]
-      }
+        1: [
+          {
+            name: 'health',
+            target: 'health-app.workers.dev',
+            priority: 'critical',
+          },
+        ],
+      },
     };
   }
 }
 
 async function validateEnvironment() {
   writeInfo('Validating environment...');
-  
+
   if (!apiToken) {
     writeTaskError('Environment', 'Cloudflare API token required');
-    writeInfo('Set CLOUDFLARE_API_TOKEN environment variable or use --api-token');
+    writeInfo(
+      'Set CLOUDFLARE_API_TOKEN environment variable or use --api-token'
+    );
     writeInfo('Get token from: https://dash.cloudflare.com/profile/api-tokens');
     return false;
   }
@@ -105,14 +116,17 @@ async function validateEnvironment() {
 
 async function getCloudflareZoneId(domain = 'andernet.dev') {
   writeInfo(`Finding Zone ID for ${domain}...`);
-  
+
   try {
-    const response = await axios.get(`https://api.cloudflare.com/client/v4/zones?name=${domain}`, {
-      headers: {
-        'Authorization': `Bearer ${apiToken}`,
-        'Content-Type': 'application/json'
+    const response = await axios.get(
+      `https://api.cloudflare.com/client/v4/zones?name=${domain}`,
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          'Content-Type': 'application/json',
+        },
       }
-    });
+    );
 
     if (response.data.success && response.data.result.length > 0) {
       const zoneId = response.data.result[0].id;
@@ -128,8 +142,10 @@ async function getCloudflareZoneId(domain = 'andernet.dev') {
 }
 
 async function createDnsRecord(zoneId, subdomain, target) {
-  const recordName = subdomain.includes('.') ? subdomain : `${subdomain}.andernet.dev`;
-  
+  const recordName = subdomain.includes('.')
+    ? subdomain
+    : `${subdomain}.andernet.dev`;
+
   if (options.dryRun) {
     writeInfo(`[DRY RUN] Would create DNS record: ${recordName} → ${target}`);
     return { success: true, id: 'dry-run-id' };
@@ -142,13 +158,13 @@ async function createDnsRecord(zoneId, subdomain, target) {
         type: 'CNAME',
         name: recordName,
         content: target,
-        ttl: 300
+        ttl: 300,
       },
       {
         headers: {
-          'Authorization': `Bearer ${apiToken}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${apiToken}`,
+          'Content-Type': 'application/json',
+        },
       }
     );
 
@@ -174,7 +190,7 @@ async function createDnsRecord(zoneId, subdomain, target) {
 
 async function deployDnsRecords(config, phase) {
   writeInfo(`Deploying DNS records for phase ${phase}...`);
-  
+
   const zoneId = await getCloudflareZoneId(config.domain);
   if (!zoneId) {
     return false;
@@ -184,19 +200,25 @@ async function deployDnsRecords(config, phase) {
   let successCount = 0;
 
   for (const subdomain of subdomains) {
-    const result = await createDnsRecord(zoneId, subdomain.name, subdomain.target);
+    const result = await createDnsRecord(
+      zoneId,
+      subdomain.name,
+      subdomain.target
+    );
     if (result.success) {
       successCount++;
     }
   }
 
-  writeInfo(`DNS deployment complete: ${successCount}/${subdomains.length} records processed`);
+  writeInfo(
+    `DNS deployment complete: ${successCount}/${subdomains.length} records processed`
+  );
   return successCount === subdomains.length;
 }
 
 async function buildApplication() {
   writeInfo('Building React application...');
-  
+
   if (options.dryRun) {
     writeInfo('[DRY RUN] Would run: npm run build');
     return true;
@@ -204,9 +226,9 @@ async function buildApplication() {
 
   try {
     await execa('npm', ['run', 'build'], {
-      stdio: options.verbose ? 'inherit' : 'pipe'
+      stdio: options.verbose ? 'inherit' : 'pipe',
     });
-    
+
     writeSuccess('✓ Build completed successfully');
     addDeploymentResult('React Build', 'SUCCESS', 'Application built');
     return true;
@@ -219,7 +241,7 @@ async function buildApplication() {
 
 async function deployWorkers(phase) {
   writeInfo(`Deploying Workers for phase ${phase}...`);
-  
+
   const environments = ['development', 'production'];
   let successCount = 0;
 
@@ -232,9 +254,9 @@ async function deployWorkers(phase) {
       }
 
       await execa('wrangler', ['deploy', '--env', env], {
-        stdio: options.verbose ? 'inherit' : 'pipe'
+        stdio: options.verbose ? 'inherit' : 'pipe',
       });
-      
+
       writeSuccess(`✓ Deployed to ${env}`);
       addDeploymentResult(`Worker: ${env}`, 'SUCCESS', 'Deployed');
       successCount++;
@@ -249,24 +271,34 @@ async function deployWorkers(phase) {
 
 async function verifyDeployment(config, phase) {
   writeInfo('Verifying deployment...');
-  
+
   const subdomains = config.subdomains?.[phase] || [];
   let successCount = 0;
 
   for (const subdomain of subdomains) {
-    const baseUrl = subdomain.name.includes('.') ? subdomain.name : `${subdomain.name}.${config.domain}`;
+    const baseUrl = subdomain.name.includes('.')
+      ? subdomain.name
+      : `${subdomain.name}.${config.domain}`;
     const url = `https://${baseUrl}/health`;
-    
+
     try {
       const response = await axios.get(url, { timeout: 10000 });
-      
+
       if (response.status === 200) {
         writeSuccess(`✓ ${url} is responding`);
-        addDeploymentResult(`Verify: ${subdomain.name}`, 'SUCCESS', `Status: ${response.status}`);
+        addDeploymentResult(
+          `Verify: ${subdomain.name}`,
+          'SUCCESS',
+          `Status: ${response.status}`
+        );
         successCount++;
       } else {
         writeWarning(`${url} returned status: ${response.status}`);
-        addDeploymentResult(`Verify: ${subdomain.name}`, 'WARNING', `Status: ${response.status}`);
+        addDeploymentResult(
+          `Verify: ${subdomain.name}`,
+          'WARNING',
+          `Status: ${response.status}`
+        );
       }
     } catch (error) {
       writeTaskError('Verify', `${url} failed: ${error.message}`);
@@ -274,7 +306,9 @@ async function verifyDeployment(config, phase) {
     }
   }
 
-  writeInfo(`Verification complete: ${successCount}/${subdomains.length} endpoints responding`);
+  writeInfo(
+    `Verification complete: ${successCount}/${subdomains.length} endpoints responding`
+  );
   return successCount > 0;
 }
 
@@ -285,11 +319,15 @@ function getStatusIcon(status) {
 }
 
 function printDeploymentSummary() {
-  const successful = deploymentResults.filter(r => r.status === 'SUCCESS').length;
-  const failed = deploymentResults.filter(r => r.status === 'FAILED').length;
-  const warnings = deploymentResults.filter(r => r.status === 'WARNING').length;
+  const successful = deploymentResults.filter(
+    (r) => r.status === 'SUCCESS'
+  ).length;
+  const failed = deploymentResults.filter((r) => r.status === 'FAILED').length;
+  const warnings = deploymentResults.filter(
+    (r) => r.status === 'WARNING'
+  ).length;
   const total = deploymentResults.length;
-  
+
   writeInfo('\n📊 Deployment Summary:');
   writeInfo(`   Total operations: ${total}`);
   writeSuccess(`   Successful: ${successful}`);
@@ -299,15 +337,15 @@ function printDeploymentSummary() {
   if (failed > 0) {
     writeTaskError('Summary', `Failed: ${failed}`);
   }
-  
+
   if (options.verbose) {
     writeInfo('\n📋 Detailed Results:');
-    deploymentResults.forEach(result => {
+    deploymentResults.forEach((result) => {
       const icon = getStatusIcon(result.status);
       writeInfo(`   ${icon} ${result.component}: ${result.details}`);
     });
   }
-  
+
   return failed === 0;
 }
 
@@ -341,7 +379,10 @@ async function runDeploymentPhase(config) {
 }
 
 async function main() {
-  writeTaskStart('Platform Deployment', `Phase ${options.phase} | Mode: ${options.dryRun ? 'DRY RUN' : 'LIVE'}`);
+  writeTaskStart(
+    'Platform Deployment',
+    `Phase ${options.phase} | Mode: ${options.dryRun ? 'DRY RUN' : 'LIVE'}`
+  );
 
   try {
     // Validate environment
@@ -351,7 +392,7 @@ async function main() {
 
     // Read configuration
     const config = await readYamlConfig(options.config);
-    
+
     // Phase-specific deployment logic
     if (options.verify) {
       await verifyDeployment(config, options.phase);
@@ -360,9 +401,12 @@ async function main() {
     }
 
     const summaryOk = printDeploymentSummary();
-    
+
     if (summaryOk) {
-      writeTaskComplete('Platform Deployment', 'Deployment completed successfully!');
+      writeTaskComplete(
+        'Platform Deployment',
+        'Deployment completed successfully!'
+      );
       exitWithSuccess();
     } else {
       writeTaskError('Platform Deployment', 'Some operations failed');
@@ -376,7 +420,7 @@ async function main() {
 
 // Only run if this file is executed directly
 if (process.argv[1] === __filename) {
-  main().catch(error => {
+  main().catch((error) => {
     writeTaskError('Deploy Platform', error.message);
     process.exit(1);
   });

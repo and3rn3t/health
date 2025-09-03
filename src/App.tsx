@@ -453,7 +453,7 @@ function App() {
   const Sidebar = () => (
     <aside
       className={`
-      bg-card border-border fixed left-0 top-0 z-40 h-screen border-r
+      bg-card fixed left-0 top-0 z-40 h-screen border-r border-border
       transition-all duration-300 ease-in-out
       ${sidebarCollapsed ? 'w-16' : 'w-64'}
       hidden lg:flex lg:flex-col
@@ -461,7 +461,7 @@ function App() {
     >
       <div className="flex h-full flex-col overflow-hidden">
         {/* Header */}
-        <div className="border-border flex-shrink-0 border-b p-4">
+        <div className="flex-shrink-0 border-b border-border p-4">
           <div className="flex items-center justify-between">
             {!sidebarCollapsed && (
               <div className="flex items-center gap-3">
@@ -763,7 +763,7 @@ function App() {
         </nav>
 
         {/* Footer */}
-        <div className="border-border border-t p-4">
+        <div className="border-t border-border p-4">
           {/* Theme mode toggle */}
           <div className="mb-3">
             <Button
@@ -822,7 +822,7 @@ function App() {
   );
 
   return (
-    <div className="bg-background flex min-h-screen">
+    <div className="flex min-h-screen bg-background">
       {/* Sidebar for larger screens */}
       <Sidebar />
 
@@ -839,7 +839,7 @@ function App() {
                   <Shield className="text-primary-foreground h-6 w-6" />
                 </div>
                 <div>
-                  <h1 className="text-foreground text-2xl font-bold">
+                  <h1 className="text-2xl font-bold text-foreground">
                     VitalSense
                   </h1>
                   <p className="text-muted-foreground text-sm">

@@ -287,7 +287,7 @@ export default function RealTimeMonitoringHub({
       {/* Header Status */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
             <Monitor className="h-6 w-6" />
             Real-Time Monitoring Hub
           </h2>

@@ -1,11 +1,11 @@
+@import 'tw-animate-css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import 'tw-animate-css';
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: var(--border);
   }
 }
 

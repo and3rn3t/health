@@ -9,7 +9,7 @@ export const ErrorFallback = ({ error, resetErrorBoundary }) => {
   if (import.meta.env.DEV) throw error;
 
   return (
-    <div className="bg-background flex min-h-screen items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <Alert variant="destructive" className="mb-6">
           <AlertTriangleIcon />
