@@ -509,14 +509,14 @@ var A;
   }
   t.joinValues = s, t.jsonStringifyReplacer = (n, a) => typeof a == "bigint" ? a.toString() : a;
 })(A || (A = {}));
-var Wt;
+var Kt;
 (function(t) {
   t.mergeShapes = (e, r) => ({
     ...e,
     ...r
     // second overwrites first
   });
-})(Wt || (Wt = {}));
+})(Kt || (Kt = {}));
 const p = A.arrayToEnum([
   "string",
   "nan",
@@ -783,7 +783,7 @@ class U {
 }
 const w = Object.freeze({
   status: "aborted"
-}), Je = (t) => ({ status: "dirty", value: t }), z = (t) => ({ status: "valid", value: t }), Kt = (t) => t.status === "aborted", Jt = (t) => t.status === "dirty", Ue = (t) => t.status === "valid", dt = (t) => typeof Promise < "u" && t instanceof Promise;
+}), Je = (t) => ({ status: "dirty", value: t }), z = (t) => ({ status: "valid", value: t }), Wt = (t) => t.status === "aborted", Jt = (t) => t.status === "dirty", Ue = (t) => t.status === "valid", dt = (t) => typeof Promise < "u" && t instanceof Promise;
 var g;
 (function(t) {
   t.errToObj = (e) => typeof e == "string" ? { message: e } : e || {}, t.toString = (e) => typeof e == "string" ? e : e == null ? void 0 : e.message;
@@ -2450,7 +2450,7 @@ function Ct(t, e) {
 class ft extends S {
   _parse(e) {
     const { status: r, ctx: s } = this._processInputParams(e), n = (a, i) => {
-      if (Kt(a) || Kt(i))
+      if (Wt(a) || Wt(i))
         return w;
       const o = Ct(a.value, i.value);
       return o.valid ? ((Jt(a) || Jt(i)) && r.dirty(), { status: r.value, value: o.data }) : (m(s, {
@@ -3073,7 +3073,7 @@ const or = ut.create;
 Ze.create;
 const Ts = Tt.create;
 ye.create;
-const Rr = J.create, K = C.create;
+const Rr = J.create, W = C.create;
 ht.create;
 ft.create;
 Re.create;
@@ -3091,7 +3091,7 @@ const Or = {
   bigint: ((t) => Ie.create({ ...t, coerce: !0 })),
   date: ((t) => Ze.create({ ...t, coerce: !0 }))
 };
-K({
+W({
   type: Me([
     "connection_established",
     "live_health_update",
@@ -3118,7 +3118,7 @@ const Tr = Me([
   "body_temperature",
   "respiratory_rate",
   "fall_event"
-]), Vt = K({
+]), Vt = W({
   type: Tr,
   value: B().describe("numeric value for the metric"),
   unit: O().optional(),
@@ -3127,16 +3127,16 @@ const Tr = Me([
   userId: O().optional(),
   source: O().optional().describe("data source like Apple Watch, manual entry"),
   confidence: B().min(0).max(1).optional().describe("confidence level of the reading")
-}), Cs = K({
+}), Cs = W({
   metrics: Rr(Vt),
   uploadedAt: O().datetime(),
-  deviceInfo: K({
+  deviceInfo: W({
     deviceId: O(),
     deviceType: O(),
     osVersion: O().optional(),
     appVersion: O().optional()
   }).optional()
-}), _t = K({
+}), _t = W({
   id: O().uuid().optional(),
   type: Tr,
   value: B(),
@@ -3147,7 +3147,7 @@ const Tr = Me([
   // Analytics and insights
   healthScore: B().min(0).max(100).optional(),
   fallRisk: Me(["low", "moderate", "high", "critical"]).optional(),
-  trendAnalysis: K({
+  trendAnalysis: W({
     direction: Me(["improving", "stable", "declining"]),
     confidence: B().min(0).max(1),
     changePercent: B().optional()
@@ -3156,21 +3156,21 @@ const Tr = Me([
   anomalyScore: B().min(0).max(1).optional().describe("how unusual this reading is"),
   correlatedMetrics: Rr(O()).optional().describe("related metrics that influenced this reading"),
   // Alert and notification system
-  alert: K({
+  alert: W({
     level: Me(["info", "warning", "critical", "emergency"]),
     message: O(),
     actionRequired: or().optional(),
     expiresAt: O().datetime().optional()
   }).nullable().optional(),
   // Data lineage
-  source: K({
+  source: W({
     deviceId: O().optional(),
     userId: O(),
     collectedAt: O().datetime(),
     processingPipeline: O().optional()
   }),
   // Quality metrics
-  dataQuality: K({
+  dataQuality: W({
     completeness: B().min(0).max(100),
     accuracy: B().min(0).max(100),
     timeliness: B().min(0).max(100),
@@ -3429,10 +3429,10 @@ var Ps = (t, e, r) => {
       o.filter(Boolean).map((c) => Hr(c, e, !1, s, n))
     ).then(() => n[0])
   )) : Promise.resolve(t);
-}, Ws = "text/plain; charset=UTF-8", It = (t, e) => ({
+}, Ks = "text/plain; charset=UTF-8", It = (t, e) => ({
   "Content-Type": t,
   ...e
-}), Xe, et, Q, $e, X, H, tt, Le, He, be, rt, st, de, Ne, fr, Ks = (fr = class {
+}), Xe, et, Q, $e, X, H, tt, Le, He, be, rt, st, de, Ne, fr, Ws = (fr = class {
   constructor(t, e) {
     k(this, de);
     k(this, Xe);
@@ -3470,7 +3470,7 @@ var Ps = (t, e, r) => {
     v(this, "get", (t) => u(this, Q) ? u(this, Q).get(t) : void 0);
     v(this, "newResponse", (...t) => E(this, de, Ne).call(this, ...t));
     v(this, "body", (t, e, r) => E(this, de, Ne).call(this, t, e, r));
-    v(this, "text", (t, e, r) => !u(this, be) && !u(this, $e) && !e && !r && !this.finalized ? new Response(t) : E(this, de, Ne).call(this, t, e, It(Ws, r)));
+    v(this, "text", (t, e, r) => !u(this, be) && !u(this, $e) && !e && !r && !this.finalized ? new Response(t) : E(this, de, Ne).call(this, t, e, It(Ks, r)));
     v(this, "json", (t, e, r) => E(this, de, Ne).call(this, JSON.stringify(t), e, It("application/json", r)));
     v(this, "html", (t, e, r) => {
       const s = (n) => E(this, de, Ne).call(this, n, e, It("text/html; charset=UTF-8", r));
@@ -3659,7 +3659,7 @@ var Ps = (t, e, r) => {
 }, ct = function(e, r, s, n) {
   if (n === "HEAD")
     return (async () => new Response(null, await E(this, D, ct).call(this, e, r, s, "GET")))();
-  const a = this.getPath(e, { env: s }), i = this.router.match(n, a), o = new Ks(e, {
+  const a = this.getPath(e, { env: s }), i = this.router.match(n, a), o = new Ws(e, {
     path: a,
     matchResult: i,
     env: s,
@@ -3696,11 +3696,11 @@ var Ps = (t, e, r) => {
 function en(t, e) {
   return t.length === 1 ? e.length === 1 ? t < e ? -1 : 1 : -1 : e.length === 1 || t === Ye || t === Ge ? 1 : e === Ye || e === Ge ? -1 : t === pt ? 1 : e === pt ? -1 : t.length === e.length ? t < e ? -1 : 1 : e.length - t.length;
 }
-var ke, xe, W, pr, Pt = (pr = class {
+var ke, xe, K, pr, Pt = (pr = class {
   constructor() {
     k(this, ke);
     k(this, xe);
-    k(this, W, /* @__PURE__ */ Object.create(null));
+    k(this, K, /* @__PURE__ */ Object.create(null));
   }
   insert(e, r, s, n, a) {
     if (e.length === 0) {
@@ -3718,35 +3718,35 @@ var ke, xe, W, pr, Pt = (pr = class {
       let f = c[2] || pt;
       if (d && c[2] && (f === ".*" || (f = f.replace(/^\((?!\?:)(?=[^)]+\)$)/, "(?:"), /\((?!\?:)/.test(f))))
         throw De;
-      if (l = u(this, W)[f], !l) {
-        if (Object.keys(u(this, W)).some(
+      if (l = u(this, K)[f], !l) {
+        if (Object.keys(u(this, K)).some(
           (y) => y !== Ye && y !== Ge
         ))
           throw De;
         if (a)
           return;
-        l = u(this, W)[f] = new Pt(), d !== "" && _(l, xe, n.varIndex++);
+        l = u(this, K)[f] = new Pt(), d !== "" && _(l, xe, n.varIndex++);
       }
       !a && d !== "" && s.push([d, u(l, xe)]);
-    } else if (l = u(this, W)[i], !l) {
-      if (Object.keys(u(this, W)).some(
+    } else if (l = u(this, K)[i], !l) {
+      if (Object.keys(u(this, K)).some(
         (d) => d.length > 1 && d !== Ye && d !== Ge
       ))
         throw De;
       if (a)
         return;
-      l = u(this, W)[i] = new Pt();
+      l = u(this, K)[i] = new Pt();
     }
     l.insert(o, r, s, n, a);
   }
   buildRegExpStr() {
-    const r = Object.keys(u(this, W)).sort(en).map((s) => {
-      const n = u(this, W)[s];
+    const r = Object.keys(u(this, K)).sort(en).map((s) => {
+      const n = u(this, K)[s];
       return (typeof u(n, xe) == "number" ? `(${s})@${u(n, xe)}` : Xs.has(s) ? `\\${s}` : s) + n.buildRegExpStr();
     });
     return typeof u(this, ke) == "number" && r.unshift(`#${u(this, ke)}`), r.length === 0 ? "" : r.length === 1 ? r[0] : "(?:" + r.join("|") + ")";
   }
-}, ke = new WeakMap(), xe = new WeakMap(), W = new WeakMap(), pr), gt, nt, gr, tn = (gr = class {
+}, ke = new WeakMap(), xe = new WeakMap(), K = new WeakMap(), pr), gt, nt, gr, tn = (gr = class {
   constructor() {
     k(this, gt, { varIndex: 0 });
     k(this, nt, new Pt());
@@ -3842,7 +3842,7 @@ function Te(t, e) {
         return [...t[r]];
   }
 }
-var ue, he, Fe, Fr, Wr, yr, an = (yr = class {
+var ue, he, Fe, Fr, Kr, yr, an = (yr = class {
   constructor() {
     k(this, Fe);
     v(this, "name", "RegExpRouter");
@@ -3905,9 +3905,9 @@ var ue, he, Fe, Fr, Wr, yr, an = (yr = class {
 }, ue = new WeakMap(), he = new WeakMap(), Fe = new WeakSet(), Fr = function() {
   const t = /* @__PURE__ */ Object.create(null);
   return Object.keys(u(this, he)).concat(Object.keys(u(this, ue))).forEach((e) => {
-    t[e] || (t[e] = E(this, Fe, Wr).call(this, e));
+    t[e] || (t[e] = E(this, Fe, Kr).call(this, e));
   }), _(this, ue, _(this, he, void 0)), t;
-}, Wr = function(t) {
+}, Kr = function(t) {
   const e = [];
   let r = t === N;
   return [u(this, ue), u(this, he)].forEach((s) => {
@@ -3956,14 +3956,14 @@ var ue, he, Fe, Fr, Wr, yr, an = (yr = class {
       throw new Error("No active router has been determined yet.");
     return u(this, fe)[0];
   }
-}, fe = new WeakMap(), ee = new WeakMap(), vr), Ke = /* @__PURE__ */ Object.create(null), me, L, Se, Ve, $, te, we, _r, Kr = (_r = class {
+}, fe = new WeakMap(), ee = new WeakMap(), vr), We = /* @__PURE__ */ Object.create(null), me, L, Se, Ve, $, te, we, _r, Wr = (_r = class {
   constructor(t, e, r) {
     k(this, te);
     k(this, me);
     k(this, L);
     k(this, Se);
     k(this, Ve, 0);
-    k(this, $, Ke);
+    k(this, $, We);
     if (_(this, L, r || /* @__PURE__ */ Object.create(null)), _(this, me, []), t && e) {
       const s = /* @__PURE__ */ Object.create(null);
       s[t] = { handler: e, possibleKeys: [], score: 0 }, _(this, me, [s]);
@@ -3980,7 +3980,7 @@ var ue, he, Fe, Fr, Wr, yr, an = (yr = class {
         s = u(s, L)[f], d && a.push(d[1]);
         continue;
       }
-      u(s, L)[f] = new Kr(), d && (u(s, Se).push(d), a.push(d[1])), s = u(s, L)[f];
+      u(s, L)[f] = new Wr(), d && (u(s, Se).push(d), a.push(d[1])), s = u(s, L)[f];
     }
     return u(s, me).push({
       [t]: {
@@ -3993,7 +3993,7 @@ var ue, he, Fe, Fr, Wr, yr, an = (yr = class {
   search(t, e) {
     var o;
     const r = [];
-    _(this, $, Ke);
+    _(this, $, We);
     let n = [this];
     const a = Cr(e), i = [];
     for (let c = 0, l = a.length; c < l; c++) {
@@ -4004,18 +4004,18 @@ var ue, he, Fe, Fr, Wr, yr, an = (yr = class {
           ...E(this, te, we).call(this, u(M, L)["*"], t, u(R, $))
         ), r.push(...E(this, te, we).call(this, M, t, u(R, $)))) : y.push(M));
         for (let P = 0, Y = u(R, Se).length; P < Y; P++) {
-          const ae = u(R, Se)[P], V = u(R, $) === Ke ? {} : { ...u(R, $) };
+          const ae = u(R, Se)[P], V = u(R, $) === We ? {} : { ...u(R, $) };
           if (ae === "*") {
             const ie = u(R, L)["*"];
             ie && (r.push(...E(this, te, we).call(this, ie, t, u(R, $))), _(ie, $, V), y.push(ie));
             continue;
           }
-          const [wt, Zt, We] = ae;
-          if (!d && !(We instanceof RegExp))
+          const [wt, Zt, Ke] = ae;
+          if (!d && !(Ke instanceof RegExp))
             continue;
           const G = u(R, L)[wt], Gr = a.slice(c).join("/");
-          if (We instanceof RegExp) {
-            const ie = We.exec(Gr);
+          if (Ke instanceof RegExp) {
+            const ie = Ke.exec(Gr);
             if (ie) {
               if (V[Zt] = ie[0], r.push(...E(this, te, we).call(this, G, t, u(R, $), V)), Object.keys(u(G, L)).length) {
                 _(G, $, V);
@@ -4025,7 +4025,7 @@ var ue, he, Fe, Fr, Wr, yr, an = (yr = class {
               continue;
             }
           }
-          (We === !0 || We.test(d)) && (V[Zt] = d, f ? (r.push(...E(this, te, we).call(this, G, t, V, u(R, $))), u(G, L)["*"] && r.push(
+          (Ke === !0 || Ke.test(d)) && (V[Zt] = d, f ? (r.push(...E(this, te, we).call(this, G, t, V, u(R, $))), u(G, L)["*"] && r.push(
             ...E(this, te, we).call(this, u(G, L)["*"], t, V, u(R, $))
           )) : (_(G, $, V), y.push(G)));
         }
@@ -4038,7 +4038,7 @@ var ue, he, Fe, Fr, Wr, yr, an = (yr = class {
   const n = [];
   for (let a = 0, i = u(t, me).length; a < i; a++) {
     const o = u(t, me)[a], c = o[e] || o[N], l = {};
-    if (c !== void 0 && (c.params = /* @__PURE__ */ Object.create(null), n.push(c), r !== Ke || s && s !== Ke))
+    if (c !== void 0 && (c.params = /* @__PURE__ */ Object.create(null), n.push(c), r !== We || s && s !== We))
       for (let d = 0, f = c.possibleKeys.length; d < f; d++) {
         const y = c.possibleKeys[d], I = l[c.score];
         c.params[y] = s != null && s[y] && !I ? s[y] : r[y] ?? (s == null ? void 0 : s[y]), l[c.score] = !0;
@@ -4049,7 +4049,7 @@ var ue, he, Fe, Fr, Wr, yr, an = (yr = class {
   constructor() {
     v(this, "name", "TrieRouter");
     k(this, Ae);
-    _(this, Ae, new Kr());
+    _(this, Ae, new Wr());
   }
   add(t, e, r) {
     const s = Nr(e);
@@ -4245,7 +4245,7 @@ T.get("/api/_audit", async (t) => {
 T.post("/api/device/auth", async (t) => {
   const e = t.env.DEVICE_JWT_SECRET;
   if (!e) return t.json({ error: "not_configured" }, 500);
-  const r = K({
+  const r = W({
     userId: O().min(1),
     clientType: Me(["ios_app", "web_dashboard"]).default("ios_app"),
     ttlSec: Or.number().min(60).max(3600).optional()
@@ -4531,8 +4531,35 @@ function hn(t) {
     )[0].processedAt : null
   };
 }
+T.get("/api/kv/:key", async (t) => {
+  try {
+    const e = t.req.param("key"), r = t.env.HEALTH_KV;
+    if (!r)
+      return t.json({ error: "KV storage not available" }, 503);
+    const s = await r.get(e, { type: "json" });
+    return t.json({ key: e, value: s });
+  } catch (e) {
+    return console.error("KV get error:", e), t.json({ error: "Failed to get value" }, 500);
+  }
+});
+T.put("/api/kv/:key", async (t) => {
+  try {
+    const e = t.req.param("key"), r = await t.req.json(), s = t.env.HEALTH_KV;
+    return s ? (await s.put(e, JSON.stringify(r.value)), t.json({ success: !0, key: e })) : t.json({ error: "KV storage not available" }, 503);
+  } catch (e) {
+    return console.error("KV put error:", e), t.json({ error: "Failed to save value" }, 500);
+  }
+});
+T.delete("/api/kv/:key", async (t) => {
+  try {
+    const e = t.req.param("key"), r = t.env.HEALTH_KV;
+    return r ? (await r.delete(e), t.json({ success: !0, key: e })) : t.json({ error: "KV storage not available" }, 503);
+  } catch (e) {
+    return console.error("KV delete error:", e), t.json({ error: "Failed to delete value" }, 500);
+  }
+});
 T.get("/api/health-data", async (t) => {
-  const e = K({
+  const e = W({
     from: O().datetime().optional(),
     to: O().datetime().optional(),
     metric: Vt.shape.type.optional(),
