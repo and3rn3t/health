@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,7 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -18,22 +25,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import {
-  AlertTriangle,
-  Plus,
-  MapPin,
-  Clock,
-  Activity,
-} from 'lucide-react';
+import { useKV } from '@github/spark/hooks';
+import { Activity, AlertTriangle, Clock, MapPin, Plus } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface FallIncident {
@@ -51,9 +45,9 @@ interface FallIncident {
 }
 
 export default function FallHistory() {
-  const [fallHistory, setFallHistory] = useKV(
+  const [fallHistory, setFallHistory] = useKV<FallIncident[]>(
     'fall-history',
-    [] as FallIncident[]
+    []
   );
   const [isAddingIncident, setIsAddingIncident] = useState(false);
   const [newIncident, setNewIncident] = useState({
@@ -84,7 +78,7 @@ export default function FallHistory() {
       ...newIncident,
     };
 
-    setFallHistory((currentHistory) => [incident, ...currentHistory]);
+    setFallHistory((currentHistory) => [incident, ...(currentHistory || [])]);
     setNewIncident({
       date: new Date().toISOString().split('T')[0],
       time: new Date().toTimeString().slice(0, 5),
@@ -117,9 +111,9 @@ export default function FallHistory() {
   };
 
   const getInsights = () => {
-    if (fallHistory.length === 0) return [];
+    if (!fallHistory || fallHistory.length === 0) return [];
 
-    const insights = [];
+    const insights: string[] = [];
 
     // Location analysis
     const locationCounts: { [key: string]: number } = {};
@@ -343,39 +337,43 @@ export default function FallHistory() {
 
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="help-received"
-                        checked={newIncident.helpReceived}
-                        onChange={(e) =>
-                          setNewIncident({
-                            ...newIncident,
-                            helpReceived: e.target.checked,
-                          })
-                        }
-                        className="h-4 w-4"
-                      />
-                      <Label htmlFor="help-received" className="text-sm">
-                        Received help from someone
-                      </Label>
+                      <label className="flex cursor-pointer items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="help-received"
+                          checked={newIncident.helpReceived}
+                          onChange={(e) =>
+                            setNewIncident({
+                              ...newIncident,
+                              helpReceived: e.target.checked,
+                            })
+                          }
+                          className="h-4 w-4"
+                        />
+                        <span className="text-sm">
+                          Received help from someone
+                        </span>
+                      </label>
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="hospital-visit"
-                        checked={newIncident.hospitalVisit}
-                        onChange={(e) =>
-                          setNewIncident({
-                            ...newIncident,
-                            hospitalVisit: e.target.checked,
-                          })
-                        }
-                        className="h-4 w-4"
-                      />
-                      <Label htmlFor="hospital-visit" className="text-sm">
-                        Required medical attention/hospital visit
-                      </Label>
+                      <label className="flex cursor-pointer items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="hospital-visit"
+                          checked={newIncident.hospitalVisit}
+                          onChange={(e) =>
+                            setNewIncident({
+                              ...newIncident,
+                              hospitalVisit: e.target.checked,
+                            })
+                          }
+                          className="h-4 w-4"
+                        />
+                        <span className="text-sm">
+                          Required medical attention/hospital visit
+                        </span>
+                      </label>
                     </div>
                   </div>
 
@@ -413,7 +411,7 @@ export default function FallHistory() {
           </div>
         </CardHeader>
         <CardContent>
-          {fallHistory.length === 0 ? (
+          {!fallHistory || fallHistory.length === 0 ? (
             <div className="py-8 text-center">
               <Activity className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
               <p className="text-muted-foreground mb-2">
@@ -435,14 +433,16 @@ export default function FallHistory() {
                   </h4>
                   <ul className="text-muted-foreground space-y-1 text-sm">
                     {getInsights().map((insight, index) => (
-                      <li key={index}>• {insight}</li>
+                      <li key={`insight-${index}-${insight.slice(0, 20)}`}>
+                        • {insight}
+                      </li>
                     ))}
                   </ul>
                 </div>
               )}
 
               {/* Fall History List */}
-              {fallHistory.map((incident) => (
+              {(fallHistory || []).map((incident) => (
                 <div
                   key={incident.id}
                   className="space-y-3 rounded-lg border p-4"

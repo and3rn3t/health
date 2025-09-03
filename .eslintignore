@@ -60,3 +60,14 @@ Thumbs.db
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+# Generated and minified files
+**/*.generated.*
+**/*.min.js
+**/*.bundle.js
+**/*.d.ts
+
+# Additional patterns
+*.config.js
+*.config.ts
+vite.config.*.timestamp-*

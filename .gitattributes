@@ -1,0 +1,100 @@
+# VitalSense Health App - Git attributes
+# Ensures consistent behavior across different platforms
+
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout
+*.js text
+*.ts text
+*.tsx text
+*.jsx text
+*.json text
+*.md text
+*.txt text
+*.yml text
+*.yaml text
+*.xml text
+*.html text
+*.css text
+*.scss text
+*.less text
+*.sql text
+
+# Declare files that will always have CRLF line endings on checkout
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Declare files that will always have LF line endings on checkout
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+
+# Denote all files that are truly binary and should not be modified
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.webp binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.7z binary
+*.rar binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.app binary
+*.dmg binary
+*.pkg binary
+*.deb binary
+*.rpm binary
+
+# iOS specific binary files
+*.ipa binary
+*.mobileprovision binary
+*.p12 binary
+*.cer binary
+*.certSigningRequest binary
+
+# Font files
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.ttf binary
+*.otf binary
+
+# Audio/Video files
+*.mp3 binary
+*.mp4 binary
+*.mov binary
+*.avi binary
+*.wav binary
+*.flac binary
+
+# Archive files
+*.tar.gz binary
+*.tgz binary
+
+# Lock files should not be merged
+package-lock.json merge=ours
+yarn.lock merge=ours
+pnpm-lock.yaml merge=ours
+Podfile.lock merge=ours
+
+# Language specific attributes
+*.swift linguist-language=Swift
+*.ps1 linguist-language=PowerShell
+
+# Mark generated files
+src/**/*.generated.* linguist-generated=true
+dist/ linguist-generated=true
+dist-worker/ linguist-generated=true
+build/ linguist-generated=true
+coverage/ linguist-generated=true

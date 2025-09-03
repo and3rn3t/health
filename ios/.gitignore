@@ -80,6 +80,24 @@ medical_reports/
 *.xlsx
 test_data/personal/
 
+# Additional security patterns
+*.pem
+*.key
+*.crt
+*.keychain
+AuthKey_*.p8
+GoogleService-Info.plist
+GoogleService-Info-*.plist
+
+# Health data patterns
+*.healthdata
+*.healthexport
+*.xml.gz
+health_records/
+patient_records/
+phi_data/
+hipaa_data/
+
 # Backup files
 *.backup
 *.bak

@@ -43,7 +43,6 @@ dist-worker/
 
 # Build outputs
 build/
-dist/
 .next/
 out/
 
@@ -106,3 +105,76 @@ yarn-error.log*
 *.health-data
 *.vitals-backup
 test-health-data.json.backup
+
+# Additional common patterns
+*.orig
+*.rej
+*.patch
+.eslintcache
+.stylelintcache
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env.backup
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+out
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+# Comment in the public line in if your project uses Gatsby and not Next.js
+# public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# Runtime configuration cache
+*.cache
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*

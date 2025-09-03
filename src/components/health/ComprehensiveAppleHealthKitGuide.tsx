@@ -545,32 +545,37 @@ class HealthDataWebSocketBridge: ObservableObject {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const toggleComponent = (componentId: string) => {
-    setComponents((currentComponents) =>
-      currentComponents.map((comp) =>
-        comp.id === componentId ? { ...comp, completed: !comp.completed } : comp
-      )
+    setComponents(
+      (currentComponents) =>
+        currentComponents?.map((comp) =>
+          comp.id === componentId
+            ? { ...comp, completed: !comp.completed }
+            : comp
+        ) || []
     );
   };
 
   const getComponentsByCategory = (category: string) => {
-    if (category === 'all') return components;
-    return components.filter((comp) => comp.category === category);
+    if (category === 'all') return components || [];
+    return components?.filter((comp) => comp.category === category) || [];
   };
 
   const calculateProgress = (category?: string) => {
     const relevantComponents = category
-      ? components.filter((c) => c.category === category)
-      : components;
+      ? components?.filter((c) => c.category === category) || []
+      : components || [];
     const completedComponents = relevantComponents.filter(
       (c) => c.completed
     ).length;
-    return Math.round((completedComponents / relevantComponents.length) * 100);
+    return relevantComponents.length > 0
+      ? Math.round((completedComponents / relevantComponents.length) * 100)
+      : 0;
   };
 
   const getTotalHours = (category?: string) => {
     const relevantComponents = category
-      ? components.filter((c) => c.category === category)
-      : components;
+      ? components?.filter((c) => c.category === category) || []
+      : components || [];
     return relevantComponents.reduce(
       (total, comp) => total + comp.estimatedHours,
       0
@@ -601,6 +606,21 @@ class HealthDataWebSocketBridge: ObservableObject {
       default:
         return 'text-gray-600';
     }
+  };
+
+  const getDependencyComponent = (depId: string) => {
+    return (components || []).find((c) => c.id === depId);
+  };
+
+  const renderDependencyBadges = (dependencies: string[]) => {
+    return dependencies.map((depId) => {
+      const depComponent = getDependencyComponent(depId);
+      return (
+        <Badge key={depId} variant="outline" className="text-xs">
+          {depComponent?.title || depId}
+        </Badge>
+      );
+    });
   };
 
   const categories = [
@@ -634,7 +654,7 @@ class HealthDataWebSocketBridge: ObservableObject {
   ];
 
   const overallProgress = calculateProgress();
-  const requiredComponents = components.filter(
+  const requiredComponents = (components || []).filter(
     (c) => c.implementation === 'required'
   );
   const requiredCompleted = requiredComponents.filter(
@@ -681,7 +701,10 @@ class HealthDataWebSocketBridge: ObservableObject {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">
-                {healthDataTypes.filter((t) => t.requiredForFallRisk).length}
+                {
+                  (healthDataTypes || []).filter((t) => t.requiredForFallRisk)
+                    .length
+                }
               </div>
               <div className="text-muted-foreground text-sm">
                 Critical Data Types
@@ -689,7 +712,10 @@ class HealthDataWebSocketBridge: ObservableObject {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">
-                {healthDataTypes.filter((t) => t.appleWatchAvailable).length}
+                {
+                  (healthDataTypes || []).filter((t) => t.appleWatchAvailable)
+                    .length
+                }
               </div>
               <div className="text-muted-foreground text-sm">
                 Watch Available
@@ -724,7 +750,7 @@ class HealthDataWebSocketBridge: ObservableObject {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {healthDataTypes.map((dataType) => (
+            {(healthDataTypes || []).map((dataType) => (
               <div
                 key={dataType.identifier}
                 className={`rounded-lg border p-4 ${dataType.requiredForFallRisk ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}
@@ -844,17 +870,20 @@ class HealthDataWebSocketBridge: ObservableObject {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <input
-                            type="checkbox"
-                            checked={component.completed}
-                            onChange={() => toggleComponent(component.id)}
-                            className="text-primary h-4 w-4"
-                          />
-                          <h4
-                            className={`font-medium ${component.completed ? 'text-muted-foreground line-through' : ''}`}
-                          >
-                            {component.title}
-                          </h4>
+                          <label className="flex cursor-pointer items-center gap-3">
+                            <input
+                              type="checkbox"
+                              checked={component.completed}
+                              onChange={() => toggleComponent(component.id)}
+                              className="text-primary h-4 w-4"
+                              aria-label={`Mark ${component.title} as ${component.completed ? 'incomplete' : 'complete'}`}
+                            />
+                            <h4
+                              className={`font-medium ${component.completed ? 'text-muted-foreground line-through' : ''}`}
+                            >
+                              {component.title}
+                            </h4>
+                          </label>
                         </div>
                         <div className="flex items-center gap-2">
                           <div
@@ -881,20 +910,7 @@ class HealthDataWebSocketBridge: ObservableObject {
                           <span className="text-muted-foreground">
                             Depends on:
                           </span>
-                          {component.dependencies.map((depId) => {
-                            const depComponent = components.find(
-                              (c) => c.id === depId
-                            );
-                            return (
-                              <Badge
-                                key={depId}
-                                variant="outline"
-                                className="text-xs"
-                              >
-                                {depComponent?.title}
-                              </Badge>
-                            );
-                          })}
+                          {renderDependencyBadges(component.dependencies)}
                         </div>
                       )}
 
@@ -918,7 +934,9 @@ class HealthDataWebSocketBridge: ObservableObject {
                           </h5>
                           <ul className="text-muted-foreground list-inside list-disc space-y-1 text-sm">
                             {component.notes.map((note, index) => (
-                              <li key={index}>{note}</li>
+                              <li key={`${component.id}-note-${index}`}>
+                                {note}
+                              </li>
                             ))}
                           </ul>
                         </div>

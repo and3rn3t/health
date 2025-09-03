@@ -1,0 +1,67 @@
+# NPM ignore for VitalSense Health App
+# Files to exclude when publishing to npm (if applicable)
+
+# Source files (keep only dist)
+src/
+*.ts
+*.tsx
+!*.d.ts
+
+# Development dependencies
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+__tests__/
+**/*.test.*
+**/*.spec.*
+coverage/
+.nyc_output
+
+# Build tools configuration
+vite.config.*
+vitest.config.*
+tsconfig.json
+tailwind.config.js
+eslint.config.js
+.eslintrc.*
+.prettierrc.*
+
+# Documentation source
+docs/
+*.md
+!README.md
+
+# Git
+.git*
+
+# CI/CD
+.github/
+
+# Environment files
+.env*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Backup files
+*.backup
+*.bak
+
+# Cache directories
+.cache/
+.parcel-cache/
+.tsbuildinfo
