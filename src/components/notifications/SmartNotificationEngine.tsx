@@ -37,6 +37,18 @@ import {
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+// Type aliases for union types
+type DeliveryStatus = 'pending' | 'sent' | 'failed';
+type NotificationType =
+  | 'health'
+  | 'exercise'
+  | 'fall'
+  | 'achievement'
+  | 'reminder'
+  | 'emergency';
+type NotificationPriority = 'low' | 'medium' | 'high' | 'critical';
+type _ActivityType = 'morning' | 'afternoon' | 'evening';
+
 interface EngagementPattern {
   hour: number;
   dayOfWeek: number;
@@ -83,16 +95,10 @@ interface NotificationPreferences {
 
 interface SmartNotification {
   id: string;
-  type:
-    | 'health'
-    | 'exercise'
-    | 'fall'
-    | 'achievement'
-    | 'reminder'
-    | 'emergency';
+  type: NotificationType;
   title: string;
   message: string;
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  priority: NotificationPriority;
   scheduledTime: Date;
   optimalTime: Date;
   engagementScore: number;
@@ -101,10 +107,10 @@ interface SmartNotification {
   createdAt: Date;
   deliveryMethods: string[];
   deliveryStatus: {
-    push?: 'pending' | 'sent' | 'failed';
-    email?: 'pending' | 'sent' | 'failed';
-    sms?: 'pending' | 'sent' | 'failed';
-    phone?: 'pending' | 'sent' | 'failed';
+    push?: DeliveryStatus;
+    email?: DeliveryStatus;
+    sms?: DeliveryStatus;
+    phone?: DeliveryStatus;
   };
   escalated: boolean;
   acknowledgmentRequired: boolean;
@@ -112,41 +118,54 @@ interface SmartNotification {
 }
 
 interface SmartNotificationEngineProps {
-  healthData: ProcessedHealthData;
+  readonly healthData: ProcessedHealthData;
 }
 
 export default function SmartNotificationEngine({
   healthData,
 }: SmartNotificationEngineProps) {
+  // Default preferences to avoid undefined issues
+  const defaultPreferences: NotificationPreferences = {
+    enabled: true,
+    healthReminders: true,
+    exercisePrompts: true,
+    fallRiskAlerts: true,
+    achievementCelebrations: true,
+    familyUpdates: true,
+    optimalTimingEnabled: true,
+    quietHoursStart: 22,
+    quietHoursEnd: 8,
+    maxNotificationsPerDay: 10,
+    personalizedTiming: true,
+    deliveryMethods: {
+      low: { push: true, email: false, sms: false, phone: false },
+      medium: { push: true, email: true, sms: false, phone: false },
+      high: { push: true, email: true, sms: true, phone: false },
+      critical: { push: true, email: true, sms: true, phone: true },
+    },
+    contactInfo: {
+      email: '',
+      phone: '',
+      emergencyContacts: [],
+    },
+    escalationEnabled: true,
+    escalationDelay: 15,
+  };
+
   const [preferences, setPreferences] = useKV<NotificationPreferences>(
     'notification-preferences',
-    {
-      enabled: true,
-      healthReminders: true,
-      exercisePrompts: true,
-      fallRiskAlerts: true,
-      achievementCelebrations: true,
-      familyUpdates: true,
-      optimalTimingEnabled: true,
-      quietHoursStart: 22,
-      quietHoursEnd: 8,
-      maxNotificationsPerDay: 10,
-      personalizedTiming: true,
-      deliveryMethods: {
-        low: { push: true, email: false, sms: false, phone: false },
-        medium: { push: true, email: true, sms: false, phone: false },
-        high: { push: true, email: true, sms: true, phone: false },
-        critical: { push: true, email: true, sms: true, phone: true },
-      },
-      contactInfo: {
-        email: '',
-        phone: '',
-        emergencyContacts: [],
-      },
-      escalationEnabled: true,
-      escalationDelay: 15,
-    }
+    defaultPreferences
   );
+
+  // Safe preferences getter with fallback
+  const safePreferences = preferences || defaultPreferences;
+
+  // Safe setter for preferences
+  const updatePreferences = (
+    updater: (current: NotificationPreferences) => NotificationPreferences
+  ) => {
+    setPreferences((current) => updater(current || defaultPreferences));
+  };
 
   const [notifications, setNotifications] = useKV<SmartNotification[]>(
     'smart-notifications',
@@ -170,7 +189,6 @@ export default function SmartNotificationEngine({
   // Simulate engagement pattern learning
   useEffect(() => {
     const simulateEngagementLearning = () => {
-      const now = new Date();
       const patterns: EngagementPattern[] = [];
 
       // Generate realistic engagement patterns
@@ -198,12 +216,17 @@ export default function SmartNotificationEngine({
           score += (Math.random() - 0.5) * 0.2;
           score = Math.max(0, Math.min(1, score));
 
+          const getActivityType = (hourValue: number): string => {
+            if (hourValue < 12) return 'morning';
+            if (hourValue < 17) return 'afternoon';
+            return 'evening';
+          };
+
           patterns.push({
             hour,
             dayOfWeek: day,
             engagementScore: score,
-            activityType:
-              hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening',
+            activityType: getActivityType(hour),
             frequency: Math.floor(Math.random() * 10) + 1,
           });
         }
@@ -228,7 +251,7 @@ export default function SmartNotificationEngine({
     const currentDay = now.getDay();
 
     // Find the best engagement times for the current day
-    const todayPatterns = engagementPatterns.filter(
+    const todayPatterns = (engagementPatterns || []).filter(
       (p) => p.dayOfWeek === currentDay
     );
 
@@ -243,15 +266,17 @@ export default function SmartNotificationEngine({
 
     // Check quiet hours
     const isQuietHours = (hour: number) => {
-      if (preferences.quietHoursStart < preferences.quietHoursEnd) {
+      if (!preferences) return false;
+
+      if (safePreferences.quietHoursStart < safePreferences.quietHoursEnd) {
         return (
-          hour >= preferences.quietHoursStart ||
-          hour < preferences.quietHoursEnd
+          hour >= safePreferences.quietHoursStart ||
+          hour < safePreferences.quietHoursEnd
         );
       } else {
         return (
-          hour >= preferences.quietHoursStart &&
-          hour < preferences.quietHoursEnd
+          hour >= safePreferences.quietHoursStart &&
+          hour < safePreferences.quietHoursEnd
         );
       }
     };
@@ -290,8 +315,10 @@ export default function SmartNotificationEngine({
   const getDeliveryMethods = (
     priority: 'low' | 'medium' | 'high' | 'critical'
   ): string[] => {
+    if (!preferences) return ['push']; // Default fallback
+
     const methods: string[] = [];
-    const config = preferences.deliveryMethods[priority];
+    const config = safePreferences.deliveryMethods[priority];
 
     if (config.push) methods.push('push');
     if (config.email) methods.push('email');
@@ -323,7 +350,7 @@ export default function SmartNotificationEngine({
           };
 
           setNotifications((current) => {
-            const updated = current.map((n) =>
+            const updated = (current || []).map((n) =>
               n.id === notification.id ? deliveredNotification : n
             );
             return updated.some((n) => n.id === notification.id)
@@ -346,7 +373,7 @@ export default function SmartNotificationEngine({
 
   // Generate smart notifications based on health data
   const generateSmartNotifications = async () => {
-    if (!preferences.enabled || isGenerating) return;
+    if (!preferences?.enabled || isGenerating) return;
 
     setIsGenerating(true);
 
@@ -355,7 +382,7 @@ export default function SmartNotificationEngine({
       const now = new Date();
 
       // Health reminder notifications
-      if (preferences.healthReminders && healthData.healthScore < 70) {
+      if (safePreferences.healthReminders && healthData.healthScore < 70) {
         const notification: SmartNotification = {
           id: `health-reminder-${Date.now()}`,
           type: 'health',
@@ -386,7 +413,7 @@ export default function SmartNotificationEngine({
       }
 
       // Exercise prompts
-      if (preferences.exercisePrompts) {
+      if (preferences?.exercisePrompts) {
         const todaySteps = Math.floor(Math.random() * 10000) + 2000; // Simulated
         if (todaySteps < 8000) {
           const notification: SmartNotification = {
@@ -413,7 +440,7 @@ export default function SmartNotificationEngine({
 
       // Fall risk alerts
       if (
-        preferences.fallRiskAlerts &&
+        preferences?.fallRiskAlerts &&
         healthData.fallRiskFactors?.some((f) => f.risk === 'high')
       ) {
         const notification: SmartNotification = {
@@ -439,7 +466,7 @@ export default function SmartNotificationEngine({
       }
 
       // Achievement celebrations
-      if (preferences.achievementCelebrations) {
+      if (preferences?.achievementCelebrations) {
         const achievements = [
           'Completed daily step goal for 3 consecutive days!',
           'Heart rate variability has improved this week!',
@@ -483,6 +510,7 @@ export default function SmartNotificationEngine({
 
       toast.success(`Generated ${newNotifications.length} smart notifications`);
     } catch (error) {
+      console.error('Failed to generate notifications:', error);
       toast.error('Failed to generate notifications');
     } finally {
       setIsGenerating(false);
@@ -491,12 +519,13 @@ export default function SmartNotificationEngine({
 
   // Update analytics when notifications change
   useEffect(() => {
-    const delivered = notifications.filter((n) => n.delivered).length;
-    const interacted = notifications.filter((n) => n.interacted).length;
+    const notificationList = notifications || [];
+    const delivered = notificationList.filter((n) => n.delivered).length;
+    const interacted = notificationList.filter((n) => n.interacted).length;
     const avgEngagement =
-      notifications.length > 0
-        ? notifications.reduce((sum, n) => sum + n.engagementScore, 0) /
-          notifications.length
+      notificationList.length > 0
+        ? notificationList.reduce((sum, n) => sum + n.engagementScore, 0) /
+          notificationList.length
         : 0;
 
     setAnalytics((current) => ({
@@ -512,14 +541,16 @@ export default function SmartNotificationEngine({
   const getCurrentOptimalTime = (): string => {
     const now = new Date();
     const currentDay = now.getDay();
-    const patterns = engagementPatterns.filter(
+    const patterns = (engagementPatterns || []).filter(
       (p) => p.dayOfWeek === currentDay
     );
 
     if (patterns.length === 0) return 'No data available';
 
-    const bestPattern = patterns.reduce((best, current) =>
-      current.engagementScore > best.engagementScore ? current : best
+    const bestPattern = patterns.reduce(
+      (best, current) =>
+        current.engagementScore > best.engagementScore ? current : best,
+      patterns[0] // Provide initial value
     );
 
     const hour = bestPattern.hour.toString().padStart(2, '0');
@@ -577,7 +608,7 @@ export default function SmartNotificationEngine({
         </div>
         <Button
           onClick={generateSmartNotifications}
-          disabled={isGenerating || !preferences.enabled}
+          disabled={isGenerating || !safePreferences.enabled}
           className="flex items-center gap-2"
         >
           <Brain className="h-4 w-4" />
@@ -686,7 +717,7 @@ export default function SmartNotificationEngine({
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 rounded-full bg-green-500"></div>
                   <span className="text-sm">
-                    Recent: {notifications.slice(-5).length}
+                    Recent: {notifications?.slice(-5).length || 0}
                   </span>
                 </div>
               </div>
@@ -703,12 +734,13 @@ export default function SmartNotificationEngine({
                     <p className="text-muted-foreground mb-1 text-xs">{day}</p>
                     <div className="space-y-1">
                       {Array.from({ length: 4 }, (_, hourBlock) => {
-                        const patterns = engagementPatterns.filter(
-                          (p) =>
-                            p.dayOfWeek === dayIndex &&
-                            p.hour >= hourBlock * 6 &&
-                            p.hour < (hourBlock + 1) * 6
-                        );
+                        const patterns =
+                          engagementPatterns?.filter(
+                            (p) =>
+                              p.dayOfWeek === dayIndex &&
+                              p.hour >= hourBlock * 6 &&
+                              p.hour < (hourBlock + 1) * 6
+                          ) || [];
                         const avgScore =
                           patterns.length > 0
                             ? patterns.reduce(
@@ -720,11 +752,7 @@ export default function SmartNotificationEngine({
                         return (
                           <div
                             key={hourBlock}
-                            className="h-4 rounded-sm"
-                            style={{
-                              backgroundColor: `hsl(${120 * avgScore}, 70%, ${50 + avgScore * 30}%)`,
-                              opacity: 0.7 + avgScore * 0.3,
-                            }}
+                            className={`h-4 rounded-sm bg-green-${Math.round(avgScore * 900)} opacity-${Math.round((0.7 + avgScore * 0.3) * 100)}`}
                             title={`${hourBlock * 6}:00-${(hourBlock + 1) * 6}:00: ${Math.round(avgScore * 100)}% engagement`}
                           />
                         );
@@ -763,14 +791,17 @@ export default function SmartNotificationEngine({
               </p>
             </div>
             <Switch
-              checked={preferences.enabled}
+              checked={safePreferences.enabled}
               onCheckedChange={(checked) =>
-                setPreferences((current) => ({ ...current, enabled: checked }))
+                updatePreferences((current) => ({
+                  ...current,
+                  enabled: checked,
+                }))
               }
             />
           </div>
 
-          {preferences.enabled && (
+          {safePreferences.enabled && (
             <>
               {/* Notification Types */}
               <div className="space-y-4">
@@ -810,12 +841,12 @@ export default function SmartNotificationEngine({
                     </div>
                     <Switch
                       checked={
-                        preferences[
+                        safePreferences[
                           key as keyof NotificationPreferences
                         ] as boolean
                       }
                       onCheckedChange={(checked) =>
-                        setPreferences((current) => ({
+                        updatePreferences((current) => ({
                           ...current,
                           [key]: checked,
                         }))
@@ -837,9 +868,9 @@ export default function SmartNotificationEngine({
                     </p>
                   </div>
                   <Switch
-                    checked={preferences.optimalTimingEnabled}
+                    checked={safePreferences.optimalTimingEnabled}
                     onCheckedChange={(checked) =>
-                      setPreferences((current) => ({
+                      updatePreferences((current) => ({
                         ...current,
                         optimalTimingEnabled: checked,
                       }))
@@ -853,9 +884,9 @@ export default function SmartNotificationEngine({
                       Quiet Hours Start
                     </p>
                     <Select
-                      value={preferences.quietHoursStart.toString()}
+                      value={safePreferences.quietHoursStart.toString()}
                       onValueChange={(value) =>
-                        setPreferences((current) => ({
+                        updatePreferences((current) => ({
                           ...current,
                           quietHoursStart: parseInt(value),
                         }))
@@ -877,9 +908,9 @@ export default function SmartNotificationEngine({
                   <div>
                     <p className="mb-2 text-sm font-medium">Quiet Hours End</p>
                     <Select
-                      value={preferences.quietHoursEnd.toString()}
+                      value={safePreferences.quietHoursEnd.toString()}
                       onValueChange={(value) =>
-                        setPreferences((current) => ({
+                        updatePreferences((current) => ({
                           ...current,
                           quietHoursEnd: parseInt(value),
                         }))
@@ -905,9 +936,9 @@ export default function SmartNotificationEngine({
                   </p>
                   <div className="px-3">
                     <Slider
-                      value={[preferences.maxNotificationsPerDay]}
+                      value={[safePreferences.maxNotificationsPerDay]}
                       onValueChange={([value]) =>
-                        setPreferences((current) => ({
+                        updatePreferences((current) => ({
                           ...current,
                           maxNotificationsPerDay: value,
                         }))
@@ -919,7 +950,7 @@ export default function SmartNotificationEngine({
                     />
                     <div className="text-muted-foreground mt-1 flex justify-between text-xs">
                       <span>1</span>
-                      <span>{preferences.maxNotificationsPerDay}</span>
+                      <span>{safePreferences.maxNotificationsPerDay}</span>
                       <span>20</span>
                     </div>
                   </div>
@@ -936,9 +967,9 @@ export default function SmartNotificationEngine({
                     <Input
                       type="email"
                       placeholder="your@email.com"
-                      value={preferences.contactInfo.email}
+                      value={safePreferences.contactInfo.email}
                       onChange={(e) =>
-                        setPreferences((current) => ({
+                        updatePreferences((current) => ({
                           ...current,
                           contactInfo: {
                             ...current.contactInfo,
@@ -954,9 +985,9 @@ export default function SmartNotificationEngine({
                     <Input
                       type="tel"
                       placeholder="+1 (555) 123-4567"
-                      value={preferences.contactInfo.phone}
+                      value={safePreferences.contactInfo.phone}
                       onChange={(e) =>
-                        setPreferences((current) => ({
+                        updatePreferences((current) => ({
                           ...current,
                           contactInfo: {
                             ...current.contactInfo,
@@ -993,9 +1024,11 @@ export default function SmartNotificationEngine({
                       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                         <div className="flex items-center space-x-2">
                           <Switch
-                            checked={preferences.deliveryMethods[level].push}
+                            checked={
+                              safePreferences.deliveryMethods[level].push
+                            }
                             onCheckedChange={(checked) =>
-                              setPreferences((current) => ({
+                              updatePreferences((current) => ({
                                 ...current,
                                 deliveryMethods: {
                                   ...current.deliveryMethods,
@@ -1015,9 +1048,11 @@ export default function SmartNotificationEngine({
 
                         <div className="flex items-center space-x-2">
                           <Switch
-                            checked={preferences.deliveryMethods[level].email}
+                            checked={
+                              safePreferences.deliveryMethods[level].email
+                            }
                             onCheckedChange={(checked) =>
-                              setPreferences((current) => ({
+                              updatePreferences((current) => ({
                                 ...current,
                                 deliveryMethods: {
                                   ...current.deliveryMethods,
@@ -1037,9 +1072,9 @@ export default function SmartNotificationEngine({
 
                         <div className="flex items-center space-x-2">
                           <Switch
-                            checked={preferences.deliveryMethods[level].sms}
+                            checked={safePreferences.deliveryMethods[level].sms}
                             onCheckedChange={(checked) =>
-                              setPreferences((current) => ({
+                              updatePreferences((current) => ({
                                 ...current,
                                 deliveryMethods: {
                                   ...current.deliveryMethods,
@@ -1059,9 +1094,11 @@ export default function SmartNotificationEngine({
 
                         <div className="flex items-center space-x-2">
                           <Switch
-                            checked={preferences.deliveryMethods[level].phone}
+                            checked={
+                              safePreferences.deliveryMethods[level].phone
+                            }
                             onCheckedChange={(checked) =>
-                              setPreferences((current) => ({
+                              updatePreferences((current) => ({
                                 ...current,
                                 deliveryMethods: {
                                   ...current.deliveryMethods,
@@ -1096,9 +1133,9 @@ export default function SmartNotificationEngine({
                     </p>
                   </div>
                   <Switch
-                    checked={preferences.escalationEnabled}
+                    checked={safePreferences.escalationEnabled}
                     onCheckedChange={(checked) =>
-                      setPreferences((current) => ({
+                      updatePreferences((current) => ({
                         ...current,
                         escalationEnabled: checked,
                       }))
@@ -1106,16 +1143,16 @@ export default function SmartNotificationEngine({
                   />
                 </div>
 
-                {preferences.escalationEnabled && (
+                {safePreferences.escalationEnabled && (
                   <div>
                     <p className="mb-2 text-sm font-medium">
                       Escalation Delay (minutes)
                     </p>
                     <div className="px-3">
                       <Slider
-                        value={[preferences.escalationDelay]}
+                        value={[safePreferences.escalationDelay]}
                         onValueChange={([value]) =>
-                          setPreferences((current) => ({
+                          updatePreferences((current) => ({
                             ...current,
                             escalationDelay: value,
                           }))
@@ -1127,7 +1164,7 @@ export default function SmartNotificationEngine({
                       />
                       <div className="text-muted-foreground mt-1 flex justify-between text-xs">
                         <span>1 min</span>
-                        <span>{preferences.escalationDelay} minutes</span>
+                        <span>{safePreferences.escalationDelay} minutes</span>
                         <span>60 min</span>
                       </div>
                     </div>
@@ -1170,7 +1207,7 @@ export default function SmartNotificationEngine({
                           };
 
                           setNotifications((current) => [
-                            ...current,
+                            ...(current || []),
                             testNotification,
                           ]);
                           toast.success(
@@ -1202,7 +1239,7 @@ export default function SmartNotificationEngine({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {notifications.length > 0 ? (
+          {notifications && notifications.length > 0 ? (
             <div className="space-y-3">
               {notifications
                 .slice(-10)
@@ -1293,13 +1330,13 @@ export default function SmartNotificationEngine({
                                   </span>
                                   {status && (
                                     <Badge
-                                      variant={
-                                        status === 'sent'
-                                          ? 'secondary'
-                                          : status === 'failed'
-                                            ? 'destructive'
-                                            : 'outline'
-                                      }
+                                      variant={(() => {
+                                        if (status === 'sent')
+                                          return 'secondary';
+                                        if (status === 'failed')
+                                          return 'destructive';
+                                        return 'outline';
+                                      })()}
                                       className="px-1 py-0 text-xs"
                                     >
                                       {status}
@@ -1321,7 +1358,7 @@ export default function SmartNotificationEngine({
                                 variant="outline"
                                 onClick={() => {
                                   setNotifications((current) =>
-                                    current.map((n) =>
+                                    (current || []).map((n) =>
                                       n.id === notification.id
                                         ? {
                                             ...n,
