@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,11 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -19,24 +16,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { useKV } from '@github/spark/hooks';
 import {
-  Bell,
-  Bell,
-  Clock,
-  Brain,
-  TrendingUp,
-  CheckCircle,
   AlertTriangle,
-  Info,
+  Bell,
+  Brain,
   Calendar,
+  CheckCircle,
+  Clock,
+  Info,
   Mail,
-  Smartphone,
   Phone,
   Settings,
+  Smartphone,
+  TrendingUp,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 interface EngagementPattern {
   hour: number;

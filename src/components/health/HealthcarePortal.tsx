@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,11 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,31 +18,25 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  Heart,
-  Calendar,
-  Clock,
-  FileText,
-  AlertTriangle,
-  CheckCircle,
-  TrendingUp,
-  TrendingDown,
-  Activity,
-  Heart,
-  Shield,
-  Phone,
-  Mail,
-  Plus,
-  Edit,
-  Archive,
-  Flag,
-  MessageCircle,
-} from 'lucide-react';
-import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { useKV } from '@github/spark/hooks';
+import {
+  Activity,
+  AlertTriangle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Edit,
+  FileText,
+  Heart,
+  Mail,
+  MessageCircle,
+  Phone,
+  Plus,
+} from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface HealthcareProvider {
   id: string;
@@ -130,17 +122,17 @@ export default function HealthcarePortal({
   const generateMedicalInsights = async () => {
     const prompt = spark.llmPrompt`
       As a healthcare AI assistant, analyze this patient's health data and generate clinical insights:
-      
+
       Health Score: ${healthData.healthScore || 0}/100
       Fall Risk Factors: ${JSON.stringify(healthData.fallRiskFactors || [])}
       Activity Data: ${JSON.stringify(healthData.recentActivities || [])}
-      
+
       Provide:
       1. Clinical assessment summary
       2. Risk factors that need medical attention
       3. Recommended interventions or follow-ups
       4. Monitoring priorities
-      
+
       Format as JSON with assessment, riskFactors[], recommendations[], priorities[] fields.
     `;
 

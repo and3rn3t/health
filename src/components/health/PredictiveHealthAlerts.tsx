@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,14 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
@@ -23,23 +19,23 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { useKV } from '@github/spark/hooks';
 import {
-  AlertTriangle,
-  TrendingDown,
-  Brain,
-  Bell,
-  Settings,
   Activity,
-  Heart,
-  Zap,
-  Clock,
-  Target,
-  LineChart,
   AlertTriangle,
+  Bell,
+  Brain,
   CheckCircle,
+  LineChart,
+  Settings,
+  Target,
+  TrendingDown,
   XCircle,
 } from 'lucide-react';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface HealthAlert {

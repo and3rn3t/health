@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -6,36 +8,32 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useKV } from '@github/spark/hooks';
 import { useLiveHealthData } from '@/hooks/useLiveHealthData';
+import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { useKV } from '@github/spark/hooks';
 import {
+  Activity,
+  AlertTriangle,
+  Bell,
+  CheckCircle,
+  CloudUpload,
+  Globe,
+  Heart,
   Monitor,
+  Pause,
+  Phone,
+  Play,
+  Shield,
+  Users,
   WifiHigh,
   WifiOff,
-  Phone,
-  Users,
-  AlertTriangle,
-  CheckCircle,
   X,
-  Play,
-  Pause,
-  Bell,
-  Clock,
-  Activity,
-  Shield,
-  Globe,
-  CloudUpload,
-  Heart,
-  Zap,
   Zap,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 interface MonitoringStatus {
   isActive: boolean;

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,33 +8,29 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { useKV } from '@github/spark/hooks';
 import {
-  Target,
-  TrendingUp,
-  Clock,
-  Users,
+  Activity,
+  AlertTriangle,
+  ArrowRight,
+  BarChart3,
   Brain,
   CheckCircle,
-  AlertTriangle,
-  Calendar,
-  Activity,
-  Heart,
-  Trophy,
+  Clock,
   Lightbulb,
-  Timer,
-  BarChart3,
-  Zap,
-  Star,
-  ArrowRight,
   Sparkles,
+  Target,
+  Timer,
+  TrendingUp,
+  Trophy,
+  Users,
+  Zap,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 interface EngagementPattern {
   timeOfDay: string;
@@ -86,7 +83,16 @@ export default function PersonalizedEngagementOptimizer({
   // Simulate engagement pattern analysis
   useEffect(() => {
     if (!engagementData.patterns.length) {
-      generateEngagementPatterns();
+      // Wrap async function to handle promises properly
+      const performGeneration = () => {
+        generateEngagementPatterns().catch((error) => {
+          console.error(
+            'Unhandled error in engagement pattern generation:',
+            error
+          );
+        });
+      };
+      performGeneration();
     }
   }, []);
 
@@ -150,18 +156,18 @@ export default function PersonalizedEngagementOptimizer({
   ) => {
     const prompt = spark.llmPrompt`
       Based on this user's engagement patterns and profile, generate 8-10 personalized optimization recommendations:
-      
+
       Engagement Patterns: ${JSON.stringify(patterns)}
       User Profile: ${JSON.stringify(profile)}
       Health Data Score: ${healthData.healthScore || 0}
-      
+
       Generate recommendations that focus on:
       1. Optimal timing for health monitoring
       2. Content personalization based on engagement style
       3. Interaction improvements for attention span
       4. Motivation triggers alignment
       5. Workflow optimization
-      
+
       Return as JSON array with: id, type, priority, title, description, expectedImpact (0-100), timeToImplement, actions (array), implemented (false)
     `;
 
@@ -302,7 +308,7 @@ export default function PersonalizedEngagementOptimizer({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5 animate-Activity" />
+            <Brain className="animate-Activity h-5 w-5" />
             Analyzing Engagement Patterns
           </CardTitle>
           <CardDescription>

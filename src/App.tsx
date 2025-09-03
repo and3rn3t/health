@@ -16,18 +16,16 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { Contact } from '@/types';
-import { useKV } from '@github/spark/hooks';
 import {
   Activity,
   AlertTriangle,
-  Apple,
   BarChart3,
   Bell,
   Brain,
   Clock,
   CloudUpload,
-  Code,
   Heart,
   Home as House,
   Lightbulb,
@@ -35,7 +33,6 @@ import {
   Monitor,
   Moon,
   Pill,
-  Map as Roadmap,
   Search,
   Settings,
   Share,
@@ -58,9 +55,8 @@ import EmergencyContacts from '@/components/health/EmergencyContacts';
 import EmergencyTrigger from '@/components/health/EmergencyTrigger';
 import ExportData from '@/components/health/ExportData';
 import FallHistory from '@/components/health/FallHistory';
-import FallRiskMonitor from '@/components/health/FallRiskMonitor';
+import FallRiskWalkingManager from '@/components/health/FallRiskWalkingManager';
 import HealthAnalytics from '@/components/health/HealthAnalytics';
-import HealthDashboard from '@/components/health/HealthDashboard';
 import HealthDataImport from '@/components/health/HealthDataImport';
 import HealthSettings from '@/components/health/HealthSettings';
 import MedicationTracker from '@/components/health/MedicationTracker';
@@ -68,19 +64,22 @@ import WorkoutTracker from '@/components/health/WorkoutTracker';
 // import FallMonitoringTooling from '@/components/health/FallMonitoringTooling'
 import FamilyGameification from '@/components/gamification/FamilyGameification';
 import HealthGameCenter from '@/components/gamification/HealthGameCenter';
+
+// Enhanced UI Components
+import Footer from '@/components/Footer';
 import AIRecommendations from '@/components/health/AIRecommendations';
-import CloudInfrastructureStatus from '@/components/health/CloudInfrastructureStatus';
 import CommunityShare from '@/components/health/CommunityShare';
 import FamilyDashboard from '@/components/health/FamilyDashboard';
 import HealthcarePortal from '@/components/health/HealthcarePortal';
 import HealthSearch from '@/components/health/HealthSearch';
 import HealthSystemIntegration from '@/components/health/HealthSystemIntegration';
-import ImplementationPhases from '@/components/health/ImplementationPhases';
 import LiveHealthDataIntegration from '@/components/health/LiveHealthDataIntegration';
 import MLPredictionsDashboard from '@/components/health/MLPredictionsDashboard';
 import MovementPatternAnalysis from '@/components/health/MovementPatternAnalysis';
 import RealTimeFallDetection from '@/components/health/RealTimeFallDetection';
 import RealTimeMonitoringHub from '@/components/health/RealTimeMonitoringHub';
+import LandingPage from '@/components/LandingPage';
+import NavigationHeader from '@/components/NavigationHeader';
 // import HealthInsightsDashboard from '@/components/health/HealthInsightsDashboard'
 import AIUsagePredictions from '@/components/analytics/AIUsagePredictions';
 import UsageAnalyticsDashboard from '@/components/analytics/UsageAnalyticsDashboard';
@@ -94,29 +93,181 @@ import EnhancedHealthInsightsDashboard from '@/components/health/EnhancedHealthI
 import HealthAlertsConfig from '@/components/health/HealthAlertsConfig';
 import PredictiveHealthAlerts from '@/components/health/PredictiveHealthAlerts';
 import RealTimeHealthScoring from '@/components/health/RealTimeHealthScoring';
-import RealtimeStatusBar from '@/components/health/RealtimeStatusBar';
 import WebSocketArchitectureGuide from '@/components/health/WebSocketArchitectureGuide';
 import WSTokenSettings from '@/components/health/WSTokenSettings';
-import XcodeDevelopmentSetup from '@/components/health/XcodeDevelopmentSetup';
 import SmartNotificationEngine from '@/components/notifications/SmartNotificationEngine';
 import PersonalizedEngagementOptimizer from '@/components/recommendations/PersonalizedEngagementOptimizer';
 import SmartFeatureRecommendations from '@/components/recommendations/SmartFeatureRecommendations';
-import SystemStatusPanel from '@/components/SystemStatusPanel';
 import VitalSenseBrandShowcase from '@/components/VitalSenseBrandShowcase';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 function App() {
+  console.log('🚀 VitalSense App component loading...');
+
   // Restored KV persistence for production use
   const [healthData, setHealthData] = useKV<ProcessedHealthData | null>(
     'health-data',
     null
   );
-  const [fallRiskScore, setFallRiskScore] = useKV<number>('fall-risk-score', 0);
+  const [_fallRiskScore, _setFallRiskScore] = useKV<number>(
+    'fall-risk-score',
+    0
+  );
+
+  // Development mode: Load comprehensive test data
+  useEffect(() => {
+    if (import.meta.env.DEV && !healthData) {
+      const testHealthData: ProcessedHealthData = {
+        healthScore: 78,
+        lastUpdated: new Date().toISOString(),
+        dataQuality: {
+          completeness: 92,
+          consistency: 88,
+          recency: 95,
+          overall: 'excellent',
+        },
+        metrics: {
+          steps: {
+            daily: [],
+            weekly: [],
+            monthly: [],
+            average: 8750,
+            lastValue: 9234,
+            trend: 'increasing',
+            variability: 12.5,
+            reliability: 94,
+            percentileRank: 75,
+          },
+          heartRate: {
+            daily: [],
+            weekly: [],
+            monthly: [],
+            average: 72,
+            lastValue: 68,
+            trend: 'stable',
+            variability: 8.2,
+            reliability: 91,
+            percentileRank: 82,
+          },
+          sleepHours: {
+            daily: [],
+            weekly: [],
+            monthly: [],
+            average: 7.2,
+            lastValue: 7.8,
+            trend: 'increasing',
+            variability: 15.3,
+            reliability: 87,
+            percentileRank: 68,
+          },
+          walkingSteadiness: {
+            daily: [],
+            weekly: [],
+            monthly: [],
+            average: 3.2,
+            lastValue: 3.4,
+            trend: 'increasing',
+            variability: 6.3,
+            reliability: 89,
+            percentileRank: 71,
+          },
+          bodyWeight: {
+            daily: [],
+            weekly: [],
+            monthly: [],
+            average: 165.3,
+            lastValue: 164.8,
+            trend: 'decreasing',
+            variability: 2.1,
+            reliability: 96,
+            percentileRank: 58,
+          },
+        },
+        fallRiskFactors: [
+          {
+            factor: 'Walking Speed',
+            risk: 'low',
+            impact: 15,
+            recommendation: 'Walking speed is above safe threshold',
+          },
+          {
+            factor: 'Balance Stability',
+            risk: 'moderate',
+            impact: 35,
+            recommendation: 'Slight decrease in balance stability detected',
+          },
+          {
+            factor: 'Medication Effects',
+            risk: 'low',
+            impact: 10,
+            recommendation: 'Current medications have minimal fall risk impact',
+          },
+        ],
+        insights: [
+          'Your sleep quality has improved by 8% this week. Keep up the consistent bedtime routine!',
+          'Recent balance stability readings suggest scheduling a balance assessment.',
+          "You're exceeding your daily step goal by 12%. Great progress!",
+          'Your resting heart rate has improved, indicating better cardiovascular fitness.',
+        ],
+      };
+
+      console.log('🎯 Loading development test data...');
+      setHealthData(testHealthData);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [healthData]); // setHealthData is stable from useKV
 
   const [emergencyContacts, setEmergencyContacts] = useKV<Contact[]>(
     'emergency-contacts',
     []
   );
+
+  // Development mode: Load test emergency contacts
+  useEffect(() => {
+    if (
+      import.meta.env.DEV &&
+      (!emergencyContacts || emergencyContacts.length === 0)
+    ) {
+      const testContacts: Contact[] = [
+        {
+          id: '1',
+          name: 'Dr. Sarah Johnson',
+          relationship: 'Primary Care Physician',
+          phone: '(555) 123-4567',
+          email: 'dr.johnson@healthcenter.com',
+          isPrimary: true,
+        },
+        {
+          id: '2',
+          name: 'Michael Chen',
+          relationship: 'Adult Child',
+          phone: '(555) 987-6543',
+          email: 'michael.chen@email.com',
+          isPrimary: false,
+        },
+        {
+          id: '3',
+          name: 'Lisa Thompson',
+          relationship: 'Neighbor & Emergency Contact',
+          phone: '(555) 456-7890',
+          email: 'lisa.thompson@email.com',
+          isPrimary: false,
+        },
+        {
+          id: '4',
+          name: 'VitalSense Emergency Line',
+          relationship: 'Healthcare Service',
+          phone: '(800) 911-VITAL',
+          email: 'emergency@vitalsense.com',
+          isPrimary: false,
+        },
+      ];
+
+      console.log('👥 Loading development emergency contacts...');
+      setEmergencyContacts(testContacts);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [emergencyContacts]); // setEmergencyContacts is stable from useKV
 
   const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -206,7 +357,7 @@ function App() {
       { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       { id: 'usage-analytics', label: 'Usage Analytics', icon: Brain },
       { id: 'usage-predictions', label: 'Usage Predictions', icon: Sparkles },
-      { id: 'fall-risk', label: 'Fall Risk', icon: Shield },
+      { id: 'fall-risk', label: 'Fall Risk & Walking', icon: Shield },
       { id: 'emergency', label: 'Emergency Alert', icon: AlertTriangle },
       { id: 'recommendations', label: 'Recommendations', icon: Lightbulb },
       {
@@ -218,7 +369,6 @@ function App() {
       { id: 'search', label: 'Search', icon: Search },
     ],
     monitoring: [
-      { id: 'system-status', label: 'System Status', icon: Monitor },
       { id: 'realtime-scoring', label: 'Live Health Score', icon: Heart },
       { id: 'alerts', label: 'Health Alerts', icon: Bell },
       { id: 'predictive-alerts', label: 'Predictive Alerts', icon: Brain },
@@ -259,18 +409,6 @@ function App() {
       { id: 'workouts', label: 'Workouts', icon: Activity },
       { id: 'settings', label: 'Health Settings', icon: Settings },
     ],
-    setup: [
-      { id: 'phases', label: 'Implementation', icon: Roadmap },
-      { id: 'healthkit-guide', label: 'HealthKit Guide', icon: Apple },
-      { id: 'websocket-guide', label: 'WebSocket Bridge', icon: CloudUpload },
-      {
-        id: 'integration-checklist',
-        label: 'Integration Checklist',
-        icon: Apple,
-      },
-      { id: 'xcode-setup', label: 'Xcode Development Setup', icon: Code },
-      { id: 'infrastructure', label: 'Cloud Infrastructure', icon: Settings },
-    ],
     profile: [{ id: 'user-profile', label: 'User Profile', icon: Users }],
   };
 
@@ -284,7 +422,6 @@ function App() {
       ...navigationItems.gamification,
       ...navigationItems.community,
       ...navigationItems.management,
-      ...navigationItems.setup,
       ...navigationItems.profile,
     ];
     const currentItem = allItems.find((item) => item.id === activeTab);
@@ -304,8 +441,6 @@ function App() {
       category = 'Community';
     if (navigationItems.management.find((item) => item.id === activeTab))
       category = 'Management';
-    if (navigationItems.setup.find((item) => item.id === activeTab))
-      category = 'Setup';
     if (navigationItems.profile.find((item) => item.id === activeTab))
       category = 'Profile';
 
@@ -321,12 +456,12 @@ function App() {
       bg-card border-border fixed left-0 top-0 z-40 h-screen border-r
       transition-all duration-300 ease-in-out
       ${sidebarCollapsed ? 'w-16' : 'w-64'}
-      hidden lg:block
+      hidden lg:flex lg:flex-col
     `}
     >
-      <div className="flex h-full flex-col">
+      <div className="flex h-full flex-col overflow-hidden">
         {/* Header */}
-        <div className="border-border border-b p-4">
+        <div className="border-border flex-shrink-0 border-b p-4">
           <div className="flex items-center justify-between">
             {!sidebarCollapsed && (
               <div className="flex items-center gap-3">
@@ -354,7 +489,7 @@ function App() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setSidebarCollapsed((current) => !current)}
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
               className="h-8 w-8 p-0"
             >
               {sidebarCollapsed ? (
@@ -367,7 +502,7 @@ function App() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-6 p-4">
+        <nav className="flex-1 space-y-6 overflow-y-auto p-4">
           {/* Main Features */}
           <div>
             {!sidebarCollapsed && (
@@ -625,36 +760,6 @@ function App() {
           </div>
 
           {/* Setup */}
-          <div>
-            {!sidebarCollapsed && (
-              <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-                Setup & Configuration
-              </h3>
-            )}
-            <div className="space-y-1">
-              {navigationItems.setup.map((item) => {
-                const IconComponent = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <Button
-                    key={item.id}
-                    variant={isActive ? 'default' : 'ghost'}
-                    className={`
-                      h-10 w-full justify-start
-                      px-3
-                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                    `}
-                    onClick={() => setActiveTab(item.id)}
-                  >
-                    <IconComponent className="h-4 w-4 flex-shrink-0" />
-                    {!sidebarCollapsed && (
-                      <span className="ml-3">{item.label}</span>
-                    )}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
         </nav>
 
         {/* Footer */}
@@ -717,13 +822,13 @@ function App() {
   );
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-background flex min-h-screen">
       {/* Sidebar for larger screens */}
       <Sidebar />
 
       {/* Main layout with responsive margin */}
       <div
-        className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}
+        className={`flex min-h-screen flex-1 flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}
       >
         {/* Header */}
         <header className="bg-card border-b lg:hidden">
@@ -776,86 +881,18 @@ function App() {
           </div>
         </header>
 
-        {/* Desktop Header */}
-        <header className="bg-card hidden border-b lg:block">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-foreground text-2xl font-bold">
-                  {currentPageInfo.label}
-                </h1>
-                <div className="text-muted-foreground text-sm">
-                  {currentPageInfo.category === 'Main' &&
-                    currentPageInfo.label === 'Dashboard' &&
-                    'Core health monitoring overview'}
-                  {currentPageInfo.category === 'Main' &&
-                    currentPageInfo.label === 'Insights' &&
-                    'Real-time trending data and AI-powered insights'}
-                  {currentPageInfo.category === 'Main' &&
-                    currentPageInfo.label === 'Analytics' &&
-                    'Deep analysis of your health metrics'}
-                  {currentPageInfo.category === 'Main' &&
-                    currentPageInfo.label === 'Usage Analytics' &&
-                    'Discover how AI optimizes your VitalSense experience'}
-                  {currentPageInfo.category === 'Main' &&
-                    currentPageInfo.label === 'Usage Predictions' &&
-                    'AI-powered forecasts of your health engagement trends'}
-                  {currentPageInfo.category === 'Main' &&
-                    currentPageInfo.label === 'Fall Risk' &&
-                    'Fall prevention and risk assessment'}
-                  {currentPageInfo.category === 'Main' &&
-                    currentPageInfo.label === 'Recommendations' &&
-                    'Smart suggestions based on your usage patterns'}
-                  {currentPageInfo.category === 'Main' &&
-                    currentPageInfo.label === 'Engagement Optimizer' &&
-                    'Personalized recommendations to optimize your health monitoring experience'}
-                  {currentPageInfo.category === 'Main' &&
-                    currentPageInfo.label === 'Smart Notifications' &&
-                    'AI-powered notifications optimized for your engagement patterns'}
-                  {currentPageInfo.category === 'Main' &&
-                    currentPageInfo.label === 'Search' &&
-                    'Find specific health insights and data'}
-                  {currentPageInfo.category === 'Monitoring' &&
-                    currentPageInfo.label === 'System Status' &&
-                    'Real-time monitoring of system health and performance metrics'}
-                  {currentPageInfo.category === 'Monitoring' &&
-                    currentPageInfo.label !== 'System Status' &&
-                    'Health monitoring and alert system'}
-                  {currentPageInfo.category === 'AI & ML' &&
-                    'Advanced AI analysis and machine learning'}
-                  {currentPageInfo.category === 'Advanced' &&
-                    'Advanced monitoring and integration features'}
-                  {currentPageInfo.category === 'Gamification' &&
-                    'Challenges, competitions, and motivation'}
-                  {currentPageInfo.category === 'Community' &&
-                    'Share progress with your care team'}
-                  {currentPageInfo.category === 'Management' &&
-                    'Data and contact management'}
-                  {currentPageInfo.category === 'Setup' &&
-                    'Configuration and setup guides'}
-                  {currentPageInfo.category === 'Profile' &&
-                    'User account and security settings'}
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={toggleThemeMode}
-                  className="h-8 w-8 p-0"
-                >
-                  {themeMode === 'dark' && <Moon className="h-4 w-4" />}
-                  {themeMode === 'light' && <Sun className="h-4 w-4" />}
-                  {themeMode === 'system' && <Monitor className="h-4 w-4" />}
-                </Button>
-                <EmergencyTriggerButton size="sm" />
-              </div>
-            </div>
-          </div>
-        </header>
+        {/* Enhanced Navigation Header */}
+        <NavigationHeader
+          currentPageInfo={currentPageInfo}
+          onNavigate={setActiveTab}
+          onThemeToggle={toggleThemeMode}
+          themeMode={themeMode || 'system'}
+          onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+          sidebarCollapsed={sidebarCollapsed || false}
+        />
 
         {/* Main Content */}
-        <main className="px-6 py-6">
+        <main className="flex-1 overflow-y-auto px-6 py-6">
           {!hasHealthData ? (
             <div className="mx-auto max-w-2xl">
               <Card>
@@ -948,7 +985,6 @@ function App() {
                           navigationItems.gamification.length +
                           navigationItems.community.length +
                           navigationItems.management.length +
-                          navigationItems.setup.length +
                           navigationItems.profile.length}{' '}
                         more
                       </Badge>
@@ -1091,16 +1127,13 @@ function App() {
                         </div>
                       </div>
 
-                      {/* Setup */}
+                      {/* Management */}
                       <div className="min-w-[140px] flex-shrink-0 space-y-2">
                         <h4 className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
-                          Setup
+                          Management
                         </h4>
                         <div className="space-y-1">
-                          {[
-                            ...navigationItems.management,
-                            ...navigationItems.setup.slice(0, 3),
-                          ].map((item) => {
+                          {navigationItems.management.map((item) => {
                             const IconComponent = item.icon;
                             return (
                               <Button
@@ -1127,7 +1160,11 @@ function App() {
               {/* Content Area */}
               <div className="space-y-6">
                 {activeTab === 'dashboard' && healthData && (
-                  <HealthDashboard healthData={healthData} />
+                  <LandingPage
+                    healthData={healthData}
+                    onNavigateToFeature={setActiveTab}
+                    fallRiskScore={75} // This would normally come from health data processing
+                  />
                 )}
                 {activeTab === 'user-profile' && <UserProfile />}
                 {activeTab === 'vitalsense-brand' && (
@@ -1154,17 +1191,12 @@ function App() {
                 {activeTab === 'smart-notifications' && healthData && (
                   <SmartNotificationEngine healthData={healthData} />
                 )}
-                {activeTab === 'system-status' && <SystemStatusPanel />}
                 {activeTab === 'realtime-scoring' && <RealTimeHealthScoring />}
                 {activeTab === 'analytics' && healthData && (
                   <HealthAnalytics healthData={healthData} />
                 )}
                 {activeTab === 'fall-risk' && (
-                  <FallRiskMonitor
-                    healthData={healthData}
-                    fallRiskScore={fallRiskScore || 0}
-                    setFallRiskScore={setFallRiskScore}
-                  />
+                  <FallRiskWalkingManager healthData={healthData} />
                 )}
                 {activeTab === 'emergency' && <EmergencyTrigger />}
                 {activeTab === 'alerts' && healthData && (
@@ -1264,7 +1296,6 @@ function App() {
                 {activeTab === 'medications' && <MedicationTracker />}
                 {activeTab === 'workouts' && <WorkoutTracker />}
                 {activeTab === 'settings' && <HealthSettings />}
-                {activeTab === 'phases' && <ImplementationPhases />}
                 {activeTab === 'healthkit-guide' && (
                   <ComprehensiveAppleHealthKitGuide />
                 )}
@@ -1274,16 +1305,23 @@ function App() {
                 {activeTab === 'integration-checklist' && (
                   <AppleWatchIntegrationChecklist />
                 )}
-                {activeTab === 'xcode-setup' && <XcodeDevelopmentSetup />}
-                {activeTab === 'infrastructure' && (
-                  <CloudInfrastructureStatus />
-                )}
               </div>
             </div>
           )}
         </main>
+
+        {/* Enhanced Footer */}
+        <Footer
+          healthScore={healthData?.healthScore}
+          lastSync={
+            healthData?.lastUpdated
+              ? new Date(healthData.lastUpdated)
+              : undefined
+          }
+          connectionStatus="connected"
+          onNavigate={setActiveTab}
+        />
       </div>
-      <RealtimeStatusBar userId="default-user" />
       <WSTokenSettings />
     </div>
   );

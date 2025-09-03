@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useWebSocket, type MessageHandlers } from './useWebSocket';
 
 export interface LiveHealthMetric {
@@ -139,7 +139,10 @@ export function useLiveHealthData(userId: string = 'demo-user') {
   };
 
   const { connectionState, sendMessage, connect, disconnect } = useWebSocket(
-    { url: 'ws://localhost:3001' },
+    {
+      url: 'ws://localhost:3001',
+      enableInDevelopment: false, // Disable WebSocket in development to prevent console errors
+    },
     handlers
   );
 

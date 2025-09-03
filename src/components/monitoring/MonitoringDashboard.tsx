@@ -123,8 +123,15 @@ export function MonitoringDashboard() {
   };
 
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 30000); // Refresh every 30 seconds
+    // Wrap async function to handle promises properly
+    const performFetch = () => {
+      fetchData().catch((error) => {
+        console.error('Unhandled error in data fetch:', error);
+      });
+    };
+
+    performFetch();
+    const interval = setInterval(performFetch, 30000); // Refresh every 30 seconds
     return () => clearInterval(interval);
   }, []);
 

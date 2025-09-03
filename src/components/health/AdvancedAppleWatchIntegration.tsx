@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,30 +8,22 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@github/spark/hooks';
 import {
-  Heart,
   Activity,
-  Wifi,
-  WifiOff,
-  Play,
-  Pause,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Brain,
   AlertTriangle,
-  Watch,
-  Bluetooth,
-  Radio,
   Battery,
-  Activity,
+  Bluetooth,
+  Brain,
+  Heart,
+  Radio,
   Timer,
+  Watch,
+  WifiOff,
 } from 'lucide-react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 interface AppleWatchStatus {

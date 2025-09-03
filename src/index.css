@@ -100,6 +100,39 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
 }
 
+/* Smooth scrolling for the entire app */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(0.6 0.02 250 / 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.5 0.02 250 / 0.5);
+}
+
+/* Dark mode scrollbar */
+[data-appearance='dark'] ::-webkit-scrollbar-thumb {
+  background: oklch(0.8 0.02 250 / 0.3);
+}
+
+[data-appearance='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.8 0.02 250 / 0.5);
+}
+
 /* Hide scrollbar for horizontal scroll but keep functionality */
 .scrollbar-hide {
   -ms-overflow-style: none; /* IE and Edge */

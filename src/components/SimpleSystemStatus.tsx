@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -6,9 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import React, { useEffect, useState } from 'react';
 
 interface SystemHealth {
   webApp: 'healthy' | 'degraded' | 'down';
@@ -103,8 +103,15 @@ const SystemStatusPanel: React.FC = () => {
       }
     };
 
-    checkSystemHealth();
-    const interval = setInterval(checkSystemHealth, 10000);
+    // Wrap async function to handle promises properly
+    const performHealthCheck = () => {
+      checkSystemHealth().catch((error) => {
+        console.error('Unhandled error in health check:', error);
+      });
+    };
+
+    performHealthCheck();
+    const interval = setInterval(performHealthCheck, 30000); // Every 30 seconds (reduced from 10)
     return () => clearInterval(interval);
   }, []);
 

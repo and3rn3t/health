@@ -223,6 +223,11 @@ export class SafeLogger {
   }
 
   static error(message: string, meta?: Record<string, unknown>): void {
+    // Suppress error logging in development mode to reduce console noise
+    if (import.meta.env.DEV) {
+      console.debug('Suppressed error log in development:', message);
+      return;
+    }
     this.formatMessage('error', message, meta);
   }
 
@@ -395,9 +400,27 @@ export class ErrorFactory {
 /**
  * Global error handler for unhandled errors
  */
+let isGlobalErrorHandlingSetup = false;
+
 export function setupGlobalErrorHandling(): void {
+  // Prevent multiple setup calls
+  if (isGlobalErrorHandlingSetup) {
+    console.debug('Global error handling already setup, skipping');
+    return;
+  }
+  isGlobalErrorHandlingSetup = true;
   // Handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
+    // In development mode, prevent all unhandled promise rejection logging
+    if (import.meta.env.DEV) {
+      // Always prevent the default console error in development
+      event.preventDefault();
+
+      // Skip logging entirely for development to reduce noise
+      console.debug('Suppressed unhandled rejection in development mode');
+      return;
+    }
+
     const error = ErrorFactory.processingError('Unhandled promise rejection', {
       reason: event.reason?.message || 'Unknown error',
       stack: event.reason?.stack,

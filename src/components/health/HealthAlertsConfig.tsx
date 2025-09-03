@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,10 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -18,24 +16,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Bell,
-  Plus,
-  Trash,
-  AlertTriangle,
-  Heart,
-  Activity,
-  Clock,
-  Shield,
-  Heart,
-  Target,
-} from 'lucide-react';
-import { toast } from 'sonner';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { useKV } from '@github/spark/hooks';
+import {
+  AlertTriangle,
+  Bell,
+  Clock,
+  Heart,
+  Plus,
+  Shield,
+  Target,
+  Trash,
+} from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface HealthAlert {
   id: string;

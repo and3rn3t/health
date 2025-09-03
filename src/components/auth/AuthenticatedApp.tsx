@@ -18,6 +18,9 @@ export default function AuthenticatedApp() {
   const { isAuthenticated, isLoading } = useAuth();
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
 
+  // Development mode bypass - always bypass auth in development
+  const isDevelopment = import.meta.env.DEV;
+
   useEffect(() => {
     // Listen for navigation changes
     const handlePopState = () => {
@@ -31,6 +34,12 @@ export default function AuthenticatedApp() {
   // Handle Auth0 callback
   if (currentPath === '/callback') {
     return <CallbackPage />;
+  }
+
+  // Development mode: always bypass auth
+  if (isDevelopment) {
+    console.log('🔓 Development mode: bypassing authentication');
+    return <OriginalApp />;
   }
 
   // Show login page if not authenticated

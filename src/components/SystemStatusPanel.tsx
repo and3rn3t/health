@@ -122,11 +122,18 @@ const SystemStatusPanel: React.FC = () => {
       }
     };
 
+    // Wrap async function to handle promises properly
+    const performHealthCheck = () => {
+      checkSystemHealth().catch((error) => {
+        console.error('Unhandled error in health check:', error);
+      });
+    };
+
     // Initial check
-    checkSystemHealth();
+    performHealthCheck();
 
     // Set up interval for continuous monitoring
-    const interval = setInterval(checkSystemHealth, 10000); // Every 10 seconds
+    const interval = setInterval(performHealthCheck, 30000); // Every 30 seconds (reduced from 10)
 
     return () => clearInterval(interval);
   }, []);

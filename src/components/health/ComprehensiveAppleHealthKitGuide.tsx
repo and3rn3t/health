@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -7,35 +7,30 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@github/spark/hooks';
 import {
+  AlertTriangle,
   Apple,
-  Heart,
-  Watch,
-  Smartphone,
-  Shield,
+  CheckCircle,
+  Clock,
+  CloudUpload,
   Code,
   Database,
-  CloudUpload,
-  Settings,
-  FlaskConical,
-  FileText,
-  Key,
   Download,
-  Terminal,
-  Bug,
-  CheckCircle,
-  AlertTriangle,
+  FileText,
+  FlaskConical,
+  Heart,
   Info,
+  Key,
   Lightbulb,
-  AlertTriangle,
-  Clock,
+  Settings,
+  Shield,
+  Watch,
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface HealthKitComponent {
   id: string;
@@ -149,7 +144,7 @@ export default function ComprehensiveAppleHealthKitGuide() {
 
 class HealthStoreManager: ObservableObject {
     private let healthStore = HKHealthStore()
-    
+
     func requestAuthorization(completion: @escaping (Bool, Error?) -> Void) {
         let readTypes: Set<HKObjectType> = [
             HKObjectType.quantityType(forIdentifier: .stepCount)!,
@@ -159,10 +154,10 @@ class HealthStoreManager: ObservableObject {
             HKObjectType.quantityType(forIdentifier: .walkingAsymmetryPercentage)!,
             HKObjectType.quantityType(forIdentifier: .walkingSteadiness)!
         ]
-        
+
         healthStore.requestAuthorization(toShare: nil, read: readTypes, completion: completion)
     }
-    
+
     func fetchHealthData<T: HKSample>(
         for type: HKSampleType,
         predicate: NSPredicate? = nil,
@@ -176,7 +171,7 @@ class HealthStoreManager: ObservableObject {
         ) { _, samples, error in
             completion(samples as? [T], error)
         }
-        
+
         healthStore.execute(query)
     }
 }`,
@@ -199,7 +194,7 @@ class HealthStoreManager: ObservableObject {
         completed: false,
         codeExample: `func enableBackgroundDelivery() {
     let stepType = HKObjectType.quantityType(forIdentifier: .stepCount)!
-    
+
     healthStore.enableBackgroundDelivery(
         for: stepType,
         frequency: .immediate
@@ -218,7 +213,7 @@ private func setupObserverQuery(for type: HKSampleType) {
             self.fetchLatestData(for: type)
         }
     }
-    
+
     healthStore.execute(query)
 }`,
         notes: [
@@ -244,38 +239,38 @@ import HealthKit
 class FallDetectionManager: ObservableObject {
     private let motionManager = CMMotionManager()
     private let healthStore = HKHealthStore()
-    
+
     func startFallDetection() {
         // Configure motion updates
         motionManager.accelerometerUpdateInterval = 0.1
         motionManager.gyroUpdateInterval = 0.1
-        
+
         // Start accelerometer monitoring
         motionManager.startAccelerometerUpdates(to: .main) { data, error in
             guard let acceleration = data?.acceleration else { return }
             self.analyzeAcceleration(acceleration)
         }
-        
-        // Start gyroscope monitoring  
+
+        // Start gyroscope monitoring
         motionManager.startGyroUpdates(to: .main) { data, error in
             guard let rotation = data?.rotationRate else { return }
             self.analyzeRotation(rotation)
         }
     }
-    
+
     private func analyzeAcceleration(_ acceleration: CMAcceleration) {
         let magnitude = sqrt(
-            acceleration.x * acceleration.x + 
-            acceleration.y * acceleration.y + 
+            acceleration.x * acceleration.x +
+            acceleration.y * acceleration.y +
             acceleration.z * acceleration.z
         )
-        
+
         // Fall detection threshold (adjust based on testing)
         if magnitude > 2.5 {
             detectPotentialFall()
         }
     }
-    
+
     private func detectPotentialFall() {
         // Implement fall confirmation logic
         // Check for impact followed by stillness
@@ -330,13 +325,13 @@ class FallDetectionManager: ObservableObject {
 
 class HealthDataEncryption {
     private let symmetricKey = SymmetricKey(size: .bits256)
-    
+
     func encryptHealthData<T: Codable>(_ data: T) throws -> Data {
         let jsonData = try JSONEncoder().encode(data)
         let encryptedData = try AES.GCM.seal(jsonData, using: symmetricKey)
         return encryptedData.combined!
     }
-    
+
     func decryptHealthData<T: Codable>(_ encryptedData: Data, type: T.Type) throws -> T {
         let sealedBox = try AES.GCM.SealedBox(combined: encryptedData)
         let decryptedData = try AES.GCM.open(sealedBox, using: symmetricKey)
@@ -367,20 +362,20 @@ class HealthDataEncryption {
 class HealthDataWebSocketBridge: ObservableObject {
     private var webSocketTask: URLSessionWebSocketTask?
     private let urlSession = URLSession(configuration: .default)
-    
+
     func connect(to url: URL) {
         webSocketTask = urlSession.webSocketTask(with: url)
         webSocketTask?.resume()
         receiveMessages()
     }
-    
+
     func sendHealthData<T: Codable>(_ data: T) {
         guard let webSocketTask = webSocketTask else { return }
-        
+
         do {
             let jsonData = try JSONEncoder().encode(data)
             let message = URLSessionWebSocketTask.Message.data(jsonData)
-            
+
             webSocketTask.send(message) { error in
                 if let error = error {
                     print("WebSocket send error: \\(error)")
@@ -390,7 +385,7 @@ class HealthDataWebSocketBridge: ObservableObject {
             print("JSON encoding error: \\(error)")
         }
     }
-    
+
     private func receiveMessages() {
         webSocketTask?.receive { result in
             switch result {
@@ -425,12 +420,12 @@ class HealthDataWebSocketBridge: ObservableObject {
     static func generateMockData() -> [HKQuantitySample] {
         var samples: [HKQuantitySample] = []
         let calendar = Calendar.current
-        
+
         // Generate step count data for last 7 days
         for day in 0..<7 {
             let date = calendar.date(byAdding: .day, value: -day, to: Date())!
             let steps = Double.random(in: 3000...12000)
-            
+
             if let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount) {
                 let quantity = HKQuantity(unit: HKUnit.count(), doubleValue: steps)
                 let sample = HKQuantitySample(
@@ -442,7 +437,7 @@ class HealthDataWebSocketBridge: ObservableObject {
                 samples.append(sample)
             }
         }
-        
+
         return samples
     }
 }`,
@@ -631,7 +626,11 @@ class HealthDataWebSocketBridge: ObservableObject {
       icon: <CloudUpload className="h-4 w-4" />,
     },
     { id: 'security', label: 'Security', icon: <Key className="h-4 w-4" /> },
-    { id: 'testing', label: 'Testing', icon: <FlaskConical className="h-4 w-4" /> },
+    {
+      id: 'testing',
+      label: 'Testing',
+      icon: <FlaskConical className="h-4 w-4" />,
+    },
   ];
 
   const overallProgress = calculateProgress();

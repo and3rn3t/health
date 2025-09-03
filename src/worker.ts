@@ -879,6 +879,59 @@ function calculateHealthAnalytics(data: ProcessedHealthData[]) {
   };
 }
 
+// API routes for KV storage
+app.get('/api/kv/:key', async (c) => {
+  try {
+    const key = c.req.param('key');
+    const kv = c.env.HEALTH_KV;
+
+    if (!kv) {
+      return c.json({ error: 'KV storage not available' }, 503);
+    }
+
+    const value = await kv.get(key, { type: 'json' });
+    return c.json({ key, value });
+  } catch (error) {
+    console.error('KV get error:', error);
+    return c.json({ error: 'Failed to get value' }, 500);
+  }
+});
+
+app.put('/api/kv/:key', async (c) => {
+  try {
+    const key = c.req.param('key');
+    const body = await c.req.json();
+    const kv = c.env.HEALTH_KV;
+
+    if (!kv) {
+      return c.json({ error: 'KV storage not available' }, 503);
+    }
+
+    await kv.put(key, JSON.stringify(body.value));
+    return c.json({ success: true, key });
+  } catch (error) {
+    console.error('KV put error:', error);
+    return c.json({ error: 'Failed to save value' }, 500);
+  }
+});
+
+app.delete('/api/kv/:key', async (c) => {
+  try {
+    const key = c.req.param('key');
+    const kv = c.env.HEALTH_KV;
+
+    if (!kv) {
+      return c.json({ error: 'KV storage not available' }, 503);
+    }
+
+    await kv.delete(key);
+    return c.json({ success: true, key });
+  } catch (error) {
+    console.error('KV delete error:', error);
+    return c.json({ error: 'Failed to delete value' }, 500);
+  }
+});
+
 // API routes for health data
 app.get('/api/health-data', async (c) => {
   // Validate query params

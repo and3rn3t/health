@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
 
 // WebSocket message schema validation
@@ -34,6 +34,7 @@ export interface WebSocketConfig {
   reconnectAttempts?: number;
   reconnectDelay?: number;
   pingInterval?: number;
+  enableInDevelopment?: boolean; // Set to true to enable WebSocket connections in development mode
   onError?: (error: string) => void;
   onConnect?: () => void;
   onDisconnect?: () => void;
@@ -43,11 +44,18 @@ export function useWebSocket(
   config: WebSocketConfig,
   handlers: MessageHandlers = {}
 ): WebSocketHookReturn {
+  // Check if we're in development mode and if WebSocket should be enabled
+  const isDevelopment = import.meta.env.DEV;
+  const enableInDev = config.enableInDevelopment ?? false;
+
+  // In development mode, skip WebSocket unless explicitly enabled
+  const shouldConnect = !isDevelopment || enableInDev;
+
   // Production-ready WebSocket hook with proper connection limits
   const [connectionState, setConnectionState] = useState<ConnectionState>({
     isConnected: false,
     isConnecting: false,
-    error: null,
+    error: shouldConnect ? null : 'WebSocket disabled in development mode',
     reconnectAttempts: 0,
   });
 
@@ -83,6 +91,15 @@ export function useWebSocket(
 
   const sendMessage = useCallback(
     (message: WebSocketMessage) => {
+      // Skip sending in development mode unless explicitly enabled
+      if (!shouldConnect) {
+        console.info(
+          'WebSocket message not sent (development mode):',
+          message.type
+        );
+        return;
+      }
+
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         try {
           wsRef.current.send(JSON.stringify(message));
@@ -95,7 +112,7 @@ export function useWebSocket(
         config.onError?.('WebSocket not connected');
       }
     },
-    [config]
+    [config, shouldConnect]
   );
 
   const handleMessage = useCallback(
@@ -118,6 +135,14 @@ export function useWebSocket(
     [handlers, config]
   );
   const connect = useCallback(() => {
+    // Skip connection in development mode unless explicitly enabled
+    if (!shouldConnect) {
+      console.info(
+        'WebSocket connections disabled in development mode. Set enableInDevelopment: true to enable.'
+      );
+      return;
+    }
+
     // Throttle connection attempts to prevent storms
     const now = Date.now();
     if (now - lastConnectionAttempt.current < connectionThrottle) {
@@ -282,7 +307,7 @@ export function useWebSocket(
     }
   }, [
     config,
-    handlers,
+    shouldConnect,
     sendMessage,
     handleMessage,
     maxReconnectAttempts,
