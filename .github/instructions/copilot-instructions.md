@@ -47,6 +47,15 @@ These instructions guide GitHub Copilot Chat/Edits to produce code and docs that
 - Access environment via `c.env`. Don’t hardcode secrets; use Wrangler secrets/vars.
 - Keep Worker bundles small and edge-safe; avoid large Node libraries.
 
+## Terminal and Command Execution Rules
+
+- **NEVER run commands in active/working terminals** - Always check terminal status first with `get_terminal_output`
+- If a terminal is already running a process (like dev servers), DO NOT interrupt it with new commands
+- Use `run_in_terminal` with `isBackground=true` for long-running processes (servers, watchers)
+- Use `run_in_terminal` with `isBackground=false` for quick commands that should complete
+- Always check if required dependencies are installed before running commands
+- Prefer using VS Code tasks when available over direct terminal commands
+
 ## Conventions and patterns
 
 - Components: function components with explicit props types; avoid `any`. Keep files small and focused.

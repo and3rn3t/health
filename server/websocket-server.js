@@ -48,6 +48,13 @@ const envelopeSchema = z.object({
     'ping',
     'heart_rate_alert',
     'fall_risk_alert',
+    'gait_data',
+    'posture_data',
+    'posture_alert',
+    'walking_coaching_data',
+    'walking_quality_update',
+    'fall_risk_update',
+    'real_time_gait_metrics',
     'device_status',
   ]),
   data: z.unknown().optional(),
@@ -367,6 +374,30 @@ function handleMessage(clientId, data) {
       handleSubscription(clientId, data.metrics);
       break;
 
+    case 'gait_data':
+      handleGaitData(clientId, data.data);
+      break;
+
+    case 'posture_data':
+      handlePostureData(clientId, data.data);
+      break;
+
+    case 'posture_alert':
+      handlePostureAlert(clientId, data.data);
+      break;
+
+    case 'walking_coaching_data':
+      handleWalkingCoachingData(clientId, data.data);
+      break;
+
+    case 'walking_quality_update':
+      handleWalkingQualityUpdate(clientId, data.data);
+      break;
+
+    case 'real_time_gait_metrics':
+      handleRealtimeGaitMetrics(clientId, data.data);
+      break;
+
     case 'start_historical_backfill':
       startHistoricalBackfill(clientId, data && data.cursor);
       break;
@@ -683,6 +714,238 @@ app.post('/api/users/:userId/emergency', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// MARK: - Gait and Posture Data Handlers
+
+function handleGaitData(clientId, data) {
+  const connection = connections.get(clientId);
+  if (!connection) return;
+
+  console.log(`📊 Processing gait data from client ${clientId}:`, data);
+
+  const userId = connection.info.userId;
+  if (!userId) return;
+
+  // Process gait metrics and calculate insights
+  const gaitAnalysis = {
+    id: crypto.randomUUID(),
+    userId,
+    timestamp: data.timestamp || new Date().toISOString(),
+    walkingSpeed: data.walking_speed,
+    stepLength: data.step_length,
+    cadence: data.cadence,
+    asymmetry: data.asymmetry,
+    doubleSupportTime: data.double_support_time,
+    walkingQualityScore: data.walking_quality_score,
+    fallRiskLevel: data.fall_risk_level,
+    processedAt: Date.now(),
+  };
+
+  // Store in buffer
+  if (!healthDataBuffer.has(userId)) {
+    healthDataBuffer.set(userId, []);
+  }
+  const buffer = healthDataBuffer.get(userId);
+  buffer.push(gaitAnalysis);
+
+  // Broadcast to family/caregivers if walking quality is concerning
+  if (data.walking_quality_score < 60) {
+    broadcastToFamilyMembers(userId, {
+      type: 'walking_quality_alert',
+      data: {
+        score: data.walking_quality_score,
+        message: 'Walking quality needs attention',
+        timestamp: gaitAnalysis.timestamp,
+        recommendations: data.recommendations || [],
+      },
+    });
+  }
+
+  // Send confirmation back to client
+  sendEnvelope(connection.ws, 'gait_data_processed', {
+    id: gaitAnalysis.id,
+    processed_at: gaitAnalysis.processedAt,
+    status: 'success',
+  });
+}
+
+function handlePostureData(clientId, data) {
+  const connection = connections.get(clientId);
+  if (!connection) return;
+
+  console.log(`🧘 Processing posture data from client ${clientId}:`, data);
+
+  const userId = connection.info.userId;
+  if (!userId) return;
+
+  const postureAnalysis = {
+    id: crypto.randomUUID(),
+    userId,
+    timestamp: data.timestamp || new Date().toISOString(),
+    excellentPercentage: data.excellent_percentage,
+    goodPercentage: data.good_percentage,
+    fairPercentage: data.fair_percentage,
+    poorPercentage: data.poor_percentage,
+    criticalPercentage: data.critical_percentage,
+    averageNeckAngle: data.average_neck_angle,
+    totalAlerts: data.total_alerts,
+    currentScore: data.current_score,
+    processedAt: Date.now(),
+  };
+
+  // Add to buffer
+  if (!healthDataBuffer.has(userId)) {
+    healthDataBuffer.set(userId, []);
+  }
+  const buffer = healthDataBuffer.get(userId);
+  buffer.push(postureAnalysis);
+
+  // Send confirmation
+  sendEnvelope(connection.ws, 'posture_data_processed', {
+    id: postureAnalysis.id,
+    processed_at: postureAnalysis.processedAt,
+    status: 'success',
+  });
+}
+
+function handlePostureAlert(clientId, data) {
+  const connection = connections.get(clientId);
+  if (!connection) return;
+
+  console.log(`⚠️ Processing posture alert from client ${clientId}:`, data);
+
+  const userId = connection.info.userId;
+  if (!userId) return;
+
+  // Forward posture alert to family/caregivers if severe
+  if (data.severity === 'high' || data.alert_type === 'forward_head') {
+    broadcastToFamilyMembers(userId, {
+      type: 'posture_alert',
+      data: {
+        alert_type: data.alert_type,
+        message: data.message,
+        severity: data.severity,
+        timestamp: data.timestamp,
+        recommendations: [
+          'Take a posture break',
+          'Adjust workspace ergonomics',
+        ],
+      },
+    });
+  }
+
+  // Send confirmation
+  sendEnvelope(connection.ws, 'posture_alert_processed', {
+    status: 'alert_forwarded',
+    severity: data.severity,
+  });
+}
+
+function handleWalkingCoachingData(clientId, data) {
+  const connection = connections.get(clientId);
+  if (!connection) return;
+
+  console.log(
+    `🚶 Processing walking coaching data from client ${clientId}:`,
+    data
+  );
+
+  const userId = connection.info.userId;
+  if (!userId) return;
+
+  const coachingSession = {
+    id: crypto.randomUUID(),
+    userId,
+    sessionStart: data.session_start,
+    sessionEnd: data.session_end,
+    duration: data.duration,
+    distance: data.distance,
+    averageSpeed: data.average_speed,
+    averageCadence: data.average_cadence,
+    gaitStability: data.gait_stability,
+    improvementAreas: data.improvement_areas,
+    feedback: data.feedback,
+    workoutType: data.workout_type,
+    processedAt: Date.now(),
+  };
+
+  // Store coaching session
+  if (!healthDataBuffer.has(userId)) {
+    healthDataBuffer.set(userId, []);
+  }
+  const buffer = healthDataBuffer.get(userId);
+  buffer.push(coachingSession);
+
+  // Share progress with family if significant improvement
+  if (data.improvement_areas && data.improvement_areas.length === 0) {
+    broadcastToFamilyMembers(userId, {
+      type: 'walking_progress_update',
+      data: {
+        message: 'Excellent walking session completed!',
+        duration: data.duration,
+        distance: data.distance,
+        improvements: 'All gait metrics in optimal range',
+        timestamp: coachingSession.sessionEnd,
+      },
+    });
+  }
+
+  // Send confirmation
+  sendEnvelope(connection.ws, 'coaching_data_processed', {
+    session_id: coachingSession.id,
+    status: 'session_recorded',
+  });
+}
+
+function handleWalkingQualityUpdate(clientId, data) {
+  const connection = connections.get(clientId);
+  if (!connection) return;
+
+  const userId = connection.info.userId;
+  if (!userId) return;
+
+  // Broadcast real-time walking quality to connected family members
+  broadcastToFamilyMembers(userId, {
+    type: 'walking_quality_update',
+    data: {
+      overall_score: data.overall_score,
+      quality_level: data.quality_level,
+      components: data.components,
+      timestamp: data.timestamp,
+    },
+  });
+}
+
+function handleRealtimeGaitMetrics(clientId, data) {
+  const connection = connections.get(clientId);
+  if (!connection) return;
+
+  const userId = connection.info.userId;
+  if (!userId) return;
+
+  // Forward real-time metrics to dashboard/family
+  broadcastToFamilyMembers(userId, {
+    type: 'real_time_gait_metrics',
+    data: {
+      current_speed: data.current_speed,
+      step_cadence: data.step_cadence,
+      gait_stability: data.gait_stability,
+      elapsed_time: data.elapsed_time,
+      distance: data.distance,
+      timestamp: data.timestamp,
+    },
+  });
+}
+
+function broadcastToFamilyMembers(userId, message) {
+  // This would integrate with your user/family management system
+  // For now, broadcast to all connections for the user
+  broadcastToAllClients(userId, message);
+  console.log(
+    `📡 Broadcasting to family members for user ${userId}:`,
+    message.type
+  );
+}
 
 // Error handling
 process.on('uncaughtException', (error) => {
