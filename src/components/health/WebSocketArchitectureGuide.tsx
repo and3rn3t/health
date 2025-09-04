@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -7,33 +7,27 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@github/spark/hooks';
 import {
+  AlertTriangle,
   CloudUpload,
   Code,
   Database,
-  Shield,
-  Terminal,
-  Settings,
-  Network,
-  Key,
-  Bug,
-  FlaskConical,
-  Smartphone,
-  Globe,
-  CheckCircle,
-  AlertTriangle,
-  Info,
-  Lightbulb,
-  Timer,
-  Lock,
   Eye,
+  Globe,
+  Info,
+  Key,
+  Lightbulb,
+  Lock,
+  Network,
+  Shield,
+  Smartphone,
+  Terminal,
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface WebSocketComponent {
   id: string;
@@ -92,16 +86,16 @@ class HealthWebSocketServer {
   constructor() {
     this.app = express()
     this.setupRoutes()
-    
+
     const server = https.createServer({
       // SSL certificates for secure WebSocket
     }, this.app)
 
-    this.wss = new WebSocketServer({ 
+    this.wss = new WebSocketServer({
       server,
       verifyClient: this.verifyClient.bind(this)
     })
-    
+
     this.wss.on('connection', this.handleConnection.bind(this))
   }
 
@@ -138,7 +132,7 @@ class HealthWebSocketServer {
   private handleMessage(userId: string, data: Buffer) {
     try {
       const message: HealthDataMessage = JSON.parse(data.toString())
-      
+
       // Process different message types
       switch (message.type) {
         case 'health_data':
@@ -174,7 +168,7 @@ class HealthWebSocketServer {
       timestamp: message.timestamp,
       priority: 'critical'
     })
-    
+
     // Trigger external emergency services if configured
   }
 
@@ -244,7 +238,7 @@ class HealthDataService {
 
       // Trigger real-time analytics
       await this.updateRealTimeAnalytics(userId, metrics)
-      
+
       return healthRecord
     } catch (error) {
       console.error('Health data storage error:', error)
@@ -254,7 +248,7 @@ class HealthDataService {
 
   async getRecentHealthData(userId: string, hours: number = 24) {
     const since = new Date(Date.now() - hours * 60 * 60 * 1000)
-    
+
     return await this.prisma.healthData.findMany({
       where: {
         userId,
@@ -299,14 +293,14 @@ class HealthWebSocketManager: ObservableObject {
     private let urlSession = URLSession(configuration: .default)
     private let healthStore = HKHealthStore()
     private var reconnectionTimer: Timer?
-    
+
     @Published var connectionStatus: ConnectionStatus = .disconnected
     @Published var lastDataSent: Date?
-    
+
     enum ConnectionStatus {
         case connected, disconnected, connecting, error
     }
-    
+
     struct HealthDataPayload: Codable {
         let type: String = "health_data"
         let userId: String
@@ -314,7 +308,7 @@ class HealthWebSocketManager: ObservableObject {
         let deviceId: String
         let data: HealthMetrics
     }
-    
+
     struct HealthMetrics: Codable {
         let stepCount: Int?
         let heartRate: Double?
@@ -322,21 +316,21 @@ class HealthWebSocketManager: ObservableObject {
         let walkingSteadiness: Double?
         let fallRiskScore: Double?
     }
-    
+
     func connect(userId: String, authToken: String) {
         guard let url = URL(string: "wss://your-server.com/health?token=\\(authToken)") else {
             return
         }
-        
+
         connectionStatus = .connecting
         webSocketTask = urlSession.webSocketTask(with: url)
         webSocketTask?.resume()
-        
+
         setupConnectionMonitoring()
         startListeningForMessages()
         startHealthDataStreaming(userId: userId)
     }
-    
+
     private func setupConnectionMonitoring() {
         // Monitor connection state
         // Implement exponential backoff for reconnection
@@ -344,26 +338,26 @@ class HealthWebSocketManager: ObservableObject {
             self.sendHeartbeat()
         }
     }
-    
+
     private func startHealthDataStreaming(userId: String) {
         // Set up HealthKit observers for real-time data
         let stepType = HKObjectType.quantityType(forIdentifier: .stepCount)!
-        
+
         let query = HKObserverQuery(sampleType: stepType, predicate: nil) { _, _, error in
             if error == nil {
                 self.fetchAndSendLatestHealthData(userId: userId)
             }
         }
-        
+
         healthStore.execute(query)
         healthStore.enableBackgroundDelivery(for: stepType, frequency: .immediate) { _, _ in }
     }
-    
+
     private func fetchAndSendLatestHealthData(userId: String) {
         // Fetch latest health metrics
         // Package into HealthDataPayload
         // Send via WebSocket
-        
+
         let payload = HealthDataPayload(
             userId: userId,
             timestamp: ISO8601DateFormatter().string(from: Date()),
@@ -376,21 +370,21 @@ class HealthWebSocketManager: ObservableObject {
                 fallRiskScore: 25.0
             )
         )
-        
+
         sendHealthData(payload)
     }
-    
+
     private func sendHealthData(_ payload: HealthDataPayload) {
         guard let webSocketTask = webSocketTask,
               webSocketTask.state == .running else {
             // Queue data for later sending
             return
         }
-        
+
         do {
             let jsonData = try JSONEncoder().encode(payload)
             let message = URLSessionWebSocketTask.Message.data(jsonData)
-            
+
             webSocketTask.send(message) { [weak self] error in
                 DispatchQueue.main.async {
                     if error == nil {
@@ -406,15 +400,15 @@ class HealthWebSocketManager: ObservableObject {
             print("JSON encoding error: \\(error)")
         }
     }
-    
+
     private func sendHeartbeat() {
         // Send periodic heartbeat to maintain connection
     }
-    
+
     private func attemptReconnection() {
         // Implement exponential backoff reconnection logic
     }
-    
+
     func sendFallAlert(location: CLLocation?, severity: FallSeverity) {
         let alert = FallAlertPayload(
             type: "fall_alert",
@@ -424,7 +418,7 @@ class HealthWebSocketManager: ObservableObject {
             location: location,
             severity: severity
         )
-        
+
         // Send with high priority
         sendFallAlert(alert)
     }
@@ -463,7 +457,7 @@ class HealthWebSocketClient {
   private reconnectDelay = 1000
   private userId: string
   private authToken: string
-  
+
   constructor(userId: string, authToken: string) {
     this.userId = userId
     this.authToken = authToken
@@ -504,7 +498,7 @@ class HealthWebSocketClient {
   private handleMessage(data: string) {
     try {
       const update: HealthDataUpdate = JSON.parse(data)
-      
+
       switch (update.type) {
         case 'health_update':
           this.onHealthDataUpdate(update.data)
@@ -525,7 +519,7 @@ class HealthWebSocketClient {
     // Update the health dashboard in real-time
     // Trigger UI updates
     // Store in local state management (Redux/Zustand)
-    
+
     window.dispatchEvent(new CustomEvent('healthDataUpdate', {
       detail: { data, timestamp: new Date() }
     }))
@@ -535,7 +529,7 @@ class HealthWebSocketClient {
     // Show urgent notification
     // Play alert sound
     // Update emergency dashboard
-    
+
     if (Notification.permission === 'granted') {
       new Notification('Emergency Alert', {
         body: 'Fall detected - Emergency response activated',
@@ -544,7 +538,7 @@ class HealthWebSocketClient {
         requireInteraction: true
       })
     }
-    
+
     window.dispatchEvent(new CustomEvent('emergencyAlert', {
       detail: { data, timestamp: new Date() }
     }))
@@ -554,7 +548,7 @@ class HealthWebSocketClient {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++
       const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1)
-      
+
       setTimeout(() => {
         console.log(\`Reconnection attempt \${this.reconnectAttempts}\`)
         this.connect()
@@ -641,7 +635,7 @@ interface UserSession {
 
 class WebSocketAuthService {
   private activeSessions: Map<string, UserSession> = new Map()
-  
+
   // Rate limiting for auth attempts
   private authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -659,7 +653,7 @@ class WebSocketAuthService {
 
       // Generate JWT token with health data permissions
       const token = jwt.sign(
-        { 
+        {
           userId: user.id,
           deviceId,
           permissions: ['health:read', 'health:write', 'emergency:alert'],
@@ -689,14 +683,14 @@ class WebSocketAuthService {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
       const session = this.activeSessions.get(token)
-      
+
       if (!session) {
         return false
       }
 
       // Update last activity
       session.lastActivity = new Date()
-      
+
       return true
     } catch (error) {
       console.error('Token validation error:', error)
@@ -896,7 +890,7 @@ class HealthMonitoringService extends EventEmitter {
     // Track message throughput
     // Measure response times
     // Check error rates
-    
+
     const memUsage = process.memoryUsage()
     this.metrics.memoryUsage = memUsage.heapUsed / 1024 / 1024 // MB
 
@@ -911,7 +905,7 @@ class HealthMonitoringService extends EventEmitter {
     // Query database for health data trends
     // Calculate aggregate statistics
     // Identify patterns and anomalies
-    
+
     this.emit('healthAnalytics', this.analytics)
   }
 
@@ -984,31 +978,33 @@ class HealthMonitoringService extends EventEmitter {
 
   const toggleComponent = (componentId: string) => {
     setComponents((currentComponents) =>
-      currentComponents.map((comp) =>
+      (currentComponents ?? []).map((comp) =>
         comp.id === componentId ? { ...comp, completed: !comp.completed } : comp
       )
     );
   };
 
   const getComponentsByCategory = (category: string) => {
-    if (category === 'all') return components;
-    return components.filter((comp) => comp.category === category);
+    if (category === 'all') return components ?? [];
+    return (components ?? []).filter((comp) => comp.category === category);
   };
 
   const calculateProgress = (category?: string) => {
     const relevantComponents = category
-      ? components.filter((c) => c.category === category)
-      : components;
+      ? (components ?? []).filter((c) => c.category === category)
+      : (components ?? []);
     const completedComponents = relevantComponents.filter(
       (c) => c.completed
     ).length;
-    return Math.round((completedComponents / relevantComponents.length) * 100);
+    return relevantComponents.length > 0
+      ? Math.round((completedComponents / relevantComponents.length) * 100)
+      : 0;
   };
 
   const getTotalHours = (category?: string) => {
     const relevantComponents = category
-      ? components.filter((c) => c.category === category)
-      : components;
+      ? (components ?? []).filter((c) => c.category === category)
+      : (components ?? []);
     return relevantComponents.reduce(
       (total, comp) => total + comp.estimatedHours,
       0
@@ -1104,14 +1100,19 @@ class HealthMonitoringService extends EventEmitter {
               </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{components.length}</div>
+              <div className="text-2xl font-bold">
+                {(components ?? []).length}
+              </div>
               <div className="text-muted-foreground text-sm">
                 Total Components
               </div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">
-                {components.filter((c) => c.complexity === 'advanced').length}
+                {
+                  (components ?? []).filter((c) => c.complexity === 'advanced')
+                    .length
+                }
               </div>
               <div className="text-muted-foreground text-sm">
                 Advanced Components
@@ -1225,12 +1226,11 @@ class HealthMonitoringService extends EventEmitter {
               <h3 className="text-lg font-semibold">{category.label}</h3>
               <div className="flex items-center gap-4">
                 <Badge variant="outline">
-                  {
-                    getComponentsByCategory(category.id).filter(
-                      (c) => c.completed
-                    ).length
-                  }{' '}
-                  / {getComponentsByCategory(category.id).length} completed
+                  {getComponentsByCategory(category.id)?.filter(
+                    (c) => c.completed
+                  ).length ?? 0}{' '}
+                  / {getComponentsByCategory(category.id)?.length ?? 0}{' '}
+                  completed
                 </Badge>
                 <Badge variant="secondary">
                   {getTotalHours(
@@ -1242,7 +1242,7 @@ class HealthMonitoringService extends EventEmitter {
             </div>
 
             <div className="space-y-4">
-              {getComponentsByCategory(category.id).map((component) => (
+              {(getComponentsByCategory(category.id) ?? []).map((component) => (
                 <Card
                   key={component.id}
                   className={component.completed ? 'opacity-75' : ''}
@@ -1256,6 +1256,7 @@ class HealthMonitoringService extends EventEmitter {
                             checked={component.completed}
                             onChange={() => toggleComponent(component.id)}
                             className="text-primary h-4 w-4"
+                            title={`Mark ${component.title} as completed`}
                           />
                           <h4
                             className={`font-medium ${component.completed ? 'text-muted-foreground line-through' : ''}`}
@@ -1304,8 +1305,8 @@ class HealthMonitoringService extends EventEmitter {
                             Implementation Notes:
                           </h5>
                           <ul className="text-muted-foreground list-inside list-disc space-y-1 text-sm">
-                            {component.notes.map((note, index) => (
-                              <li key={index}>{note}</li>
+                            {component.notes.map((note) => (
+                              <li key={note}>{note}</li>
                             ))}
                           </ul>
                         </div>

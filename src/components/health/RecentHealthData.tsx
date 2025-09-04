@@ -1,3 +1,6 @@
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -5,17 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useHealthDataQuery } from '@/hooks/useHealthDataQuery';
 import { useCreateHealthData } from '@/hooks/useCreateHealthData';
-import { toast } from 'sonner';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { addDays, format, formatDistanceToNow } from 'date-fns';
+import { useHealthDataQuery } from '@/hooks/useHealthDataQuery';
 import { healthMetricSchema } from '@/schemas/health';
-import { z } from 'zod';
 import { useKV } from '@github/spark/hooks';
+import { addDays, format, formatDistanceToNow } from 'date-fns';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { z } from 'zod';
 
 type MetricType = z.infer<typeof healthMetricSchema.shape.type>;
 
@@ -26,7 +26,8 @@ export function RecentHealthData() {
   const [isDev, setIsDev] = useState(false);
 
   const params = useMemo(() => {
-    const toISO = (d: string) => (d ? new Date(d).toISOString() : undefined);
+    const toISO = (d: string | undefined) =>
+      d ? new Date(d).toISOString() : undefined;
     return {
       metric: metric || undefined,
       from: toISO(from),
@@ -39,10 +40,18 @@ export function RecentHealthData() {
   const createMutation = useCreateHealthData();
 
   const addSample = () => {
+    const now = new Date().toISOString();
     const sample = {
       type: 'steps' as const,
       value: Math.floor(5000 + Math.random() * 4000),
-      processedAt: new Date().toISOString(),
+      timestamp: now,
+      source: {
+        userId: 'demo-user',
+        collectedAt: now,
+        deviceId: 'demo-device',
+        processingPipeline: 'manual',
+      },
+      processedAt: now,
       validated: true,
       fallRisk: 'low' as const,
     };
@@ -91,7 +100,8 @@ export function RecentHealthData() {
       if (from) sp.set('from', from);
       if (to) sp.set('to', to);
       const qs = sp.toString();
-      const url = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
+      const urlPath = window.location.pathname;
+      const url = qs ? `${urlPath}?${qs}` : urlPath;
       window.history.replaceState(null, '', url);
     } catch {
       // ignore
@@ -151,11 +161,14 @@ export function RecentHealthData() {
 
   const shiftDay = (delta: 1 | -1) => {
     const today = new Date();
-    const baseFrom = from
-      ? parseLocalDate(from)
-      : to
-        ? parseLocalDate(to)
-        : today;
+    let baseFrom: Date;
+    if (from) {
+      baseFrom = parseLocalDate(from);
+    } else if (to) {
+      baseFrom = parseLocalDate(to);
+    } else {
+      baseFrom = today;
+    }
     const baseTo = to ? parseLocalDate(to) : baseFrom;
 
     const newFrom = addDays(baseFrom, delta);
@@ -228,11 +241,14 @@ export function RecentHealthData() {
       today.getMonth(),
       today.getDate()
     );
-    const currentTo = to
-      ? parseLocalDate(to)
-      : from
-        ? parseLocalDate(from)
-        : todayLocal;
+    let currentTo: Date;
+    if (to) {
+      currentTo = parseLocalDate(to);
+    } else if (from) {
+      currentTo = parseLocalDate(from);
+    } else {
+      currentTo = todayLocal;
+    }
     // Disable if the current 'to' is already today or later (date-wise)
     return (
       (currentTo.getFullYear() === todayLocal.getFullYear() &&
@@ -313,7 +329,7 @@ export function RecentHealthData() {
               Metric
             </label>
             <select
-              className="h-9 rounded-md border bg-background px-2"
+              className="bg-background h-9 rounded-md border px-2"
               value={metric}
               onChange={(e) => setMetric(e.target.value as MetricType | '')}
               aria-label="Metric filter"
@@ -335,7 +351,7 @@ export function RecentHealthData() {
             </label>
             <input
               type="date"
-              className="h-9 rounded-md border bg-background px-2"
+              className="bg-background h-9 rounded-md border px-2"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
               aria-label="From date"
@@ -348,7 +364,7 @@ export function RecentHealthData() {
             </label>
             <input
               type="date"
-              className="h-9 rounded-md border bg-background px-2"
+              className="bg-background h-9 rounded-md border px-2"
               value={to}
               onChange={(e) => setTo(e.target.value)}
               aria-label="To date"

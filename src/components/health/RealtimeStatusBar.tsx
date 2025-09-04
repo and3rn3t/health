@@ -1,44 +1,23 @@
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { useLiveHealthData } from '@/hooks/useLiveHealthData';
-import { AlertTriangle, Wifi } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { Wifi } from 'lucide-react';
+import { useState } from 'react';
 
 type Props = { readonly userId?: string };
 
 export function RealtimeStatusBar({ userId = 'default-user' }: Props) {
-  const { connectionStatus, pendingEmergency, cancelPendingEmergency } =
-    useLiveHealthData(userId);
-  const [iosOnline, setIosOnline] = useState<boolean>(false);
+  const { connectionStatus } = useLiveHealthData(userId);
+  const [iosOnline] = useState<boolean>(false);
 
-  useEffect(() => {
-    // DISABLED for debugging - was causing console spam
-    /*
-    const i = setInterval(() => {
-      try {
-        const sync = getLiveHealthDataSync(userId);
-        setIosOnline(sync.isIosOnline());
-      } catch {
-        // noop
-      }
-    }, 2000);
-    return () => clearInterval(i);
-    */
-  }, [userId]);
-
-  const remainingSec = useMemo(() => {
-    if (!pendingEmergency) return 0;
-    const ms = Math.max(0, pendingEmergency.expiresAt - Date.now());
-    return Math.ceil(ms / 1000);
-  }, [pendingEmergency]);
+  // iOS connectivity monitoring disabled for debugging
 
   return (
-    <div className="bg-card/90 fixed bottom-3 left-3 right-3 z-50 flex items-center justify-between rounded-xl border border-border px-3 py-2 shadow backdrop-blur">
+    <div className="bg-card/90 border-border fixed bottom-3 left-3 right-3 z-50 flex items-center justify-between rounded-xl border px-3 py-2 shadow backdrop-blur">
       <div className="flex items-center gap-2">
         <Wifi
           className={`h-4 w-4 ${connectionStatus.connected ? 'text-green-500' : 'text-red-500'}`}
         />
-        <span className="text-sm text-foreground">
+        <span className="text-foreground text-sm">
           {connectionStatus.connected ? 'Connected' : 'Disconnected'}
         </span>
         <Badge variant="secondary" className="ml-2">
@@ -51,22 +30,6 @@ export function RealtimeStatusBar({ userId = 'default-user' }: Props) {
           iOS {iosOnline ? 'online' : 'offline'}
         </Badge>
       </div>
-
-      {pendingEmergency ? (
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-amber-600">
-            <AlertTriangle className="h-4 w-4" />
-            <span className="text-sm">Emergency in {remainingSec}s</span>
-          </div>
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={cancelPendingEmergency}
-          >
-            Cancel
-          </Button>
-        </div>
-      ) : null}
     </div>
   );
 }

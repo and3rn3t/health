@@ -1,6 +1,0 @@
-
-> vitalsense-app@0.0.0 lint
-> eslint .
-
-[31;1m'eslint' is not recognized as an internal or external command,[0m
-[31;1moperable program or batch file.[0m
