@@ -101,6 +101,389 @@ import SmartFeatureRecommendations from '@/components/recommendations/SmartFeatu
 import VitalSenseBrandShowcase from '@/components/VitalSenseBrandShowcase';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
+// Extract Sidebar component to reduce nesting
+interface SidebarProps {
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+  themeMode: string;
+  toggleThemeMode: () => void;
+  hasHealthData: boolean;
+  navigationItems: any;
+}
+
+const Sidebar = ({
+  sidebarCollapsed,
+  setSidebarCollapsed,
+  activeTab,
+  setActiveTab,
+  themeMode,
+  toggleThemeMode,
+  hasHealthData,
+  navigationItems,
+}: SidebarProps) => (
+  <aside
+    className={`
+    bg-card border-border fixed left-0 top-0 z-40 h-screen border-r
+    transition-all duration-300 ease-in-out
+    ${sidebarCollapsed ? 'w-16' : 'w-64'}
+    hidden lg:flex lg:flex-col
+  `}
+  >
+    <div className="flex h-full flex-col overflow-hidden">
+      {/* Header */}
+      <div className="border-border flex-shrink-0 border-b p-4">
+        <div className="flex items-center justify-between">
+          {!sidebarCollapsed && (
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-vitalsense-primary">
+                <Shield className="h-5 w-5 text-vitalsense-primary-contrast" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-vitalsense-text-primary">
+                  VitalSense
+                </h2>
+                <p className="text-xs text-vitalsense-text-muted">
+                  Health Monitor
+                </p>
+                <div className="mt-1">
+                  <Badge
+                    variant="outline"
+                    className="border-vitalsense-teal text-vitalsense-teal"
+                  >
+                    iOS ready
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="h-8 w-8 p-0"
+          >
+            {sidebarCollapsed ? (
+              <List className="h-4 w-4" />
+            ) : (
+              <X className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 space-y-6 overflow-y-auto p-4">
+        {/* Main Features */}
+        <div>
+          {!sidebarCollapsed && (
+            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
+              Main Features
+            </h3>
+          )}
+          <div className="space-y-1">
+            {navigationItems.main.map((item: any) => {
+              const IconComponent = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <Button
+                  key={item.id}
+                  variant={isActive ? 'default' : 'ghost'}
+                  className={`
+                    h-10 w-full justify-start
+                    px-3
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
+                  `}
+                  onClick={() => setActiveTab(item.id)}
+                >
+                  <IconComponent className="h-4 w-4 flex-shrink-0" />
+                  {!sidebarCollapsed && (
+                    <span className="ml-3">{item.label}</span>
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Monitoring */}
+        <div>
+          {!sidebarCollapsed && (
+            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
+              Monitoring & Alerts
+            </h3>
+          )}
+          <div className="space-y-1">
+            {navigationItems.monitoring.map((item: any) => {
+              const IconComponent = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <Button
+                  key={item.id}
+                  variant={isActive ? 'default' : 'ghost'}
+                  className={`
+                    h-10 w-full justify-start
+                    px-3
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
+                  `}
+                  onClick={() => setActiveTab(item.id)}
+                >
+                  <IconComponent className="h-4 w-4 flex-shrink-0" />
+                  {!sidebarCollapsed && (
+                    <span className="ml-3">{item.label}</span>
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* AI & ML */}
+        <div>
+          {!sidebarCollapsed && (
+            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
+              AI & Machine Learning
+            </h3>
+          )}
+          <div className="space-y-1">
+            {navigationItems.ai.map((item: any) => {
+              const IconComponent = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <Button
+                  key={item.id}
+                  variant={isActive ? 'default' : 'ghost'}
+                  className={`
+                    h-10 w-full justify-start
+                    px-3
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
+                  `}
+                  onClick={() => setActiveTab(item.id)}
+                >
+                  <IconComponent className="h-4 w-4 flex-shrink-0" />
+                  {!sidebarCollapsed && (
+                    <span className="ml-3">{item.label}</span>
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Advanced Features */}
+        <div>
+          {!sidebarCollapsed && (
+            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
+              Advanced Features
+            </h3>
+          )}
+          <div className="space-y-1">
+            {navigationItems.advanced.map((item: any) => {
+              const IconComponent = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <Button
+                  key={item.id}
+                  variant={isActive ? 'default' : 'ghost'}
+                  className={`
+                    h-10 w-full justify-start
+                    px-3
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
+                  `}
+                  onClick={() => setActiveTab(item.id)}
+                >
+                  <IconComponent className="h-4 w-4 flex-shrink-0" />
+                  {!sidebarCollapsed && (
+                    <span className="ml-3">{item.label}</span>
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Gamification */}
+        <div>
+          {!sidebarCollapsed && (
+            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
+              Gamification
+            </h3>
+          )}
+          <div className="space-y-1">
+            {navigationItems.gamification.map((item: any) => {
+              const IconComponent = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <Button
+                  key={item.id}
+                  variant={isActive ? 'default' : 'ghost'}
+                  className={`
+                    h-10 w-full justify-start
+                    px-3
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
+                  `}
+                  onClick={() => setActiveTab(item.id)}
+                >
+                  <IconComponent className="h-4 w-4 flex-shrink-0" />
+                  {!sidebarCollapsed && (
+                    <span className="ml-3">{item.label}</span>
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Community */}
+        <div>
+          {!sidebarCollapsed && (
+            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
+              Community & Care
+            </h3>
+          )}
+          <div className="space-y-1">
+            {navigationItems.community.map((item: any) => {
+              const IconComponent = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <Button
+                  key={item.id}
+                  variant={isActive ? 'default' : 'ghost'}
+                  className={`
+                    h-10 w-full justify-start
+                    px-3
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
+                  `}
+                  onClick={() => setActiveTab(item.id)}
+                >
+                  <IconComponent className="h-4 w-4 flex-shrink-0" />
+                  {!sidebarCollapsed && (
+                    <span className="ml-3">{item.label}</span>
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Management */}
+        <div>
+          {!sidebarCollapsed && (
+            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
+              Management
+            </h3>
+          )}
+          <div className="space-y-1">
+            {navigationItems.management.map((item: any) => {
+              const IconComponent = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <Button
+                  key={item.id}
+                  variant={isActive ? 'default' : 'ghost'}
+                  className={`
+                    h-10 w-full justify-start
+                    px-3
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
+                  `}
+                  onClick={() => setActiveTab(item.id)}
+                >
+                  <IconComponent className="h-4 w-4 flex-shrink-0" />
+                  {!sidebarCollapsed && (
+                    <span className="ml-3">{item.label}</span>
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Profile */}
+        <div>
+          {!sidebarCollapsed && (
+            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
+              User Profile
+            </h3>
+          )}
+          <div className="space-y-1">
+            {navigationItems.profile.map((item: any) => {
+              const IconComponent = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <Button
+                  key={item.id}
+                  variant={isActive ? 'default' : 'ghost'}
+                  className={`
+                    h-10 w-full justify-start
+                    px-3
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
+                  `}
+                  onClick={() => setActiveTab(item.id)}
+                >
+                  <IconComponent className="h-4 w-4 flex-shrink-0" />
+                  {!sidebarCollapsed && (
+                    <span className="ml-3">{item.label}</span>
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Setup */}
+      </nav>
+
+      {/* Footer */}
+      <div className="border-border border-t p-4">
+        {/* Theme mode toggle */}
+        <div className="mb-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleThemeMode}
+            className={`
+              hover:bg-muted h-8 w-full
+              justify-start
+              px-3
+            `}
+          >
+            {themeMode === 'dark' && <Moon className="h-4 w-4 flex-shrink-0" />}
+            {themeMode === 'light' && <Sun className="h-4 w-4 flex-shrink-0" />}
+            {themeMode === 'system' && (
+              <Monitor className="h-4 w-4 flex-shrink-0" />
+            )}
+            {!sidebarCollapsed && (
+              <span className="ml-3">
+                {themeMode === 'dark' && 'Dark Mode'}
+                {themeMode === 'light' && 'Light Mode'}
+                {themeMode === 'system' && 'Auto Mode'}
+              </span>
+            )}
+          </Button>
+        </div>
+
+        {hasHealthData && !sidebarCollapsed && (
+          <div className="space-y-2">
+            <Badge
+              variant="outline"
+              className="border-vitalsense-primary text-vitalsense-primary"
+            >
+              Data Connected
+            </Badge>
+          </div>
+        )}
+
+        {!hasHealthData && !sidebarCollapsed && (
+          <div className="flex justify-center">
+            <AlertTriangle className="text-destructive h-5 w-5" />
+          </div>
+        )}
+      </div>
+    </div>
+  </aside>
+);
+
 function App() {
   console.log('🚀 VitalSense App component loading...');
 
@@ -448,383 +831,19 @@ function App() {
   };
 
   const currentPageInfo = getCurrentPageInfo();
-
-  // Sidebar component for larger screens
-  const Sidebar = () => (
-    <aside
-      className={`
-      bg-card fixed left-0 top-0 z-40 h-screen border-r border-border
-      transition-all duration-300 ease-in-out
-      ${sidebarCollapsed ? 'w-16' : 'w-64'}
-      hidden lg:flex lg:flex-col
-    `}
-    >
-      <div className="flex h-full flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex-shrink-0 border-b border-border p-4">
-          <div className="flex items-center justify-between">
-            {!sidebarCollapsed && (
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-vitalsense-primary">
-                  <Shield className="h-5 w-5 text-vitalsense-primary-contrast" />
-                </div>
-                <div>
-                  <h2 className="font-semibold text-vitalsense-text-primary">
-                    VitalSense
-                  </h2>
-                  <p className="text-xs text-vitalsense-text-muted">
-                    Health Monitor
-                  </p>
-                  <div className="mt-1">
-                    <Badge
-                      variant="outline"
-                      className="border-vitalsense-teal text-vitalsense-teal"
-                    >
-                      iOS ready
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="h-8 w-8 p-0"
-            >
-              {sidebarCollapsed ? (
-                <List className="h-4 w-4" />
-              ) : (
-                <X className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 space-y-6 overflow-y-auto p-4">
-          {/* Main Features */}
-          <div>
-            {!sidebarCollapsed && (
-              <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-                Main Features
-              </h3>
-            )}
-            <div className="space-y-1">
-              {navigationItems.main.map((item) => {
-                const IconComponent = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <Button
-                    key={item.id}
-                    variant={isActive ? 'default' : 'ghost'}
-                    className={`
-                      h-10 w-full justify-start
-                      px-3
-                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                    `}
-                    onClick={() => setActiveTab(item.id)}
-                  >
-                    <IconComponent className="h-4 w-4 flex-shrink-0" />
-                    {!sidebarCollapsed && (
-                      <span className="ml-3">{item.label}</span>
-                    )}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Monitoring */}
-          <div>
-            {!sidebarCollapsed && (
-              <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-                Monitoring & Alerts
-              </h3>
-            )}
-            <div className="space-y-1">
-              {navigationItems.monitoring.map((item) => {
-                const IconComponent = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <Button
-                    key={item.id}
-                    variant={isActive ? 'default' : 'ghost'}
-                    className={`
-                      h-10 w-full justify-start
-                      px-3
-                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                    `}
-                    onClick={() => setActiveTab(item.id)}
-                  >
-                    <IconComponent className="h-4 w-4 flex-shrink-0" />
-                    {!sidebarCollapsed && (
-                      <span className="ml-3">{item.label}</span>
-                    )}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* AI & ML */}
-          <div>
-            {!sidebarCollapsed && (
-              <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-                AI & Machine Learning
-              </h3>
-            )}
-            <div className="space-y-1">
-              {navigationItems.ai.map((item) => {
-                const IconComponent = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <Button
-                    key={item.id}
-                    variant={isActive ? 'default' : 'ghost'}
-                    className={`
-                      h-10 w-full justify-start
-                      px-3
-                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                    `}
-                    onClick={() => setActiveTab(item.id)}
-                  >
-                    <IconComponent className="h-4 w-4 flex-shrink-0" />
-                    {!sidebarCollapsed && (
-                      <span className="ml-3">{item.label}</span>
-                    )}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Advanced Features */}
-          <div>
-            {!sidebarCollapsed && (
-              <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-                Advanced Features
-              </h3>
-            )}
-            <div className="space-y-1">
-              {navigationItems.advanced.map((item) => {
-                const IconComponent = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <Button
-                    key={item.id}
-                    variant={isActive ? 'default' : 'ghost'}
-                    className={`
-                      h-10 w-full justify-start
-                      px-3
-                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                    `}
-                    onClick={() => setActiveTab(item.id)}
-                  >
-                    <IconComponent className="h-4 w-4 flex-shrink-0" />
-                    {!sidebarCollapsed && (
-                      <span className="ml-3">{item.label}</span>
-                    )}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Gamification */}
-          <div>
-            {!sidebarCollapsed && (
-              <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-                Gamification
-              </h3>
-            )}
-            <div className="space-y-1">
-              {navigationItems.gamification.map((item) => {
-                const IconComponent = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <Button
-                    key={item.id}
-                    variant={isActive ? 'default' : 'ghost'}
-                    className={`
-                      h-10 w-full justify-start
-                      px-3
-                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                    `}
-                    onClick={() => setActiveTab(item.id)}
-                  >
-                    <IconComponent className="h-4 w-4 flex-shrink-0" />
-                    {!sidebarCollapsed && (
-                      <span className="ml-3">{item.label}</span>
-                    )}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Community */}
-          <div>
-            {!sidebarCollapsed && (
-              <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-                Community & Care
-              </h3>
-            )}
-            <div className="space-y-1">
-              {navigationItems.community.map((item) => {
-                const IconComponent = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <Button
-                    key={item.id}
-                    variant={isActive ? 'default' : 'ghost'}
-                    className={`
-                      h-10 w-full justify-start
-                      px-3
-                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                    `}
-                    onClick={() => setActiveTab(item.id)}
-                  >
-                    <IconComponent className="h-4 w-4 flex-shrink-0" />
-                    {!sidebarCollapsed && (
-                      <span className="ml-3">{item.label}</span>
-                    )}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Management */}
-          <div>
-            {!sidebarCollapsed && (
-              <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-                Management
-              </h3>
-            )}
-            <div className="space-y-1">
-              {navigationItems.management.map((item) => {
-                const IconComponent = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <Button
-                    key={item.id}
-                    variant={isActive ? 'default' : 'ghost'}
-                    className={`
-                      h-10 w-full justify-start
-                      px-3
-                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                    `}
-                    onClick={() => setActiveTab(item.id)}
-                  >
-                    <IconComponent className="h-4 w-4 flex-shrink-0" />
-                    {!sidebarCollapsed && (
-                      <span className="ml-3">{item.label}</span>
-                    )}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Profile */}
-          <div>
-            {!sidebarCollapsed && (
-              <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-                User Profile
-              </h3>
-            )}
-            <div className="space-y-1">
-              {navigationItems.profile.map((item) => {
-                const IconComponent = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <Button
-                    key={item.id}
-                    variant={isActive ? 'default' : 'ghost'}
-                    className={`
-                      h-10 w-full justify-start
-                      px-3
-                      ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                    `}
-                    onClick={() => setActiveTab(item.id)}
-                  >
-                    <IconComponent className="h-4 w-4 flex-shrink-0" />
-                    {!sidebarCollapsed && (
-                      <span className="ml-3">{item.label}</span>
-                    )}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Setup */}
-        </nav>
-
-        {/* Footer */}
-        <div className="border-t border-border p-4">
-          {/* Theme mode toggle */}
-          <div className="mb-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleThemeMode}
-              className={`
-                hover:bg-muted h-8 w-full
-                justify-start
-                px-3
-              `}
-            >
-              {themeMode === 'dark' && (
-                <Moon className="h-4 w-4 flex-shrink-0" />
-              )}
-              {themeMode === 'light' && (
-                <Sun className="h-4 w-4 flex-shrink-0" />
-              )}
-              {themeMode === 'system' && (
-                <Monitor className="h-4 w-4 flex-shrink-0" />
-              )}
-              {!sidebarCollapsed && (
-                <span className="ml-3">
-                  {themeMode === 'dark' && 'Dark Mode'}
-                  {themeMode === 'light' && 'Light Mode'}
-                  {themeMode === 'system' && 'Auto Mode'}
-                </span>
-              )}
-            </Button>
-          </div>
-
-          {hasHealthData && !sidebarCollapsed && (
-            <div className="space-y-2">
-              <Badge
-                variant="outline"
-                className="text-primary border-primary w-full justify-center"
-              >
-                Health Score: {healthData.healthScore || 0}/100
-              </Badge>
-              {isHighRisk && (
-                <Badge variant="destructive" className="w-full justify-center">
-                  <AlertTriangle className="mr-1 h-3 w-3" />
-                  High Fall Risk
-                </Badge>
-              )}
-            </div>
-          )}
-          {hasHealthData && sidebarCollapsed && isHighRisk && (
-            <div className="flex justify-center">
-              <AlertTriangle className="text-destructive h-5 w-5" />
-            </div>
-          )}
-        </div>
-      </div>
-    </aside>
-  );
-
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="bg-background flex min-h-screen">
       {/* Sidebar for larger screens */}
-      <Sidebar />
+      <Sidebar
+        sidebarCollapsed={sidebarCollapsed}
+        setSidebarCollapsed={setSidebarCollapsed}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        themeMode={themeMode}
+        toggleThemeMode={toggleThemeMode}
+        hasHealthData={hasHealthData || false}
+        navigationItems={navigationItems}
+      />
 
       {/* Main layout with responsive margin */}
       <div
@@ -839,7 +858,7 @@ function App() {
                   <Shield className="text-primary-foreground h-6 w-6" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-foreground">
+                  <h1 className="text-foreground text-2xl font-bold">
                     VitalSense
                   </h1>
                   <p className="text-muted-foreground text-sm">

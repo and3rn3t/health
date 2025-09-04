@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,31 +7,22 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { useKV } from '@github/spark/hooks';
 import {
-  Heart,
-  Plus,
-  Trash,
-  Send,
-  CheckCircle,
-  AlertTriangle,
-  Clock,
-  Shield,
   Database,
-  Link,
-  Key,
-  Hospital,
-  User,
-  Bell,
   FileText,
-  Activity,
+  Heart,
+  Hospital,
+  Link,
+  Plus,
+  Send,
+  Trash,
 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface HealthcareProvider {
@@ -75,7 +66,7 @@ interface HealthReport {
   id: string;
   providerId: string;
   type: 'emergency' | 'routine' | 'alert' | 'summary';
-  data: any;
+  data: Record<string, unknown>;
   status: 'pending' | 'sent' | 'delivered' | 'failed';
   timestamp: string;
   priority: 'low' | 'medium' | 'high' | 'critical';
@@ -103,21 +94,21 @@ export default function HealthcareProviderAPI() {
       dataSharing: 'read-only',
     },
   });
-  const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
 
   // Simulate API testing
-  const testAPIConnection = async (providerId: string) => {
-    setIsTestingConnection(true);
+  const testConnection = async (providerId: string) => {
+    if (!integrations) return;
 
+    setIsTestingConnection(true);
     try {
-      // Simulate API call
+      // Simulate API test
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       const integration = integrations.find((i) => i.providerId === providerId);
       if (integration) {
         setIntegrations((current) =>
-          current.map((i) =>
+          (current ?? []).map((i) =>
             i.providerId === providerId
               ? {
                   ...i,
@@ -131,8 +122,9 @@ export default function HealthcareProviderAPI() {
         toast.success('API connection successful');
       }
     } catch (error) {
+      console.error('API connection test failed:', error);
       setIntegrations((current) =>
-        current.map((i) =>
+        (current ?? []).map((i) =>
           i.providerId === providerId
             ? { ...i, status: 'error', lastTest: new Date().toISOString() }
             : i
@@ -155,7 +147,11 @@ export default function HealthcareProviderAPI() {
       id: Date.now().toString(),
       name: newProvider.name,
       type: newProvider.type || 'primary-care',
-      contactInfo: newProvider.contactInfo!,
+      contactInfo: newProvider.contactInfo || {
+        email: '',
+        phone: '',
+        address: '',
+      },
       apiConfig: newProvider.apiConfig!,
       permissions: newProvider.permissions!,
       lastSync: null,
@@ -173,8 +169,8 @@ export default function HealthcareProviderAPI() {
       frequency: 'daily',
     };
 
-    setProviders((current) => [...current, provider]);
-    setIntegrations((current) => [...current, integration]);
+    setProviders((current) => [...(current ?? []), provider]);
+    setIntegrations((current) => [...(current ?? []), integration]);
 
     // Reset form
     setNewProvider({
@@ -193,12 +189,30 @@ export default function HealthcareProviderAPI() {
     toast.success('Healthcare provider added successfully');
   };
 
+  // Helper function to update report status
+  const updateReportStatus = (reportId: string) => {
+    setReports((current) =>
+      (current ?? []).map((r) =>
+        r.id === reportId ? { ...r, status: 'sent' } : r
+      )
+    );
+    toast.success('Health report sent successfully');
+  };
+
   // Send health report to provider
   const sendHealthReport = async (
     providerId: string,
     type: HealthReport['type'],
-    data: any
+    data: Record<string, unknown>
   ) => {
+    const getPriority = (
+      reportType: HealthReport['type']
+    ): HealthReport['priority'] => {
+      if (reportType === 'emergency') return 'critical';
+      if (reportType === 'alert') return 'high';
+      return 'medium';
+    };
+
     const report: HealthReport = {
       id: Date.now().toString(),
       providerId,
@@ -206,32 +220,26 @@ export default function HealthcareProviderAPI() {
       data,
       status: 'pending',
       timestamp: new Date().toISOString(),
-      priority:
-        type === 'emergency'
-          ? 'critical'
-          : type === 'alert'
-            ? 'high'
-            : 'medium',
+      priority: getPriority(type),
     };
 
-    setReports((current) => [...current, report]);
+    setReports((current) => [...(current ?? []), report]);
 
     // Simulate sending
-    setTimeout(() => {
-      setReports((current) =>
-        current.map((r) => (r.id === report.id ? { ...r, status: 'sent' } : r))
-      );
-      toast.success('Health report sent successfully');
-    }, 1000);
+    setTimeout(() => updateReportStatus(report.id), 1000);
   };
 
   // Remove provider
   const removeProvider = (providerId: string) => {
-    setProviders((current) => current.filter((p) => p.id !== providerId));
-    setIntegrations((current) =>
-      current.filter((i) => i.providerId !== providerId)
+    setProviders((current) =>
+      (current ?? []).filter((p) => p.id !== providerId)
     );
-    setReports((current) => current.filter((r) => r.providerId !== providerId));
+    setIntegrations((current) =>
+      (current ?? []).filter((i) => i.providerId !== providerId)
+    );
+    setReports((current) =>
+      (current ?? []).filter((r) => r.providerId !== providerId)
+    );
     toast.success('Provider removed');
   };
 
@@ -286,7 +294,7 @@ export default function HealthcareProviderAPI() {
           variant="outline"
           className="border-blue-200 bg-blue-50 text-blue-700"
         >
-          {providers.length} Providers Connected
+          {providers?.length ?? 0} Providers Connected
         </Badge>
       </div>
 
@@ -299,7 +307,7 @@ export default function HealthcareProviderAPI() {
         </TabsList>
 
         <TabsContent value="providers" className="space-y-4">
-          {providers.length === 0 ? (
+          {(providers?.length ?? 0) === 0 ? (
             <Card>
               <CardContent className="pt-6 text-center">
                 <Hospital className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
@@ -311,13 +319,12 @@ export default function HealthcareProviderAPI() {
                   and emergency alerts
                 </p>
                 <Button
-                  onClick={() =>
-                    document
-                      .querySelector(
-                        '[data-state="inactive"][value="add-provider"]'
-                      )
-                      ?.click()
-                  }
+                  onClick={() => {
+                    const element = document.querySelector(
+                      '[data-state="inactive"][value="add-provider"]'
+                    ) as HTMLElement;
+                    element?.click();
+                  }}
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Add First Provider
@@ -326,11 +333,11 @@ export default function HealthcareProviderAPI() {
             </Card>
           ) : (
             <div className="grid gap-4">
-              {providers.map((provider) => {
-                const integration = integrations.find(
+              {(providers ?? []).map((provider) => {
+                const integration = (integrations ?? []).find(
                   (i) => i.providerId === provider.id
                 );
-                const recentReports = reports
+                const recentReports = (reports ?? [])
                   .filter((r) => r.providerId === provider.id)
                   .slice(0, 3);
 
@@ -426,7 +433,6 @@ export default function HealthcareProviderAPI() {
                                       className={getPriorityColor(
                                         report.priority
                                       )}
-                                      size="sm"
                                     >
                                       {report.type}
                                     </Badge>
@@ -450,7 +456,7 @@ export default function HealthcareProviderAPI() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => testAPIConnection(provider.id)}
+                          onClick={() => testConnection(provider.id)}
                           disabled={isTestingConnection}
                         >
                           <Link className="mr-2 h-4 w-4" />
@@ -490,8 +496,8 @@ export default function HealthcareProviderAPI() {
 
         <TabsContent value="integrations" className="space-y-4">
           <div className="grid gap-4">
-            {integrations.map((integration) => {
-              const provider = providers.find(
+            {(integrations ?? []).map((integration) => {
+              const provider = (providers ?? []).find(
                 (p) => p.id === integration.providerId
               );
 
@@ -562,7 +568,7 @@ export default function HealthcareProviderAPI() {
 
         <TabsContent value="reports" className="space-y-4">
           <div className="grid gap-4">
-            {reports.length === 0 ? (
+            {(reports?.length ?? 0) === 0 ? (
               <Card>
                 <CardContent className="pt-6 text-center">
                   <FileText className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
@@ -576,11 +582,11 @@ export default function HealthcareProviderAPI() {
                 </CardContent>
               </Card>
             ) : (
-              reports
+              (reports ?? [])
                 .slice()
                 .reverse()
                 .map((report) => {
-                  const provider = providers.find(
+                  const provider = (providers ?? []).find(
                     (p) => p.id === report.providerId
                   );
 
@@ -653,14 +659,15 @@ export default function HealthcareProviderAPI() {
                   <Label htmlFor="provider-type">Provider Type</Label>
                   <select
                     id="provider-type"
-                    className="w-full rounded-md border bg-background p-2"
+                    className="bg-background w-full rounded-md border p-2"
                     value={newProvider.type}
                     onChange={(e) =>
                       setNewProvider((prev) => ({
                         ...prev,
-                        type: e.target.value as any,
+                        type: e.target.value as HealthcareProvider['type'],
                       }))
                     }
+                    aria-label="Provider type"
                   >
                     <option value="primary-care">Primary Care</option>
                     <option value="specialist">Specialist</option>
@@ -771,17 +778,19 @@ export default function HealthcareProviderAPI() {
                     <Label htmlFor="api-protocol">Protocol</Label>
                     <select
                       id="api-protocol"
-                      className="w-full rounded-md border bg-background p-2"
+                      className="bg-background w-full rounded-md border p-2"
                       value={newProvider.apiConfig?.protocol}
                       onChange={(e) =>
                         setNewProvider((prev) => ({
                           ...prev,
                           apiConfig: {
                             ...prev.apiConfig!,
-                            protocol: e.target.value as any,
+                            protocol: e.target
+                              .value as HealthcareProvider['apiConfig']['protocol'],
                           },
                         }))
                       }
+                      aria-label="API protocol"
                     >
                       <option value="FHIR">FHIR</option>
                       <option value="HL7">HL7</option>
@@ -831,6 +840,7 @@ export default function HealthcareProviderAPI() {
                         }))
                       }
                       className="rounded"
+                      aria-label="Allow emergency notifications to this provider"
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -853,6 +863,7 @@ export default function HealthcareProviderAPI() {
                         }))
                       }
                       className="rounded"
+                      aria-label="Include in emergency contact list"
                     />
                   </div>
                 </div>

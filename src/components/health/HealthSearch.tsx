@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -6,51 +7,74 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import {
-  Search,
-  X,
-  TrendingUp,
-  TrendingDown,
-  Heart,
-  Activity,
-  Shield,
-  Clock,
-  Target,
-  Filter,
-  Calendar,
-  LineChart,
-} from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import {
+  Activity,
+  Calendar,
+  Clock,
+  Filter,
+  Heart,
+  LineChart,
+  Search,
+  Shield,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  X,
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
+
+type Priority = 'high' | 'medium' | 'low';
+type Trend = 'up' | 'down' | 'stable';
+type Category =
+  | 'metrics'
+  | 'trends'
+  | 'recommendations'
+  | 'risk-factors'
+  | 'achievements';
+
+interface Recommendation {
+  title?: string;
+  description?: string;
+  priority?: Priority;
+  category?: string;
+}
+
+interface Achievement {
+  title?: string;
+  description?: string;
+}
+
+interface InsightData {
+  title?: string;
+  description?: string;
+  message?: string;
+  severity?: string;
+  category?: string;
+}
 
 interface HealthSearchProps {
-  healthData: ProcessedHealthData;
-  onNavigateToInsight?: (category: string, metric?: string) => void;
+  readonly healthData: ProcessedHealthData;
+  readonly onNavigateToInsight?: (category: string, metric?: string) => void;
 }
 
 interface SearchResult {
   id: string;
-  category:
-    | 'metrics'
-    | 'trends'
-    | 'recommendations'
-    | 'risk-factors'
-    | 'achievements';
+  category: Category;
   title: string;
   description: string;
   value?: string | number;
-  trend?: 'up' | 'down' | 'stable';
-  priority?: 'high' | 'medium' | 'low';
+  trend?: Trend;
+  priority?: Priority;
   tags: string[];
   navigateTo?: { tab: string; metric?: string };
   date?: Date;
@@ -122,10 +146,11 @@ export default function HealthSearch({
   };
 
   // Helper function to extract numeric value for filtering
-  const extractNumericValue = (value: any): number | null => {
+  const extractNumericValue = (value: unknown): number | null => {
     if (typeof value === 'number') return value;
     if (typeof value === 'string') {
-      const match = value.match(/[\d.]+/);
+      const regex = /[\d.]+/;
+      const match = regex.exec(value);
       return match ? parseFloat(match[0]) : null;
     }
     return null;
@@ -140,18 +165,35 @@ export default function HealthSearch({
       Object.entries(healthData.metrics).forEach(([key, metric]) => {
         if (metric && typeof metric === 'object' && 'value' in metric) {
           const numericValue = extractNumericValue(metric.value);
+          const metricTitle =
+            'name' in metric && typeof metric.name === 'string'
+              ? metric.name
+              : key.replace(/([A-Z])/g, ' $1').trim();
+          const metricUnit =
+            'unit' in metric && typeof metric.unit === 'string'
+              ? metric.unit
+              : '';
+          const metricCategory =
+            'category' in metric && typeof metric.category === 'string'
+              ? metric.category
+              : 'health';
+
           results.push({
             id: `metric-${key}`,
             category: 'metrics',
-            title: metric.name || key.replace(/([A-Z])/g, ' $1').trim(),
-            description: `Current value: ${metric.value} ${metric.unit || ''}`,
-            value: metric.value,
-            trend: metric.trend as 'up' | 'down' | 'stable',
-            tags: [key, 'metric', metric.category || 'health'],
+            title: metricTitle,
+            description: `Current value: ${metric.value} ${metricUnit}`,
+            value:
+              typeof metric.value === 'string' ||
+              typeof metric.value === 'number'
+                ? metric.value
+                : String(metric.value),
+            trend: 'trend' in metric ? (metric.trend as Trend) : undefined,
+            tags: [key, 'metric', metricCategory],
             navigateTo: { tab: 'analytics', metric: key },
             date: getContextualDate(Math.floor(Math.random() * 30)), // Simulate recent data
             healthScore: healthData.healthScore || 75,
-            numericValue: numericValue,
+            numericValue: numericValue ?? undefined,
           });
         }
       });
@@ -160,13 +202,24 @@ export default function HealthSearch({
     // Health insights and trends
     if (healthData.insights) {
       healthData.insights.forEach((insight, index) => {
+        // Handle insights as strings or objects
+        const insightData: InsightData =
+          typeof insight === 'string'
+            ? {
+                title: 'Health Insight',
+                description: insight,
+                severity: 'medium',
+                category: 'general',
+              }
+            : (insight as InsightData);
+
         results.push({
           id: `insight-${index}`,
           category: 'trends',
-          title: insight.title || 'Health Insight',
-          description: insight.description || insight.message || '',
-          priority: insight.severity as 'high' | 'medium' | 'low',
-          tags: ['insight', 'trend', insight.category || 'general'],
+          title: insightData.title || 'Health Insight',
+          description: insightData.description || insightData.message || '',
+          priority: insightData.severity as Priority,
+          tags: ['insight', 'trend', insightData.category || 'general'],
           navigateTo: { tab: 'dashboard' },
           date: getContextualDate(Math.floor(Math.random() * 7)), // Recent insights
           healthScore: healthData.healthScore || 75,
@@ -177,12 +230,17 @@ export default function HealthSearch({
     // Fall risk factors
     if (healthData.fallRiskFactors) {
       healthData.fallRiskFactors.forEach((factor, index) => {
+        const description =
+          'description' in factor && typeof factor.description === 'string'
+            ? factor.description
+            : `${factor.risk} risk factor`;
+
         results.push({
           id: `risk-${index}`,
           category: 'risk-factors',
           title: factor.factor || 'Risk Factor',
-          description: factor.description || `${factor.risk} risk factor`,
-          priority: factor.risk as 'high' | 'medium' | 'low',
+          description,
+          priority: factor.risk as Priority,
           tags: ['fall-risk', 'safety', factor.factor?.toLowerCase() || 'risk'],
           navigateTo: { tab: 'fall-risk' },
           date: getContextualDate(Math.floor(Math.random() * 14)), // Risk assessments
@@ -192,40 +250,52 @@ export default function HealthSearch({
     }
 
     // Recommendations
-    if (healthData.recommendations) {
-      healthData.recommendations.forEach((rec, index) => {
-        results.push({
-          id: `recommendation-${index}`,
-          category: 'recommendations',
-          title: rec.title || 'Health Recommendation',
-          description: rec.description || '',
-          priority: rec.priority as 'high' | 'medium' | 'low',
-          tags: [
-            'recommendation',
-            'action',
-            rec.category?.toLowerCase() || 'health',
-          ],
-          navigateTo: { tab: 'ai-recommendations' },
-          date: getContextualDate(Math.floor(Math.random() * 3)), // Recent recommendations
-          healthScore: healthData.healthScore || 75,
-        });
-      });
+    if (
+      'recommendations' in healthData &&
+      healthData.recommendations &&
+      Array.isArray(healthData.recommendations)
+    ) {
+      healthData.recommendations.forEach(
+        (rec: Recommendation, index: number) => {
+          results.push({
+            id: `recommendation-${index}`,
+            category: 'recommendations',
+            title: rec.title || 'Health Recommendation',
+            description: rec.description || '',
+            priority: rec.priority as Priority,
+            tags: [
+              'recommendation',
+              'action',
+              rec.category?.toLowerCase() || 'health',
+            ],
+            navigateTo: { tab: 'ai-recommendations' },
+            date: getContextualDate(Math.floor(Math.random() * 3)), // Recent recommendations
+            healthScore: healthData.healthScore || 75,
+          });
+        }
+      );
     }
 
     // Achievements and milestones
-    if (healthData.achievements) {
-      healthData.achievements.forEach((achievement, index) => {
-        results.push({
-          id: `achievement-${index}`,
-          category: 'achievements',
-          title: achievement.title || 'Achievement',
-          description: achievement.description || '',
-          tags: ['achievement', 'milestone', 'progress'],
-          navigateTo: { tab: 'game-center' },
-          date: getContextualDate(Math.floor(Math.random() * 21)), // Past achievements
-          healthScore: healthData.healthScore || 75,
-        });
-      });
+    if (
+      'achievements' in healthData &&
+      healthData.achievements &&
+      Array.isArray(healthData.achievements)
+    ) {
+      healthData.achievements.forEach(
+        (achievement: Achievement, index: number) => {
+          results.push({
+            id: `achievement-${index}`,
+            category: 'achievements',
+            title: achievement.title || 'Achievement',
+            description: achievement.description || '',
+            tags: ['achievement', 'milestone', 'progress'],
+            navigateTo: { tab: 'game-center' },
+            date: getContextualDate(Math.floor(Math.random() * 21)), // Past achievements
+            healthScore: healthData.healthScore || 75,
+          });
+        }
+      );
     }
 
     return results;
@@ -358,7 +428,9 @@ export default function HealthSearch({
     }
   };
 
-  const getPriorityColor = (priority?: string) => {
+  const getPriorityColor = (
+    priority?: string
+  ): 'destructive' | 'secondary' | 'outline' => {
     switch (priority) {
       case 'high':
         return 'destructive';
@@ -447,7 +519,8 @@ export default function HealthSearch({
                                 },
                               }))
                             }
-                            className="rounded border-border"
+                            className="border-border rounded"
+                            aria-label="Enable date range filter"
                           />
                           <Calendar className="h-4 w-4" />
                           Filter by Date Range
@@ -529,7 +602,8 @@ export default function HealthSearch({
                               },
                             }))
                           }
-                          className="rounded border-border"
+                          className="border-border rounded"
+                          aria-label="Enable health score filter"
                         />
                         <LineChart className="h-4 w-4" />
                         Filter by Health Score
@@ -582,7 +656,8 @@ export default function HealthSearch({
                               },
                             }))
                           }
-                          className="rounded border-border"
+                          className="border-border rounded"
+                          aria-label="Enable metric value range filter"
                         />
                         <Target className="h-4 w-4" />
                         Filter by Metric Values
@@ -671,14 +746,21 @@ export default function HealthSearch({
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <Search className="text-muted-foreground mb-4 h-12 w-12" />
-              <h3 className="mb-2 text-lg font-semibold text-foreground">
+              <h3 className="text-foreground mb-2 text-lg font-semibold">
                 {searchQuery || activeFiltersCount > 0
                   ? 'No results found'
                   : 'Start searching'}
               </h3>
               <p className="text-muted-foreground">
                 {searchQuery || activeFiltersCount > 0
-                  ? `No results found${searchQuery ? ` for "${searchQuery}"` : ''}${activeFiltersCount > 0 ? ' with current filters' : ''}. Try adjusting your search criteria.`
+                  ? (() => {
+                      const searchPart = searchQuery
+                        ? ` for "${searchQuery}"`
+                        : '';
+                      const filterPart =
+                        activeFiltersCount > 0 ? ' with current filters' : '';
+                      return `No results found${searchPart}${filterPart}. Try adjusting your search criteria.`;
+                    })()
                   : 'Enter keywords to search through your health insights, metrics, and recommendations.'}
               </p>
               {activeFiltersCount > 0 && (
@@ -697,7 +779,7 @@ export default function HealthSearch({
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-foreground">
+              <h3 className="text-foreground text-sm font-medium">
                 Search Results ({filteredResults.length})
                 {activeFiltersCount > 0 && (
                   <span className="text-muted-foreground font-normal">
@@ -742,7 +824,7 @@ export default function HealthSearch({
                         <div className="flex-1 space-y-2">
                           <div className="flex items-center gap-2">
                             <IconComponent className="text-muted-foreground h-4 w-4" />
-                            <h4 className="font-medium text-foreground">
+                            <h4 className="text-foreground font-medium">
                               {result.title}
                             </h4>
                             {result.trend && (
@@ -771,9 +853,7 @@ export default function HealthSearch({
 
                             {result.priority && (
                               <Badge
-                                variant={
-                                  getPriorityColor(result.priority) as any
-                                }
+                                variant={getPriorityColor(result.priority)}
                                 className="text-xs"
                               >
                                 {result.priority} priority

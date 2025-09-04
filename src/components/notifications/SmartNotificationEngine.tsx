@@ -34,7 +34,7 @@ import {
   Smartphone,
   TrendingUp,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 // Type aliases for union types
@@ -241,6 +241,52 @@ export default function SmartNotificationEngine({
     return () => clearInterval(interval);
   }, [setEngagementPatterns]);
 
+  // Helper function to check if current time is in quiet hours
+  const isQuietHours = (
+    hour: number,
+    prefs: typeof safePreferences
+  ): boolean => {
+    if (prefs.quietHoursStart < prefs.quietHoursEnd) {
+      return hour >= prefs.quietHoursStart || hour < prefs.quietHoursEnd;
+    } else {
+      return hour >= prefs.quietHoursStart && hour < prefs.quietHoursEnd;
+    }
+  };
+
+  // Helper function to find optimal time based on engagement patterns
+  const findOptimalEngagementTime = (
+    todayPatterns: EngagementPattern[],
+    currentHour: number,
+    now: Date,
+    priority: string
+  ): Date | null => {
+    for (let i = 0; i < 24; i++) {
+      const checkHour = (currentHour + i) % 24;
+
+      if (isQuietHours(checkHour, safePreferences) && priority !== 'high') {
+        continue;
+      }
+
+      const pattern = todayPatterns.find((p) => p.hour === checkHour);
+      if (pattern && pattern.engagementScore > 0.6) {
+        const optimalTime = new Date(now);
+        optimalTime.setHours(checkHour, Math.floor(Math.random() * 60), 0, 0);
+
+        // If the time is in the past, set it for today or tomorrow
+        if (optimalTime <= now) {
+          if (i === 0) {
+            optimalTime.setTime(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
+          } else {
+            optimalTime.setDate(optimalTime.getDate() + 1);
+          }
+        }
+
+        return optimalTime;
+      }
+    }
+    return null;
+  };
+
   // Calculate optimal notification time
   const calculateOptimalTime = (
     notificationType: string,
@@ -264,47 +310,15 @@ export default function SmartNotificationEngine({
       return now;
     }
 
-    // Check quiet hours
-    const isQuietHours = (hour: number) => {
-      if (!preferences) return false;
-
-      if (safePreferences.quietHoursStart < safePreferences.quietHoursEnd) {
-        return (
-          hour >= safePreferences.quietHoursStart ||
-          hour < safePreferences.quietHoursEnd
-        );
-      } else {
-        return (
-          hour >= safePreferences.quietHoursStart &&
-          hour < safePreferences.quietHoursEnd
-        );
-      }
-    };
-
-    // Find next optimal time
-    for (let i = 0; i < 24; i++) {
-      const checkHour = (currentHour + i) % 24;
-
-      if (isQuietHours(checkHour) && priority !== 'high') {
-        continue;
-      }
-
-      const pattern = todayPatterns.find((p) => p.hour === checkHour);
-      if (pattern && pattern.engagementScore > 0.6) {
-        const optimalTime = new Date(now);
-        optimalTime.setHours(checkHour, Math.floor(Math.random() * 60), 0, 0);
-
-        // If the time is in the past, set it for today or tomorrow
-        if (optimalTime <= now) {
-          if (i === 0) {
-            optimalTime.setTime(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
-          } else {
-            optimalTime.setDate(optimalTime.getDate() + 1);
-          }
-        }
-
-        return optimalTime;
-      }
+    // Try to find optimal engagement time
+    const optimalTime = findOptimalEngagementTime(
+      todayPatterns,
+      currentHour,
+      now,
+      priority
+    );
+    if (optimalTime) {
+      return optimalTime;
     }
 
     // Fallback: 1 hour from now
@@ -328,48 +342,140 @@ export default function SmartNotificationEngine({
     return methods;
   };
 
+  // Helper function to create delivery status
+  const createDeliveryStatus = (
+    deliveryMethods: string[]
+  ): SmartNotification['deliveryStatus'] => {
+    return deliveryMethods.reduce(
+      (acc, method) => {
+        acc[method as keyof typeof acc] =
+          Math.random() > 0.1 ? 'sent' : 'failed';
+        return acc;
+      },
+      {} as SmartNotification['deliveryStatus']
+    );
+  };
+
+  // Helper function to update notification status
+  const updateNotificationAsDelivered = useCallback(
+    (notification: SmartNotification): SmartNotification => {
+      return {
+        ...notification,
+        delivered: true,
+        deliveryStatus: createDeliveryStatus(notification.deliveryMethods),
+      };
+    },
+    []
+  );
+
+  // Helper functions for notification state updates
+  const updateNotificationList = useCallback(
+    (deliveredNotification: SmartNotification) =>
+      (current: typeof notifications) => {
+        const updated = (current || []).map((n) =>
+          n.id === deliveredNotification.id ? deliveredNotification : n
+        );
+        return updated.some((n) => n.id === deliveredNotification.id)
+          ? updated
+          : [...updated, deliveredNotification];
+      },
+    []
+  );
+
+  const removeFromQueue = useCallback(
+    (notificationId: string) => (current: typeof notificationQueue) =>
+      current.filter((n) => n.id !== notificationId),
+    []
+  );
+
+  // Extract notification queue processing to reduce nesting
+  const processNotificationQueue = useCallback(() => {
+    const now = new Date();
+
+    notificationQueue.forEach((notification) => {
+      if (notification.scheduledTime <= now && !notification.delivered) {
+        // Simulate delivery
+        const deliveredNotification =
+          updateNotificationAsDelivered(notification);
+
+        setNotifications(updateNotificationList(deliveredNotification));
+        setNotificationQueue(removeFromQueue(notification.id));
+
+        toast.success(`Notification delivered: ${notification.title}`);
+      }
+    });
+  }, [
+    notificationQueue,
+    setNotifications,
+    updateNotificationAsDelivered,
+    updateNotificationList,
+    removeFromQueue,
+  ]);
+
   // Notification delivery simulation
   useEffect(() => {
-    const processNotificationQueue = () => {
-      const now = new Date();
-
-      notificationQueue.forEach((notification) => {
-        if (notification.scheduledTime <= now && !notification.delivered) {
-          // Simulate delivery
-          const deliveredNotification = {
-            ...notification,
-            delivered: true,
-            deliveryStatus: notification.deliveryMethods.reduce(
-              (acc, method) => {
-                acc[method as keyof typeof acc] =
-                  Math.random() > 0.1 ? 'sent' : 'failed';
-                return acc;
-              },
-              {} as SmartNotification['deliveryStatus']
-            ),
-          };
-
-          setNotifications((current) => {
-            const updated = (current || []).map((n) =>
-              n.id === notification.id ? deliveredNotification : n
-            );
-            return updated.some((n) => n.id === notification.id)
-              ? updated
-              : [...updated, deliveredNotification];
-          });
-
-          setNotificationQueue((current) =>
-            current.filter((n) => n.id !== notification.id)
-          );
-
-          toast.success(`Notification delivered: ${notification.title}`);
-        }
-      });
-    };
-
     const interval = setInterval(processNotificationQueue, 5000); // Check every 5 seconds
     return () => clearInterval(interval);
-  }, [notificationQueue, setNotifications]);
+  }, [processNotificationQueue]);
+
+  // Helper function to create health reminder notifications
+  const createHealthReminderNotification = (
+    healthScore: number,
+    now: Date
+  ): SmartNotification | null => {
+    if (!safePreferences.healthReminders || healthScore >= 70) {
+      return null;
+    }
+
+    const priority = healthScore < 50 ? 'high' : 'medium';
+    return {
+      id: `health-reminder-${Date.now()}`,
+      type: 'health',
+      title: 'Health Check Reminder',
+      message: `Your health score is ${healthScore}/100. Consider reviewing your recent activity and metrics.`,
+      priority,
+      scheduledTime: calculateOptimalTime('health', priority),
+      optimalTime: calculateOptimalTime('health', priority),
+      engagementScore: 0,
+      delivered: false,
+      interacted: false,
+      createdAt: now,
+      deliveryMethods: getDeliveryMethods(priority),
+      deliveryStatus: {},
+      escalated: false,
+      acknowledgmentRequired: healthScore < 40,
+      acknowledged: false,
+    };
+  };
+
+  // Helper function to create exercise prompt notifications
+  const createExercisePromptNotification = (
+    todaySteps: number,
+    now: Date
+  ): SmartNotification | null => {
+    if (!preferences?.exercisePrompts || todaySteps >= 8000) {
+      return null;
+    }
+
+    return {
+      id: `exercise-prompt-${Date.now()}`,
+      type: 'exercise',
+      title: 'Step Goal Reminder',
+      message: `You've taken ${todaySteps} steps today. Consider a short walk to reach your daily goal!`,
+      priority: 'low',
+      scheduledTime: calculateOptimalTime('exercise', 'low'),
+      optimalTime: calculateOptimalTime('exercise', 'low'),
+      engagementScore: 0,
+      delivered: false,
+      interacted: false,
+      createdAt: now,
+      deliveryMethods: getDeliveryMethods('low'),
+      deliveryStatus: {},
+      escalated: false,
+      acknowledgmentRequired: false,
+      acknowledged: false,
+    };
+  };
 
   // Generate smart notifications based on health data
   const generateSmartNotifications = async () => {
@@ -382,60 +488,22 @@ export default function SmartNotificationEngine({
       const now = new Date();
 
       // Health reminder notifications
-      if (safePreferences.healthReminders && healthData.healthScore < 70) {
-        const notification: SmartNotification = {
-          id: `health-reminder-${Date.now()}`,
-          type: 'health',
-          title: 'Health Check Reminder',
-          message: `Your health score is ${healthData.healthScore}/100. Consider reviewing your recent activity and metrics.`,
-          priority: healthData.healthScore < 50 ? 'high' : 'medium',
-          scheduledTime: calculateOptimalTime(
-            'health',
-            healthData.healthScore < 50 ? 'high' : 'medium'
-          ),
-          optimalTime: calculateOptimalTime(
-            'health',
-            healthData.healthScore < 50 ? 'high' : 'medium'
-          ),
-          engagementScore: 0,
-          delivered: false,
-          interacted: false,
-          createdAt: now,
-          deliveryMethods: getDeliveryMethods(
-            healthData.healthScore < 50 ? 'high' : 'medium'
-          ),
-          deliveryStatus: {},
-          escalated: false,
-          acknowledgmentRequired: healthData.healthScore < 40,
-          acknowledged: false,
-        };
-        newNotifications.push(notification);
+      const healthNotification = createHealthReminderNotification(
+        healthData.healthScore,
+        now
+      );
+      if (healthNotification) {
+        newNotifications.push(healthNotification);
       }
 
       // Exercise prompts
-      if (preferences?.exercisePrompts) {
-        const todaySteps = Math.floor(Math.random() * 10000) + 2000; // Simulated
-        if (todaySteps < 8000) {
-          const notification: SmartNotification = {
-            id: `exercise-prompt-${Date.now()}`,
-            type: 'exercise',
-            title: 'Step Goal Reminder',
-            message: `You've taken ${todaySteps} steps today. Consider a short walk to reach your daily goal!`,
-            priority: 'low',
-            scheduledTime: calculateOptimalTime('exercise', 'low'),
-            optimalTime: calculateOptimalTime('exercise', 'low'),
-            engagementScore: 0,
-            delivered: false,
-            interacted: false,
-            createdAt: now,
-            deliveryMethods: getDeliveryMethods('low'),
-            deliveryStatus: {},
-            escalated: false,
-            acknowledgmentRequired: false,
-            acknowledged: false,
-          };
-          newNotifications.push(notification);
-        }
+      const todaySteps = Math.floor(Math.random() * 10000) + 2000; // Simulated
+      const exerciseNotification = createExercisePromptNotification(
+        todaySteps,
+        now
+      );
+      if (exerciseNotification) {
+        newNotifications.push(exerciseNotification);
       }
 
       // Fall risk alerts
@@ -593,12 +661,77 @@ export default function SmartNotificationEngine({
     );
   };
 
+  // Helper to get delivery method icon
+  const getMethodIcon = (method: string) => {
+    switch (method) {
+      case 'push':
+        return <Smartphone className="h-3 w-3" />;
+      case 'email':
+        return <Mail className="h-3 w-3" />;
+      case 'sms':
+        return <Smartphone className="h-3 w-3" />;
+      case 'phone':
+        return <Phone className="h-3 w-3" />;
+      default:
+        return <Bell className="h-3 w-3" />;
+    }
+  };
+
+  // Helper to get status badge variant
+  const getStatusBadgeVariant = (status: string) => {
+    if (status === 'sent') return 'secondary';
+    if (status === 'failed') return 'destructive';
+    return 'outline';
+  };
+
+  // Helper to render delivery method item
+  const renderDeliveryMethodItem = (
+    method: string,
+    notification: SmartNotification
+  ) => {
+    const status =
+      notification.deliveryStatus[
+        method as keyof typeof notification.deliveryStatus
+      ];
+
+    return (
+      <div key={method} className="flex items-center gap-1">
+        {getMethodIcon(method)}
+        <span className="text-xs capitalize">{method}</span>
+        {status && (
+          <Badge
+            variant={getStatusBadgeVariant(status)}
+            className="px-1 py-0 text-xs"
+          >
+            {status}
+          </Badge>
+        )}
+      </div>
+    );
+  };
+
+  // Helper to handle notification acknowledgment
+  const handleNotificationAcknowledgment = (notificationId: string) => {
+    setNotifications((current) =>
+      (current || []).map((n) =>
+        n.id === notificationId
+          ? {
+              ...n,
+              acknowledged: true,
+              interacted: true,
+            }
+          : n
+      )
+    );
+    toast.success('Notification acknowledged');
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
+          <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
             <Bell className="h-6 w-6" />
             Smart Notifications
           </h2>
@@ -1302,52 +1435,9 @@ export default function SmartNotificationEngine({
                             <span className="text-muted-foreground text-xs">
                               Methods:
                             </span>
-                            {notification.deliveryMethods.map((method) => {
-                              const status =
-                                notification.deliveryStatus[
-                                  method as keyof typeof notification.deliveryStatus
-                                ];
-                              const getMethodIcon = (method: string) => {
-                                switch (method) {
-                                  case 'push':
-                                    return <Smartphone className="h-3 w-3" />;
-                                  case 'email':
-                                    return <Mail className="h-3 w-3" />;
-                                  case 'sms':
-                                    return <Smartphone className="h-3 w-3" />;
-                                  case 'phone':
-                                    return <Phone className="h-3 w-3" />;
-                                  default:
-                                    return <Bell className="h-3 w-3" />;
-                                }
-                              };
-
-                              return (
-                                <div
-                                  key={method}
-                                  className="flex items-center gap-1"
-                                >
-                                  {getMethodIcon(method)}
-                                  <span className="text-xs capitalize">
-                                    {method}
-                                  </span>
-                                  {status && (
-                                    <Badge
-                                      variant={(() => {
-                                        if (status === 'sent')
-                                          return 'secondary';
-                                        if (status === 'failed')
-                                          return 'destructive';
-                                        return 'outline';
-                                      })()}
-                                      className="px-1 py-0 text-xs"
-                                    >
-                                      {status}
-                                    </Badge>
-                                  )}
-                                </div>
-                              );
-                            })}
+                            {notification.deliveryMethods.map((method) =>
+                              renderDeliveryMethodItem(method, notification)
+                            )}
                           </div>
                         )}
 
@@ -1359,20 +1449,11 @@ export default function SmartNotificationEngine({
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => {
-                                  setNotifications((current) =>
-                                    (current || []).map((n) =>
-                                      n.id === notification.id
-                                        ? {
-                                            ...n,
-                                            acknowledged: true,
-                                            interacted: true,
-                                          }
-                                        : n
-                                    )
-                                  );
-                                  toast.success('Notification acknowledged');
-                                }}
+                                onClick={() =>
+                                  handleNotificationAcknowledgment(
+                                    notification.id
+                                  )
+                                }
                                 className="h-6 text-xs"
                               >
                                 Acknowledge
