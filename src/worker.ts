@@ -291,10 +291,23 @@ app.use('*', async (c, next) => {
 
 // API-wide middleware: rate limiting and auth (auth is a no-op in non-production)
 app.use('/api/*', async (c, next) => {
+  const url = new URL(c.req.url);
+  const pathname = url.pathname;
+  // Allowlist harmless info endpoints for unauthenticated GETs
+  const publicInfo = c.req.method === 'GET' && (
+    pathname === '/api/ws-url' ||
+    pathname === '/api/ws-device-token' ||
+    pathname === '/api/ws-user-id' ||
+    pathname === '/api/ws-live-enabled'
+  );
+
   const key = deriveRateLimitKey(c);
   if (!(await rateLimitDO(c, key)))
     return c.json({ error: 'rate_limited' }, 429);
-  if (!(await requireAuth(c))) return c.json({ error: 'unauthorized' }, 401);
+
+  if (!publicInfo && !(await requireAuth(c))) {
+    return c.json({ error: 'unauthorized' }, 401);
+  }
   return next();
 });
 
@@ -337,7 +350,9 @@ app.get('/app-config.js', (c) => {
   const clientId = c.env.AUTH0_CLIENT_ID || '';
   const baseUrl = c.env.BASE_URL || new URL(c.req.url).origin;
   const redirectUri = `${baseUrl}/callback`;
-  const js = `window.__VITALSENSE_CONFIG__ = ${JSON.stringify({
+  const kvMode = (c.env.ENVIRONMENT || 'unknown') === 'production' ? 'local' : 'network';
+  const js = `// Runtime app config (loaded before app bundle)
+window.__VITALSENSE_CONFIG__ = ${JSON.stringify({
     environment: c.env.ENVIRONMENT || 'unknown',
     auth0: {
       domain,
@@ -347,7 +362,16 @@ app.get('/app-config.js', (c) => {
       scope:
         'openid profile email read:health_data write:health_data manage:emergency_contacts',
     },
-  })};`;
+  })};
+
+// KV mode hint: 'local' => client-only storage; 'network' => use server endpoint
+window.__VITALSENSE_KV_MODE = ${JSON.stringify(kvMode)};
+
+// Compatibility for @github/spark/hooks (expects a global var, not just window prop)
+var BASE_KV_SERVICE_URL = ${JSON.stringify(kvMode === 'network' ? '/api' : '')};
+// also expose on window for code that reads from window
+window.BASE_KV_SERVICE_URL = BASE_KV_SERVICE_URL;
+`;
   return new Response(js, {
     headers: { 'content-type': 'application/javascript; charset=utf-8' },
   });
@@ -361,6 +385,11 @@ app.get('/callback', async (c) => {
     const hasCode = current.searchParams.has('code');
     const hasState = current.searchParams.has('state');
     if (!hasCode && !hasState) {
+      // Heuristic: if Auth0 SPA session cookie exists, assume authenticated
+      const cookie = c.req.header('Cookie') || '';
+      if (cookie.includes('auth0.is.authenticated=true')) {
+        return c.redirect('/', 302);
+      }
       return c.redirect('/', 302);
     }
     // Serve the app shell (index.html) while preserving the /callback path
@@ -410,6 +439,12 @@ app.get('/api/ws-user-id', (c) => {
   }
   // In production, this would extract user ID from JWT
   return c.json({ userId: 'user-id-placeholder' });
+});
+
+// Whether live updates should be enabled by default (public info)
+app.get('/api/ws-live-enabled', (c) => {
+  // In production, default to enabled; clients may still disable locally
+  return c.json({ enabled: true });
 });
 
 // User emergency contacts persistence
@@ -1507,12 +1542,14 @@ app.get('/demo', async (c) => {
         return originalFetch(input, init);
       };
 
-      // Define missing environment variables for demo mode
-      window.BASE_KV_SERVICE_URL = '/api';
+  // Define missing environment variables for demo mode
+  // Provide as both global var and window property for broad compatibility
+  var BASE_KV_SERVICE_URL = '/api';
+  window.BASE_KV_SERVICE_URL = BASE_KV_SERVICE_URL;
       window.GITHUB_RUNTIME_PERMANENT_NAME = 'vitalsense-demo';
 
-      // Disable WebSocket connections in demo mode
-      window.VITALSENSE_DISABLE_WEBSOCKET = true;
+  // Disable WebSocket connections in demo mode (read by client hook)
+  window.VITALSENSE_DISABLE_WEBSOCKET = true;
 
       // Defensive array helper for .slice() errors
       window.safeSlice = function(arr, ...args) {

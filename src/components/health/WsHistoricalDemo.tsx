@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import createWSClient from '@/lib/wsClient';
+import { useEffect, useRef, useState } from 'react';
 
 export default function WsHistoricalDemo() {
   const clientRef = useRef<ReturnType<typeof createWSClient> | null>(null);
@@ -8,8 +8,17 @@ export default function WsHistoricalDemo() {
   const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
+    // Default to same-origin /ws to avoid localhost assumptions
+    const sameOrigin = (() => {
+      try {
+        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+        return `${proto}://${location.host}/ws`;
+      } catch {
+        return '';
+      }
+    })();
     const client = createWSClient({
-      url: 'ws://localhost:3001',
+      url: sameOrigin,
       heartbeatMs: 15000,
       handlers: {
         historical_data_update: (page) => {

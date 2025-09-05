@@ -5,6 +5,7 @@
  */
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
@@ -50,6 +51,11 @@ export default function ProtectedRoute({
         </Card>
       </div>
     );
+  }
+
+  // Allow initial pass-through right after authentication while the profile hydrates
+  if (isAuthenticated && !user) {
+    return <>{children}</>;
   }
 
   // Show login prompt if not authenticated
@@ -123,6 +129,10 @@ export default function ProtectedRoute({
 
   // Check permission requirements
   if (requiredPermissions.length > 0 && user) {
+    // If permissions haven't hydrated yet, allow access to avoid loops
+    if (!user.permissions || user.permissions.length === 0) {
+      return <>{children}</>;
+    }
     const hasRequiredPermissions = requireAll
       ? requiredPermissions.every((permission) => hasPermission(permission))
       : requiredPermissions.some((permission) => hasPermission(permission));
@@ -161,6 +171,21 @@ export default function ProtectedRoute({
     }
   }
 
-  // Render children if all checks pass
-  return <>{children}</>;
+  // Render children if all checks pass, with a soft HIPAA banner if consent is missing
+  return (
+    <>
+      {user && isAuthenticated && user.hipaaConsent === false && (
+        <div className="mx-auto my-2 w-full max-w-5xl px-2">
+          <Alert>
+            <AlertDescription className="flex items-center gap-2 text-sm">
+              <Badge variant="secondary">HIPAA</Badge>
+              HIPAA consent is not recorded. Some features may be limited until
+              consent is granted.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+      {children}
+    </>
+  );
 }

@@ -1,51 +1,51 @@
 import { Badge } from '@/components/ui/badge';
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useKV } from '@/hooks/useCloudflareKV';
 import { Contact } from '@/types';
 import {
-  Activity,
-  AlertTriangle,
-  BarChart3,
-  Bell,
-  Brain,
-  Clock,
-  CloudUpload,
-  Heart,
-  Home as House,
-  Lightbulb,
-  Menu as List,
-  Monitor,
-  Moon,
-  Pill,
-  Search,
-  Settings,
-  Share,
-  Shield,
-  Smartphone,
-  Sparkles,
-  Sun,
-  Target,
-  TrendingUp,
-  Trophy,
-  Upload,
-  Users,
-  X,
+    Activity,
+    AlertTriangle,
+    BarChart3,
+    Bell,
+    Brain,
+    Clock,
+    CloudUpload,
+    Heart,
+    Home as House,
+    Lightbulb,
+    Menu as List,
+    Monitor,
+    Moon,
+    Pill,
+    Search,
+    Settings,
+    Share,
+    Shield,
+    Smartphone,
+    Sparkles,
+    Sun,
+    Target,
+    TrendingUp,
+    Trophy,
+    Upload,
+    Users,
+    X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -94,6 +94,7 @@ import HealthAlertsConfig from '@/components/health/HealthAlertsConfig';
 import PredictiveHealthAlerts from '@/components/health/PredictiveHealthAlerts';
 import RealTimeHealthScoring from '@/components/health/RealTimeHealthScoring';
 import WebSocketArchitectureGuide from '@/components/health/WebSocketArchitectureGuide';
+import WSHealthPanel from '@/components/health/WSHealthPanel';
 import WSTokenSettings from '@/components/health/WSTokenSettings';
 import SmartNotificationEngine from '@/components/notifications/SmartNotificationEngine';
 import PersonalizedEngagementOptimizer from '@/components/recommendations/PersonalizedEngagementOptimizer';
@@ -1342,6 +1343,7 @@ function App() {
         />
       </div>
       <WSTokenSettings />
+  {import.meta.env.DEV && <WSHealthPanel />}
     </div>
   );
 }

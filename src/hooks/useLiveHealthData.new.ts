@@ -46,7 +46,7 @@ export interface ConnectionStatus {
   dataQuality: 'realtime' | 'delayed' | 'offline';
 }
 
-export function useLiveHealthData(userId: string = 'demo-user') {
+export function useLiveHealthData(_userId: string = 'demo-user') {
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
     connected: false,
     lastHeartbeat: '',
@@ -129,7 +129,8 @@ export function useLiveHealthData(userId: string = 'demo-user') {
       }));
     }, []),
 
-    onError: useCallback((error: string) => {
+    onError: useCallback((data: unknown) => {
+      const error = data as string;
       console.error('Live health data error:', error);
       setConnectionStatus((prev) => ({
         ...prev,
@@ -140,7 +141,7 @@ export function useLiveHealthData(userId: string = 'demo-user') {
 
   const { connectionState, sendMessage, connect, disconnect } = useWebSocket(
     {
-      url: 'ws://localhost:3001',
+  url: '', // default computed in useWebSocket
       enableInDevelopment: false, // Disable WebSocket in development to prevent console errors
     },
     handlers
@@ -178,7 +179,8 @@ export function useLiveHealthData(userId: string = 'demo-user') {
     (metrics: string[] = []) => {
       sendMessage({
         type: 'subscribe_health_updates',
-        metrics,
+        data: { metrics },
+        timestamp: new Date().toISOString(),
       });
     },
     [sendMessage]
@@ -188,7 +190,8 @@ export function useLiveHealthData(userId: string = 'demo-user') {
     (cursor?: string) => {
       sendMessage({
         type: 'start_historical_backfill',
-        cursor,
+        data: { cursor },
+        timestamp: new Date().toISOString(),
       });
     },
     [sendMessage]

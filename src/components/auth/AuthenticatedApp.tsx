@@ -58,6 +58,23 @@ export default function AuthenticatedApp() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // If SDK finished and we're authenticated while on /callback with no auth params, move home
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      const onCallback = url.pathname === '/callback';
+      const hasAuthParams =
+        url.searchParams.has('code') || url.searchParams.has('state');
+      if (onCallback && !hasAuthParams && isAuthenticated) {
+        window.history.replaceState(null, '', '/');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+        setCurrentPath('/');
+      }
+    } catch {
+      // ignore
+    }
+  }, [isAuthenticated]);
+
   // If OAuth params are present on a non-callback path, show callback progress immediately
   try {
     const u = new URL(window.location.href);
@@ -74,7 +91,10 @@ export default function AuthenticatedApp() {
   if (currentPath === '/callback') {
     if (isAuthenticated) {
       window.history.replaceState(null, '', '/');
-      return <OriginalApp />;
+      // sync internal state and notify listeners
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      setCurrentPath('/');
+      return <OriginalApp />; // Do not gate on permissions during callback redirect
     }
     return <CallbackPage />;
   }

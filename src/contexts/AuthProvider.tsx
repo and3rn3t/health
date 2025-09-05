@@ -13,6 +13,7 @@
 import { auth0Config, getAuth0ConfigForEnvironment } from '@/lib/auth0Config';
 import {
   type AuthContextType,
+  PERMISSIONS,
   type Permission,
   USER_ROLES,
   type UserProfile,
@@ -27,6 +28,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { toast } from 'sonner';
@@ -51,6 +53,38 @@ function AuthContextProvider({ children }: Readonly<AuthProviderProps>) {
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const hasLoggedAuthRef = useRef(false);
+
+  const getUpdatedAt = (u: unknown): string | undefined => {
+    if (
+      u &&
+      typeof u === 'object' &&
+      'updated_at' in (u as Record<string, unknown>)
+    ) {
+      const v = (u as { updated_at?: unknown }).updated_at;
+      return typeof v === 'string' ? v : undefined;
+    }
+    return undefined;
+  };
+
+  const sessionGet = (key: string): string | undefined => {
+    try {
+      return typeof window !== 'undefined'
+        ? (window.sessionStorage.getItem(key) ?? undefined)
+        : undefined;
+    } catch {
+      return undefined;
+    }
+  };
+
+  const sessionSet = (key: string, value: string) => {
+    try {
+      if (typeof window !== 'undefined')
+        window.sessionStorage.setItem(key, value);
+    } catch {
+      /* no-op */
+    }
+  };
 
   // Extract user profile from Auth0 user
   const buildUserProfile =
@@ -70,12 +104,47 @@ function AuthContextProvider({ children }: Readonly<AuthProviderProps>) {
           }
         }
 
-        // Extract roles and permissions from token claims
-        const roles = (idToken?.[
-          'https://vitalsense.app/roles'
-        ] as string[]) || [USER_ROLES.PATIENT];
-        const permissions =
-          (idToken?.['https://vitalsense.app/permissions'] as string[]) || [];
+        // Extract roles and permissions from token claims (normalize shapes)
+        const rawRoles = idToken?.['https://vitalsense.app/roles'];
+        const rolesFromToken: string[] = Array.isArray(rawRoles)
+          ? (rawRoles as unknown[]).filter(
+              (r): r is string => typeof r === 'string' && r.trim().length > 0
+            )
+          : typeof rawRoles === 'string' && rawRoles.trim().length > 0
+            ? [rawRoles]
+            : [];
+
+        const rawPerms = idToken?.['https://vitalsense.app/permissions'];
+        let permissions: string[] = Array.isArray(rawPerms)
+          ? (rawPerms as unknown[]).filter(
+              (p): p is string => typeof p === 'string' && p.trim().length > 0
+            )
+          : typeof rawPerms === 'string' && rawPerms.trim().length > 0
+            ? [rawPerms]
+            : [];
+        // Fallback: if no explicit permissions claim, grant basic read permission for authenticated users
+        if (permissions.length === 0) {
+          permissions = [PERMISSIONS.READ_HEALTH_DATA];
+        }
+        // Always ensure baseline read permission for authenticated users
+        if (!permissions.includes(PERMISSIONS.READ_HEALTH_DATA)) {
+          permissions = [...permissions, PERMISSIONS.READ_HEALTH_DATA];
+        }
+
+        // Derive a minimal virtual role set when roles aren't configured in Auth0
+        // This keeps role-gated routes working using permission signals.
+        const roles: string[] =
+          rolesFromToken.length > 0
+            ? [...rolesFromToken]
+            : [USER_ROLES.PATIENT];
+        const perms = new Set(permissions);
+        if (
+          (perms.has(PERMISSIONS.MANAGE_USERS) ||
+            perms.has(PERMISSIONS.CONFIGURE_SYSTEM)) &&
+          !roles.includes(USER_ROLES.ADMIN)
+        ) {
+          roles.push(USER_ROLES.ADMIN);
+        }
 
         // Check for required HIPAA consent
         const hipaaConsent =
@@ -90,7 +159,8 @@ function AuthContextProvider({ children }: Readonly<AuthProviderProps>) {
           picture: auth0User.picture,
           roles: roles as UserRole[],
           permissions: permissions as Permission[],
-          lastLogin: new Date().toISOString(),
+          // Use Auth0 user timestamp to avoid changing on every render
+          lastLogin: getUpdatedAt(auth0User) ?? new Date().toISOString(),
           mfaEnabled,
           hipaaConsent,
           emergencyContacts: idToken?.[
@@ -98,14 +168,20 @@ function AuthContextProvider({ children }: Readonly<AuthProviderProps>) {
           ] as string[],
         };
 
-        // Log successful authentication
-        logAuthOperation('user_authentication', {
-          userId: profile.id,
-          email: profile.email,
-          roles,
-          mfaEnabled,
-          hipaaConsent,
-        });
+        // Log successful authentication once per tab session and once per mount
+        const logKey = `auth:logged:${profile.id}`;
+        const alreadyLogged = sessionGet(logKey);
+        if (!hasLoggedAuthRef.current && !alreadyLogged) {
+          logAuthOperation('user_authentication', {
+            userId: profile.id,
+            email: profile.email,
+            roles,
+            mfaEnabled,
+            hipaaConsent,
+          });
+          hasLoggedAuthRef.current = true;
+          sessionSet(logKey, '1');
+        }
 
         return profile;
       } catch (error) {
@@ -153,11 +229,7 @@ function AuthContextProvider({ children }: Readonly<AuthProviderProps>) {
       setIsLoading(false);
 
       // HIPAA consent: warn but do not force logout to avoid redirect loops
-      if (profile && !profile.hipaaConsent) {
-        toast.warning(
-          'HIPAA consent is not recorded. Some features may be limited until consent is granted.'
-        );
-      }
+      // Suppress HIPAA consent warning during initial auth to avoid noisy toasts
 
       // Enforce MFA for healthcare providers and admins
       if (
@@ -177,13 +249,7 @@ function AuthContextProvider({ children }: Readonly<AuthProviderProps>) {
       setUser(null);
       setIsLoading(auth0IsLoading);
     }
-  }, [
-    auth0IsAuthenticated,
-    auth0User,
-    auth0IsLoading,
-    buildUserProfile,
-    logout,
-  ]);
+  }, [auth0IsAuthenticated, auth0User, auth0IsLoading, buildUserProfile]);
 
   // Authentication methods
   const login = useCallback(async () => {

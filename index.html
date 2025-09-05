@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
       rel="stylesheet"
     />
-    <link href="/src/main.css" rel="stylesheet" />
+    <!-- Styles are imported via modules in src/main.tsx and bundled by Vite -->
     <script>
       (function () {
         try {
@@ -20,14 +20,48 @@
           if ((hasCode || hasState) && u.pathname !== '/callback') {
             window.location.replace('/callback' + u.search);
           }
-        } catch (e) {}
+        } catch (e) {
+          // swallow early redirect normalization errors but log
+          try { console.debug('redirect-normalize failed', e && e.message ? e.message : e); } catch {}
+        }
       })();
     </script>
-    <script src="/app-config.js"></script>
+    <script>
+      // Load runtime app config without letting Vite try to bundle it
+      (function () {
+        try {
+          var s = document.createElement('script');
+          s.src = '/app-config.js';
+          s.async = true;
+          document.head.appendChild(s);
+        } catch (e) {
+          try { console.debug('app-config loader failed', e && e.message ? e.message : e); } catch {}
+        }
+      })();
+    </script>
+    <script>
+    // Inline fallbacks to avoid race conditions before app-config.js loads
+      (function () {
+        try {
+      // Prefer local KV mode by default; /app-config.js may override
+      // eslint-disable-next-line no-var
+      var BASE_KV_SERVICE_URL = '';
+      // Expose on window for libraries that read from globals
+      window.BASE_KV_SERVICE_URL = BASE_KV_SERVICE_URL;
+      window.__VITALSENSE_KV_MODE = 'local';
+          // Auto-disable WS on demo routes
+          if (location.pathname.indexOf('/demo') === 0) {
+            window.VITALSENSE_DISABLE_WEBSOCKET = true;
+          }
+  } catch (e) { try { console.debug('inline-fallback failed', e && e.message ? e.message : e); } catch {} }
+      })();
+    </script>
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="spark-app" class="min-h-screen bg-background text-foreground">
+      <div id="root"></div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

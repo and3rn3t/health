@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ProcessedHealthData } from '@/schemas/health';
 import {
-  Activity,
-  Heart,
-  Pause,
-  Play,
-  RotateCcw,
-  Wifi,
-  WifiOff,
-  Zap,
+    Activity,
+    Heart,
+    Pause,
+    Play,
+    RotateCcw,
+    Wifi,
+    WifiOff,
+    Zap,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -107,10 +107,28 @@ export default function LiveDataStream({
   // WebSocket connection management
   const connectWebSocket = useCallback(() => {
     try {
-      // Use environment-specific WebSocket URL
-      const wsUrl = import.meta.env.DEV
-        ? 'ws://localhost:3001'
-        : 'wss://vitalsense.health/ws';
+      // Respect global disable flags (demo or user toggle)
+      try {
+        const disabled =
+          (typeof window !== 'undefined' &&
+            (window as unknown as { VITALSENSE_DISABLE_WEBSOCKET?: boolean })
+              .VITALSENSE_DISABLE_WEBSOCKET) ||
+          (typeof window !== 'undefined' &&
+            (window as unknown as { VITALSENSE_LIVE_DISABLED?: boolean })
+              .VITALSENSE_LIVE_DISABLED);
+        if (disabled) {
+          console.info('LiveDataStream: WebSocket disabled by flags');
+          return;
+        }
+      } catch {
+        // ignore
+      }
+
+      // Use same-origin WebSocket URL by default
+      const wsUrl = (() => {
+        const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        return `${proto}://${window.location.host}/ws`;
+      })();
 
       wsRef.current = new WebSocket(wsUrl);
 

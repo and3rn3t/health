@@ -24,6 +24,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import { toast } from 'sonner';
@@ -75,17 +76,23 @@ const authLog = {
   info: (...args: unknown[]) => {
     try {
       console.info('[auth]', ...args);
-    } catch {}
+    } catch {
+      /* no-op */
+    }
   },
   warn: (...args: unknown[]) => {
     try {
       console.warn('[auth]', ...args);
-    } catch {}
+    } catch {
+      /* no-op */
+    }
   },
   error: (...args: unknown[]) => {
     try {
       console.error('[auth]', ...args);
-    } catch {}
+    } catch {
+      /* no-op */
+    }
   },
 };
 
@@ -114,6 +121,23 @@ function AuthContextProvider({ children }: AuthProviderProps) {
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const hipaaWarnedRef = useRef(false);
+  const sessionGet = (k: string): string | null => {
+    try {
+      return typeof window !== 'undefined'
+        ? window.sessionStorage.getItem(k)
+        : null;
+    } catch {
+      return null;
+    }
+  };
+  const sessionSet = (k: string, v: string) => {
+    try {
+      if (typeof window !== 'undefined') window.sessionStorage.setItem(k, v);
+    } catch {
+      /* no-op */
+    }
+  };
 
   // Extract user profile from Auth0 user
   const buildUserProfile =
@@ -186,11 +210,14 @@ function AuthContextProvider({ children }: AuthProviderProps) {
       setUser(profile);
       setIsLoading(false);
 
-      // HIPAA consent: warn but do not force logout to avoid redirect loops
+      // HIPAA consent: no toast here; inline banner handles user messaging
       if (profile && !profile.hipaaConsent) {
-        toast.warning(
-          'HIPAA consent is not recorded. Some features may be limited until consent is granted.'
-        );
+        const key = `hipaa:warned:${profile.id}`;
+        const already = hipaaWarnedRef.current || !!sessionGet(key);
+        if (!already) {
+          hipaaWarnedRef.current = true;
+          sessionSet(key, '1');
+        }
       }
 
       // Enforce MFA for healthcare providers and admins

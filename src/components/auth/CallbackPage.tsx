@@ -9,10 +9,31 @@ import { CheckCircle, Heart, XCircle } from 'lucide-react';
 import { useEffect } from 'react';
 
 export default function CallbackPage() {
-  const { error, isLoading } = useAuth0();
+  const { error, isLoading, loginWithRedirect } = useAuth0();
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    // Recover when Auth0 returned without a state param (some proxies strip it)
+    try {
+      const url = new URL(window.location.href);
+      const hasCode = url.searchParams.has('code');
+      const hasState = url.searchParams.has('state');
+      const retried = sessionStorage.getItem('auth0_callback_retry') === '1';
+      if (hasCode && !hasState && !retried) {
+        sessionStorage.setItem('auth0_callback_retry', '1');
+        const redirectUri = `${window.location.origin}/callback`;
+        void loginWithRedirect({
+          authorizationParams: {
+            prompt: 'none',
+            redirect_uri: redirectUri,
+          },
+        });
+        return;
+      }
+    } catch {
+      // ignore
+    }
+
     // The Auth0Provider will handle the callback automatically
     // and redirect to the main app once authentication is complete
     let timeout: number | undefined;
@@ -37,7 +58,7 @@ export default function CallbackPage() {
     return () => {
       if (timeout) window.clearTimeout(timeout);
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loginWithRedirect]);
 
   if (error) {
     return (

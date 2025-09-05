@@ -1,8 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useKV } from '@github/spark/hooks';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -11,26 +7,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { toast } from 'sonner';
-import {
-  clampTtl,
-  decodeJwtExp,
-  formatCountdown,
-  isValidTtl,
-  isValidWsUrl,
-} from '@/lib/wsSettings';
-import { getLiveHealthDataSync } from '@/lib/liveHealthDataSync';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { getLiveHealthDataSync } from '@/lib/liveHealthDataSync';
+import { clampTtl, decodeJwtExp, isValidTtl, isValidWsUrl } from '@/lib/wsSettings';
+import { useKV } from '@github/spark/hooks';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export function WSTokenSettings() {
   // Restored KV persistence for production use
   const [storedToken, setStoredToken] = useKV<string>('ws-device-token', '');
 
-  const [wsUrl, setWsUrl] = useKV<string>('ws-url', 'ws://localhost:3001');
+  // Empty default means: use same-origin /ws implicitly
+  const [wsUrl, setWsUrl] = useKV<string>('ws-url', '');
 
   const [userId, setUserId] = useKV<string>('ws-user-id', 'default-user');
   const [open, setOpen] = useState(false);
@@ -40,10 +35,14 @@ export function WSTokenSettings() {
   const [ttlSec, setTtlSec] = useState<number>(600);
   const [loading, setLoading] = useState(false);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
-  const [countdown, setCountdown] = useState<string>('');
-  const [connected, setConnected] = useState<boolean>(false);
+  const [countdown] = useState<string>('');
+  const [connected] = useState<boolean>(false);
   const [autoRefreshExp, setAutoRefreshExp] = useState<number | null>(null);
-  const [lastRtt, setLastRtt] = useState<number | null>(null);
+  const [lastRtt] = useState<number | null>(null);
+  const [liveEnabled, setLiveEnabled] = useKV<boolean>(
+    'ws-live-enabled',
+    true
+  );
 
   // Sync global hint for ws client on mount and when stored token changes
   useEffect(() => {
@@ -60,42 +59,33 @@ export function WSTokenSettings() {
         if (wsUrl) {
           (window as unknown as { __WS_URL__?: string }).__WS_URL__ = wsUrl;
         }
+    // expose live-enabled as a global switch for hooks
+    (window as unknown as { VITALSENSE_LIVE_DISABLED?: boolean }).VITALSENSE_LIVE_DISABLED = !liveEnabled;
       }
     } catch {
       // ignore
     }
-  }, [storedToken, wsUrl]);
+  }, [storedToken, wsUrl, liveEnabled]);
 
   // Track token expiry and connected state - DISABLED for debugging
   useEffect(() => {
     const exp = storedToken ? decodeJwtExp(storedToken) : null;
     setExpiresAt(exp ? exp * 1000 : null);
-    // DISABLED aggressive polling that was causing console spam
-    /*
-    const i = setInterval(() => {
-      if (exp) {
-        const remain = Math.floor(exp - Date.now() / 1000);
-        setCountdown(formatCountdown(remain));
-      } else {
-        setCountdown('');
-      }
-      // poll connection state cheaply
-      try {
-        const sync = getLiveHealthDataSync(userId || 'default-user');
-        const status = sync.getConnectionStatus();
-        setConnected(status.connected);
-        setLastRtt(status.latency || null);
-      } catch {
-        // ignore
-      }
-    }, 1000);
-    return () => clearInterval(i);
-    */
+  // Polling removed to reduce console noise
   }, [storedToken, userId]);
 
   useEffect(() => {
     setDraft(storedToken || '');
-    setDraftUrl(wsUrl || 'ws://localhost:3001');
+    // Prefer same-origin when no explicit URL is set
+    const defaultSameOrigin = (() => {
+      try {
+        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+        return `${proto}://${location.host}/ws`;
+      } catch {
+        return '';
+      }
+    })();
+    setDraftUrl(wsUrl || defaultSameOrigin);
     setDraftUser(userId || 'default-user');
   }, [open, storedToken, wsUrl, userId]);
 
@@ -105,7 +95,7 @@ export function WSTokenSettings() {
 
   const onSave = () => {
     const url = draftUrl.trim();
-    if (!isValidWsUrl(url)) {
+    if (url && !isValidWsUrl(url)) {
       toast.error('WS URL must start with ws:// or wss://');
       return;
     }
@@ -321,16 +311,36 @@ export function WSTokenSettings() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-3">
+            <div className="flex items-center justify-between rounded-md border p-2">
+              <div className="text-sm">
+                <div className="font-medium">Live updates</div>
+                <div className="text-muted-foreground text-xs">
+                  Enable realtime WebSocket processing
+                </div>
+              </div>
+              <Button
+                variant={liveEnabled ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setLiveEnabled(!liveEnabled)}
+              >
+                {liveEnabled ? 'On' : 'Off'}
+              </Button>
+            </div>
             <div className="grid gap-1">
               <Label htmlFor="ws-url">WebSocket URL</Label>
               <Input
                 id="ws-url"
                 type="text"
-                placeholder="ws://localhost:3001"
+                placeholder={`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`}
                 value={draftUrl}
                 onChange={(e) => setDraftUrl(e.currentTarget.value)}
                 autoComplete="off"
               />
+              <p className="text-muted-foreground mt-1 text-[11px]">
+                Effective: <span className="font-mono">
+                  {wsUrl || `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`}
+                </span>
+              </p>
             </div>
             <div className="grid gap-1">
               <Label htmlFor="ws-user">User ID</Label>

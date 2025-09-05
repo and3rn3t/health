@@ -86,8 +86,13 @@ export class LiveHealthDataSync {
 
   constructor(userId: string, config?: Partial<WebSocketConfig>) {
     this.userId = userId;
+    let defaultUrl = config?.url || '';
+    if (!defaultUrl && typeof window !== 'undefined') {
+      const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
+      defaultUrl = `${proto}://${window.location.host}/ws`;
+    }
     this.config = {
-      url: config?.url || 'ws://localhost:3001',
+      url: defaultUrl,
       reconnectAttempts: config?.reconnectAttempts || 5,
       heartbeatInterval: config?.heartbeatInterval || 30000,
       connectionTimeout: config?.connectionTimeout || 10000,
