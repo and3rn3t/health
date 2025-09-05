@@ -17,7 +17,7 @@ export default [
       'build/**',
       'out/**',
       '.next/**',
-      
+
       // Development and tooling files that don't need linting
       'server/**',
       'ios/**',
@@ -30,7 +30,7 @@ export default [
       '**/*.json',
       '**/*.yml',
       '**/*.yaml',
-      
+
       // Build and cache directories
       '.cache/**',
       'coverage/**',
@@ -38,14 +38,14 @@ export default [
       'logs/**',
       '**/tmp/**',
       '**/temp/**',
-      
+
       // Generated and minified files
       '**/*.js.map',
       '**/*.min.js',
       '**/*.bundle.js',
       '**/*.generated.*',
       '.tsbuildinfo',
-      
+
       // Config files (handled separately below)
       'vite.*.config.*',
       'wrangler.toml',
@@ -67,7 +67,11 @@ export default [
       // Align JS unused vars severity with TS override
       'no-unused-vars': [
         'warn',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
       ],
     },
   },
@@ -91,7 +95,11 @@ export default [
     rules: {
       'no-unused-vars': [
         'warn',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
       ],
       'no-undef': 'off', // Node globals provided above
     },
