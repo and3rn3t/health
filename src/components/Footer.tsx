@@ -18,10 +18,10 @@ import {
 import { useEffect, useState } from 'react';
 
 interface FooterProps {
-  healthScore?: number;
-  lastSync?: Date;
-  connectionStatus?: 'connected' | 'disconnected' | 'syncing';
-  onNavigate: (tab: string) => void;
+  readonly healthScore?: number;
+  readonly lastSync?: Date;
+  readonly connectionStatus?: 'connected' | 'disconnected' | 'syncing';
+  readonly onNavigate: (tab: string) => void;
 }
 
 export default function Footer({

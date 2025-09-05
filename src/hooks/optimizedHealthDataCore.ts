@@ -1,4 +1,4 @@
-import type { ProcessedHealthData } from '@/schemas/health';
+import type { ProcessedHealthRecord } from '@/types';
 import { createContext, useContext, useMemo } from 'react';
 
 // Types for centralized state management
@@ -13,7 +13,7 @@ export type ConnectionState =
 export type SystemHealth = 'healthy' | 'degraded' | 'down';
 
 export interface HealthDataState {
-  rawData: ProcessedHealthData[];
+  rawData: ProcessedHealthRecord[];
   aggregatedMetrics: AggregatedMetrics | null;
   mlPredictions: MLPredictions | null;
   realTimeStream: LiveHealthData[];
@@ -68,7 +68,7 @@ export interface ConnectionStatus {
 export type HealthDataAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
-  | { type: 'UPDATE_RAW_DATA'; payload: ProcessedHealthData[] }
+  | { type: 'UPDATE_RAW_DATA'; payload: ProcessedHealthRecord[] }
   | { type: 'ADD_REAL_TIME_DATA'; payload: LiveHealthData }
   | { type: 'UPDATE_AGGREGATED_METRICS'; payload: AggregatedMetrics }
   | { type: 'UPDATE_ML_PREDICTIONS'; payload: MLPredictions }
@@ -166,7 +166,7 @@ export function healthDataReducer(
 
 // Context definition
 export interface HealthDataContextValue extends HealthDataState {
-  updateRawData: (data: ProcessedHealthData[]) => void;
+  updateRawData: (data: ProcessedHealthRecord[]) => void;
   addRealTimeData: (data: LiveHealthData) => void;
   updateAggregatedMetrics: (metrics: AggregatedMetrics) => void;
   updateMLPredictions: (predictions: MLPredictions) => void;
@@ -176,7 +176,7 @@ export interface HealthDataContextValue extends HealthDataState {
   clearOldRealTimeData: () => void;
 
   // Derived computed values (memoized)
-  recentHealthData: ProcessedHealthData[];
+  recentHealthData: ProcessedHealthRecord[];
   healthTrends: AggregatedMetrics['trends'] | null;
   riskLevel: RiskLevel;
   connectionQuality: 'excellent' | 'good' | 'poor' | 'offline';
@@ -249,7 +249,7 @@ export function useHealthDataActions(
 ) {
   return useMemo(
     () => ({
-      updateRawData: (data: ProcessedHealthData[]) =>
+  updateRawData: (data: ProcessedHealthRecord[]) =>
         dispatch({ type: 'UPDATE_RAW_DATA', payload: data }),
 
       addRealTimeData: (data: LiveHealthData) =>

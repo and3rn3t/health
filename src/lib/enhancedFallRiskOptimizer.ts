@@ -3,17 +3,18 @@
  * Advanced ML-powered optimization for fall risk prediction and intervention
  */
 
+import type { ProcessedHealthData as AnalyticsHealthData, MetricData } from '@/lib/healthDataProcessor';
 import { MLFallRiskPredictor, RiskPrediction } from '@/lib/mlFallRiskPredictor';
-import { ProcessedHealthData } from '@/types';
+import { normalizeToHealthData } from '@/lib/normalizeHealthInput';
+import type { ProcessedHealthRecord } from '@/types';
 
 interface ContextData {
   environmentalRisk?: number;
   weatherRisk?: number;
   locationComplexity?: number;
   acceptsTechnology?: boolean;
-  weather?: {
-    riskFactor: number;
-  };
+  weather?: { riskFactor: number };
+  [k: string]: unknown;
 }
 
 interface PersonalizedFactors {
@@ -106,12 +107,13 @@ interface PredictiveInsight {
   };
 }
 
+type HealthInput = ProcessedHealthRecord | ProcessedHealthRecord[] | AnalyticsHealthData;
+
 export class EnhancedFallRiskOptimizer {
-  private mlPredictor: MLFallRiskPredictor;
-  private interventionHistory: Map<string, OptimizedInterventionPlan[]> =
-    new Map();
-  private personalizedThresholds: Map<string, AdaptiveThreshold[]> = new Map();
-  private contextualFactors: Map<string, any> = new Map();
+  private readonly mlPredictor: MLFallRiskPredictor;
+  private readonly interventionHistory: Map<string, OptimizedInterventionPlan[]> = new Map();
+  private readonly personalizedThresholds: Map<string, AdaptiveThreshold[]> = new Map();
+  private readonly contextualFactors: Map<string, ContextData> = new Map();
 
   constructor() {
     this.mlPredictor = new MLFallRiskPredictor();
@@ -122,9 +124,10 @@ export class EnhancedFallRiskOptimizer {
    */
   async generateOptimizedInterventionPlan(
     userId: string,
-    healthData: ProcessedHealthData,
-    contextData?: any
+    input: HealthInput,
+    contextData?: ContextData
   ): Promise<OptimizedInterventionPlan> {
+    const healthData = this.normalizeInput(input);
     // Get base risk prediction
     const riskPrediction = await this.mlPredictor.predictFallRisk(
       healthData,
@@ -180,9 +183,10 @@ export class EnhancedFallRiskOptimizer {
    */
   async generatePredictiveInsights(
     userId: string,
-    healthData: ProcessedHealthData,
-    contextData?: any
+    input: HealthInput,
+    contextData?: ContextData
   ): Promise<PredictiveInsight[]> {
+    const healthData = this.normalizeInput(input);
     const timeHorizons: PredictiveInsight['timeHorizon'][] = [
       '1hour',
       '4hours',
@@ -195,9 +199,11 @@ export class EnhancedFallRiskOptimizer {
     const insights: PredictiveInsight[] = [];
 
     for (const horizon of timeHorizons) {
+      // Convert '30days' to '7days' since MLFallRiskPredictor doesn't support '30days'
+      const supportedHorizon = horizon === '30days' ? '7days' : horizon;
       const prediction = await this.mlPredictor.predictFallRisk(
         healthData,
-        horizon,
+        supportedHorizon,
         contextData
       );
 
@@ -234,7 +240,7 @@ export class EnhancedFallRiskOptimizer {
   private async updateAdaptiveThresholds(
     userId: string,
     prediction: RiskPrediction,
-    healthData: ProcessedHealthData
+    healthData: AnalyticsHealthData
   ): Promise<AdaptiveThreshold[]> {
     const currentThresholds = this.personalizedThresholds.get(userId) || [];
     const updatedThresholds: AdaptiveThreshold[] = [];
@@ -292,7 +298,7 @@ export class EnhancedFallRiskOptimizer {
    */
   private generateExerciseInterventions(
     riskLevel: RiskPrediction['riskLevel'],
-    personalizedFactors: any
+  personalizedFactors: PersonalizedFactors
   ): PersonalizedIntervention[] {
     const exercises: PersonalizedIntervention[] = [];
 
@@ -369,7 +375,7 @@ export class EnhancedFallRiskOptimizer {
    */
   private generateEnvironmentalInterventions(
     riskLevel: RiskPrediction['riskLevel'],
-    contextData?: any
+  contextData?: ContextData
   ): PersonalizedIntervention[] {
     const environmental: PersonalizedIntervention[] = [];
 
@@ -423,27 +429,21 @@ export class EnhancedFallRiskOptimizer {
    * Analyze personalized risk factors
    */
   private analyzePersonalizedFactors(
-    healthData: ProcessedHealthData,
+    healthData: AnalyticsHealthData,
     userHistory: OptimizedInterventionPlan[],
-    contextData?: any
-  ): any {
-    const walkingSteadiness =
-      healthData.metrics.walkingSteadiness?.average || 70;
-    const stepCount = healthData.metrics.steps?.average || 5000;
-    const heartRateVariability =
-      healthData.metrics.heartRateVariability?.average || 30;
+    contextData?: ContextData
+  ): PersonalizedFactors {
+    const getAvg = (metric?: MetricData) => metric?.average ?? 0;
+    const walkingSteadiness = getAvg(healthData.metrics.walkingSteadiness) || 70;
+    const stepCount = getAvg(healthData.metrics.steps) || 5000;
+  const metricsMap = healthData.metrics as Record<string, MetricData | undefined>;
+  const heartRateVariability = getAvg(metricsMap.heartRateVariability) || 30;
+  const walkingSpeed = getAvg(metricsMap.walkingSpeed) || 1.2;
+  const gaitAsymmetry = metricsMap.walkingStepLength?.variability || 0.1;
 
-    // Calculate personalized factors
     const balanceDeficit = Math.max(0, (80 - walkingSteadiness) / 80);
     const activityDeficit = Math.max(0, (8000 - stepCount) / 8000);
     const autonomicDysfunction = Math.max(0, (40 - heartRateVariability) / 40);
-
-    // Gait asymmetry calculation (simplified)
-    const gaitAsymmetry =
-      healthData.metrics.walkingStepLength?.variability || 0.1;
-
-    // Muscle weakness indicator
-    const walkingSpeed = healthData.metrics.walkingSpeed?.average || 1.2;
     const muscleWeakness = Math.max(0, (1.2 - walkingSpeed) / 1.2);
 
     return {
@@ -462,8 +462,8 @@ export class EnhancedFallRiskOptimizer {
    */
   private generateInterventionTimeline(
     prediction: RiskPrediction,
-    personalizedFactors: any,
-    contextData?: any
+  personalizedFactors: PersonalizedFactors,
+  contextData?: ContextData
   ): InterventionTimeline {
     const immediate: PersonalizedIntervention[] = [];
     const shortTerm: PersonalizedIntervention[] = [];
@@ -529,8 +529,8 @@ export class EnhancedFallRiskOptimizer {
    * Define success metrics for intervention tracking
    */
   private defineSuccessMetrics(
-    prediction: RiskPrediction,
-    personalizedFactors: any
+  prediction: RiskPrediction,
+  personalizedFactors: PersonalizedFactors
   ): SuccessMetric[] {
     const metrics: SuccessMetric[] = [];
 
@@ -591,9 +591,9 @@ export class EnhancedFallRiskOptimizer {
   }
 
   private analyzeTrend(
-    userId: string,
-    horizon: PredictiveInsight['timeHorizon'],
-    currentScore: number
+    _userId: string,
+    _horizon: PredictiveInsight['timeHorizon'],
+    _currentScore: number
   ): PredictiveInsight['riskTrend'] {
     // Simplified trend analysis - would use historical data in production
     const randomFactor = Math.random();
@@ -604,8 +604,8 @@ export class EnhancedFallRiskOptimizer {
   }
 
   private calculateConfidenceInterval(
-    prediction: RiskPrediction,
-    horizon: PredictiveInsight['timeHorizon']
+  prediction: RiskPrediction,
+  _horizon: PredictiveInsight['timeHorizon']
   ): [number, number] {
     const margin = (1 - prediction.confidence) * 0.2;
     return [
@@ -616,7 +616,7 @@ export class EnhancedFallRiskOptimizer {
 
   private identifyKeyDrivers(
     prediction: RiskPrediction,
-    healthData: ProcessedHealthData
+    _healthData: AnalyticsHealthData
   ): PredictiveInsight['keyDrivers'] {
     return prediction.primaryFactors.map((factor) => ({
       factor: factor.factor,
@@ -627,8 +627,8 @@ export class EnhancedFallRiskOptimizer {
   }
 
   private analyzeEnvironmentalFactors(
-    contextData: any,
-    horizon: PredictiveInsight['timeHorizon']
+    contextData: ContextData | undefined,
+    _horizon: PredictiveInsight['timeHorizon']
   ): PredictiveInsight['environmentalFactors'] {
     return {
       weather: contextData?.weather?.riskFactor || 0.3,
@@ -638,7 +638,7 @@ export class EnhancedFallRiskOptimizer {
     };
   }
 
-  private analyzeHistoricalPatterns(history: OptimizedInterventionPlan[]): any {
+  private analyzeHistoricalPatterns(_history: OptimizedInterventionPlan[]): HistoricalPatterns {
     return {
       averageAdherence: 0.75,
       effectiveInterventions: ['balance training', 'strength training'],
@@ -647,23 +647,23 @@ export class EnhancedFallRiskOptimizer {
   }
 
   private extractMetricValue(
-    healthData: ProcessedHealthData,
+    healthData: AnalyticsHealthData,
     metric: string
   ): number {
     switch (metric) {
       case 'walkingSteadiness':
         return healthData.metrics.walkingSteadiness?.average || 70;
       case 'gaitAsymmetry':
-        return healthData.metrics.walkingStepLength?.variability || 0.1;
+  return (healthData.metrics as Record<string, MetricData | undefined>).walkingStepLength?.variability || 0.1;
       default:
         return 0;
     }
   }
 
   private evaluateThresholdPerformance(
-    threshold: AdaptiveThreshold,
-    prediction: RiskPrediction,
-    metricValue: number
+  _threshold: AdaptiveThreshold,
+  _prediction: RiskPrediction,
+  _metricValue: number
   ): { accuracy: number; falsePositiveRate: number } {
     // Simplified performance evaluation
     return {
@@ -748,5 +748,12 @@ export class EnhancedFallRiskOptimizer {
   private getSeasonalityRisk(): number {
     const month = new Date().getMonth();
     return month >= 10 || month <= 2 ? 0.6 : 0.3; // Higher risk in winter months
+  }
+
+  private normalizeInput(
+    input: HealthInput,
+    options?: { bypassCache?: boolean }
+  ): AnalyticsHealthData {
+    return normalizeToHealthData(input, options);
   }
 }

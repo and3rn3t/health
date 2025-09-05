@@ -6,7 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ErrorContext } from '@/hooks/useErrorHandling';
 import { AppErrorHandler, ErrorFactory, SafeLogger } from '@/lib/errorHandling';
-import { AlertTriangleIcon, BugIcon, RefreshCwIcon } from 'lucide-react';
+import { AlertTriangle, Bug, RefreshCw } from 'lucide-react';
 import React from 'react';
 import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary';
 
@@ -21,7 +21,6 @@ interface ErrorFallbackProps {
 export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
   error,
   resetErrorBoundary,
-  errorInfo,
 }) => {
   // Convert to our AppError format for consistent handling
   const appError =
@@ -30,7 +29,6 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
       : ErrorFactory.processingError(
           error.message || 'Component error occurred',
           {
-            componentStack: errorInfo?.componentStack,
             errorName: error.name,
             errorStack: error.stack,
           }
@@ -53,7 +51,7 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <Alert variant="destructive" className="mb-6">
-          <AlertTriangleIcon className="h-4 w-4" />
+          <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Something went wrong</AlertTitle>
           <AlertDescription>
             {appError.userAction ||
@@ -64,7 +62,7 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
         {showTechnicalDetails && (
           <div className="bg-card mb-6 rounded-lg border p-4">
             <div className="mb-3 flex items-center gap-2">
-              <BugIcon className="text-muted-foreground h-4 w-4" />
+              <Bug className="text-muted-foreground h-4 w-4" />
               <h3 className="text-muted-foreground text-sm font-semibold">
                 Technical Details
               </h3>
@@ -102,7 +100,7 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
             className="w-full"
             variant="outline"
           >
-            <RefreshCwIcon className="mr-2 h-4 w-4" />
+            <RefreshCw className="mr-2 h-4 w-4" />
             Try Again
           </Button>
 
@@ -128,14 +126,12 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
 export const HealthDataErrorFallback: React.FC<ErrorFallbackProps> = ({
   error,
   resetErrorBoundary,
-  errorInfo,
 }) => {
   const appError =
     error instanceof AppErrorHandler
       ? error
       : ErrorFactory.processingError('Health data processing error', {
           originalMessage: error.message,
-          componentStack: errorInfo?.componentStack,
         });
 
   React.useEffect(() => {
@@ -145,7 +141,7 @@ export const HealthDataErrorFallback: React.FC<ErrorFallbackProps> = ({
   return (
     <div className="rounded-lg border bg-background p-6">
       <Alert variant="destructive" className="mb-4">
-        <AlertTriangleIcon className="h-4 w-4" />
+        <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Health Data Error</AlertTitle>
         <AlertDescription>
           Unable to process health data. Your data is safe, but we encountered
@@ -160,7 +156,7 @@ export const HealthDataErrorFallback: React.FC<ErrorFallbackProps> = ({
           size="sm"
           className="w-full"
         >
-          <RefreshCwIcon className="mr-2 h-4 w-4" />
+          <RefreshCw className="mr-2 h-4 w-4" />
           Retry Loading Data
         </Button>
 
@@ -187,7 +183,7 @@ export const NetworkErrorFallback: React.FC<ErrorFallbackProps> = ({
   return (
     <div className="rounded-lg border bg-background p-6">
       <Alert variant="destructive" className="mb-4">
-        <AlertTriangleIcon className="h-4 w-4" />
+        <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Connection Error</AlertTitle>
         <AlertDescription>
           {isNetworkError
@@ -202,7 +198,7 @@ export const NetworkErrorFallback: React.FC<ErrorFallbackProps> = ({
         size="sm"
         className="w-full"
       >
-        <RefreshCwIcon className="mr-2 h-4 w-4" />
+        <RefreshCw className="mr-2 h-4 w-4" />
         Try Again
       </Button>
     </div>
@@ -215,14 +211,14 @@ export const NetworkErrorFallback: React.FC<ErrorFallbackProps> = ({
 export const ComponentErrorBoundary: React.FC<{
   children: React.ReactNode;
   fallback?: React.ComponentType<ErrorFallbackProps>;
-  onError?: (error: Error, errorInfo: { componentStack: string }) => void;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 }> = ({
   children,
   fallback: FallbackComponent = HealthDataErrorFallback,
   onError,
 }) => {
   const handleError = React.useCallback(
-    (error: Error, errorInfo: { componentStack: string }) => {
+    (error: Error, errorInfo: React.ErrorInfo) => {
       // Log error with safe metadata
       const appError = ErrorFactory.processingError(
         'Component boundary error',
@@ -274,7 +270,7 @@ export const AppErrorBoundary: React.FC<{
   }, []);
 
   const handleError = React.useCallback(
-    (error: Error, errorInfo: { componentStack: string }) => {
+    (error: Error, errorInfo: React.ErrorInfo) => {
       SafeLogger.error('Application error boundary triggered', {
         errorName: error.name,
         errorCount: errorCount + 1,
@@ -310,58 +306,4 @@ export const AppErrorBoundary: React.FC<{
 /**
  * Hook for manual error reporting
  */
-export const useErrorReporting = () => {
-  const context = React.useContext(ErrorContext);
-
-  if (!context) {
-    throw new Error('useErrorReporting must be used within AppErrorBoundary');
-  }
-
-  return context;
-};
-
-/**
- * Hook for safe async operations with error handling
- */
-export const useSafeAsync = <T,>(
-  asyncFn: () => Promise<T>,
-  dependencies: React.DependencyList = []
-) => {
-  const [state, setState] = React.useState<{
-    data: T | null;
-    loading: boolean;
-    error: AppErrorHandler | null;
-  }>({
-    data: null,
-    loading: false,
-    error: null,
-  });
-
-  const { reportError } = useErrorReporting();
-
-  const execute = React.useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-
-    try {
-      const result = await asyncFn();
-      setState({ data: result, loading: false, error: null });
-      return result;
-    } catch (error) {
-      const appError =
-        error instanceof AppErrorHandler
-          ? error
-          : ErrorFactory.processingError(
-              error instanceof Error ? error.message : 'Async operation failed'
-            );
-
-      setState({ data: null, loading: false, error: appError });
-      reportError(appError);
-      throw appError;
-    }
-  }, dependencies);
-
-  return {
-    ...state,
-    execute,
-  };
-};
+// hooks moved to '@/hooks/useErrorReporting' and '@/hooks/useSafeAsync' to satisfy Fast Refresh

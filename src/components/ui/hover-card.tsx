@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 function HoverCard({
   ...props
-}: ComponentProps<typeof HoverCardPrimitive.Root>) {
+}: Readonly<ComponentProps<typeof HoverCardPrimitive.Root>>) {
   return <HoverCardPrimitive.Root data-slot="hover-card" {...props} />;
 }
 

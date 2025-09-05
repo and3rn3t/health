@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -6,30 +7,28 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProcessedHealthData } from '@/types';
+import { useKV } from '@github/spark/hooks';
 import {
+  Activity,
+  AlertTriangle,
+  Award,
   Brain,
-  Target,
-  TrendingUp,
+  Calendar,
+  CheckCircle,
   Clock,
   Heart,
-  Activity,
-  Shield,
   Lightbulb,
-  CheckCircle,
-  AlertTriangle,
-  Calendar,
+  Shield,
+  Target,
+  TrendingUp,
   Zap,
-  Award,
 } from 'lucide-react';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
-import { useKV } from '@github/spark/hooks';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface Recommendation {
@@ -58,12 +57,21 @@ interface AIRecommendationsProps {
   healthData: ProcessedHealthData;
 }
 
-const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
+const AIRecommendations = ({ healthData }: Readonly<AIRecommendationsProps>) => {
+  // Optional Spark integration guard
+  type SparkLike = {
+    llmPrompt: (
+      strings: TemplateStringsArray,
+      ...expr: unknown[]
+    ) => string;
+    llm: (prompt: string, model?: string, asJson?: boolean) => Promise<string>;
+  };
+  const spark = (globalThis as unknown as { spark?: SparkLike }).spark;
   const [recommendations, setRecommendations] = useKV<Recommendation[]>(
     'ai-recommendations',
     []
   );
-  const [completedRecommendations, setCompletedRecommendations] = useKV<
+  const [_completedRecommendations, setCompletedRecommendations] = useKV<
     string[]
   >('completed-recommendations', []);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -74,17 +82,16 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
   );
 
   // Generate AI recommendations based on health data
-  const generateRecommendations = async () => {
+  const generateRecommendations = useCallback(async () => {
     setIsGenerating(true);
     try {
-      const prompt = spark.llmPrompt`
+      const prompt = (spark?.llmPrompt || ((s: TemplateStringsArray) => s.join('')))`
         Based on this health data analysis, generate personalized health recommendations:
-        
+
         Health Score: ${healthData.healthScore}/100
         Fall Risk Factors: ${JSON.stringify(healthData.fallRiskFactors || [])}
-        Key Metrics: ${JSON.stringify(healthData.metrics)}
-        Health Trends: ${JSON.stringify(healthData.trends || [])}
-        
+  Key Metrics: ${JSON.stringify(healthData.metrics)}
+
         Generate 8-12 specific, actionable recommendations covering:
         - Exercise and movement optimization
         - Nutrition improvements
@@ -92,7 +99,7 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
         - Medical follow-ups
         - Lifestyle modifications
         - Fall prevention strategies
-        
+
         For each recommendation, provide:
         - Clear title and description
         - Category classification
@@ -103,7 +110,7 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
         - 3-5 specific action steps
         - Scientific reasoning
         - Supporting evidence points
-        
+
         Focus on recommendations that are:
         - Personalized to the specific health data patterns
         - Evidence-based and medically sound
@@ -112,23 +119,27 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
         - Realistic for the user's current health status
       `;
 
-      const response = await spark.llm(prompt, 'gpt-4o', true);
+      const response = spark?.llm
+        ? await spark.llm(prompt, 'gpt-4o', true)
+        : '[]';
       const generatedRecs = JSON.parse(response);
 
       // Add unique IDs and format recommendations
-      const formattedRecs: Recommendation[] = generatedRecs.map(
-        (rec: any, index: number) => ({
+      const formattedRecs: Recommendation[] = (generatedRecs as Array<
+        Partial<Recommendation>
+      >).map((rec, index: number) => ({
           id: `rec-${Date.now()}-${index}`,
-          title: rec.title,
-          description: rec.description,
-          category: rec.category,
-          priority: rec.priority,
-          impact: rec.impact,
-          difficulty: rec.difficulty,
-          timeframe: rec.timeframe,
-          actionSteps: rec.actionSteps,
-          reasoning: rec.reasoning,
-          evidence: rec.evidence,
+          title: String(rec.title || `Recommendation ${index + 1}`),
+          description: String(rec.description || ''),
+          category: (rec.category as Recommendation['category']) || 'lifestyle',
+          priority: (rec.priority as Recommendation['priority']) || 'medium',
+          impact: Number(rec.impact ?? 5),
+          difficulty: (rec.difficulty as Recommendation['difficulty']) ||
+            'moderate',
+          timeframe: String(rec.timeframe || '1-2 weeks'),
+          actionSteps: (rec.actionSteps as string[]) || [],
+          reasoning: String(rec.reasoning || ''),
+          evidence: (rec.evidence as string[]) || [],
           completed: false,
         })
       );
@@ -142,20 +153,20 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [healthData, setLastGenerated, setRecommendations, spark]);
 
   // Mark recommendation as completed
   const completeRecommendation = (id: string) => {
-    setRecommendations((current) =>
+    setRecommendations((current = []) =>
       current.map((rec) => (rec.id === id ? { ...rec, completed: true } : rec))
     );
-    setCompletedRecommendations((current) => [...current, id]);
+    setCompletedRecommendations((current = []) => [...current, id]);
     toast.success('Recommendation marked as completed!');
   };
 
   // Dismiss recommendation
   const dismissRecommendation = (id: string) => {
-    setRecommendations((current) =>
+    setRecommendations((current = []) =>
       current.map((rec) =>
         rec.id === id
           ? { ...rec, dateDismissed: new Date().toISOString() }
@@ -166,7 +177,8 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
   };
 
   // Filter recommendations
-  const filteredRecommendations = recommendations.filter((rec) => {
+  const safeRecs = recommendations ?? [];
+  const filteredRecommendations = safeRecs.filter((rec) => {
     if (rec.dateDismissed) return false;
     if (activeCategory === 'all') return true;
     if (activeCategory === 'completed') return rec.completed;
@@ -191,7 +203,9 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
   };
 
   // Get category icon
-  const getCategoryIcon = (category: string) => {
+  const getCategoryIcon = (
+    category: Recommendation['category'] | 'all' | 'active' | 'completed'
+  ) => {
     switch (category) {
       case 'exercise':
         return Activity;
@@ -211,8 +225,8 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
   };
 
   // Calculate completion statistics
-  const totalRecommendations = recommendations.length;
-  const completedCount = recommendations.filter((rec) => rec.completed).length;
+  const totalRecommendations = safeRecs.length;
+  const completedCount = safeRecs.filter((rec) => rec.completed).length;
   const completionRate =
     totalRecommendations > 0
       ? (completedCount / totalRecommendations) * 100
@@ -221,13 +235,13 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
   useEffect(() => {
     // Auto-generate recommendations if none exist and we have health data
     if (
-      recommendations.length === 0 &&
+  safeRecs.length === 0 &&
       healthData.metrics &&
       Object.keys(healthData.metrics).length > 0
     ) {
-      generateRecommendations();
+      void generateRecommendations();
     }
-  }, [healthData]);
+  }, [healthData, safeRecs.length, generateRecommendations]);
 
   return (
     <div className="space-y-6">
@@ -310,7 +324,7 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
               <div>
                 <p className="text-2xl font-bold">
                   {
-                    recommendations.filter(
+                    safeRecs.filter(
                       (rec) =>
                         rec.priority === 'high' || rec.priority === 'critical'
                     ).length
@@ -383,7 +397,7 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
                     No recommendations found
                   </h3>
                   <p className="text-muted-foreground">
-                    {recommendations.length === 0
+                    {safeRecs.length === 0
                       ? 'Generate AI recommendations to get personalized health interventions.'
                       : 'Try a different category or generate new recommendations.'}
                   </p>
@@ -391,28 +405,23 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
               ) : (
                 <ScrollArea className="h-[600px]">
                   <div className="space-y-4">
-                    {filteredRecommendations
-                      .sort((a, b) => {
-                        // Sort by priority first, then by impact
-                        const priorityOrder = {
-                          critical: 4,
-                          high: 3,
-                          medium: 2,
-                          low: 1,
-                        };
-                        const aPriority =
-                          priorityOrder[
-                            a.priority as keyof typeof priorityOrder
-                          ] || 0;
-                        const bPriority =
-                          priorityOrder[
-                            b.priority as keyof typeof priorityOrder
-                          ] || 0;
-                        if (aPriority !== bPriority)
-                          return bPriority - aPriority;
-                        return b.impact - a.impact;
-                      })
-                      .map((recommendation) => {
+                    {(() => {
+                      const priorityOrder = {
+                        critical: 4,
+                        high: 3,
+                        medium: 2,
+                        low: 1,
+                      } as const;
+                      const sorted = [...filteredRecommendations].sort(
+                        (a: Recommendation, b: Recommendation) => {
+                          const aPriority = priorityOrder[a.priority] || 0;
+                          const bPriority = priorityOrder[b.priority] || 0;
+                          if (aPriority !== bPriority)
+                            return bPriority - aPriority;
+                          return b.impact - a.impact;
+                        }
+                      );
+                      return sorted.map((recommendation: Recommendation) => {
                         const CategoryIcon = getCategoryIcon(
                           recommendation.category
                         );
@@ -502,9 +511,9 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
                                   </h4>
                                   <ul className="space-y-1">
                                     {recommendation.actionSteps.map(
-                                      (step, index) => (
+                                      (step: string, index: number) => (
                                         <li
-                                          key={index}
+                                          key={`step-${recommendation.id}-${index}-${step.slice(0,20)}`}
                                           className="flex items-start gap-2 text-sm"
                                         >
                                           <span className="text-primary mt-1 font-semibold">
@@ -535,9 +544,9 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
                                     </h4>
                                     <ul className="space-y-1">
                                       {recommendation.evidence.map(
-                                        (evidence, index) => (
+                                        (evidence: string, index: number) => (
                                           <li
-                                            key={index}
+                                            key={`evidence-${recommendation.id}-${index}-${evidence.slice(0,20)}`}
                                             className="text-muted-foreground flex items-start gap-1 text-sm"
                                           >
                                             <span className="text-primary">
@@ -554,7 +563,8 @@ const AIRecommendations = ({ healthData }: AIRecommendationsProps) => {
                             </CardContent>
                           </Card>
                         );
-                      })}
+                      });
+                    })()}
                   </div>
                 </ScrollArea>
               )}

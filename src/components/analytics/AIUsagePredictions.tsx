@@ -10,18 +10,32 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { ProcessedHealthData } from '@/types';
 import { useKV } from '@github/spark/hooks';
-import { Brain, CheckCircle, Clock, Sparkles, Target } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import {
+  Activity,
+  Brain,
+  CheckCircle,
+  Clock,
+  Sparkles,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Zap,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
+type Timeframe = '7days' | '30days' | '90days';
+type Trend = 'increasing' | 'decreasing' | 'stable';
+type RiskLevel = 'low' | 'medium' | 'high';
 
 interface UsagePrediction {
   metric: string;
-  currentTrend: 'increasing' | 'decreasing' | 'stable';
+  currentTrend: Trend;
   predictedValue: number;
   confidence: number;
-  timeframe: '7days' | '30days' | '90days';
+  timeframe: Timeframe;
   factors: string[];
   recommendation: string;
 }
@@ -30,7 +44,7 @@ interface EngagementForecast {
   period: string;
   predictedEngagement: number;
   healthScore: number;
-  riskLevel: 'low' | 'medium' | 'high';
+  riskLevel: RiskLevel;
   keyPredictions: UsagePrediction[];
 }
 
@@ -40,7 +54,17 @@ interface AIUsagePredictionsProps {
 
 export default function AIUsagePredictions({
   healthData,
-}: AIUsagePredictionsProps) {
+}: Readonly<AIUsagePredictionsProps>) {
+  // Optional Spark LLM integration (guarded for environments without spark)
+  type SparkLike = {
+    llmPrompt: (
+      strings: TemplateStringsArray,
+      ...expr: unknown[]
+    ) => string;
+    llm: (prompt: string, model?: string, asJson?: boolean) => Promise<string>;
+  };
+  const spark = (globalThis as unknown as { spark?: SparkLike }).spark;
+
   const [predictions, setPredictions] = useKV<UsagePrediction[]>(
     'usage-predictions',
     []
@@ -50,36 +74,43 @@ export default function AIUsagePredictions({
     []
   );
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedTimeframe, setSelectedTimeframe] = useState<
-    '7days' | '30days' | '90days'
-  >('30days');
+  const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe>(
+    '30days'
+  );
 
   // Generate AI-powered predictions
-  const generatePredictions = async () => {
+  const generatePredictions = useCallback(async () => {
     setIsGenerating(true);
 
     try {
-      // Create comprehensive usage analysis prompt
-      const prompt = spark.llmPrompt`
-        Based on the following health data, generate detailed usage predictions and engagement forecasts:
+      // Optionally call Spark LLM if available (not strictly required)
+      if (spark?.llmPrompt && spark?.llm) {
+        const prompt = spark.llmPrompt`
+          Based on the following health data, generate detailed usage predictions and engagement forecasts:
 
-        Health Score: ${healthData.healthScore || 0}
-        Fall Risk Factors: ${JSON.stringify(healthData.fallRiskFactors || [])}
-        Key Metrics: ${JSON.stringify(healthData.metrics || {})}
+          Health Score: ${healthData.healthScore || 0}
+          Fall Risk Factors: ${JSON.stringify(
+            healthData.fallRiskFactors || []
+          )}
+          Key Metrics: ${JSON.stringify(healthData.metrics || {})}
 
-        Generate predictions for:
-        1. Health monitoring engagement patterns
-        2. Feature usage trends
-        3. Data upload frequency
-        4. Alert response rates
-        5. Goal achievement likelihood
+          Generate predictions for:
+          1. Health monitoring engagement patterns
+          2. Feature usage trends
+          3. Data upload frequency
+          4. Alert response rates
+          5. Goal achievement likelihood
 
-        Consider seasonal patterns, health trends, and behavioral indicators.
-        Focus on actionable insights that can improve health outcomes.
-      `;
-
-      const predictionData = await spark.llm(prompt, 'gpt-4o', true);
-      const parsedData = JSON.parse(predictionData);
+          Consider seasonal patterns, health trends, and behavioral indicators.
+          Focus on actionable insights that can improve health outcomes.
+        `;
+        // Fire-and-forget; result is optional and ignored if not valid JSON
+        try {
+          await spark.llm(prompt, 'gpt-4o', true);
+        } catch {
+          // Non-fatal: continue with heuristic predictions below
+        }
+      }
 
       // Generate mock predictions based on health data with more sophisticated analysis
       const currentTime = new Date();
@@ -88,7 +119,7 @@ export default function AIUsagePredictions({
       const seasonFactor =
         Math.sin((currentTime.getMonth() / 12) * 2 * Math.PI) * 0.1 + 1;
 
-      const newPredictions: UsagePrediction[] = [
+  const newPredictions: UsagePrediction[] = [
         {
           metric: 'Daily Health Monitoring',
           currentTrend:
@@ -189,17 +220,18 @@ export default function AIUsagePredictions({
       ];
 
       // Generate engagement forecasts
+      const riskFromScore = (score: number): RiskLevel => {
+        if (score > 75) return 'low';
+        if (score > 50) return 'medium';
+        return 'high';
+      };
+
       const newForecasts: EngagementForecast[] = [
         {
           period: 'Next 7 Days',
           predictedEngagement: Math.max(60, (healthData.healthScore || 0) - 10),
           healthScore: Math.min(100, (healthData.healthScore || 0) + 5),
-          riskLevel:
-            healthData.healthScore > 75
-              ? 'low'
-              : healthData.healthScore > 50
-                ? 'medium'
-                : 'high',
+          riskLevel: riskFromScore(healthData.healthScore || 0),
           keyPredictions: newPredictions.filter(
             (p) => p.timeframe === '7days' || p.confidence > 0.85
           ),
@@ -208,12 +240,7 @@ export default function AIUsagePredictions({
           period: 'Next 30 Days',
           predictedEngagement: Math.max(50, (healthData.healthScore || 0) - 15),
           healthScore: Math.min(100, (healthData.healthScore || 0) + 3),
-          riskLevel:
-            healthData.healthScore > 70
-              ? 'low'
-              : healthData.healthScore > 45
-                ? 'medium'
-                : 'high',
+          riskLevel: riskFromScore((healthData.healthScore || 0) - 5),
           keyPredictions: newPredictions.filter(
             (p) => p.timeframe === '30days' || p.confidence > 0.8
           ),
@@ -222,12 +249,7 @@ export default function AIUsagePredictions({
           period: 'Next 90 Days',
           predictedEngagement: Math.max(40, (healthData.healthScore || 0) - 20),
           healthScore: Math.max(30, (healthData.healthScore || 0) - 5),
-          riskLevel:
-            healthData.healthScore > 65
-              ? 'low'
-              : healthData.healthScore > 40
-                ? 'medium'
-                : 'high',
+          riskLevel: riskFromScore((healthData.healthScore || 0) - 10),
           keyPredictions: newPredictions.filter(
             (p) => p.timeframe === '90days' || p.confidence > 0.75
           ),
@@ -244,16 +266,20 @@ export default function AIUsagePredictions({
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [healthData, selectedTimeframe, setForecasts, setPredictions, spark]);
+
+  // Safe fallbacks for possibly undefined KV reads
+  const safePredictions = predictions ?? [];
+  const safeForecasts = forecasts ?? [];
 
   // Auto-generate predictions on component mount
   useEffect(() => {
-    if (healthData && predictions.length === 0) {
-      generatePredictions();
+    if (healthData && safePredictions.length === 0) {
+      void generatePredictions();
     }
-  }, [healthData]);
+  }, [healthData, safePredictions.length, generatePredictions]);
 
-  const getTrendIcon = (trend: string) => {
+  const getTrendIcon = (trend: Trend) => {
     switch (trend) {
       case 'increasing':
         return <TrendingUp className="h-4 w-4 text-green-500" />;
@@ -264,7 +290,7 @@ export default function AIUsagePredictions({
     }
   };
 
-  const getRiskColor = (level: string) => {
+  const getRiskColor = (level: RiskLevel) => {
     switch (level) {
       case 'low':
         return 'text-green-600 bg-green-50 border-green-200';
@@ -311,8 +337,11 @@ export default function AIUsagePredictions({
 
       {/* Engagement Forecasts */}
       <div className="grid gap-6 md:grid-cols-3">
-        {forecasts.map((forecast, index) => (
-          <Card key={index} className="relative overflow-hidden">
+  {safeForecasts.map((forecast) => (
+          <Card
+            key={`forecast-${forecast.period}`}
+            className="relative overflow-hidden"
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">{forecast.period}</CardTitle>
@@ -373,7 +402,9 @@ export default function AIUsagePredictions({
         <CardContent>
           <Tabs
             value={selectedTimeframe}
-            onValueChange={(value) => setSelectedTimeframe(value as any)}
+            onValueChange={(value) =>
+              setSelectedTimeframe(value as '7days' | '30days' | '90days')
+            }
           >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="7days">7 Days</TabsTrigger>
@@ -382,10 +413,13 @@ export default function AIUsagePredictions({
             </TabsList>
 
             <TabsContent value={selectedTimeframe} className="mt-6 space-y-4">
-              {predictions
+              {safePredictions
                 .filter((p) => p.timeframe === selectedTimeframe)
-                .map((prediction, index) => (
-                  <Card key={index} className="border-l-primary border-l-4">
+                .map((prediction) => (
+                  <Card
+                    key={`${prediction.metric}-${prediction.timeframe}`}
+                    className="border-l-primary border-l-4"
+                  >
                     <CardContent className="p-4">
                       <div className="mb-3 flex items-start justify-between">
                         <div className="flex items-center gap-2">
@@ -419,9 +453,9 @@ export default function AIUsagePredictions({
                               Key Factors:
                             </h5>
                             <div className="flex flex-wrap gap-1">
-                              {prediction.factors.map((factor, idx) => (
+                {prediction.factors.map((factor) => (
                                 <Badge
-                                  key={idx}
+                  key={`${prediction.metric}-${factor}`}
                                   variant="secondary"
                                   className="text-xs"
                                 >

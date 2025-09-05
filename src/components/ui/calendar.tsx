@@ -1,10 +1,25 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ComponentProps } from 'react';
-import ChevronLeft from 'lucide-react/dist/esm/icons/chevron-left';
-import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right';
 import { DayPicker } from 'react-day-picker';
 
-import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+function PrevButton({ className, ...props }: ComponentProps<'button'>) {
+  return (
+    <button aria-label="Previous Month" {...props} className={className}>
+      <ChevronLeft className={cn('size-4')} />
+    </button>
+  );
+}
+
+function NextButton({ className, ...props }: ComponentProps<'button'>) {
+  return (
+    <button aria-label="Next Month" {...props} className={className}>
+      <ChevronRight className={cn('size-4')} />
+    </button>
+  );
+}
 
 function Calendar({
   className,
@@ -59,12 +74,8 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        PreviousMonthButton: ({ className, ...props }) => (
-          <ChevronLeft className={cn('size-4', className)} {...props} />
-        ),
-        NextMonthButton: ({ className, ...props }) => (
-          <ChevronRight className={cn('size-4', className)} {...props} />
-        ),
+        PreviousMonthButton: PrevButton,
+        NextMonthButton: NextButton,
       }}
       {...props}
     />

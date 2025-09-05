@@ -3,6 +3,8 @@ build
 coverage
 dist
 dist-worker
+.vite
+test-build
 .wrangler
 
 # Ignore all JS/TS files in node_modules

@@ -294,12 +294,12 @@ app.use('/api/*', async (c, next) => {
   const url = new URL(c.req.url);
   const pathname = url.pathname;
   // Allowlist harmless info endpoints for unauthenticated GETs
-  const publicInfo = c.req.method === 'GET' && (
-    pathname === '/api/ws-url' ||
-    pathname === '/api/ws-device-token' ||
-    pathname === '/api/ws-user-id' ||
-    pathname === '/api/ws-live-enabled'
-  );
+  const publicInfo =
+    c.req.method === 'GET' &&
+    (pathname === '/api/ws-url' ||
+      pathname === '/api/ws-device-token' ||
+      pathname === '/api/ws-user-id' ||
+      pathname === '/api/ws-live-enabled');
 
   const key = deriveRateLimitKey(c);
   if (!(await rateLimitDO(c, key)))
@@ -350,7 +350,8 @@ app.get('/app-config.js', (c) => {
   const clientId = c.env.AUTH0_CLIENT_ID || '';
   const baseUrl = c.env.BASE_URL || new URL(c.req.url).origin;
   const redirectUri = `${baseUrl}/callback`;
-  const kvMode = (c.env.ENVIRONMENT || 'unknown') === 'production' ? 'local' : 'network';
+  const kvMode =
+    (c.env.ENVIRONMENT || 'unknown') === 'production' ? 'local' : 'network';
   const js = `// Runtime app config (loaded before app bundle)
 window.__VITALSENSE_CONFIG__ = ${JSON.stringify({
     environment: c.env.ENVIRONMENT || 'unknown',

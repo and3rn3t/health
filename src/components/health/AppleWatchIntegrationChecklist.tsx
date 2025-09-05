@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -7,27 +7,26 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@github/spark/hooks';
 import {
+  AlertTriangle,
+  Apple,
   CheckCircle,
   Circle,
   Clock,
-  AlertTriangle,
-  Apple,
-  Watch,
-  Smartphone,
-  Shield,
   Code,
-  FlaskConical,
-  Upload,
-  Settings,
   FileText,
+  FlaskConical,
+  Settings,
+  Shield,
+  Smartphone,
+  Upload,
+  Watch,
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface IntegrationTask {
   id: string;
@@ -39,6 +38,20 @@ interface IntegrationTask {
   dependencies: string[];
   completed: boolean;
   notes?: string;
+}
+
+function DependencyBadge({ depId, tasks }: Readonly<{ depId: string; tasks: IntegrationTask[] | undefined }>) {
+  const list = tasks ?? [];
+  const depTask = list.find((t) => t.id === depId);
+  const depCompleted = !!depTask?.completed;
+  const variant = depCompleted ? 'default' : 'secondary' as const;
+  const Icon = depCompleted ? CheckCircle : Clock;
+  return (
+    <Badge key={depId} variant={variant} className="text-xs">
+      <Icon className="mr-1 h-3 w-3" />
+      {depTask?.title ?? depId}
+    </Badge>
+  );
 }
 
 export default function AppleWatchIntegrationChecklist() {
@@ -242,40 +255,38 @@ export default function AppleWatchIntegrationChecklist() {
 
   const toggleTask = (taskId: string) => {
     setTasks((currentTasks) =>
-      currentTasks.map((task) =>
+      (currentTasks ?? []).map((task) =>
         task.id === taskId ? { ...task, completed: !task.completed } : task
       )
     );
   };
 
   const getTasksByCategory = (category: string) => {
-    if (category === 'all') return tasks;
-    return tasks.filter((task) => task.category === category);
+    const list = tasks ?? [];
+    if (category === 'all') return list;
+    return list.filter((task) => task.category === category);
   };
 
   const calculateProgress = (category?: string) => {
-    const relevantTasks = category
-      ? tasks.filter((t) => t.category === category)
-      : tasks;
+    const list = tasks ?? [];
+    const relevantTasks = category ? list.filter((t) => t.category === category) : list;
     const completedTasks = relevantTasks.filter((t) => t.completed).length;
-    return Math.round((completedTasks / relevantTasks.length) * 100);
+    return Math.round((completedTasks / (relevantTasks.length || 1)) * 100);
   };
 
   const getTotalHours = (category?: string) => {
-    const relevantTasks = category
-      ? tasks.filter((t) => t.category === category)
-      : tasks;
-    return relevantTasks.reduce(
+    const list = tasks ?? [];
+    const relevantTasks = category ? list.filter((t) => t.category === category) : list;
+    return (relevantTasks).reduce(
       (total, task) => total + task.estimatedHours,
       0
     );
   };
 
   const getCompletedHours = (category?: string) => {
-    const relevantTasks = category
-      ? tasks.filter((t) => t.category === category)
-      : tasks;
-    return relevantTasks
+    const list = tasks ?? [];
+    const relevantTasks = category ? list.filter((t) => t.category === category) : list;
+    return (relevantTasks)
       .filter((t) => t.completed)
       .reduce((total, task) => total + task.estimatedHours, 0);
   };
@@ -334,8 +345,9 @@ export default function AppleWatchIntegrationChecklist() {
 
   const overallProgress = calculateProgress();
   const isBlockedTask = (task: IntegrationTask) => {
+    const list = tasks ?? [];
     return task.dependencies.some(
-      (depId) => !tasks.find((t) => t.id === depId)?.completed
+      (depId) => !list.find((t) => t.id === depId)?.completed
     );
   };
 
@@ -373,7 +385,7 @@ export default function AppleWatchIntegrationChecklist() {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">
-                {tasks.filter((t) => t.completed).length}
+                {(tasks ?? []).filter((t) => t.completed).length}
               </div>
               <div className="text-muted-foreground text-sm">
                 Tasks Complete
@@ -381,10 +393,7 @@ export default function AppleWatchIntegrationChecklist() {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">
-                {
-                  tasks.filter((t) => t.priority === 'high' && !t.completed)
-                    .length
-                }
+                {(tasks ?? []).filter((t) => t.priority === 'high' && !t.completed).length}
               </div>
               <div className="text-muted-foreground text-sm">
                 High Priority Remaining
@@ -542,28 +551,9 @@ export default function AppleWatchIntegrationChecklist() {
                               <span className="text-muted-foreground">
                                 Depends on:
                               </span>
-                              {task.dependencies.map((depId) => {
-                                const depTask = tasks.find(
-                                  (t) => t.id === depId
-                                );
-                                const depCompleted = depTask?.completed;
-                                return (
-                                  <Badge
-                                    key={depId}
-                                    variant={
-                                      depCompleted ? 'default' : 'secondary'
-                                    }
-                                    className="text-xs"
-                                  >
-                                    {depCompleted ? (
-                                      <CheckCircle className="mr-1 h-3 w-3" />
-                                    ) : (
-                                      <Clock className="mr-1 h-3 w-3" />
-                                    )}
-                                    {depTask?.title}
-                                  </Badge>
-                                );
-                              })}
+                              {(task.dependencies || []).map((depId) => (
+                                <DependencyBadge key={depId} depId={depId} tasks={tasks} />
+                              ))}
                             </div>
                           )}
 

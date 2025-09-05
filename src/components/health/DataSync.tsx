@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { ProcessedHealthData } from '@/schemas/health';
+import { ProcessedHealthData } from '@/types';
 import {
   AlertTriangle,
   CheckCircle,

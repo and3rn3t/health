@@ -21,37 +21,109 @@ interface ProtectedRouteProps {
   fallback?: ReactNode;
 }
 
+// Small helpers and presentational components kept outside to avoid nested components
+const anyOrAll = <T,>(items: T[], all: boolean, pred: (t: T) => boolean) =>
+  all ? items.every(pred) : items.some(pred);
+
+const LoadingView = () => (
+  <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <Card className="w-full max-w-md">
+      <CardHeader className="text-center">
+        <div className="mb-4 flex justify-center">
+          <div className="rounded-full bg-blue-600 p-3">
+            <Heart className="h-8 w-8 animate-pulse text-white" />
+          </div>
+        </div>
+        <CardTitle>VitalSense Health</CardTitle>
+      </CardHeader>
+      <CardContent className="text-center">
+        <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+        <p className="text-gray-600">Loading your secure session...</p>
+      </CardContent>
+    </Card>
+  </div>
+);
+
+const LoginView = ({ onLogin }: { onLogin: () => void }) => (
+  <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <Card className="w-full max-w-md">
+      <CardHeader className="text-center">
+        <Shield className="mx-auto mb-4 h-12 w-12 text-blue-600" />
+        <CardTitle>Authentication Required</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 text-center">
+        <p className="text-gray-600">
+          Please sign in to access this secure area of the application.
+        </p>
+        <Button onClick={onLogin} className="w-full">
+          <Lock className="mr-2 h-4 w-4" />
+          Sign In Securely
+        </Button>
+        <Alert>
+          <Shield className="h-4 w-4" />
+          <AlertDescription className="text-xs">
+            Your session is protected by enterprise-grade security including
+            HIPAA compliance and multi-factor authentication.
+          </AlertDescription>
+        </Alert>
+      </CardContent>
+    </Card>
+  </div>
+);
+
+type AccessDeniedViewProps = {
+  title: string;
+  message: string;
+  requiredLabel: string;
+  requiredItems: string[];
+  userLabel: string;
+  userItems: string[];
+};
+
+const AccessDeniedView = ({
+  title,
+  message,
+  requiredLabel,
+  requiredItems,
+  userLabel,
+  userItems,
+}: AccessDeniedViewProps) => (
+  <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <Card className="w-full max-w-md">
+      <CardHeader className="text-center">
+        <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-red-500" />
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 text-center">
+        <p className="text-gray-600">{message}</p>
+        <Alert>
+          <AlertDescription>
+            <strong>{requiredLabel}:</strong>{' '}
+            {requiredItems.join(', ') || 'None'}
+            <br />
+            <strong>{userLabel}:</strong> {userItems.join(', ') || 'None'}
+          </AlertDescription>
+        </Alert>
+        <p className="text-sm text-gray-500">
+          Contact your administrator if you believe you should have access.
+        </p>
+      </CardContent>
+    </Card>
+  </div>
+);
+
 export default function ProtectedRoute({
   children,
   requiredRoles = [],
   requiredPermissions = [],
   requireAll = false,
   fallback,
-}: ProtectedRouteProps) {
+}: Readonly<ProtectedRouteProps>) {
   const { isAuthenticated, isLoading, user, hasRole, hasPermission, login } =
     useAuth();
 
   // Show loading state
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mb-4 flex justify-center">
-              <div className="rounded-full bg-blue-600 p-3">
-                <Heart className="h-8 w-8 animate-pulse text-white" />
-              </div>
-            </div>
-            <CardTitle>VitalSense Health</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
-            <p className="text-gray-600">Loading your secure session...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingView />;
 
   // Allow initial pass-through right after authentication while the profile hydrates
   if (isAuthenticated && !user) {
@@ -59,69 +131,22 @@ export default function ProtectedRoute({
   }
 
   // Show login prompt if not authenticated
-  if (!isAuthenticated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <Shield className="mx-auto mb-4 h-12 w-12 text-blue-600" />
-            <CardTitle>Authentication Required</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-center">
-            <p className="text-gray-600">
-              Please sign in to access this secure area of the application.
-            </p>
-            <Button onClick={login} className="w-full">
-              <Lock className="mr-2 h-4 w-4" />
-              Sign In Securely
-            </Button>
-            <Alert>
-              <Shield className="h-4 w-4" />
-              <AlertDescription className="text-xs">
-                Your session is protected by enterprise-grade security including
-                HIPAA compliance and multi-factor authentication.
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  if (!isAuthenticated) return <LoginView onLogin={login} />;
 
   // Check role requirements
   if (requiredRoles.length > 0 && user) {
-    const hasRequiredRoles = requireAll
-      ? requiredRoles.every((role) => hasRole(role))
-      : requiredRoles.some((role) => hasRole(role));
-
-    if (!hasRequiredRoles) {
+    const rolesOk = anyOrAll(requiredRoles, requireAll, hasRole);
+    if (!rolesOk) {
       return (
         fallback || (
-          <div className="flex min-h-screen items-center justify-center bg-gray-50">
-            <Card className="w-full max-w-md">
-              <CardHeader className="text-center">
-                <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-red-500" />
-                <CardTitle>Access Denied</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 text-center">
-                <p className="text-gray-600">
-                  You don't have the required role to access this area.
-                </p>
-                <Alert>
-                  <AlertDescription>
-                    <strong>Required roles:</strong> {requiredRoles.join(', ')}
-                    <br />
-                    <strong>Your roles:</strong>{' '}
-                    {user.roles.join(', ') || 'None'}
-                  </AlertDescription>
-                </Alert>
-                <p className="text-sm text-gray-500">
-                  Contact your administrator if you believe you should have
-                  access.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+          <AccessDeniedView
+            title="Access Denied"
+            message="You don't have the required role to access this area."
+            requiredLabel="Required roles"
+            requiredItems={requiredRoles}
+            userLabel="Your roles"
+            userItems={user.roles}
+          />
         )
       );
     }
@@ -130,42 +155,20 @@ export default function ProtectedRoute({
   // Check permission requirements
   if (requiredPermissions.length > 0 && user) {
     // If permissions haven't hydrated yet, allow access to avoid loops
-    if (!user.permissions || user.permissions.length === 0) {
+    if (!user.permissions || user.permissions.length === 0)
       return <>{children}</>;
-    }
-    const hasRequiredPermissions = requireAll
-      ? requiredPermissions.every((permission) => hasPermission(permission))
-      : requiredPermissions.some((permission) => hasPermission(permission));
-
-    if (!hasRequiredPermissions) {
+    const permsOk = anyOrAll(requiredPermissions, requireAll, hasPermission);
+    if (!permsOk) {
       return (
         fallback || (
-          <div className="flex min-h-screen items-center justify-center bg-gray-50">
-            <Card className="w-full max-w-md">
-              <CardHeader className="text-center">
-                <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-red-500" />
-                <CardTitle>Access Denied</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 text-center">
-                <p className="text-gray-600">
-                  You don't have the required permissions to access this area.
-                </p>
-                <Alert>
-                  <AlertDescription>
-                    <strong>Required permissions:</strong>{' '}
-                    {requiredPermissions.join(', ')}
-                    <br />
-                    <strong>Your permissions:</strong>{' '}
-                    {user.permissions.join(', ') || 'None'}
-                  </AlertDescription>
-                </Alert>
-                <p className="text-sm text-gray-500">
-                  Contact your administrator if you believe you should have
-                  access.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+          <AccessDeniedView
+            title="Access Denied"
+            message="You don't have the required permissions to access this area."
+            requiredLabel="Required permissions"
+            requiredItems={requiredPermissions}
+            userLabel="Your permissions"
+            userItems={user.permissions}
+          />
         )
       );
     }

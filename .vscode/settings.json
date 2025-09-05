@@ -1,11 +1,8 @@
 {
-  // TypeScript & JavaScript settings
   "typescript.preferences.quoteStyle": "single",
   "typescript.updateImportsOnFileMove.enabled": "always",
   "typescript.preferences.importModuleSpecifier": "relative",
   "javascript.preferences.quoteStyle": "single",
-
-  // Editor formatting and behavior
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
@@ -16,14 +13,10 @@
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
   "editor.detectIndentation": false,
-
-  // File handling
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
   "files.eol": "\n",
-
-  // File associations
   "files.associations": {
     "*.tsx": "typescriptreact",
     "*.ts": "typescript",
@@ -34,14 +27,10 @@
     "wrangler.toml": "toml",
     ".env*": "properties"
   },
-
-  // Emmet configuration
   "emmet.includeLanguages": {
     "typescript": "html",
     "typescriptreact": "html"
   },
-
-  // Search exclusions - aligned with gitignore
   "search.exclude": {
     "**/node_modules": true,
     "**/dist": true,
@@ -58,8 +47,6 @@
     "**/logs": true,
     "**/*.log": true
   },
-
-  // Tailwind CSS configuration
   "tailwindCSS.includeLanguages": {
     "typescript": "html",
     "typescriptreact": "html"
@@ -68,8 +55,6 @@
     "clsx\\(([^)]*)\\)",
     "cn\\(([^)]*)\\)"
   ],
-
-  // Language-specific formatting
   "[powershell]": {
     "editor.defaultFormatter": "ms-vscode.powershell",
     "editor.tabSize": 2
@@ -92,8 +77,6 @@
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-
-  // ESLint configuration
   "eslint.workingDirectories": [".", "./ios", "./scripts/node"],
   "eslint.validate": [
     "javascript",
@@ -101,12 +84,8 @@
     "typescript",
     "typescriptreact"
   ],
-
-  // Git configuration
   "git.autofetch": true,
   "git.confirmSync": false,
-
-  // Terminal configuration
   "terminal.integrated.defaultProfile.windows": "PowerShell 7",
   "terminal.integrated.profiles.windows": {
     "PowerShell 7": {
@@ -131,8 +110,6 @@
   "terminal.integrated.enableVisualBell": false,
   "terminal.integrated.showExitAlert": false,
   "terminal.integrated.scrollback": 10000,
-
-  // PowerShell specific settings
   "powershell.codeFormatting.preset": "OTBS",
   "powershell.codeFormatting.useConstantStrings": true,
   "powershell.codeFormatting.useCorrectCasing": true,
@@ -140,21 +117,13 @@
   "powershell.debugging.createTemporaryIntegratedConsole": true,
   "powershell.scriptAnalysis.enable": true,
   "powershell.scriptAnalysis.settingsPath": ".vscode/PSScriptAnalyzerSettings.psd1",
-
-  // Task and command output optimization
   "task.verboseLogging": true,
   "task.allowAutomaticTasks": "on",
   "task.reconnection": true,
-
-  // Breadcrumbs
   "breadcrumbs.enabled": true,
-
-  // Problems panel
   "problems.decorations.enabled": true,
   "problems.showCurrentInStatus": true,
   "problems.sortOrder": "severity",
-
-  // SonarLint configuration
   "sonarlint.rules": {
     "typescript:S6478": "off",
     "typescript:S1774": "off",
@@ -164,8 +133,6 @@
   },
   "sonarlint.focusOnNewCode": true,
   "sonarlint.verboseLogging": false,
-
-  // Copilot optimization
   "github.copilot.enable": {
     "*": true,
     "yaml": true,
@@ -182,22 +149,14 @@
     "debug.testOverrideProxyUrl": "",
     "debug.overrideProxyUrl": ""
   },
-
-  // Enhanced IntelliSense for Node.js scripts
   "typescript.suggest.autoImports": true,
   "typescript.suggest.completeFunctionCalls": true,
   "typescript.suggest.includeAutomaticOptionalChainCompletions": true,
-
-  // Task execution optimization
   "task.quickOpen.history": 10,
   "task.quickOpen.detail": true,
   "task.quickOpen.skip": false,
-
-  // Enhanced terminal for script debugging
   "terminal.integrated.enablePersistentSessions": true,
   "terminal.integrated.persistentSessionReviveProcess": "onExitAndWindowClose",
-
-  // Better file watching for our Node.js scripts
   "files.watcherExclude": {
     "**/node_modules/**": true,
     "**/.git/objects/**": true,

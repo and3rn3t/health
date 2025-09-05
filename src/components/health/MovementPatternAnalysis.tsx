@@ -3,7 +3,9 @@
  * Advanced ML analysis of movement patterns for predictive fall risk assessment
  */
 
-import { useState, useEffect } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -11,36 +13,34 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
+  FallPrediction,
+  GaitMetrics,
+  MovementPattern,
+  movementPatternAnalyzer,
+} from '@/lib/movementPatternAnalyzer';
+import { ProcessedHealthData } from '@/types';
+import {
   Activity,
-  TrendingUp,
-  Brain,
   AlertTriangle,
+  BarChart3,
+  // TrendingUp,
+  Brain,
   CheckCircle,
   Clock,
-  BarChart3,
-  Target,
-  Zap,
-  Waves,
   Eye,
   RotateCcw,
+  Target,
+  Waves,
+  Zap,
 } from 'lucide-react';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
-import {
-  movementPatternAnalyzer,
-  MovementPattern,
-  GaitMetrics,
-  FallPrediction,
-} from '@/lib/movementPatternAnalyzer';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface MovementPatternAnalysisProps {
-  healthData: ProcessedHealthData;
+  readonly healthData: ProcessedHealthData;
 }
 
 function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
@@ -51,13 +51,18 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
   const [selectedTimeframe, setSelectedTimeframe] = useState<
     '1hour' | '4hours' | '24hours' | '7days'
   >('24hours');
-  const [anomalies, setAnomalies] = useState<any[]>([]);
+  type Anomaly = {
+    type: string;
+    severity: 'low' | 'moderate' | 'high' | 'critical';
+    timestamp: string;
+    description: string;
+    score: number;
+    affectedMetrics: string[];
+    actions: string[];
+  };
+  const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
 
-  useEffect(() => {
-    analyzeMovementPatterns();
-  }, [healthData, selectedTimeframe]);
-
-  const analyzeMovementPatterns = async () => {
+  const analyzeMovementPatterns = useCallback(async () => {
     setIsAnalyzing(true);
     try {
       // Analyze movement patterns
@@ -91,7 +96,13 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, [healthData, selectedTimeframe]);
+
+  useEffect(() => {
+    analyzeMovementPatterns();
+  }, [analyzeMovementPatterns]);
+
+
 
   const getPatternRiskColor = (
     risk: 'low' | 'moderate' | 'high' | 'critical'
@@ -208,27 +219,24 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-4 gap-2">
-            {(['1hour', '4hours', '24hours', '7days'] as const).map(
-              (timeframe) => (
+            {(['1hour', '4hours', '24hours', '7days'] as const).map((timeframe) => {
+              let label = '7 Days';
+              if (timeframe === '1hour') label = '1 Hour';
+              else if (timeframe === '4hours') label = '4 Hours';
+              else if (timeframe === '24hours') label = '24 Hours';
+              const variant = selectedTimeframe === timeframe ? 'default' : 'outline';
+              return (
                 <Button
                   key={timeframe}
-                  variant={
-                    selectedTimeframe === timeframe ? 'default' : 'outline'
-                  }
+                  variant={variant}
                   size="sm"
                   onClick={() => setSelectedTimeframe(timeframe)}
                   className="text-xs"
                 >
-                  {timeframe === '1hour'
-                    ? '1 Hour'
-                    : timeframe === '4hours'
-                      ? '4 Hours'
-                      : timeframe === '24hours'
-                        ? '24 Hours'
-                        : '7 Days'}
+                  {label}
                 </Button>
-              )
-            )}
+              );
+            })}
           </div>
         </CardContent>
       </Card>
@@ -376,25 +384,26 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                           stroke="rgb(226 232 240)"
                           strokeWidth="8"
                         />
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="40"
-                          fill="none"
-                          stroke={
-                            gaitMetrics.overallScore >= 0.8
-                              ? 'rgb(34 197 94)'
-                              : gaitMetrics.overallScore >= 0.6
-                                ? 'rgb(234 179 8)'
-                                : gaitMetrics.overallScore >= 0.4
-                                  ? 'rgb(249 115 22)'
-                                  : 'rgb(239 68 68)'
-                          }
-                          strokeWidth="8"
-                          strokeLinecap="round"
-                          strokeDasharray={`${gaitMetrics.overallScore * 251.2} 251.2`}
-                          className="transition-all duration-1000 ease-out"
-                        />
+                        {(() => {
+                          const s = gaitMetrics.overallScore;
+                          let stroke = 'rgb(239 68 68)';
+                          if (s >= 0.8) stroke = 'rgb(34 197 94)';
+                          else if (s >= 0.6) stroke = 'rgb(234 179 8)';
+                          else if (s >= 0.4) stroke = 'rgb(249 115 22)';
+                          return (
+                            <circle
+                              cx="50"
+                              cy="50"
+                              r="40"
+                              fill="none"
+                              stroke={stroke}
+                              strokeWidth="8"
+                              strokeLinecap="round"
+                              strokeDasharray={`${gaitMetrics.overallScore * 251.2} 251.2`}
+                              className="transition-all duration-1000 ease-out"
+                            />
+                          );
+                        })()}
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center">
@@ -426,8 +435,8 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
         {/* Movement Patterns Tab */}
         <TabsContent value="patterns" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            {patterns.map((pattern, index) => (
-              <Card key={index}>
+            {patterns.map((pattern) => (
+              <Card key={`${pattern.type}:${pattern.description}`}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">{pattern.type}</CardTitle>
@@ -459,8 +468,8 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                       Key Indicators:
                     </h4>
                     <ul className="text-muted-foreground space-y-1 text-sm">
-                      {pattern.indicators.map((indicator, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
+                      {pattern.indicators.map((indicator) => (
+                        <li key={`${pattern.type}:indicator:${indicator}`} className="flex items-start gap-2">
                           <div className="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
                           {indicator}
                         </li>
@@ -474,8 +483,8 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                         Recommendations:
                       </h4>
                       <ul className="text-muted-foreground space-y-1 text-sm">
-                        {pattern.recommendations.map((rec, idx) => (
-                          <li key={idx} className="flex items-start gap-2">
+                        {pattern.recommendations.map((rec) => (
+                          <li key={`${pattern.type}:rec:${rec}`} className="flex items-start gap-2">
                             <div className="bg-accent mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
                             {rec}
                           </li>
@@ -492,9 +501,9 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
         {/* Fall Predictions Tab */}
         <TabsContent value="predictions" className="space-y-4">
           <div className="space-y-4">
-            {predictions.map((prediction, index) => (
+      {predictions.map((prediction) => (
               <Card
-                key={index}
+        key={`${prediction.timeWindow}:${prediction.probability}:${prediction.confidence}`}
                 className={
                   prediction.severity === 'critical' ? 'border-destructive' : ''
                 }
@@ -536,8 +545,8 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                       Contributing Factors:
                     </h4>
                     <div className="space-y-2">
-                      {prediction.factors.map((factor, idx) => (
-                        <div key={idx} className="space-y-1">
+                      {prediction.factors.map((factor) => (
+                        <div key={`${factor.name}:${factor.impact}`} className="space-y-1">
                           <div className="flex justify-between">
                             <span className="text-muted-foreground text-sm">
                               {factor.name}
@@ -561,8 +570,8 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                         Suggested Interventions:
                       </h4>
                       <ul className="text-muted-foreground space-y-1 text-sm">
-                        {prediction.interventions.map((intervention, idx) => (
-                          <li key={idx} className="flex items-start gap-2">
+                        {prediction.interventions.map((intervention) => (
+                          <li key={`${intervention}`} className="flex items-start gap-2">
                             <Zap className="text-accent mt-1 h-3 w-3 flex-shrink-0" />
                             {intervention}
                           </li>
@@ -580,9 +589,9 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
         <TabsContent value="anomalies" className="space-y-4">
           {anomalies.length > 0 ? (
             <div className="space-y-4">
-              {anomalies.map((anomaly, index) => (
+        {anomalies.map((anomaly) => (
                 <Card
-                  key={index}
+          key={`${anomaly.type}:${anomaly.timestamp}:${anomaly.score}`}
                   className={
                     anomaly.severity === 'critical' ? 'border-destructive' : ''
                   }
@@ -626,8 +635,8 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                           Affected Metrics:
                         </h4>
                         <ul className="text-muted-foreground space-y-1 text-sm">
-                          {anomaly.affectedMetrics.map((metric, idx) => (
-                            <li key={idx} className="flex items-center gap-2">
+                          {anomaly.affectedMetrics.map((metric: string) => (
+                            <li key={`${anomaly.type}:metric:${metric}`} className="flex items-center gap-2">
                               <div className="bg-destructive h-1.5 w-1.5 rounded-full" />
                               {metric}
                             </li>
@@ -641,8 +650,8 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                             Recommended Actions:
                           </h4>
                           <ul className="text-muted-foreground space-y-1 text-sm">
-                            {anomaly.actions.map((action, idx) => (
-                              <li key={idx} className="flex items-start gap-2">
+                            {anomaly.actions.map((action: string) => (
+                              <li key={`${anomaly.type}:action:${action}`} className="flex items-start gap-2">
                                 <CheckCircle className="text-accent mt-1 h-3 w-3 flex-shrink-0" />
                                 {action}
                               </li>

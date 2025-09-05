@@ -915,7 +915,7 @@ class HealthMonitoringService extends EventEmitter {
       this.emit('alert', {
         type: 'high_load',
         message: 'High connection count detected',
-        severity: 'AlertTriangle'
+  severity: 'warning'
       })
     }
 
@@ -933,7 +933,7 @@ class HealthMonitoringService extends EventEmitter {
       this.emit('alert', {
         type: 'high_memory',
         message: 'Memory usage above 1GB',
-        severity: 'AlertTriangle'
+  severity: 'warning'
       })
     }
   }

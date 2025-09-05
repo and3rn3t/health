@@ -3,7 +3,96 @@
  * Implements multiple ML models for predictive fall risk assessment
  */
 
-import { ProcessedHealthData, MetricData } from './healthDataProcessor';
+import { normalizeToHealthData } from '@/lib/normalizeHealthInput';
+import type { ProcessedHealthRecord } from '@/types';
+import { MetricData, ProcessedHealthData } from './healthDataProcessor';
+
+// Added explicit model/config and context types to eliminate `any` usage
+type FeatureWeightMap = Record<string, number>;
+type FeatureImportanceMap = Record<string, number>;
+
+interface RandomForestModel {
+  type: 'randomForest';
+  trees: number;
+  maxDepth: number;
+  minSamplesLeaf: number;
+  featureImportance: FeatureImportanceMap;
+  weights: FeatureWeightMap;
+  performance: ModelPerformance;
+}
+
+interface GradientBoostingModel {
+  type: 'gradientBoosting';
+  learningRate: number;
+  nEstimators: number;
+  maxDepth: number;
+  subsample: number;
+  weights: FeatureWeightMap;
+  performance: ModelPerformance;
+}
+
+interface NeuralNetworkModel {
+  type: 'neuralNetwork';
+  layers: number[];
+  activation: string;
+  dropout: number;
+  batchNorm: boolean;
+  weights: number[][]; // one weight vector per layer (simplified)
+  performance: ModelPerformance;
+}
+
+interface LSTMModel {
+  type: 'lstm';
+  sequenceLength: number;
+  hiddenSize: number;
+  numLayers: number;
+  dropout: number;
+  features: string[];
+  performance: ModelPerformance;
+}
+
+interface TransformerModel {
+  type: 'transformer';
+  sequenceLength: number;
+  headSize: number;
+  numHeads: number;
+  numLayers: number;
+  features: string[];
+  performance: ModelPerformance;
+}
+
+interface EnsembleModelConfig {
+  type: 'ensemble';
+  modelWeights: Record<string, number>;
+  performance: ModelPerformance;
+}
+
+type InternalModel =
+  | RandomForestModel
+  | GradientBoostingModel
+  | NeuralNetworkModel
+  | LSTMModel
+  | TransformerModel
+  | EnsembleModelConfig;
+
+interface FallHistoryItem {
+  date: string | Date;
+  [k: string]: unknown;
+}
+
+interface ContextData {
+  fallHistory?: FallHistoryItem[];
+  weatherRisk?: number;
+  locationComplexity?: number;
+  surfaceType?: number;
+  lightingConditions?: number;
+  cognitiveLoad?: number;
+  medicationTiming?: number;
+  hydrationStatus?: number;
+  [k: string]: unknown;
+}
+
+type MetricsCollection = ProcessedHealthData['metrics'];
 
 export interface MLFeatures {
   // Gait and mobility features
@@ -109,10 +198,10 @@ export interface ModelEnsemble {
 }
 
 export class MLFallRiskPredictor {
-  private models: Map<string, any> = new Map();
+  private readonly models: Map<string, InternalModel> = new Map();
   private features: AdvancedMLFeatures | null = null;
   private trainingData: Array<{
-    features: AdvancedMLFeatures;
+    features: Partial<AdvancedMLFeatures> & MLFeatures;
     outcome: boolean;
     timestamp: number;
   }> = [];
@@ -146,6 +235,8 @@ export class MLFallRiskPredictor {
         recall: 0.91,
         f1Score: 0.88,
         roc_auc: 0.93,
+        lastTrained: new Date().toISOString(),
+        sampleSize: 0,
       },
     });
 
@@ -163,6 +254,8 @@ export class MLFallRiskPredictor {
         recall: 0.89,
         f1Score: 0.86,
         roc_auc: 0.91,
+        lastTrained: new Date().toISOString(),
+        sampleSize: 0,
       },
     });
 
@@ -180,6 +273,8 @@ export class MLFallRiskPredictor {
         recall: 0.88,
         f1Score: 0.85,
         roc_auc: 0.89,
+        lastTrained: new Date().toISOString(),
+        sampleSize: 0,
       },
     });
 
@@ -197,6 +292,8 @@ export class MLFallRiskPredictor {
         recall: 0.89,
         f1Score: 0.86,
         roc_auc: 0.9,
+        lastTrained: new Date().toISOString(),
+        sampleSize: 0,
       },
     });
 
@@ -214,6 +311,8 @@ export class MLFallRiskPredictor {
         recall: 0.9,
         f1Score: 0.87,
         roc_auc: 0.92,
+        lastTrained: new Date().toISOString(),
+        sampleSize: 0,
       },
     });
 
@@ -233,6 +332,8 @@ export class MLFallRiskPredictor {
         recall: 0.93,
         f1Score: 0.9,
         roc_auc: 0.95,
+        lastTrained: new Date().toISOString(),
+        sampleSize: 0,
       },
     });
   }
@@ -319,9 +420,9 @@ export class MLFallRiskPredictor {
    */
   extractAdvancedFeatures(
     healthData: ProcessedHealthData,
-    contextData?: any
+    contextData?: ContextData
   ): AdvancedMLFeatures {
-    const basicFeatures = this.extractFeatures(healthData, contextData);
+  const basicFeatures = this.extractFeatures(healthData, contextData);
 
     const advancedFeatures: AdvancedMLFeatures = {
       ...basicFeatures,
@@ -369,10 +470,11 @@ export class MLFallRiskPredictor {
    * Enhanced predict fall risk using advanced ensemble of ML models
    */
   async predictFallRisk(
-    healthData: ProcessedHealthData,
+    input: ProcessedHealthData | ProcessedHealthRecord | ProcessedHealthRecord[],
     timeHorizon: RiskPrediction['timeHorizon'] = '24hours',
-    contextData?: any
+    contextData?: ContextData
   ): Promise<RiskPrediction> {
+    const healthData = this.normalizeInput(input);
     const features = this.extractAdvancedFeatures(healthData, contextData);
 
     // Get predictions from all active models
@@ -389,12 +491,15 @@ export class MLFallRiskPredictor {
     }
 
     // Advanced ensemble prediction with uncertainty quantification
-    const ensembleModel = this.models.get('ensemble')!;
+    const ensembleModel = this.models.get('ensemble');
+    const ensembleWeights =
+      ensembleModel && ensembleModel.type === 'ensemble'
+        ? ensembleModel.modelWeights
+        : Object.fromEntries(Array.from(predictions.keys()).map((k) => [k, 1]));
     const ensembleResult = this.calculateAdvancedEnsemblePrediction(
       predictions,
-      ensembleModel.modelWeights
+      ensembleWeights
     );
-
     // Adjust for time horizon with temporal decay
     const adjustedScore = this.adjustForTimeHorizonAdvanced(
       ensembleResult.riskScore,
@@ -446,11 +551,52 @@ export class MLFallRiskPredictor {
     return prediction;
   }
 
+  private extractFeatures(
+    healthData: ProcessedHealthData,
+    contextData?: ContextData
+  ): MLFeatures {
+    const m = healthData.metrics;
+    return {
+      walkingSteadiness: this.calculateWalkingSteadiness(m.walkingSteadiness),
+      stepCount: m.steps?.average || 0,
+      stepVariability: m.steps?.variability || 0,
+      walkingDistance: (m as Record<string, MetricData | undefined>).distanceWalking?.average || 0,
+      walkingSpeed: this.calculateWalkingSpeed(
+        m.steps,
+        (m as Record<string, MetricData | undefined>).distanceWalking
+      ),
+      heartRateResting: this.extractRestingHeartRate(m.heartRate),
+      heartRateVariability: this.calculateHRV(m.heartRate),
+      heartRateRecovery: this.calculateHeartRateRecovery(m.heartRate),
+      sleepDuration: m.sleepHours?.average || 0,
+      sleepQuality: this.calculateSleepQuality(m.sleepHours),
+      sleepConsistency: this.calculateSleepConsistency(m.sleepHours),
+  activeEnergy: (m as Record<string, MetricData | undefined>).activeEnergy?.average || 0,
+      sedentaryTime: this.calculateSedentaryTime(m.steps),
+      activityConsistency: this.calculateActivityConsistency(m.steps),
+      age: (contextData?.age as number) ?? 70,
+      bodyMassIndex: (contextData?.bmi as number) ?? 25,
+      medicationCount: (contextData?.medicationCount as number) ?? 0,
+      chronicalConditions: (contextData?.chronicalConditions as number) ?? 0,
+      timeOfDay: new Date().getHours(),
+      dayOfWeek: new Date().getDay(),
+      weatherConditions: contextData?.weatherRisk ?? 0.3,
+      locationRisk: contextData?.locationComplexity ?? 0.4,
+    };
+  }
+
+  private normalizeInput(
+    input: ProcessedHealthData | ProcessedHealthRecord | ProcessedHealthRecord[],
+    options?: { bypassCache?: boolean }
+  ): ProcessedHealthData {
+    return normalizeToHealthData(input, options);
+  }
+
   /**
    * Run a specific ML model on features
    */
   private runModel(
-    model: any,
+    model: InternalModel,
     features: MLFeatures
   ): { riskScore: number; confidence: number } {
     switch (model.type) {
@@ -460,6 +606,34 @@ export class MLFallRiskPredictor {
         return this.runGradientBoosting(model, features);
       case 'neuralNetwork':
         return this.runNeuralNetwork(model, features);
+      case 'lstm':
+        // Simplified: treat as random forest style (placeholder)
+        return this.runRandomForest(
+          {
+            type: 'randomForest',
+            trees: 50,
+            maxDepth: 10,
+            minSamplesLeaf: 2,
+            featureImportance: this.getFeatureImportance(),
+            weights: this.getRandomForestWeights(),
+            performance: model.performance,
+          },
+          features
+        );
+      case 'transformer':
+        // Simplified: treat as gradient boosting style (placeholder)
+        return this.runGradientBoosting(
+          {
+            type: 'gradientBoosting',
+            learningRate: 0.05,
+            nEstimators: 120,
+            maxDepth: 6,
+            subsample: 0.9,
+            weights: this.getGradientBoostingWeights(),
+            performance: model.performance,
+          },
+          features
+        );
       default:
         return { riskScore: 0.5, confidence: 0.5 };
     }
@@ -469,7 +643,7 @@ export class MLFallRiskPredictor {
    * Random Forest implementation
    */
   private runRandomForest(
-    model: any,
+    model: RandomForestModel,
     features: MLFeatures
   ): { riskScore: number; confidence: number } {
     const featureVector = this.featuresToVector(features);
@@ -493,7 +667,7 @@ export class MLFallRiskPredictor {
    * Gradient Boosting implementation
    */
   private runGradientBoosting(
-    model: any,
+    model: GradientBoostingModel,
     features: MLFeatures
   ): { riskScore: number; confidence: number } {
     const featureVector = this.featuresToVector(features);
@@ -520,7 +694,7 @@ export class MLFallRiskPredictor {
    * Neural Network implementation
    */
   private runNeuralNetwork(
-    model: any,
+    model: NeuralNetworkModel,
     features: MLFeatures
   ): { riskScore: number; confidence: number } {
     const input = this.featuresToVector(features);
@@ -547,7 +721,7 @@ export class MLFallRiskPredictor {
    */
   private calculateEnsemblePrediction(
     predictions: Map<string, number>,
-    weights: any
+    weights: Record<string, number>
   ): number {
     let weightedSum = 0;
     let totalWeight = 0;
@@ -566,7 +740,7 @@ export class MLFallRiskPredictor {
    */
   private calculateEnsembleConfidence(
     confidences: Map<string, number>,
-    weights: any
+    weights: Record<string, number>
   ): number {
     let weightedSum = 0;
     let totalWeight = 0;
@@ -620,7 +794,7 @@ export class MLFallRiskPredictor {
    */
   private identifyPrimaryFactors(
     features: MLFeatures,
-    riskScore: number
+    _riskScore: number,
   ): RiskPrediction['primaryFactors'] {
     const factors = [];
 
@@ -680,7 +854,7 @@ export class MLFallRiskPredictor {
   private generateRecommendations(
     features: MLFeatures,
     riskLevel: RiskPrediction['riskLevel'],
-    factors: any[]
+    factors: RiskPrediction['primaryFactors']
   ): string[] {
     const recommendations = [];
 
@@ -730,7 +904,7 @@ export class MLFallRiskPredictor {
   private shouldAlert(
     riskScore: number,
     riskLevel: RiskPrediction['riskLevel'],
-    factors: any[]
+    factors: RiskPrediction['primaryFactors']
   ): boolean {
     // High risk score
     if (riskScore >= 0.8) return true;
@@ -872,8 +1046,8 @@ export class MLFallRiskPredictor {
 
   private runDecisionTree(
     features: number[],
-    weights: any,
-    treeIndex: number
+    _weights: FeatureWeightMap,
+    _treeIndex: number
   ): { risk: number; confidence: number } {
     // Simplified decision tree implementation
     let risk = 0.5;
@@ -890,8 +1064,8 @@ export class MLFallRiskPredictor {
 
   private runWeakLearner(
     features: number[],
-    weights: any,
-    currentPrediction: number
+    _weights: FeatureWeightMap,
+    _currentPrediction: number
   ): number {
     // Simplified weak learner
     let adjustment = 0;
@@ -908,16 +1082,18 @@ export class MLFallRiskPredictor {
     weights: number[],
     activation: string
   ): number[] {
-    // Simplified neural network layer
-    const output = [];
-    for (let i = 0; i < weights.length; i++) {
+    const output: number[] = [];
+    for (const w of weights) {
       let sum = 0;
-      for (let j = 0; j < input.length; j++) {
-        sum += input[j] * (weights[i] || Math.random() * 0.1);
+      for (const v of input) {
+        sum += v * (w || Math.random() * 0.1);
       }
       output.push(activation === 'relu' ? Math.max(0, sum) : sum);
     }
     return output;
+  }
+  private calculateStepConsistency(stepsData?: MetricData): number {
+    return this.calculateActivityConsistency(stepsData);
   }
 
   private sigmoid(x: number): number {
@@ -932,7 +1108,7 @@ export class MLFallRiskPredictor {
   }
 
   // Model weights (simplified - would be learned from training data)
-  private getRandomForestWeights(): any {
+  private getRandomForestWeights(): FeatureWeightMap {
     return {
       walkingSteadiness: 0.2,
       stepRegularityScore: 0.18,
@@ -946,7 +1122,7 @@ export class MLFallRiskPredictor {
     };
   }
 
-  private getGradientBoostingWeights(): any {
+  private getGradientBoostingWeights(): FeatureWeightMap {
     return {
       walkingSteadiness: 0.18,
       stepCount: 0.16,
@@ -961,7 +1137,7 @@ export class MLFallRiskPredictor {
     };
   }
 
-  private getNeuralNetworkWeights(): any {
+  private getNeuralNetworkWeights(): number[][] {
     // Simplified weights for demo - would be trained matrices
     return [
       Array.from({ length: 32 }, () => Math.random() * 0.1 - 0.05),
@@ -972,7 +1148,7 @@ export class MLFallRiskPredictor {
     ];
   }
 
-  private getFeatureImportance(): any {
+  private getFeatureImportance(): FeatureImportanceMap {
     return {
       walkingSteadiness: 0.25,
       stepRegularityScore: 0.2,
@@ -984,7 +1160,7 @@ export class MLFallRiskPredictor {
   }
 
   // Advanced feature calculation methods
-  private calculateGaitAsymmetry(metrics: any): number {
+  private calculateGaitAsymmetry(metrics: MetricsCollection): number {
     // Simulated gait asymmetry calculation
     const walkingSteadiness = metrics.walkingSteadiness?.average || 0.7;
     const stepVariability = metrics.steps?.variability || 0.2;
@@ -998,21 +1174,21 @@ export class MLFallRiskPredictor {
     return (consistency + rhythm) / 2;
   }
 
-  private calculateDynamicBalanceIndex(metrics: any): number {
+  private calculateDynamicBalanceIndex(metrics: MetricsCollection): number {
     const walkingSteadiness = metrics.walkingSteadiness?.average || 0.7;
     const stepConsistency = this.calculateStepConsistency(metrics.steps);
     const heartRateStability = this.calculateHRV(metrics.heartRate);
     return (walkingSteadiness + stepConsistency + heartRateStability) / 3;
   }
 
-  private calculateMovementComplexity(metrics: any): number {
+  private calculateMovementComplexity(metrics: MetricsCollection): number {
     const stepVariability = metrics.steps?.variability || 0.2;
     const distanceVariability = metrics.distanceWalking?.variability || 0.2;
     const energyVariability = metrics.activeEnergy?.variability || 0.2;
     return (stepVariability + distanceVariability + energyVariability) / 3;
   }
 
-  private calculateFallHistoryWeight(fallHistory: any[]): number {
+  private calculateFallHistoryWeight(fallHistory: FallHistoryItem[]): number {
     if (!fallHistory || fallHistory.length === 0) return 0;
 
     const recentFalls = fallHistory.filter((fall) => {
@@ -1025,7 +1201,7 @@ export class MLFallRiskPredictor {
     return Math.min(1, recentFalls.length * 0.3);
   }
 
-  private calculateTimeSeriesVariability(metrics: any): number {
+  private calculateTimeSeriesVariability(metrics: MetricsCollection): number {
     // Calculate variability across multiple metrics over time
     const variabilities = [];
     if (metrics.steps) variabilities.push(metrics.steps.variability);
@@ -1039,13 +1215,13 @@ export class MLFallRiskPredictor {
       : 0.3;
   }
 
-  private calculateCircadianAlignment(metrics: any): number {
+  private calculateCircadianAlignment(metrics: MetricsCollection): number {
     const sleepConsistency = this.calculateSleepConsistency(metrics.sleepHours);
     const activityRhythm = this.calculateActivityConsistency(metrics.steps);
     return (sleepConsistency + activityRhythm) / 2;
   }
 
-  private calculateWeeklyActivityPattern(metrics: any): number {
+  private calculateWeeklyActivityPattern(metrics: MetricsCollection): number {
     // Simulated weekly pattern analysis
     const stepConsistency = this.calculateActivityConsistency(metrics.steps);
     const energyConsistency = metrics.activeEnergy
@@ -1054,7 +1230,7 @@ export class MLFallRiskPredictor {
     return (stepConsistency + energyConsistency) / 2;
   }
 
-  private calculateFatigueLevel(metrics: any): number {
+  private calculateFatigueLevel(metrics: MetricsCollection): number {
     const sleepQuality = this.calculateSleepQuality(metrics.sleepHours);
     const activityLevel = Math.min(1, (metrics.steps?.average || 5000) / 8000);
     const heartRateRecovery = this.calculateHeartRateRecovery(
@@ -1075,7 +1251,7 @@ export class MLFallRiskPredictor {
 
   // Advanced model running methods
   private runAdvancedModel(
-    model: any,
+    model: InternalModel,
     features: AdvancedMLFeatures
   ): { riskScore: number; confidence: number; explanation: string } {
     const basicResult = this.runModel(model, features);
@@ -1086,34 +1262,40 @@ export class MLFallRiskPredictor {
     let explanation = `${model.type} model prediction`;
 
     switch (model.type) {
-      case 'randomForest':
-        // Random forest considers feature interactions
+      case 'randomForest': {
         if (features.gaitAsymmetry > 0.3 && features.walkingSteadiness < 0.5) {
           enhancedScore += 0.1;
           explanation += ' with gait asymmetry concerns';
         }
         break;
-      case 'gradientBoosting':
-        // Gradient boosting focuses on sequential patterns
+      }
+      case 'gradientBoosting': {
         if (features.timeSeriesVariability > 0.4) {
           enhancedScore += 0.08;
           explanation += ' showing temporal instability';
         }
         break;
-      case 'neuralNetwork':
-        // Neural network captures complex interactions
-        const complexityScore =
-          features.movementComplexity * features.fatigueLevel;
+      }
+      case 'neuralNetwork': {
+        const complexityScore = features.movementComplexity * features.fatigueLevel;
         enhancedScore += complexityScore * 0.15;
         explanation += ' considering movement complexity';
         break;
-      case 'lstm':
-        // LSTM focuses on temporal dependencies
+      }
+      case 'lstm': {
         if (features.circadianAlignment < 0.5) {
           enhancedScore += 0.12;
           explanation += ' with circadian disruption';
         }
         break;
+      }
+      case 'transformer': {
+        if (features.movementComplexity > 0.5) {
+          enhancedScore += 0.07;
+          explanation += ' capturing complex movement patterns';
+        }
+        break;
+      }
     }
 
     return {
@@ -1128,7 +1310,7 @@ export class MLFallRiskPredictor {
       string,
       { riskScore: number; confidence: number; explanation: string }
     >,
-    weights: any
+    weights: Record<string, number>
   ): { riskScore: number; confidence: number } {
     let weightedSum = 0;
     let confidenceSum = 0;
@@ -1221,8 +1403,8 @@ export class MLFallRiskPredictor {
 
   private identifyPrimaryFactorsAdvanced(
     features: AdvancedMLFeatures,
-    riskScore: number,
-    predictions: Map<
+    _riskScore: number,
+    _predictions: Map<
       string,
       { riskScore: number; confidence: number; explanation: string }
     >
@@ -1232,12 +1414,12 @@ export class MLFallRiskPredictor {
 
     // Analyze each important feature
     for (const [featureName, importance] of Object.entries(featureImportance)) {
-      const featureValue = (features as any)[featureName];
+      const featureValue = (features as unknown as Record<string, number>)[featureName];
       if (featureValue !== undefined) {
         const contribution = this.calculateFeatureContribution(
           featureName,
           featureValue,
-          importance as number
+          importance
         );
 
         if (contribution > 0.05) {
@@ -1251,7 +1433,8 @@ export class MLFallRiskPredictor {
       }
     }
 
-    return factors.sort((a, b) => b.contribution - a.contribution).slice(0, 4); // Return top 4 factors
+  const sorted = [...factors].sort((a, b) => b.contribution - a.contribution);
+  return sorted.slice(0, 4); // Return top 4 factors
   }
 
   private calculateFeatureContribution(
@@ -1282,7 +1465,7 @@ export class MLFallRiskPredictor {
         contribution = Math.min(1, value / 0.3) * importance;
         break;
       default:
-        contribution = 0;
+  // no contribution adjustment
     }
 
     return Math.min(1, contribution);
@@ -1343,7 +1526,7 @@ export class MLFallRiskPredictor {
   private async generateAIRecommendations(
     features: AdvancedMLFeatures,
     riskLevel: RiskPrediction['riskLevel'],
-    factors: any[]
+    factors: RiskPrediction['primaryFactors']
   ): Promise<string[]> {
     const recommendations: string[] = [];
 
@@ -1422,8 +1605,8 @@ export class MLFallRiskPredictor {
   private shouldAlertAdvanced(
     riskScore: number,
     riskLevel: RiskPrediction['riskLevel'],
-    factors: any[],
-    contextData?: any
+    factors: RiskPrediction['primaryFactors'],
+    contextData?: ContextData
   ): boolean {
     // Base alert conditions
     if (riskScore >= 0.8 || riskLevel === 'severe') return true;
@@ -1436,8 +1619,8 @@ export class MLFallRiskPredictor {
         return true;
 
       // Environmental factors
-      if (contextData.weatherRisk > 0.7 && riskScore >= 0.5) return true;
-      if (contextData.locationComplexity > 0.8 && riskScore >= 0.6) return true;
+  if ((contextData.weatherRisk ?? 0) > 0.7 && riskScore >= 0.5) return true;
+  if ((contextData.locationComplexity ?? 0) > 0.8 && riskScore >= 0.6) return true;
     }
 
     // Multiple moderate risk factors

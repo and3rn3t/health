@@ -19,7 +19,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { ProcessedHealthData } from '@/types';
 import { useKV } from '@github/spark/hooks';
 import {
   AlertTriangle,
@@ -54,6 +54,17 @@ interface HealthAlert {
   lastTriggered?: string;
   triggerCount: number;
   description?: string;
+}
+
+interface AlertHistoryEntry {
+  id: string;
+  alertId: string;
+  alertName: string;
+  metric: string;
+  value: number;
+  unit?: string;
+  priority: HealthAlert['priority'];
+  timestamp: number;
 }
 
 interface AlertsConfigProps {
@@ -134,16 +145,39 @@ const PRIORITY_COLORS = {
   critical: 'bg-red-100 text-red-800 border-red-200',
 };
 
-export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
-  const [alerts, setAlerts] = useKV<HealthAlert[]>('health-alerts', []);
-  const [alertHistory, setAlertHistory] = useKV<any[]>('alert-history', []);
-  const [globalSettings, setGlobalSettings] = useKV('alert-global-settings', {
+export default function HealthAlertsConfig({ healthData: _healthData }: Readonly<AlertsConfigProps>) {
+  const [alertsRaw, setAlerts] = useKV<HealthAlert[]>('health-alerts', []);
+  // History is read-only here
+  const [alertHistoryRaw] = useKV<AlertHistoryEntry[]>(
+    'alert-history',
+    []
+  );
+  interface GlobalSettings {
+    enabled: boolean;
+    quietHours: { start: string; end: string };
+    maxAlertsPerDay: number;
+    emailNotifications: boolean;
+    pushNotifications: boolean;
+  }
+  const [globalSettingsRaw, setGlobalSettings] = useKV<GlobalSettings>(
+    'alert-global-settings',
+    {
+      enabled: true,
+      quietHours: { start: '22:00', end: '07:00' },
+      maxAlertsPerDay: 10,
+      emailNotifications: false,
+      pushNotifications: true,
+    }
+  );
+  const alerts: HealthAlert[] = alertsRaw ?? [];
+  const alertHistory = alertHistoryRaw ?? [];
+  const globalSettings = globalSettingsRaw ?? {
     enabled: true,
     quietHours: { start: '22:00', end: '07:00' },
     maxAlertsPerDay: 10,
     emailNotifications: false,
     pushNotifications: true,
-  });
+  };
 
   const [newAlert, setNewAlert] = useState<Partial<HealthAlert>>({
     name: '',
@@ -170,20 +204,20 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
 
     const alert: HealthAlert = {
       id: `alert_${Date.now()}`,
-      name: newAlert.name!,
-      metric: newAlert.metric!,
-      condition: newAlert.condition!,
-      threshold: newAlert.threshold!,
+      name: newAlert.name || '',
+      metric: newAlert.metric || '',
+      condition: newAlert.condition || 'above',
+      threshold: newAlert.threshold ?? 0,
       thresholdMax: newAlert.thresholdMax,
-      enabled: newAlert.enabled!,
-      priority: newAlert.priority!,
-      frequency: newAlert.frequency!,
+      enabled: newAlert.enabled ?? true,
+      priority: newAlert.priority || 'medium',
+      frequency: newAlert.frequency || 'immediate',
       createdAt: new Date().toISOString(),
       triggerCount: 0,
       description: newAlert.description,
     };
 
-    setAlerts((current) => [...current, alert]);
+  setAlerts((current) => ([...(current ?? []), alert]));
     setNewAlert({
       name: '',
       metric: '',
@@ -199,13 +233,13 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
   };
 
   const deleteAlert = (alertId: string) => {
-    setAlerts((current) => current.filter((alert) => alert.id !== alertId));
+  setAlerts((current) => (current ?? []).filter((alert) => alert.id !== alertId));
     toast.success('Alert deleted');
   };
 
   const toggleAlert = (alertId: string) => {
     setAlerts((current) =>
-      current.map((alert) =>
+      (current ?? []).map((alert) =>
         alert.id === alertId ? { ...alert, enabled: !alert.enabled } : alert
       )
     );
@@ -289,7 +323,7 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
         description: alertTemplate.description,
       };
 
-      setAlerts((current) => [...current, alert]);
+  setAlerts((current) => [...(current ?? []), alert]);
     });
 
     toast.success(`Smart alerts created for ${metricInfo.label}`);
@@ -419,7 +453,7 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                     <Label htmlFor="alert-name">Alert Name</Label>
                     <Input
                       id="alert-name"
-                      placeholder="e.g., High Heart Rate AlertTriangle"
+                      placeholder="e.g., High Heart Rate Alert"
                       value={newAlert.name || ''}
                       onChange={(e) =>
                         setNewAlert((prev) => ({
@@ -455,8 +489,8 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                     <Label htmlFor="alert-condition">Condition</Label>
                     <Select
                       value={newAlert.condition || 'above'}
-                      onValueChange={(value: any) =>
-                        setNewAlert((prev) => ({ ...prev, condition: value }))
+                      onValueChange={(value: string) =>
+                        setNewAlert((prev) => ({ ...prev, condition: value as HealthAlert['condition'] }))
                       }
                     >
                       <SelectTrigger>
@@ -517,8 +551,8 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                     <Label htmlFor="alert-priority">Priority Level</Label>
                     <Select
                       value={newAlert.priority || 'medium'}
-                      onValueChange={(value: any) =>
-                        setNewAlert((prev) => ({ ...prev, priority: value }))
+                      onValueChange={(value: string) =>
+                        setNewAlert((prev) => ({ ...prev, priority: value as HealthAlert['priority'] }))
                       }
                     >
                       <SelectTrigger>
@@ -537,8 +571,8 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                     <Label htmlFor="alert-frequency">Alert Frequency</Label>
                     <Select
                       value={newAlert.frequency || 'immediate'}
-                      onValueChange={(value: any) =>
-                        setNewAlert((prev) => ({ ...prev, frequency: value }))
+                      onValueChange={(value: string) =>
+                        setNewAlert((prev) => ({ ...prev, frequency: value as HealthAlert['frequency'] }))
                       }
                     >
                       <SelectTrigger>
@@ -760,7 +794,7 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                   id="global-alerts"
                   checked={globalSettings.enabled}
                   onCheckedChange={(checked) =>
-                    setGlobalSettings((prev) => ({ ...prev, enabled: checked }))
+                    setGlobalSettings({ ...globalSettings, enabled: checked })
                   }
                 />
               </div>
@@ -777,13 +811,13 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                       type="time"
                       value={globalSettings.quietHours.start}
                       onChange={(e) =>
-                        setGlobalSettings((prev) => ({
-                          ...prev,
+                        setGlobalSettings({
+                          ...globalSettings,
                           quietHours: {
-                            ...prev.quietHours,
+                            ...globalSettings.quietHours,
                             start: e.target.value,
                           },
-                        }))
+                        })
                       }
                     />
                   </div>
@@ -794,13 +828,13 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                       type="time"
                       value={globalSettings.quietHours.end}
                       onChange={(e) =>
-                        setGlobalSettings((prev) => ({
-                          ...prev,
+                        setGlobalSettings({
+                          ...globalSettings,
                           quietHours: {
-                            ...prev.quietHours,
+                            ...globalSettings.quietHours,
                             end: e.target.value,
                           },
-                        }))
+                        })
                       }
                     />
                   </div>
@@ -818,10 +852,10 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                   max="50"
                   value={globalSettings.maxAlertsPerDay}
                   onChange={(e) =>
-                    setGlobalSettings((prev) => ({
-                      ...prev,
+                    setGlobalSettings({
+                      ...globalSettings,
                       maxAlertsPerDay: parseInt(e.target.value),
-                    }))
+                    })
                   }
                 />
                 <p className="text-muted-foreground text-sm">
@@ -847,10 +881,10 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                     id="email-notifications"
                     checked={globalSettings.emailNotifications}
                     onCheckedChange={(checked) =>
-                      setGlobalSettings((prev) => ({
-                        ...prev,
+                      setGlobalSettings({
+                        ...globalSettings,
                         emailNotifications: checked,
-                      }))
+                      })
                     }
                   />
                 </div>
@@ -868,10 +902,10 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                     id="push-notifications"
                     checked={globalSettings.pushNotifications}
                     onCheckedChange={(checked) =>
-                      setGlobalSettings((prev) => ({
-                        ...prev,
+                      setGlobalSettings({
+                        ...globalSettings,
                         pushNotifications: checked,
-                      }))
+                      })
                     }
                   />
                 </div>
@@ -902,40 +936,33 @@ export default function HealthAlertsConfig({ healthData }: AlertsConfigProps) {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {alertHistory.slice(0, 20).map((entry, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between rounded-lg border p-4"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`h-3 w-3 rounded-full ${
-                            entry.priority === 'critical'
-                              ? 'bg-red-500'
-                              : entry.priority === 'high'
-                                ? 'bg-orange-500'
-                                : entry.priority === 'medium'
-                                  ? 'bg-yellow-500'
-                                  : 'bg-blue-500'
-                          }`}
-                        />
-                        <div>
-                          <p className="font-medium">{entry.alertName}</p>
-                          <p className="text-muted-foreground text-sm">
-                            {entry.metric}: {entry.value} {entry.unit}
-                          </p>
+                  {alertHistory.slice(0, 20).map((entry) => {
+                    const date = new Date(entry.timestamp);
+                    let priorityColor = 'bg-blue-500';
+                    if (entry.priority === 'critical') priorityColor = 'bg-red-500';
+                    else if (entry.priority === 'high') priorityColor = 'bg-orange-500';
+                    else if (entry.priority === 'medium') priorityColor = 'bg-yellow-500';
+                    return (
+                      <div
+                        key={entry.id}
+                        className="flex items-center justify-between rounded-lg border p-4"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`h-3 w-3 rounded-full ${priorityColor}`} />
+                          <div>
+                            <p className="font-medium">{entry.alertName}</p>
+                            <p className="text-muted-foreground text-sm">
+                              {entry.metric}: {entry.value} {entry.unit}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium">{date.toLocaleDateString()}</p>
+                          <p className="text-muted-foreground text-sm">{date.toLocaleTimeString()}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">
-                          {new Date(entry.timestamp).toLocaleDateString()}
-                        </p>
-                        <p className="text-muted-foreground text-sm">
-                          {new Date(entry.timestamp).toLocaleTimeString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

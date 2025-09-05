@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import type { ProcessedHealthData } from '@/types';
 import {
   Activity,
   ArrowRight,
@@ -32,7 +32,9 @@ interface FeatureCard {
   icon: React.ComponentType<{ className?: string }>;
   status: 'available' | 'processing' | 'new' | 'beta';
   benefits: string[];
-  component: React.ComponentType;
+  // Allow heterogeneous component prop signatures – callers spread a loose object
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: React.ComponentType<any>;
 }
 
 interface HealthSystemIntegrationProps {
@@ -217,17 +219,12 @@ export default function HealthSystemIntegration({
                     <IconComponent className="h-5 w-5" />
                     <CardTitle className="text-lg">{feature.title}</CardTitle>
                   </div>
-                  <Badge
-                    variant={
-                      feature.status === 'new'
-                        ? 'default'
-                        : feature.status === 'beta'
-                          ? 'secondary'
-                          : 'outline'
-                    }
-                  >
-                    {feature.status}
-                  </Badge>
+                  {(() => {
+                    let variant: 'default' | 'secondary' | 'outline' = 'outline';
+                    if (feature.status === 'new') variant = 'default';
+                    else if (feature.status === 'beta') variant = 'secondary';
+                    return <Badge variant={variant}>{feature.status}</Badge>;
+                  })()}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -238,9 +235,9 @@ export default function HealthSystemIntegration({
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium">Key Benefits:</h4>
                   <ul className="space-y-1">
-                    {feature.benefits.map((benefit, index) => (
+                    {feature.benefits.map((benefit) => (
                       <li
-                        key={index}
+                        key={benefit}
                         className="flex items-center gap-2 text-sm"
                       >
                         <CheckCircle className="h-3 w-3 text-green-500" />
@@ -369,17 +366,12 @@ export default function HealthSystemIntegration({
           <div className="flex items-center gap-2">
             <feature.icon className="h-6 w-6" />
             <h2 className="text-2xl font-bold">{feature.title}</h2>
-            <Badge
-              variant={
-                feature.status === 'new'
-                  ? 'default'
-                  : feature.status === 'beta'
-                    ? 'secondary'
-                    : 'outline'
-              }
-            >
-              {feature.status}
-            </Badge>
+            {(() => {
+              let variant: 'default' | 'secondary' | 'outline' = 'outline';
+              if (feature.status === 'new') variant = 'default';
+              else if (feature.status === 'beta') variant = 'secondary';
+              return <Badge variant={variant}>{feature.status}</Badge>;
+            })()}
           </div>
           <Button
             onClick={() => setActiveFeature('overview')}

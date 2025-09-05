@@ -3,6 +3,7 @@
 import js from '@eslint/js';
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks';
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh';
+import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default [
@@ -36,23 +37,63 @@ export default [
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  // Node-targeted JS (scripts, tools)
   {
-    files: ['**/*.js'],
+    files: ['scripts/**/*.js', 'server/**/*.js', '**/*.cjs', '**/*.mjs'],
     languageOptions: {
       globals: {
-        console: 'readonly',
-        process: 'readonly',
-        Buffer: 'readonly',
-        __dirname: 'readonly',
-        __filename: 'readonly',
-        module: 'readonly',
-        require: 'readonly',
-        exports: 'readonly',
+        ...globals.node,
+        ...globals.es2021,
       },
+    },
+    rules: {
+      // Align JS unused vars severity with TS override
+      'no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
+    },
+  },
+  // Root / build config files (Node context)
+  {
+    files: [
+      '*.config.js',
+      '*.config.cjs',
+      '*.config.mjs',
+      'vite.config.*',
+      'postcss.config.*',
+      'tailwind.config.*',
+      'eslint.config.*',
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.es2021,
+      },
+    },
+    rules: {
+      'no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
+      'no-undef': 'off', // Node globals provided above
+    },
+  },
+  // Browser-targeted JS inside src
+  {
+    files: ['src/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.es2021,
+      },
+    },
+    rules: {
+      'no-undef': 'off',
     },
   },
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -60,12 +101,18 @@ export default [
         sourceType: 'module',
         projectService: false,
       },
+      globals: {
+        ...globals.browser,
+        ...globals.es2021,
+      },
     },
     plugins: {
       'react-hooks': eslintPluginReactHooks,
       'react-refresh': eslintPluginReactRefresh,
     },
     rules: {
+      // TS files use the TS compiler for globals; disable base no-undef
+      'no-undef': 'off',
       ...eslintPluginReactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': [
         'warn',

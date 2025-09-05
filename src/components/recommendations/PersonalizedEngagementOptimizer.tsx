@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { ProcessedHealthData } from '@/types';
 import { useKV } from '@github/spark/hooks';
 import {
   Activity,
@@ -29,7 +29,7 @@ import {
   Users,
   Zap,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface EngagementPattern {
@@ -60,6 +60,9 @@ interface OptimizationRecommendation {
   implemented: boolean;
 }
 
+type RecommendationType = OptimizationRecommendation['type'];
+type RecommendationPriority = OptimizationRecommendation['priority'];
+
 interface Props {
   healthData: ProcessedHealthData;
   onNavigateToFeature: (featureId: string) => void;
@@ -68,8 +71,12 @@ interface Props {
 export default function PersonalizedEngagementOptimizer({
   healthData,
   onNavigateToFeature,
-}: Props) {
-  const [engagementData, setEngagementData] = useKV('engagement-data', {
+}: Readonly<Props>) {
+  const [engagementData, setEngagementData] = useKV<{
+    sessions: unknown[];
+    patterns: EngagementPattern[];
+    profile: PersonalizationProfile | null;
+  }>('engagement-data', {
     sessions: [],
     patterns: [],
     profile: null,
@@ -80,100 +87,50 @@ export default function PersonalizedEngagementOptimizer({
   const [selectedTab, setSelectedTab] = useState('overview');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Simulate engagement pattern analysis
-  useEffect(() => {
-    if (!engagementData.patterns.length) {
-      // Wrap async function to handle promises properly
-      const performGeneration = () => {
-        generateEngagementPatterns().catch((error) => {
-          console.error(
-            'Unhandled error in engagement pattern generation:',
-            error
-          );
-        });
-      };
-      performGeneration();
-    }
-  }, []);
-
-  const generateEngagementPatterns = async () => {
-    setIsAnalyzing(true);
-
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const patterns: EngagementPattern[] = [
-      {
-        timeOfDay: 'morning',
-        frequency: 0.85,
-        duration: 12,
-        features: ['dashboard', 'insights', 'fall-risk'],
-        effectiveness: 0.92,
-      },
-      {
-        timeOfDay: 'afternoon',
-        frequency: 0.45,
-        duration: 6,
-        features: ['analytics', 'search'],
-        effectiveness: 0.67,
-      },
-      {
-        timeOfDay: 'evening',
-        frequency: 0.78,
-        duration: 18,
-        features: ['game-center', 'family', 'community'],
-        effectiveness: 0.88,
-      },
-    ];
-
-    const profile: PersonalizationProfile = {
-      preferredTime: 'morning',
-      engagementStyle: 'data-driven',
-      motivationTriggers: [
-        'progress tracking',
-        'health insights',
-        'achievement goals',
-      ],
-      attentionSpan: 'medium',
-      learningPreference: 'analytical',
-    };
-
-    setEngagementData((current) => ({
-      ...current,
-      patterns,
-      profile,
-    }));
-
-    // Generate personalized recommendations
-    await generateRecommendations(patterns, profile);
-    setIsAnalyzing(false);
-    toast.success('Engagement analysis complete!');
+  // Safe fallbacks for KV values to satisfy strict typing
+  const defaultEngagement: { sessions: unknown[]; patterns: EngagementPattern[]; profile: PersonalizationProfile | null } = {
+    sessions: [],
+    patterns: [],
+    profile: null,
   };
+  const currentEngagement = engagementData ?? defaultEngagement;
+  const currentRecommendations = recommendations ?? [];
 
-  const generateRecommendations = async (
+  // Generate personalized recommendations using LLM (if available) with a safe fallback
+  const generateRecommendations = useCallback(async (
     patterns: EngagementPattern[],
     profile: PersonalizationProfile
-  ) => {
-    const prompt = spark.llmPrompt`
-      Based on this user's engagement patterns and profile, generate 8-10 personalized optimization recommendations:
-
-      Engagement Patterns: ${JSON.stringify(patterns)}
-      User Profile: ${JSON.stringify(profile)}
-      Health Data Score: ${healthData.healthScore || 0}
-
-      Generate recommendations that focus on:
-      1. Optimal timing for health monitoring
-      2. Content personalization based on engagement style
-      3. Interaction improvements for attention span
-      4. Motivation triggers alignment
-      5. Workflow optimization
-
-      Return as JSON array with: id, type, priority, title, description, expectedImpact (0-100), timeToImplement, actions (array), implemented (false)
-    `;
-
+  ): Promise<void> => {
     try {
-      const response = await spark.llm(prompt, 'gpt-4o', true);
-      const newRecommendations = JSON.parse(response);
+      // Use Spark LLM if available; otherwise fall back
+      interface SparkLike {
+        llm: (prompt: string, model?: string, stream?: boolean) => Promise<string>;
+        llmPrompt: (template: TemplateStringsArray, ...subs: unknown[]) => string;
+      }
+      const s = (globalThis as { spark?: SparkLike }).spark;
+      if (!s) {
+        throw new Error('Spark LLM not available');
+      }
+
+      const prompt = s.llmPrompt`
+        Based on this user's engagement patterns and profile, generate 8-10 personalized optimization recommendations:
+
+        Engagement Patterns: ${JSON.stringify(patterns)}
+        User Profile: ${JSON.stringify(profile)}
+        Health Data Score: ${healthData.healthScore || 0}
+
+        Generate recommendations that focus on:
+        1. Optimal timing for health monitoring
+        2. Content personalization based on engagement style
+        3. Interaction improvements for attention span
+        4. Motivation triggers alignment
+        5. Workflow optimization
+
+        Return as JSON array with: id, type, priority, title, description, expectedImpact (0-100), timeToImplement, actions (array), implemented (false)
+      `;
+
+      const response = await s.llm(prompt, 'gpt-4o', true);
+      const newRecommendations = JSON.parse(response) as OptimizationRecommendation[];
       setRecommendations(newRecommendations);
     } catch (error) {
       console.error('Error generating recommendations:', error);
@@ -246,34 +203,99 @@ export default function PersonalizedEngagementOptimizer({
       ];
       setRecommendations(fallbackRecommendations);
     }
-  };
+  }, [healthData.healthScore, setRecommendations]);
+
+  const generateEngagementPatterns = useCallback(async () => {
+    setIsAnalyzing(true);
+
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const patterns: EngagementPattern[] = [
+      {
+        timeOfDay: 'morning',
+        frequency: 0.85,
+        duration: 12,
+        features: ['dashboard', 'insights', 'fall-risk'],
+        effectiveness: 0.92,
+      },
+      {
+        timeOfDay: 'afternoon',
+        frequency: 0.45,
+        duration: 6,
+        features: ['analytics', 'search'],
+        effectiveness: 0.67,
+      },
+      {
+        timeOfDay: 'evening',
+        frequency: 0.78,
+        duration: 18,
+        features: ['game-center', 'family', 'community'],
+        effectiveness: 0.88,
+      },
+    ];
+
+    const profile: PersonalizationProfile = {
+      preferredTime: 'morning',
+      engagementStyle: 'data-driven',
+      motivationTriggers: [
+        'progress tracking',
+        'health insights',
+        'achievement goals',
+      ],
+      attentionSpan: 'medium',
+      learningPreference: 'analytical',
+    };
+
+    setEngagementData((current) => ({
+      sessions: current?.sessions ?? [],
+      patterns,
+      profile,
+    }));
+
+    // Generate personalized recommendations
+    await generateRecommendations(patterns, profile);
+    setIsAnalyzing(false);
+    toast.success('Engagement analysis complete!');
+  }, [generateRecommendations, setEngagementData]);
+
+
+  // Simulate engagement pattern analysis (after callbacks declared)
+  useEffect(() => {
+    const patternsLen = currentEngagement.patterns.length;
+    if (!patternsLen) {
+      void generateEngagementPatterns().catch((error) => {
+        console.error('Unhandled error in engagement pattern generation:', error);
+      });
+    }
+  }, [currentEngagement.patterns.length, generateEngagementPatterns]);
 
   const implementRecommendation = (id: string) => {
     setRecommendations((current) =>
-      current.map((rec) =>
+      (current ?? []).map((rec) =>
         rec.id === id ? { ...rec, implemented: true } : rec
       )
     );
 
-    const recommendation = recommendations.find((r) => r.id === id);
+    const recommendation = currentRecommendations.find((r) => r.id === id);
     if (recommendation) {
       toast.success(`Implemented: ${recommendation.title}`);
     }
   };
 
   const getEngagementScore = () => {
-    if (!engagementData.patterns.length) return 0;
+    if (!currentEngagement.patterns.length) return 0;
     const avgEffectiveness =
-      engagementData.patterns.reduce((sum, p) => sum + p.effectiveness, 0) /
-      engagementData.patterns.length;
+      currentEngagement.patterns.reduce((sum, p) => sum + p.effectiveness, 0) /
+      currentEngagement.patterns.length;
     return Math.round(avgEffectiveness * 100);
   };
 
-  const getRecommendationsByType = (type: string) => {
-    return recommendations.filter((rec) => rec.type === type);
+  const getRecommendationsByType = (type: RecommendationType) => {
+  return currentRecommendations.filter((rec) => rec.type === type);
   };
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityColor = (priority: RecommendationPriority) => {
     switch (priority) {
       case 'high':
         return 'text-destructive';
@@ -286,7 +308,7 @@ export default function PersonalizedEngagementOptimizer({
     }
   };
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: RecommendationType) => {
     switch (type) {
       case 'timing':
         return Clock;
@@ -356,7 +378,7 @@ export default function PersonalizedEngagementOptimizer({
                   Active Recommendations
                 </p>
                 <p className="text-accent text-3xl font-bold">
-                  {recommendations.filter((r) => !r.implemented).length}
+                  {currentRecommendations.filter((r) => !r.implemented).length}
                 </p>
               </div>
               <Lightbulb className="text-accent h-8 w-8" />
@@ -374,7 +396,7 @@ export default function PersonalizedEngagementOptimizer({
                 <p className="text-accent text-3xl font-bold">
                   +
                   {Math.round(
-                    recommendations
+                    currentRecommendations
                       .filter((r) => !r.implemented)
                       .reduce((sum, r) => sum + r.expectedImpact, 0) / 10
                   )}
@@ -388,7 +410,7 @@ export default function PersonalizedEngagementOptimizer({
       </div>
 
       {/* User Profile Insights */}
-      {engagementData.profile && (
+  {currentEngagement.profile && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -404,25 +426,25 @@ export default function PersonalizedEngagementOptimizer({
               <div className="space-y-2">
                 <p className="text-sm font-medium">Preferred Time</p>
                 <Badge variant="outline" className="capitalize">
-                  {engagementData.profile.preferredTime}
+      {currentEngagement.profile.preferredTime}
                 </Badge>
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-medium">Engagement Style</p>
                 <Badge variant="outline" className="capitalize">
-                  {engagementData.profile.engagementStyle.replace('-', ' ')}
+      {currentEngagement.profile.engagementStyle.replace('-', ' ')}
                 </Badge>
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-medium">Attention Span</p>
                 <Badge variant="outline" className="capitalize">
-                  {engagementData.profile.attentionSpan}
+      {currentEngagement.profile.attentionSpan}
                 </Badge>
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-medium">Learning Style</p>
                 <Badge variant="outline" className="capitalize">
-                  {engagementData.profile.learningPreference}
+      {currentEngagement.profile.learningPreference}
                 </Badge>
               </div>
             </div>
@@ -454,7 +476,7 @@ export default function PersonalizedEngagementOptimizer({
 
             <TabsContent value="overview" className="space-y-4">
               <div className="grid gap-4">
-                {recommendations.slice(0, 6).map((rec) => {
+                {currentRecommendations.slice(0, 6).map((rec) => {
                   const IconComponent = getTypeIcon(rec.type);
                   return (
                     <div
@@ -572,9 +594,9 @@ export default function PersonalizedEngagementOptimizer({
                               Implementation Steps:
                             </h5>
                             <ul className="space-y-1">
-                              {rec.actions.map((action, index) => (
+                {rec.actions.map((action, index) => (
                                 <li
-                                  key={index}
+                  key={`${rec.id}-action-${index}`}
                                   className="text-muted-foreground flex items-center gap-2 text-sm"
                                 >
                                   <div className="bg-primary h-1.5 w-1.5 rounded-full" />

@@ -48,7 +48,7 @@ interface Props {
   onChallengeCreated?: (challenge: Challenge) => void;
 }
 
-export default function ChallengeCreator({ onChallengeCreated }: Props) {
+export default function ChallengeCreator({ onChallengeCreated }: Readonly<Props>) {
   const [challenges, setChallenges] = useKV<Challenge[]>(
     'created-challenges',
     []
@@ -110,7 +110,7 @@ export default function ChallengeCreator({ onChallengeCreated }: Props) {
       status: 'upcoming',
     };
 
-    setChallenges((current) => [...current, newChallenge]);
+    setChallenges((current) => [...(current ?? []), newChallenge]);
     onChallengeCreated?.(newChallenge);
 
     // Reset form
@@ -197,9 +197,9 @@ export default function ChallengeCreator({ onChallengeCreated }: Props) {
           <div>
             <Label className="text-sm font-medium">Quick Presets</Label>
             <div className="mt-2 grid grid-cols-3 gap-2">
-              {challengePresets.map((preset, index) => (
+              {challengePresets.map((preset) => (
                 <Button
-                  key={index}
+                  key={preset.title}
                   variant="outline"
                   size="sm"
                   onClick={() => applyPreset(preset)}

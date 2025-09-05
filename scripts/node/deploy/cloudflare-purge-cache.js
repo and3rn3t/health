@@ -14,10 +14,17 @@ const apiToken = process.env.CLOUDFLARE_API_TOKEN || getArg('--api-token');
 const zoneId = process.env.CLOUDFLARE_ZONE_ID || getArg('--zone');
 const everything = process.argv.includes('--everything');
 const urlsArg = getArg('--urls');
-const urls = urlsArg ? urlsArg.split(',').map((u) => u.trim()).filter(Boolean) : undefined;
+const urls = urlsArg
+  ? urlsArg
+      .split(',')
+      .map((u) => u.trim())
+      .filter(Boolean)
+  : undefined;
 
 if (!apiToken || !zoneId) {
-  console.error('Missing CLOUDFLARE_API_TOKEN or ZONE_ID. Provide via env or --api-token/--zone');
+  console.error(
+    'Missing CLOUDFLARE_API_TOKEN or ZONE_ID. Provide via env or --api-token/--zone'
+  );
   process.exit(1);
 }
 

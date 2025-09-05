@@ -12,7 +12,13 @@ function Table({ className, ...props }: ComponentProps<'table'>) {
         data-slot="table"
         className={cn('w-full caption-bottom text-sm', className)}
         {...props}
-      />
+      >
+        <thead className="sr-only">
+          <tr>
+            <th>Table</th>
+          </tr>
+        </thead>
+      </table>
     </div>
   );
 }

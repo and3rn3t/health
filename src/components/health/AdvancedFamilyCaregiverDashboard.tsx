@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
+import RecentHealthHistory from '@/components/health/RecentHealthHistory';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,31 +9,28 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Users,
-  Activity,
-  Clock,
-  Shield,
-  Heart,
-  AlertTriangle,
-  CheckCircle,
-  Bell,
-  Eye,
-  Phone,
-  Calendar,
-  Heart,
-  TrendingUp,
-} from 'lucide-react';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
-import RecentHealthHistory from '@/components/health/RecentHealthHistory';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useCreateHealthData } from '@/hooks/useCreateHealthData';
 import { processedHealthDataSchema } from '@/schemas/health';
+import { ProcessedHealthData } from '@/types';
+import { useKV } from '@github/spark/hooks';
+import {
+  Activity,
+  AlertTriangle,
+  Bell,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Eye,
+  Heart,
+  Phone,
+  Shield,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface FamilyMember {
   id: string;
@@ -113,9 +112,34 @@ interface Props {
   healthData: ProcessedHealthData;
 }
 
+// Helpers to avoid deep nested function definitions in event handlers
+function acknowledgeAlertList(list: CaregiverAlert[], id: string): CaregiverAlert[] {
+  const result: CaregiverAlert[] = [];
+  for (const a of list) {
+    if (a.id === id) result.push({ ...a, status: 'acknowledged', responseTime: 5 });
+    else result.push(a);
+  }
+  return result;
+}
+
+function completeTaskInList(list: CaregiverTask[], id: string): CaregiverTask[] {
+  const result: CaregiverTask[] = [];
+  for (const t of list) {
+    if (t.id === id)
+      result.push({
+        ...t,
+        status: 'completed',
+        completedBy: 'Current User',
+        completedAt: new Date().toISOString(),
+      });
+    else result.push(t);
+  }
+  return result;
+}
+
 export default function AdvancedFamilyCaregiverDashboard({
   healthData,
-}: Props) {
+}: Readonly<Props>) {
   const [familyMembers, setFamilyMembers] = useKV<FamilyMember[]>(
     'family-members',
     []
@@ -142,8 +166,13 @@ export default function AdvancedFamilyCaregiverDashboard({
     const payload: typeof processedHealthDataSchema._type = {
       type: 'heart_rate',
       value: Math.floor(55 + Math.random() * 30),
+      timestamp: now,
       processedAt: now,
       validated: true,
+      source: {
+        userId: 'demo-user',
+        collectedAt: now,
+      },
       alert: null,
     };
     createMutation.mutate(payload, {
@@ -154,7 +183,7 @@ export default function AdvancedFamilyCaregiverDashboard({
 
   // Initialize with sample data if empty
   useEffect(() => {
-    if (familyMembers.length === 0) {
+    if ((familyMembers?.length ?? 0) === 0) {
       const sampleFamily: FamilyMember[] = [
         {
           id: 'spouse-1',
@@ -279,7 +308,7 @@ export default function AdvancedFamilyCaregiverDashboard({
       setCaregiverTasks(sampleTasks);
     }
   }, [
-    familyMembers.length,
+    familyMembers?.length,
     setFamilyMembers,
     setCaregiverAlerts,
     setCaregiverTasks,
@@ -287,7 +316,7 @@ export default function AdvancedFamilyCaregiverDashboard({
 
   // Generate health insights based on current data
   useEffect(() => {
-    if (healthData && healthInsights.length === 0) {
+    if (healthData && (healthInsights?.length ?? 0) === 0) {
       const insights: HealthInsight[] = [
         {
           id: 'insight-1',
@@ -312,9 +341,9 @@ export default function AdvancedFamilyCaregiverDashboard({
           sharedWith: ['spouse-1'],
         },
       ];
-      setHealthInsights(insights);
+    setHealthInsights(insights);
     }
-  }, [healthData, healthInsights.length, setHealthInsights]);
+  }, [healthData, healthInsights?.length, setHealthInsights]);
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -363,11 +392,15 @@ export default function AdvancedFamilyCaregiverDashboard({
     }
   };
 
-  const activeAlerts = caregiverAlerts.filter(
+  const safeFamilyMembers = familyMembers ?? [];
+  const safeCaregiverAlerts = caregiverAlerts ?? [];
+  const safeCaregiverTasks = caregiverTasks ?? [];
+
+  const activeAlerts = safeCaregiverAlerts.filter(
     (a) => a.status !== 'acknowledged' && a.status !== 'responded'
   );
-  const pendingTasks = caregiverTasks.filter((t) => t.status === 'pending');
-  const emergencyContacts = familyMembers.filter(
+  const pendingTasks = safeCaregiverTasks.filter((t) => t.status === 'pending');
+  const emergencyContacts = safeFamilyMembers.filter(
     (m) => m.permissions.emergencyContact
   );
 
@@ -388,7 +421,7 @@ export default function AdvancedFamilyCaregiverDashboard({
             variant="outline"
             className="border-blue-200 bg-blue-50 text-blue-700"
           >
-            {familyMembers.length} Care Team Members
+            {safeFamilyMembers.length} Care Team Members
           </Badge>
           {activeAlerts.length > 0 && (
             <Badge variant="destructive">
@@ -429,7 +462,7 @@ export default function AdvancedFamilyCaregiverDashboard({
             </p>
             <p className="text-muted-foreground text-sm">
               Shared with{' '}
-              {familyMembers.filter((m) => m.permissions.viewHealthData).length}{' '}
+              {safeFamilyMembers.filter((m) => m.permissions.viewHealthData).length}{' '}
               members
             </p>
           </CardContent>
@@ -512,7 +545,7 @@ export default function AdvancedFamilyCaregiverDashboard({
             </div>
           </div>
           <div className="grid gap-4">
-            {familyMembers.map((member) => (
+            {(familyMembers ?? []).map((member) => (
               <Card
                 key={member.id}
                 className={
@@ -535,7 +568,7 @@ export default function AdvancedFamilyCaregiverDashboard({
                     </div>
                     <div className="flex items-center gap-2">
                       {member.permissions.emergencyContact && (
-                        <Badge variant="secondary" size="sm">
+                        <Badge variant="secondary" className="text-xs">
                           <Phone className="mr-1 h-3 w-3" />
                           Emergency
                         </Badge>
@@ -548,7 +581,7 @@ export default function AdvancedFamilyCaregiverDashboard({
                             ? 'default'
                             : 'secondary'
                         }
-                        size="sm"
+                        className="text-xs"
                       >
                         {member.lastActive
                           ? `Active ${new Date(member.lastActive).toLocaleDateString()}`
@@ -578,17 +611,17 @@ export default function AdvancedFamilyCaregiverDashboard({
                       </h4>
                       <div className="space-y-1">
                         {member.permissions.viewHealthData && (
-                          <Badge variant="secondary" size="sm">
+                          <Badge variant="secondary" className="text-xs">
                             View Health Data
                           </Badge>
                         )}
                         {member.permissions.receiveAlerts && (
-                          <Badge variant="secondary" size="sm">
+                          <Badge variant="secondary" className="text-xs">
                             Receive Alerts
                           </Badge>
                         )}
                         {member.permissions.canModifySettings && (
-                          <Badge variant="secondary" size="sm">
+                          <Badge variant="secondary" className="text-xs">
                             Modify Settings
                           </Badge>
                         )}
@@ -645,7 +678,7 @@ export default function AdvancedFamilyCaregiverDashboard({
 
         <TabsContent value="alerts" className="space-y-4">
           <div className="grid gap-4">
-            {caregiverAlerts.length === 0 ? (
+            {(caregiverAlerts ?? []).length === 0 ? (
               <Card>
                 <CardContent className="pt-6 text-center">
                   <CheckCircle className="mx-auto mb-4 h-12 w-12 text-green-500" />
@@ -658,7 +691,7 @@ export default function AdvancedFamilyCaregiverDashboard({
                 </CardContent>
               </Card>
             ) : (
-              caregiverAlerts
+              (caregiverAlerts ?? [])
                 .slice()
                 .reverse()
                 .map((alert) => (
@@ -680,14 +713,12 @@ export default function AdvancedFamilyCaregiverDashboard({
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge
-                            className={getSeverityColor(alert.severity)}
-                            size="sm"
+                            className={`text-xs ${getSeverityColor(alert.severity)}`}
                           >
                             {alert.severity}
                           </Badge>
                           <Badge
-                            className={getStatusColor(alert.status)}
-                            size="sm"
+                            className={`text-xs ${getStatusColor(alert.status)}`}
                           >
                             {alert.status}
                           </Badge>
@@ -702,7 +733,7 @@ export default function AdvancedFamilyCaregiverDashboard({
                           <div className="text-sm">
                             {alert.recipientIds
                               .map((id) => {
-                                const member = familyMembers.find(
+                                const member = (familyMembers ?? []).find(
                                   (m) => m.id === id
                                 );
                                 return member ? member.name : 'Unknown';
@@ -730,30 +761,17 @@ export default function AdvancedFamilyCaregiverDashboard({
                         </div>
                       </div>
 
-                      {alert.status === 'sent' ||
-                      alert.status === 'delivered' ? (
+                      {alert.status === 'sent' || alert.status === 'delivered' ? (
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() =>
-                            setCaregiverAlerts((current) =>
-                              current.map((a) =>
-                                a.id === alert.id
-                                  ? {
-                                      ...a,
-                                      status: 'acknowledged',
-                                      responseTime: 5,
-                                    }
-                                  : a
-                              )
-                            )
-                          }
+                          onClick={() => setCaregiverAlerts(acknowledgeAlertList((caregiverAlerts ?? []), alert.id))}
                         >
                           <CheckCircle className="mr-2 h-4 w-4" />
                           Mark as Acknowledged
                         </Button>
                       ) : (
-                        <Badge variant="secondary" size="sm">
+                        <Badge variant="secondary" className="text-xs">
                           {alert.status === 'acknowledged'
                             ? 'Acknowledged'
                             : 'Responded'}
@@ -768,60 +786,64 @@ export default function AdvancedFamilyCaregiverDashboard({
 
         <TabsContent value="insights" className="space-y-4">
           <div className="grid gap-4">
-            {healthInsights.map((insight) => (
-              <Card key={insight.id}>
-                <CardContent className="pt-6">
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`rounded-lg p-2 ${
-                          insight.type === 'improvement'
-                            ? 'bg-green-100'
-                            : insight.type === 'concern'
-                              ? 'bg-red-100'
-                              : insight.type === 'milestone'
-                                ? 'bg-blue-100'
-                                : 'bg-yellow-100'
-                        }`}
-                      >
-                        {insight.type === 'improvement' && (
-                          <TrendingUp className="h-5 w-5 text-green-600" />
-                        )}
-                        {insight.type === 'concern' && (
-                          <AlertTriangle className="h-5 w-5 text-red-600" />
-                        )}
-                        {insight.type === 'milestone' && (
-                          <CheckCircle className="h-5 w-5 text-blue-600" />
-                        )}
-                        {insight.type === 'trend' && (
-                          <Activity className="h-5 w-5 text-yellow-600" />
-                        )}
+            {(healthInsights ?? []).map((insight) => {
+              const bgClass = (() => {
+                switch (insight.type) {
+                  case 'improvement':
+                    return 'bg-green-100';
+                  case 'concern':
+                    return 'bg-red-100';
+                  case 'milestone':
+                    return 'bg-blue-100';
+                  default:
+                    return 'bg-yellow-100';
+                }
+              })();
+              const badgeVariant = (() => {
+                switch (insight.type) {
+                  case 'improvement':
+                    return 'default' as const;
+                  case 'concern':
+                    return 'destructive' as const;
+                  default:
+                    return 'secondary' as const;
+                }
+              })();
+              let metricSuffix = '';
+              if (insight.metric.includes('percent')) metricSuffix = '%';
+              else if (insight.metric.includes('time')) metricSuffix = ' min';
+              return (
+                <Card key={insight.id}>
+                  <CardContent className="pt-6">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`rounded-lg p-2 ${bgClass}`}>
+                          {insight.type === 'improvement' && (
+                            <TrendingUp className="h-5 w-5 text-green-600" />
+                          )}
+                          {insight.type === 'concern' && (
+                            <AlertTriangle className="h-5 w-5 text-red-600" />
+                          )}
+                          {insight.type === 'milestone' && (
+                            <CheckCircle className="h-5 w-5 text-blue-600" />
+                          )}
+                          {insight.type === 'trend' && (
+                            <Activity className="h-5 w-5 text-yellow-600" />
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{insight.title}</h3>
+                          <p className="text-muted-foreground text-sm">
+                            {insight.description}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold">{insight.title}</h3>
-                        <p className="text-muted-foreground text-sm">
-                          {insight.description}
-                        </p>
-                      </div>
+                      <Badge variant={badgeVariant}>
+                        {insight.value > 0 ? '+' : ''}
+                        {insight.value}
+                        {metricSuffix}
+                      </Badge>
                     </div>
-                    <Badge
-                      variant={
-                        insight.type === 'improvement'
-                          ? 'default'
-                          : insight.type === 'concern'
-                            ? 'destructive'
-                            : 'secondary'
-                      }
-                    >
-                      {insight.value > 0 ? '+' : ''}
-                      {insight.value}
-                      {insight.metric.includes('percent')
-                        ? '%'
-                        : insight.metric.includes('time')
-                          ? ' min'
-                          : ''}
-                    </Badge>
-                  </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -831,7 +853,7 @@ export default function AdvancedFamilyCaregiverDashboard({
                       <div className="text-sm">
                         {insight.sharedWith
                           .map((id) => {
-                            const member = familyMembers.find(
+                            const member = (familyMembers ?? []).find(
                               (m) => m.id === id
                             );
                             return member ? member.name : 'Unknown';
@@ -850,13 +872,14 @@ export default function AdvancedFamilyCaregiverDashboard({
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         </TabsContent>
 
         <TabsContent value="tasks" className="space-y-4">
           <div className="grid gap-4">
-            {caregiverTasks.map((task) => (
+            {(caregiverTasks ?? []).map((task) => (
               <Card key={task.id}>
                 <CardContent className="pt-6">
                   <div className="mb-4 flex items-center justify-between">
@@ -887,12 +910,11 @@ export default function AdvancedFamilyCaregiverDashboard({
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge
-                        className={getSeverityColor(task.priority)}
-                        size="sm"
+                        className={`text-xs ${getSeverityColor(task.priority)}`}
                       >
                         {task.priority}
                       </Badge>
-                      <Badge className={getStatusColor(task.status)} size="sm">
+                      <Badge className={`text-xs ${getStatusColor(task.status)}`}>
                         {task.status}
                       </Badge>
                     </div>
@@ -904,7 +926,7 @@ export default function AdvancedFamilyCaregiverDashboard({
                         Assigned To
                       </Label>
                       <div className="text-sm">
-                        {familyMembers.find((m) => m.id === task.assignedTo)
+                        {(familyMembers ?? []).find((m) => m.id === task.assignedTo)
                           ?.name || 'Unknown'}
                       </div>
                     </div>
@@ -930,20 +952,7 @@ export default function AdvancedFamilyCaregiverDashboard({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() =>
-                        setCaregiverTasks((current) =>
-                          current.map((t) =>
-                            t.id === task.id
-                              ? {
-                                  ...t,
-                                  status: 'completed',
-                                  completedBy: 'Current User',
-                                  completedAt: new Date().toISOString(),
-                                }
-                              : t
-                          )
-                        )
-                      }
+                      onClick={() => setCaregiverTasks(completeTaskInList((caregiverTasks ?? []), task.id))}
                     >
                       <CheckCircle className="mr-2 h-4 w-4" />
                       Mark as Completed
@@ -978,7 +987,7 @@ export default function AdvancedFamilyCaregiverDashboard({
                         key={contact.id}
                         className="flex items-center gap-3 rounded-lg border p-3"
                       >
-                        <Badge variant="secondary" size="sm">
+                        <Badge variant="secondary" className="text-xs">
                           {index + 1}
                         </Badge>
                         <div className="flex-1">
@@ -987,7 +996,7 @@ export default function AdvancedFamilyCaregiverDashboard({
                             {contact.contactInfo.phone}
                           </div>
                         </div>
-                        <Badge variant="outline" size="sm">
+                        <Badge variant="outline" className="text-xs">
                           {contact.relationship}
                         </Badge>
                       </div>
@@ -1015,7 +1024,7 @@ export default function AdvancedFamilyCaregiverDashboard({
                         <span className="font-medium">Emergency Contacts</span>
                       </div>
                       <p className="text-muted-foreground text-sm">
-                        {emergencyContacts.length} contacts ready
+                        {(safeFamilyMembers.filter((m) => m.permissions.emergencyContact)).length} contacts ready
                       </p>
                     </div>
                   </div>
@@ -1037,10 +1046,10 @@ export default function AdvancedFamilyCaregiverDashboard({
 function Label({
   children,
   className,
-}: {
+}: Readonly<{
   children: React.ReactNode;
   className?: string;
-}) {
+}>) {
   return (
     <label className={`text-sm font-medium ${className || ''}`}>
       {children}

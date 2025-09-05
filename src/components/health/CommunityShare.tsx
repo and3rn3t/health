@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,9 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -19,33 +17,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Progress } from '@/components/ui/progress';
+import { Switch } from '@/components/ui/switch';
+import { ProcessedHealthData } from '@/types';
+import { useKV } from '@github/spark/hooks';
 import {
-  Share,
-  Users,
-  UserPlus,
-  Mail,
-  Phone,
-  Heart,
-  Activity,
-  Shield,
-  Calendar,
-  Clock,
-  CheckCircle,
   AlertCircle,
-  TrendingUp,
-  FileText,
-  Send,
+  Calendar,
+  CheckCircle,
   Eye,
+  FileText,
   Lock,
-  Globe,
+  Mail,
+  Send,
+  Share,
+  TrendingUp,
+  UserPlus,
+  Users,
 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 interface CommunityMember {
   id: string;
@@ -71,7 +62,7 @@ interface HealthReport {
   summary: string;
   metrics: {
     healthScore: number;
-    fallRiskLevel: 'low' | 'medium' | 'high';
+    fallRiskLevel: 'low' | 'moderate' | 'high';
     activeMinutes: number;
     stepCount: number;
     sleepQuality: number;
@@ -88,7 +79,17 @@ interface CommunityShareProps {
   healthData: ProcessedHealthData;
 }
 
-export default function CommunityShare({ healthData }: CommunityShareProps) {
+export default function CommunityShare({ healthData }: Readonly<CommunityShareProps>) {
+  // Optional Spark integration guard
+  type SparkLike = {
+    llmPrompt: (
+      strings: TemplateStringsArray,
+      ...expr: unknown[]
+    ) => string;
+    llm: (prompt: string, model?: string, asJson?: boolean) => Promise<string>;
+  };
+  const spark = (globalThis as unknown as { spark?: SparkLike }).spark;
+
   const [communityMembers, setCommunityMembers] = useKV<CommunityMember[]>(
     'community-members',
     []
@@ -97,18 +98,28 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
     'health-reports',
     []
   );
-  const [shareSettings, setShareSettings] = useKV('share-settings', {
+  interface ShareSettings {
+    autoShareWeekly: boolean;
+    emergencyAutoShare: boolean;
+    publicProfile: boolean;
+  }
+  const DEFAULT_SHARE_SETTINGS: ShareSettings = {
     autoShareWeekly: false,
     emergencyAutoShare: true,
     publicProfile: false,
-  });
+  };
+  const [shareSettings, setShareSettings] = useKV<ShareSettings>(
+    'share-settings',
+    DEFAULT_SHARE_SETTINGS
+  );
 
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [selectedTab, setSelectedTab] = useState<
     'members' | 'reports' | 'settings'
   >('members');
 
-  const [newMember, setNewMember] = useState({
+  type NewMember = Pick<CommunityMember, 'name' | 'email' | 'relationship' | 'permissions'>;
+  const [newMember, setNewMember] = useState<NewMember>({
     name: '',
     email: '',
     relationship: 'family' as const,
@@ -120,6 +131,11 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
       receiveAlerts: false,
     },
   });
+
+  // Safe fallbacks for possibly undefined KV values
+  const safeMembers = communityMembers ?? [];
+  const safeReports = healthReports ?? [];
+  const safeShareSettings = shareSettings ?? DEFAULT_SHARE_SETTINGS;
 
   const addCommunityMember = () => {
     if (!newMember.name || !newMember.email) {
@@ -133,7 +149,7 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
       joinedDate: new Date(),
     };
 
-    setCommunityMembers((current) => [...current, member]);
+    setCommunityMembers((current = []) => [...current, member]);
     setNewMember({
       name: '',
       email: '',
@@ -151,61 +167,77 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
   };
 
   const generateHealthReport = async () => {
-    const prompt = spark.llmPrompt`
+    const prompt = (spark?.llmPrompt || ((s: TemplateStringsArray) => s.join('')))`
       Generate a comprehensive health report based on this data:
       Health Score: ${healthData.healthScore || 0}/100
       Fall Risk Factors: ${JSON.stringify(healthData.fallRiskFactors || [])}
-      Recent Activities: ${JSON.stringify(healthData.recentActivities || [])}
-      
+      Recent Insights: ${JSON.stringify(healthData.insights || [])}
+
       Create a report with:
       1. A brief summary (2-3 sentences)
       2. 3-5 key insights about health trends
       3. Any areas of concern
       4. Positive improvements or achievements
-      
+
       Format as JSON with summary, insights[], concerns[], improvements[] fields.
     `;
 
     try {
-      const response = await spark.llm(prompt, 'gpt-4o', true);
-      const reportData = JSON.parse(response);
+      const response = spark?.llm ? await spark.llm(prompt, 'gpt-4o', true) : '{}';
+      const reportData = JSON.parse(response || '{}') as Partial<{
+        summary: string;
+        insights: string[];
+        concerns: string[];
+        improvements: string[];
+      }>;
+
+  const hasHighRisk = !!healthData.fallRiskFactors?.some((f) => f.risk === 'high');
+  const hasModerateRisk = !!healthData.fallRiskFactors?.some((f) => f.risk === 'moderate');
+  let computedRiskLevel: HealthReport['metrics']['fallRiskLevel'];
+      if (hasHighRisk) {
+        computedRiskLevel = 'high';
+      } else if (hasModerateRisk) {
+        computedRiskLevel = 'moderate';
+      } else {
+        computedRiskLevel = 'low';
+      }
 
       const report: HealthReport = {
         id: Date.now().toString(),
         type: 'custom',
         title: `Health Report - ${new Date().toLocaleDateString()}`,
-        summary: reportData.summary,
+        summary: String(reportData.summary || 'Summary not available.'),
         metrics: {
           healthScore: healthData.healthScore || 0,
-          fallRiskLevel: healthData.fallRiskFactors?.some(
-            (f) => f.risk === 'high'
-          )
-            ? 'high'
-            : healthData.fallRiskFactors?.some((f) => f.risk === 'medium')
-              ? 'medium'
-              : 'low',
-          activeMinutes: healthData.metrics?.activeMinutes || 0,
-          stepCount: healthData.metrics?.stepCount || 0,
-          sleepQuality: healthData.metrics?.sleepQuality || 0,
+          fallRiskLevel: computedRiskLevel,
+          // Approximate active minutes from steps (simple heuristic)
+          activeMinutes: Math.max(0, Math.round((healthData.metrics?.steps?.average || 0) / 100)),
+          stepCount: Math.max(0, Math.round(healthData.metrics?.steps?.average || 0)),
+          // Derive sleep quality as percentage of 8 hours target
+          sleepQuality: Math.max(
+            0,
+            Math.min(100, Math.round(((healthData.metrics?.sleepHours?.average || 0) / 8) * 100))
+          ),
         },
-        insights: reportData.insights || [],
-        concerns: reportData.concerns || [],
-        improvements: reportData.improvements || [],
+        insights: Array.isArray(reportData.insights) ? reportData.insights : [],
+        concerns: Array.isArray(reportData.concerns) ? reportData.concerns : [],
+        improvements: Array.isArray(reportData.improvements) ? reportData.improvements : [],
         createdAt: new Date(),
         sharedWith: [],
         viewCount: 0,
       };
 
-      setHealthReports((current) => [report, ...current]);
+      setHealthReports((current = []) => [report, ...(current || [])]);
       toast.success('Health report generated successfully');
-    } catch (error) {
+    } catch (_err) {
+      console.error('Failed to generate health report', _err);
       toast.error('Failed to generate health report');
     }
   };
 
   const shareReport = (reportId: string, memberIds: string[]) => {
-    setHealthReports((current) =>
-      current.map((report) =>
+    setHealthReports((current = []) =>
+      (current || []).map((report) =>
         report.id === reportId
           ? {
               ...report,
@@ -232,11 +264,11 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
     }
   };
 
-  const getRiskColor = (level: string) => {
+  const getRiskColor = (level: HealthReport['metrics']['fallRiskLevel']) => {
     switch (level) {
       case 'high':
         return 'text-destructive';
-      case 'medium':
+      case 'moderate':
         return 'text-yellow-600';
       case 'low':
         return 'text-green-600';
@@ -259,28 +291,28 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-primary border-primary">
-            {communityMembers.length} Members
+            {safeMembers.length} Members
           </Badge>
           <Badge variant="outline" className="text-secondary border-secondary">
-            {healthReports.length} Reports
+            {safeReports.length} Reports
           </Badge>
         </div>
       </div>
 
       {/* Navigation Tabs */}
       <div className="bg-muted flex space-x-1 rounded-lg p-1">
-        {[
+        {([
           { id: 'members', label: 'Community Members', icon: Users },
           { id: 'reports', label: 'Health Reports', icon: FileText },
           { id: 'settings', label: 'Privacy Settings', icon: Lock },
-        ].map((tab) => {
+        ] as const).map((tab) => {
           const IconComponent = tab.icon;
           return (
             <Button
               key={tab.id}
               variant={selectedTab === tab.id ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setSelectedTab(tab.id as any)}
+              onClick={() => setSelectedTab(tab.id)}
               className="flex-1 justify-center"
             >
               <IconComponent className="mr-2 h-4 w-4" />
@@ -343,10 +375,10 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
                   <Label htmlFor="relationship">Relationship</Label>
                   <Select
                     value={newMember.relationship}
-                    onValueChange={(value) =>
+          onValueChange={(value) =>
                       setNewMember((prev) => ({
                         ...prev,
-                        relationship: value as any,
+            relationship: value as CommunityMember['relationship'],
                       }))
                     }
                   >
@@ -429,7 +461,7 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
               </Card>
             )}
 
-            {communityMembers.map((member) => (
+            {safeMembers.map((member) => (
               <Card key={member.id}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
@@ -527,7 +559,7 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
 
           {/* Reports List */}
           <div className="space-y-4">
-            {healthReports.map((report) => (
+            {safeReports.map((report) => (
               <Card key={report.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -604,8 +636,10 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
                         Key Insights
                       </h5>
                       <ul className="space-y-1 text-sm">
-                        {report.insights.map((insight, index) => (
-                          <li key={index} className="flex items-start gap-2">
+                        {report.insights.map((insight) => (
+                          <li key={`${report.id}-insight-${insight.slice(0, 24)}`}
+                            className="flex items-start gap-2"
+                          >
                             <span className="mt-0.5 text-green-600">•</span>
                             {insight}
                           </li>
@@ -622,8 +656,10 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
                         Areas of Concern
                       </h5>
                       <ul className="space-y-1 text-sm">
-                        {report.concerns.map((concern, index) => (
-                          <li key={index} className="flex items-start gap-2">
+                        {report.concerns.map((concern) => (
+                          <li key={`${report.id}-concern-${concern.slice(0, 24)}`}
+                            className="flex items-start gap-2"
+                          >
                             <span className="mt-0.5 text-yellow-600">•</span>
                             {concern}
                           </li>
@@ -638,7 +674,7 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
                       {report.sharedWith.length > 0 && (
                         <div className="flex -space-x-2">
                           {report.sharedWith.slice(0, 3).map((memberId) => {
-                            const member = communityMembers.find(
+                            const member = safeMembers.find(
                               (m) => m.id === memberId
                             );
                             return member ? (
@@ -670,7 +706,7 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
                       size="sm"
                       onClick={() => {
                         // Simple share to all members for demo
-                        const allMemberIds = communityMembers.map((m) => m.id);
+                        const allMemberIds = safeMembers.map((m) => m.id);
                         shareReport(report.id, allMemberIds);
                       }}
                     >
@@ -712,12 +748,12 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
                     </div>
                     <Switch
                       id="auto-weekly"
-                      checked={shareSettings.autoShareWeekly}
+                      checked={safeShareSettings.autoShareWeekly}
                       onCheckedChange={(checked) =>
-                        setShareSettings((prev) => ({
-                          ...prev,
-                          autoShareWeekly: checked,
-                        }))
+                        setShareSettings((prev) => {
+                          const base = prev ?? DEFAULT_SHARE_SETTINGS;
+                          return { ...base, autoShareWeekly: checked };
+                        })
                       }
                     />
                   </div>
@@ -733,12 +769,12 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
                     </div>
                     <Switch
                       id="emergency-share"
-                      checked={shareSettings.emergencyAutoShare}
+                      checked={safeShareSettings.emergencyAutoShare}
                       onCheckedChange={(checked) =>
-                        setShareSettings((prev) => ({
-                          ...prev,
-                          emergencyAutoShare: checked,
-                        }))
+                        setShareSettings((prev) => {
+                          const base = prev ?? DEFAULT_SHARE_SETTINGS;
+                          return { ...base, emergencyAutoShare: checked };
+                        })
                       }
                     />
                   </div>
@@ -763,12 +799,12 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
                     </div>
                     <Switch
                       id="public-profile"
-                      checked={shareSettings.publicProfile}
+                      checked={safeShareSettings.publicProfile}
                       onCheckedChange={(checked) =>
-                        setShareSettings((prev) => ({
-                          ...prev,
-                          publicProfile: checked,
-                        }))
+                        setShareSettings((prev) => {
+                          const base = prev ?? DEFAULT_SHARE_SETTINGS;
+                          return { ...base, publicProfile: checked };
+                        })
                       }
                     />
                   </div>
@@ -806,7 +842,7 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="text-center">
                   <div className="text-primary text-2xl font-bold">
-                    {communityMembers.length}
+                    {safeMembers.length}
                   </div>
                   <div className="text-muted-foreground text-sm">
                     Community Members
@@ -814,7 +850,7 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
-                    {healthReports.length}
+                    {safeReports.length}
                   </div>
                   <div className="text-muted-foreground text-sm">
                     Reports Shared
@@ -822,7 +858,7 @@ export default function CommunityShare({ healthData }: CommunityShareProps) {
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">
-                    {healthReports.reduce(
+                    {safeReports.reduce(
                       (sum, report) => sum + report.viewCount,
                       0
                     )}

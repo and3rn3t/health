@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -6,40 +7,32 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { useKV } from '@github/spark/hooks';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Wifi,
-  WifiHigh,
-  WifiOff,
-  Activity,
-  Heart,
-  Clock,
-  Phone,
-  AlertTriangle,
-  CheckCircle,
-  Play,
-  Pause,
-  Zap,
-  CloudUpload,
-  Globe,
-  Monitor,
-  Bluetooth,
-  BatteryFull,
-  Radio,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import {
-  LiveHealthDataSync,
-  LiveHealthMetric,
   ConnectionStatus,
   getLiveHealthDataSync,
+  LiveHealthMetric,
 } from '@/lib/liveHealthDataSync';
+import { useKV } from '@github/spark/hooks';
+import {
+  Activity,
+  AlertTriangle,
+  BatteryFull,
+  CheckCircle,
+  Clock,
+  CloudUpload,
+  Globe,
+  Heart,
+  Monitor,
+  Phone,
+  Radio,
+  Wifi,
+  WifiOff,
+  Zap,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface LiveDataStats {
   totalMetricsReceived: number;
@@ -61,10 +54,14 @@ interface DeviceStatus {
 }
 
 export default function LiveHealthDataIntegration() {
-  const [isConnected, setIsConnected] = useKV('live-data-connected', false);
-  const [liveDataEnabled, setLiveDataEnabled] = useKV(
+  // Persist as strings for KV compatibility
+  const [isConnected, setIsConnected] = useKV<string>(
+    'live-data-connected',
+    'false'
+  );
+  const [liveDataEnabled, setLiveDataEnabled] = useKV<string>(
     'live-data-enabled',
-    false
+    'false'
   );
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
     connected: false,
@@ -116,79 +113,55 @@ export default function LiveHealthDataIntegration() {
   ]);
 
   // Initialize live data sync
-  const liveDataSync = getLiveHealthDataSync();
+  const liveDataSync = getLiveHealthDataSync('default-user');
 
-  // Handle connection status changes
-  useEffect(() => {
-    liveDataSync.onConnectionStatusChange((status) => {
-      setConnectionStatus(status);
-      setIsConnected(status.connected);
+  const updateDevicesConnection = useCallback((connected: boolean) => {
+    setDevices((prev) =>
+      prev.map((device) => ({
+        ...device,
+        isConnected: connected,
+        lastSeen: connected ? new Date().toISOString() : device.lastSeen,
+      }))
+    );
+  }, []);
 
-      if (status.connected) {
-        toast.success('Live health data connection established');
-        setDevices((prev) =>
-          prev.map((device) => ({
-            ...device,
-            isConnected: true,
-            lastSeen: new Date().toISOString(),
-          }))
-        );
-      } else {
-        toast.error('Lost connection to live health data');
-        setDevices((prev) =>
-          prev.map((device) => ({
-            ...device,
-            isConnected: false,
-          }))
-        );
-      }
-    });
-
-    // Handle incoming live data
-    liveDataSync.onLiveDataReceived((data) => {
-      setLiveMetrics((prev) => {
-        const updated = [data, ...prev.slice(0, 49)]; // Keep last 50 metrics
-        return updated;
-      });
-
-      // Update device status
-      setDevices((prev) =>
-        prev.map((device) => {
-          if (device.id === data.deviceId) {
-            return {
+  const handleMetric = useCallback((data: LiveHealthMetric) => {
+    setLiveMetrics((prev) => [data, ...prev.slice(0, 49)]);
+    setDevices((prev) =>
+      prev.map((device) =>
+        device.id === data.deviceId
+          ? {
               ...device,
               lastSeen: data.timestamp,
               dataRate: device.dataRate + 1,
-            };
-          }
-          return device;
-        })
-      );
+            }
+          : device
+      )
+    );
+    setDataStats((prev) => ({
+      ...prev,
+      totalMetricsReceived: prev.totalMetricsReceived + 1,
+      lastUpdateTime: data.timestamp,
+      dataQualityScore: Math.min(100, prev.dataQualityScore + 0.1),
+    }));
+  }, []);
 
-      // Update stats
-      setDataStats((prev) => ({
-        ...prev,
-        totalMetricsReceived: prev.totalMetricsReceived + 1,
-        lastUpdateTime: data.timestamp,
-        dataQualityScore: Math.min(100, prev.dataQualityScore + 0.1),
-      }));
-    });
-
-    // Handle errors
-    liveDataSync.onErrorOccurred((error) => {
-      toast.error(`Live data error: ${error.message}`);
-      console.error('Live data sync error:', error);
-    });
-
-    return () => {
-      // Cleanup if needed
-    };
-  }, [liveDataSync]);
+  // Poll connection status periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const status = liveDataSync.getConnectionStatus();
+      setConnectionStatus(status);
+      const connectedStr = status.connected ? 'true' : 'false';
+      setIsConnected(connectedStr);
+      updateDevicesConnection(status.connected);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [liveDataSync, setIsConnected, updateDevicesConnection]);
 
   // Calculate metrics per minute
   useEffect(() => {
     const interval = setInterval(() => {
-      if (isConnected) {
+  if (isConnected === 'true') {
         const now = Date.now();
         const oneMinuteAgo = now - 60000;
         const recentMetrics = liveMetrics.filter(
@@ -206,9 +179,9 @@ export default function LiveHealthDataIntegration() {
     return () => clearInterval(interval);
   }, [isConnected, liveMetrics]);
 
-  const toggleLiveData = async () => {
-    if (!liveDataEnabled) {
-      setLiveDataEnabled(true);
+  const toggleLiveData = async (_checked?: boolean) => {
+    if (liveDataEnabled !== 'true') {
+      setLiveDataEnabled('true');
       const connected = await liveDataSync.connect();
       if (connected) {
         // Subscribe to all metric types
@@ -222,7 +195,7 @@ export default function LiveHealthDataIntegration() {
             'sleep',
           ],
           callback: (data) => {
-            // Data is already handled by the global handler
+            handleMetric(data);
           },
           filters: {
             minConfidence: 0.7,
@@ -230,18 +203,21 @@ export default function LiveHealthDataIntegration() {
         });
       }
     } else {
-      setLiveDataEnabled(false);
+      setLiveDataEnabled('false');
       liveDataSync.disconnect();
       liveDataSync.unsubscribe('main-subscription');
     }
   };
 
   const getConnectionIcon = () => {
-    if (!isConnected) return <WifiOff className="h-5 w-5 text-red-500" />;
-    if (connectionStatus.dataQuality === 'excellent')
-      return <WifiHigh className="h-5 w-5 text-green-500" />;
-    if (connectionStatus.dataQuality === 'good')
+    if (isConnected !== 'true') {
+      return <WifiOff className="h-5 w-5 text-red-500" />;
+    }
+    if (connectionStatus.dataQuality === 'excellent') {
+      return <Wifi className="h-5 w-5 text-green-500" />;
+    } else if (connectionStatus.dataQuality === 'good') {
       return <Wifi className="h-5 w-5 text-yellow-500" />;
+    }
     return <WifiOff className="h-5 w-5 text-red-500" />;
   };
 
@@ -307,7 +283,7 @@ export default function LiveHealthDataIntegration() {
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Live Data</span>
             <Switch
-              checked={liveDataEnabled}
+              checked={liveDataEnabled === 'true'}
               onCheckedChange={toggleLiveData}
             />
           </div>
@@ -316,7 +292,7 @@ export default function LiveHealthDataIntegration() {
       </div>
 
       {/* Connection Status Alert */}
-      {liveDataEnabled && !isConnected && (
+  {liveDataEnabled === 'true' && isConnected !== 'true' && (
         <Alert className="border-yellow-200 bg-yellow-50">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
@@ -429,15 +405,15 @@ export default function LiveHealthDataIntegration() {
                     <div className="py-8 text-center">
                       <Activity className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
                       <p className="text-muted-foreground text-sm">
-                        {liveDataEnabled
+                        {liveDataEnabled === 'true'
                           ? 'Waiting for live data...'
                           : 'Enable live data to see metrics'}
                       </p>
                     </div>
                   ) : (
-                    liveMetrics.slice(0, 10).map((metric, index) => (
+                    liveMetrics.slice(0, 10).map((metric) => (
                       <div
-                        key={index}
+                        key={`${metric.deviceId ?? ''}-${metric.timestamp}`}
                         className="bg-muted flex items-center justify-between rounded-lg p-3"
                       >
                         <div className="flex items-center gap-3">
@@ -507,10 +483,13 @@ export default function LiveHealthDataIntegration() {
                         Connection Stability
                       </span>
                       <span className="text-sm font-semibold text-blue-600">
-                        {isConnected ? '99.9%' : '0%'}
+                        {isConnected === 'true' ? '99.9%' : '0%'}
                       </span>
                     </div>
-                    <Progress value={isConnected ? 99.9 : 0} className="h-2" />
+                    <Progress
+                      value={isConnected === 'true' ? 99.9 : 0}
+                      className="h-2"
+                    />
                   </div>
 
                   <div>

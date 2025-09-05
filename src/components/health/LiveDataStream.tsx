@@ -2,16 +2,16 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { ProcessedHealthData } from '@/schemas/health';
+import type { ProcessedHealthRecord } from '@/types';
 import {
-    Activity,
-    Heart,
-    Pause,
-    Play,
-    RotateCcw,
-    Wifi,
-    WifiOff,
-    Zap,
+  Activity,
+  Heart,
+  Pause,
+  Play,
+  RotateCcw,
+  Wifi,
+  WifiOff,
+  Zap,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -26,7 +26,7 @@ interface LiveStreamMetric {
 interface WebSocketMessage {
   type: string;
   data?: LiveStreamMetric;
-  processedData?: ProcessedHealthData;
+  processedData?: ProcessedHealthRecord;
   quality?: 'excellent' | 'good' | 'poor';
   error?: string;
   userId?: string;
@@ -34,13 +34,13 @@ interface WebSocketMessage {
 
 interface LiveDataStreamProps {
   userId: string;
-  onDataReceived?: (data: ProcessedHealthData) => void;
+  onDataReceived?: (data: ProcessedHealthRecord) => void;
 }
 
 export default function LiveDataStream({
   userId,
   onDataReceived,
-}: LiveDataStreamProps) {
+}: Readonly<LiveDataStreamProps>) {
   const [isConnected, setIsConnected] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [currentMetrics, setCurrentMetrics] = useState<LiveStreamMetric | null>(

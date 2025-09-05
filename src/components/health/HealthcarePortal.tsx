@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { ProcessedHealthData } from '@/types';
 import { useKV } from '@github/spark/hooks';
 import {
   Activity,
@@ -38,6 +38,10 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+type AccessLevel = 'full' | 'limited' | 'emergency-only';
+type NoteType = 'assessment' | 'recommendation' | 'concern' | 'followup';
+type Priority = 'low' | 'medium' | 'high' | 'urgent';
+
 interface HealthcareProvider {
   id: string;
   name: string;
@@ -45,7 +49,7 @@ interface HealthcareProvider {
   email: string;
   phone: string;
   clinic: string;
-  accessLevel: 'full' | 'limited' | 'emergency-only';
+  accessLevel: AccessLevel;
   verificationStatus: 'verified' | 'pending' | 'unverified';
   lastAccess?: Date;
   joinedDate: Date;
@@ -54,10 +58,10 @@ interface HealthcareProvider {
 interface MedicalNote {
   id: string;
   providerId: string;
-  type: 'assessment' | 'recommendation' | 'concern' | 'followup';
+  type: NoteType;
   title: string;
   content: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  priority: Priority;
   actionRequired: boolean;
   patientVisible: boolean;
   createdAt: Date;
@@ -82,7 +86,7 @@ interface HealthcarePortalProps {
 
 export default function HealthcarePortal({
   healthData,
-}: HealthcarePortalProps) {
+}: Readonly<HealthcarePortalProps>) {
   const [providers, setProviders] = useKV<HealthcareProvider[]>(
     'healthcare-providers',
     []
@@ -91,7 +95,7 @@ export default function HealthcarePortal({
     'medical-notes',
     []
   );
-  const [careTasks, setCareTasks] = useKV<CareTask[]>('care-tasks', []);
+  const [careTasks, _setCareTasks] = useKV<CareTask[]>('care-tasks', []);
 
   const [selectedTab, setSelectedTab] = useState<
     'providers' | 'notes' | 'tasks' | 'timeline'
@@ -99,63 +103,71 @@ export default function HealthcarePortal({
   const [isAddingProvider, setIsAddingProvider] = useState(false);
   const [isAddingNote, setIsAddingNote] = useState(false);
 
-  const [newProvider, setNewProvider] = useState({
+  const [newProvider, setNewProvider] = useState<{ name: string; specialization: string; email: string; phone: string; clinic: string; accessLevel: AccessLevel }>({
     name: '',
     specialization: '',
     email: '',
     phone: '',
     clinic: '',
-    accessLevel: 'limited' as const,
+    accessLevel: 'limited',
   });
 
-  const [newNote, setNewNote] = useState({
-    type: 'assessment' as const,
+  const [newNote, setNewNote] = useState<{ type: NoteType; title: string; content: string; priority: Priority; actionRequired: boolean; patientVisible: boolean; followupDate: string }>({
+    type: 'assessment',
     title: '',
     content: '',
-    priority: 'medium' as const,
+    priority: 'medium',
     actionRequired: false,
     patientVisible: true,
     followupDate: '',
   });
 
-  // Generate AI-powered medical insights
+  // Generate deterministic medical insights locally (Workers-safe)
   const generateMedicalInsights = async () => {
-    const prompt = spark.llmPrompt`
-      As a healthcare AI assistant, analyze this patient's health data and generate clinical insights:
-
-      Health Score: ${healthData.healthScore || 0}/100
-      Fall Risk Factors: ${JSON.stringify(healthData.fallRiskFactors || [])}
-      Activity Data: ${JSON.stringify(healthData.recentActivities || [])}
-
-      Provide:
-      1. Clinical assessment summary
-      2. Risk factors that need medical attention
-      3. Recommended interventions or follow-ups
-      4. Monitoring priorities
-
-      Format as JSON with assessment, riskFactors[], recommendations[], priorities[] fields.
-    `;
-
     try {
-      const response = await spark.llm(prompt, 'gpt-4o', true);
-      const insights = JSON.parse(response);
+      const score = healthData.healthScore ?? 0;
+      const highRiskCount = (healthData.fallRiskFactors || []).filter(
+        (f) => f.risk === 'high'
+      ).length;
+      const hasConcerns = score < 60 || highRiskCount > 0;
+
+      const assessmentParts: string[] = [];
+  let statusMsg = 'Health status needs attention.';
+  if (score >= 80) statusMsg = 'Excellent overall status.';
+  else if (score >= 60) statusMsg = 'Good overall status with areas to improve.';
+  assessmentParts.push(`Overall health score is ${score}/100. ${statusMsg}`);
+      if (highRiskCount > 0) {
+        assessmentParts.push(
+          `${highRiskCount} high fall-risk factor${highRiskCount > 1 ? 's' : ''} detected.`
+        );
+      }
+
+      const recommendations: string[] = [];
+      if (score < 60) recommendations.push('Schedule a primary care check-in');
+      if (highRiskCount > 0)
+        recommendations.push('Review home fall hazards and add supports');
+      recommendations.push('Maintain hydration and regular sleep schedule');
 
       const note: MedicalNote = {
         id: Date.now().toString(),
         providerId: 'ai-assistant',
         type: 'assessment',
-        title: 'AI Clinical Assessment',
-        content: insights.assessment,
-        priority: insights.riskFactors?.length > 2 ? 'high' : 'medium',
-        actionRequired: insights.recommendations?.length > 0,
+        title: 'Clinical Assessment (Auto-generated)',
+        content: assessmentParts.join(' '),
+        priority: hasConcerns ? 'high' : 'medium',
+        actionRequired: recommendations.length > 0,
         patientVisible: true,
         createdAt: new Date(),
+        followupDate: hasConcerns
+          ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+          : undefined,
       };
 
-      setMedicalNotes((current) => [note, ...current]);
-      toast.success('Medical insights generated successfully');
-    } catch (error) {
-      toast.error('Failed to generate medical insights');
+  setMedicalNotes((current) => [note, ...((current ?? []))]);
+      toast.success('Medical insights generated');
+    } catch (err) {
+      console.error('generateMedicalInsights failed', err);
+      toast.error('Unable to generate insights');
     }
   };
 
@@ -172,7 +184,7 @@ export default function HealthcarePortal({
       joinedDate: new Date(),
     };
 
-    setProviders((current) => [...current, provider]);
+  setProviders((current) => ([...(current ?? []), provider]));
     setNewProvider({
       name: '',
       specialization: '',
@@ -201,7 +213,7 @@ export default function HealthcarePortal({
       createdAt: new Date(),
     };
 
-    setMedicalNotes((current) => [note, ...current]);
+  setMedicalNotes((current) => [note, ...((current ?? []))]);
     setNewNote({
       type: 'assessment',
       title: '',
@@ -230,20 +242,7 @@ export default function HealthcarePortal({
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'in-progress':
-        return 'bg-blue-100 text-blue-800';
-      case 'overdue':
-        return 'bg-red-100 text-red-800';
-      case 'pending':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
+  // (status chips use inline mappings in UI; no dedicated helper needed here)
 
   const getAccessLevelColor = (level: string) => {
     switch (level) {
@@ -259,10 +258,10 @@ export default function HealthcarePortal({
   };
 
   // Calculate urgent items count
-  const urgentNotesCount = medicalNotes.filter(
+  const urgentNotesCount = (medicalNotes ?? []).filter(
     (note) => note.priority === 'urgent' || note.actionRequired
   ).length;
-  const overdueTasks = careTasks.filter(
+  const overdueTasks = (careTasks ?? []).filter(
     (task) => task.status === 'overdue'
   ).length;
 
@@ -314,7 +313,7 @@ export default function HealthcarePortal({
               key={tab.id}
               variant={selectedTab === tab.id ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setSelectedTab(tab.id as any)}
+              onClick={() => setSelectedTab(tab.id as typeof selectedTab)}
               className="flex-1 justify-center"
             >
               <IconComponent className="mr-2 h-4 w-4" />
@@ -435,10 +434,14 @@ export default function HealthcarePortal({
                   <Label htmlFor="access-level">Access Level</Label>
                   <Select
                     value={newProvider.accessLevel}
-                    onValueChange={(value) =>
+                    onValueChange={(value: 'full' | 'limited' | 'emergency-only') =>
                       setNewProvider((prev) => ({
-                        ...prev,
-                        accessLevel: value as any,
+                        name: prev.name,
+                        specialization: prev.specialization,
+                        email: prev.email,
+                        phone: prev.phone,
+                        clinic: prev.clinic,
+                        accessLevel: value,
                       }))
                     }
                   >
@@ -476,7 +479,7 @@ export default function HealthcarePortal({
 
           {/* Providers List */}
           <div className="grid gap-4">
-            {providers.map((provider) => (
+            {(providers ?? []).map((provider) => (
               <Card key={provider.id}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
@@ -528,13 +531,11 @@ export default function HealthcarePortal({
                                 ? 'default'
                                 : 'outline'
                             }
-                            className={
-                              provider.verificationStatus === 'verified'
-                                ? 'bg-green-100 text-green-800'
-                                : provider.verificationStatus === 'pending'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-gray-100 text-gray-800'
-                            }
+                            className={(() => {
+                              if (provider.verificationStatus === 'verified') return 'bg-green-100 text-green-800';
+                              if (provider.verificationStatus === 'pending') return 'bg-yellow-100 text-yellow-800';
+                              return 'bg-gray-100 text-gray-800';
+                            })()}
                           >
                             {provider.verificationStatus}
                           </Badge>
@@ -582,8 +583,16 @@ export default function HealthcarePortal({
                     <Label htmlFor="note-type">Type</Label>
                     <Select
                       value={newNote.type}
-                      onValueChange={(value) =>
-                        setNewNote((prev) => ({ ...prev, type: value as any }))
+                      onValueChange={(value: 'assessment' | 'recommendation' | 'concern' | 'followup') =>
+                        setNewNote((prev) => ({
+                          type: value,
+                          title: prev.title,
+                          content: prev.content,
+                          priority: prev.priority,
+                          actionRequired: prev.actionRequired,
+                          patientVisible: prev.patientVisible,
+                          followupDate: prev.followupDate,
+                        }))
                       }
                     >
                       <SelectTrigger>
@@ -607,10 +616,15 @@ export default function HealthcarePortal({
                     <Label htmlFor="note-priority">Priority</Label>
                     <Select
                       value={newNote.priority}
-                      onValueChange={(value) =>
+                      onValueChange={(value: 'low' | 'medium' | 'high' | 'urgent') =>
                         setNewNote((prev) => ({
-                          ...prev,
-                          priority: value as any,
+                          type: prev.type,
+                          title: prev.title,
+                          content: prev.content,
+                          priority: value,
+                          actionRequired: prev.actionRequired,
+                          patientVisible: prev.patientVisible,
+                          followupDate: prev.followupDate,
                         }))
                       }
                     >
@@ -722,7 +736,7 @@ export default function HealthcarePortal({
 
           {/* Notes List */}
           <div className="space-y-4">
-            {medicalNotes.map((note) => (
+            {(medicalNotes ?? []).map((note) => (
               <Card
                 key={note.id}
                 className={note.actionRequired ? 'border-orange-200' : ''}
@@ -731,15 +745,12 @@ export default function HealthcarePortal({
                   <div className="mb-3 flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`h-3 w-3 rounded-full ${
-                          note.priority === 'urgent'
-                            ? 'bg-red-500'
-                            : note.priority === 'high'
-                              ? 'bg-orange-500'
-                              : note.priority === 'medium'
-                                ? 'bg-yellow-500'
-                                : 'bg-green-500'
-                        }`}
+                        className={`h-3 w-3 rounded-full ${(() => {
+                          if (note.priority === 'urgent') return 'bg-red-500';
+                          if (note.priority === 'high') return 'bg-orange-500';
+                          if (note.priority === 'medium') return 'bg-yellow-500';
+                          return 'bg-green-500';
+                        })()}`}
                       />
                       <div>
                         <h4 className="font-medium">{note.title}</h4>
@@ -799,13 +810,13 @@ export default function HealthcarePortal({
               <div className="grid gap-4 text-center md:grid-cols-4">
                 <div>
                   <div className="text-2xl font-bold text-blue-600">
-                    {careTasks.filter((t) => t.status === 'pending').length}
+                    {(careTasks ?? []).filter((t) => t.status === 'pending').length}
                   </div>
                   <div className="text-muted-foreground text-sm">Pending</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-yellow-600">
-                    {careTasks.filter((t) => t.status === 'in-progress').length}
+                    {(careTasks ?? []).filter((t) => t.status === 'in-progress').length}
                   </div>
                   <div className="text-muted-foreground text-sm">
                     In Progress
@@ -813,13 +824,13 @@ export default function HealthcarePortal({
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-green-600">
-                    {careTasks.filter((t) => t.status === 'completed').length}
+                    {(careTasks ?? []).filter((t) => t.status === 'completed').length}
                   </div>
                   <div className="text-muted-foreground text-sm">Completed</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-red-600">
-                    {careTasks.filter((t) => t.status === 'overdue').length}
+                    {(careTasks ?? []).filter((t) => t.status === 'overdue').length}
                   </div>
                   <div className="text-muted-foreground text-sm">Overdue</div>
                 </div>

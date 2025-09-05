@@ -9,24 +9,18 @@ function Collapsible({
 
 function CollapsibleTrigger({
   ...props
-}: ComponentProps<typeof CollapsiblePrimitive.CollapsibleTrigger>) {
+}: ComponentProps<typeof CollapsiblePrimitive.Trigger>) {
   return (
-    <CollapsiblePrimitive.CollapsibleTrigger
-      data-slot="collapsible-trigger"
-      {...props}
-    />
+    <CollapsiblePrimitive.Trigger data-slot="collapsible-trigger" {...props} />
   );
 }
 
 function CollapsibleContent({
   ...props
-}: ComponentProps<typeof CollapsiblePrimitive.CollapsibleContent>) {
+}: ComponentProps<typeof CollapsiblePrimitive.Content>) {
   return (
-    <CollapsiblePrimitive.CollapsibleContent
-      data-slot="collapsible-content"
-      {...props}
-    />
+    <CollapsiblePrimitive.Content data-slot="collapsible-content" {...props} />
   );
 }
 
-export { Collapsible, CollapsibleTrigger, CollapsibleContent };
+export { Collapsible, CollapsibleContent, CollapsibleTrigger };

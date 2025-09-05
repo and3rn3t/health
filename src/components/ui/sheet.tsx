@@ -1,6 +1,6 @@
-import { ComponentProps } from 'react';
 import * as SheetPrimitive from '@radix-ui/react-dialog';
-import XIcon from 'lucide-react/dist/esm/icons/x';
+import { X } from 'lucide-react';
+import { ComponentProps } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -69,7 +69,7 @@ function SheetContent({
       >
         {children}
         <SheetPrimitive.Close className="focus:ring-ring data-[state=open]:bg-secondary rounded-xs focus:outline-hidden absolute right-4 top-4 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none">
-          <XIcon className="size-4" />
+          <X className="size-4" />
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>
       </SheetPrimitive.Content>
@@ -125,11 +125,11 @@ function SheetDescription({
 
 export {
   Sheet,
-  SheetTrigger,
   SheetClose,
   SheetContent,
-  SheetHeader,
-  SheetFooter,
-  SheetTitle,
   SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 };

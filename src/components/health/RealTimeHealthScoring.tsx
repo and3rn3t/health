@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,23 +8,22 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useKV } from '@github/spark/hooks';
 import {
-  Heart,
   Activity,
+  AlertTriangle,
+  Brain,
+  Heart,
+  Minus,
+  Pause,
+  Play,
+  TrendingDown,
+  TrendingUp,
   Wifi,
   WifiOff,
-  Play,
-  Pause,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Brain,
-  AlertTriangle,
 } from 'lucide-react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 
 interface HealthMetric {
@@ -45,21 +45,28 @@ interface HealthScoreData {
 }
 
 export default function RealTimeHealthScoring() {
-  const [isConnected, setIsConnected] = useKV('apple-Watch-connected', false);
-  const [isMonitoring, setIsMonitoring] = useKV(
-    'health-monitoring-active',
-    false
-  );
-  const [currentScore, setCurrentScore] = useKV<HealthScoreData>(
-    'current-health-score',
-    {
+  const DEFAULT_SCORE = useMemo<HealthScoreData>(
+    () => ({
       overall: 75,
       cardiovascular: 78,
       activity: 72,
       recovery: 80,
       stability: 73,
       timestamp: new Date(),
-    }
+    }),
+    []
+  );
+  const [isConnected, setIsConnected] = useKV<string>(
+    'apple-Watch-connected',
+    'false'
+  );
+  const [isMonitoring, setIsMonitoring] = useKV<string>(
+    'health-monitoring-active',
+    'false'
+  );
+  const [currentScore, setCurrentScore] = useKV<HealthScoreData>(
+    'current-health-score',
+  DEFAULT_SCORE
   );
   const [realtimeMetrics, setRealtimeMetrics] = useKV<HealthMetric[]>(
     'realtime-metrics',
@@ -73,10 +80,10 @@ export default function RealTimeHealthScoring() {
 
   // Simulate Apple Watch connection
   const toggleConnection = async () => {
-    if (!isConnected) {
+    if (isConnected !== 'true') {
       toast.loading('Connecting to Apple Watch...');
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      setIsConnected(true);
+      setIsConnected('true');
       toast.success('Connected to Apple Watch');
 
       // Initialize with current metrics
@@ -124,21 +131,21 @@ export default function RealTimeHealthScoring() {
       ];
       setRealtimeMetrics(initialMetrics);
     } else {
-      setIsConnected(false);
-      setIsMonitoring(false);
+      setIsConnected('false');
+      setIsMonitoring('false');
       toast.info('Disconnected from Apple Watch');
       setRealtimeMetrics([]);
     }
   };
 
   const toggleMonitoring = () => {
-    if (!isConnected) {
+    if (isConnected !== 'true') {
       toast.error('Please connect to Apple Watch first');
       return;
     }
 
-    setIsMonitoring((current) => !current);
-    if (!isMonitoring) {
+    setIsMonitoring((current) => (current === 'true' ? 'false' : 'true'));
+    if (isMonitoring !== 'true') {
       toast.success('Started real-time health monitoring');
     } else {
       toast.info('Paused real-time health monitoring');
@@ -146,8 +153,10 @@ export default function RealTimeHealthScoring() {
   };
 
   // Calculate weighted health score
-  const calculateHealthScore = (metrics: HealthMetric[]): HealthScoreData => {
-    if (metrics.length === 0) return currentScore;
+  const calculateHealthScore = useCallback(
+    (metrics: HealthMetric[]): HealthScoreData => {
+      const base = currentScore ?? DEFAULT_SCORE;
+      if (metrics.length === 0) return base;
 
     let totalWeightedScore = 0;
     let totalWeight = 0;
@@ -179,67 +188,71 @@ export default function RealTimeHealthScoring() {
       }
     });
 
-    const overall =
-      totalWeight > 0 ? Math.round(totalWeightedScore / totalWeight) : 75;
+      const overall =
+        totalWeight > 0 ? Math.round(totalWeightedScore / totalWeight) : 75;
 
-    return {
-      overall,
-      cardiovascular: Math.round(categoryScores.cardiovascular),
-      activity: Math.round(categoryScores.activity),
-      recovery: Math.round(categoryScores.recovery),
-      stability: Math.round(categoryScores.stability),
-      timestamp: new Date(),
-    };
-  };
+      return {
+        overall,
+        cardiovascular: Math.round(categoryScores.cardiovascular),
+        activity: Math.round(categoryScores.activity),
+        recovery: Math.round(categoryScores.recovery),
+        stability: Math.round(categoryScores.stability),
+        timestamp: new Date(),
+      };
+    },
+  [currentScore, DEFAULT_SCORE]
+  );
+
+  const transformMetrics = useCallback((currentMetrics: HealthMetric[]) => {
+    return currentMetrics.map((metric) => {
+      // Simulate realistic variations
+      const variation = (Math.random() - 0.5) * 4; // ±2 units
+      let newValue = metric.value + variation;
+
+      // Apply bounds based on metric type
+      if (metric.name === 'Heart Rate') {
+        newValue = Math.max(50, Math.min(120, newValue));
+      } else if (metric.name === 'Heart Rate Variability') {
+        newValue = Math.max(20, Math.min(80, newValue));
+      } else {
+        newValue = Math.max(0, Math.min(100, newValue));
+      }
+
+      // Determine trend
+      let trend: 'up' | 'down' | 'stable' = 'stable';
+      if (Math.abs(variation) > 1) {
+        trend = variation > 0 ? 'up' : 'down';
+      }
+
+      return {
+        ...metric,
+        value: Math.round(newValue * 10) / 10,
+        trend,
+        lastUpdated: new Date(),
+      };
+    });
+  }, []);
 
   // Simulate real-time updates
   useEffect(() => {
-    if (!isConnected || !isMonitoring) return;
+    if (isConnected !== 'true' || isMonitoring !== 'true') return;
 
     const interval = setInterval(() => {
-      setRealtimeMetrics((currentMetrics) => {
-        return currentMetrics.map((metric) => {
-          // Simulate realistic variations
-          const variation = (Math.random() - 0.5) * 4; // ±2 units
-          let newValue = metric.value + variation;
-
-          // Apply bounds based on metric type
-          if (metric.name === 'Heart Rate') {
-            newValue = Math.max(50, Math.min(120, newValue));
-          } else if (metric.name === 'Heart Rate Variability') {
-            newValue = Math.max(20, Math.min(80, newValue));
-          } else {
-            newValue = Math.max(0, Math.min(100, newValue));
-          }
-
-          // Determine trend
-          let trend: 'up' | 'down' | 'stable' = 'stable';
-          if (Math.abs(variation) > 1) {
-            trend = variation > 0 ? 'up' : 'down';
-          }
-
-          return {
-            ...metric,
-            value: Math.round(newValue * 10) / 10,
-            trend,
-            lastUpdated: new Date(),
-          };
-        });
-      });
+      setRealtimeMetrics((old) => transformMetrics(old ?? []));
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [isConnected, isMonitoring]);
+  }, [isConnected, isMonitoring, setRealtimeMetrics, transformMetrics]);
 
   // Update health score when metrics change
   useEffect(() => {
-    if (realtimeMetrics.length > 0) {
-      const newScore = calculateHealthScore(realtimeMetrics);
+    if ((realtimeMetrics ?? []).length > 0) {
+      const newScore = calculateHealthScore(realtimeMetrics ?? []);
       setCurrentScore(newScore);
 
       // Add to history every minute (simulated)
       setScoreHistory((current) => {
-        const updated = [...current, newScore].slice(-50); // Keep last 50 entries
+        const updated = [...(current ?? []), newScore].slice(-50); // Keep last 50 entries
         return updated;
       });
 
@@ -254,7 +267,7 @@ export default function RealTimeHealthScoring() {
         newAlerts.push('Cardiovascular metrics need attention');
       }
 
-      const heartRateMetric = realtimeMetrics.find(
+  const heartRateMetric = (realtimeMetrics ?? []).find(
         (m) => m.name === 'Heart Rate'
       );
       if (
@@ -266,7 +279,7 @@ export default function RealTimeHealthScoring() {
 
       setAlerts(newAlerts);
     }
-  }, [realtimeMetrics]);
+  }, [realtimeMetrics, calculateHealthScore, setCurrentScore, setScoreHistory, setAlerts]);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
@@ -308,7 +321,7 @@ export default function RealTimeHealthScoring() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {isConnected ? (
+              {isConnected === 'true' ? (
                 <div className="flex items-center gap-2">
                   <Wifi className="h-5 w-5 text-green-600" />
                   <Badge
@@ -328,26 +341,26 @@ export default function RealTimeHealthScoring() {
 
             <div className="flex items-center gap-2">
               <Button
-                variant={isConnected ? 'outline' : 'default'}
+                variant={isConnected === 'true' ? 'outline' : 'default'}
                 onClick={toggleConnection}
                 className="flex items-center gap-2"
               >
                 <Heart className="h-4 w-4" />
-                {isConnected ? 'Disconnect' : 'Connect Watch'}
+                {isConnected === 'true' ? 'Disconnect' : 'Connect Watch'}
               </Button>
 
-              {isConnected && (
+              {isConnected === 'true' && (
                 <Button
-                  variant={isMonitoring ? 'destructive' : 'default'}
+                  variant={isMonitoring === 'true' ? 'destructive' : 'default'}
                   onClick={toggleMonitoring}
                   className="flex items-center gap-2"
                 >
-                  {isMonitoring ? (
+                  {isMonitoring === 'true' ? (
                     <Pause className="h-4 w-4" />
                   ) : (
                     <Play className="h-4 w-4" />
                   )}
-                  {isMonitoring ? 'Pause' : 'Start'} Monitoring
+                  {isMonitoring === 'true' ? 'Pause' : 'Start'} Monitoring
                 </Button>
               )}
             </div>
@@ -356,7 +369,7 @@ export default function RealTimeHealthScoring() {
       </Card>
 
       {/* Health Score Overview */}
-      {isConnected && (
+      {isConnected === 'true' && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
           <Card className="md:col-span-2 lg:col-span-1">
             <CardHeader className="pb-2">
@@ -365,17 +378,22 @@ export default function RealTimeHealthScoring() {
             <CardContent>
               <div className="flex items-center justify-center">
                 <div className="relative">
+                  {(() => {
+                    const cs = currentScore ?? DEFAULT_SCORE;
+                    return (
                   <div
-                    className={`text-4xl font-bold ${getScoreColor(currentScore.overall)}`}
+                      className={`text-4xl font-bold ${getScoreColor(cs.overall)}`}
                   >
-                    {currentScore.overall}
+                      {cs.overall}
                   </div>
+                    );
+                  })()}
                   <div className="text-muted-foreground text-center text-sm">
                     / 100
                   </div>
                 </div>
               </div>
-              <Progress value={currentScore.overall} className="mt-4" />
+              <Progress value={(currentScore ?? DEFAULT_SCORE).overall} className="mt-4" />
             </CardContent>
           </Card>
 
@@ -385,11 +403,11 @@ export default function RealTimeHealthScoring() {
             </CardHeader>
             <CardContent>
               <div
-                className={`text-2xl font-bold ${getScoreColor(currentScore.cardiovascular)}`}
+                className={`text-2xl font-bold ${getScoreColor((currentScore ?? DEFAULT_SCORE).cardiovascular)}`}
               >
-                {currentScore.cardiovascular}
+                {(currentScore ?? DEFAULT_SCORE).cardiovascular}
               </div>
-              <Progress value={currentScore.cardiovascular} className="mt-2" />
+              <Progress value={(currentScore ?? DEFAULT_SCORE).cardiovascular} className="mt-2" />
             </CardContent>
           </Card>
 
@@ -399,11 +417,11 @@ export default function RealTimeHealthScoring() {
             </CardHeader>
             <CardContent>
               <div
-                className={`text-2xl font-bold ${getScoreColor(currentScore.activity)}`}
+                className={`text-2xl font-bold ${getScoreColor((currentScore ?? DEFAULT_SCORE).activity)}`}
               >
-                {currentScore.activity}
+                {(currentScore ?? DEFAULT_SCORE).activity}
               </div>
-              <Progress value={currentScore.activity} className="mt-2" />
+              <Progress value={(currentScore ?? DEFAULT_SCORE).activity} className="mt-2" />
             </CardContent>
           </Card>
 
@@ -413,11 +431,11 @@ export default function RealTimeHealthScoring() {
             </CardHeader>
             <CardContent>
               <div
-                className={`text-2xl font-bold ${getScoreColor(currentScore.recovery)}`}
+                className={`text-2xl font-bold ${getScoreColor((currentScore ?? DEFAULT_SCORE).recovery)}`}
               >
-                {currentScore.recovery}
+                {(currentScore ?? DEFAULT_SCORE).recovery}
               </div>
-              <Progress value={currentScore.recovery} className="mt-2" />
+              <Progress value={(currentScore ?? DEFAULT_SCORE).recovery} className="mt-2" />
             </CardContent>
           </Card>
 
@@ -427,26 +445,26 @@ export default function RealTimeHealthScoring() {
             </CardHeader>
             <CardContent>
               <div
-                className={`text-2xl font-bold ${getScoreColor(currentScore.stability)}`}
+                className={`text-2xl font-bold ${getScoreColor((currentScore ?? DEFAULT_SCORE).stability)}`}
               >
-                {currentScore.stability}
+                {(currentScore ?? DEFAULT_SCORE).stability}
               </div>
-              <Progress value={currentScore.stability} className="mt-2" />
+              <Progress value={(currentScore ?? DEFAULT_SCORE).stability} className="mt-2" />
             </CardContent>
           </Card>
         </div>
       )}
 
       {/* Live Metrics */}
-      {isConnected && realtimeMetrics.length > 0 && (
+  {isConnected === 'true' && (realtimeMetrics ?? []).length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
               Live Health Metrics
-              {isMonitoring && (
+              {isMonitoring === 'true' && (
                 <div className="flex items-center gap-1">
-                  <div className="animate-Activity h-2 w-2 rounded-full bg-green-500" />
+                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
                   <span className="text-sm text-green-600">Live</span>
                 </div>
               )}
@@ -454,9 +472,9 @@ export default function RealTimeHealthScoring() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {realtimeMetrics.map((metric, index) => (
+              {(realtimeMetrics ?? []).map((metric) => (
                 <div
-                  key={index}
+          key={`${metric.name}-${metric.lastUpdated.getTime()}`}
                   className="flex items-center justify-between rounded-lg border p-3"
                 >
                   <div>
@@ -479,10 +497,10 @@ export default function RealTimeHealthScoring() {
       )}
 
       {/* Alerts */}
-      {alerts.length > 0 && (
+    {(alerts ?? []).length > 0 && (
         <div className="space-y-2">
-          {alerts.map((alert, index) => (
-            <Alert key={index} variant="destructive">
+      {(alerts ?? []).map((alert) => (
+            <Alert key={alert} variant="destructive">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>{alert}</AlertDescription>
             </Alert>
@@ -491,7 +509,7 @@ export default function RealTimeHealthScoring() {
       )}
 
       {/* AI Insights */}
-      {isConnected && isMonitoring && (
+  {isConnected === 'true' && isMonitoring === 'true' && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -505,9 +523,9 @@ export default function RealTimeHealthScoring() {
                 <h4 className="mb-2 font-medium">Current Trend</h4>
                 <p className="text-muted-foreground text-sm">
                   Your health score has been{' '}
-                  {currentScore.overall >= 75 ? 'stable' : 'declining'} over the
+                  {(currentScore ?? DEFAULT_SCORE).overall >= 75 ? 'stable' : 'declining'} over the
                   last hour.
-                  {currentScore.cardiovascular > 80 &&
+                  {(currentScore ?? DEFAULT_SCORE).cardiovascular > 80 &&
                     ' Excellent cardiovascular performance detected.'}
                 </p>
               </div>
@@ -515,14 +533,14 @@ export default function RealTimeHealthScoring() {
               <div className="bg-muted/50 rounded-lg p-4">
                 <h4 className="mb-2 font-medium">Recommendations</h4>
                 <p className="text-muted-foreground text-sm">
-                  {currentScore.activity < 70
+      {(currentScore ?? DEFAULT_SCORE).activity < 70
                     ? 'Consider light movement to improve activity score.'
                     : 'Great activity levels! Keep up the good work.'}
                 </p>
               </div>
             </div>
 
-            {currentScore.overall < 70 && (
+    {(currentScore ?? DEFAULT_SCORE).overall < 70 && (
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
@@ -537,7 +555,7 @@ export default function RealTimeHealthScoring() {
       )}
 
       {/* Score History Preview */}
-      {scoreHistory.length > 0 && (
+  {(scoreHistory ?? []).length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Recent Score History</CardTitle>
@@ -547,12 +565,12 @@ export default function RealTimeHealthScoring() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {scoreHistory
+      {(scoreHistory ?? [])
                 .slice(-5)
                 .reverse()
-                .map((score, index) => (
+        .map((score) => (
                   <div
-                    key={index}
+          key={score.timestamp.toISOString()}
                     className="flex items-center justify-between rounded border p-2"
                   >
                     <span className="text-muted-foreground text-sm">

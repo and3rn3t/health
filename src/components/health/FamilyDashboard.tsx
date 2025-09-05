@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,31 +8,23 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
+import { ProcessedHealthData } from '@/types';
+import { useKV } from '@github/spark/hooks';
 import {
-  Heart,
-  Shield,
   Activity,
-  Phone,
-  MessageCircle,
-  Calendar,
   AlertTriangle,
-  CheckCircle,
-  TrendingUp,
-  TrendingDown,
-  Clock,
-  Star,
-  Users,
-  Zap,
-  MapPin,
   Bell,
+  CheckCircle,
+  Heart,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Shield,
+  Star,
+  TrendingUp,
+  Users,
 } from 'lucide-react';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 interface FamilyMember {
   id: string;
@@ -64,7 +57,7 @@ interface FamilyDashboardProps {
   healthData: ProcessedHealthData;
 }
 
-export default function FamilyDashboard({ healthData }: FamilyDashboardProps) {
+export default function FamilyDashboard({ healthData }: Readonly<FamilyDashboardProps>) {
   const [familyMembers, setFamilyMembers] = useKV<FamilyMember[]>(
     'family-members',
     [
@@ -130,7 +123,7 @@ export default function FamilyDashboard({ healthData }: FamilyDashboardProps) {
 
   const addReaction = (shareId: string, memberId: string, reaction: string) => {
     setProgressShares((current) =>
-      current.map((share) =>
+      current?.map((share) =>
         share.id === shareId
           ? {
               ...share,
@@ -139,8 +132,8 @@ export default function FamilyDashboard({ healthData }: FamilyDashboardProps) {
                 { memberId, reaction },
               ],
             }
-          : share
-      )
+            : share
+      ) || []
     );
   };
 
@@ -154,11 +147,11 @@ export default function FamilyDashboard({ healthData }: FamilyDashboardProps) {
       value: healthData.healthScore || 0,
       unit: 'health score',
       date: new Date(),
-      celebrateWith: familyMembers.map((m) => m.id),
+      celebrateWith: (familyMembers ?? []).map((m) => m.id),
       reactions: [],
     };
 
-    setProgressShares((current) => [newShare, ...current]);
+    setProgressShares((current) => [newShare, ...(current || [])]);
   };
 
   const getTypeIcon = (type: string) => {
@@ -191,6 +184,16 @@ export default function FamilyDashboard({ healthData }: FamilyDashboardProps) {
     }
   };
 
+  const getHealthStatusMessage = (score: number) => {
+    if (score >= 80) {
+      return 'Excellent health status! Keep it up!';
+    } else if (score >= 60) {
+      return 'Good health with room for improvement';
+    } else {
+      return 'Health needs attention - consider consulting with healthcare providers';
+    }
+  };
+
   const getRelativeTime = (date: Date) => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -205,12 +208,12 @@ export default function FamilyDashboard({ healthData }: FamilyDashboardProps) {
   };
 
   // Calculate family engagement metrics
-  const activeFamilyMembers = familyMembers.filter(
+  const activeFamilyMembers = (familyMembers ?? []).filter(
     (member) =>
       new Date().getTime() - member.lastSeen.getTime() < 1000 * 60 * 60 * 24 // Active in last 24h
   ).length;
 
-  const totalReactions = progressShares.reduce(
+  const totalReactions = (progressShares || []).reduce(
     (sum, share) => sum + share.reactions.length,
     0
   );
@@ -240,7 +243,7 @@ export default function FamilyDashboard({ healthData }: FamilyDashboardProps) {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-primary text-2xl font-bold">
-              {familyMembers.length}
+                {(familyMembers || []).length}
             </div>
             <div className="text-muted-foreground text-sm">Family Members</div>
           </CardContent>
@@ -274,13 +277,15 @@ export default function FamilyDashboard({ healthData }: FamilyDashboardProps) {
             A simple overview of your health for your family
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-6 md:grid-cols-2">
+        <CardContent>
+          <div className="space-y-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Overall Health</span>
-                <span className="text-muted-foreground text-sm">
-                  {healthData.healthScore || 0}/100
+                <span>
+                  <p className="text-muted-foreground text-xs">
+                    {getHealthStatusMessage(healthData.healthScore || 0)}
+                  </p>
                 </span>
               </div>
               <Progress value={healthData.healthScore || 0} className="h-2" />
@@ -296,25 +301,19 @@ export default function FamilyDashboard({ healthData }: FamilyDashboardProps) {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Fall Risk</span>
-                <Badge
-                  variant={
-                    healthData.fallRiskFactors?.some((f) => f.risk === 'high')
-                      ? 'destructive'
-                      : healthData.fallRiskFactors?.some(
-                            (f) => f.risk === 'medium'
-                          )
-                        ? 'default'
-                        : 'secondary'
-                  }
-                >
-                  {healthData.fallRiskFactors?.some((f) => f.risk === 'high')
-                    ? 'HIGH'
-                    : healthData.fallRiskFactors?.some(
-                          (f) => f.risk === 'medium'
-                        )
-                      ? 'MEDIUM'
-                      : 'LOW'}
-                </Badge>
+                {(() => {
+                  const hasHighRisk = healthData.fallRiskFactors?.some((f) => f.risk === 'high') ?? false;
+                  const hasModerateRisk = healthData.fallRiskFactors?.some((f) => f.risk === 'moderate') ?? false;
+
+                  const badgeVariant = hasHighRisk ? 'destructive' : hasModerateRisk ? 'default' : 'secondary';
+                  const badgeText = hasHighRisk ? 'HIGH' : hasModerateRisk ? 'MEDIUM' : 'LOW';
+
+                  return (
+                    <Badge variant={badgeVariant}>
+                      {badgeText}
+                    </Badge>
+                  );
+                })()}
               </div>
               <p className="text-muted-foreground text-xs">
                 {healthData.fallRiskFactors?.some((f) => f.risk === 'high')
@@ -339,7 +338,7 @@ export default function FamilyDashboard({ healthData }: FamilyDashboardProps) {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
-            {familyMembers.map((member) => (
+            {(familyMembers ?? []).map((member) => (
               <div
                 key={member.id}
                 className="flex items-center justify-between rounded-lg border p-3"
@@ -403,7 +402,7 @@ export default function FamilyDashboard({ healthData }: FamilyDashboardProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {progressShares.map((share) => {
+            {progressShares?.map((share) => {
               const IconComponent = getTypeIcon(share.type);
               return (
                 <div key={share.id} className="rounded-lg border p-4">

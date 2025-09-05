@@ -1,51 +1,53 @@
+import TelemetryPanel from '@/components/dev/TelemetryPanel';
 import { Badge } from '@/components/ui/badge';
 import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useKV } from '@/hooks/useCloudflareKV';
-import { Contact } from '@/types';
+import { recordTelemetry } from '@/lib/telemetry';
+import { Contact, ProcessedHealthData } from '@/types';
 import {
-    Activity,
-    AlertTriangle,
-    BarChart3,
-    Bell,
-    Brain,
-    Clock,
-    CloudUpload,
-    Heart,
-    Home as House,
-    Lightbulb,
-    Menu as List,
-    Monitor,
-    Moon,
-    Pill,
-    Search,
-    Settings,
-    Share,
-    Shield,
-    Smartphone,
-    Sparkles,
-    Sun,
-    Target,
-    TrendingUp,
-    Trophy,
-    Upload,
-    Users,
-    X,
+  Activity,
+  AlertTriangle,
+  BarChart3,
+  Bell,
+  Brain,
+  Clock,
+  CloudUpload,
+  Heart,
+  Home as House,
+  Lightbulb,
+  Menu as List,
+  Monitor,
+  Moon,
+  Pill,
+  Search,
+  Settings,
+  Share,
+  Shield,
+  Smartphone,
+  Sparkles,
+  Sun,
+  Target,
+  TrendingUp,
+  Trophy,
+  Upload,
+  Users,
+  X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -59,8 +61,6 @@ import FallRiskWalkingManager from '@/components/health/FallRiskWalkingManager';
 import HealthAnalytics from '@/components/health/HealthAnalytics';
 import HealthDataImport from '@/components/health/HealthDataImport';
 import HealthSettings from '@/components/health/HealthSettings';
-import MedicationTracker from '@/components/health/MedicationTracker';
-import WorkoutTracker from '@/components/health/WorkoutTracker';
 // import FallMonitoringTooling from '@/components/health/FallMonitoringTooling'
 import FamilyGameification from '@/components/gamification/FamilyGameification';
 import HealthGameCenter from '@/components/gamification/HealthGameCenter';
@@ -99,8 +99,25 @@ import WSTokenSettings from '@/components/health/WSTokenSettings';
 import SmartNotificationEngine from '@/components/notifications/SmartNotificationEngine';
 import PersonalizedEngagementOptimizer from '@/components/recommendations/PersonalizedEngagementOptimizer';
 import SmartFeatureRecommendations from '@/components/recommendations/SmartFeatureRecommendations';
-import VitalSenseBrandShowcase from '@/components/VitalSenseBrandShowcase';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+
+// Define navigation item structure
+interface NavigationItem {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+}
+
+// Define navigation items categories
+interface NavigationItems {
+  main: NavigationItem[];
+  monitoring: NavigationItem[];
+  ai: NavigationItem[];
+  advanced: NavigationItem[];
+  gamification: NavigationItem[];
+  community: NavigationItem[];
+  management: NavigationItem[];
+  profile: NavigationItem[];
+}
 
 // Extract Sidebar component to reduce nesting
 interface SidebarProps {
@@ -111,7 +128,7 @@ interface SidebarProps {
   themeMode: string;
   toggleThemeMode: () => void;
   hasHealthData: boolean;
-  navigationItems: any;
+  navigationItems: NavigationItems;
 }
 
 const Sidebar = ({
@@ -126,7 +143,7 @@ const Sidebar = ({
 }: SidebarProps) => (
   <aside
     className={`
-    bg-card border-border fixed left-0 top-0 z-40 h-screen border-r
+    bg-card fixed left-0 top-0 z-40 h-screen border-r border-border
     transition-all duration-300 ease-in-out
     ${sidebarCollapsed ? 'w-16' : 'w-64'}
     hidden lg:flex lg:flex-col
@@ -134,7 +151,7 @@ const Sidebar = ({
   >
     <div className="flex h-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="border-border flex-shrink-0 border-b p-4">
+      <div className="flex-shrink-0 border-b border-border p-4">
         <div className="flex items-center justify-between">
           {!sidebarCollapsed && (
             <div className="flex items-center gap-3">
@@ -184,7 +201,7 @@ const Sidebar = ({
             </h3>
           )}
           <div className="space-y-1">
-            {navigationItems.main.map((item: any) => {
+            {navigationItems.main.map((item: NavigationItem) => {
               const IconComponent = item.icon;
               const isActive = activeTab === item.id;
               return (
@@ -216,7 +233,7 @@ const Sidebar = ({
             </h3>
           )}
           <div className="space-y-1">
-            {navigationItems.monitoring.map((item: any) => {
+            {navigationItems.monitoring.map((item: NavigationItem) => {
               const IconComponent = item.icon;
               const isActive = activeTab === item.id;
               return (
@@ -248,7 +265,7 @@ const Sidebar = ({
             </h3>
           )}
           <div className="space-y-1">
-            {navigationItems.ai.map((item: any) => {
+            {navigationItems.ai.map((item: NavigationItem) => {
               const IconComponent = item.icon;
               const isActive = activeTab === item.id;
               return (
@@ -280,7 +297,7 @@ const Sidebar = ({
             </h3>
           )}
           <div className="space-y-1">
-            {navigationItems.advanced.map((item: any) => {
+            {navigationItems.advanced.map((item: NavigationItem) => {
               const IconComponent = item.icon;
               const isActive = activeTab === item.id;
               return (
@@ -312,7 +329,7 @@ const Sidebar = ({
             </h3>
           )}
           <div className="space-y-1">
-            {navigationItems.gamification.map((item: any) => {
+            {navigationItems.gamification.map((item: NavigationItem) => {
               const IconComponent = item.icon;
               const isActive = activeTab === item.id;
               return (
@@ -344,7 +361,7 @@ const Sidebar = ({
             </h3>
           )}
           <div className="space-y-1">
-            {navigationItems.community.map((item: any) => {
+            {navigationItems.community.map((item: NavigationItem) => {
               const IconComponent = item.icon;
               const isActive = activeTab === item.id;
               return (
@@ -376,7 +393,7 @@ const Sidebar = ({
             </h3>
           )}
           <div className="space-y-1">
-            {navigationItems.management.map((item: any) => {
+            {navigationItems.management.map((item: NavigationItem) => {
               const IconComponent = item.icon;
               const isActive = activeTab === item.id;
               return (
@@ -408,7 +425,7 @@ const Sidebar = ({
             </h3>
           )}
           <div className="space-y-1">
-            {navigationItems.profile.map((item: any) => {
+            {navigationItems.profile.map((item: NavigationItem) => {
               const IconComponent = item.icon;
               const isActive = activeTab === item.id;
               return (
@@ -436,7 +453,7 @@ const Sidebar = ({
       </nav>
 
       {/* Footer */}
-      <div className="border-border border-t p-4">
+      <div className="border-t border-border p-4">
         {/* Theme mode toggle */}
         <div className="mb-3">
           <Button
@@ -732,6 +749,12 @@ function App() {
     ((healthData.healthScore || 0) < 60 ||
       healthData.fallRiskFactors?.some((factor) => factor.risk === 'high'));
 
+  // Dev-only telemetry panel state (persisted)
+  const [showTelemetry, setShowTelemetry] = useKV<boolean>(
+    'dev-telemetry-open',
+    false
+  );
+
   // Define navigation structure with categories
   const navigationItems = {
     main: [
@@ -833,7 +856,7 @@ function App() {
 
   const currentPageInfo = getCurrentPageInfo();
   return (
-    <div className="bg-background flex min-h-screen">
+    <div className="flex min-h-screen bg-background">
       {/* Sidebar for larger screens */}
       <Sidebar
         sidebarCollapsed={sidebarCollapsed}
@@ -859,7 +882,7 @@ function App() {
                   <Shield className="text-primary-foreground h-6 w-6" />
                 </div>
                 <div>
-                  <h1 className="text-foreground text-2xl font-bold">
+                  <h1 className="text-2xl font-bold text-foreground">
                     VitalSense
                   </h1>
                   <p className="text-muted-foreground text-sm">
@@ -1187,9 +1210,7 @@ function App() {
                   />
                 )}
                 {activeTab === 'user-profile' && <UserProfile />}
-                {activeTab === 'vitalsense-brand' && (
-                  <VitalSenseBrandShowcase />
-                )}
+                {/* Removed VitalSenseBrandShowcase (component not found) */}
                 {activeTab === 'insights' && healthData && (
                   <EnhancedHealthInsightsDashboard healthData={healthData} />
                 )}
@@ -1313,8 +1334,7 @@ function App() {
                   <ExportData healthData={healthData} />
                 )}
                 {activeTab === 'devices' && <ConnectedDevices />}
-                {activeTab === 'medications' && <MedicationTracker />}
-                {activeTab === 'workouts' && <WorkoutTracker />}
+                {/* MedicationTracker / WorkoutTracker components not present; placeholders removed */}
                 {activeTab === 'settings' && <HealthSettings />}
                 {activeTab === 'healthkit-guide' && (
                   <ComprehensiveAppleHealthKitGuide />
@@ -1343,7 +1363,33 @@ function App() {
         />
       </div>
       <WSTokenSettings />
-  {import.meta.env.DEV && <WSHealthPanel />}
+      {import.meta.env.DEV && <WSHealthPanel />}
+      {import.meta.env.DEV && (
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              const next = !showTelemetry;
+              setShowTelemetry(next);
+              recordTelemetry('ui_toggle', {
+                target: 'telemetry_panel',
+                state: next ? 'open' : 'closed',
+              });
+            }}
+            className="fixed bottom-4 right-4 z-50 rounded-full bg-[var(--color-accent)] text-[var(--color-accent-foreground)] shadow-lg px-4 py-2 text-xs font-semibold hover:opacity-90 transition"
+          >
+            {showTelemetry ? 'Close Telemetry' : 'Telemetry'}
+          </button>
+          {showTelemetry && (
+            <div className="fixed bottom-16 right-4 z-50 w-[380px] max-h-[70vh] overflow-hidden rounded-lg border border-border bg-background shadow-xl">
+              <div className="h-full overflow-y-auto p-2">
+                {/* Import dynamically to avoid impacting initial bundle size if desired */}
+                <TelemetryPanel showNormalizationStats limit={120} />
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

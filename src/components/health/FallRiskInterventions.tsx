@@ -82,23 +82,16 @@ interface Exercise {
   safety: string[];
 }
 
-interface ProgressTracking {
-  interventionId: string;
-  completedSessions: number;
-  totalSessions: number;
-  lastCompletedDate: Date;
-  adherenceRate: number;
-  notes: string[];
-}
+// Removed unused ProgressTracking interface (not yet implemented)
 
 function InterventionCard({
   intervention,
   onToggleComplete,
   onViewDetails,
 }: {
-  intervention: Intervention;
-  onToggleComplete: (id: string) => void;
-  onViewDetails: (intervention: Intervention) => void;
+  readonly intervention: Intervention;
+  readonly onToggleComplete: (id: string) => void;
+  readonly onViewDetails: (intervention: Intervention) => void;
 }) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -235,7 +228,7 @@ function InterventionCard({
   );
 }
 
-function ExerciseProgramCard({ program }: { program: ExerciseProgram }) {
+function ExerciseProgramCard({ program }: { readonly program: ExerciseProgram }) {
   const progressPercentage = (program.currentWeek / program.totalWeeks) * 100;
 
   return (
@@ -276,9 +269,9 @@ function ExerciseProgramCard({ program }: { program: ExerciseProgram }) {
         <div className="space-y-2">
           <h4 className="text-sm font-medium">This Week's Exercises:</h4>
           <div className="space-y-1">
-            {program.exercises.slice(0, 3).map((exercise, index) => (
+            {program.exercises.slice(0, 3).map((exercise) => (
               <div
-                key={index}
+                key={`${program.id}-${exercise.name}`}
                 className="flex items-center justify-between text-xs"
               >
                 <span>{exercise.name}</span>
@@ -315,9 +308,9 @@ function InterventionDetailsDialog({
   isOpen,
   onClose,
 }: {
-  intervention: Intervention | null;
-  isOpen: boolean;
-  onClose: () => void;
+  readonly intervention: Intervention | null;
+  readonly isOpen: boolean;
+  readonly onClose: () => void;
 }) {
   if (!intervention) return null;
 
@@ -352,7 +345,7 @@ function InterventionDetailsDialog({
             <h3 className="mb-3 font-semibold">Step-by-Step Instructions</h3>
             <ol className="space-y-2">
               {intervention.instructions.map((instruction, index) => (
-                <li key={index} className="flex gap-3">
+                <li key={instruction} className="flex gap-3">
                   <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-800">
                     {index + 1}
                   </span>
@@ -366,8 +359,8 @@ function InterventionDetailsDialog({
           <div>
             <h3 className="mb-3 font-semibold">Expected Benefits</h3>
             <ul className="space-y-1">
-              {intervention.benefits.map((benefit, index) => (
-                <li key={index} className="flex items-center gap-2 text-sm">
+              {intervention.benefits.map((benefit) => (
+                <li key={benefit} className="flex items-center gap-2 text-sm">
                   <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-500" />
                   {benefit}
                 </li>
@@ -380,8 +373,8 @@ function InterventionDetailsDialog({
             <div>
               <h3 className="mb-3 font-semibold">Safety Precautions</h3>
               <ul className="space-y-1">
-                {intervention.precautions.map((precaution, index) => (
-                  <li key={index} className="flex items-center gap-2 text-sm">
+                {intervention.precautions.map((precaution) => (
+                  <li key={precaution} className="flex items-center gap-2 text-sm">
                     <AlertTriangle className="h-4 w-4 flex-shrink-0 text-yellow-500" />
                     {precaution}
                   </li>
@@ -411,14 +404,17 @@ function InterventionDetailsDialog({
 }
 
 export default function FallRiskInterventions() {
-  const [interventions, setInterventions] = useKV(
+  // Persisted state (typed). useKV generic may yield undefined before load, so we normalize.
+  const [interventionsRaw, setInterventions] = useKV<Intervention[]>(
     'fall-interventions',
-    [] as Intervention[]
+    []
   );
-  const [exercisePrograms, setExercisePrograms] = useKV(
+  const [exerciseProgramsRaw, setExercisePrograms] = useKV<ExerciseProgram[]>(
     'exercise-programs',
-    [] as ExerciseProgram[]
+    []
   );
+  const interventions = interventionsRaw ?? [];
+  const exercisePrograms = exerciseProgramsRaw ?? [];
   const [selectedIntervention, setSelectedIntervention] =
     useState<Intervention | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
@@ -427,7 +423,7 @@ export default function FallRiskInterventions() {
   // Initialize with default interventions if empty
   useEffect(() => {
     if (interventions.length === 0) {
-      const defaultInterventions: Intervention[] = [
+  const defaultInterventions: Intervention[] = [
         {
           id: '1',
           category: 'exercise',
@@ -560,7 +556,7 @@ export default function FallRiskInterventions() {
   // Initialize exercise programs
   useEffect(() => {
     if (exercisePrograms.length === 0) {
-      const defaultPrograms: ExerciseProgram[] = [
+  const defaultPrograms: ExerciseProgram[] = [
         {
           id: '1',
           name: 'Fall Prevention Basics',
@@ -613,7 +609,7 @@ export default function FallRiskInterventions() {
 
   const handleToggleComplete = (interventionId: string) => {
     setInterventions((prev) =>
-      prev.map((intervention) =>
+      (prev ?? []).map((intervention: Intervention) =>
         intervention.id === interventionId
           ? {
               ...intervention,
@@ -624,8 +620,9 @@ export default function FallRiskInterventions() {
           : intervention
       )
     );
-
-    const intervention = interventions.find((i) => i.id === interventionId);
+    const intervention = (interventionsRaw ?? []).find(
+      (i) => i.id === interventionId
+    );
     if (intervention) {
       toast.success(
         intervention.completed
@@ -713,7 +710,7 @@ export default function FallRiskInterventions() {
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-purple-600">
-                  {exercisePrograms.reduce((sum, p) => sum + p.currentWeek, 0)}
+                  {(exercisePrograms ?? []).reduce((sum, p) => sum + p.currentWeek, 0)}
                 </p>
                 <p className="text-muted-foreground text-xs">Exercise Weeks</p>
               </div>
@@ -731,7 +728,7 @@ export default function FallRiskInterventions() {
 
         <TabsContent value="interventions" className="space-y-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {interventions.map((intervention) => (
+            {(interventions ?? []).map((intervention) => (
               <InterventionCard
                 key={intervention.id}
                 intervention={intervention}
@@ -744,7 +741,7 @@ export default function FallRiskInterventions() {
 
         <TabsContent value="exercises" className="space-y-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {exercisePrograms.map((program) => (
+            {(exercisePrograms ?? []).map((program) => (
               <ExerciseProgramCard key={program.id} program={program} />
             ))}
           </div>

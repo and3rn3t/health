@@ -1,28 +1,30 @@
-import { ComponentProps } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import XIcon from 'lucide-react/dist/esm/icons/x';
+import { X } from 'lucide-react';
+import { ComponentProps } from 'react';
 
 import { cn } from '@/lib/utils';
 
-function Dialog({ ...props }: ComponentProps<typeof DialogPrimitive.Root>) {
+function Dialog({
+  ...props
+}: Readonly<ComponentProps<typeof DialogPrimitive.Root>>) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
 }
 
 function DialogTrigger({
   ...props
-}: ComponentProps<typeof DialogPrimitive.Trigger>) {
+}: Readonly<ComponentProps<typeof DialogPrimitive.Trigger>>) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
 
 function DialogPortal({
   ...props
-}: ComponentProps<typeof DialogPrimitive.Portal>) {
+}: Readonly<ComponentProps<typeof DialogPrimitive.Portal>>) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
 }
 
 function DialogClose({
   ...props
-}: ComponentProps<typeof DialogPrimitive.Close>) {
+}: Readonly<ComponentProps<typeof DialogPrimitive.Close>>) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
@@ -60,7 +62,7 @@ function DialogContent({
       >
         {children}
         <DialogPrimitive.Close className="focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground rounded-xs focus:outline-hidden absolute right-4 top-4 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0">
-          <XIcon />
+          <X />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>

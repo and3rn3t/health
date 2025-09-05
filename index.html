@@ -22,7 +22,12 @@
           }
         } catch (e) {
           // swallow early redirect normalization errors but log
-          try { console.debug('redirect-normalize failed', e && e.message ? e.message : e); } catch {}
+          try {
+            console.debug(
+              'redirect-normalize failed',
+              e && e.message ? e.message : e
+            );
+          } catch {}
         }
       })();
     </script>
@@ -35,25 +40,37 @@
           s.async = true;
           document.head.appendChild(s);
         } catch (e) {
-          try { console.debug('app-config loader failed', e && e.message ? e.message : e); } catch {}
+          try {
+            console.debug(
+              'app-config loader failed',
+              e && e.message ? e.message : e
+            );
+          } catch {}
         }
       })();
     </script>
     <script>
-    // Inline fallbacks to avoid race conditions before app-config.js loads
+      // Inline fallbacks to avoid race conditions before app-config.js loads
       (function () {
         try {
-      // Prefer local KV mode by default; /app-config.js may override
-      // eslint-disable-next-line no-var
-      var BASE_KV_SERVICE_URL = '';
-      // Expose on window for libraries that read from globals
-      window.BASE_KV_SERVICE_URL = BASE_KV_SERVICE_URL;
-      window.__VITALSENSE_KV_MODE = 'local';
+          // Prefer local KV mode by default; /app-config.js may override
+          // eslint-disable-next-line no-var
+          var BASE_KV_SERVICE_URL = '';
+          // Expose on window for libraries that read from globals
+          window.BASE_KV_SERVICE_URL = BASE_KV_SERVICE_URL;
+          window.__VITALSENSE_KV_MODE = 'local';
           // Auto-disable WS on demo routes
           if (location.pathname.indexOf('/demo') === 0) {
             window.VITALSENSE_DISABLE_WEBSOCKET = true;
           }
-  } catch (e) { try { console.debug('inline-fallback failed', e && e.message ? e.message : e); } catch {} }
+        } catch (e) {
+          try {
+            console.debug(
+              'inline-fallback failed',
+              e && e.message ? e.message : e
+            );
+          } catch {}
+        }
       })();
     </script>
   </head>

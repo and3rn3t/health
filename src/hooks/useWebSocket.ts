@@ -44,7 +44,9 @@ export function useWebSocket(
   config: WebSocketConfig,
   handlers: MessageHandlers = {}
 ): WebSocketHookReturn {
-  type WindowWithKvMode = Window & { __VITALSENSE_KV_MODE?: 'local' | 'network' };
+  type WindowWithKvMode = Window & {
+    __VITALSENSE_KV_MODE?: 'local' | 'network';
+  };
   // Check if we're in development mode and if WebSocket should be enabled
   const isDevelopment = import.meta.env.DEV;
   // Demo mode flag injected by Worker for /demo route
@@ -61,7 +63,8 @@ export function useWebSocket(
 
   // In development mode, skip WebSocket unless explicitly enabled
   // In demo mode, never connect. In development, only connect when explicitly enabled.
-  const shouldConnect = !isDemoMode && !isLiveDisabled && (!isDevelopment || enableInDev);
+  const shouldConnect =
+    !isDemoMode && !isLiveDisabled && (!isDevelopment || enableInDev);
 
   // Production-ready WebSocket hook with proper connection limits
   const [connectionState, setConnectionState] = useState<ConnectionState>({
@@ -135,7 +138,14 @@ export function useWebSocket(
 
         const bumpHeartbeat = () => {
           try {
-            (window as unknown as { __WS_CONNECTION__?: { connected: boolean; lastHeartbeat?: string } }).__WS_CONNECTION__ = {
+            (
+              window as unknown as {
+                __WS_CONNECTION__?: {
+                  connected: boolean;
+                  lastHeartbeat?: string;
+                };
+              }
+            ).__WS_CONNECTION__ = {
               connected: true,
               lastHeartbeat: new Date().toISOString(),
             };
@@ -149,7 +159,9 @@ export function useWebSocket(
           pong: () => bumpHeartbeat(),
         };
 
-        const handler = handlers[validatedMessage.type] || defaultHandlers[validatedMessage.type];
+        const handler =
+          handlers[validatedMessage.type] ||
+          defaultHandlers[validatedMessage.type];
         if (handler) {
           handler(validatedMessage.data);
         } else {
@@ -174,7 +186,9 @@ export function useWebSocket(
 
     // If the app is configured to require a device token, avoid connecting without one
     try {
-      const w = window as unknown as WindowWithKvMode & { __WS_DEVICE_TOKEN__?: string };
+      const w = window as unknown as WindowWithKvMode & {
+        __WS_DEVICE_TOKEN__?: string;
+      };
       const token = w.__WS_DEVICE_TOKEN__ || '';
       // Heuristic: if a token is expected but missing, skip connect to avoid server 401 noise
       if (token === '' && typeof w.__VITALSENSE_KV_MODE !== 'undefined') {
@@ -277,21 +291,30 @@ export function useWebSocket(
           ...prev,
           isConnected: false,
           isConnecting: false,
-          error: event.code === 1000 ? null : `Connection closed: ${event.code} ${event.reason}`,
+          error:
+            event.code === 1000
+              ? null
+              : `Connection closed: ${event.code} ${event.reason}`,
         }));
       };
 
       const scheduleReconnect = (delay: number, doConnect: () => void) => {
         reconnectTimeoutRef.current = setTimeout(() => {
           reconnectAttemptsRef.current++;
-          setConnectionState((prev) => ({ ...prev, reconnectAttempts: reconnectAttemptsRef.current }));
+          setConnectionState((prev) => ({
+            ...prev,
+            reconnectAttempts: reconnectAttemptsRef.current,
+          }));
           doConnect();
         }, delay);
       };
 
       ws.onclose = (event) => {
         clearTimeout(timeoutId);
-        connectionAttemptRef.current = Math.max(0, connectionAttemptRef.current - 1);
+        connectionAttemptRef.current = Math.max(
+          0,
+          connectionAttemptRef.current - 1
+        );
 
         applyClosedState(event);
 
@@ -303,13 +326,24 @@ export function useWebSocket(
         config.onDisconnect?.();
 
         // Auto-reconnect with exponential backoff (if not manually closed)
-        if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
-          const delay = Math.min(reconnectDelay * Math.pow(2, reconnectAttemptsRef.current), 30000);
-          console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/${maxReconnectAttempts})`);
+        if (
+          event.code !== 1000 &&
+          reconnectAttemptsRef.current < maxReconnectAttempts
+        ) {
+          const delay = Math.min(
+            reconnectDelay * Math.pow(2, reconnectAttemptsRef.current),
+            30000
+          );
+          console.log(
+            `Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/${maxReconnectAttempts})`
+          );
           scheduleReconnect(delay, connect);
         } else if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
           console.error('Max reconnection attempts reached');
-          setConnectionState((prev) => ({ ...prev, error: 'Max reconnection attempts reached' }));
+          setConnectionState((prev) => ({
+            ...prev,
+            error: 'Max reconnection attempts reached',
+          }));
         }
       };
 

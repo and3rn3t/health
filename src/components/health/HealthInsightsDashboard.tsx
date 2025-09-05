@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,27 +7,27 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProcessedHealthData } from '@/types';
+import { useKV } from '@github/spark/hooks';
 import {
-  TrendingUp,
-  TrendingDown,
-  ArrowUp,
-  ArrowDown,
   Activity,
-  Heart,
-  BarChart3,
-  Zap,
-  Clock,
-  Target,
   AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  BarChart3,
   CheckCircle,
+  Clock,
+  Heart,
   Info,
   Minus,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface TrendData {
@@ -46,7 +46,7 @@ interface HealthTrend {
   trend: 'up' | 'down' | 'stable';
   category: string;
   unit: string;
-  status: 'good' | 'AlertTriangle' | 'critical' | 'neutral';
+  status: 'good' | 'warning' | 'critical' | 'neutral';
   insight: string;
   recommendation?: string;
 }
@@ -55,7 +55,7 @@ interface LiveInsight {
   id: string;
   title: string;
   description: string;
-  severity: 'info' | 'AlertTriangle' | 'critical' | 'success';
+  severity: 'info' | 'warning' | 'critical' | 'success';
   timestamp: number;
   category: string;
   actionable: boolean;
@@ -68,7 +68,7 @@ interface HealthInsightsDashboardProps {
 
 export default function HealthInsightsDashboard({
   healthData,
-}: HealthInsightsDashboardProps) {
+}: Readonly<HealthInsightsDashboardProps>) {
   const [trendHistory, setTrendHistory] = useKV<TrendData[]>(
     'health-trend-history',
     []
@@ -79,11 +79,11 @@ export default function HealthInsightsDashboard({
   );
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [autoRefresh, setAutoRefresh] = useKV('insights-auto-refresh', true);
+  const [autoRefresh, setAutoRefresh] = useKV<string>('insights-auto-refresh', 'true');
 
   // Simulate real-time data updates
   useEffect(() => {
-    if (!autoRefresh) return;
+    if (autoRefresh !== 'true') return;
 
     const interval = setInterval(() => {
       // Add current health data to trend history
@@ -102,28 +102,28 @@ export default function HealthInsightsDashboard({
         }
 
         // Steps trends
-        if (healthData.metrics.steps) {
+    if (healthData.metrics.steps) {
           newTrendData.push({
             timestamp: now,
-            value: healthData.metrics.steps.total || 0,
+      value: healthData.metrics.steps.lastValue || 0,
             category: 'activity',
             metric: 'steps',
           });
         }
 
-        // Sleep trends
-        if (healthData.metrics.sleep) {
+    // Sleep trends (uses sleepHours metric from processor)
+    if (healthData.metrics.sleepHours) {
           newTrendData.push({
             timestamp: now,
-            value: healthData.metrics.sleep.totalHours || 0,
+      value: healthData.metrics.sleepHours.average || 0,
             category: 'recovery',
-            metric: 'sleep',
+      metric: 'sleepHours',
           });
         }
 
         // Update trend history (keep last 100 entries)
         setTrendHistory((currentHistory) => {
-          const updated = [...currentHistory, ...newTrendData];
+          const updated = [...(currentHistory || []), ...newTrendData];
           return updated.slice(-100);
         });
       }
@@ -148,7 +148,7 @@ export default function HealthInsightsDashboard({
             id: `hr-elevated-${now}`,
             title: 'Elevated Heart Rate Detected',
             description: `Your average heart rate is ${avgHR} BPM, which is above normal resting range.`,
-            severity: 'AlertTriangle',
+            severity: 'warning',
             timestamp: now,
             category: 'cardiovascular',
             actionable: true,
@@ -170,13 +170,13 @@ export default function HealthInsightsDashboard({
 
       // Analyze activity levels
       if (healthData.metrics?.steps) {
-        const dailySteps = healthData.metrics.steps.total || 0;
+        const dailySteps = healthData.metrics.steps.lastValue || 0;
         if (dailySteps < 8000) {
           insights.push({
             id: `steps-low-${now}`,
             title: 'Activity Goal Not Met',
             description: `You've taken ${dailySteps.toLocaleString()} steps today. Aim for 8,000+ steps for optimal health.`,
-            severity: 'AlertTriangle',
+            severity: 'warning',
             timestamp: now,
             category: 'activity',
             actionable: true,
@@ -197,14 +197,14 @@ export default function HealthInsightsDashboard({
       }
 
       // Analyze sleep patterns
-      if (healthData.metrics?.sleep) {
-        const sleepHours = healthData.metrics.sleep.totalHours || 0;
+      if (healthData.metrics?.sleepHours) {
+        const sleepHours = healthData.metrics.sleepHours.average || 0;
         if (sleepHours < 7) {
           insights.push({
             id: `sleep-insufficient-${now}`,
             title: 'Insufficient Sleep Detected',
             description: `You got ${sleepHours.toFixed(1)} hours of sleep. Adults need 7-9 hours for optimal recovery.`,
-            severity: 'AlertTriangle',
+            severity: 'warning',
             timestamp: now,
             category: 'recovery',
             actionable: true,
@@ -261,7 +261,7 @@ export default function HealthInsightsDashboard({
             id: `health-score-needs-attention-${now}`,
             title: 'Health Score Needs Attention',
             description: `Your health score of ${healthData.healthScore}/100 suggests areas for improvement.`,
-            severity: 'AlertTriangle',
+            severity: 'warning',
             timestamp: now,
             category: 'overall',
             actionable: true,
@@ -273,7 +273,8 @@ export default function HealthInsightsDashboard({
 
       // Update live insights (keep last 20)
       setLiveInsights((currentInsights) => {
-        const filtered = currentInsights.filter(
+    const safeCurrent = currentInsights ?? [];
+    const filtered = safeCurrent.filter(
           (insight) => now - insight.timestamp < 24 * 60 * 60 * 1000 // Keep insights from last 24 hours
         );
         return [...filtered, ...insights].slice(-20);
@@ -297,7 +298,7 @@ export default function HealthInsightsDashboard({
     // Heart Rate Trend
     if (healthData.metrics.heartRate) {
       const current = healthData.metrics.heartRate.average || 0;
-      const historical = trendHistory
+      const historical = (trendHistory || [])
         .filter((t) => t.metric === 'heartRate')
         .slice(-10);
       const previous =
@@ -325,7 +326,7 @@ export default function HealthInsightsDashboard({
           current >= 60 && current <= 80
             ? 'good'
             : current > 100
-              ? 'AlertTriangle'
+              ? 'warning'
               : 'neutral',
         insight:
           current >= 60 && current <= 80
@@ -338,8 +339,8 @@ export default function HealthInsightsDashboard({
 
     // Steps Trend
     if (healthData.metrics.steps) {
-      const current = healthData.metrics.steps.total || 0;
-      const historical = trendHistory
+      const current = healthData.metrics.steps.lastValue || 0;
+      const historical = (trendHistory || [])
         .filter((t) => t.metric === 'steps')
         .slice(-7); // Last 7 days
       const avgPrevious =
@@ -367,7 +368,7 @@ export default function HealthInsightsDashboard({
           current >= 8000
             ? 'good'
             : current < 5000
-              ? 'AlertTriangle'
+              ? 'warning'
               : 'neutral',
         insight:
           current >= 10000
@@ -381,10 +382,10 @@ export default function HealthInsightsDashboard({
     }
 
     // Sleep Trend
-    if (healthData.metrics.sleep) {
-      const current = healthData.metrics.sleep.totalHours || 0;
-      const historical = trendHistory
-        .filter((t) => t.metric === 'sleep')
+    if (healthData.metrics.sleepHours) {
+      const current = healthData.metrics.sleepHours.average || 0;
+      const historical = (trendHistory || [])
+        .filter((t) => t.metric === 'sleepHours')
         .slice(-7); // Last 7 days
       const avgPrevious =
         historical.length > 0
@@ -411,7 +412,7 @@ export default function HealthInsightsDashboard({
           current >= 7 && current <= 9
             ? 'good'
             : current < 6
-              ? 'AlertTriangle'
+              ? 'warning'
               : 'neutral',
         insight:
           current >= 7 && current <= 9
@@ -428,16 +429,17 @@ export default function HealthInsightsDashboard({
   };
 
   const trends = calculateTrends();
+  const insightsList: LiveInsight[] = liveInsights ?? [];
   const filteredInsights =
     selectedCategory === 'all'
-      ? liveInsights
-      : liveInsights.filter((insight) => insight.category === selectedCategory);
+      ? insightsList
+      : insightsList.filter((insight) => insight.category === selectedCategory);
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case 'critical':
         return <AlertTriangle className="h-4 w-4" />;
-      case 'AlertTriangle':
+  case 'warning':
         return <AlertTriangle className="h-4 w-4" />;
       case 'success':
         return <CheckCircle className="h-4 w-4" />;
@@ -450,7 +452,7 @@ export default function HealthInsightsDashboard({
     switch (severity) {
       case 'critical':
         return 'destructive';
-      case 'AlertTriangle':
+  case 'warning':
         return 'default';
       case 'success':
         return 'default';
@@ -474,7 +476,7 @@ export default function HealthInsightsDashboard({
     switch (status) {
       case 'good':
         return 'bg-green-100 text-green-800 border-green-200';
-      case 'AlertTriangle':
+  case 'warning':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'critical':
         return 'bg-red-100 text-red-800 border-red-200';
@@ -499,11 +501,11 @@ export default function HealthInsightsDashboard({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setAutoRefresh((current) => !current)}
-            className={autoRefresh ? 'border-green-200 bg-green-50' : ''}
+            onClick={() => setAutoRefresh((current) => current === 'true' ? 'false' : 'true')}
+            className={autoRefresh === 'true' ? 'border-green-200 bg-green-50' : ''}
           >
             <Zap className="mr-2 h-4 w-4" />
-            {autoRefresh ? 'Live' : 'Paused'}
+            {autoRefresh === 'true' ? 'Live' : 'Paused'}
           </Button>
           <Button onClick={generateLiveInsights} disabled={isAnalyzing}>
             {isAnalyzing ? (
@@ -557,7 +559,7 @@ export default function HealthInsightsDashboard({
                     >
                       {trend.status === 'good'
                         ? 'Optimal'
-                        : trend.status === 'AlertTriangle'
+                        : trend.status === 'warning'
                           ? 'Needs Attention'
                           : 'Monitor'}
                     </Badge>
@@ -644,7 +646,7 @@ export default function HealthInsightsDashboard({
                         className={`rounded-full p-2 ${
                           insight.severity === 'critical'
                             ? 'bg-red-100'
-                            : insight.severity === 'AlertTriangle'
+                            : insight.severity === 'warning'
                               ? 'bg-yellow-100'
                               : insight.severity === 'success'
                                 ? 'bg-green-100'
@@ -662,7 +664,7 @@ export default function HealthInsightsDashboard({
                           <div className="flex items-center gap-2">
                             <Badge
                               variant={
-                                getSeverityColor(insight.severity) as any
+                                getSeverityColor(insight.severity)
                               }
                               className="text-xs"
                             >

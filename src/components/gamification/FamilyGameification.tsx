@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { useKV } from '@github/spark/hooks';
+// Removed unused useState (no local period selection yet)
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,20 +9,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@github/spark/hooks';
 import {
-  Trophy,
-  Target,
   Crown,
-  Medal,
   Flame,
-  Star,
+  Medal,
+  Target,
   TrendingUp,
-  Calendar,
+  Trophy,
   Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -63,16 +61,13 @@ interface FamilyGoal {
 }
 
 export default function FamilyGameification() {
-  const [familyMembers, setFamilyMembers] = useKV<FamilyMember[]>(
-    'family-members',
-    []
-  );
-  const [familyActivities, setFamilyActivities] = useKV<FamilyActivity[]>(
+  // Only consuming stored values; setters omitted to avoid unused variable lint warnings
+  const [familyMembers = []] = useKV<FamilyMember[]>('family-members', []);
+  const [familyActivities = []] = useKV<FamilyActivity[]>(
     'family-activities',
     []
   );
-  const [familyGoals, setFamilyGoals] = useKV<FamilyGoal[]>('family-goals', []);
-  const [selectedPeriod, setSelectedPeriod] = useState('week');
+  const [familyGoals = []] = useKV<FamilyGoal[]>('family-goals', []);
 
   // Sample data
   const sampleMembers: FamilyMember[] = [

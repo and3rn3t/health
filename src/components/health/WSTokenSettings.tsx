@@ -15,7 +15,12 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { getLiveHealthDataSync } from '@/lib/liveHealthDataSync';
-import { clampTtl, decodeJwtExp, isValidTtl, isValidWsUrl } from '@/lib/wsSettings';
+import {
+  clampTtl,
+  decodeJwtExp,
+  isValidTtl,
+  isValidWsUrl,
+} from '@/lib/wsSettings';
 import { useKV } from '@github/spark/hooks';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -39,10 +44,7 @@ export function WSTokenSettings() {
   const [connected] = useState<boolean>(false);
   const [autoRefreshExp, setAutoRefreshExp] = useState<number | null>(null);
   const [lastRtt] = useState<number | null>(null);
-  const [liveEnabled, setLiveEnabled] = useKV<boolean>(
-    'ws-live-enabled',
-    true
-  );
+  const [liveEnabled, setLiveEnabled] = useKV<boolean>('ws-live-enabled', true);
 
   // Sync global hint for ws client on mount and when stored token changes
   useEffect(() => {
@@ -59,8 +61,10 @@ export function WSTokenSettings() {
         if (wsUrl) {
           (window as unknown as { __WS_URL__?: string }).__WS_URL__ = wsUrl;
         }
-    // expose live-enabled as a global switch for hooks
-    (window as unknown as { VITALSENSE_LIVE_DISABLED?: boolean }).VITALSENSE_LIVE_DISABLED = !liveEnabled;
+        // expose live-enabled as a global switch for hooks
+        (
+          window as unknown as { VITALSENSE_LIVE_DISABLED?: boolean }
+        ).VITALSENSE_LIVE_DISABLED = !liveEnabled;
       }
     } catch {
       // ignore
@@ -71,7 +75,7 @@ export function WSTokenSettings() {
   useEffect(() => {
     const exp = storedToken ? decodeJwtExp(storedToken) : null;
     setExpiresAt(exp ? exp * 1000 : null);
-  // Polling removed to reduce console noise
+    // Polling removed to reduce console noise
   }, [storedToken, userId]);
 
   useEffect(() => {
@@ -337,8 +341,10 @@ export function WSTokenSettings() {
                 autoComplete="off"
               />
               <p className="text-muted-foreground mt-1 text-[11px]">
-                Effective: <span className="font-mono">
-                  {wsUrl || `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`}
+                Effective:{' '}
+                <span className="font-mono">
+                  {wsUrl ||
+                    `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`}
                 </span>
               </p>
             </div>

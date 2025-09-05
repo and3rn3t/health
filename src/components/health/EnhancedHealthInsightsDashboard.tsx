@@ -1,30 +1,24 @@
-import { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useKV } from '@github/spark/hooks';
+import { useCallback, useEffect, useState } from 'react';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProcessedHealthData } from '@/types';
 import {
-  Heart,
-  TrendingUp,
-  TrendingDown,
   Activity,
-  Brain,
   AlertTriangle,
+  Brain,
   Clock,
-  Target,
-  Zap,
+  Heart,
   Shield,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 interface HealthTrend {
   metric: string;
@@ -39,7 +33,7 @@ interface HealthInsight {
   id: string;
   title: string;
   description: string;
-  type: 'positive' | 'AlertTriangle' | 'critical' | 'info';
+  type: 'positive' | 'warning' | 'critical' | 'info';
   priority: number;
   category: string;
   actionable: boolean;
@@ -57,11 +51,11 @@ interface PredictiveAlert {
 }
 
 interface Props {
-  healthData: ProcessedHealthData;
+  readonly healthData: ProcessedHealthData;
 }
 
 export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
-  const [currentScore, setCurrentScore] = useKV('current-health-score', 75);
+  const [currentScore] = useKV<number>('current-health-score', 75);
   const [trends, setTrends] = useKV<HealthTrend[]>('health-trends', []);
   const [insights, setInsights] = useKV<HealthInsight[]>('health-insights', []);
   const [predictiveAlerts, setPredictiveAlerts] = useKV<PredictiveAlert[]>(
@@ -73,7 +67,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
   );
 
   // Generate health insights based on current data
-  const generateHealthInsights = async (): Promise<HealthInsight[]> => {
+  const generateHealthInsights = useCallback(async (): Promise<HealthInsight[]> => {
     const newInsights: HealthInsight[] = [];
 
     // Heart rate insights
@@ -84,7 +78,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
           id: 'hr-elevated',
           title: 'Elevated Resting Heart Rate',
           description: `Your average heart rate of ${avgHeartRate} bpm is above the typical range (60-80 bpm).`,
-          type: 'AlertTriangle',
+          type: 'warning',
           priority: 8,
           category: 'Cardiovascular',
           actionable: true,
@@ -106,7 +100,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
           id: 'low-activity',
           title: 'Below Recommended Activity Level',
           description: `Your daily average of ${avgSteps} steps is below the recommended 8,000-10,000 steps.`,
-          type: 'AlertTriangle',
+          type: 'warning',
           priority: 6,
           category: 'Activity',
           actionable: true,
@@ -162,7 +156,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
           id: 'insufficient-sleep',
           title: 'Insufficient Sleep Duration',
           description: `Your average sleep of ${avgSleep.toFixed(1)} hours is below the recommended 7-9 hours.`,
-          type: 'AlertTriangle',
+          type: 'warning',
           priority: 7,
           category: 'Recovery',
           actionable: true,
@@ -177,10 +171,10 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
     }
 
     return newInsights;
-  };
+  }, [healthData]);
 
   // Generate predictive alerts using AI
-  const generatePredictiveAlerts = async (): Promise<PredictiveAlert[]> => {
+  const generatePredictiveAlerts = useCallback(async (): Promise<PredictiveAlert[]> => {
     const alerts: PredictiveAlert[] = [];
 
     // Cardiovascular risk prediction
@@ -226,10 +220,10 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
     }
 
     return alerts;
-  };
+  }, [healthData]);
 
   // Generate health trends
-  const generateHealthTrends = (): HealthTrend[] => {
+  const generateHealthTrends = useCallback((): HealthTrend[] => {
     const trends: HealthTrend[] = [];
 
     // Mock trend data based on health metrics
@@ -256,7 +250,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
     }
 
     return trends;
-  };
+  }, [healthData]);
 
   // Initialize data
   useEffect(() => {
@@ -265,19 +259,20 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
       const newAlerts = await generatePredictiveAlerts();
       const newTrends = generateHealthTrends();
 
-      setInsights(newInsights.sort((a, b) => b.priority - a.priority));
+      const sorted = [...newInsights].sort((a, b) => b.priority - a.priority);
+      setInsights(sorted);
       setPredictiveAlerts(newAlerts);
       setTrends(newTrends);
     };
 
     initializeInsights();
-  }, [healthData]);
+  }, [healthData, setInsights, setPredictiveAlerts, setTrends, generateHealthInsights, generatePredictiveAlerts, generateHealthTrends]);
 
   const getInsightIcon = (type: string) => {
     switch (type) {
       case 'positive':
         return <Heart className="h-4 w-4 text-green-600" />;
-      case 'AlertTriangle':
+  case 'warning':
         return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
       case 'critical':
         return <AlertTriangle className="h-4 w-4 text-red-600" />;
@@ -290,7 +285,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
     switch (type) {
       case 'positive':
         return 'default';
-      case 'AlertTriangle':
+  case 'warning':
         return 'secondary';
       case 'critical':
         return 'destructive';
@@ -310,6 +305,31 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
     }
   };
 
+  // Helpers
+  const resolvedScore = (
+    typeof healthData.healthScore === 'number' ? healthData.healthScore : undefined
+  ) ?? (typeof currentScore === 'number' ? currentScore : 75);
+
+  const getScoreLabel = (score: number) => {
+    if (score >= 80) return 'Excellent';
+    if (score >= 60) return 'Good';
+    return 'Needs Attention';
+  };
+
+  const getFallRiskVariant = () => {
+    const factors = healthData.fallRiskFactors ?? [];
+    if (factors.some((f) => f.risk === 'high')) return 'destructive' as const;
+    if (factors.some((f) => f.risk === 'moderate')) return 'secondary' as const;
+    return 'default' as const;
+  };
+
+  const getFallRiskLabel = () => {
+    const factors = healthData.fallRiskFactors ?? [];
+    if (factors.some((f) => f.risk === 'high')) return 'High Risk';
+    if (factors.some((f) => f.risk === 'moderate')) return 'Moderate Risk';
+    return 'Low Risk';
+  };
+
   return (
     <div className="space-y-6">
       {/* Health Score Summary */}
@@ -322,20 +342,9 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-primary text-3xl font-bold">
-              {healthData.healthScore || currentScore}/100
-            </div>
-            <Progress
-              value={healthData.healthScore || currentScore}
-              className="mt-2"
-            />
-            <p className="text-muted-foreground mt-2 text-sm">
-              {(healthData.healthScore || currentScore) >= 80
-                ? 'Excellent'
-                : (healthData.healthScore || currentScore) >= 60
-                  ? 'Good'
-                  : 'Needs Attention'}
-            </p>
+            <div className="text-primary text-3xl font-bold">{resolvedScore}/100</div>
+            <Progress value={resolvedScore} className="mt-2" />
+            <p className="text-muted-foreground mt-2 text-sm">{getScoreLabel(resolvedScore)}</p>
           </CardContent>
         </Card>
 
@@ -348,25 +357,11 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {healthData.fallRiskFactors ? (
+        {healthData.fallRiskFactors ? (
                 <Badge
-                  variant={
-                    healthData.fallRiskFactors.some((f) => f.risk === 'high')
-                      ? 'destructive'
-                      : healthData.fallRiskFactors.some(
-                            (f) => f.risk === 'moderate'
-                          )
-                        ? 'secondary'
-                        : 'default'
-                  }
+          variant={getFallRiskVariant()}
                 >
-                  {healthData.fallRiskFactors.some((f) => f.risk === 'high')
-                    ? 'High Risk'
-                    : healthData.fallRiskFactors.some(
-                          (f) => f.risk === 'moderate'
-                        )
-                      ? 'Moderate Risk'
-                      : 'Low Risk'}
+          {getFallRiskLabel()}
                 </Badge>
               ) : (
                 <Badge variant="outline">Not Assessed</Badge>
@@ -408,7 +403,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
 
         <TabsContent value="insights" className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {insights.map((insight) => (
+            {(insights ?? []).map((insight) => (
               <Card
                 key={insight.id}
                 className={`cursor-pointer transition-all hover:shadow-md ${
@@ -450,7 +445,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
             ))}
           </div>
 
-          {selectedInsight && selectedInsight.recommendations && (
+          {selectedInsight?.recommendations && (
             <Card>
               <CardHeader>
                 <CardTitle>
@@ -459,8 +454,8 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
-                  {selectedInsight.recommendations.map((rec, index) => (
-                    <li key={index} className="flex items-start gap-2">
+                  {selectedInsight.recommendations.map((rec) => (
+                    <li key={`${selectedInsight.id}:${rec}`} className="flex items-start gap-2">
                       <div className="bg-primary mt-2 h-2 w-2 flex-shrink-0 rounded-full" />
                       <span className="text-sm">{rec}</span>
                     </li>
@@ -473,8 +468,12 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
 
         <TabsContent value="trends" className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {trends.map((trend, index) => (
-              <Card key={index}>
+            {(trends ?? []).map((trend) => {
+              let trendVariant: 'default' | 'destructive' | 'secondary' = 'secondary';
+              if (trend.trend === 'up') trendVariant = 'default';
+              else if (trend.trend === 'down') trendVariant = 'destructive';
+              return (
+              <Card key={`${trend.metric}:${trend.timeframe}`}>
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center justify-between text-sm">
                     <span>{trend.metric}</span>
@@ -487,15 +486,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
                       <span className="text-2xl font-bold">
                         {trend.current}
                       </span>
-                      <Badge
-                        variant={
-                          trend.trend === 'up'
-                            ? 'default'
-                            : trend.trend === 'down'
-                              ? 'destructive'
-                              : 'secondary'
-                        }
-                      >
+                      <Badge variant={trendVariant}>
                         {trend.change > 0 ? '+' : ''}
                         {trend.change}
                       </Badge>
@@ -506,26 +497,22 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            );})}
           </div>
         </TabsContent>
 
         <TabsContent value="predictions" className="space-y-4">
-          {predictiveAlerts.map((alert) => (
+          {(predictiveAlerts ?? []).map((alert) => {
+            let severityVariant: 'destructive' | 'secondary' | 'outline' = 'outline';
+            if (alert.severity === 'high') severityVariant = 'destructive';
+            else if (alert.severity === 'medium') severityVariant = 'secondary';
+            return (
             <Card key={alert.id}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Brain className="h-5 w-5 text-purple-600" />
                   {alert.title}
-                  <Badge
-                    variant={
-                      alert.severity === 'high'
-                        ? 'destructive'
-                        : alert.severity === 'medium'
-                          ? 'secondary'
-                          : 'outline'
-                    }
-                  >
+                  <Badge variant={severityVariant}>
                     {alert.severity} risk
                   </Badge>
                 </CardTitle>
@@ -539,9 +526,9 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
                 <div>
                   <h4 className="mb-2 font-medium">Preventive Actions:</h4>
                   <ul className="space-y-1">
-                    {alert.preventiveActions.map((action, index) => (
+                    {alert.preventiveActions.map((action) => (
                       <li
-                        key={index}
+                        key={`${alert.id}:${action}`}
                         className="flex items-start gap-2 text-sm"
                       >
                         <div className="bg-accent mt-2 h-2 w-2 flex-shrink-0 rounded-full" />
@@ -552,12 +539,12 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          );})}
         </TabsContent>
 
         <TabsContent value="recommendations" className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {insights
+            {(insights ?? [])
               .filter(
                 (insight) => insight.actionable && insight.recommendations
               )
@@ -571,9 +558,9 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {insight.recommendations?.map((rec, index) => (
+                      {insight.recommendations?.map((rec) => (
                         <Button
-                          key={index}
+                          key={`${insight.id}:${rec}`}
                           variant="outline"
                           size="sm"
                           className="h-auto w-full justify-start py-2 text-xs"

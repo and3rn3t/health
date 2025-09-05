@@ -15,12 +15,12 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import {
   mlFallRiskPredictor,
   ModelPerformance,
   RiskPrediction,
 } from '@/lib/mlFallRiskPredictor';
+import { ProcessedHealthData } from '@/types';
 import {
   AlertTriangle,
   BarChart3,
@@ -40,7 +40,9 @@ interface MLPredictionsDashboardProps {
   healthData: ProcessedHealthData;
 }
 
-function MLPredictionsDashboard({ healthData }: MLPredictionsDashboardProps) {
+function MLPredictionsDashboard({
+  healthData,
+}: Readonly<MLPredictionsDashboardProps>) {
   const [predictions, setPredictions] = useState<Map<string, RiskPrediction>>(
     new Map()
   );

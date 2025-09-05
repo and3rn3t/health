@@ -118,7 +118,7 @@ const getStatusColor = (
       return (
         HealthColorMap.fallRisk[
           status as keyof typeof HealthColorMap.fallRisk
-        ] || getVitalSenseClasses.text.AlertTriangle
+  ] || getVitalSenseClasses.text.warning
       );
 
     default:
@@ -133,7 +133,7 @@ export function VitalSenseStatusCard({
   value,
   subtitle,
   className = '',
-}: VitalSenseStatusCardProps) {
+}: Readonly<VitalSenseStatusCardProps>) {
   const statusColorClass = getStatusColor(type, status);
   const icon = getStatusIcon(type, status);
 
@@ -181,7 +181,7 @@ interface VitalSenseBrandHeaderProps {
   subtitle?: string;
   icon?: React.ReactNode;
   children?: React.ReactNode;
-  variant?: 'primary' | 'teal' | 'success' | 'AlertTriangle' | 'error';
+  variant?: 'primary' | 'teal' | 'success' | 'warning' | 'error';
 }
 
 export function VitalSenseBrandHeader({
@@ -190,7 +190,7 @@ export function VitalSenseBrandHeader({
   icon,
   children,
   variant = 'primary',
-}: VitalSenseBrandHeaderProps) {
+}: Readonly<VitalSenseBrandHeaderProps>) {
   const getVariantClasses = () => {
     switch (variant) {
       case 'teal':
@@ -205,11 +205,11 @@ export function VitalSenseBrandHeader({
           text: getVitalSenseClasses.text.successContrast,
           accent: getVitalSenseClasses.text.success,
         };
-      case 'AlertTriangle':
+    case 'warning':
         return {
-          bg: getVitalSenseClasses.bg.AlertTriangle,
+      bg: getVitalSenseClasses.bg.warning,
           text: getVitalSenseClasses.text.warningContrast,
-          accent: getVitalSenseClasses.text.AlertTriangle,
+          accent: getVitalSenseClasses.text.warning,
         };
       case 'error':
         return {

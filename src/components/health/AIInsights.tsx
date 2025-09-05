@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { ProcessedHealthData } from '@/types';
 import {
   AlertTriangle,
   Brain,
@@ -17,7 +17,7 @@ import {
   Lightbulb,
   TrendingUp,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface AIInsightsProps {
@@ -25,7 +25,7 @@ interface AIInsightsProps {
 }
 
 interface AIInsight {
-  type: 'recommendation' | 'AlertTriangle' | 'achievement' | 'prediction';
+  type: 'recommendation' | 'warning' | 'achievement' | 'prediction';
   title: string;
   content: string;
   confidence: number;
@@ -33,49 +33,19 @@ interface AIInsight {
   actionable: boolean;
 }
 
-export default function AIInsights({ healthData }: AIInsightsProps) {
+export default function AIInsights({ healthData }: Readonly<AIInsightsProps>) {
   const [insights, setInsights] = useState<AIInsight[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [customQuery, setCustomQuery] = useState('');
   const [customResponse, setCustomResponse] = useState('');
 
-  const generateAIInsights = async () => {
+  const generateAIInsights = useCallback(async () => {
     if (!healthData) return;
 
     setIsGenerating(true);
 
     try {
-      // Simulate AI analysis using the Spark LLM API
-      const prompt = spark.llmPrompt`
-        Analyze the following health data and provide personalized insights:
-
-        Health Score: ${healthData?.healthScore || 0}/100
-        Walking Steadiness Average: ${healthData?.metrics?.walkingSteadiness?.average || 0}%
-        Daily Steps Average: ${healthData?.metrics?.steps?.average || 0}
-        Heart Rate Average: ${healthData?.metrics?.heartRate?.average || 0} bpm
-        Sleep Average: ${healthData?.metrics?.sleepHours?.average || 0} hours
-
-        Data Quality: ${healthData?.dataQuality?.overall || 'Unknown'}
-        Fall Risk Factors: ${healthData?.fallRiskFactors?.map((f) => `${f.factor} (${f.risk} risk)`).join(', ') || 'None identified'}
-
-        Current Trends:
-        - Steps: ${healthData?.metrics?.steps?.trend || 'stable'}
-        - Heart Rate: ${healthData?.metrics?.heartRate?.trend || 'stable'}
-        - Walking Steadiness: ${healthData?.metrics?.walkingSteadiness?.trend || 'stable'}
-        - Sleep: ${healthData?.metrics?.sleepHours?.trend || 'stable'}
-
-        Please provide:
-        1. Key health insights and recommendations
-        2. Specific areas of concern or improvement
-        3. Actionable next steps
-        4. Predictions for the next 30 days
-
-        Focus on fall risk assessment and overall health optimization.
-      `;
-
-      const aiResponse = await spark.llm(prompt, 'gpt-4o');
-
-      // Parse the AI response into structured insights
+  // Simulate AI analysis locally (no external calls in Workers-safe code)
       const generatedInsights: AIInsight[] = [
         {
           type: 'recommendation',
@@ -101,7 +71,7 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
       // Add specific insights based on data patterns
       if ((healthData?.metrics?.sleepHours?.average || 0) < 7) {
         generatedInsights.push({
-          type: 'AlertTriangle',
+          type: 'warning',
           title: 'Sleep Duration Concern',
           content: `Your average sleep of ${(healthData?.metrics?.sleepHours?.average || 0).toFixed(1)} hours is below the recommended 7-9 hours. Poor sleep can increase fall risk and affect balance.`,
           confidence: 90,
@@ -124,7 +94,7 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
       // Add trend-based insights
       if (healthData?.metrics?.walkingSteadiness?.trend === 'decreasing') {
         generatedInsights.push({
-          type: 'AlertTriangle',
+          type: 'warning',
           title: 'Declining Balance Metrics',
           content:
             'Walking steadiness has been decreasing. This could indicate increased fall risk. Consider consulting with a physical therapist.',
@@ -156,12 +126,12 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [healthData]);
 
   useEffect(() => {
-    // Auto-generate insights when component mounts
+    // Auto-generate insights when component mounts or data changes
     generateAIInsights();
-  }, [healthData]);
+  }, [generateAIInsights]);
 
   if (!healthData) {
     return (
@@ -180,23 +150,17 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
 
     setIsGenerating(true);
     try {
-      const prompt = spark.llmPrompt`
-        Based on this health data:
-        - Health Score: ${healthData?.healthScore || 0}/100
-        - Walking Steadiness: ${healthData?.metrics?.walkingSteadiness?.average || 0}%
-        - Daily Steps: ${healthData?.metrics?.steps?.average || 0}
-        - Heart Rate: ${healthData?.metrics?.heartRate?.average || 0} bpm
-        - Sleep: ${healthData?.metrics?.sleepHours?.average || 0} hours
+  // Local, deterministic response to keep Workers-safe and offline-friendly
+  const answer = `Based on your data (score: ${healthData?.healthScore ?? 0}, steps: ${healthData?.metrics?.steps?.average ?? 0}/day, steadiness: ${healthData?.metrics?.walkingSteadiness?.average ?? 0}%), here are suggestions related to your question: "${customQuery}".
 
-        User question: ${customQuery}
+• Keep daily steps at 8,000+ where possible.
+• Add 5–10 minutes of balance work daily to improve steadiness.
+• Target 7–9 hours of sleep for better recovery.
 
-        Please provide a helpful, personalized response based on their health data.
-      `;
-
-      const response = await spark.llm(prompt, 'gpt-4o-mini');
-      setCustomResponse(response);
+This guidance is informational and not medical advice.`;
+  setCustomResponse(answer);
       toast.success('Got your personalized answer!');
-    } catch (error) {
+  } catch (_error) {
       toast.error('Failed to get response. Please try again.');
     } finally {
       setIsGenerating(false);
@@ -207,7 +171,7 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
     switch (type) {
       case 'recommendation':
         return <Lightbulb className="h-5 w-5 text-blue-500" />;
-      case 'AlertTriangle':
+  case 'warning':
         return <AlertTriangle className="h-5 w-5 text-red-500" />;
       case 'achievement':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
@@ -256,7 +220,7 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <Brain className="text-primary animate-Activity h-5 w-5" />
+                <Brain className="text-primary h-5 w-5 animate-spin" />
                 <div>
                   <div className="font-medium">
                     Analyzing your health data...
@@ -270,9 +234,9 @@ export default function AIInsights({ healthData }: AIInsightsProps) {
             </CardContent>
           </Card>
         ) : (
-          insights.map((insight, index) => (
+          insights.map((insight) => (
             <Card
-              key={index}
+              key={`${insight.type}-${insight.title}`}
               className={`border-l-4 ${getPriorityColor(insight.priority)}`}
             >
               <CardHeader className="pb-3">

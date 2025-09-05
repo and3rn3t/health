@@ -29,11 +29,30 @@ program
   .option('--strict', 'Run in strict mode with extra checks')
   .option('--swift-only', 'Only run Swift linting')
   .option('--ts-only', 'Only run TypeScript/React linting')
+  // Back-compat & convenience flags
+  .option('--typescript', '[DEPRECATED] Alias for --ts-only')
+  .option('--swift', '[DEPRECATED] Alias for --swift-only')
+  .option('--all', '[DEPRECATED] Run both TS and Swift linting (default)')
+  .option('--quick', 'Quick mode: ESLint only (skip Prettier & TS compile)')
   .option('--path <path>', 'Path to lint', '.')
   .option('-v, --verbose', 'Verbose output')
   .parse();
 
 const options = program.opts();
+// Map deprecated flags and convenience switches before running
+if (options.typescript) {
+  writeWarning('Flag --typescript is deprecated. Use --ts-only instead.');
+  options.tsOnly = true;
+}
+if (options.swift) {
+  writeWarning('Flag --swift is deprecated. Use --swift-only instead.');
+  options.swiftOnly = true;
+}
+if (options.all) {
+  writeWarning(
+    'Flag --all is deprecated. Default already runs both TS and Swift.'
+  );
+}
 
 let hasErrors = false;
 
@@ -115,8 +134,12 @@ async function runTypeScriptLinting() {
   writeInfo('📝 Checking TypeScript/React code...');
 
   await runESLint();
-  await runPrettier();
-  await runTypeScriptCheck();
+  if (!options.quick) {
+    await runPrettier();
+    await runTypeScriptCheck();
+  } else {
+    writeInfo('⏭️  Quick mode: skipping Prettier and TypeScript compilation');
+  }
 }
 
 async function runSwiftLinting() {

@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,24 +8,22 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ProcessedHealthData } from '@/types';
+import { useKV } from '@github/spark/hooks';
 import {
-  Trophy,
-  Target,
-  Users,
-  Flame,
   Calendar,
-  Star,
-  Medal,
   Crown,
-  Zap,
+  Flame,
+  Medal,
+  Star,
+  Target,
   TrendingUp,
+  Trophy,
+  Users,
+  Zap,
 } from 'lucide-react';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { toast } from 'sonner';
 
 interface Challenge {
@@ -70,15 +69,32 @@ interface LeaderboardEntry {
 }
 
 interface Props {
-  healthData: ProcessedHealthData;
+  readonly healthData: ProcessedHealthData;
 }
 
-export default function HealthGameCenter({ healthData }: Props) {
+function getAchievementVariant(
+  type: Achievement['type']
+): 'outline' | 'secondary' | 'default' | 'destructive' {
+  switch (type) {
+    case 'bronze':
+      return 'outline';
+    case 'silver':
+      return 'secondary';
+    case 'gold':
+      return 'default';
+    case 'platinum':
+      return 'destructive';
+    default:
+      return 'outline';
+  }
+}
+
+export default function HealthGameCenter({ healthData: _healthData }: Props) {
   const [activeChallenges, setActiveChallenges] = useKV<Challenge[]>(
     'active-challenges',
     []
   );
-  const [completedChallenges, setCompletedChallenges] = useKV<Challenge[]>(
+  const [_completedChallenges] = useKV<Challenge[]>(
     'completed-challenges',
     []
   );
@@ -86,10 +102,10 @@ export default function HealthGameCenter({ healthData }: Props) {
     'user-achievements',
     []
   );
-  const [userPoints, setUserPoints] = useKV('user-points', 0);
-  const [userLevel, setUserLevel] = useKV('user-level', 1);
-  const [currentStreak, setCurrentStreak] = useKV('current-streak', 0);
-  const [leaderboard, setLeaderboard] = useKV<LeaderboardEntry[]>(
+  const [userPoints, setUserPoints] = useKV<number>('user-points', 0);
+  const [userLevel] = useKV<number>('user-level', 1);
+  const [currentStreak] = useKV<number>('current-streak', 0);
+  const [leaderboard] = useKV<LeaderboardEntry[]>(
     'family-leaderboard',
     []
   );
@@ -168,9 +184,9 @@ export default function HealthGameCenter({ healthData }: Props) {
     {
       userId: 'user1',
       name: 'You',
-      points: userPoints || 1250,
-      level: userLevel || 3,
-      streak: currentStreak || 5,
+  points: userPoints ?? 1250,
+  level: userLevel ?? 3,
+  streak: currentStreak ?? 5,
       badges: ['Step Master', 'Early Bird'],
       weeklyProgress: 85,
     },
@@ -196,7 +212,7 @@ export default function HealthGameCenter({ healthData }: Props) {
 
   const joinChallenge = (challengeId: string) => {
     setActiveChallenges((current) =>
-      current.map((challenge) =>
+      (current ?? []).map((challenge) =>
         challenge.id === challengeId
           ? {
               ...challenge,
@@ -214,7 +230,7 @@ export default function HealthGameCenter({ healthData }: Props) {
 
   const claimReward = (achievementId: string) => {
     setAchievements((current) =>
-      current.map((achievement) =>
+      (current ?? []).map((achievement) =>
         achievement.id === achievementId
           ? {
               ...achievement,
@@ -224,21 +240,24 @@ export default function HealthGameCenter({ healthData }: Props) {
           : achievement
       )
     );
-    setUserPoints((current) => current + 100);
+  setUserPoints((current) => (current ?? 0) + 100);
     toast.success('Achievement unlocked! +100 points');
   };
 
   const getPointsToNextLevel = () => {
     const pointsPerLevel = 1000;
-    const currentLevelPoints = (userLevel - 1) * pointsPerLevel;
-    const nextLevelPoints = userLevel * pointsPerLevel;
-    return nextLevelPoints - userPoints;
+  const lvl = userLevel ?? 1;
+  const pts = userPoints ?? 0;
+  const nextLevelPoints = lvl * pointsPerLevel;
+  return nextLevelPoints - pts;
   };
 
   const getLevelProgress = () => {
     const pointsPerLevel = 1000;
-    const currentLevelPoints = (userLevel - 1) * pointsPerLevel;
-    const progressInLevel = userPoints - currentLevelPoints;
+  const lvl = userLevel ?? 1;
+  const pts = userPoints ?? 0;
+  const currentLevelPoints = (lvl - 1) * pointsPerLevel;
+  const progressInLevel = pts - currentLevelPoints;
     return (progressInLevel / pointsPerLevel) * 100;
   };
 
@@ -299,7 +318,7 @@ export default function HealthGameCenter({ healthData }: Props) {
               </div>
               <div>
                 <p className="text-2xl font-bold">
-                  {achievements.filter((a) => a.unlocked).length}
+                  {(achievements ?? []).filter((a) => a.unlocked).length}
                 </p>
                 <p className="text-muted-foreground text-sm">Achievements</p>
               </div>
@@ -334,10 +353,9 @@ export default function HealthGameCenter({ healthData }: Props) {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
-            {(activeChallenges.length > 0
-              ? activeChallenges
-              : sampleChallenges
-            ).map((challenge) => (
+            {((activeChallenges ?? []).length > 0
+              ? (activeChallenges ?? [])
+              : sampleChallenges).map((challenge) => (
               <Card key={challenge.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -414,7 +432,9 @@ export default function HealthGameCenter({ healthData }: Props) {
           <Card>
             <CardContent className="p-6">
               <div className="space-y-4">
-                {(leaderboard.length > 0 ? leaderboard : sampleLeaderboard)
+                {((leaderboard ?? []).length > 0
+                  ? (leaderboard ?? [])
+                  : sampleLeaderboard)
                   .sort((a, b) => b.points - a.points)
                   .map((entry, index) => (
                     <div
@@ -469,9 +489,9 @@ export default function HealthGameCenter({ healthData }: Props) {
                       </div>
 
                       <div className="flex gap-1">
-                        {entry.badges.slice(0, 3).map((badge, idx) => (
+            {entry.badges.slice(0, 3).map((badge) => (
                           <Badge
-                            key={idx}
+              key={`${entry.userId}-${badge}`}
                             variant="outline"
                             className="text-xs"
                           >
@@ -495,8 +515,9 @@ export default function HealthGameCenter({ healthData }: Props) {
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
-            {(achievements.length > 0 ? achievements : sampleAchievements).map(
-              (achievement) => (
+            {((achievements ?? []).length > 0
+              ? (achievements ?? [])
+              : sampleAchievements).map((achievement) => (
                 <Card
                   key={achievement.id}
                   className={achievement.unlocked ? 'border-primary' : ''}
@@ -511,17 +532,7 @@ export default function HealthGameCenter({ healthData }: Props) {
                         </p>
                       </div>
 
-                      <Badge
-                        variant={
-                          achievement.type === 'bronze'
-                            ? 'outline'
-                            : achievement.type === 'silver'
-                              ? 'secondary'
-                              : achievement.type === 'gold'
-                                ? 'default'
-                                : 'destructive'
-                        }
-                      >
+                      <Badge variant={getAchievementVariant(achievement.type)}>
                         {achievement.type.toUpperCase()}
                       </Badge>
 

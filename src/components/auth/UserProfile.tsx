@@ -39,6 +39,7 @@ export default function UserProfile() {
   const {
     user,
     logout,
+    login,
     isLoading,
     refreshSession,
     validateSession,
@@ -197,7 +198,7 @@ export default function UserProfile() {
         setContactsLoading(false);
       }
     };
-    void run();
+    run().catch(() => {});
   }, [getAccessToken, user]);
 
   // Decode JWT exp
@@ -254,7 +255,7 @@ export default function UserProfile() {
     const msLeft = next - now.getTime();
     if (msLeft > 0 && msLeft < soonMs && !isRefreshing) {
       // Non-blocking refresh
-      void handleRefreshSession();
+      handleRefreshSession().catch(() => {});
     }
   }, [
     autoRefresh,
@@ -277,10 +278,10 @@ export default function UserProfile() {
   };
 
   // Manage MFA — re-auth to trigger policies
-  const handleManageMfa = useCallback(() => {
+  const handleManageMfa = () => {
     // Re-auth to trigger policies using Auth0 redirect
-    void login();
-  }, [login]);
+    login();
+  };
 
   // Change Password — open Auth0 hosted reset
   const handleChangePassword = useCallback(() => {

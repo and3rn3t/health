@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,30 +8,26 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@github/spark/hooks';
 import {
-  Shield,
   Activity,
-  Clock,
-  Users,
   AlertTriangle,
-  CheckCircle,
-  Heart,
   Bell,
+  CheckCircle,
+  Clock,
   Database,
-  CloudUpload,
-  Monitor,
-  Wifi,
-  Server,
-  HardDrives,
   Globe,
-  Lock,
+  HardDrive,
+  Heart,
+  Monitor,
+  Server,
+  Shield,
+  Wifi,
 } from 'lucide-react';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { useEffect, useState } from 'react';
+// Removed unused imports
 
 interface SystemStatus {
   component: string;
@@ -54,7 +51,7 @@ interface FailoverSystem {
   primary: boolean;
   status: 'active' | 'standby' | 'failed';
   lastFailover: string | null;
-  healthCheck: 'passing' | 'AlertTriangle' | 'critical';
+  healthCheck: 'passing' | 'warning' | 'critical';
 }
 
 interface MonitoringAlert {
@@ -84,8 +81,9 @@ export default function UptimeMonitoringSystem() {
   const [lastStatusUpdate, setLastStatusUpdate] = useState<string | null>(null);
 
   // Initialize system status on first load
+  const systemStatusLen = systemStatus?.length ?? 0;
   useEffect(() => {
-    if (systemStatus.length === 0) {
+    if (systemStatusLen === 0) {
       const initialStatus: SystemStatus[] = [
         {
           component: 'Web Application',
@@ -221,7 +219,7 @@ export default function UptimeMonitoringSystem() {
       setUptimeMetrics(historicalMetrics);
     }
   }, [
-    systemStatus.length,
+    systemStatusLen,
     setSystemStatus,
     setFailoverSystems,
     setUptimeMetrics,
@@ -233,15 +231,8 @@ export default function UptimeMonitoringSystem() {
       const now = new Date().toISOString();
       setLastStatusUpdate(now);
 
-      // Randomly update some metrics to simulate real monitoring
-      setSystemStatus((current) =>
-        current.map((status) => ({
-          ...status,
-          lastChecked: now,
-          responseTime: status.responseTime + (Math.random() - 0.5) * 20,
-          uptime: Math.min(100, status.uptime + Math.random() * 0.001),
-        }))
-      );
+  // Randomly update some metrics to simulate real monitoring
+  setSystemStatus(createStatusUpdater(now));
 
       // Occasionally generate monitoring alerts
       if (Math.random() < 0.1) {
@@ -268,17 +259,11 @@ export default function UptimeMonitoringSystem() {
           component: components[Math.floor(Math.random() * components.length)],
         };
 
-        setAlerts((current) => [newAlert, ...current].slice(0, 50));
+  setAlerts(prependAlertUpdater(newAlert));
       }
 
       // Auto-resolve some alerts
-      setAlerts((current) =>
-        current.map((alert) =>
-          !alert.resolved && Math.random() < 0.3
-            ? { ...alert, resolved: true }
-            : alert
-        )
-      );
+  setAlerts(autoResolveAlertsUpdater(0.3));
     }, 10000); // Update every 10 seconds
 
     return () => clearInterval(interval);
@@ -292,7 +277,7 @@ export default function UptimeMonitoringSystem() {
         return 'bg-green-100 text-green-800';
       case 'degraded':
       case 'standby':
-      case 'AlertTriangle':
+  case 'warning':
         return 'bg-yellow-100 text-yellow-800';
       case 'outage':
       case 'failed':
@@ -320,17 +305,75 @@ export default function UptimeMonitoringSystem() {
     }
   };
 
-  const overallUptime =
-    systemStatus.length > 0
-      ? systemStatus.reduce((sum, s) => sum + s.uptime, 0) / systemStatus.length
-      : 0;
+  // Updater helpers
+  const createStatusUpdater = (now: string) =>
+    (current: SystemStatus[] | undefined) =>
+      (current ?? []).map((status) => ({
+        ...status,
+        lastChecked: now,
+        responseTime: status.responseTime + (Math.random() - 0.5) * 20,
+        uptime: Math.min(100, status.uptime + Math.random() * 0.001),
+      }));
 
-  const criticalAlerts = alerts.filter(
+  const prependAlertUpdater = (newAlert: MonitoringAlert) =>
+    (current: MonitoringAlert[] | undefined) =>
+      [newAlert, ...(current ?? [])].slice(0, 50);
+
+  const autoResolveAlertsUpdater = (prob: number) =>
+    (current: MonitoringAlert[] | undefined) =>
+      (current ?? []).map((alert) =>
+        !alert.resolved && Math.random() < prob
+          ? { ...alert, resolved: true }
+          : alert
+      );
+
+  const resolveAlertByIdUpdater = (id: string) =>
+    (current: MonitoringAlert[] | undefined) =>
+      (current ?? []).map((a) => (a.id === id ? { ...a, resolved: true } : a));
+
+  const ss = systemStatus ?? [];
+  const um = uptimeMetrics ?? [];
+  const fo = failoverSystems ?? [];
+  const al = alerts ?? [];
+
+  const overallUptime =
+    ss.length > 0 ? ss.reduce((sum, s) => sum + s.uptime, 0) / ss.length : 0;
+
+  const criticalAlerts = al.filter(
     (a) => !a.resolved && (a.severity === 'critical' || a.severity === 'high')
   );
-  const activeIncidents = systemStatus.filter(
+  const activeIncidents = ss.filter(
     (s) => s.status !== 'operational'
   ).length;
+
+  // Map numeric uptime (0-100) to discrete Tailwind height classes (5% steps)
+  const getBarHeightClass = (uptime: number) => {
+    const classes = [
+      'h-[0%]',
+      'h-[5%]',
+      'h-[10%]',
+      'h-[15%]',
+      'h-[20%]',
+      'h-[25%]',
+      'h-[30%]',
+      'h-[35%]',
+      'h-[40%]',
+      'h-[45%]',
+      'h-[50%]',
+      'h-[55%]',
+      'h-[60%]',
+      'h-[65%]',
+      'h-[70%]',
+      'h-[75%]',
+      'h-[80%]',
+      'h-[85%]',
+      'h-[90%]',
+      'h-[95%]',
+      'h-[100%]',
+    ] as const;
+    const idx = Math.max(0, Math.min(20, Math.round(uptime / 5)));
+    return classes[idx];
+  };
 
   return (
     <div className="space-y-6">
@@ -410,10 +453,7 @@ export default function UptimeMonitoringSystem() {
               <span className="font-semibold">Avg Response Time</span>
             </div>
             <p className="text-2xl font-bold">
-              {(
-                systemStatus.reduce((sum, s) => sum + s.responseTime, 0) /
-                Math.max(systemStatus.length, 1)
-              ).toFixed(0)}
+              {(ss.reduce((sum, s) => sum + s.responseTime, 0) / Math.max(ss.length, 1)).toFixed(0)}
               ms
             </p>
             <p className="text-muted-foreground text-sm">Across all services</p>
@@ -426,9 +466,7 @@ export default function UptimeMonitoringSystem() {
               <Bell className="h-5 w-5 text-red-500" />
               <span className="font-semibold">Unresolved Alerts</span>
             </div>
-            <p className="text-2xl font-bold">
-              {alerts.filter((a) => !a.resolved).length}
-            </p>
+            <p className="text-2xl font-bold">{al.filter((a) => !a.resolved).length}</p>
             <p className="text-muted-foreground text-sm">Need attention</p>
           </CardContent>
         </Card>
@@ -444,8 +482,8 @@ export default function UptimeMonitoringSystem() {
 
         <TabsContent value="status" className="space-y-4">
           <div className="grid gap-4">
-            {systemStatus.map((status, index) => (
-              <Card key={index}>
+            {ss.map((status) => (
+              <Card key={status.component}>
                 <CardContent className="pt-6">
                   <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -482,7 +520,7 @@ export default function UptimeMonitoringSystem() {
                         </p>
                       </div>
                     </div>
-                    <Badge className={getStatusColor(status.status)} size="sm">
+                    <Badge className={getStatusColor(status.status)}>
                       {status.status}
                     </Badge>
                   </div>
@@ -522,7 +560,7 @@ export default function UptimeMonitoringSystem() {
 
         <TabsContent value="failover" className="space-y-4">
           <div className="grid gap-4">
-            {failoverSystems.map((system) => (
+            {fo.map((system) => (
               <Card key={system.id}>
                 <CardContent className="pt-6">
                   <div className="mb-4 flex items-center justify-between">
@@ -531,7 +569,7 @@ export default function UptimeMonitoringSystem() {
                         {system.primary ? (
                           <Server className="h-5 w-5 text-green-600" />
                         ) : (
-                          <HardDrives className="h-5 w-5 text-green-600" />
+                          <HardDrive className="h-5 w-5 text-green-600" />
                         )}
                       </div>
                       <div>
@@ -544,13 +582,11 @@ export default function UptimeMonitoringSystem() {
                     <div className="flex items-center gap-2">
                       <Badge
                         className={getStatusColor(system.status)}
-                        size="sm"
                       >
                         {system.status}
                       </Badge>
                       <Badge
                         className={getStatusColor(system.healthCheck)}
-                        size="sm"
                       >
                         {system.healthCheck}
                       </Badge>
@@ -605,11 +641,10 @@ export default function UptimeMonitoringSystem() {
                     Daily Uptime Percentage
                   </h4>
                   <div className="flex h-32 items-end justify-center gap-1 rounded-lg bg-gray-50 p-4">
-                    {uptimeMetrics.slice(-14).map((metric, index) => (
+          {um.slice(-14).map((metric) => (
                       <div
-                        key={index}
-                        className="w-4 rounded-sm bg-green-500"
-                        style={{ height: `${metric.uptime}%` }}
+            key={metric.date}
+                        className={`w-4 rounded-sm bg-green-500 ${getBarHeightClass(metric.uptime)}`}
                         title={`${new Date(metric.date).toLocaleDateString()}: ${metric.uptime.toFixed(2)}%`}
                       />
                     ))}
@@ -622,10 +657,7 @@ export default function UptimeMonitoringSystem() {
                       Average Uptime
                     </Label>
                     <p className="text-2xl font-bold">
-                      {(
-                        uptimeMetrics.reduce((sum, m) => sum + m.uptime, 0) /
-                        uptimeMetrics.length
-                      ).toFixed(2)}
+                      {(um.reduce((sum, m) => sum + m.uptime, 0) / um.length).toFixed(2)}
                       %
                     </p>
                   </div>
@@ -634,7 +666,7 @@ export default function UptimeMonitoringSystem() {
                       Total Incidents
                     </Label>
                     <p className="text-2xl font-bold">
-                      {uptimeMetrics.reduce((sum, m) => sum + m.incidents, 0)}
+                      {um.reduce((sum, m) => sum + m.incidents, 0)}
                     </p>
                   </div>
                   <div>
@@ -642,12 +674,7 @@ export default function UptimeMonitoringSystem() {
                       Avg Response Time
                     </Label>
                     <p className="text-2xl font-bold">
-                      {(
-                        uptimeMetrics.reduce(
-                          (sum, m) => sum + m.avgResponseTime,
-                          0
-                        ) / uptimeMetrics.length
-                      ).toFixed(0)}
+                      {(um.reduce((sum, m) => sum + m.avgResponseTime, 0) / um.length).toFixed(0)}
                       ms
                     </p>
                   </div>
@@ -659,7 +686,7 @@ export default function UptimeMonitoringSystem() {
 
         <TabsContent value="alerts" className="space-y-4">
           <div className="grid gap-4">
-            {alerts.length === 0 ? (
+            {al.length === 0 ? (
               <Card>
                 <CardContent className="pt-6 text-center">
                   <CheckCircle className="mx-auto mb-4 h-12 w-12 text-green-500" />
@@ -672,7 +699,7 @@ export default function UptimeMonitoringSystem() {
                 </CardContent>
               </Card>
             ) : (
-              alerts.map((alert) => (
+              al.map((alert) => (
                 <Card
                   key={alert.id}
                   className={alert.resolved ? 'opacity-60' : ''}
@@ -700,13 +727,11 @@ export default function UptimeMonitoringSystem() {
                       <div className="flex items-center gap-2">
                         <Badge
                           className={getSeverityColor(alert.severity)}
-                          size="sm"
                         >
                           {alert.severity}
                         </Badge>
                         <Badge
                           variant={alert.resolved ? 'secondary' : 'destructive'}
-                          size="sm"
                         >
                           {alert.resolved ? 'Resolved' : 'Active'}
                         </Badge>
@@ -717,13 +742,7 @@ export default function UptimeMonitoringSystem() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() =>
-                          setAlerts((current) =>
-                            current.map((a) =>
-                              a.id === alert.id ? { ...a, resolved: true } : a
-                            )
-                          )
-                        }
+                        onClick={() => setAlerts(resolveAlertByIdUpdater(alert.id))}
                       >
                         <CheckCircle className="mr-2 h-4 w-4" />
                         Mark as Resolved
@@ -743,10 +762,10 @@ export default function UptimeMonitoringSystem() {
 function Label({
   children,
   className,
-}: {
+}: Readonly<{
   children: React.ReactNode;
   className?: string;
-}) {
+}>) {
   return (
     <label className={`text-sm font-medium ${className || ''}`}>
       {children}

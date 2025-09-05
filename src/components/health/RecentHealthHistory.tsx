@@ -17,7 +17,7 @@ export function RecentHealthHistory({
   metric,
   limit = 10,
   showFilter = true,
-}: Props) {
+}: Readonly<Props>) {
   const [selected, setSelected] = useState<Metric>(metric || 'heart_rate');
   const [pageSize] = useState<number>(limit);
   useEffect(() => {

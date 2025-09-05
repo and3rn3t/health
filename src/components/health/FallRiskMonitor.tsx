@@ -10,15 +10,28 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
-import { Brain, Heart, Phone, Shield } from 'lucide-react';
+import {
+  VitalSenseBrandHeader,
+  VitalSenseStatusCard,
+} from '@/components/ui/vitalsense-components';
+import { getVitalSenseClasses } from '@/lib/vitalsense-colors';
+import { ProcessedHealthData } from '@/types';
+import {
+  Activity,
+  AlertTriangle,
+  Brain,
+  Heart,
+  Phone,
+  Shield,
+  TrendingDown,
+} from 'lucide-react';
 import { useEffect } from 'react';
 import MLPredictionsDashboard from './MLPredictionsDashboard';
 
 interface FallRiskMonitorProps {
-  healthData: ProcessedHealthData;
-  fallRiskScore: number;
-  setFallRiskScore: (score: number) => void;
+  readonly healthData: ProcessedHealthData;
+  readonly fallRiskScore: number;
+  readonly setFallRiskScore: (score: number) => void;
 }
 
 interface RiskFactorProps {
@@ -35,7 +48,7 @@ function RiskFactor({
   threshold,
   unit,
   description,
-}: RiskFactorProps) {
+}: Readonly<RiskFactorProps>) {
   const isRisk = value < threshold;
   const percentage = Math.max(0, Math.min(100, (value / threshold) * 100));
 
@@ -60,25 +73,27 @@ function RiskFactor({
   );
 }
 
-function FallRiskGauge({ score }: { score: number }) {
+function FallRiskGauge({ score }: Readonly<{ score: number }>) {
   const getRiskLevel = (score: number) => {
-    if (score < 30)
+    if (score < 30) {
       return {
         level: 'Low',
         color: getVitalSenseClasses.text.success,
         bgColor: getVitalSenseClasses.bg.success + ' bg-opacity-10',
-      };
-    if (score < 70)
+      } as const;
+    }
+    if (score < 70) {
       return {
         level: 'Moderate',
-        color: getVitalSenseClasses.text.AlertTriangle,
-        bgColor: getVitalSenseClasses.bg.AlertTriangle + ' bg-opacity-10',
-      };
+        color: getVitalSenseClasses.text.warning,
+        bgColor: getVitalSenseClasses.bg.warning + ' bg-opacity-10',
+      } as const;
+    }
     return {
       level: 'High',
       color: getVitalSenseClasses.text.error,
       bgColor: getVitalSenseClasses.bg.error + ' bg-opacity-10',
-    };
+    } as const;
   };
 
   const risk = getRiskLevel(score);
@@ -100,38 +115,44 @@ function FallRiskGauge({ score }: { score: number }) {
             stroke="rgb(226 232 240)"
             strokeWidth="8"
           />
-          <circle
-            cx="50"
-            cy="50"
-            r="40"
-            fill="none"
-            stroke={
-              score < 30
-                ? 'rgb(34 197 94)'
-                : score < 70
-                  ? 'rgb(234 179 8)'
-                  : 'rgb(239 68 68)'
+          {(() => {
+            let strokeColor = 'rgb(239 68 68)';
+            if (score < 30) {
+              strokeColor = 'rgb(34 197 94)';
+            } else if (score < 70) {
+              strokeColor = 'rgb(234 179 8)';
             }
-            strokeWidth="8"
-            strokeDasharray={strokeDasharray}
-            strokeDashoffset={strokeDashoffset}
-            className={risk.color}
-            strokeLinecap="round"
-          />
+            return (
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                fill="none"
+                stroke={strokeColor}
+                strokeWidth="8"
+                strokeDasharray={strokeDasharray}
+                strokeDashoffset={strokeDashoffset}
+                className={risk.color}
+                strokeLinecap="round"
+              />
+            );
+          })()}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-2xl font-bold">{score}</span>
           <span className="text-muted-foreground text-xs">Risk Score</span>
         </div>
       </div>
-      <Badge
-        variant={
-          score > 70 ? 'destructive' : score > 30 ? 'secondary' : 'default'
-        }
-        className="text-sm"
-      >
-        {risk.level} Risk
-      </Badge>
+      {(() => {
+        let variant: 'destructive' | 'secondary' | 'default' = 'default';
+        if (score > 70) variant = 'destructive';
+        else if (score > 30) variant = 'secondary';
+        return (
+          <Badge variant={variant} className="text-sm">
+            {risk.level} Risk
+          </Badge>
+        );
+      })()}
     </div>
   );
 }
@@ -140,9 +161,9 @@ export default function FallRiskMonitor({
   healthData,
   fallRiskScore,
   setFallRiskScore,
-}: FallRiskMonitorProps) {
+}: Readonly<FallRiskMonitorProps>) {
   useEffect(() => {
-    if (healthData && healthData.metrics) {
+  if (healthData?.metrics) {
       // Calculate fall risk based on multiple factors
       const walkingSteadiness =
         healthData.metrics.walkingSteadiness?.average || 100;
@@ -171,7 +192,7 @@ export default function FallRiskMonitor({
     }
   }, [healthData, setFallRiskScore]);
 
-  if (!healthData || !healthData.metrics) {
+  if (!healthData?.metrics) {
     return (
       <Card>
         <CardContent className="py-8 text-center">
@@ -194,23 +215,19 @@ export default function FallRiskMonitor({
         title="Fall Risk Monitor"
         subtitle="Advanced fall risk assessment and prevention insights"
         icon={<Shield className="h-6 w-6" />}
-        variant={
-          isHighRisk
-            ? 'error'
-            : fallRiskScore > 50
-              ? 'AlertTriangle'
-              : 'success'
-        }
+        variant={(() => {
+          if (isHighRisk) return 'error';
+          if (fallRiskScore > 50) return 'warning';
+          return 'success';
+        })()}
       >
         <VitalSenseStatusCard
           type="fallRisk"
-          status={
-            fallRiskScore > 70
-              ? 'high'
-              : fallRiskScore > 50
-                ? 'moderate'
-                : 'low'
-          }
+          status={(() => {
+            if (fallRiskScore > 70) return 'high';
+            if (fallRiskScore > 50) return 'moderate';
+            return 'low';
+          })()}
           title="Risk Level"
           value={`${fallRiskScore}%`}
           subtitle="Based on current metrics"

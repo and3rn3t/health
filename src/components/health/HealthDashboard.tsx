@@ -13,8 +13,8 @@ import {
   VitalSenseStatusCard,
 } from '@/components/ui/vitalsense-components';
 import { useUsageTracking } from '@/hooks/useUsageTracking';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { HealthColorMap, getVitalSenseClasses } from '@/lib/vitalsense-colors';
+import { ProcessedHealthData } from '@/types';
 import {
   Activity,
   Brain,
@@ -138,7 +138,7 @@ export default function HealthDashboard({
   const _getHealthScoreColor = () => {
     const score = healthScore || 0;
     if (score >= 80) return getVitalSenseClasses.text.success;
-    if (score >= 60) return getVitalSenseClasses.text.AlertTriangle;
+    if (score >= 60) return getVitalSenseClasses.text.warning;
     return getVitalSenseClasses.text.error;
   };
 

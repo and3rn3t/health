@@ -26,6 +26,14 @@ export function EmergencyTrigger() {
     null
   );
 
+  // Extracted card status class to avoid nested ternary
+  let cardStatusClass = '';
+  if (isEmergencyMode) {
+    cardStatusClass = 'border-red-500 bg-red-50';
+  } else if (emergencyCountdown) {
+    cardStatusClass = 'border-yellow-500 bg-yellow-50';
+  }
+
   const startEmergency = () => {
     setEmergencyCountdown(10);
 
@@ -61,54 +69,56 @@ export function EmergencyTrigger() {
     },
   };
 
+  // Extracted card title to avoid nested ternary in JSX
+  let cardTitle = '';
+  if (isEmergencyMode) {
+    cardTitle = 'EMERGENCY ACTIVE';
+  } else if (emergencyCountdown) {
+    cardTitle = 'Emergency Starting...';
+  } else {
+    cardTitle = 'Emergency Status';
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Emergency Alert System</h1>
-        <p className="text-muted-foreground mt-2">
-          Quick access to emergency services and automatic health data sharing
-          for medical emergencies.
-        </p>
-      </div>
-
-      {/* Emergency Status */}
-      <Card
-        className={
-          isEmergencyMode
-            ? 'border-red-500 bg-red-50'
-            : emergencyCountdown
-              ? 'border-yellow-500 bg-yellow-50'
-              : ''
-        }
-      >
+      {/*
+        Extract the card status class to avoid nested ternary in JSX
+      */}
+      <Card className={cardStatusClass}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div
-                className={`rounded-lg p-2 ${
-                  isEmergencyMode
-                    ? 'bg-red-100 text-red-600'
-                    : emergencyCountdown
-                      ? 'bg-yellow-100 text-yellow-600'
-                      : 'bg-vitalsense-primary/10 text-vitalsense-primary'
-                }`}
-              >
-                {isEmergencyMode ? (
-                  <Siren className="h-6 w-6" />
-                ) : emergencyCountdown ? (
-                  <AlertTriangle className="h-6 w-6" />
-                ) : (
-                  <Shield className="h-6 w-6" />
-                )}
-              </div>
+              {/*
+                Extracted icon background class to avoid nested ternary
+              */}
+              {(() => {
+                let iconBgClass = '';
+                if (isEmergencyMode) {
+                  iconBgClass = 'bg-red-100 text-red-600';
+                } else if (emergencyCountdown) {
+                  iconBgClass = 'bg-yellow-100 text-yellow-600';
+                } else {
+                  iconBgClass =
+                    'bg-vitalsense-primary/10 text-vitalsense-primary';
+                }
+
+                let statusIcon = null;
+                if (isEmergencyMode) {
+                  statusIcon = <Siren className="h-6 w-6" />;
+                } else if (emergencyCountdown) {
+                  statusIcon = <AlertTriangle className="h-6 w-6" />;
+                } else {
+                  statusIcon = <Shield className="h-6 w-6" />;
+                }
+
+                return (
+                  <div className={`rounded-lg p-2 ${iconBgClass}`}>
+                    {statusIcon}
+                  </div>
+                );
+              })()}
               <div>
-                <CardTitle className="text-xl">
-                  {isEmergencyMode
-                    ? 'EMERGENCY ACTIVE'
-                    : emergencyCountdown
-                      ? 'Emergency Starting...'
-                      : 'Emergency Status'}
-                </CardTitle>
+                <CardTitle className="text-xl">{cardTitle}</CardTitle>
                 <CardDescription>
                   {isEmergencyMode
                     ? 'Emergency services have been contacted'

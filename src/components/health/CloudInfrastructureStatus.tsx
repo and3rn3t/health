@@ -39,16 +39,16 @@ interface InfrastructureMetric {
   label: string;
   value: string | number;
   unit: string;
-  status: 'good' | 'AlertTriangle' | 'critical';
+  status: 'good' | 'warning' | 'critical';
   trend: 'up' | 'down' | 'stable';
 }
 
 export default function CloudInfrastructureStatus() {
-  const [infrastructureEnabled, setInfrastructureEnabled] = useKV(
+  const [infrastructureEnabled, setInfrastructureEnabled] = useKV<boolean>(
     'cloud-infrastructure-enabled',
     false
   );
-  const [lastSync, setLastSync] = useKV(
+  const [, setLastSync] = useKV<string>(
     'last-infrastructure-sync',
     new Date().toISOString()
   );
@@ -199,7 +199,7 @@ export default function CloudInfrastructureStatus() {
     switch (status) {
       case 'good':
         return 'text-green-600';
-      case 'AlertTriangle':
+  case 'warning':
         return 'text-yellow-600';
       case 'critical':
         return 'text-red-600';
@@ -362,8 +362,8 @@ export default function CloudInfrastructureStatus() {
 
         <TabsContent value="metrics" className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {metrics.map((metric, index) => (
-              <Card key={index}>
+            {metrics.map((metric) => (
+              <Card key={`${metric.label}:${metric.unit}`}>
                 <CardContent className="pt-6">
                   <div className="mb-2 flex items-center justify-between">
                     <p className="text-muted-foreground text-sm font-medium">

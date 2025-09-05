@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { ProcessedHealthData } from '@/types';
 import { useKV } from '@github/spark/hooks';
 import {
   AlertTriangle,
@@ -731,7 +731,7 @@ export default function SmartNotificationEngine({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
             <Bell className="h-6 w-6" />
             Smart Notifications
           </h2>

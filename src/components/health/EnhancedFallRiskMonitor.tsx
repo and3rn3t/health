@@ -82,7 +82,7 @@ interface MonitoringSession {
 function PredictiveAnalyticsDashboard({
   metrics,
 }: {
-  metrics: EnhancedMetrics;
+  readonly metrics: EnhancedMetrics;
 }) {
   const getRiskColor = (risk: number) => {
     if (risk >= 0.8) return 'text-red-600';
@@ -332,7 +332,11 @@ function PredictiveAnalyticsDashboard({
   );
 }
 
-function PredictiveAlertsPanel({ alerts }: { alerts: PredictiveAlert[] }) {
+function PredictiveAlertsPanel({
+  alerts,
+}: {
+  readonly alerts: ReadonlyArray<PredictiveAlert>;
+}) {
   const getSeverityIcon = (severity: PredictiveAlert['severity']) => {
     switch (severity) {
       case 'critical':
@@ -405,8 +409,8 @@ function AdaptiveThresholdsPanel({
   thresholds,
   onThresholdToggle,
 }: {
-  thresholds: AdaptiveThreshold[];
-  onThresholdToggle: (metricId: string, enabled: boolean) => void;
+  readonly thresholds: readonly AdaptiveThreshold[];
+  readonly onThresholdToggle: (metricId: string, enabled: boolean) => void;
 }) {
   return (
     <div className="space-y-4">

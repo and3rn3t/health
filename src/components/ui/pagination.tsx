@@ -1,10 +1,8 @@
+import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { ComponentProps } from 'react';
-import ChevronLeftIcon from 'lucide-react/dist/esm/icons/chevron-left';
-import ChevronRightIcon from 'lucide-react/dist/esm/icons/chevron-right';
-import MoreHorizontalIcon from 'lucide-react/dist/esm/icons/more-horizontal';
 
-import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 function Pagination({ className, ...props }: ComponentProps<'nav'>) {
   return (
@@ -71,7 +69,7 @@ function PaginationPrevious({
       className={cn('gap-1 px-2.5 sm:pl-2.5', className)}
       {...props}
     >
-      <ChevronLeftIcon />
+      <ChevronLeft />
       <span className="hidden sm:block">Previous</span>
     </PaginationLink>
   );
@@ -89,7 +87,7 @@ function PaginationNext({
       {...props}
     >
       <span className="hidden sm:block">Next</span>
-      <ChevronRightIcon />
+      <ChevronRight />
     </PaginationLink>
   );
 }
@@ -102,7 +100,7 @@ function PaginationEllipsis({ className, ...props }: ComponentProps<'span'>) {
       className={cn('flex size-9 items-center justify-center', className)}
       {...props}
     >
-      <MoreHorizontalIcon className="size-4" />
+      <MoreHorizontal className="size-4" />
       <span className="sr-only">More pages</span>
     </span>
   );
@@ -111,9 +109,9 @@ function PaginationEllipsis({ className, ...props }: ComponentProps<'span'>) {
 export {
   Pagination,
   PaginationContent,
-  PaginationLink,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
   PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
 };

@@ -488,9 +488,9 @@ export function MonitoringDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {securityData?.topThreats.map((threat, index) => (
+                  {securityData?.topThreats.map((threat) => (
                     <div
-                      key={index}
+                      key={threat.type}
                       className="flex items-center justify-between"
                     >
                       <div className="flex items-center gap-2">

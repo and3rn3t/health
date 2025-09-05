@@ -21,7 +21,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import type { MetricData, ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { useKV } from '@github/spark/hooks';
 import {
   Activity,
@@ -86,119 +86,99 @@ interface PredictiveHealthAlertsProps {
   healthData: ProcessedHealthData;
 }
 
-export default function PredictiveHealthAlerts({
-  healthData,
-}: PredictiveHealthAlertsProps) {
-  const [alerts, setAlerts] = useKV<HealthAlert[]>(
+export default function PredictiveHealthAlerts({ healthData }: Readonly<PredictiveHealthAlertsProps>) {
+  const [alerts = [], setAlerts] = useKV<HealthAlert[]>(
     'predictive-health-alerts',
     []
   );
-  const [alertConfig, setAlertConfig] = useKV<AlertConfig>('alert-config', {
+  const defaultConfig: AlertConfig = {
     enabled: true,
     sensitivity: 'medium',
     timeframe: 30,
-    thresholds: {
-      decline: 15,
-      confidence: 0.7,
-    },
-    notifications: {
-      email: true,
-      push: true,
-      sms: false,
-    },
-  });
+    thresholds: { decline: 15, confidence: 0.7 },
+    notifications: { email: true, push: true, sms: false },
+  };
+  const [alertConfigValue, setAlertConfig] = useKV<AlertConfig>(
+    'alert-config',
+    defaultConfig
+  );
+  const alertConfig: AlertConfig = alertConfigValue || defaultConfig;
   const [trendAnalysis, setTrendAnalysis] = useState<TrendAnalysis[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState('alerts');
 
   // Simulate ML trend analysis
-  const generateTrendAnalysis = async () => {
+  const computeTrendDirection = (slope: number): TrendAnalysis['direction'] => {
+    if (slope < -0.15) return 'concerning';
+    if (slope < -0.1) return 'declining';
+    if (slope > 0.05) return 'improving';
+    return 'stable';
+  };
+  const shouldGenerateAlert = (trend: TrendAnalysis, decline: number) => {
+    if (trend.direction === 'concerning') return true;
+    return trend.direction === 'declining' && trend.confidence > alertConfig.thresholds.confidence && decline >= alertConfig.thresholds.decline;
+  };
+  const generateTrendAnalysis = async (): Promise<void> => {
     setIsAnalyzing(true);
-
     try {
-      // Simulate ML processing time
       await new Promise((resolve) => setTimeout(resolve, 2000));
-
       const metrics = Object.keys(healthData.metrics || {});
       const analysis: TrendAnalysis[] = [];
-
       for (const metric of metrics.slice(0, 6)) {
-        const currentValue = healthData.metrics[metric];
-        const slope = (Math.random() - 0.5) * 0.4; // Random slope between -0.2 and 0.2
-        const confidence = 0.6 + Math.random() * 0.35; // Random confidence between 0.6 and 0.95
-
-        let direction: TrendAnalysis['direction'] = 'stable';
-        if (slope < -0.1)
-          direction = slope < -0.15 ? 'concerning' : 'declining';
-        else if (slope > 0.05) direction = 'improving';
-
-        const nextWeekPrediction = currentValue * (1 + slope * 0.25);
-        const nextMonthPrediction = currentValue * (1 + slope);
-
-        const riskFactors = [];
+        const currentValueRaw = (healthData.metrics as Record<string, MetricData | undefined>)[metric];
+        const numericValue = currentValueRaw ? currentValueRaw.average : 0;
+        const slope = (Math.random() - 0.5) * 0.4;
+        const confidence = 0.6 + Math.random() * 0.35;
+        const direction = computeTrendDirection(slope);
+        const nextWeekPrediction = numericValue * (1 + slope * 0.25);
+        const nextMonthPrediction = numericValue * (1 + slope);
+        const riskFactors: string[] = [];
         if (direction === 'declining' || direction === 'concerning') {
           riskFactors.push('Decreasing trend detected');
           if (confidence > 0.8) riskFactors.push('High confidence prediction');
           if (slope < -0.15) riskFactors.push('Rapid decline rate');
         }
-
         analysis.push({
           metric,
           direction,
           slope,
           confidence,
-          prediction: {
-            nextWeek: nextWeekPrediction,
-            nextMonth: nextMonthPrediction,
-            confidence,
-          },
+          prediction: { nextWeek: nextWeekPrediction, nextMonth: nextMonthPrediction, confidence },
           riskFactors,
         });
       }
-
       setTrendAnalysis(analysis);
-
-      // Generate alerts based on analysis
       const newAlerts: HealthAlert[] = [];
-
       for (const trend of analysis) {
-        if (
-          trend.direction === 'concerning' ||
-          (trend.direction === 'declining' &&
-            trend.confidence > alertConfig.thresholds.confidence)
-        ) {
-          const decline = Math.abs(trend.slope) * 100;
-
-          if (decline >= alertConfig.thresholds.decline) {
-            newAlerts.push({
-              id: `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              type: 'decline',
-              severity:
-                decline > 25 ? 'critical' : decline > 20 ? 'high' : 'medium',
-              title: `Predicted Decline in ${trend.metric}`,
-              description: `ML analysis predicts a ${decline.toFixed(1)}% decline in ${trend.metric} over the next ${alertConfig.timeframe} days`,
-              metric: trend.metric,
-              currentValue: healthData.metrics[trend.metric],
-              predictedValue: trend.prediction.nextMonth,
-              confidence: trend.confidence,
-              timeframe: `${alertConfig.timeframe} days`,
-              triggered: new Date(),
-              acknowledged: false,
-              recommendations: generateRecommendations(trend.metric, decline),
-            });
-          }
+        const decline = Math.abs(trend.slope) * 100;
+        if (shouldGenerateAlert(trend, decline)) {
+          let severity: HealthAlert['severity'] = 'medium';
+            if (decline > 25) severity = 'critical';
+            else if (decline > 20) severity = 'high';
+          newAlerts.push({
+            id: `alert-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+            type: 'decline',
+            severity,
+            title: `Predicted Decline in ${trend.metric}`,
+            description: `ML analysis predicts a ${decline.toFixed(1)}% decline in ${trend.metric} over the next ${alertConfig.timeframe} days`,
+            metric: trend.metric,
+            currentValue: (healthData.metrics as Record<string, MetricData | undefined>)[trend.metric]?.average ?? 0,
+            predictedValue: trend.prediction.nextMonth,
+            confidence: trend.confidence,
+            timeframe: `${alertConfig.timeframe} days`,
+            triggered: new Date(),
+            acknowledged: false,
+            recommendations: generateRecommendations(trend.metric, decline),
+          });
         }
       }
-
       if (newAlerts.length > 0) {
-        setAlerts((current) => [...current, ...newAlerts]);
-        toast.AlertTriangle(
-          `${newAlerts.length} new predictive health alerts generated`
-        );
+        setAlerts([...(alerts || []), ...newAlerts]);
+        toast.warning(`${newAlerts.length} new predictive health alerts generated`);
       } else {
         toast.success('Analysis complete - no concerning trends detected');
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to analyze health trends');
     } finally {
       setIsAnalyzing(false);
@@ -237,16 +217,14 @@ export default function PredictiveHealthAlerts({
   };
 
   const acknowledgeAlert = (alertId: string) => {
-    setAlerts((current) =>
-      current.map((alert) =>
-        alert.id === alertId ? { ...alert, acknowledged: true } : alert
-      )
-    );
+    setAlerts(alerts.map((alert) =>
+      alert.id === alertId ? { ...alert, acknowledged: true } : alert
+    ));
     toast.success('Alert acknowledged');
   };
 
   const dismissAlert = (alertId: string) => {
-    setAlerts((current) => current.filter((alert) => alert.id !== alertId));
+  setAlerts(alerts.filter((alert) => alert.id !== alertId));
     toast.success('Alert dismissed');
   };
 
@@ -280,10 +258,8 @@ export default function PredictiveHealthAlerts({
     }
   };
 
-  const unacknowledgedAlerts = alerts.filter((alert) => !alert.acknowledged);
-  const criticalAlerts = alerts.filter(
-    (alert) => alert.severity === 'critical'
-  );
+  const unacknowledgedAlerts = (alerts || []).filter((alert) => !alert.acknowledged);
+  const criticalAlerts = (alerts || []).filter((alert) => alert.severity === 'critical');
 
   return (
     <div className="space-y-6">
@@ -423,9 +399,9 @@ export default function PredictiveHealthAlerts({
             </Card>
           ) : (
             <div className="space-y-4">
-              {alerts.map((alert) => (
+            {alerts.map((alert) => (
                 <Card
-                  key={alert.id}
+              key={alert.id}
                   className={`${alert.acknowledged ? 'opacity-60' : ''}`}
                 >
                   <CardHeader className="pb-4">
@@ -512,9 +488,9 @@ export default function PredictiveHealthAlerts({
                         Recommendations
                       </Label>
                       <ul className="space-y-1">
-                        {alert.recommendations.map((rec, index) => (
+            {alert.recommendations.map((rec) => (
                           <li
-                            key={index}
+              key={`${alert.id}-${rec}`}
                             className="text-muted-foreground flex items-center gap-2 text-sm"
                           >
                             <div className="bg-primary h-1 w-1 rounded-full" />
@@ -546,8 +522,8 @@ export default function PredictiveHealthAlerts({
             </Card>
           ) : (
             <div className="space-y-4">
-              {trendAnalysis.map((trend, index) => (
-                <Card key={index}>
+              {trendAnalysis.map((trend) => (
+                <Card key={`${trend.metric}-${trend.direction}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -562,13 +538,11 @@ export default function PredictiveHealthAlerts({
                         </div>
                       </div>
                       <Badge
-                        variant={
-                          trend.direction === 'concerning'
-                            ? 'destructive'
-                            : trend.direction === 'improving'
-                              ? 'default'
-                              : 'secondary'
-                        }
+                        variant={((): 'default' | 'secondary' | 'destructive' => {
+                          if (trend.direction === 'concerning') return 'destructive';
+                          if (trend.direction === 'improving') return 'default';
+                          return 'secondary';
+                        })()}
                       >
                         {trend.direction}
                       </Badge>
@@ -614,9 +588,9 @@ export default function PredictiveHealthAlerts({
                           Risk Factors
                         </Label>
                         <div className="flex flex-wrap gap-2">
-                          {trend.riskFactors.map((factor, idx) => (
+                          {trend.riskFactors.map((factor) => (
                             <Badge
-                              key={idx}
+                              key={`${trend.metric}-${factor}`}
                               variant="outline"
                               className="text-xs"
                             >
@@ -653,7 +627,7 @@ export default function PredictiveHealthAlerts({
                 <Switch
                   checked={alertConfig.enabled}
                   onCheckedChange={(enabled) =>
-                    setAlertConfig((current) => ({ ...current, enabled }))
+                    setAlertConfig({ ...alertConfig, enabled })
                   }
                 />
               </div>
@@ -669,7 +643,7 @@ export default function PredictiveHealthAlerts({
                   <Select
                     value={alertConfig.sensitivity}
                     onValueChange={(sensitivity: 'low' | 'medium' | 'high') =>
-                      setAlertConfig((current) => ({ ...current, sensitivity }))
+                      setAlertConfig({ ...alertConfig, sensitivity })
                     }
                   >
                     <SelectTrigger>
@@ -700,10 +674,10 @@ export default function PredictiveHealthAlerts({
                     max="90"
                     value={alertConfig.timeframe}
                     onChange={(e) =>
-                      setAlertConfig((current) => ({
-                        ...current,
+                      setAlertConfig({
+                        ...alertConfig,
                         timeframe: parseInt(e.target.value) || 30,
-                      }))
+                      })
                     }
                   />
                 </div>
@@ -719,13 +693,13 @@ export default function PredictiveHealthAlerts({
                     max="50"
                     value={alertConfig.thresholds.decline}
                     onChange={(e) =>
-                      setAlertConfig((current) => ({
-                        ...current,
+                      setAlertConfig({
+                        ...alertConfig,
                         thresholds: {
-                          ...current.thresholds,
+                          ...alertConfig.thresholds,
                           decline: parseInt(e.target.value) || 15,
                         },
-                      }))
+                      })
                     }
                   />
                 </div>
@@ -742,13 +716,13 @@ export default function PredictiveHealthAlerts({
                     step="0.05"
                     value={alertConfig.thresholds.confidence}
                     onChange={(e) =>
-                      setAlertConfig((current) => ({
-                        ...current,
+                      setAlertConfig({
+                        ...alertConfig,
                         thresholds: {
-                          ...current.thresholds,
+                          ...alertConfig.thresholds,
                           confidence: parseFloat(e.target.value) || 0.7,
                         },
-                      }))
+                      })
                     }
                   />
                 </div>
@@ -771,10 +745,10 @@ export default function PredictiveHealthAlerts({
                     <Switch
                       checked={alertConfig.notifications.email}
                       onCheckedChange={(email) =>
-                        setAlertConfig((current) => ({
-                          ...current,
-                          notifications: { ...current.notifications, email },
-                        }))
+                        setAlertConfig({
+                          ...alertConfig,
+                          notifications: { ...alertConfig.notifications, email },
+                        })
                       }
                     />
                   </div>
@@ -789,10 +763,10 @@ export default function PredictiveHealthAlerts({
                     <Switch
                       checked={alertConfig.notifications.push}
                       onCheckedChange={(push) =>
-                        setAlertConfig((current) => ({
-                          ...current,
-                          notifications: { ...current.notifications, push },
-                        }))
+                        setAlertConfig({
+                          ...alertConfig,
+                          notifications: { ...alertConfig.notifications, push },
+                        })
                       }
                     />
                   </div>
@@ -807,10 +781,10 @@ export default function PredictiveHealthAlerts({
                     <Switch
                       checked={alertConfig.notifications.sms}
                       onCheckedChange={(sms) =>
-                        setAlertConfig((current) => ({
-                          ...current,
-                          notifications: { ...current.notifications, sms },
-                        }))
+                        setAlertConfig({
+                          ...alertConfig,
+                          notifications: { ...alertConfig.notifications, sms },
+                        })
                       }
                     />
                   </div>

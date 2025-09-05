@@ -141,7 +141,7 @@ export function useLiveHealthData(_userId: string = 'demo-user') {
 
   const { connectionState, sendMessage, connect, disconnect } = useWebSocket(
     {
-  url: '', // default computed in useWebSocket
+      url: '', // default computed in useWebSocket
       enableInDevelopment: false, // Disable WebSocket in development to prevent console errors
     },
     handlers

@@ -14,7 +14,6 @@ import {
   Smartphone,
   WifiHigh,
   Cloud,
-  Activity,
   Settings,
   Zap,
   Shield,
@@ -312,8 +311,8 @@ export default function FallMonitoringTooling() {
               </div>
 
               <div className="space-y-4">
-                {filteredRequirements.map((req, index) => (
-                  <div key={index} className="space-y-3 rounded-lg border p-4">
+                {filteredRequirements.map((req) => (
+                  <div key={req.name} className="space-y-3 rounded-lg border p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {getCategoryIcon(req.category)}
@@ -360,7 +359,7 @@ export default function FallMonitoringTooling() {
             <CardContent>
               <div className="space-y-6">
                 {monitoringFlow.map((step, index) => (
-                  <div key={index} className="flex gap-4">
+                  <div key={step.step} className="flex gap-4">
                     <div className="flex flex-col items-center">
                       <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold">
                         {step.step}

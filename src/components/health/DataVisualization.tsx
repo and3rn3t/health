@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -5,8 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { ProcessedHealthData } from '@/types';
 
 interface DataVisualizationProps {
   healthData: ProcessedHealthData | null;

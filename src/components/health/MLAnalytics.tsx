@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { ProcessedHealthData } from '@/schemas/health';
+import type { AnalyticsHealthData as ProcessedHealthData } from '@/lib/healthDataProcessor';
 import {
   Activity,
   AlertTriangle,
@@ -244,43 +244,35 @@ export default function MLAnalytics({
     setIsLoading(false);
   };
 
-  const retrainModel = async (modelId: string) => {
-    setModels((prev) =>
-      prev.map((model) =>
-        model.id === modelId ? { ...model, status: 'training' as const } : model
-      )
+  const markTraining = (modelId: string) => (m: MLModel): MLModel =>
+    m.id === modelId ? { ...m, status: 'training' } : m;
+  const finalizeTraining = (modelId: string) => (m: MLModel): MLModel =>
+    m.id === modelId
+      ? {
+          ...m,
+          status: 'active',
+          accuracy: Math.min(100, m.accuracy + Math.random() * 2),
+          lastTrained: new Date().toISOString(),
+        }
+      : m;
+  const retrainModel = (modelId: string) => {
+    setModels((prev) => prev.map(markTraining(modelId)));
+    setTimeout(
+      () => setModels((prev) => prev.map(finalizeTraining(modelId))),
+      10000
     );
-
-    // Simulate model retraining
-    setTimeout(() => {
-      setModels((prev) =>
-        prev.map((model) =>
-          model.id === modelId
-            ? {
-                ...model,
-                status: 'active' as const,
-                accuracy: Math.min(100, model.accuracy + Math.random() * 2),
-                lastTrained: new Date().toISOString(),
-              }
-            : model
-        )
-      );
-    }, 10000);
   };
 
   const renderPredictionChart = () => {
     // Combine historical and predicted data
     const historicalData = healthData.slice(-7).map((d) => ({
-      date: new Date(d.timestamp).toISOString().split('T')[0],
+      date: new Date(d.lastUpdated).toISOString().split('T')[0],
       actual_health_score: d.healthScore,
-      actual_fall_risk:
-        d.fallRisk === 'low'
-          ? 20
-          : d.fallRisk === 'moderate'
-            ? 50
-            : d.fallRisk === 'high'
-              ? 75
-              : 90,
+      // Approximate fall risk numeric via variability of walking steadiness (placeholder heuristic)
+      actual_fall_risk: Math.min(
+        100,
+        Math.max(0, d.metrics.walkingSteadiness.variability * 1.2)
+      ),
       type: 'historical',
     }));
 
@@ -353,13 +345,16 @@ export default function MLAnalytics({
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm">{model.name}</CardTitle>
               <Badge
-                variant={
-                  model.status === 'active'
-                    ? 'default'
-                    : model.status === 'training'
-                      ? 'secondary'
-                      : 'destructive'
-                }
+                variant={(() => {
+                  switch (model.status) {
+                    case 'active':
+                      return 'default';
+                    case 'training':
+                      return 'secondary';
+                    default:
+                      return 'destructive';
+                  }
+                })()}
               >
                 {model.status === 'active' && (
                   <CheckCircle className="mr-1 h-3 w-3" />
@@ -409,18 +404,21 @@ export default function MLAnalytics({
 
   const renderAnomalies = () => (
     <div className="space-y-3">
-      {anomalies.map((anomaly, index) => (
+      {anomalies.map((anomaly) => (
         <Alert
-          key={index}
-          className={
-            anomaly.severity === 'critical'
-              ? 'border-red-500'
-              : anomaly.severity === 'high'
-                ? 'border-orange-500'
-                : anomaly.severity === 'medium'
-                  ? 'border-yellow-500'
-                  : 'border-blue-500'
-          }
+          key={`${anomaly.metric}-${anomaly.timestamp}`}
+          className={(() => {
+            switch (anomaly.severity) {
+              case 'critical':
+                return 'border-red-500';
+              case 'high':
+                return 'border-orange-500';
+              case 'medium':
+                return 'border-yellow-500';
+              default:
+                return 'border-blue-500';
+            }
+          })()}
         >
           <AlertTriangle className="h-4 w-4" />
           <div className="flex w-full items-start justify-between">
@@ -443,15 +441,17 @@ export default function MLAnalytics({
             </div>
             <div className="flex flex-col items-end gap-1">
               <Badge
-                variant={
-                  anomaly.severity === 'critical'
-                    ? 'destructive'
-                    : anomaly.severity === 'high'
-                      ? 'destructive'
-                      : anomaly.severity === 'medium'
-                        ? 'secondary'
-                        : 'default'
-                }
+                variant={(() => {
+                  switch (anomaly.severity) {
+                    case 'critical':
+                    case 'high':
+                      return 'destructive';
+                    case 'medium':
+                      return 'secondary';
+                    default:
+                      return 'default';
+                  }
+                })()}
               >
                 {anomaly.severity}
               </Badge>

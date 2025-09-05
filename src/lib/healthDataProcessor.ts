@@ -9,6 +9,12 @@ export interface HealthMetric {
   unit?: string;
 }
 
+/**
+ * Aggregated analytics snapshot produced by HealthDataProcessor.
+ * NOTE: This is intentionally distinct from the event-level `ProcessedHealthData`
+ * defined in `@/schemas/health` (a single processed metric reading).
+ * To reduce ambiguity elsewhere you may import this as `AnalyticsHealthData`.
+ */
 export interface ProcessedHealthData {
   lastUpdated: string;
   dataQuality: {
@@ -50,6 +56,9 @@ export interface FallRiskFactor {
   impact: number;
   recommendation: string;
 }
+
+// Preferred alias to disambiguate from schema-level single reading type
+export type AnalyticsHealthData = ProcessedHealthData;
 
 /**
  * Processes raw health data and returns structured analytics

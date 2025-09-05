@@ -1,16 +1,14 @@
 'use client';
 
-import { ComponentProps } from 'react';
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
-import CheckIcon from 'lucide-react/dist/esm/icons/check';
-import ChevronRightIcon from 'lucide-react/dist/esm/icons/chevron-right';
-import CircleIcon from 'lucide-react/dist/esm/icons/circle';
+import { Check, ChevronRight, Circle } from 'lucide-react';
+import { ComponentProps } from 'react';
 
 import { cn } from '@/lib/utils';
 
 function ContextMenu({
   ...props
-}: ComponentProps<typeof ContextMenuPrimitive.Root>) {
+}: Readonly<ComponentProps<typeof ContextMenuPrimitive.Root>>) {
   return <ContextMenuPrimitive.Root data-slot="context-menu" {...props} />;
 }
 
@@ -32,7 +30,7 @@ function ContextMenuGroup({
 
 function ContextMenuPortal({
   ...props
-}: ComponentProps<typeof ContextMenuPrimitive.Portal>) {
+}: Readonly<ComponentProps<typeof ContextMenuPrimitive.Portal>>) {
   return (
     <ContextMenuPrimitive.Portal data-slot="context-menu-portal" {...props} />
   );
@@ -40,7 +38,7 @@ function ContextMenuPortal({
 
 function ContextMenuSub({
   ...props
-}: ComponentProps<typeof ContextMenuPrimitive.Sub>) {
+}: Readonly<ComponentProps<typeof ContextMenuPrimitive.Sub>>) {
   return <ContextMenuPrimitive.Sub data-slot="context-menu-sub" {...props} />;
 }
 
@@ -74,7 +72,7 @@ function ContextMenuSubTrigger({
       {...props}
     >
       {children}
-      <ChevronRightIcon className="ml-auto" />
+      <ChevronRight className="ml-auto" />
     </ContextMenuPrimitive.SubTrigger>
   );
 }
@@ -154,7 +152,7 @@ function ContextMenuCheckboxItem({
     >
       <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
         <ContextMenuPrimitive.ItemIndicator>
-          <CheckIcon className="size-4" />
+          <Check className="size-4" />
         </ContextMenuPrimitive.ItemIndicator>
       </span>
       {children}
@@ -178,7 +176,7 @@ function ContextMenuRadioItem({
     >
       <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
         <ContextMenuPrimitive.ItemIndicator>
-          <CircleIcon className="size-2 fill-current" />
+          <Circle className="size-2 fill-current" />
         </ContextMenuPrimitive.ItemIndicator>
       </span>
       {children}
@@ -234,18 +232,18 @@ function ContextMenuShortcut({ className, ...props }: ComponentProps<'span'>) {
 
 export {
   ContextMenu,
-  ContextMenuTrigger,
-  ContextMenuContent,
-  ContextMenuItem,
   ContextMenuCheckboxItem,
-  ContextMenuRadioItem,
+  ContextMenuContent,
+  ContextMenuGroup,
+  ContextMenuItem,
   ContextMenuLabel,
+  ContextMenuPortal,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
   ContextMenuSeparator,
   ContextMenuShortcut,
-  ContextMenuGroup,
-  ContextMenuPortal,
   ContextMenuSub,
   ContextMenuSubContent,
   ContextMenuSubTrigger,
-  ContextMenuRadioGroup,
+  ContextMenuTrigger,
 };

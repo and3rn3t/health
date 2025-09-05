@@ -69,7 +69,7 @@ export default function AdvancedAnalytics({
   userId,
   timeRange,
   onTimeRangeChange,
-}: AdvancedAnalyticsProps) {
+}: Readonly<AdvancedAnalyticsProps>) {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedMetric, setSelectedMetric] = useState<string>('overview');

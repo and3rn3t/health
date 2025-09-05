@@ -1,25 +1,21 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
+  CardTitle
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { Upload, FileText, CheckCircle, Brain, Activity } from 'lucide-react';
+import { HealthDataProcessor } from '@/lib/healthDataProcessor';
+import type { ProcessedHealthData } from '@/types';
+import { Activity, Brain, CheckCircle, FileText, Upload } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import {
-  HealthDataProcessor,
-  ProcessedHealthData,
-} from '@/lib/healthDataProcessor';
 
 interface HealthDataImportProps {
-  onDataImported: (data: ProcessedHealthData) => void;
+  readonly onDataImported: (data: ProcessedHealthData) => void;
 }
 
 export default function HealthDataImport({
