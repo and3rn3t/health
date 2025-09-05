@@ -1,1264 +1,1383 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "probe-health-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/health/simple-probe.js", "--port", "8787"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "options": {
-        "shell": {
-          "executable": "node"
-        }
-      }
-    },
-    {
-      "label": "probe-health-8788-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/health/simple-probe.js", "--port", "8788"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "enhanced-probe-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/health/probe.js", "--port", "8787", "--verbose"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "task-runner-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/task-runner.js", "${input:taskType}"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "start-dev-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/start-dev.js"],
-      "group": "build",
-      "isBackground": true,
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "lint-typescript-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/lint-runner.js", "--typescript"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "lint-all-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/lint-runner.js", "--all"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "config-validate-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/utils/config-validator.js", "--verbose"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "test-dev-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/test/test-runner.js", "--dev", "--verbose"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "test-full-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/test/test-runner.js", "--full", "--verbose"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "deploy-platform-dry-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/deploy/platform-deploy.js",
-        "--dry-run",
-        "--verbose"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "deploy-platform-phase1-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/deploy/platform-deploy.js", "--phase", "1"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "dns-setup-dry-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/deploy/dns-setup.js",
-        "--dry-run",
-        "--verbose",
-        "--api-token",
-        "${input:cloudflareApiToken}"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "dns-setup-phase1-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/deploy/dns-setup.js",
-        "--phase",
-        "1",
-        "--api-token",
-        "${input:cloudflareApiToken}"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "🚀 Node.js Development Workflow",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/start-dev.js", "--interactive"],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "isBackground": true,
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": true,
-        "panel": "new",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "problemMatcher": {
-        "pattern": {
-          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-          "file": 1,
-          "line": 2,
-          "column": 3,
-          "severity": 4,
-          "message": 5
-        },
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": "Starting development server",
-          "endsPattern": "Server ready"
-        }
-      },
-      "dependsOrder": "sequence",
-      "dependsOn": ["config-validate-nodejs", "lint-quick-nodejs"],
-      "icon": {
-        "id": "rocket",
-        "color": "terminal.ansiBlue"
-      },
-      "detail": "Start development server with pre-checks (config validation + quick lint)"
-    },
-    {
-      "label": "⚡ Quick Health Check",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/test/test-runner.js", "--quick", "--verbose"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "pulse",
-        "color": "terminal.ansiGreen"
-      },
-      "detail": "Fast health check of development environment"
-    },
-    {
-      "label": "🧪 Full Test Suite",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/test/test-runner.js", "--full", "--verbose"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "dependsOn": ["config-validate-nodejs"],
-      "icon": {
-        "id": "beaker",
-        "color": "terminal.ansiMagenta"
-      },
-      "detail": "Comprehensive test suite with config validation"
-    },
-    {
-      "label": "🔧 Fix All Issues",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/lint-runner.js", "--all", "--fix"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "dependsOrder": "sequence",
-      "dependsOn": ["config-validate-nodejs"],
-      "icon": {
-        "id": "tools",
-        "color": "terminal.ansiYellow"
-      },
-      "detail": "Auto-fix linting issues and validate configuration"
-    },
-    {
-      "label": "🚀 Deploy (Dry Run)",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/deploy/platform-deploy.js",
-        "--dry-run",
-        "--verbose"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "dependsOrder": "sequence",
-      "dependsOn": ["🧪 Full Test Suite"],
-      "icon": {
-        "id": "cloud-upload",
-        "color": "terminal.ansiCyan"
-      },
-      "detail": "Preview deployment changes (safe dry-run after full tests)"
-    },
-    {
-      "label": "🌐 DNS Setup (Preview)",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/deploy/dns-setup.js",
-        "--dry-run",
-        "--verbose",
-        "--api-token",
-        "${input:cloudflareApiToken}"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "globe",
-        "color": "terminal.ansiBlue"
-      },
-      "detail": "Preview DNS configuration changes"
-    },
-    {
-      "label": "💎 VitalSense Deploy",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/deploy/vitalsense-deploy.js", "--verbose"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "dependsOrder": "sequence",
-      "dependsOn": ["🔧 Fix All Issues"],
-      "icon": {
-        "id": "heart",
-        "color": "terminal.ansiRed"
-      },
-      "detail": "VitalSense branding verification and deployment"
-    },
-    {
-      "label": "lint-quick-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/lint-runner.js", "--typescript", "--quick"],
-      "group": "build",
-      "presentation": {
-        "echo": false,
-        "reveal": "silent",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": false
-      },
-      "icon": {
-        "id": "check",
-        "color": "terminal.ansiGreen"
-      },
-      "detail": "Quick TypeScript linting (internal task)"
-    },
-    {
-      "label": "probe-health",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/simple-probe.ps1",
-        "-Port",
-        "8787"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false,
-        "close": false
-      },
-      "options": {
-        "shell": {
-          "executable": "pwsh",
-          "args": ["-NoProfile", "-ExecutionPolicy", "Bypass"]
-        }
-      }
-    },
-    {
-      "label": "wrangler-dev-8788",
-      "type": "shell",
-      "command": "wrangler",
-      "args": ["dev", "--env", "development", "--port", "8788"],
-      "isBackground": true,
-      "problemMatcher": ["$eslint-stylish"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "dedicated",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
-    },
-    {
-      "label": "probe-health-8788",
-      "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/simple-probe.ps1",
-        "-Port",
-        "8788"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Enhanced Task Runner",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/run-task.ps1",
-        "-Task",
-        "${input:taskType}",
-        "-Verbose"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": true,
-        "panel": "dedicated"
-      }
-    },
-    {
-      "label": "Get Copilot Context",
-      "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/simple-context.ps1"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "probe-health-8788",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-Command",
-        "$u='http://127.0.0.1:8788/health'; try { (Invoke-RestMethod -Uri $u -TimeoutSec 5) | ConvertTo-Json -Depth 5 } catch { $_.Exception.Message }"
-      ]
-    },
-    {
-      "label": "probe-health-8788-curl",
-      "type": "shell",
-      "command": "curl.exe",
-      "args": ["-sS", "http://127.0.0.1:8788/health"]
-    },
-    {
-      "label": "wrangler-dev-8789",
-      "type": "shell",
-      "command": "wrangler",
-      "args": [
-        "dev",
-        "--env",
-        "development",
-        "--port",
-        "8789",
-        "--var",
-        "DEVICE_JWT_SECRET:dev-local"
-      ],
-      "isBackground": true,
-      "problemMatcher": ["$eslint-stylish"],
-      "group": "build"
-    },
-    {
-      "label": "probe-health-8789-curl",
-      "type": "shell",
-      "command": "curl.exe",
-      "args": ["-sS", "http://127.0.0.1:8789/health"]
-    },
-    {
-      "label": "probe-worker-default",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/probe.ps1",
-        "-HostUrl",
-        "http://127.0.0.1",
-        "-Port",
-        "8789",
-        "-UserId",
-        "demo-user"
-      ]
-    },
-    {
-      "label": "probe-worker-default",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/probe.ps1",
-        "-HostUrl",
-        "http://127.0.0.1",
-        "-Port",
-        "8789",
-        "-UserId",
-        "demo-user"
-      ]
-    },
-    {
-      "label": "probe-worker-8789",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/probe.ps1",
-        "-HostUrl",
-        "http://127.0.0.1",
-        "-Port",
-        "8789",
-        "-UserId",
-        "demo-user"
-      ]
-    },
-    {
-      "label": "probe-worker-8789",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/probe.ps1",
-        "-HostUrl",
-        "http://127.0.0.1",
-        "-Port",
-        "8789",
-        "-UserId",
-        "demo-user"
-      ]
-    },
-    {
-      "label": "iOS: Setup Development Tools",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/setup-ios-dev-windows.ps1",
-        "-All"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Swift Lint",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-File", "ios/scripts/swift-lint-windows.ps1"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Swift Format",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-File", "ios/scripts/swift-format-windows.ps1"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Check Swift Errors",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/HealthKitBridge/scripts/Check-SwiftErrors.ps1"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Format Check (Dry Run)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/swift-format-windows.ps1",
-        "-DryRun"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Build Simulator",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-File", "ios/scripts/ios-build-simulator.ps1"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Dependency Analysis",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/swift-dependency-analyzer.ps1",
-        "-ShowGraph"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Performance Analysis",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/swift-performance-analyzer.ps1",
-        "-Detailed"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "App: Deploy Development",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/main-app-deploy.ps1",
-        "-Environment",
-        "development",
-        "-Deploy"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "App: Deploy Production",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/main-app-deploy.ps1",
-        "-Environment",
-        "production",
-        "-Deploy"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "App: Status Check",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/main-app-deploy.ps1",
-        "-Status"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "App: Quick Check",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/main-app-deploy.ps1",
-        "-Quick"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Test Enhanced Health Processing",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/test-enhanced-health-processing.ps1"
-      ],
-      "group": "test"
-    },
-    {
-      "label": "Final Test Enhanced Health Processing",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/test-enhanced-health-processing.ps1"
-      ],
-      "group": "test"
-    },
-    {
-      "label": "Auth0: Test Custom Login Page",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/test-auth0-login-page.ps1"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
-      }
-    },
-    {
-      "label": "Auth0: Quick Deploy (Test Mode)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/quick-deploy-auth0.ps1",
-        "-TestMode"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
-      }
-    },
-    {
-      "label": "Auth0: Deploy Custom Login Page",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/quick-deploy-auth0.ps1"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
-      }
-    },
-    {
-      "label": "🧪 Comprehensive API Testing",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/test/test-all-endpoints.js",
-        "--verbose",
-        "--timeout=${input:testTimeout}",
-        "--save=test-results.json"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "beaker",
-        "color": "terminal.ansiMagenta"
-      },
-      "detail": "Phase 4: Comprehensive API endpoint testing with results export"
-    },
-    {
-      "label": "🔍 Integration Test Suite",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/test/test-integration.js",
-        "--verbose",
-        "--save=integration-results.json"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "pulse",
-        "color": "terminal.ansiCyan"
-      },
-      "detail": "Phase 4: Full system integration testing with health checks"
-    },
-    {
-      "label": "🏗️ Production Infrastructure Setup",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/infrastructure/setup-production-infrastructure.js",
-        "--${input:deploymentMode}",
-        "--verbose"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "cloud-upload",
-        "color": "terminal.ansiBlue"
-      },
-      "detail": "Phase 4: Complete production infrastructure deployment with safety checks"
-    },
-    {
-      "label": "🔐 Auth0 Configuration Manager",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/auth/auth0-setup.js",
-        "--update-config",
-        "--test",
-        "--verbose"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "shield",
-        "color": "terminal.ansiYellow"
-      },
-      "detail": "Phase 4: Auth0 authentication setup and configuration management"
-    },
-    {
-      "label": "Check VitalSense App Status",
-      "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-Command",
-        "try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $response.StatusCode; Write-Host 'Content Length:' $response.Content.Length; Write-Host 'Title:' ($response.Content | Select-String '<title>(.*?)</title>').Matches[0].Groups[1].Value } catch { Write-Host 'Error:' $_.Exception.Message }"
-      ]
-    },
-    {
-      "label": "Simple Health Check",
-      "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-Command",
-        "try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $response.StatusCode; Write-Host 'Content Length:' $response.Content.Length; } catch { Write-Host 'Error:' $_.Exception.Message }"
-      ]
-    },
-    {
-      "label": "VitalSense App Health Check",
-      "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-Command",
-        "Write-Host '🔍 Checking VitalSense App Status...'; try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 10; Write-Host '✅ Status:' $response.StatusCode; Write-Host '📄 Content Length:' $response.Content.Length 'bytes'; if ($response.Content -like '*VitalSense*') { Write-Host '🎯 VitalSense branding detected' } else { Write-Host '⚠️  VitalSense branding not found' }; if ($response.Content -like '*Health Score*') { Write-Host '💓 Health Score detected' } else { Write-Host '⚠️  Health Score not found' } } catch { Write-Host '❌ Error:' $_.Exception.Message }"
-      ]
-    },
-    {
-      "label": "Quick App Check",
-      "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-Command",
-        "try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode; Write-Host 'Size:' $r.Content.Length 'bytes' } catch { Write-Host 'Error:' $_.Exception.Message }"
-      ]
-    },
-    {
-      "label": "Final VitalSense Check",
-      "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-Command",
-        "Write-Host 'VitalSense App Status Check'; Write-Host '========================'; try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status: ✅' $r.StatusCode; Write-Host 'Content: 📄' $r.Content.Length 'bytes'; Write-Host 'App is responding correctly' } catch { Write-Host 'Status: ❌ Error -' $_.Exception.Message }"
-      ]
-    },
-    {
-      "label": "Debug VitalSense Status",
-      "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-Command",
-        "Write-Host '🔍 VitalSense Development Check'; Write-Host '================================'; try { $response = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host '✅ Status:' $response.StatusCode; Write-Host '📄 Size:' $response.Content.Length 'bytes'; $title = [regex]::Match($response.Content, '<title>(.*?)</title>').Groups[1].Value; if ($title) { Write-Host '📋 Title:' $title } else { Write-Host '⚠️  No title found' }; Write-Host '🎯 App responding correctly' } catch { Write-Host '❌ Connection failed:' $_.Exception.Message }"
-      ]
-    },
-    {
-      "label": "Simple Content Check",
-      "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-Command",
-        "try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode; Write-Host 'Size:' $r.Content.Length; Write-Host 'First 200 chars:'; Write-Host $r.Content.Substring(0, [Math]::Min(200, $r.Content.Length)) } catch { Write-Host 'Error:' $_.Exception.Message }"
-      ]
-    }
-  ],
-  "inputs": [
-    {
-      "id": "taskType",
-      "description": "Select development task to run",
-      "type": "pickString",
-      "options": [
-        {
-          "label": "🚀 Development Server - Start local development environment",
-          "value": "dev"
-        },
-        {
-          "label": "🧪 Run Tests - Execute test suite",
-          "value": "test"
-        },
-        {
-          "label": "🔨 Build Project - Compile and bundle application",
-          "value": "build"
-        },
-        {
-          "label": "🔍 Health Probe - Check endpoint health",
-          "value": "probe"
-        },
-        {
-          "label": "🚀 Deploy Application - Deploy to cloud platform",
-          "value": "deploy"
-        },
-        {
-          "label": "🧹 Clean Build - Remove build artifacts and rebuild",
-          "value": "clean"
-        },
-        {
-          "label": "🔧 Fix Issues - Auto-fix linting and formatting issues",
-          "value": "fix"
-        },
-        {
-          "label": "📋 Validate Config - Check all configuration files",
-          "value": "validate"
-        }
-      ]
-    },
-    {
-      "id": "cloudflareApiToken",
-      "description": "🔐 Enter Cloudflare API Token (get from: https://dash.cloudflare.com/profile/api-tokens)",
-      "type": "promptString"
-    },
-    {
-      "id": "deploymentPhase",
-      "description": "Select deployment phase",
-      "type": "pickString",
-      "options": [
-        {
-          "label": "Phase 1 - Core Platform (health.andernet.dev)",
-          "value": "1"
-        },
-        {
-          "label": "Phase 2 - API & WebSocket (api.health, ws.health)",
-          "value": "2"
-        },
-        {
-          "label": "Phase 3 - Emergency & Files (emergency.health, files.health, caregiver.health)",
-          "value": "3"
-        }
-      ]
-    },
-    {
-      "id": "testScope",
-      "description": "Select test scope",
-      "type": "pickString",
-      "options": [
-        {
-          "label": "⚡ Quick - Basic health checks only",
-          "value": "quick"
-        },
-        {
-          "label": "🔍 API - API endpoint testing",
-          "value": "api"
-        },
-        {
-          "label": "🌐 Full - Comprehensive test suite",
-          "value": "full"
-        },
-        {
-          "label": "🏭 Production - Test production endpoints",
-          "value": "prod"
-        }
-      ]
-    },
-    {
-      "id": "lintScope",
-      "description": "Select linting scope",
-      "type": "pickString",
-      "options": [
-        {
-          "label": "📝 TypeScript - TypeScript files only",
-          "value": "typescript"
-        },
-        {
-          "label": "🍎 Swift - iOS Swift files only",
-          "value": "swift"
-        },
-        {
-          "label": "🌍 All - All supported file types",
-          "value": "all"
-        }
-      ]
-    },
-    {
-      "id": "testTimeout",
-      "description": "Test timeout in milliseconds",
-      "type": "pickString",
-      "options": [
-        {
-          "label": "⚡ Fast (5 seconds)",
-          "value": "5000"
-        },
-        {
-          "label": "🔄 Normal (10 seconds)",
-          "value": "10000"
-        },
-        {
-          "label": "🐌 Slow (30 seconds)",
-          "value": "30000"
-        }
-      ]
-    },
-    {
-      "id": "deploymentMode",
-      "description": "Deployment mode",
-      "type": "pickString",
-      "options": [
-        {
-          "label": "🧪 Dry Run (Preview only)",
-          "value": "dry-run"
-        },
-        {
-          "label": "🚀 Deploy All",
-          "value": "all"
-        },
-        {
-          "label": "🏗️ Build Only",
-          "value": "build"
-        },
-        {
-          "label": "🌐 DNS Only",
-          "value": "dns"
-        }
-      ]
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "probe-health-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/health/simple-probe.js",
+				"--port",
+				"8787"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"options": {
+				"shell": {
+					"executable": "node"
+				}
+			}
+		},
+		{
+			"label": "probe-health-8788-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/health/simple-probe.js",
+				"--port",
+				"8788"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
+			"label": "enhanced-probe-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/health/probe.js",
+				"--port",
+				"8787",
+				"--verbose"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
+			"label": "task-runner-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/dev/task-runner.js",
+				"${input:taskType}"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
+			"label": "start-dev-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/dev/start-dev.js"
+			],
+			"group": "build",
+			"isBackground": true,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
+			"label": "lint-typescript-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/dev/lint-runner.js",
+				"--typescript"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
+			"label": "lint-all-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/dev/lint-runner.js",
+				"--all"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
+			"label": "config-validate-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/utils/config-validator.js",
+				"--verbose"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
+			"label": "test-dev-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/test/test-runner.js",
+				"--dev",
+				"--verbose"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
+			"label": "test-full-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/test/test-runner.js",
+				"--full",
+				"--verbose"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
+			"label": "deploy-platform-dry-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/deploy/platform-deploy.js",
+				"--dry-run",
+				"--verbose"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
+			"label": "deploy-platform-phase1-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/deploy/platform-deploy.js",
+				"--phase",
+				"1"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
+			"label": "dns-setup-dry-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/deploy/dns-setup.js",
+				"--dry-run",
+				"--verbose",
+				"--api-token",
+				"${input:cloudflareApiToken}"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
+			"label": "dns-setup-phase1-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/deploy/dns-setup.js",
+				"--phase",
+				"1",
+				"--api-token",
+				"${input:cloudflareApiToken}"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
+			"label": "🚀 Node.js Development Workflow",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/dev/start-dev.js",
+				"--interactive"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"isBackground": true,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": true,
+				"panel": "new",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"problemMatcher": {
+				"pattern": {
+					"regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+					"file": 1,
+					"line": 2,
+					"column": 3,
+					"severity": 4,
+					"message": 5
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "Starting development server",
+					"endsPattern": "Server ready"
+				}
+			},
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"config-validate-nodejs",
+				"lint-quick-nodejs"
+			],
+			"icon": {
+				"id": "rocket",
+				"color": "terminal.ansiBlue"
+			},
+			"detail": "Start development server with pre-checks (config validation + quick lint)"
+		},
+		{
+			"label": "⚡ Quick Health Check",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/test/test-runner.js",
+				"--quick",
+				"--verbose"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"icon": {
+				"id": "pulse",
+				"color": "terminal.ansiGreen"
+			},
+			"detail": "Fast health check of development environment"
+		},
+		{
+			"label": "🧪 Full Test Suite",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/test/test-runner.js",
+				"--full",
+				"--verbose"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"dependsOn": [
+				"config-validate-nodejs"
+			],
+			"icon": {
+				"id": "beaker",
+				"color": "terminal.ansiMagenta"
+			},
+			"detail": "Comprehensive test suite with config validation"
+		},
+		{
+			"label": "🔧 Fix All Issues",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/dev/lint-runner.js",
+				"--all",
+				"--fix"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"config-validate-nodejs"
+			],
+			"icon": {
+				"id": "tools",
+				"color": "terminal.ansiYellow"
+			},
+			"detail": "Auto-fix linting issues and validate configuration"
+		},
+		{
+			"label": "🚀 Deploy (Dry Run)",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/deploy/platform-deploy.js",
+				"--dry-run",
+				"--verbose"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"🧪 Full Test Suite"
+			],
+			"icon": {
+				"id": "cloud-upload",
+				"color": "terminal.ansiCyan"
+			},
+			"detail": "Preview deployment changes (safe dry-run after full tests)"
+		},
+		{
+			"label": "🌐 DNS Setup (Preview)",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/deploy/dns-setup.js",
+				"--dry-run",
+				"--verbose",
+				"--api-token",
+				"${input:cloudflareApiToken}"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"icon": {
+				"id": "globe",
+				"color": "terminal.ansiBlue"
+			},
+			"detail": "Preview DNS configuration changes"
+		},
+		{
+			"label": "💎 VitalSense Deploy",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/deploy/vitalsense-deploy.js",
+				"--verbose"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"🔧 Fix All Issues"
+			],
+			"icon": {
+				"id": "heart",
+				"color": "terminal.ansiRed"
+			},
+			"detail": "VitalSense branding verification and deployment"
+		},
+		{
+			"label": "lint-quick-nodejs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/dev/lint-runner.js",
+				"--typescript",
+				"--quick"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": false,
+				"reveal": "silent",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": false
+			},
+			"icon": {
+				"id": "check",
+				"color": "terminal.ansiGreen"
+			},
+			"detail": "Quick TypeScript linting (internal task)"
+		},
+		{
+			"label": "probe-health",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"scripts/simple-probe.ps1",
+				"-Port",
+				"8787"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false,
+				"close": false
+			},
+			"options": {
+				"shell": {
+					"executable": "pwsh",
+					"args": [
+						"-NoProfile",
+						"-ExecutionPolicy",
+						"Bypass"
+					]
+				}
+			}
+		},
+		{
+			"label": "wrangler-dev-8788",
+			"type": "shell",
+			"command": "wrangler",
+			"args": [
+				"dev",
+				"--env",
+				"development",
+				"--port",
+				"8788"
+			],
+			"isBackground": true,
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"runOptions": {
+				"instanceLimit": 1
+			}
+		},
+		{
+			"label": "probe-health-8788",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"scripts/simple-probe.ps1",
+				"-Port",
+				"8788"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "Enhanced Task Runner",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"scripts/run-task.ps1",
+				"-Task",
+				"${input:taskType}",
+				"-Verbose"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": true,
+				"panel": "dedicated"
+			}
+		},
+		{
+			"label": "Get Copilot Context",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"scripts/simple-context.ps1"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "probe-health-8788",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$u='http://127.0.0.1:8788/health'; try { (Invoke-RestMethod -Uri $u -TimeoutSec 5) | ConvertTo-Json -Depth 5 } catch { $_.Exception.Message }"
+			]
+		},
+		{
+			"label": "probe-health-8788-curl",
+			"type": "shell",
+			"command": "curl.exe",
+			"args": [
+				"-sS",
+				"http://127.0.0.1:8788/health"
+			]
+		},
+		{
+			"label": "wrangler-dev-8789",
+			"type": "shell",
+			"command": "wrangler",
+			"args": [
+				"dev",
+				"--env",
+				"development",
+				"--port",
+				"8789",
+				"--var",
+				"DEVICE_JWT_SECRET:dev-local"
+			],
+			"isBackground": true,
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"group": "build"
+		},
+		{
+			"label": "probe-health-8789-curl",
+			"type": "shell",
+			"command": "curl.exe",
+			"args": [
+				"-sS",
+				"http://127.0.0.1:8789/health"
+			]
+		},
+		{
+			"label": "probe-worker-default",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"scripts/probe.ps1",
+				"-HostUrl",
+				"http://127.0.0.1",
+				"-Port",
+				"8789",
+				"-UserId",
+				"demo-user"
+			]
+		},
+		{
+			"label": "probe-worker-default",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"scripts/probe.ps1",
+				"-HostUrl",
+				"http://127.0.0.1",
+				"-Port",
+				"8789",
+				"-UserId",
+				"demo-user"
+			]
+		},
+		{
+			"label": "probe-worker-8789",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"scripts/probe.ps1",
+				"-HostUrl",
+				"http://127.0.0.1",
+				"-Port",
+				"8789",
+				"-UserId",
+				"demo-user"
+			]
+		},
+		{
+			"label": "probe-worker-8789",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"scripts/probe.ps1",
+				"-HostUrl",
+				"http://127.0.0.1",
+				"-Port",
+				"8789",
+				"-UserId",
+				"demo-user"
+			]
+		},
+		{
+			"label": "iOS: Setup Development Tools",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"ios/scripts/setup-ios-dev-windows.ps1",
+				"-All"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "iOS: Swift Lint",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"ios/scripts/swift-lint-windows.ps1"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "iOS: Swift Format",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"ios/scripts/swift-format-windows.ps1"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "iOS: Check Swift Errors",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"ios/HealthKitBridge/scripts/Check-SwiftErrors.ps1"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "iOS: Format Check (Dry Run)",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"ios/scripts/swift-format-windows.ps1",
+				"-DryRun"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "iOS: Build Simulator",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"ios/scripts/ios-build-simulator.ps1"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "iOS: Dependency Analysis",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"ios/scripts/swift-dependency-analyzer.ps1",
+				"-ShowGraph"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "iOS: Performance Analysis",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"ios/scripts/swift-performance-analyzer.ps1",
+				"-Detailed"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "App: Deploy Development",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"ios/scripts/main-app-deploy.ps1",
+				"-Environment",
+				"development",
+				"-Deploy"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "App: Deploy Production",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"ios/scripts/main-app-deploy.ps1",
+				"-Environment",
+				"production",
+				"-Deploy"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "App: Status Check",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"ios/scripts/main-app-deploy.ps1",
+				"-Status"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "App: Quick Check",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"ios/scripts/main-app-deploy.ps1",
+				"-Quick"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Test Enhanced Health Processing",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"scripts/test-enhanced-health-processing.ps1"
+			],
+			"group": "test"
+		},
+		{
+			"label": "Final Test Enhanced Health Processing",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"scripts/test-enhanced-health-processing.ps1"
+			],
+			"group": "test"
+		},
+		{
+			"label": "Auth0: Test Custom Login Page",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"scripts/test-auth0-login-page.ps1"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			}
+		},
+		{
+			"label": "Auth0: Quick Deploy (Test Mode)",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"scripts/quick-deploy-auth0.ps1",
+				"-TestMode"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			}
+		},
+		{
+			"label": "Auth0: Deploy Custom Login Page",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"scripts/quick-deploy-auth0.ps1"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			}
+		},
+		{
+			"label": "🧪 Comprehensive API Testing",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/test/test-all-endpoints.js",
+				"--verbose",
+				"--timeout=${input:testTimeout}",
+				"--save=test-results.json"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"icon": {
+				"id": "beaker",
+				"color": "terminal.ansiMagenta"
+			},
+			"detail": "Phase 4: Comprehensive API endpoint testing with results export"
+		},
+		{
+			"label": "🔍 Integration Test Suite",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/test/test-integration.js",
+				"--verbose",
+				"--save=integration-results.json"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"icon": {
+				"id": "pulse",
+				"color": "terminal.ansiCyan"
+			},
+			"detail": "Phase 4: Full system integration testing with health checks"
+		},
+		{
+			"label": "🏗️ Production Infrastructure Setup",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/infrastructure/setup-production-infrastructure.js",
+				"--${input:deploymentMode}",
+				"--verbose"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"icon": {
+				"id": "cloud-upload",
+				"color": "terminal.ansiBlue"
+			},
+			"detail": "Phase 4: Complete production infrastructure deployment with safety checks"
+		},
+		{
+			"label": "🔐 Auth0 Configuration Manager",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/node/auth/auth0-setup.js",
+				"--update-config",
+				"--test",
+				"--verbose"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"icon": {
+				"id": "shield",
+				"color": "terminal.ansiYellow"
+			},
+			"detail": "Phase 4: Auth0 authentication setup and configuration management"
+		},
+		{
+			"label": "Check VitalSense App Status",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $response.StatusCode; Write-Host 'Content Length:' $response.Content.Length; Write-Host 'Title:' ($response.Content | Select-String '<title>(.*?)</title>').Matches[0].Groups[1].Value } catch { Write-Host 'Error:' $_.Exception.Message }"
+			]
+		},
+		{
+			"label": "Simple Health Check",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $response.StatusCode; Write-Host 'Content Length:' $response.Content.Length; } catch { Write-Host 'Error:' $_.Exception.Message }"
+			]
+		},
+		{
+			"label": "VitalSense App Health Check",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"Write-Host '🔍 Checking VitalSense App Status...'; try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 10; Write-Host '✅ Status:' $response.StatusCode; Write-Host '📄 Content Length:' $response.Content.Length 'bytes'; if ($response.Content -like '*VitalSense*') { Write-Host '🎯 VitalSense branding detected' } else { Write-Host '⚠️  VitalSense branding not found' }; if ($response.Content -like '*Health Score*') { Write-Host '💓 Health Score detected' } else { Write-Host '⚠️  Health Score not found' } } catch { Write-Host '❌ Error:' $_.Exception.Message }"
+			]
+		},
+		{
+			"label": "Quick App Check",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode; Write-Host 'Size:' $r.Content.Length 'bytes' } catch { Write-Host 'Error:' $_.Exception.Message }"
+			]
+		},
+		{
+			"label": "Final VitalSense Check",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"Write-Host 'VitalSense App Status Check'; Write-Host '========================'; try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status: ✅' $r.StatusCode; Write-Host 'Content: 📄' $r.Content.Length 'bytes'; Write-Host 'App is responding correctly' } catch { Write-Host 'Status: ❌ Error -' $_.Exception.Message }"
+			]
+		},
+		{
+			"label": "Debug VitalSense Status",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"Write-Host '🔍 VitalSense Development Check'; Write-Host '================================'; try { $response = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host '✅ Status:' $response.StatusCode; Write-Host '📄 Size:' $response.Content.Length 'bytes'; $title = [regex]::Match($response.Content, '<title>(.*?)</title>').Groups[1].Value; if ($title) { Write-Host '📋 Title:' $title } else { Write-Host '⚠️  No title found' }; Write-Host '🎯 App responding correctly' } catch { Write-Host '❌ Connection failed:' $_.Exception.Message }"
+			]
+		},
+		{
+			"label": "Simple Content Check",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode; Write-Host 'Size:' $r.Content.Length; Write-Host 'First 200 chars:'; Write-Host $r.Content.Substring(0, [Math]::Min(200, $r.Content.Length)) } catch { Write-Host 'Error:' $_.Exception.Message }"
+			]
+		},
+		{
+			"label": "wrangler-publish-production",
+			"type": "shell",
+			"command": "wrangler",
+			"args": [
+				"publish",
+				"--env",
+				"production"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		}
+	],
+	"inputs": [
+		{
+			"id": "taskType",
+			"description": "Select development task to run",
+			"type": "pickString",
+			"options": [
+				{
+					"label": "🚀 Development Server - Start local development environment",
+					"value": "dev"
+				},
+				{
+					"label": "🧪 Run Tests - Execute test suite",
+					"value": "test"
+				},
+				{
+					"label": "🔨 Build Project - Compile and bundle application",
+					"value": "build"
+				},
+				{
+					"label": "🔍 Health Probe - Check endpoint health",
+					"value": "probe"
+				},
+				{
+					"label": "🚀 Deploy Application - Deploy to cloud platform",
+					"value": "deploy"
+				},
+				{
+					"label": "🧹 Clean Build - Remove build artifacts and rebuild",
+					"value": "clean"
+				},
+				{
+					"label": "🔧 Fix Issues - Auto-fix linting and formatting issues",
+					"value": "fix"
+				},
+				{
+					"label": "📋 Validate Config - Check all configuration files",
+					"value": "validate"
+				}
+			]
+		},
+		{
+			"id": "cloudflareApiToken",
+			"description": "🔐 Enter Cloudflare API Token (get from: https://dash.cloudflare.com/profile/api-tokens)",
+			"type": "promptString"
+		},
+		{
+			"id": "deploymentPhase",
+			"description": "Select deployment phase",
+			"type": "pickString",
+			"options": [
+				{
+					"label": "Phase 1 - Core Platform (health.andernet.dev)",
+					"value": "1"
+				},
+				{
+					"label": "Phase 2 - API & WebSocket (api.health, ws.health)",
+					"value": "2"
+				},
+				{
+					"label": "Phase 3 - Emergency & Files (emergency.health, files.health, caregiver.health)",
+					"value": "3"
+				}
+			]
+		},
+		{
+			"id": "testScope",
+			"description": "Select test scope",
+			"type": "pickString",
+			"options": [
+				{
+					"label": "⚡ Quick - Basic health checks only",
+					"value": "quick"
+				},
+				{
+					"label": "🔍 API - API endpoint testing",
+					"value": "api"
+				},
+				{
+					"label": "🌐 Full - Comprehensive test suite",
+					"value": "full"
+				},
+				{
+					"label": "🏭 Production - Test production endpoints",
+					"value": "prod"
+				}
+			]
+		},
+		{
+			"id": "lintScope",
+			"description": "Select linting scope",
+			"type": "pickString",
+			"options": [
+				{
+					"label": "📝 TypeScript - TypeScript files only",
+					"value": "typescript"
+				},
+				{
+					"label": "🍎 Swift - iOS Swift files only",
+					"value": "swift"
+				},
+				{
+					"label": "🌍 All - All supported file types",
+					"value": "all"
+				}
+			]
+		},
+		{
+			"id": "testTimeout",
+			"description": "Test timeout in milliseconds",
+			"type": "pickString",
+			"options": [
+				{
+					"label": "⚡ Fast (5 seconds)",
+					"value": "5000"
+				},
+				{
+					"label": "🔄 Normal (10 seconds)",
+					"value": "10000"
+				},
+				{
+					"label": "🐌 Slow (30 seconds)",
+					"value": "30000"
+				}
+			]
+		},
+		{
+			"id": "deploymentMode",
+			"description": "Deployment mode",
+			"type": "pickString",
+			"options": [
+				{
+					"label": "🧪 Dry Run (Preview only)",
+					"value": "dry-run"
+				},
+				{
+					"label": "🚀 Deploy All",
+					"value": "all"
+				},
+				{
+					"label": "🏗️ Build Only",
+					"value": "build"
+				},
+				{
+					"label": "🌐 DNS Only",
+					"value": "dns"
+				}
+			]
+		}
+	]
 }

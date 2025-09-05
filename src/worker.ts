@@ -179,17 +179,25 @@ async function requireAuth(c: Context<{ Bindings: Env }>): Promise<boolean> {
   const auth = c.req.header('Authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   if (!token) return false;
-  const jwksUrl = c.env.API_JWKS_URL;
+  const jwksUrl =
+    c.env.API_JWKS_URL ||
+    (c.env.AUTH0_DOMAIN
+      ? `https://${c.env.AUTH0_DOMAIN}/.well-known/jwks.json`
+      : undefined);
   if (jwksUrl) {
     const check = await verifyJwtWithJwks(token, {
-      iss: c.env.API_ISS,
+      iss:
+        c.env.API_ISS ||
+        (c.env.AUTH0_DOMAIN ? `https://${c.env.AUTH0_DOMAIN}/` : undefined),
       aud: c.env.API_AUD,
       jwksUrl,
     });
     return check.ok;
   }
   const check = await validateBearerJWT(token, {
-    iss: c.env.API_ISS,
+    iss:
+      c.env.API_ISS ||
+      (c.env.AUTH0_DOMAIN ? `https://${c.env.AUTH0_DOMAIN}/` : undefined),
     aud: c.env.API_AUD,
   });
   return check.ok;
@@ -215,9 +223,9 @@ app.use('*', async (c, next) => {
   const baseResp = c.res ?? new Response(null);
 
   // Use relaxed CSP for login page to allow Auth0 scripts, and for demo page to allow Google Fonts
-  const isLoginPage = c.req.path === '/login';
-  const isDemoPage =
-    c.req.path === '/demo' || new URL(c.req.url).pathname === '/demo';
+  const path = new URL(c.req.url).pathname;
+  const isLoginPage = path === '/login' || path.startsWith('/login/');
+  const isDemoPage = path === '/demo' || path.startsWith('/demo/');
 
   let csp: string;
   if (isLoginPage) {
@@ -240,12 +248,23 @@ app.use('*', async (c, next) => {
       "frame-ancestors 'none'",
     ].join('; ');
   } else {
+    const auth0 = c.env.AUTH0_DOMAIN
+      ? `https://${c.env.AUTH0_DOMAIN}`
+      : 'https://*.auth0.com';
     csp = [
       "default-src 'self'",
-      "img-src 'self' data:",
-      "style-src 'self' 'unsafe-inline'", // Tailwind inlined
+      // Allow local and external images (e.g., icons, remote logos)
+      "img-src 'self' data: https:",
+      // Allow inlined styles and Google Fonts CSS for branding
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      // Allow Google Fonts files
+      "font-src 'self' https://fonts.gstatic.com",
+      // App scripts are self only
       "script-src 'self'",
+      // API/WebSocket connections
       "connect-src 'self' https: wss:",
+      // Allow Auth0 silent auth iframes and keep clickjacking protection
+      `frame-src 'self' ${auth0} https://*.auth0.com`,
       "frame-ancestors 'none'",
     ].join('; ');
   }
@@ -283,6 +302,18 @@ app.use('/api/*', async (c, next) => {
 app.use('/*', async (c, next) => {
   // Only try to serve assets for GET requests to avoid consuming request body
   if (c.req.method !== 'GET') return next();
+  // Bypass ASSETS for server-rendered pages like /login and /callback
+  const urlObj = new URL(c.req.url);
+  const p = urlObj.pathname;
+  // Normalize Auth0 callback on any asset request
+  const hasCode = urlObj.searchParams.has('code');
+  const hasState = urlObj.searchParams.has('state');
+  if ((hasCode || hasState) && p !== '/callback') {
+    return c.redirect(`/callback${urlObj.search}`, 302);
+  }
+  if (p === '/login' || p.startsWith('/login/') || p === '/callback') {
+    return next();
+  }
 
   const res = await c.env.ASSETS?.fetch(c.req.raw);
   if (!res || res.status === 404) return next();
@@ -296,6 +327,59 @@ app.get('/health', (c) => {
     timestamp: new Date().toISOString(),
     environment: c.env.ENVIRONMENT || 'unknown',
   });
+});
+
+// Note: The custom /login page is defined later with full HTML and headers
+
+// Runtime config for SPA: exposes safe public variables
+app.get('/app-config.js', (c) => {
+  const domain = c.env.AUTH0_DOMAIN || '';
+  const clientId = c.env.AUTH0_CLIENT_ID || '';
+  const baseUrl = c.env.BASE_URL || new URL(c.req.url).origin;
+  const redirectUri = `${baseUrl}/callback`;
+  const js = `window.__VITALSENSE_CONFIG__ = ${JSON.stringify({
+    environment: c.env.ENVIRONMENT || 'unknown',
+    auth0: {
+      domain,
+      clientId,
+      redirectUri,
+      audience: 'https://vitalsense-health-api',
+      scope:
+        'openid profile email read:health_data write:health_data manage:emergency_contacts',
+    },
+  })};`;
+  return new Response(js, {
+    headers: { 'content-type': 'application/javascript; charset=utf-8' },
+  });
+});
+
+// Auth callback: serve SPA index at /callback so Auth0 SDK can complete the flow
+app.get('/callback', async (c) => {
+  try {
+    // If this is accessed without OAuth params, redirect home
+    const current = new URL(c.req.url);
+    const hasCode = current.searchParams.has('code');
+    const hasState = current.searchParams.has('state');
+    if (!hasCode && !hasState) {
+      return c.redirect('/', 302);
+    }
+    // Serve the app shell (index.html) while preserving the /callback path
+    const url = new URL(c.req.url);
+    const indexUrl = new URL('/index.html', url.origin);
+    const req = new Request(indexUrl.toString(), { method: 'GET' });
+    const res = await c.env.ASSETS?.fetch(req);
+    if (!res || res.status === 404) {
+      return c.text('Callback handler unavailable (index.html not found)', 500);
+    }
+    return res;
+  } catch (_err) {
+    try {
+      console.error('callback_handler_error', _err);
+    } catch {
+      /* noop */
+    }
+    return c.text('Callback handler error', 500);
+  }
 });
 
 // WebSocket configuration endpoints
@@ -326,6 +410,112 @@ app.get('/api/ws-user-id', (c) => {
   }
   // In production, this would extract user ID from JWT
   return c.json({ userId: 'user-id-placeholder' });
+});
+
+// User emergency contacts persistence
+// GET returns user's saved emergency contacts (empty array if none)
+app.get('/api/user/emergency-contacts', async (c) => {
+  try {
+    const kv = c.env.HEALTH_KV;
+    if (!kv || typeof kv.get !== 'function') {
+      return c.json({ contacts: [] }, 200);
+    }
+    const auth = c.req.header('Authorization') || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+    const payload = token ? decodeJwtPayload(token) : null;
+    const sub = (payload?.sub as string | undefined) || null;
+    if (!sub) return c.json({ error: 'unauthorized' }, 401);
+    const key = `user:contacts:${encodeURIComponent(sub)}`;
+    const raw = await kv.get(key);
+    if (!raw) return c.json({ contacts: [], updatedAt: null }, 200);
+
+    // Decrypt if ENC_KEY is configured, otherwise parse JSON
+    const encKeyB64 = c.env.ENC_KEY;
+    let obj: Record<string, unknown> | null = null;
+    try {
+      if (encKeyB64) {
+        const keyObj = await getAesKey(encKeyB64);
+        obj = await decryptJSON<Record<string, unknown>>(keyObj, raw);
+      } else {
+        obj = JSON.parse(raw);
+      }
+    } catch (e) {
+      log.error('contacts_read_parse_failed', { error: (e as Error).message });
+      return c.json({ error: 'contacts_parse_failed' }, 500);
+    }
+    const contacts = Array.isArray(obj?.contacts)
+      ? (obj.contacts as string[])
+      : [];
+    const updatedAt = (obj?.updatedAt as string | undefined) || null;
+    return c.json({ contacts, updatedAt }, 200);
+  } catch (e) {
+    log.error('contacts_read_failed', { error: (e as Error).message });
+    return c.json({ error: 'contacts_read_failed' }, 500);
+  }
+});
+
+// PUT saves user's emergency contacts; requires manage:emergency_contacts permission
+app.put('/api/user/emergency-contacts', async (c) => {
+  try {
+    const kv = c.env.HEALTH_KV;
+    if (!kv || typeof kv.put !== 'function') {
+      return c.json({ error: 'storage_unavailable' }, 503);
+    }
+    const auth = c.req.header('Authorization') || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+    const payload = token ? decodeJwtPayload(token) : null;
+    const sub = (payload?.sub as string | undefined) || null;
+    if (!sub) return c.json({ error: 'unauthorized' }, 401);
+
+    // Permission check: Auth0 may include permissions[] or scope string
+    const perms = (payload?.permissions as string[] | undefined) || [];
+    const scope = (payload?.scope as string | undefined) || '';
+    const hasManagePerm =
+      perms.includes('manage:emergency_contacts') ||
+      scope.split(' ').includes('manage:emergency_contacts');
+    if (!hasManagePerm) return c.json({ error: 'forbidden' }, 403);
+
+    const body = await c.req.json().catch(() => null as unknown);
+    const schema = z.object({
+      contacts: z.array(z.string().min(1).max(256)).max(50),
+    });
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
+      return c.json(
+        { error: 'invalid_body', details: parsed.error.flatten() },
+        400
+      );
+    }
+    // dedupe + normalize whitespace
+    const contacts = Array.from(
+      new Set(parsed.data.contacts.map((s) => s.trim()).filter(Boolean))
+    );
+    const key = `user:contacts:${encodeURIComponent(sub)}`;
+    const valueObj = {
+      version: 1,
+      updatedAt: new Date().toISOString(),
+      contacts,
+    };
+    let toStore: string;
+    const encKeyB64 = c.env.ENC_KEY;
+    if (encKeyB64) {
+      const keyObj = await getAesKey(encKeyB64);
+      toStore = await encryptJSON(keyObj, valueObj);
+    } else {
+      toStore = JSON.stringify(valueObj);
+    }
+    await kv.put(key, toStore);
+    await writeAudit(c.env, {
+      type: 'update_contacts',
+      actor: sub,
+      resource: 'kv:user:contacts',
+      meta: { count: contacts.length },
+    });
+    return c.json({ ok: true, updatedAt: valueObj.updatedAt }, 200);
+  } catch (e) {
+    log.error('contacts_write_failed', { error: (e as Error).message });
+    return c.json({ error: 'contacts_write_failed' }, 500);
+  }
 });
 
 // WebSocket endpoint for real-time health data
@@ -1429,6 +1619,41 @@ app.get('/demo', async (c) => {
   });
 });
 
+// Convenience: disable demo mode (clears flags and redirects to /)
+app.get('/demo/disable', async (c) => {
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Disable Demo</title></head><body>
+  <script>
+    try {
+      localStorage.removeItem('vitalsense_demo_mode');
+      localStorage.removeItem('vitalsense_demo_user');
+      localStorage.removeItem('VITALSENSE_DEMO_MODE');
+      localStorage.removeItem('auth_bypass');
+      // reset any custom flags used earlier
+      localStorage.removeItem('vitalsense_bypass_auth');
+      sessionStorage.clear();
+    } catch (e) { /* ignore */ }
+    // Hard reload root without cache
+    location.replace('/');
+  </script>
+  </body></html>`;
+  return c.html(html);
+});
+
+// Convenience: enable demo mode (sets flags and redirects to /demo)
+app.get('/demo/enable', async (c) => {
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Enable Demo</title></head><body>
+  <script>
+    try {
+      localStorage.setItem('vitalsense_demo_mode', 'true');
+      localStorage.setItem('VITALSENSE_DEMO_MODE', 'true');
+      localStorage.setItem('auth_bypass', 'demo');
+    } catch (e) { /* ignore */ }
+    location.replace('/demo');
+  </script>
+  </body></html>`;
+  return c.html(html);
+});
+
 // Static demo page - completely bypasses React app authentication
 app.get('/demo-static', async (c) => {
   const html = `<!DOCTYPE html>
@@ -1696,12 +1921,14 @@ app.get('/demo-static', async (c) => {
 // Auth0 custom login page - inline VitalSense branding for custom domain
 app.get('/login', async (c) => {
   // Serve dynamic login page with Auth0 config injected
-  const auth0Domain = c.env.AUTH0_DOMAIN || 'dev-qjdpc81dzr7xrnlu.us.auth0.com';
-  const auth0ClientId =
-    c.env.AUTH0_CLIENT_ID || '3SWqx7E8dFSIWapIikjppEKQ5ksNxRAQ';
+  const auth0Domain = c.env.AUTH0_DOMAIN || '';
+  const auth0ClientId = c.env.AUTH0_CLIENT_ID || '';
 
   // Use the current domain for callback
-  const baseUrl = c.env.BASE_URL || 'https://health.andernet.dev';
+  const baseUrl =
+    c.env.BASE_URL ||
+    new URL(c.req.url).origin ||
+    'https://health.andernet.dev';
   const redirectUri = `${baseUrl}/callback`;
 
   // Inline VitalSense login page
@@ -1907,44 +2134,35 @@ app.get('/login', async (c) => {
         // Start initialization
         initializeAuth0();
 
-        function loginWithAuth0() {
-            console.log('🔐 Auth0 login button clicked');
-
-            // For now, skip Auth0 and go directly to demo mode
-            // since the current Auth0 domain is not accessible
-            console.log('🚀 Using demo mode (Auth0 domain not accessible)');
+    function loginWithAuth0() {
+      console.log('🔐 Auth0 login button clicked');
+      const domain = '${auth0Domain}';
+      const clientId = '${auth0ClientId}';
+      if (!domain || !clientId) {
+        console.log('⚠️ Missing Auth0 config, using demo mode...');
+        loginDemo();
+        return;
+      }
+      if (!window.vitalsenseAuth) {
+        console.log('⚠️ Auth0 not initialized yet, trying demo mode...');
+        loginDemo();
+        return;
+      }
+      fetch('https://' + domain + '/.well-known/openid-configuration')
+        .then(response => {
+          if (response.ok) {
+            console.log('✅ Auth0 configuration valid, starting authorization...');
+            window.vitalsenseAuth.authorize();
+          } else {
+            console.log('⚠️ Auth0 configuration invalid (' + response.status + '), using demo mode...');
             loginDemo();
-
-            /*
-            // Uncomment this when Auth0 is properly configured:
-
-            // Check if Auth0 is initialized
-            if (!window.vitalsenseAuth) {
-                console.log('⚠️ Auth0 not initialized yet, trying demo mode...');
-                loginDemo();
-                return;
-            }
-
-            // Check if Auth0 is properly configured
-            fetch('https://' + '${auth0Domain}' + '/.well-known/openid_configuration')
-                .then(response => {
-                    if (response.ok) {
-                        console.log('✅ Auth0 configuration valid, starting authorization...');
-                        // Auth0 is working, proceed with normal auth
-                        window.vitalsenseAuth.authorize();
-                    } else {
-                        console.log('⚠️ Auth0 configuration invalid, using demo mode...');
-                        // Auth0 not configured, use demo mode
-                        loginDemo();
-                    }
-                })
-                .catch(error => {
-                    console.log('❌ Auth0 not accessible, using demo mode...', error);
-                    // Auth0 not accessible, use demo mode
-                    loginDemo();
-                });
-            */
-        }
+          }
+        })
+        .catch(error => {
+          console.log('❌ Auth0 not accessible, using demo mode...', error);
+          loginDemo();
+        });
+    }
 
         function loginDemo() {
             console.log('Demo login clicked!');
@@ -1975,44 +2193,89 @@ app.get('/login', async (c) => {
         // Check for existing auth after a short delay to ensure Auth0 is loaded
         setTimeout(checkExistingAuth, 1000);
     </script>
+    <!-- VS-CUSTOM-LOGIN:1 -->
+    <div style="text-align:center;margin-top:1rem;color:#94a3b8;font-size:10px;">Custom Login Page</div>
 </body>
 </html>`;
-
-  return c.html(html);
+  return new Response(html, {
+    headers: {
+      'content-type': 'text/html; charset=utf-8',
+      'cache-control': 'no-store, no-cache, must-revalidate, max-age=0',
+      pragma: 'no-cache',
+      'x-robots-tag': 'noindex',
+      'x-page-id': 'vs-custom-login',
+    },
+  });
 });
 
-// Auth0 callback handler - redirect back to main app after authentication
-app.get('/callback', async (c) => {
-  // Get the authorization code and state from Auth0
-  const url = new URL(c.req.url);
-  const code = url.searchParams.get('code');
-  const state = url.searchParams.get('state');
-  const error = url.searchParams.get('error');
-  const demo = url.searchParams.get('demo');
+// (Removed duplicate callback redirect handler; SPA-serving callback defined earlier)
 
-  // Handle demo mode
-  if (demo === 'true') {
-    return c.redirect('https://health.andernet.dev/?demo=true', 302);
+// Diagnostics: Verify Auth0/OpenID configuration for the configured domain
+app.get('/api/auth0/health', async (c) => {
+  const domain = c.env.AUTH0_DOMAIN || '';
+  const clientId = c.env.AUTH0_CLIENT_ID || '';
+  const issuerUrl = domain ? `https://${domain}/` : null;
+  const openIdCfgUrl = domain
+    ? `https://${domain}/.well-known/openid-configuration`
+    : null;
+  const out: Record<string, unknown> = {
+    ok: false,
+    domain,
+    clientIdSet: Boolean(clientId),
+    issuer: null as string | null,
+    jwks_uri: null as string | null,
+    authorization_endpoint: null as string | null,
+    error: null as string | null,
+  };
+  try {
+    if (!openIdCfgUrl) throw new Error('AUTH0_DOMAIN not set');
+    const res = await fetch(openIdCfgUrl);
+    if (!res.ok) throw new Error(`openid-configuration ${res.status}`);
+    const cfg = (await res.json()) as Record<string, unknown>;
+    out.ok = true;
+    out.issuer = (cfg.issuer as string) || issuerUrl;
+    out.jwks_uri = cfg.jwks_uri as string;
+    out.authorization_endpoint = cfg.authorization_endpoint as string;
+    return c.json(out, 200);
+  } catch (e) {
+    out.ok = false;
+    out.error = (e as Error).message;
+    return c.json(out, 200);
   }
+});
 
-  // If there's an error, redirect to main domain with error
-  if (error) {
-    return c.redirect(
-      `https://health.andernet.dev/?auth_error=${encodeURIComponent(error)}`,
-      302
-    );
+// Public diagnostics (non-API path) to validate Auth0 config without API auth
+app.get('/auth0/health', async (c) => {
+  const domain = c.env.AUTH0_DOMAIN || '';
+  const clientId = c.env.AUTH0_CLIENT_ID || '';
+  const issuerUrl = domain ? `https://${domain}/` : null;
+  const openIdCfgUrl = domain
+    ? `https://${domain}/.well-known/openid-configuration`
+    : null;
+  const out: Record<string, unknown> = {
+    ok: false,
+    domain,
+    clientIdSet: Boolean(clientId),
+    issuer: null as string | null,
+    jwks_uri: null as string | null,
+    authorization_endpoint: null as string | null,
+    error: null as string | null,
+  };
+  try {
+    if (!openIdCfgUrl) throw new Error('AUTH0_DOMAIN not set');
+    const res = await fetch(openIdCfgUrl);
+    if (!res.ok) throw new Error(`openid-configuration ${res.status}`);
+    const cfg = (await res.json()) as Record<string, unknown>;
+    out.ok = true;
+    out.issuer = (cfg.issuer as string) || issuerUrl;
+    out.jwks_uri = cfg.jwks_uri as string;
+    out.authorization_endpoint = cfg.authorization_endpoint as string;
+    return c.json(out, 200);
+  } catch (e) {
+    out.ok = false;
+    out.error = (e as Error).message;
+    return c.json(out, 200);
   }
-
-  // If successful, redirect to main app with auth code
-  if (code) {
-    const params = new URLSearchParams();
-    params.set('code', code);
-    if (state) params.set('state', state);
-    return c.redirect(`https://health.andernet.dev/?${params.toString()}`, 302);
-  }
-
-  // Fallback redirect to main app
-  return c.redirect('https://health.andernet.dev/', 302);
 });
 
 // Support alternative auth path for backward compatibility
@@ -2020,11 +2283,41 @@ app.get('/auth/login', async (c) => {
   return c.redirect('/login', 302);
 });
 
+// Explicit force-login path to avoid any front-end routing interference
+app.get('/_force-login', async (c) => {
+  const ts = Date.now();
+  return c.redirect(`/login?ts=${ts}`, 302);
+});
+
 // SPA fallback to index.html using ASSETS binding
 app.get('*', async (c) => {
-  const url = new URL('/index.html', c.req.url);
+  const reqUrl = new URL(c.req.url);
+  const path = reqUrl.pathname;
+  // Normalize Auth0 redirects: if code/state are present on a non-callback path, redirect to /callback
+  try {
+    const hasCode = reqUrl.searchParams.has('code');
+    const hasState = reqUrl.searchParams.has('state');
+    if ((hasCode || hasState) && path !== '/callback') {
+      return c.redirect(`/callback${reqUrl.search}`, 302);
+    }
+  } catch {
+    // no-op
+  }
   if (!c.env.ASSETS) return c.text('Not Found', 404);
-  return c.env.ASSETS.fetch(new Request(url.toString(), c.req.raw));
+  // Do not serve SPA index for custom server routes handled by Hono
+  if (
+    path === '/login' ||
+    path.startsWith('/login/') ||
+    path === '/callback' ||
+    path === '/demo' ||
+    path.startsWith('/demo/') ||
+    path === '/auth0/health' ||
+    path === '/api/auth0/health'
+  ) {
+    return c.text('Not Found', 404);
+  }
+  const indexUrl = new URL('/index.html', c.req.url);
+  return c.env.ASSETS.fetch(new Request(indexUrl.toString(), c.req.raw));
 });
 
 export default app;

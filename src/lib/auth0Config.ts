@@ -9,13 +9,38 @@
  * - Session management with automatic logout
  */
 
+declare global {
+  interface Window {
+    __VITALSENSE_CONFIG__?: {
+      environment?: string;
+      auth0?: {
+        domain?: string;
+        clientId?: string;
+        redirectUri?: string;
+        audience?: string;
+        scope?: string;
+      };
+    };
+  }
+}
+
 export const auth0Config = {
   // Auth0 Application Configuration
-  domain: import.meta.env.VITE_AUTH0_DOMAIN || 'vitalsense-health.auth0.com',
-  clientId: import.meta.env.VITE_AUTH0_CLIENT_ID || 'your-client-id',
+  domain:
+    (typeof window !== 'undefined' &&
+      window.__VITALSENSE_CONFIG__?.auth0?.domain) ||
+    import.meta.env.VITE_AUTH0_DOMAIN ||
+    'vitalsense-health.auth0.com',
+  clientId:
+    (typeof window !== 'undefined' &&
+      window.__VITALSENSE_CONFIG__?.auth0?.clientId) ||
+    import.meta.env.VITE_AUTH0_CLIENT_ID ||
+    'your-client-id',
 
   // Security Configuration
   redirectUri:
+    (typeof window !== 'undefined' &&
+      window.__VITALSENSE_CONFIG__?.auth0?.redirectUri) ||
     import.meta.env.VITE_AUTH0_REDIRECT_URI ||
     `${window.location.origin}/callback`,
   logoutUri:
@@ -23,8 +48,13 @@ export const auth0Config = {
 
   // HIPAA Compliance Settings
   audience:
-    import.meta.env.VITE_AUTH0_AUDIENCE || 'https://vitalsense-health-api',
+    (typeof window !== 'undefined' &&
+      window.__VITALSENSE_CONFIG__?.auth0?.audience) ||
+    import.meta.env.VITE_AUTH0_AUDIENCE ||
+    'https://vitalsense-health-api',
   scope:
+    (typeof window !== 'undefined' &&
+      window.__VITALSENSE_CONFIG__?.auth0?.scope) ||
     'openid profile email read:health_data write:health_data manage:emergency_contacts',
 
   // Enhanced Security Options
@@ -103,7 +133,11 @@ export const isValidAuth0Config = (): boolean => {
 
 // Environment-specific configuration
 export const getAuth0ConfigForEnvironment = () => {
-  const environment = import.meta.env.VITE_ENVIRONMENT || 'development';
+  const environment =
+    (typeof window !== 'undefined' &&
+      window.__VITALSENSE_CONFIG__?.environment) ||
+    import.meta.env.VITE_ENVIRONMENT ||
+    'development';
 
   const baseConfig = { ...auth0Config };
 

@@ -30,6 +30,9 @@ FALL_DETECTION_THRESHOLD = "0.75"
 EMERGENCY_RESPONSE_DELAY = "30"
 MAX_FILE_SIZE = "100MB"
 SESSION_TIMEOUT = "24h"
+ # Auth0 (development)
+ AUTH0_DOMAIN = "dev-qjdpc81dzr7xrnlu.us.auth0.com"
+ AUTH0_CLIENT_ID = "YyCHkHZ11713YG7QsB518lHrCFE3bW1s"
 
 # Production environment
 [env.production]
@@ -49,7 +52,7 @@ MAX_FILE_SIZE = "500MB"
 SESSION_TIMEOUT = "12h"
 # Auth0 Configuration
 AUTH0_DOMAIN = "dev-qjdpc81dzr7xrnlu.us.auth0.com"
-AUTH0_CLIENT_ID = "3SWqx7E8dFSIWapIikjppEKQ5ksNxRAQ"
+AUTH0_CLIENT_ID = "YyCHkHZ11713YG7QsB518lHrCFE3bW1s"
 
 # Production KV namespaces
 [[env.production.kv_namespaces]]

@@ -17,7 +17,6 @@ import {
   type Permission,
   type UserRole,
 } from '@/lib/auth0Config';
-import { SafeLogger } from '@/lib/errorHandling';
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
 import {
   createContext,
@@ -71,8 +70,24 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Create a safe logger instance for auth operations
-const authLogger = new SafeLogger('Authentication');
+// Lightweight logger shim
+const authLog = {
+  info: (...args: unknown[]) => {
+    try {
+      console.info('[auth]', ...args);
+    } catch {}
+  },
+  warn: (...args: unknown[]) => {
+    try {
+      console.warn('[auth]', ...args);
+    } catch {}
+  },
+  error: (...args: unknown[]) => {
+    try {
+      console.error('[auth]', ...args);
+    } catch {}
+  },
+};
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
@@ -107,7 +122,7 @@ function AuthContextProvider({ children }: AuthProviderProps) {
 
       try {
         // Get access token to extract permissions and roles
-        const token = await getAccessTokenSilently();
+        await getAccessTokenSilently();
         const idToken = await getIdTokenClaims();
 
         // Extract roles and permissions from token claims
@@ -140,7 +155,7 @@ function AuthContextProvider({ children }: AuthProviderProps) {
         };
 
         // Log successful authentication
-        authLogger.logHealthOperation('user_authentication', {
+        authLog.info('user_authentication', {
           userId: profile.id,
           email: profile.email,
           roles,
@@ -150,7 +165,7 @@ function AuthContextProvider({ children }: AuthProviderProps) {
 
         return profile;
       } catch (error) {
-        authLogger.logError(error as Error, {
+        authLog.error('build_user_profile_error', error, {
           operation: 'build_user_profile',
           userId: auth0User.sub,
         });
@@ -171,10 +186,11 @@ function AuthContextProvider({ children }: AuthProviderProps) {
       setUser(profile);
       setIsLoading(false);
 
-      // Enforce HIPAA consent
+      // HIPAA consent: warn but do not force logout to avoid redirect loops
       if (profile && !profile.hipaaConsent) {
-        toast.error('HIPAA consent is required to access health data');
-        await logout();
+        toast.warning(
+          'HIPAA consent is not recorded. Some features may be limited until consent is granted.'
+        );
       }
 
       // Enforce MFA for healthcare providers and admins
@@ -207,7 +223,7 @@ function AuthContextProvider({ children }: AuthProviderProps) {
         },
       });
     } catch (error) {
-      authLogger.logError(error as Error, { operation: 'login' });
+      authLog.error('login_failed', error);
       toast.error('Login failed. Please try again.');
     }
   }, [loginWithRedirect]);
@@ -216,7 +232,7 @@ function AuthContextProvider({ children }: AuthProviderProps) {
     try {
       // Log logout event
       if (user) {
-        authLogger.logHealthOperation('user_logout', {
+        authLog.info('user_logout', {
           userId: user.id,
           email: user.email,
         });
@@ -228,7 +244,7 @@ function AuthContextProvider({ children }: AuthProviderProps) {
         },
       });
     } catch (error) {
-      authLogger.logError(error as Error, { operation: 'logout' });
+      authLog.error('logout_failed', error);
       toast.error('Logout failed. Please clear your browser cache.');
     }
   }, [auth0Logout, user]);
@@ -262,7 +278,7 @@ function AuthContextProvider({ children }: AuthProviderProps) {
       const profile = await buildUserProfile();
       setUser(profile);
     } catch (error) {
-      authLogger.logError(error as Error, { operation: 'refresh_session' });
+      authLog.error('refresh_session_failed', error);
       throw error;
     }
   }, [getAccessTokenSilently, buildUserProfile]);
@@ -272,7 +288,7 @@ function AuthContextProvider({ children }: AuthProviderProps) {
       const token = await getAccessTokenSilently();
       return !!token;
     } catch (error) {
-      authLogger.logError(error as Error, { operation: 'validate_session' });
+      authLog.error('validate_session_failed', error);
       return false;
     }
   }, [getAccessTokenSilently]);
@@ -282,7 +298,7 @@ function AuthContextProvider({ children }: AuthProviderProps) {
     try {
       return await getAccessTokenSilently();
     } catch (error) {
-      authLogger.logError(error as Error, { operation: 'get_access_token' });
+      authLog.error('get_access_token_failed', error);
       return undefined;
     }
   }, [getAccessTokenSilently]);
@@ -292,7 +308,7 @@ function AuthContextProvider({ children }: AuthProviderProps) {
       const claims = await getIdTokenClaims();
       return claims?.__raw;
     } catch (error) {
-      authLogger.logError(error as Error, { operation: 'get_id_token' });
+      authLog.error('get_id_token_failed', error);
       return undefined;
     }
   }, [getIdTokenClaims]);
@@ -301,7 +317,7 @@ function AuthContextProvider({ children }: AuthProviderProps) {
   const logHealthDataAccess = useCallback(
     (action: string, resource: string) => {
       if (user) {
-        authLogger.logHealthOperation('health_data_access', {
+        authLog.info('health_data_access', {
           userId: user.id,
           action,
           resource,

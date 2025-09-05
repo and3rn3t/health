@@ -4,6 +4,7 @@
  */
 
 import EmergencyTriggerButton from '@/components/health/EmergencyTriggerButton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
   Breadcrumb,
@@ -23,9 +24,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Bell,
   Home,
+  LogIn,
+  LogOut,
   Menu,
   Monitor,
   Moon,
@@ -60,8 +64,18 @@ export default function NavigationHeader({
   sidebarCollapsed: _sidebarCollapsed,
   healthScore,
   hasAlerts = false,
-}: NavigationHeaderProps) {
+}: Readonly<NavigationHeaderProps>) {
   const [searchQuery, setSearchQuery] = useState('');
+  const { user, isAuthenticated, isLoading, login, logout } = useAuth();
+
+  const initials = (name?: string) => {
+    if (!name) return 'U';
+    const parts = name.split(' ').filter(Boolean);
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (
+      parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
+    ).toUpperCase();
+  };
 
   const getPageDescription = () => {
     const { category, label } = currentPageInfo;
@@ -230,20 +244,61 @@ export default function NavigationHeader({
           {/* Emergency Button */}
           <EmergencyTriggerButton size="sm" />
 
+          {/* View Account chip (authenticated users) */}
+          {isAuthenticated && user && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onNavigate('user-profile')}
+              className="hidden rounded-full px-3 md:inline-flex"
+            >
+              View Account
+            </Button>
+          )}
+
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="relative">
-                <User className="h-4 w-4" />
+                {isAuthenticated && user ? (
+                  <Avatar className="h-6 w-6">
+                    {user.picture && (
+                      <AvatarImage
+                        src={user.picture}
+                        alt={user.name || 'User'}
+                      />
+                    )}
+                    <AvatarFallback className="text-xs">
+                      {initials(user.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <User className="h-4 w-4" />
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">VitalSense User</p>
-                  <p className="text-muted-foreground text-xs">
-                    Health monitoring active
-                  </p>
+                  {isAuthenticated && user ? (
+                    <>
+                      <p className="text-sm font-medium">
+                        {user.name || 'Signed in'}
+                      </p>
+                      {user.email && (
+                        <p className="text-muted-foreground text-xs">
+                          {user.email}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm font-medium">Not signed in</p>
+                      <p className="text-muted-foreground text-xs">
+                        Sign in to access all features
+                      </p>
+                    </>
+                  )}
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -271,6 +326,33 @@ export default function NavigationHeader({
                 {themeMode === 'system' && <Monitor className="mr-2 h-4 w-4" />}
                 Theme: {themeMode}
               </DropdownMenuItem>
+
+              {/* Auth actions */}
+              {!isLoading && (
+                <>
+                  {/* Profile navigation */}
+                  <DropdownMenuItem onClick={() => onNavigate('user-profile')}>
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+                  {isAuthenticated ? (
+                    <DropdownMenuItem
+                      onClick={() => logout()}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign out
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={() => login()}>
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Sign in
+                    </DropdownMenuItem>
+                  )}
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

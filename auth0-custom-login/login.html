@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VitalSense Health - Auth0 Universal Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --vs-primary: #2563eb;
+        --vs-secondary: #0891b2;
+        --vs-bg: #f8fafc;
+        --vs-fg: #0f172a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          sans-serif;
+        background: var(--vs-bg);
+        color: var(--vs-fg);
+      }
+      .wrap {
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .card {
+        width: 100%;
+        max-width: 420px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        padding: 24px;
+      }
+      .logo {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        color: var(--vs-primary);
+      }
+      .logo svg {
+        width: 28px;
+        height: 28px;
+      }
+      .title {
+        margin: 0 0 4px;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--vs-primary);
+        text-align: center;
+      }
+      .subtitle {
+        margin: 0 0 16px;
+        font-size: 14px;
+        color: #64748b;
+        text-align: center;
+      }
+      .btn {
+        width: 100%;
+        display: inline-block;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 0;
+        background: var(--vs-primary);
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn.secondary {
+        background: var(--vs-secondary);
+        margin-top: 8px;
+      }
+      .note {
+        margin-top: 16px;
+        font-size: 12px;
+        color: #64748b;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <div class="logo" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path
+              d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"
+            />
+          </svg>
+          <strong>VitalSense</strong>
+        </div>
+        <h1 class="title">Sign in to VitalSense</h1>
+        <p class="subtitle">Secure access to your health dashboard</p>
+        <button class="btn" onclick="startAuth0()">Continue</button>
+        <button
+          class="btn secondary"
+          onclick="window.location.href='https://health.andernet.dev/demo-static'"
+        >
+          Try Demo
+        </button>
+        <p class="note">HIPAA-ready • Encrypted at rest • SSO supported</p>
+      </div>
+    </div>
+    <script src="https://cdn.auth0.com/js/auth0/9.23.2/auth0.min.js"></script>
+    <script src="https://cdn.auth0.com/js/lock/11.34.2/lock.min.js"></script>
+    <script>
+      // Classic Universal Login provides @@config@@ with tenant/app specifics
+      var config = (function () {
+        try {
+          // @@config@@ is base64-encoded JSON injected by Auth0 on Classic UL
+          return JSON.parse(
+            decodeURIComponent(escape(window.atob('@@config@@')))
+          );
+        } catch (e) {
+          return {};
+        }
+      })();
+
+      var lock = null;
+      (function init() {
+        var domain =
+          config.auth0Domain ||
+          config.domain ||
+          'dev-qjdpc81dzr7xrnlu.us.auth0.com';
+        var clientId = config.clientID || 'YyCHkHZ11713YG7QsB518lHrCFE3bW1s';
+        var redirectUri =
+          config.callbackURL || 'https://health.andernet.dev/callback';
+        var scope =
+          (config.extraParams && config.extraParams.scope) ||
+          'openid profile email';
+        window.vsAuth = new auth0.WebAuth({
+          domain: domain,
+          clientID: clientId,
+          redirectUri: redirectUri,
+          responseType: 'code',
+          scope: scope,
+        });
+
+        try {
+          lock = new Auth0Lock(clientId, domain, {
+            auth: {
+              redirectUrl: redirectUri,
+              responseType: 'code',
+              params: config.extraParams || { scope: scope },
+            },
+            theme: { primaryColor: '#2563eb' },
+            languageDictionary: { title: 'VitalSense Login' },
+            allowedConnections: config.connection
+              ? [config.connection]
+              : undefined,
+            closable: true,
+          });
+        } catch (e) {
+          lock = null;
+        }
+      })();
+      function startAuth0() {
+        // Pass through any server-provided extra params (e.g., connection, prompt)
+        var extra = config.extraParams || {};
+        // If a specific connection is provided, go directly
+        if (extra.connection && window.vsAuth) {
+          return window.vsAuth.authorize(extra);
+        }
+        // Otherwise show Lock for interactive login
+        if (lock && typeof lock.show === 'function') {
+          return lock.show();
+        }
+        if (window.vsAuth) {
+          return window.vsAuth.authorize(extra);
+        }
+        alert('Auth not ready');
+      }
+    </script>
+  </body>
+</html>

@@ -11,6 +11,19 @@
       rel="stylesheet"
     />
     <link href="/src/main.css" rel="stylesheet" />
+    <script>
+      (function () {
+        try {
+          var u = new URL(window.location.href);
+          var hasCode = u.searchParams.has('code');
+          var hasState = u.searchParams.has('state');
+          if ((hasCode || hasState) && u.pathname !== '/callback') {
+            window.location.replace('/callback' + u.search);
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <script src="/app-config.js"></script>
   </head>
 
   <body>

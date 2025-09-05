@@ -3,17 +3,41 @@
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth';
 import { useAuth0 } from '@auth0/auth0-react';
 import { CheckCircle, Heart, XCircle } from 'lucide-react';
 import { useEffect } from 'react';
 
 export default function CallbackPage() {
   const { error, isLoading } = useAuth0();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     // The Auth0Provider will handle the callback automatically
     // and redirect to the main app once authentication is complete
-  }, []);
+    let timeout: number | undefined;
+    const navigateHome = () => {
+      try {
+        window.history.replaceState(null, '', '/');
+        // Notify listeners (AuthenticatedApp) that the path changed
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      } catch {
+        window.location.replace('/');
+      }
+    };
+    // Safety: if we’re authenticated but still on /callback, navigate home
+    if (isAuthenticated) {
+      navigateHome();
+    } else {
+      // Hard guard: if we’re stuck here for >6s, try navigating home
+      timeout = window.setTimeout(() => {
+        navigateHome();
+      }, 6000);
+    }
+    return () => {
+      if (timeout) window.clearTimeout(timeout);
+    };
+  }, [isAuthenticated]);
 
   if (error) {
     return (

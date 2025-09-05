@@ -37,10 +37,26 @@ if (Test-Path $ConfigFile) {
   }
 }
 
+# Environment overrides (optional)
+if ($env:AUTH0_DOMAIN) { $config.Domain = $env:AUTH0_DOMAIN }
+if ($env:AUTH0_CLIENT_ID) { $config.ClientId = $env:AUTH0_CLIENT_ID }
+
 # Validate configuration
-if (-not $config -or -not $config.Domain -or -not $config.ClientId -or -not $config.ClientSecret) {
-  Write-Host '❌ Invalid configuration. Please check your auth0-config.local.ps1 file' -ForegroundColor Red
+if (-not $config -or -not $config.Domain -or -not $config.ClientId) {
+  Write-Host '❌ Invalid configuration. Please ensure Domain and ClientId are set in auth0-config.local.ps1' -ForegroundColor Red
   return
+}
+
+# In test mode we allow ClientSecret to be empty since no API calls are made
+if (-not $TestMode -and (-not $config.ClientSecret)) {
+  # Fallback: read from environment variable if present
+  if ($env:AUTH0_CLIENT_SECRET) {
+    Write-Host 'ℹ️  Using AUTH0_CLIENT_SECRET from environment for live deployment' -ForegroundColor Yellow
+    $config.ClientSecret = $env:AUTH0_CLIENT_SECRET
+  } else {
+    Write-Host '❌ ClientSecret is required for live deployment. Set $env:AUTH0_CLIENT_SECRET or add ClientSecret to auth0-config.local.ps1' -ForegroundColor Red
+    return
+  }
 }
 
 # Show configuration summary
@@ -65,6 +81,7 @@ if (Test-Path $deployScript) {
     Auth0ClientId     = $config.ClientId
     Auth0ClientSecret = $config.ClientSecret
     LoginPagePath     = "$PSScriptRoot\..\auth0-custom-login\login.html"
+  AppClientId       = $config.AppClientId
   }
 
   if ($TestMode) {

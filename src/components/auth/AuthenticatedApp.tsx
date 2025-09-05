@@ -42,11 +42,40 @@ export default function AuthenticatedApp() {
     };
 
     window.addEventListener('popstate', handlePopState);
+    // Normalize Auth0 redirect: if code/state appear on a non-callback path, move to /callback
+    try {
+      const url = new URL(window.location.href);
+      const hasCode = url.searchParams.has('code');
+      const hasState = url.searchParams.has('state');
+      if (hasCode && hasState && url.pathname !== '/callback') {
+        const newUrl = `/callback${url.search}`;
+        window.history.replaceState(null, '', newUrl);
+        setCurrentPath('/callback');
+      }
+    } catch {
+      // noop
+    }
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Handle Auth0 callback
+  // If OAuth params are present on a non-callback path, show callback progress immediately
+  try {
+    const u = new URL(window.location.href);
+    const hasAuthParams =
+      u.searchParams.has('code') || u.searchParams.has('state');
+    if (hasAuthParams && u.pathname !== '/callback') {
+      return <CallbackPage />;
+    }
+  } catch {
+    // ignore
+  }
+
+  // Handle Auth0 callback: always show progress page; it will redirect once auth completes
   if (currentPath === '/callback') {
+    if (isAuthenticated) {
+      window.history.replaceState(null, '', '/');
+      return <OriginalApp />;
+    }
     return <CallbackPage />;
   }
 

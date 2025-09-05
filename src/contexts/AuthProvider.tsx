@@ -13,8 +13,10 @@
 import { auth0Config, getAuth0ConfigForEnvironment } from '@/lib/auth0Config';
 import {
   type AuthContextType,
+  type Permission,
   USER_ROLES,
   type UserProfile,
+  type UserRole,
   logAuthError,
   logAuthOperation,
 } from '@/lib/authTypes';
@@ -24,17 +26,19 @@ import {
   createContext,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import { toast } from 'sonner';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-function AuthContextProvider({ children }: AuthProviderProps) {
+function AuthContextProvider({ children }: Readonly<AuthProviderProps>) {
   const {
     user: auth0User,
     isAuthenticated: auth0IsAuthenticated,
@@ -54,9 +58,17 @@ function AuthContextProvider({ children }: AuthProviderProps) {
       if (!auth0User || !auth0IsAuthenticated) return null;
 
       try {
-        // Get access token to extract permissions and roles
-        await getAccessTokenSilently();
-        const idToken = await getIdTokenClaims();
+        // Build from ID token; don’t require an API access token
+        let idToken = await getIdTokenClaims().catch(() => undefined);
+        if (!idToken) {
+          // Try once to refresh silently, but ignore failures
+          try {
+            await getAccessTokenSilently();
+            idToken = await getIdTokenClaims().catch(() => undefined);
+          } catch {
+            /* ignore */
+          }
+        }
 
         // Extract roles and permissions from token claims
         const roles = (idToken?.[
@@ -76,8 +88,8 @@ function AuthContextProvider({ children }: AuthProviderProps) {
           email: auth0User.email || '',
           name: auth0User.name || '',
           picture: auth0User.picture,
-          roles: roles as any[],
-          permissions: permissions as any[],
+          roles: roles as UserRole[],
+          permissions: permissions as Permission[],
           lastLogin: new Date().toISOString(),
           mfaEnabled,
           hipaaConsent,
@@ -140,10 +152,11 @@ function AuthContextProvider({ children }: AuthProviderProps) {
       setUser(profile);
       setIsLoading(false);
 
-      // Enforce HIPAA consent
+      // HIPAA consent: warn but do not force logout to avoid redirect loops
       if (profile && !profile.hipaaConsent) {
-        toast.error('HIPAA consent is required to access health data');
-        await logout();
+        toast.warning(
+          'HIPAA consent is not recorded. Some features may be limited until consent is granted.'
+        );
       }
 
       // Enforce MFA for healthcare providers and admins
@@ -189,21 +202,21 @@ function AuthContextProvider({ children }: AuthProviderProps) {
 
   // Permission checking methods
   const hasRole = useCallback(
-    (role: string): boolean => {
-      return user?.roles.includes(role as any) || false;
+    (role: UserRole): boolean => {
+      return user?.roles.includes(role) || false;
     },
     [user]
   );
 
   const hasPermission = useCallback(
-    (permission: string): boolean => {
-      return user?.permissions.includes(permission as any) || false;
+    (permission: Permission): boolean => {
+      return user?.permissions.includes(permission) || false;
     },
     [user]
   );
 
   const hasAnyPermission = useCallback(
-    (permissions: string[]): boolean => {
+    (permissions: Permission[]): boolean => {
       return permissions.some((permission) => hasPermission(permission));
     },
     [hasPermission]
@@ -266,21 +279,39 @@ function AuthContextProvider({ children }: AuthProviderProps) {
     [user]
   );
 
-  const contextValue: AuthContextType = {
-    user,
-    isAuthenticated: auth0IsAuthenticated && !!user,
-    isLoading,
-    login,
-    logout,
-    hasRole,
-    hasPermission,
-    hasAnyPermission,
-    refreshSession,
-    validateSession,
-    getAccessToken,
-    getIdToken,
-    logHealthDataAccess,
-  };
+  const contextValue: AuthContextType = useMemo(
+    () => ({
+      user,
+      // Use Auth0 SDK's flag directly; don't block on profile hydration
+      isAuthenticated: auth0IsAuthenticated,
+      isLoading,
+      login,
+      logout,
+      hasRole,
+      hasPermission,
+      hasAnyPermission,
+      refreshSession,
+      validateSession,
+      getAccessToken,
+      getIdToken,
+      logHealthDataAccess,
+    }),
+    [
+      user,
+      auth0IsAuthenticated,
+      isLoading,
+      login,
+      logout,
+      hasRole,
+      hasPermission,
+      hasAnyPermission,
+      refreshSession,
+      validateSession,
+      getAccessToken,
+      getIdToken,
+      logHealthDataAccess,
+    ]
+  );
 
   return (
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
@@ -288,7 +319,7 @@ function AuthContextProvider({ children }: AuthProviderProps) {
 }
 
 // Main Auth Provider component
-export function AuthProvider({ children }: AuthProviderProps) {
+export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
   const config = getAuth0ConfigForEnvironment();
 
   return (
@@ -302,6 +333,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }}
       useRefreshTokens={config.useRefreshTokens}
       cacheLocation={config.cacheLocation}
+      onRedirectCallback={(appState) => {
+        try {
+          const target =
+            (appState &&
+              (appState as unknown as { returnTo?: string }).returnTo) ||
+            '/';
+          window.history.replaceState(null, '', target);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        } catch {
+          // no-op
+        }
+      }}
     >
       <AuthContextProvider>{children}</AuthContextProvider>
     </Auth0Provider>

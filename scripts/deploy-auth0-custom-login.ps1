@@ -8,11 +8,15 @@ param(
   [Parameter(Mandatory = $true)]
   [string]$Auth0ClientId,
 
-  [Parameter(Mandatory = $true)]
+  [Parameter(Mandatory = $false)]
   [string]$Auth0ClientSecret,
 
   [Parameter(Mandatory = $false)]
   [string]$LoginPagePath = 'auth0-custom-login\login.html',
+
+  # Optional SPA app client ID used for Classic customization fallback and test URL
+  [Parameter(Mandatory = $false)]
+  [string]$AppClientId,
 
   [Parameter(Mandatory = $false)]
   [switch]$TestMode = $false
@@ -25,6 +29,11 @@ function Get-Auth0ManagementToken {
   param($Domain, $ClientId, $ClientSecret)
 
   Write-TaskStart 'Getting Auth0 Management API token'
+
+  if (-not $ClientSecret) {
+    Write-TaskError 'Client secret is empty. Set $env:AUTH0_CLIENT_SECRET or pass -Auth0ClientSecret.'
+    throw 'Missing client secret'
+  }
 
   $body = @{
     client_id     = $ClientId
@@ -95,16 +104,48 @@ function Update-Auth0CustomLoginPage {
       return $response
     } catch {
       Write-TaskError "Failed to update Auth0 custom login page: $($_.Exception.Message)"
-      Write-Host "Response content: $($_.Exception.Response)" -ForegroundColor Red
+      if ($_.Exception.Response -and $_.Exception.Response.Content) {
+        Write-Host "Response content: $($_.Exception.Response.Content)" -ForegroundColor Red
+      }
       throw
     }
   }
 }
 
+function Update-ClassicLoginPerClient {
+  param($Domain, $AccessToken, $ClientId, $HtmlContent, $TestMode)
+
+  if ($TestMode) {
+    Write-TaskStart 'TEST MODE: Would update Classic login page on SPA client'
+    Write-TaskComplete 'TEST MODE: Classic login customization validated'
+    return @{ success = $true; test_mode = $true }
+  }
+
+  Write-TaskStart 'Updating Classic login page on SPA client (fallback)'
+  $headers = @{ 'Authorization' = "Bearer $AccessToken"; 'Content-Type' = 'application/json' }
+  $body = @{ custom_login_page_on = $true; custom_login_page = $HtmlContent } | ConvertTo-Json -Depth 10
+  try {
+    $resp = Invoke-RestMethod -Uri "https://$Domain/api/v2/clients/$ClientId" -Method PATCH -Headers $headers -Body $body
+    Write-TaskComplete 'Classic login page updated on SPA client'
+    return $resp
+  } catch {
+    Write-TaskError "Failed to update Classic login page: $($_.Exception.Message)"
+    if ($_.Exception.Response -and $_.Exception.Response.Content) {
+      Write-Host "Response content: $($_.Exception.Response.Content)" -ForegroundColor Red
+    }
+    throw
+  }
+}
+
 function Get-Auth0BrandingSettings {
-  param($Domain, $AccessToken)
+  param($Domain, $AccessToken, $TestMode)
 
   Write-TaskStart 'Retrieving current Auth0 branding settings'
+
+  if ($TestMode) {
+    Write-TaskComplete 'TEST MODE: Skipping Auth0 branding settings retrieval'
+    return @{ test_mode = $true }
+  }
 
   $headers = @{
     'Authorization' = "Bearer $AccessToken"
@@ -137,25 +178,42 @@ function Update-Auth0BrandingSettings {
     'Content-Type'  = 'application/json'
   }
 
-  $brandingSettings = @{
-    colors      = @{
+  $fullBranding = @{
+    colors = @{
       primary         = '#2563eb'
       page_background = '#f8fafc'
     }
+    # Some tenants reject data: URLs or external font URLs. We'll try full payload first, then fallback.
     favicon_url = 'https://health.andernet.dev/favicon.ico'
-    logo_url    = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIwLjg0IDQuNjFhNS41IDUuNSAwIDAgMC03Ljc4IDBMMTIgNS42N2wtMS4wNi0xLjA2YTUuNSA1LjUgMCAwIDAtNy43OCAwIDUuNSA1LjUgMCAwIDAgMCA3Ljc4bDguODQgOC44NGE2IDYgMCAwIDAgOC40OSAwbDguNDktOC40OWE1LjUgNS41IDAgMCAwIDAtNy43OFoiIHN0cm9rZT0iIzI1NjNlYiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+'
-    font        = @{
-      url = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
-    }
+    # logo_url must be an https URL; many tenants reject data URIs.
+    # Provide a conservative default (commented). Set in tenant manually if desired.
+    # logo_url = 'https://health.andernet.dev/logo.png'
+    font = @{ url = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap' }
   } | ConvertTo-Json -Depth 10
 
   try {
-    $response = Invoke-RestMethod -Uri "https://$Domain/api/v2/branding" -Method PATCH -Headers $headers -Body $brandingSettings
+    $response = Invoke-RestMethod -Uri "https://$Domain/api/v2/branding" -Method PATCH -Headers $headers -Body $fullBranding
     Write-TaskComplete 'Auth0 branding settings updated successfully'
     return $response
   } catch {
-    Write-TaskError "Failed to update Auth0 branding settings: $($_.Exception.Message)"
-    throw
+    Write-TaskError "Failed to update Auth0 branding settings (full payload): $($_.Exception.Message)"
+    if ($_.Exception.Response -and $_.Exception.Response.Content) {
+      Write-Host "Response content: $($_.Exception.Response.Content)" -ForegroundColor Red
+    }
+    Write-Host 'Trying minimal colors-only branding update...' -ForegroundColor Yellow
+    $minimalBranding = @{ colors = @{ primary = '#2563eb'; page_background = '#f8fafc' } } | ConvertTo-Json -Depth 5
+    try {
+      $response2 = Invoke-RestMethod -Uri "https://$Domain/api/v2/branding" -Method PATCH -Headers $headers -Body $minimalBranding
+      Write-TaskComplete 'Auth0 branding settings updated (minimal payload)'
+      return $response2
+    } catch {
+      Write-TaskError "Branding update failed even with minimal payload: $($_.Exception.Message)"
+      if ($_.Exception.Response -and $_.Exception.Response.Content) {
+        Write-Host "Response content: $($_.Exception.Response.Content)" -ForegroundColor Red
+      }
+      Write-Host 'Proceeding without updating branding settings.' -ForegroundColor Yellow
+      return $null
+    }
   }
 }
 
@@ -178,16 +236,28 @@ function Main {
 
   try {
     # Validate parameters
-    if (-not $Auth0Domain -or -not $Auth0ClientId -or -not $Auth0ClientSecret) {
-      Write-TaskError 'Missing required Auth0 credentials'
-      throw 'Missing required Auth0 credentials'
+    if (-not $Auth0Domain -or -not $Auth0ClientId) {
+      Write-TaskError 'Missing required Auth0 domain or client ID'
+      throw 'Missing required Auth0 domain or client ID'
     }
 
-    # Get Management API token
-    $accessToken = Get-Auth0ManagementToken -Domain $Auth0Domain -ClientId $Auth0ClientId -ClientSecret $Auth0ClientSecret
+  Write-Host "Using Auth0 Domain: $Auth0Domain" -ForegroundColor Cyan
+  Write-Host "Using Client ID:   $Auth0ClientId" -ForegroundColor Cyan
+
+    # In test mode, skip Management API token retrieval (no secret required)
+    if ($TestMode) {
+      $accessToken = $null
+      Write-TaskStart 'TEST MODE: Skipping Auth0 Management API token retrieval'
+      Write-TaskComplete 'TEST MODE: Token retrieval skipped'
+    } else {
+      # Get Management API token
+      if (-not $Auth0ClientSecret -and $env:AUTH0_CLIENT_SECRET) { $Auth0ClientSecret = $env:AUTH0_CLIENT_SECRET }
+      if (-not $Auth0ClientSecret) { throw 'Auth0ClientSecret is required for live deployment' }
+      $accessToken = Get-Auth0ManagementToken -Domain $Auth0Domain -ClientId $Auth0ClientId -ClientSecret $Auth0ClientSecret
+    }
 
     # Get current branding settings
-    $currentBranding = Get-Auth0BrandingSettings -Domain $Auth0Domain -AccessToken $accessToken
+  $currentBranding = Get-Auth0BrandingSettings -Domain $Auth0Domain -AccessToken $accessToken -TestMode:$TestMode
     if ($currentBranding) {
       Write-Host 'Current branding:' -ForegroundColor Cyan
       Write-Host ($currentBranding | ConvertTo-Json -Depth 3) -ForegroundColor Gray
@@ -198,10 +268,23 @@ function Main {
 
     # Get and update custom login page
     $htmlContent = Get-CustomLoginPageTemplate -HtmlPath $LoginPagePath
-    $loginPageResult = Update-Auth0CustomLoginPage -Domain $Auth0Domain -AccessToken $accessToken -HtmlContent $htmlContent -TestMode $TestMode
+    try {
+      $loginPageResult = Update-Auth0CustomLoginPage -Domain $Auth0Domain -AccessToken $accessToken -HtmlContent $htmlContent -TestMode $TestMode
+    } catch {
+      # If Universal Login template endpoint is missing (404), fall back to Classic per-client customization
+      $is404 = ($_.Exception.Response -and $_.Exception.Response.StatusCode -eq 404) -or ($_.Exception.Message -like '*404*Not Found*')
+      if ($is404) {
+        if (-not $AppClientId) { Write-TaskError 'AppClientId not provided for Classic fallback'; throw }
+        Write-Host 'Falling back to Classic (per-client) login customization...' -ForegroundColor Yellow
+        $loginPageResult = Update-ClassicLoginPerClient -Domain $Auth0Domain -AccessToken $accessToken -ClientId $AppClientId -HtmlContent $htmlContent -TestMode $TestMode
+      } else {
+        throw
+      }
+    }
 
-    # Test the custom login page
-    Test-Auth0CustomLoginPage -Domain $Auth0Domain -ClientId $Auth0ClientId
+  # Test the custom login page (prefer SPA AppClientId for test URL if provided)
+  $testClientId = if ($AppClientId) { $AppClientId } else { $Auth0ClientId }
+  Test-Auth0CustomLoginPage -Domain $Auth0Domain -ClientId $testClientId
 
     Write-Host ''
     Write-Host '✅ Auth0 Custom Login Page Deployment Complete!' -ForegroundColor Green
@@ -211,8 +294,9 @@ function Main {
       Write-Host '🧪 TEST MODE: No actual changes were made' -ForegroundColor Yellow
       Write-Host 'Run without -TestMode to deploy the changes' -ForegroundColor Yellow
     } else {
-      Write-Host '✨ Your VitalSense branded login page is now live!' -ForegroundColor Green
-      Write-Host "🔗 Test at: https://$Auth0Domain/authorize?client_id=$Auth0ClientId&response_type=code&redirect_uri=https://health.andernet.dev/callback&scope=openid%20profile%20email" -ForegroundColor Cyan
+  Write-Host '✨ Your VitalSense branded login page is now live!' -ForegroundColor Green
+  $finalTestClientId = if ($AppClientId) { $AppClientId } else { $Auth0ClientId }
+  Write-Host "🔗 Test at: https://$Auth0Domain/authorize?client_id=$finalTestClientId&response_type=code&redirect_uri=https://health.andernet.dev/callback&scope=openid%20profile%20email" -ForegroundColor Cyan
     }
 
   } catch {

@@ -19,7 +19,6 @@ binding = "ASSETS"
 name = "vitalsense-health-prod"
 
 # Observability & Analytics Configuration
-[env.production.analytics_engine_datasets]
 # Health metrics analytics
 [[env.production.analytics_engine_datasets]]
 binding = "HEALTH_ANALYTICS"
@@ -33,9 +32,7 @@ binding = "SECURITY_ANALYTICS"
 binding = "PERFORMANCE_ANALYTICS"
 
 # Logpush configuration for enhanced logging
-[env.production.logpush]
-# Enable logpush to external analytics (optional)
-# destination = "https://your-analytics-endpoint.com"
+env.production.logpush = false
 
 # Production environment variables
 [env.production.vars]
@@ -53,6 +50,9 @@ SESSION_TIMEOUT = "12h"
 ENABLE_ANALYTICS = "true"
 ENABLE_SECURITY_LOGGING = "true"
 ENABLE_PERFORMANCE_MONITORING = "true"
+ # Auth0 (set your tenant domain and SPA client ID before deploying)
+ AUTH0_DOMAIN = "dev-qjdpc81dzr7xrnlu.us.auth0.com"
+ AUTH0_CLIENT_ID = "YyCHkHZ11713YG7QsB518lHrCFE3bW1s"
 
 # Production KV namespaces
 [[env.production.kv_namespaces]]
@@ -64,10 +64,11 @@ id = "c3501957dd2540ccb6f624a78df59936"
 binding = "SESSION_KV"
 id = "92783e42b1f54805be49a882bc0ef525"
 
-# Cache KV for performance
 [[env.production.kv_namespaces]]
 binding = "CACHE_KV"
-id = "327f94aec89b473db9a4d90baa9a2923"# Production R2 buckets for file storage
+id = "327f94aec89b473db9a4d90baa9a2923"
+
+# Production R2 buckets for file storage
 [[env.production.r2_buckets]]
 binding = "HEALTH_FILES"
 bucket_name = "vitalsense-health-files"
@@ -86,78 +87,18 @@ zone_name = "andernet.dev"
 pattern = "vitalsense.andernet.dev/*"
 zone_name = "andernet.dev"
 
-# Durable Objects for real-time features
-[[durable_objects.bindings]]
-name = "WEBSOCKET_ROOMS"
-class_name = "WebSocketRoom"
+# Durable Objects for real-time features (scoped to env.production)
+[[env.production.durable_objects.bindings]]
+name = "HEALTH_WEBSOCKET"
+class_name = "HealthWebSocket"
 
-[[durable_objects.bindings]]
+[[env.production.durable_objects.bindings]]
 name = "RATE_LIMITER"
 class_name = "RateLimiter"
-
-[[durable_objects.bindings]]
-name = "HEALTH_SESSIONS"
-class_name = "HealthSession"
 
 # Migrations for Durable Objects
 [[migrations]]
 tag = "v1"
-new_classes = ["WebSocketRoom", "RateLimiter", "HealthSession"]
+new_sqlite_classes = ["RateLimiter", "HealthWebSocket"]
 
-# Rules for enhanced security and performance
-[env.production.rules]
-# Custom headers for security
-[[env.production.rules.headers]]
-name = "Security Headers"
-action = "set"
-expression = "true"
-headers = [
-    "X-Content-Type-Options: nosniff",
-    "X-Frame-Options: DENY",
-    "X-XSS-Protection: 1; mode=block",
-    "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload",
-    "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' wss: https:; font-src 'self'; object-src 'none'; media-src 'self'; frame-src 'none';"
-]
-
-# Rate limiting rules
-[[env.production.rules.rate_limit]]
-name = "API Rate Limit"
-expression = "http.request.uri.path matches \"/api/.*\""
-action = "rate_limit"
-rate_limit = {
-    threshold = 100,
-    period = 60,
-    action = "challenge"
-}
-
-[[env.production.rules.rate_limit]]
-name = "Auth Rate Limit"
-expression = "http.request.uri.path matches \"/(login|register|auth)/.*\""
-action = "rate_limit"
-rate_limit = {
-    threshold = 10,
-    period = 60,
-    action = "block"
-}
-
-# Cache rules for performance
-[[env.production.rules.cache]]
-name = "Static Asset Cache"
-expression = "http.request.uri.path matches \"\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2)$\""
-action = "cache"
-cache = {
-    edge_ttl = 86400,
-    browser_ttl = 3600,
-    serve_stale = true
-}
-
-# Transform rules for optimization
-[[env.production.rules.transform]]
-name = "Minify Assets"
-expression = "http.request.uri.path matches \"\\.(js|css|html)$\""
-action = "minify"
-minify = {
-    javascript = true,
-    css = true,
-    html = true
-}
+# Note: Removed custom rules block not supported by Wrangler TOML
