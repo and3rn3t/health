@@ -98,6 +98,7 @@ import WSHealthPanel from '@/components/health/WSHealthPanel';
 import WSTokenSettings from '@/components/health/WSTokenSettings';
 import SmartNotificationEngine from '@/components/notifications/SmartNotificationEngine';
 import PersonalizedEngagementOptimizer from '@/components/recommendations/PersonalizedEngagementOptimizer';
+import { VitalSenseBrandColors } from '@/components/vitalsense/BrandColors';
 import SmartFeatureRecommendations from '@/components/recommendations/SmartFeatureRecommendations';
 
 // Define navigation item structure
@@ -1209,6 +1210,7 @@ function App() {
                     fallRiskScore={75} // This would normally come from health data processing
                   />
                 )}
+                {activeTab === 'vitalsense-brand' && <VitalSenseBrandColors />}
                 {activeTab === 'user-profile' && <UserProfile />}
                 {/* Removed VitalSenseBrandShowcase (component not found) */}
                 {activeTab === 'insights' && healthData && (
