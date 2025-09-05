@@ -9,27 +9,44 @@ import tseslint from 'typescript-eslint';
 export default [
   {
     ignores: [
-      'server/**',
-      '.wrangler/**',
+      // Core ignores - build outputs and dependencies
+      'node_modules/**',
       'dist/**',
       'dist-worker/**',
-      'node_modules/**',
-      'ios/**',
+      '.wrangler/**',
       'build/**',
-      '.next/**',
       'out/**',
+      '.next/**',
+      
+      // Development and tooling files that don't need linting
+      'server/**',
+      'ios/**',
+      'docs/**',
+      'scripts/**/*.ps1',
+      'scripts/**/*.sh',
+      '**/*.md',
+      '**/*.txt',
+      '**/*.log',
+      '**/*.json',
+      '**/*.yml',
+      '**/*.yaml',
+      
+      // Build and cache directories
       '.cache/**',
       'coverage/**',
       'test-results/**',
       'logs/**',
+      '**/tmp/**',
+      '**/temp/**',
+      
+      // Generated and minified files
       '**/*.js.map',
       '**/*.min.js',
       '**/*.bundle.js',
       '**/*.generated.*',
-      '**/tmp/**',
-      '**/temp/**',
-      '*.log',
       '.tsbuildinfo',
+      
+      // Config files (handled separately below)
       'vite.*.config.*',
       'wrangler.toml',
       'wrangler.*.toml',
