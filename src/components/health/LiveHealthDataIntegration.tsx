@@ -161,7 +161,7 @@ export default function LiveHealthDataIntegration() {
   // Calculate metrics per minute
   useEffect(() => {
     const interval = setInterval(() => {
-  if (isConnected === 'true') {
+      if (isConnected === 'true') {
         const now = Date.now();
         const oneMinuteAgo = now - 60000;
         const recentMetrics = liveMetrics.filter(
@@ -292,7 +292,7 @@ export default function LiveHealthDataIntegration() {
       </div>
 
       {/* Connection Status Alert */}
-  {liveDataEnabled === 'true' && isConnected !== 'true' && (
+      {liveDataEnabled === 'true' && isConnected !== 'true' && (
         <Alert className="border-yellow-200 bg-yellow-50">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>

@@ -48,7 +48,9 @@ interface Props {
   onChallengeCreated?: (challenge: Challenge) => void;
 }
 
-export default function ChallengeCreator({ onChallengeCreated }: Readonly<Props>) {
+export default function ChallengeCreator({
+  onChallengeCreated,
+}: Readonly<Props>) {
   const [challenges, setChallenges] = useKV<Challenge[]>(
     'created-challenges',
     []

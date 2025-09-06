@@ -263,17 +263,17 @@ export default function PersonalizedEngagementOptimizer({
       learningPreference: 'analytical',
     };
 
-    setEngagementData((current) => ({
-      sessions: current?.sessions ?? [],
+    setEngagementData({
+      sessions: engagementData?.sessions ?? [],
       patterns,
       profile,
-    }));
+    });
 
     // Generate personalized recommendations
     await generateRecommendations(patterns, profile);
     setIsAnalyzing(false);
     toast.success('Engagement analysis complete!');
-  }, [generateRecommendations, setEngagementData]);
+  }, [generateRecommendations, setEngagementData, engagementData?.sessions]);
 
   // Simulate engagement pattern analysis (after callbacks declared)
   useEffect(() => {
@@ -289,11 +289,10 @@ export default function PersonalizedEngagementOptimizer({
   }, [currentEngagement.patterns.length, generateEngagementPatterns]);
 
   const implementRecommendation = (id: string) => {
-    setRecommendations((current) =>
-      (current ?? []).map((rec) =>
-        rec.id === id ? { ...rec, implemented: true } : rec
-      )
+    const updatedRecommendations = (currentRecommendations ?? []).map((rec) =>
+      rec.id === id ? { ...rec, implemented: true } : rec
     );
+    setRecommendations(updatedRecommendations);
 
     const recommendation = currentRecommendations.find((r) => r.id === id);
     if (recommendation) {

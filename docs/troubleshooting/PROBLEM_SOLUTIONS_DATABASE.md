@@ -367,6 +367,7 @@ async function storeHealthData(data: HealthRecord[], env: Env) {
 **Files Affected**: `auth0-custom-login/login.html`, `src/lib/auth0Config.ts`, multiple component files
 
 **Implementation Steps**:
+
 ```powershell
 # 1. Create custom Auth0 login page
 # Copy example config and customize
@@ -383,6 +384,7 @@ Copy-Item "auth0-custom-login\auth0-config.example.ps1" "auth0-custom-login\auth
 ```
 
 **Key Features Implemented**:
+
 - VitalSense branding with heart icon (#2563eb primary color)
 - HIPAA/SOC 2/ISO 27001 compliance badges
 - Mobile-responsive design with dark mode support
@@ -390,6 +392,7 @@ Copy-Item "auth0-custom-login\auth0-config.example.ps1" "auth0-custom-login\auth
 - Automated deployment pipeline
 
 **VS Code Tasks Available**:
+
 - `Auth0: Test Custom Login Page`
 - `Auth0: Quick Deploy (Test Mode)`
 - `Auth0: Deploy Custom Login Page`

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getTtlSecondsForType } from '../lib/retention';
 import { writeAudit } from '../lib/security';
 
@@ -23,15 +23,25 @@ describe('audit writer', () => {
 
   it('writes newline-delimited JSON to R2 when binding present', async () => {
     const puts: Array<{ key: string; data: string }> = [];
-    const env: {
-      HEALTH_STORAGE: { put: (key: string, data: string) => Promise<void> };
-    } = {
+    const env = {
       HEALTH_STORAGE: {
-        put: async (key: string, data: string) => {
-          puts.push({ key, data });
+        put: async (
+          key: string,
+          data: string | ReadableStream<unknown> | ArrayBuffer
+        ): Promise<unknown> => {
+          puts.push({ key, data: data as string });
+          return undefined;
         },
       },
+    } as {
+      HEALTH_STORAGE: {
+        put: (
+          key: string,
+          data: string | ReadableStream<unknown> | ArrayBuffer
+        ) => Promise<unknown>;
+      };
     };
+
     await writeAudit(env, {
       type: 'test_event',
       actor: 'tester',

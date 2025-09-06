@@ -34,8 +34,8 @@ export function useHealthDataQuery(params: HealthDataQueryParams) {
       let payload;
       if (Array.isArray(json)) {
         payload = json;
-      } else if (json && Array.isArray(json.data)) {
-        payload = json.data;
+      } else if (json && Array.isArray((json as { data?: unknown }).data)) {
+        payload = (json as { data: unknown[] }).data;
       } else {
         // If the API returns an error or malformed data, return empty array
         console.warn('Health data API returned unexpected format:', json);

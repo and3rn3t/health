@@ -18,10 +18,13 @@ if (!existsSync(resolve(projectRoot, 'dist'))) {
 // Build CSS with PostCSS and Tailwind
 console.log('🎨 Building VitalSense CSS with PostCSS + Tailwind...');
 try {
-  execSync(`npx postcss ${resolve(projectRoot, 'src/main.css')} -o ${resolve(projectRoot, 'dist/main.css')} --minify`, {
-    stdio: 'inherit',
-    cwd: projectRoot
-  });
+  execSync(
+    `npx postcss ${resolve(projectRoot, 'src/main.css')} -o ${resolve(projectRoot, 'dist/main.css')} --minify`,
+    {
+      stdio: 'inherit',
+      cwd: projectRoot,
+    }
+  );
   console.log('✅ CSS build completed');
 } catch (error) {
   console.error('❌ CSS build failed:', error.message);
@@ -42,19 +45,23 @@ try {
       'process.env.NODE_ENV': '"production"',
       'import.meta.env.DEV': 'false',
       'import.meta.env.PROD': 'true',
-      'import.meta.env.VITE_AUTH0_DOMAIN': '"dev-qjdpc81dzr7xrnlu.us.auth0.com"',
-      'import.meta.env.VITE_AUTH0_CLIENT_ID': '"YyCHkHZ11713YG7QsB518lHrCFE3bW1s"',
-      'import.meta.env.VITE_AUTH0_REDIRECT_URI': '"https://health.andernet.dev/callback"',
-      'import.meta.env.VITE_AUTH0_LOGOUT_URI': '"https://health.andernet.dev/login"',
+      'import.meta.env.VITE_AUTH0_DOMAIN':
+        '"dev-qjdpc81dzr7xrnlu.us.auth0.com"',
+      'import.meta.env.VITE_AUTH0_CLIENT_ID':
+        '"YyCHkHZ11713YG7QsB518lHrCFE3bW1s"',
+      'import.meta.env.VITE_AUTH0_REDIRECT_URI':
+        '"https://health.andernet.dev/callback"',
+      'import.meta.env.VITE_AUTH0_LOGOUT_URI':
+        '"https://health.andernet.dev/login"',
       'import.meta.env.VITE_AUTH0_AUDIENCE': '"https://vitalsense-health-api"',
-      'import.meta.env.VITE_ENVIRONMENT': '"production"'
+      'import.meta.env.VITE_ENVIRONMENT': '"production"',
     },
     loader: {
       '.tsx': 'tsx',
       '.ts': 'ts',
-      '.css': 'css'
+      '.css': 'css',
     },
-    external: []
+    external: [],
   });
 
   // Copy index.html template and update script reference
@@ -150,7 +157,6 @@ try {
 
   // Now build worker
   await import('./build-worker.js');
-
 } catch (error) {
   console.error('❌ Build failed:', error);
   process.exit(1);

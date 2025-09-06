@@ -108,7 +108,7 @@ function DrawerDescription({
   return (
     <DrawerPrimitive.Description
       data-slot="drawer-description"
-      className={cn('text-slate-500 text-sm', className)}
+      className={cn('text-sm text-slate-500', className)}
       {...props}
     />
   );

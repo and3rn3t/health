@@ -34,6 +34,17 @@ import {
   Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import {
+  AdvancedCaregiverAlerts,
+  EnhancedFallRiskMonitor,
+  FallRiskInterventions,
+  FallRiskMonitor,
+  FallRiskWalkingDashboard,
+  LiDAREnvironmentalHazardDetector,
+  LiDARFallPredictionEngine,
+  LiDARTrainingAssistant,
+  WalkingPatternMonitor,
+} from './fall-risk-components';
 // import AdvancedCaregiverAlerts from './AdvancedCaregiverAlerts';
 // import EnhancedFallRiskMonitor from './EnhancedFallRiskMonitor';
 import FallHistory from './FallHistory';

@@ -56,7 +56,7 @@ function MLPredictionsDashboard({
   useEffect(() => {
     generatePredictions();
     loadModelPerformance();
-  }, [healthData, selectedTimeHorizon]);
+  }, [healthData, selectedTimeHorizon]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const generatePredictions = async () => {
     setIsLoading(true);

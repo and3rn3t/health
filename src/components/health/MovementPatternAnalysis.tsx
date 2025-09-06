@@ -102,8 +102,6 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
     analyzeMovementPatterns();
   }, [analyzeMovementPatterns]);
 
-
-
   const getPatternRiskColor = (
     risk: 'low' | 'moderate' | 'high' | 'critical'
   ) => {
@@ -219,24 +217,27 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-4 gap-2">
-            {(['1hour', '4hours', '24hours', '7days'] as const).map((timeframe) => {
-              let label = '7 Days';
-              if (timeframe === '1hour') label = '1 Hour';
-              else if (timeframe === '4hours') label = '4 Hours';
-              else if (timeframe === '24hours') label = '24 Hours';
-              const variant = selectedTimeframe === timeframe ? 'default' : 'outline';
-              return (
-                <Button
-                  key={timeframe}
-                  variant={variant}
-                  size="sm"
-                  onClick={() => setSelectedTimeframe(timeframe)}
-                  className="text-xs"
-                >
-                  {label}
-                </Button>
-              );
-            })}
+            {(['1hour', '4hours', '24hours', '7days'] as const).map(
+              (timeframe) => {
+                let label = '7 Days';
+                if (timeframe === '1hour') label = '1 Hour';
+                else if (timeframe === '4hours') label = '4 Hours';
+                else if (timeframe === '24hours') label = '24 Hours';
+                const variant =
+                  selectedTimeframe === timeframe ? 'default' : 'outline';
+                return (
+                  <Button
+                    key={timeframe}
+                    variant={variant}
+                    size="sm"
+                    onClick={() => setSelectedTimeframe(timeframe)}
+                    className="text-xs"
+                  >
+                    {label}
+                  </Button>
+                );
+              }
+            )}
           </div>
         </CardContent>
       </Card>
@@ -469,7 +470,10 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                     </h4>
                     <ul className="text-muted-foreground space-y-1 text-sm">
                       {pattern.indicators.map((indicator) => (
-                        <li key={`${pattern.type}:indicator:${indicator}`} className="flex items-start gap-2">
+                        <li
+                          key={`${pattern.type}:indicator:${indicator}`}
+                          className="flex items-start gap-2"
+                        >
                           <div className="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
                           {indicator}
                         </li>
@@ -484,7 +488,10 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                       </h4>
                       <ul className="text-muted-foreground space-y-1 text-sm">
                         {pattern.recommendations.map((rec) => (
-                          <li key={`${pattern.type}:rec:${rec}`} className="flex items-start gap-2">
+                          <li
+                            key={`${pattern.type}:rec:${rec}`}
+                            className="flex items-start gap-2"
+                          >
                             <div className="bg-accent mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
                             {rec}
                           </li>
@@ -501,9 +508,9 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
         {/* Fall Predictions Tab */}
         <TabsContent value="predictions" className="space-y-4">
           <div className="space-y-4">
-      {predictions.map((prediction) => (
+            {predictions.map((prediction) => (
               <Card
-        key={`${prediction.timeWindow}:${prediction.probability}:${prediction.confidence}`}
+                key={`${prediction.timeWindow}:${prediction.probability}:${prediction.confidence}`}
                 className={
                   prediction.severity === 'critical' ? 'border-destructive' : ''
                 }
@@ -546,7 +553,10 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                     </h4>
                     <div className="space-y-2">
                       {prediction.factors.map((factor) => (
-                        <div key={`${factor.name}:${factor.impact}`} className="space-y-1">
+                        <div
+                          key={`${factor.name}:${factor.impact}`}
+                          className="space-y-1"
+                        >
                           <div className="flex justify-between">
                             <span className="text-muted-foreground text-sm">
                               {factor.name}
@@ -571,7 +581,10 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                       </h4>
                       <ul className="text-muted-foreground space-y-1 text-sm">
                         {prediction.interventions.map((intervention) => (
-                          <li key={`${intervention}`} className="flex items-start gap-2">
+                          <li
+                            key={`${intervention}`}
+                            className="flex items-start gap-2"
+                          >
                             <Zap className="text-accent mt-1 h-3 w-3 flex-shrink-0" />
                             {intervention}
                           </li>
@@ -589,9 +602,9 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
         <TabsContent value="anomalies" className="space-y-4">
           {anomalies.length > 0 ? (
             <div className="space-y-4">
-        {anomalies.map((anomaly) => (
+              {anomalies.map((anomaly) => (
                 <Card
-          key={`${anomaly.type}:${anomaly.timestamp}:${anomaly.score}`}
+                  key={`${anomaly.type}:${anomaly.timestamp}:${anomaly.score}`}
                   className={
                     anomaly.severity === 'critical' ? 'border-destructive' : ''
                   }
@@ -636,7 +649,10 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                         </h4>
                         <ul className="text-muted-foreground space-y-1 text-sm">
                           {anomaly.affectedMetrics.map((metric: string) => (
-                            <li key={`${anomaly.type}:metric:${metric}`} className="flex items-center gap-2">
+                            <li
+                              key={`${anomaly.type}:metric:${metric}`}
+                              className="flex items-center gap-2"
+                            >
                               <div className="bg-destructive h-1.5 w-1.5 rounded-full" />
                               {metric}
                             </li>
@@ -651,7 +667,10 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
                           </h4>
                           <ul className="text-muted-foreground space-y-1 text-sm">
                             {anomaly.actions.map((action: string) => (
-                              <li key={`${anomaly.type}:action:${action}`} className="flex items-start gap-2">
+                              <li
+                                key={`${anomaly.type}:action:${action}`}
+                                className="flex items-start gap-2"
+                              >
                                 <CheckCircle className="text-accent mt-1 h-3 w-3 flex-shrink-0" />
                                 {action}
                               </li>

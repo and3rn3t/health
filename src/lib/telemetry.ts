@@ -27,7 +27,11 @@ export function recordTelemetry(
   // Notify listeners (try/catch isolated per listener)
   if (listeners.size) {
     for (const l of listeners) {
-      try { l(event); } catch { /* swallow */ }
+      try {
+        l(event);
+      } catch {
+        /* swallow */
+      }
     }
   }
   if (import.meta.env.DEV) {
@@ -62,7 +66,9 @@ export interface NormalizationCacheStats {
 
 // These setters will be wired by normalization utility (avoid circular import)
 let statsProvider: (() => NormalizationCacheStats) | null = null;
-export function registerNormalizationStatsProvider(fn: () => NormalizationCacheStats): void {
+export function registerNormalizationStatsProvider(
+  fn: () => NormalizationCacheStats
+): void {
   statsProvider = fn;
 }
 

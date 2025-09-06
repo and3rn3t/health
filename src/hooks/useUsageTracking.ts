@@ -33,34 +33,35 @@ export function useUsageTracking(
   useEffect(() => {
     startTimeRef.current = Date.now();
 
-    setUsagePatterns((currentPatterns) => {
-      const existingPattern = currentPatterns.find(
-        (p) => p.feature === featureName
+    const currentPatterns = usagePatterns || [];
+    const existingPattern = currentPatterns.find(
+      (p) => p.feature === featureName
+    );
+    if (existingPattern) {
+      const newPatterns = currentPatterns.map((p) =>
+        p.feature === featureName
+          ? {
+              ...p,
+              visits: p.visits + 1,
+              lastVisited: Date.now(),
+            }
+          : p
       );
-      if (existingPattern) {
-        return currentPatterns.map((p) =>
-          p.feature === featureName
-            ? {
-                ...p,
-                visits: p.visits + 1,
-                lastVisited: Date.now(),
-              }
-            : p
-        );
-      } else {
-        return [
-          ...currentPatterns,
-          {
-            feature: featureName,
-            visits: 1,
-            lastVisited: Date.now(),
-            timeSpent: 0,
-            actions: 0,
-          },
-        ];
-      }
-    });
-  }, [featureName, setUsagePatterns]);
+      setUsagePatterns(newPatterns);
+    } else {
+      const newPatterns = [
+        ...currentPatterns,
+        {
+          feature: featureName,
+          visits: 1,
+          lastVisited: Date.now(),
+          timeSpent: 0,
+          actions: 0,
+        },
+      ];
+      setUsagePatterns(newPatterns);
+    }
+  }, [featureName, setUsagePatterns, usagePatterns]);
 
   // Track time spent when component unmounts
   useEffect(() => {
@@ -70,19 +71,19 @@ export function useUsageTracking(
       const timeSpent = Date.now() - startTimeRef.current;
       const actions = actionCountRef.current;
 
-      setUsagePatterns((currentPatterns) =>
-        currentPatterns.map((p) =>
-          p.feature === featureName
-            ? {
-                ...p,
-                timeSpent: p.timeSpent + timeSpent,
-                actions: p.actions + actions,
-              }
-            : p
-        )
+      const currentPatterns = usagePatterns || [];
+      const updatedPatterns = currentPatterns.map((p) =>
+        p.feature === featureName
+          ? {
+              ...p,
+              timeSpent: p.timeSpent + timeSpent,
+              actions: p.actions + actions,
+            }
+          : p
       );
+      setUsagePatterns(updatedPatterns);
     };
-  }, [featureName, trackTimeSpent, setUsagePatterns]);
+  }, [featureName, trackTimeSpent, setUsagePatterns, usagePatterns]);
 
   // Function to track actions
   const trackAction = (actionType?: string) => {

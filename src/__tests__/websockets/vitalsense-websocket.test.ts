@@ -175,7 +175,7 @@ describe('VitalSense WebSocket System', () => {
 
       if (result.success) {
         expect(result.data.type).toBe('live_health_update');
-        expect(result.data.data.metric).toBe('heart_rate');
+        expect((result.data.data as any).metric).toBe('heart_rate');
       }
     });
 
@@ -245,7 +245,7 @@ describe('VitalSense WebSocket System', () => {
 
       if (result.success) {
         expect(result.data.timestamp).toBeTruthy();
-        expect(new Date(result.data.timestamp)).toBeInstanceOf(Date);
+        expect(new Date(result.data.timestamp!)).toBeInstanceOf(Date);
       }
     });
 

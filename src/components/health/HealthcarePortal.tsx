@@ -103,7 +103,14 @@ export default function HealthcarePortal({
   const [isAddingProvider, setIsAddingProvider] = useState(false);
   const [isAddingNote, setIsAddingNote] = useState(false);
 
-  const [newProvider, setNewProvider] = useState<{ name: string; specialization: string; email: string; phone: string; clinic: string; accessLevel: AccessLevel }>({
+  const [newProvider, setNewProvider] = useState<{
+    name: string;
+    specialization: string;
+    email: string;
+    phone: string;
+    clinic: string;
+    accessLevel: AccessLevel;
+  }>({
     name: '',
     specialization: '',
     email: '',
@@ -112,7 +119,15 @@ export default function HealthcarePortal({
     accessLevel: 'limited',
   });
 
-  const [newNote, setNewNote] = useState<{ type: NoteType; title: string; content: string; priority: Priority; actionRequired: boolean; patientVisible: boolean; followupDate: string }>({
+  const [newNote, setNewNote] = useState<{
+    type: NoteType;
+    title: string;
+    content: string;
+    priority: Priority;
+    actionRequired: boolean;
+    patientVisible: boolean;
+    followupDate: string;
+  }>({
     type: 'assessment',
     title: '',
     content: '',
@@ -132,10 +147,13 @@ export default function HealthcarePortal({
       const hasConcerns = score < 60 || highRiskCount > 0;
 
       const assessmentParts: string[] = [];
-  let statusMsg = 'Health status needs attention.';
-  if (score >= 80) statusMsg = 'Excellent overall status.';
-  else if (score >= 60) statusMsg = 'Good overall status with areas to improve.';
-  assessmentParts.push(`Overall health score is ${score}/100. ${statusMsg}`);
+      let statusMsg = 'Health status needs attention.';
+      if (score >= 80) statusMsg = 'Excellent overall status.';
+      else if (score >= 60)
+        statusMsg = 'Good overall status with areas to improve.';
+      assessmentParts.push(
+        `Overall health score is ${score}/100. ${statusMsg}`
+      );
       if (highRiskCount > 0) {
         assessmentParts.push(
           `${highRiskCount} high fall-risk factor${highRiskCount > 1 ? 's' : ''} detected.`
@@ -163,7 +181,7 @@ export default function HealthcarePortal({
           : undefined,
       };
 
-  setMedicalNotes((current) => [note, ...((current ?? []))]);
+      setMedicalNotes((current) => [note, ...(current ?? [])]);
       toast.success('Medical insights generated');
     } catch (err) {
       console.error('generateMedicalInsights failed', err);
@@ -184,7 +202,7 @@ export default function HealthcarePortal({
       joinedDate: new Date(),
     };
 
-  setProviders((current) => ([...(current ?? []), provider]));
+    setProviders((current) => [...(current ?? []), provider]);
     setNewProvider({
       name: '',
       specialization: '',
@@ -213,7 +231,7 @@ export default function HealthcarePortal({
       createdAt: new Date(),
     };
 
-  setMedicalNotes((current) => [note, ...((current ?? []))]);
+    setMedicalNotes((current) => [note, ...(current ?? [])]);
     setNewNote({
       type: 'assessment',
       title: '',
@@ -434,7 +452,9 @@ export default function HealthcarePortal({
                   <Label htmlFor="access-level">Access Level</Label>
                   <Select
                     value={newProvider.accessLevel}
-                    onValueChange={(value: 'full' | 'limited' | 'emergency-only') =>
+                    onValueChange={(
+                      value: 'full' | 'limited' | 'emergency-only'
+                    ) =>
                       setNewProvider((prev) => ({
                         name: prev.name,
                         specialization: prev.specialization,
@@ -532,8 +552,10 @@ export default function HealthcarePortal({
                                 : 'outline'
                             }
                             className={(() => {
-                              if (provider.verificationStatus === 'verified') return 'bg-green-100 text-green-800';
-                              if (provider.verificationStatus === 'pending') return 'bg-yellow-100 text-yellow-800';
+                              if (provider.verificationStatus === 'verified')
+                                return 'bg-green-100 text-green-800';
+                              if (provider.verificationStatus === 'pending')
+                                return 'bg-yellow-100 text-yellow-800';
                               return 'bg-gray-100 text-gray-800';
                             })()}
                           >
@@ -583,7 +605,13 @@ export default function HealthcarePortal({
                     <Label htmlFor="note-type">Type</Label>
                     <Select
                       value={newNote.type}
-                      onValueChange={(value: 'assessment' | 'recommendation' | 'concern' | 'followup') =>
+                      onValueChange={(
+                        value:
+                          | 'assessment'
+                          | 'recommendation'
+                          | 'concern'
+                          | 'followup'
+                      ) =>
                         setNewNote((prev) => ({
                           type: value,
                           title: prev.title,
@@ -616,7 +644,9 @@ export default function HealthcarePortal({
                     <Label htmlFor="note-priority">Priority</Label>
                     <Select
                       value={newNote.priority}
-                      onValueChange={(value: 'low' | 'medium' | 'high' | 'urgent') =>
+                      onValueChange={(
+                        value: 'low' | 'medium' | 'high' | 'urgent'
+                      ) =>
                         setNewNote((prev) => ({
                           type: prev.type,
                           title: prev.title,
@@ -748,7 +778,8 @@ export default function HealthcarePortal({
                         className={`h-3 w-3 rounded-full ${(() => {
                           if (note.priority === 'urgent') return 'bg-red-500';
                           if (note.priority === 'high') return 'bg-orange-500';
-                          if (note.priority === 'medium') return 'bg-yellow-500';
+                          if (note.priority === 'medium')
+                            return 'bg-yellow-500';
                           return 'bg-green-500';
                         })()}`}
                       />
@@ -810,13 +841,20 @@ export default function HealthcarePortal({
               <div className="grid gap-4 text-center md:grid-cols-4">
                 <div>
                   <div className="text-2xl font-bold text-blue-600">
-                    {(careTasks ?? []).filter((t) => t.status === 'pending').length}
+                    {
+                      (careTasks ?? []).filter((t) => t.status === 'pending')
+                        .length
+                    }
                   </div>
                   <div className="text-muted-foreground text-sm">Pending</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-yellow-600">
-                    {(careTasks ?? []).filter((t) => t.status === 'in-progress').length}
+                    {
+                      (careTasks ?? []).filter(
+                        (t) => t.status === 'in-progress'
+                      ).length
+                    }
                   </div>
                   <div className="text-muted-foreground text-sm">
                     In Progress
@@ -824,13 +862,19 @@ export default function HealthcarePortal({
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-green-600">
-                    {(careTasks ?? []).filter((t) => t.status === 'completed').length}
+                    {
+                      (careTasks ?? []).filter((t) => t.status === 'completed')
+                        .length
+                    }
                   </div>
                   <div className="text-muted-foreground text-sm">Completed</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-red-600">
-                    {(careTasks ?? []).filter((t) => t.status === 'overdue').length}
+                    {
+                      (careTasks ?? []).filter((t) => t.status === 'overdue')
+                        .length
+                    }
                   </div>
                   <div className="text-muted-foreground text-sm">Overdue</div>
                 </div>

@@ -1,9 +1,4 @@
-import { describ      // Test that endpoints follow RESTful patterns
-      coreEndpoints.forEach(endpoint => {
-        expect(endpoint).toMatch(/^\/api\/[\w\/{}-]+$/);
-        expect(endpoint).not.toContain(' ');
-        expect(endpoint).not.toContain('_endpoint');
-      });ect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 // Test the health data API endpoints structure and validation
 describe('VitalSense API Endpoints', () => {
@@ -21,7 +16,7 @@ describe('VitalSense API Endpoints', () => {
 
       // Test that endpoints follow RESTful patterns
       coreEndpoints.forEach((endpoint) => {
-        expect(endpoint).toMatch(/^\/api\/[\w\/-]+$/);
+        expect(endpoint).toMatch(/^\/api\/[\w/{}-]+$/);
         expect(endpoint).not.toContain(' ');
         expect(endpoint).not.toContain('_endpoint');
       });
@@ -37,7 +32,7 @@ describe('VitalSense API Endpoints', () => {
 
       healthEndpoints.forEach((endpoint) => {
         // Should use kebab-case
-        expect(endpoint).toMatch(/^\/api\/[\w-\/]+$/);
+        expect(endpoint).toMatch(/^\/api\/[\w-/]+$/);
 
         // Should not use camelCase in URLs
         expect(endpoint).not.toMatch(/[A-Z]/);

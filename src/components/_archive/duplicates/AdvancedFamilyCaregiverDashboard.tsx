@@ -113,16 +113,23 @@ interface Props {
 }
 
 // Helpers to avoid deep nested function definitions in event handlers
-function acknowledgeAlertList(list: CaregiverAlert[], id: string): CaregiverAlert[] {
+function acknowledgeAlertList(
+  list: CaregiverAlert[],
+  id: string
+): CaregiverAlert[] {
   const result: CaregiverAlert[] = [];
   for (const a of list) {
-    if (a.id === id) result.push({ ...a, status: 'acknowledged', responseTime: 5 });
+    if (a.id === id)
+      result.push({ ...a, status: 'acknowledged', responseTime: 5 });
     else result.push(a);
   }
   return result;
 }
 
-function completeTaskInList(list: CaregiverTask[], id: string): CaregiverTask[] {
+function completeTaskInList(
+  list: CaregiverTask[],
+  id: string
+): CaregiverTask[] {
   const result: CaregiverTask[] = [];
   for (const t of list) {
     if (t.id === id)
@@ -341,7 +348,7 @@ export default function AdvancedFamilyCaregiverDashboard({
           sharedWith: ['spouse-1'],
         },
       ];
-    setHealthInsights(insights);
+      setHealthInsights(insights);
     }
   }, [healthData, healthInsights?.length, setHealthInsights]);
 
@@ -462,7 +469,10 @@ export default function AdvancedFamilyCaregiverDashboard({
             </p>
             <p className="text-muted-foreground text-sm">
               Shared with{' '}
-              {safeFamilyMembers.filter((m) => m.permissions.viewHealthData).length}{' '}
+              {
+                safeFamilyMembers.filter((m) => m.permissions.viewHealthData)
+                  .length
+              }{' '}
               members
             </p>
           </CardContent>
@@ -761,11 +771,19 @@ export default function AdvancedFamilyCaregiverDashboard({
                         </div>
                       </div>
 
-                      {alert.status === 'sent' || alert.status === 'delivered' ? (
+                      {alert.status === 'sent' ||
+                      alert.status === 'delivered' ? (
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setCaregiverAlerts(acknowledgeAlertList((caregiverAlerts ?? []), alert.id))}
+                          onClick={() =>
+                            setCaregiverAlerts(
+                              acknowledgeAlertList(
+                                caregiverAlerts ?? [],
+                                alert.id
+                              )
+                            )
+                          }
                         >
                           <CheckCircle className="mr-2 h-4 w-4" />
                           Mark as Acknowledged
@@ -845,33 +863,33 @@ export default function AdvancedFamilyCaregiverDashboard({
                       </Badge>
                     </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-muted-foreground text-xs">
-                        Shared With
-                      </Label>
-                      <div className="text-sm">
-                        {insight.sharedWith
-                          .map((id) => {
-                            const member = (familyMembers ?? []).find(
-                              (m) => m.id === id
-                            );
-                            return member ? member.name : 'Unknown';
-                          })
-                          .join(', ')}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-muted-foreground text-xs">
+                          Shared With
+                        </Label>
+                        <div className="text-sm">
+                          {insight.sharedWith
+                            .map((id) => {
+                              const member = (familyMembers ?? []).find(
+                                (m) => m.id === id
+                              );
+                              return member ? member.name : 'Unknown';
+                            })
+                            .join(', ')}
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-muted-foreground text-xs">
+                          Generated
+                        </Label>
+                        <div className="text-sm">
+                          {new Date(insight.timestamp).toLocaleDateString()}
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <Label className="text-muted-foreground text-xs">
-                        Generated
-                      </Label>
-                      <div className="text-sm">
-                        {new Date(insight.timestamp).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
               );
             })}
           </div>
@@ -914,7 +932,9 @@ export default function AdvancedFamilyCaregiverDashboard({
                       >
                         {task.priority}
                       </Badge>
-                      <Badge className={`text-xs ${getStatusColor(task.status)}`}>
+                      <Badge
+                        className={`text-xs ${getStatusColor(task.status)}`}
+                      >
                         {task.status}
                       </Badge>
                     </div>
@@ -926,8 +946,9 @@ export default function AdvancedFamilyCaregiverDashboard({
                         Assigned To
                       </Label>
                       <div className="text-sm">
-                        {(familyMembers ?? []).find((m) => m.id === task.assignedTo)
-                          ?.name || 'Unknown'}
+                        {(familyMembers ?? []).find(
+                          (m) => m.id === task.assignedTo
+                        )?.name || 'Unknown'}
                       </div>
                     </div>
                     <div>
@@ -952,7 +973,11 @@ export default function AdvancedFamilyCaregiverDashboard({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => setCaregiverTasks(completeTaskInList((caregiverTasks ?? []), task.id))}
+                      onClick={() =>
+                        setCaregiverTasks(
+                          completeTaskInList(caregiverTasks ?? [], task.id)
+                        )
+                      }
                     >
                       <CheckCircle className="mr-2 h-4 w-4" />
                       Mark as Completed
@@ -1024,7 +1049,12 @@ export default function AdvancedFamilyCaregiverDashboard({
                         <span className="font-medium">Emergency Contacts</span>
                       </div>
                       <p className="text-muted-foreground text-sm">
-                        {(safeFamilyMembers.filter((m) => m.permissions.emergencyContact)).length} contacts ready
+                        {
+                          safeFamilyMembers.filter(
+                            (m) => m.permissions.emergencyContact
+                          ).length
+                        }{' '}
+                        contacts ready
                       </p>
                     </div>
                   </div>

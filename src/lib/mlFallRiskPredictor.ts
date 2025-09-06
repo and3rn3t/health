@@ -422,7 +422,7 @@ export class MLFallRiskPredictor {
     healthData: ProcessedHealthData,
     contextData?: ContextData
   ): AdvancedMLFeatures {
-  const basicFeatures = this.extractFeatures(healthData, contextData);
+    const basicFeatures = this.extractFeatures(healthData, contextData);
 
     const advancedFeatures: AdvancedMLFeatures = {
       ...basicFeatures,
@@ -470,7 +470,10 @@ export class MLFallRiskPredictor {
    * Enhanced predict fall risk using advanced ensemble of ML models
    */
   async predictFallRisk(
-    input: ProcessedHealthData | ProcessedHealthRecord | ProcessedHealthRecord[],
+    input:
+      | ProcessedHealthData
+      | ProcessedHealthRecord
+      | ProcessedHealthRecord[],
     timeHorizon: RiskPrediction['timeHorizon'] = '24hours',
     contextData?: ContextData
   ): Promise<RiskPrediction> {
@@ -560,7 +563,9 @@ export class MLFallRiskPredictor {
       walkingSteadiness: this.calculateWalkingSteadiness(m.walkingSteadiness),
       stepCount: m.steps?.average || 0,
       stepVariability: m.steps?.variability || 0,
-      walkingDistance: (m as Record<string, MetricData | undefined>).distanceWalking?.average || 0,
+      walkingDistance:
+        (m as Record<string, MetricData | undefined>).distanceWalking
+          ?.average || 0,
       walkingSpeed: this.calculateWalkingSpeed(
         m.steps,
         (m as Record<string, MetricData | undefined>).distanceWalking
@@ -571,7 +576,9 @@ export class MLFallRiskPredictor {
       sleepDuration: m.sleepHours?.average || 0,
       sleepQuality: this.calculateSleepQuality(m.sleepHours),
       sleepConsistency: this.calculateSleepConsistency(m.sleepHours),
-  activeEnergy: (m as Record<string, MetricData | undefined>).activeEnergy?.average || 0,
+      activeEnergy:
+        (m as Record<string, MetricData | undefined>).activeEnergy?.average ||
+        0,
       sedentaryTime: this.calculateSedentaryTime(m.steps),
       activityConsistency: this.calculateActivityConsistency(m.steps),
       age: (contextData?.age as number) ?? 70,
@@ -586,7 +593,10 @@ export class MLFallRiskPredictor {
   }
 
   private normalizeInput(
-    input: ProcessedHealthData | ProcessedHealthRecord | ProcessedHealthRecord[],
+    input:
+      | ProcessedHealthData
+      | ProcessedHealthRecord
+      | ProcessedHealthRecord[],
     options?: { bypassCache?: boolean }
   ): ProcessedHealthData {
     return normalizeToHealthData(input, options);
@@ -794,7 +804,7 @@ export class MLFallRiskPredictor {
    */
   private identifyPrimaryFactors(
     features: MLFeatures,
-    _riskScore: number,
+    _riskScore: number
   ): RiskPrediction['primaryFactors'] {
     const factors = [];
 
@@ -1277,7 +1287,8 @@ export class MLFallRiskPredictor {
         break;
       }
       case 'neuralNetwork': {
-        const complexityScore = features.movementComplexity * features.fatigueLevel;
+        const complexityScore =
+          features.movementComplexity * features.fatigueLevel;
         enhancedScore += complexityScore * 0.15;
         explanation += ' considering movement complexity';
         break;
@@ -1414,7 +1425,9 @@ export class MLFallRiskPredictor {
 
     // Analyze each important feature
     for (const [featureName, importance] of Object.entries(featureImportance)) {
-      const featureValue = (features as unknown as Record<string, number>)[featureName];
+      const featureValue = (features as unknown as Record<string, number>)[
+        featureName
+      ];
       if (featureValue !== undefined) {
         const contribution = this.calculateFeatureContribution(
           featureName,
@@ -1433,8 +1446,8 @@ export class MLFallRiskPredictor {
       }
     }
 
-  const sorted = [...factors].sort((a, b) => b.contribution - a.contribution);
-  return sorted.slice(0, 4); // Return top 4 factors
+    const sorted = [...factors].sort((a, b) => b.contribution - a.contribution);
+    return sorted.slice(0, 4); // Return top 4 factors
   }
 
   private calculateFeatureContribution(
@@ -1465,7 +1478,7 @@ export class MLFallRiskPredictor {
         contribution = Math.min(1, value / 0.3) * importance;
         break;
       default:
-  // no contribution adjustment
+      // no contribution adjustment
     }
 
     return Math.min(1, contribution);
@@ -1619,8 +1632,9 @@ export class MLFallRiskPredictor {
         return true;
 
       // Environmental factors
-  if ((contextData.weatherRisk ?? 0) > 0.7 && riskScore >= 0.5) return true;
-  if ((contextData.locationComplexity ?? 0) > 0.8 && riskScore >= 0.6) return true;
+      if ((contextData.weatherRisk ?? 0) > 0.7 && riskScore >= 0.5) return true;
+      if ((contextData.locationComplexity ?? 0) > 0.8 && riskScore >= 0.6)
+        return true;
     }
 
     // Multiple moderate risk factors

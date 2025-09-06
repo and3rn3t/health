@@ -5,7 +5,7 @@
 **Date**: September 5-6, 2025  
 **Issue**: Complete branding transformation from generic health app to VitalSense-branded platform  
 **Status**: ✅ RESOLVED  
-**Impact**: High - Affects entire user experience and brand consistency  
+**Impact**: High - Affects entire user experience and brand consistency
 
 ---
 
@@ -108,9 +108,10 @@
 ```typescript
 // Dynamic configuration loading
 export const auth0Config = {
-  domain: window.__VITALSENSE_CONFIG__?.auth0?.domain || 
-          import.meta.env.VITE_AUTH0_DOMAIN || 
-          'vitalsense-health.auth0.com',
+  domain:
+    window.__VITALSENSE_CONFIG__?.auth0?.domain ||
+    import.meta.env.VITE_AUTH0_DOMAIN ||
+    'vitalsense-health.auth0.com',
   // ... other config
 };
 ```
@@ -226,7 +227,7 @@ export const auth0Config = {
 ### **Time Investment**: ~8 hours total
 
 - Research and planning: 2 hours
-- Implementation: 4 hours  
+- Implementation: 4 hours
 - Testing and documentation: 2 hours
 
 ### **Risk Level**: Medium
@@ -255,4 +256,4 @@ export const auth0Config = {
 
 ---
 
-*This document serves as a complete reference for future VitalSense branding implementations and troubleshooting.*
+_This document serves as a complete reference for future VitalSense branding implementations and troubleshooting._

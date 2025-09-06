@@ -1,7 +1,8 @@
 import AIInsights from '@/components/health/AIInsights';
-// import DataVisualization, {
-//   CorrelationChart,
-// } from '@/components/health/DataVisualization';
+import {
+  CorrelationChart,
+  DataVisualization,
+} from '@/components/health/analytics-components';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {

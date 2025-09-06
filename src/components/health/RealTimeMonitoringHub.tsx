@@ -79,7 +79,9 @@ interface ConnectionStatusLike {
   dataQuality: 'realtime' | 'delayed' | 'offline';
 }
 
-function SystemPerformanceCard({ status }: Readonly<{ status: ConnectionStatusLike }>) {
+function SystemPerformanceCard({
+  status,
+}: Readonly<{ status: ConnectionStatusLike }>) {
   const qualityColor = (() => {
     switch (status.dataQuality) {
       case 'realtime':
@@ -161,7 +163,9 @@ function StatusCards({
   unreadAlerts: number;
 }>) {
   const connectionIcon = status.connected ? (
-    <Wifi className={`h-5 w-5 ${status.dataQuality === 'realtime' ? 'text-green-500' : 'text-yellow-500'}`} />
+    <Wifi
+      className={`h-5 w-5 ${status.dataQuality === 'realtime' ? 'text-green-500' : 'text-yellow-500'}`}
+    />
   ) : (
     <WifiOff className="h-5 w-5 text-red-500" />
   );
@@ -172,7 +176,9 @@ function StatusCards({
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm font-medium">Status</p>
+              <p className="text-muted-foreground text-sm font-medium">
+                Status
+              </p>
               <div className="mt-1 flex items-center gap-2">
                 {monitoringActive ? (
                   <CheckCircle className="h-4 w-4 text-green-500" />
@@ -193,7 +199,9 @@ function StatusCards({
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm font-medium">Connection</p>
+              <p className="text-muted-foreground text-sm font-medium">
+                Connection
+              </p>
               <div className="mt-1 flex items-center gap-2">
                 {connectionIcon}
                 <span
@@ -212,7 +220,9 @@ function StatusCards({
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm font-medium">Data Rate</p>
+              <p className="text-muted-foreground text-sm font-medium">
+                Data Rate
+              </p>
               <p className="text-2xl font-bold">{metricsPerMin}</p>
               <p className="text-muted-foreground text-xs">metrics/min</p>
             </div>
@@ -225,8 +235,12 @@ function StatusCards({
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm font-medium">Unread Alerts</p>
-              <p className="text-2xl font-bold text-orange-600">{unreadAlerts}</p>
+              <p className="text-muted-foreground text-sm font-medium">
+                Unread Alerts
+              </p>
+              <p className="text-2xl font-bold text-orange-600">
+                {unreadAlerts}
+              </p>
             </div>
             <Bell className="text-muted-foreground h-8 w-8" />
           </div>
@@ -265,31 +279,50 @@ function LiveMetricsCard({
           <div className="flex items-center justify-between">
             <span className="text-sm">Heart Rate</span>
             <div className="flex items-center gap-2">
-              <div className={`h-2 w-2 rounded-full ${heartRate ? 'animate-pulse bg-green-500' : 'bg-gray-300'}`} />
+              <div
+                className={`h-2 w-2 rounded-full ${heartRate ? 'animate-pulse bg-green-500' : 'bg-gray-300'}`}
+              />
               <span className="font-semibold">
-                {typeof heartRate === 'number' ? `${Math.round(heartRate)} BPM` : '--'}
+                {typeof heartRate === 'number'
+                  ? `${Math.round(heartRate)} BPM`
+                  : '--'}
               </span>
             </div>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm">Daily Steps</span>
             <div className="flex items-center gap-2">
-              <Progress value={typeof steps === 'number' ? Math.min(steps / 100, 100) : 0} className="h-2 w-20" />
-              <span className="font-semibold">{typeof steps === 'number' ? Math.round(steps) : 0}</span>
+              <Progress
+                value={
+                  typeof steps === 'number' ? Math.min(steps / 100, 100) : 0
+                }
+                className="h-2 w-20"
+              />
+              <span className="font-semibold">
+                {typeof steps === 'number' ? Math.round(steps) : 0}
+              </span>
             </div>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm">Walking Steadiness</span>
             <Badge
               variant="outline"
-              className={walkingSteadiness && walkingSteadiness > 0.8 ? 'border-green-200 text-green-700' : 'border-yellow-200 text-yellow-700'}
+              className={
+                walkingSteadiness && walkingSteadiness > 0.8
+                  ? 'border-green-200 text-green-700'
+                  : 'border-yellow-200 text-yellow-700'
+              }
             >
-              {walkingSteadiness && walkingSteadiness > 0.8 ? 'Good' : 'Monitoring'}
+              {walkingSteadiness && walkingSteadiness > 0.8
+                ? 'Good'
+                : 'Monitoring'}
             </Badge>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm">Last Update</span>
-            <span className="text-muted-foreground text-sm">{isConnected ? 'Live' : lastUpdate}</span>
+            <span className="text-muted-foreground text-sm">
+              {isConnected ? 'Live' : lastUpdate}
+            </span>
           </div>
           {isConnected && (
             <div className="flex items-center justify-between">
@@ -303,7 +336,9 @@ function LiveMetricsCard({
   );
 }
 
-function EmergencyResponseCard({ emergencyContactsCount }: Readonly<{ emergencyContactsCount: number }>) {
+function EmergencyResponseCard({
+  emergencyContactsCount,
+}: Readonly<{ emergencyContactsCount: number }>) {
   return (
     <Card>
       <CardHeader>
@@ -373,7 +408,7 @@ export default function RealTimeMonitoringHub({
     };
     setCurrentStatus((prev) => ({
       ...prev,
-      isActive: (monitoringActive === 'true') && live.connectionStatus.connected,
+      isActive: monitoringActive === 'true' && live.connectionStatus.connected,
       lastUpdate: live.connectionStatus.lastHeartbeat || prev.lastUpdate,
       connectionQuality: qualityMap[live.connectionStatus.dataQuality],
       devicesConnected: live.connectionStatus.connected ? 3 : 0,
@@ -382,7 +417,7 @@ export default function RealTimeMonitoringHub({
 
   // Real-time updates when live data is active
   useEffect(() => {
-    if ((monitoringActive === 'true') && live.connectionStatus.connected) {
+    if (monitoringActive === 'true' && live.connectionStatus.connected) {
       const interval = setInterval(() => {
         setCurrentStatus((prev) => ({
           ...prev,
@@ -396,7 +431,7 @@ export default function RealTimeMonitoringHub({
 
   // Initialize default devices if none exist
   useEffect(() => {
-  if ((devices ?? []).length === 0) {
+    if ((devices ?? []).length === 0) {
       const defaultDevices: ConnectedDevice[] = [
         {
           id: 'apple-Watch-1',
@@ -450,8 +485,8 @@ export default function RealTimeMonitoringHub({
       resolved: false,
     };
 
-  setAlerts((currentAlerts = []) => [newAlert, ...currentAlerts]);
-  toast.warning('New alert generated for testing');
+    setAlerts((currentAlerts = []) => [newAlert, ...currentAlerts]);
+    toast.warning('New alert generated for testing');
   };
 
   const resolveAlert = (alertId: string) => {
@@ -482,7 +517,7 @@ export default function RealTimeMonitoringHub({
     switch (status) {
       case 'online':
         return 'text-green-500';
-  case 'warning':
+      case 'warning':
         return 'text-yellow-500';
       case 'offline':
         return 'text-red-500';
@@ -512,9 +547,13 @@ export default function RealTimeMonitoringHub({
   const currentHeartRate = live.latestMetrics.heart_rate;
   const currentSteps = live.latestMetrics.step_count;
   const currentWalkingSteadiness = live.latestMetrics.walking_steadiness;
-  const heartRateVal = currentHeartRate ? Number(currentHeartRate.value) : undefined;
+  const heartRateVal = currentHeartRate
+    ? Number(currentHeartRate.value)
+    : undefined;
   const stepsVal = currentSteps ? Number(currentSteps.value) : undefined;
-  const walkingVal = currentWalkingSteadiness ? Number(currentWalkingSteadiness.value) : undefined;
+  const walkingVal = currentWalkingSteadiness
+    ? Number(currentWalkingSteadiness.value)
+    : undefined;
 
   // (Performance card now computes its own derived UI values)
 
@@ -563,7 +602,7 @@ export default function RealTimeMonitoringHub({
       />
 
       {/* Main Monitoring Interface */}
-  <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="alerts" className="relative">
@@ -591,7 +630,9 @@ export default function RealTimeMonitoringHub({
               lastUpdate={currentStatus.lastUpdate}
               totalMetrics={live.liveMetrics.length}
             />
-            <EmergencyResponseCard emergencyContactsCount={(emergencyContacts ?? []).length} />
+            <EmergencyResponseCard
+              emergencyContactsCount={(emergencyContacts ?? []).length}
+            />
           </div>
 
           {/* System Performance */}
@@ -607,7 +648,9 @@ export default function RealTimeMonitoringHub({
         <TabsContent value="alerts" className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Recent Alerts</h3>
-            <Badge variant="outline">{(alerts ?? []).length} total alerts</Badge>
+            <Badge variant="outline">
+              {(alerts ?? []).length} total alerts
+            </Badge>
           </div>
 
           <div className="space-y-3">

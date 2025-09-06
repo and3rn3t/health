@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { decryptJSON, getAesKey } from '../lib/security';
 import app from '../worker';
-import { getAesKey, decryptJSON } from '../lib/security';
 
 const ASSETS_404 = {
   fetch: async (req: Request) => {
@@ -31,7 +31,7 @@ describe.skip('worker: core routes and middleware', () => {
     const req = new Request('https://x.test/health');
     const res = await app.fetch(req, makeEnv());
     expect(res.status).toBe(200);
-    const json = await res.json();
+    const json = (await res.json()) as { status: string };
     expect(json.status).toBe('healthy');
     // Security headers applied
     expect(res.headers.get('X-Frame-Options')).toBe('DENY');
@@ -72,7 +72,7 @@ describe.skip('worker: core routes and middleware', () => {
     );
     const res = await app.fetch(req, env);
     expect(res.status).toBe(429);
-    const body = await res.json();
+    const body = (await res.json()) as { error: string };
     expect(body.error).toBe('rate_limited');
   });
 
@@ -108,7 +108,7 @@ describe.skip('worker: core routes and middleware', () => {
     });
     const res = await app.fetch(req, env);
     expect(res.status).toBe(201);
-    const body = await res.json();
+    const body = (await res.json()) as { ok: boolean };
     expect(body.ok).toBe(true);
     expect(puts.length).toBe(1);
     const { key, value, ttl } = puts[0];
@@ -126,7 +126,7 @@ describe.skip('worker: core routes and middleware', () => {
     const req = new Request('https://x.test/api/health-data?from=not-a-date');
     const res = await app.fetch(req, makeEnv());
     expect(res.status).toBe(400);
-    const json = await res.json();
+    const json = (await res.json()) as { error: string };
     expect(json.error).toBe('validation_error');
   });
 });

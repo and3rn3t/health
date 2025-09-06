@@ -3,7 +3,10 @@
  * Advanced ML-powered optimization for fall risk prediction and intervention
  */
 
-import type { ProcessedHealthData as AnalyticsHealthData, MetricData } from '@/lib/healthDataProcessor';
+import type {
+  ProcessedHealthData as AnalyticsHealthData,
+  MetricData,
+} from '@/lib/healthDataProcessor';
 import { MLFallRiskPredictor, RiskPrediction } from '@/lib/mlFallRiskPredictor';
 import { normalizeToHealthData } from '@/lib/normalizeHealthInput';
 import type { ProcessedHealthRecord } from '@/types';
@@ -107,12 +110,19 @@ interface PredictiveInsight {
   };
 }
 
-type HealthInput = ProcessedHealthRecord | ProcessedHealthRecord[] | AnalyticsHealthData;
+type HealthInput =
+  | ProcessedHealthRecord
+  | ProcessedHealthRecord[]
+  | AnalyticsHealthData;
 
 export class EnhancedFallRiskOptimizer {
   private readonly mlPredictor: MLFallRiskPredictor;
-  private readonly interventionHistory: Map<string, OptimizedInterventionPlan[]> = new Map();
-  private readonly personalizedThresholds: Map<string, AdaptiveThreshold[]> = new Map();
+  private readonly interventionHistory: Map<
+    string,
+    OptimizedInterventionPlan[]
+  > = new Map();
+  private readonly personalizedThresholds: Map<string, AdaptiveThreshold[]> =
+    new Map();
   private readonly contextualFactors: Map<string, ContextData> = new Map();
 
   constructor() {
@@ -298,7 +308,7 @@ export class EnhancedFallRiskOptimizer {
    */
   private generateExerciseInterventions(
     riskLevel: RiskPrediction['riskLevel'],
-  personalizedFactors: PersonalizedFactors
+    personalizedFactors: PersonalizedFactors
   ): PersonalizedIntervention[] {
     const exercises: PersonalizedIntervention[] = [];
 
@@ -375,7 +385,7 @@ export class EnhancedFallRiskOptimizer {
    */
   private generateEnvironmentalInterventions(
     riskLevel: RiskPrediction['riskLevel'],
-  contextData?: ContextData
+    contextData?: ContextData
   ): PersonalizedIntervention[] {
     const environmental: PersonalizedIntervention[] = [];
 
@@ -434,12 +444,16 @@ export class EnhancedFallRiskOptimizer {
     contextData?: ContextData
   ): PersonalizedFactors {
     const getAvg = (metric?: MetricData) => metric?.average ?? 0;
-    const walkingSteadiness = getAvg(healthData.metrics.walkingSteadiness) || 70;
+    const walkingSteadiness =
+      getAvg(healthData.metrics.walkingSteadiness) || 70;
     const stepCount = getAvg(healthData.metrics.steps) || 5000;
-  const metricsMap = healthData.metrics as Record<string, MetricData | undefined>;
-  const heartRateVariability = getAvg(metricsMap.heartRateVariability) || 30;
-  const walkingSpeed = getAvg(metricsMap.walkingSpeed) || 1.2;
-  const gaitAsymmetry = metricsMap.walkingStepLength?.variability || 0.1;
+    const metricsMap = healthData.metrics as Record<
+      string,
+      MetricData | undefined
+    >;
+    const heartRateVariability = getAvg(metricsMap.heartRateVariability) || 30;
+    const walkingSpeed = getAvg(metricsMap.walkingSpeed) || 1.2;
+    const gaitAsymmetry = metricsMap.walkingStepLength?.variability || 0.1;
 
     const balanceDeficit = Math.max(0, (80 - walkingSteadiness) / 80);
     const activityDeficit = Math.max(0, (8000 - stepCount) / 8000);
@@ -462,8 +476,8 @@ export class EnhancedFallRiskOptimizer {
    */
   private generateInterventionTimeline(
     prediction: RiskPrediction,
-  personalizedFactors: PersonalizedFactors,
-  contextData?: ContextData
+    personalizedFactors: PersonalizedFactors,
+    contextData?: ContextData
   ): InterventionTimeline {
     const immediate: PersonalizedIntervention[] = [];
     const shortTerm: PersonalizedIntervention[] = [];
@@ -529,8 +543,8 @@ export class EnhancedFallRiskOptimizer {
    * Define success metrics for intervention tracking
    */
   private defineSuccessMetrics(
-  prediction: RiskPrediction,
-  personalizedFactors: PersonalizedFactors
+    prediction: RiskPrediction,
+    personalizedFactors: PersonalizedFactors
   ): SuccessMetric[] {
     const metrics: SuccessMetric[] = [];
 
@@ -604,8 +618,8 @@ export class EnhancedFallRiskOptimizer {
   }
 
   private calculateConfidenceInterval(
-  prediction: RiskPrediction,
-  _horizon: PredictiveInsight['timeHorizon']
+    prediction: RiskPrediction,
+    _horizon: PredictiveInsight['timeHorizon']
   ): [number, number] {
     const margin = (1 - prediction.confidence) * 0.2;
     return [
@@ -638,7 +652,9 @@ export class EnhancedFallRiskOptimizer {
     };
   }
 
-  private analyzeHistoricalPatterns(_history: OptimizedInterventionPlan[]): HistoricalPatterns {
+  private analyzeHistoricalPatterns(
+    _history: OptimizedInterventionPlan[]
+  ): HistoricalPatterns {
     return {
       averageAdherence: 0.75,
       effectiveInterventions: ['balance training', 'strength training'],
@@ -654,16 +670,19 @@ export class EnhancedFallRiskOptimizer {
       case 'walkingSteadiness':
         return healthData.metrics.walkingSteadiness?.average || 70;
       case 'gaitAsymmetry':
-  return (healthData.metrics as Record<string, MetricData | undefined>).walkingStepLength?.variability || 0.1;
+        return (
+          (healthData.metrics as Record<string, MetricData | undefined>)
+            .walkingStepLength?.variability || 0.1
+        );
       default:
         return 0;
     }
   }
 
   private evaluateThresholdPerformance(
-  _threshold: AdaptiveThreshold,
-  _prediction: RiskPrediction,
-  _metricValue: number
+    _threshold: AdaptiveThreshold,
+    _prediction: RiskPrediction,
+    _metricValue: number
   ): { accuracy: number; falsePositiveRate: number } {
     // Simplified performance evaluation
     return {

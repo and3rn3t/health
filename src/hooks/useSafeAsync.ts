@@ -2,7 +2,7 @@ import { useErrorReporting } from '@/hooks/useErrorReporting';
 import { AppErrorHandler, ErrorFactory } from '@/lib/errorHandling';
 import React from 'react';
 
-export const useSafeAsync = <T,>(asyncFn: () => Promise<T>) => {
+export const useSafeAsync = <T>(asyncFn: () => Promise<T>) => {
   const [state, setState] = React.useState<{
     data: T | null;
     loading: boolean;

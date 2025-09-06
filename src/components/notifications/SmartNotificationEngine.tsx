@@ -164,7 +164,8 @@ export default function SmartNotificationEngine({
   const updatePreferences = (
     updater: (current: NotificationPreferences) => NotificationPreferences
   ) => {
-    setPreferences((current) => updater(current || defaultPreferences));
+    const newPreferences = updater(preferences || defaultPreferences);
+    setPreferences(newPreferences);
   };
 
   const [notifications, setNotifications] = useKV<SmartNotification[]>(
@@ -398,7 +399,10 @@ export default function SmartNotificationEngine({
         const deliveredNotification =
           updateNotificationAsDelivered(notification);
 
-        setNotifications(updateNotificationList(deliveredNotification));
+        const updatedNotifications = updateNotificationList(
+          deliveredNotification
+        )(notifications);
+        setNotifications(updatedNotifications);
         setNotificationQueue(removeFromQueue(notification.id));
 
         toast.success(`Notification delivered: ${notification.title}`);
@@ -410,6 +414,7 @@ export default function SmartNotificationEngine({
     updateNotificationAsDelivered,
     updateNotificationList,
     removeFromQueue,
+    notifications,
   ]);
 
   // Notification delivery simulation
@@ -712,17 +717,16 @@ export default function SmartNotificationEngine({
 
   // Helper to handle notification acknowledgment
   const handleNotificationAcknowledgment = (notificationId: string) => {
-    setNotifications((current) =>
-      (current || []).map((n) =>
-        n.id === notificationId
-          ? {
-              ...n,
-              acknowledged: true,
-              interacted: true,
-            }
-          : n
-      )
+    const updatedNotifications = (notifications || []).map((n) =>
+      n.id === notificationId
+        ? {
+            ...n,
+            acknowledged: true,
+            interacted: true,
+          }
+        : n
     );
+    setNotifications(updatedNotifications);
     toast.success('Notification acknowledged');
   };
 
@@ -1342,8 +1346,8 @@ export default function SmartNotificationEngine({
                             acknowledged: false,
                           };
 
-                          setNotifications((current) => [
-                            ...(current || []),
+                          setNotifications([
+                            ...(notifications || []),
                             testNotification,
                           ]);
                           toast.success(

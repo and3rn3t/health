@@ -45,7 +45,7 @@ export default function AIInsights({ healthData }: Readonly<AIInsightsProps>) {
     setIsGenerating(true);
 
     try {
-  // Simulate AI analysis locally (no external calls in Workers-safe code)
+      // Simulate AI analysis locally (no external calls in Workers-safe code)
       const generatedInsights: AIInsight[] = [
         {
           type: 'recommendation',
@@ -150,17 +150,17 @@ export default function AIInsights({ healthData }: Readonly<AIInsightsProps>) {
 
     setIsGenerating(true);
     try {
-  // Local, deterministic response to keep Workers-safe and offline-friendly
-  const answer = `Based on your data (score: ${healthData?.healthScore ?? 0}, steps: ${healthData?.metrics?.steps?.average ?? 0}/day, steadiness: ${healthData?.metrics?.walkingSteadiness?.average ?? 0}%), here are suggestions related to your question: "${customQuery}".
+      // Local, deterministic response to keep Workers-safe and offline-friendly
+      const answer = `Based on your data (score: ${healthData?.healthScore ?? 0}, steps: ${healthData?.metrics?.steps?.average ?? 0}/day, steadiness: ${healthData?.metrics?.walkingSteadiness?.average ?? 0}%), here are suggestions related to your question: "${customQuery}".
 
 • Keep daily steps at 8,000+ where possible.
 • Add 5–10 minutes of balance work daily to improve steadiness.
 • Target 7–9 hours of sleep for better recovery.
 
 This guidance is informational and not medical advice.`;
-  setCustomResponse(answer);
+      setCustomResponse(answer);
       toast.success('Got your personalized answer!');
-  } catch (_error) {
+    } catch (_error) {
       toast.error('Failed to get response. Please try again.');
     } finally {
       setIsGenerating(false);
@@ -171,7 +171,7 @@ This guidance is informational and not medical advice.`;
     switch (type) {
       case 'recommendation':
         return <Lightbulb className="h-5 w-5 text-blue-500" />;
-  case 'warning':
+      case 'warning':
         return <AlertTriangle className="h-5 w-5 text-red-500" />;
       case 'achievement':
         return <CheckCircle className="h-5 w-5 text-green-500" />;

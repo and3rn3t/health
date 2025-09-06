@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 // Import VitalSense components and utilities
 import Footer from '../../components/Footer';
+import NavigationHeader from '../../components/NavigationHeader';
 import {
   VitalSenseColors,
   getVitalSenseClasses,
@@ -167,7 +168,7 @@ describe('VitalSense Branding Compliance', () => {
 
   describe('Brand Text Consistency', () => {
     it('should display VitalSense in navigation header', () => {
-      render(<NavigationHeader />);
+      render(<NavigationHeader {...mockNavigationProps} />);
 
       // Check for VitalSense branding in header
       const brandElements = screen.getAllByText(/VitalSense/i);
@@ -175,7 +176,7 @@ describe('VitalSense Branding Compliance', () => {
     });
 
     it('should display VitalSense in footer', () => {
-      render(<Footer />);
+      render(<Footer {...mockFooterProps} />);
 
       // Check for VitalSense branding in footer
       const footerBrand = screen.getByText(/VitalSense/i);
@@ -183,7 +184,7 @@ describe('VitalSense Branding Compliance', () => {
     });
 
     it('should not contain generic "Health App" references', () => {
-      render(<Footer />);
+      render(<Footer {...mockFooterProps} />);
 
       // Ensure no generic branding remains
       const genericText = screen.queryByText(/Health App/i);
@@ -233,7 +234,7 @@ describe('VitalSense Brand Assets', () => {
   it('should load VitalSense logo correctly', () => {
     // This would test logo loading if you have logo assets
     // For now, we test the branding text is present
-    render(<NavigationHeader />);
+    render(<NavigationHeader {...mockNavigationProps} />);
 
     const brandText = screen.getByText(/VitalSense/i);
     expect(brandText).toBeVisible();
@@ -241,7 +242,7 @@ describe('VitalSense Brand Assets', () => {
 
   it('should maintain brand consistency across screen sizes', () => {
     // Test responsive branding
-    const { container } = render(<NavigationHeader />);
+    const { container } = render(<NavigationHeader {...mockNavigationProps} />);
 
     // VitalSense branding should be visible at all screen sizes
     const brandElements = container.querySelectorAll(
@@ -253,7 +254,7 @@ describe('VitalSense Brand Assets', () => {
 
 describe('VitalSense Accessibility', () => {
   it('should provide accessible VitalSense branding', () => {
-    render(<NavigationHeader />);
+    render(<NavigationHeader {...mockNavigationProps} />);
 
     // Check for accessible brand elements
     const brandElement = screen.getByText(/VitalSense/i);
@@ -264,7 +265,7 @@ describe('VitalSense Accessibility', () => {
   });
 
   it('should have proper ARIA labels for VitalSense components', () => {
-    render(<Footer />);
+    render(<Footer {...mockFooterProps} />);
 
     // Look for ARIA labels that might contain VitalSense
     const ariaElements = screen.getAllByRole('contentinfo');

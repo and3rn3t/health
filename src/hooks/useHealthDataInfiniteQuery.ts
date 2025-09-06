@@ -1,9 +1,9 @@
+import {
+  healthMetricSchema,
+  processedHealthDataSchema,
+} from '@/schemas/health';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { z } from 'zod';
-import {
-  processedHealthDataSchema,
-  healthMetricSchema,
-} from '@/schemas/health';
 
 const listSchema = z.array(processedHealthDataSchema);
 
@@ -37,10 +37,14 @@ export function useHealthDataInfiniteQuery(params: HealthDataInfiniteParams) {
       const res = await fetch(`/api/health-data?${search.toString()}`);
       if (!res.ok) throw new Error('Failed to fetch health data');
       const json = await res.json();
-      const payload = Array.isArray(json) ? json : json.data;
+      const payload = Array.isArray(json)
+        ? json
+        : (json as { data?: unknown[] }).data || [];
       const parsed = listSchema.safeParse(payload);
       if (!parsed.success) throw new Error('Schema validation failed');
-      const nextCursor = json.nextCursor as string | undefined;
+      const nextCursor = Array.isArray(json)
+        ? undefined
+        : (json as { nextCursor?: string }).nextCursor;
       return { items: parsed.data, nextCursor };
     },
   });

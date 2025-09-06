@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import RateLimiterDO from '../rateLimiter';
 
 type DOStorage = {
@@ -43,7 +43,7 @@ describe('Durable Object RateLimiter', () => {
       mkReq('https://do.local/consume?key=k1&limit=2&intervalMs=60000')
     );
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = (await res.json()) as { ok: boolean; remaining: number };
     expect(body.ok).toBe(true);
     expect(body.remaining).toBe(1);
   });

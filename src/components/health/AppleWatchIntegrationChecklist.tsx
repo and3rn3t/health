@@ -40,11 +40,14 @@ interface IntegrationTask {
   notes?: string;
 }
 
-function DependencyBadge({ depId, tasks }: Readonly<{ depId: string; tasks: IntegrationTask[] | undefined }>) {
+function DependencyBadge({
+  depId,
+  tasks,
+}: Readonly<{ depId: string; tasks: IntegrationTask[] | undefined }>) {
   const list = tasks ?? [];
   const depTask = list.find((t) => t.id === depId);
   const depCompleted = !!depTask?.completed;
-  const variant = depCompleted ? 'default' : 'secondary' as const;
+  const variant = depCompleted ? 'default' : ('secondary' as const);
   const Icon = depCompleted ? CheckCircle : Clock;
   return (
     <Badge key={depId} variant={variant} className="text-xs">
@@ -269,15 +272,19 @@ export default function AppleWatchIntegrationChecklist() {
 
   const calculateProgress = (category?: string) => {
     const list = tasks ?? [];
-    const relevantTasks = category ? list.filter((t) => t.category === category) : list;
+    const relevantTasks = category
+      ? list.filter((t) => t.category === category)
+      : list;
     const completedTasks = relevantTasks.filter((t) => t.completed).length;
     return Math.round((completedTasks / (relevantTasks.length || 1)) * 100);
   };
 
   const getTotalHours = (category?: string) => {
     const list = tasks ?? [];
-    const relevantTasks = category ? list.filter((t) => t.category === category) : list;
-    return (relevantTasks).reduce(
+    const relevantTasks = category
+      ? list.filter((t) => t.category === category)
+      : list;
+    return relevantTasks.reduce(
       (total, task) => total + task.estimatedHours,
       0
     );
@@ -285,8 +292,10 @@ export default function AppleWatchIntegrationChecklist() {
 
   const getCompletedHours = (category?: string) => {
     const list = tasks ?? [];
-    const relevantTasks = category ? list.filter((t) => t.category === category) : list;
-    return (relevantTasks)
+    const relevantTasks = category
+      ? list.filter((t) => t.category === category)
+      : list;
+    return relevantTasks
       .filter((t) => t.completed)
       .reduce((total, task) => total + task.estimatedHours, 0);
   };
@@ -393,7 +402,11 @@ export default function AppleWatchIntegrationChecklist() {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">
-                {(tasks ?? []).filter((t) => t.priority === 'high' && !t.completed).length}
+                {
+                  (tasks ?? []).filter(
+                    (t) => t.priority === 'high' && !t.completed
+                  ).length
+                }
               </div>
               <div className="text-muted-foreground text-sm">
                 High Priority Remaining
@@ -552,7 +565,11 @@ export default function AppleWatchIntegrationChecklist() {
                                 Depends on:
                               </span>
                               {(task.dependencies || []).map((depId) => (
-                                <DependencyBadge key={depId} depId={depId} tasks={tasks} />
+                                <DependencyBadge
+                                  key={depId}
+                                  depId={depId}
+                                  tasks={tasks}
+                                />
                               ))}
                             </div>
                           )}

@@ -6,7 +6,7 @@ import {
   healthDataReducer,
   initialState,
   useDerivedHealthValues,
-  useHealthDataActions
+  useHealthDataActions,
 } from './optimizedHealthDataCore';
 
 // Provider component with optimized performance
@@ -15,7 +15,10 @@ interface HealthDataProviderProps {
   userId: string;
 }
 
-export function HealthDataProvider({ children, userId: _userId }: HealthDataProviderProps) {
+export function HealthDataProvider({
+  children,
+  userId: _userId,
+}: HealthDataProviderProps) {
   const [state, dispatch] = useReducer(healthDataReducer, initialState);
 
   // Memoized action creators to prevent unnecessary re-renders
@@ -35,12 +38,15 @@ export function HealthDataProvider({ children, userId: _userId }: HealthDataProv
   const derivedValues = useDerivedHealthValues(state);
 
   // Combine state, actions, and derived values
-  const contextValue = useMemo(() => ({
-    ...state,
-    ...actions,
-    updateRawData, // override with wrapped aggregator version
-    ...derivedValues,
-  }), [state, actions, updateRawData, derivedValues]);
+  const contextValue = useMemo(
+    () => ({
+      ...state,
+      ...actions,
+      updateRawData, // override with wrapped aggregator version
+      ...derivedValues,
+    }),
+    [state, actions, updateRawData, derivedValues]
+  );
 
   return (
     <HealthDataContext.Provider value={contextValue}>

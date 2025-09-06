@@ -57,7 +57,9 @@ interface FamilyDashboardProps {
   healthData: ProcessedHealthData;
 }
 
-export default function FamilyDashboard({ healthData }: Readonly<FamilyDashboardProps>) {
+export default function FamilyDashboard({
+  healthData,
+}: Readonly<FamilyDashboardProps>) {
   const [familyMembers, setFamilyMembers] = useKV<FamilyMember[]>(
     'family-members',
     [
@@ -122,18 +124,19 @@ export default function FamilyDashboard({ healthData }: Readonly<FamilyDashboard
   );
 
   const addReaction = (shareId: string, memberId: string, reaction: string) => {
-    setProgressShares((current) =>
-      current?.map((share) =>
-        share.id === shareId
-          ? {
-              ...share,
-              reactions: [
-                ...share.reactions.filter((r) => r.memberId !== memberId),
-                { memberId, reaction },
-              ],
-            }
+    setProgressShares(
+      (current) =>
+        current?.map((share) =>
+          share.id === shareId
+            ? {
+                ...share,
+                reactions: [
+                  ...share.reactions.filter((r) => r.memberId !== memberId),
+                  { memberId, reaction },
+                ],
+              }
             : share
-      ) || []
+        ) || []
     );
   };
 
@@ -243,7 +246,7 @@ export default function FamilyDashboard({ healthData }: Readonly<FamilyDashboard
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-primary text-2xl font-bold">
-                {(familyMembers || []).length}
+              {(familyMembers || []).length}
             </div>
             <div className="text-muted-foreground text-sm">Family Members</div>
           </CardContent>
@@ -302,17 +305,27 @@ export default function FamilyDashboard({ healthData }: Readonly<FamilyDashboard
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Fall Risk</span>
                 {(() => {
-                  const hasHighRisk = healthData.fallRiskFactors?.some((f) => f.risk === 'high') ?? false;
-                  const hasModerateRisk = healthData.fallRiskFactors?.some((f) => f.risk === 'moderate') ?? false;
+                  const hasHighRisk =
+                    healthData.fallRiskFactors?.some(
+                      (f) => f.risk === 'high'
+                    ) ?? false;
+                  const hasModerateRisk =
+                    healthData.fallRiskFactors?.some(
+                      (f) => f.risk === 'moderate'
+                    ) ?? false;
 
-                  const badgeVariant = hasHighRisk ? 'destructive' : hasModerateRisk ? 'default' : 'secondary';
-                  const badgeText = hasHighRisk ? 'HIGH' : hasModerateRisk ? 'MEDIUM' : 'LOW';
+                  const badgeVariant = hasHighRisk
+                    ? 'destructive'
+                    : hasModerateRisk
+                      ? 'default'
+                      : 'secondary';
+                  const badgeText = hasHighRisk
+                    ? 'HIGH'
+                    : hasModerateRisk
+                      ? 'MEDIUM'
+                      : 'LOW';
 
-                  return (
-                    <Badge variant={badgeVariant}>
-                      {badgeText}
-                    </Badge>
-                  );
+                  return <Badge variant={badgeVariant}>{badgeText}</Badge>;
                 })()}
               </div>
               <p className="text-muted-foreground text-xs">

@@ -71,7 +71,7 @@
 // ❌ Wrong
 <title>Health App</title>
 
-// ✅ Correct  
+// ✅ Correct
 <title>VitalSense Health</title>
 ```
 
@@ -110,7 +110,7 @@ After any branding changes:
 
 - [ ] Login page shows VitalSense branding
 - [ ] Primary color is #2563eb throughout
-- [ ] Inter font is used consistently  
+- [ ] Inter font is used consistently
 - [ ] No "Health App" references remain
 - [ ] Mobile responsive design works
 - [ ] Dark mode support functions
@@ -135,4 +135,4 @@ After any branding changes:
 
 ---
 
-*For complete details, see the full documentation in the `docs/` folder.*
+_For complete details, see the full documentation in the `docs/` folder._

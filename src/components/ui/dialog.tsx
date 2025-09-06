@@ -61,7 +61,7 @@ function DialogContent({
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-slate-500 rounded-xs focus:outline-hidden absolute right-4 top-4 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0">
+        <DialogPrimitive.Close className="focus:ring-ring data-[state=open]:bg-accent rounded-xs focus:outline-hidden absolute right-4 top-4 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:text-slate-500 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0">
           <X />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
@@ -113,7 +113,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn('text-slate-500 text-sm', className)}
+      className={cn('text-sm text-slate-500', className)}
       {...props}
     />
   );

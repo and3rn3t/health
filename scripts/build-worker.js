@@ -26,16 +26,15 @@ try {
     platform: 'neutral',
     outfile: resolve(projectRoot, 'dist-worker/index.js'),
     define: {
-      'process.env.NODE_ENV': '"production"'
+      'process.env.NODE_ENV': '"production"',
     },
     loader: {
-      '.ts': 'ts'
+      '.ts': 'ts',
     },
-    external: []
+    external: [],
   });
 
   console.log('✅ Worker build completed successfully');
-
 } catch (error) {
   console.error('❌ Worker build failed:', error);
   process.exit(1);

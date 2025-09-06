@@ -94,10 +94,7 @@ export default function HealthGameCenter({ healthData: _healthData }: Props) {
     'active-challenges',
     []
   );
-  const [_completedChallenges] = useKV<Challenge[]>(
-    'completed-challenges',
-    []
-  );
+  const [_completedChallenges] = useKV<Challenge[]>('completed-challenges', []);
   const [achievements, setAchievements] = useKV<Achievement[]>(
     'user-achievements',
     []
@@ -105,10 +102,7 @@ export default function HealthGameCenter({ healthData: _healthData }: Props) {
   const [userPoints, setUserPoints] = useKV<number>('user-points', 0);
   const [userLevel] = useKV<number>('user-level', 1);
   const [currentStreak] = useKV<number>('current-streak', 0);
-  const [leaderboard] = useKV<LeaderboardEntry[]>(
-    'family-leaderboard',
-    []
-  );
+  const [leaderboard] = useKV<LeaderboardEntry[]>('family-leaderboard', []);
 
   // Sample challenges
   const sampleChallenges: Challenge[] = [
@@ -184,9 +178,9 @@ export default function HealthGameCenter({ healthData: _healthData }: Props) {
     {
       userId: 'user1',
       name: 'You',
-  points: userPoints ?? 1250,
-  level: userLevel ?? 3,
-  streak: currentStreak ?? 5,
+      points: userPoints ?? 1250,
+      level: userLevel ?? 3,
+      streak: currentStreak ?? 5,
       badges: ['Step Master', 'Early Bird'],
       weeklyProgress: 85,
     },
@@ -240,24 +234,24 @@ export default function HealthGameCenter({ healthData: _healthData }: Props) {
           : achievement
       )
     );
-  setUserPoints((current) => (current ?? 0) + 100);
+    setUserPoints((current) => (current ?? 0) + 100);
     toast.success('Achievement unlocked! +100 points');
   };
 
   const getPointsToNextLevel = () => {
     const pointsPerLevel = 1000;
-  const lvl = userLevel ?? 1;
-  const pts = userPoints ?? 0;
-  const nextLevelPoints = lvl * pointsPerLevel;
-  return nextLevelPoints - pts;
+    const lvl = userLevel ?? 1;
+    const pts = userPoints ?? 0;
+    const nextLevelPoints = lvl * pointsPerLevel;
+    return nextLevelPoints - pts;
   };
 
   const getLevelProgress = () => {
     const pointsPerLevel = 1000;
-  const lvl = userLevel ?? 1;
-  const pts = userPoints ?? 0;
-  const currentLevelPoints = (lvl - 1) * pointsPerLevel;
-  const progressInLevel = pts - currentLevelPoints;
+    const lvl = userLevel ?? 1;
+    const pts = userPoints ?? 0;
+    const currentLevelPoints = (lvl - 1) * pointsPerLevel;
+    const progressInLevel = pts - currentLevelPoints;
     return (progressInLevel / pointsPerLevel) * 100;
   };
 
@@ -355,7 +349,8 @@ export default function HealthGameCenter({ healthData: _healthData }: Props) {
           <div className="grid gap-6 md:grid-cols-2">
             {((activeChallenges ?? []).length > 0
               ? (activeChallenges ?? [])
-              : sampleChallenges).map((challenge) => (
+              : sampleChallenges
+            ).map((challenge) => (
               <Card key={challenge.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -434,7 +429,8 @@ export default function HealthGameCenter({ healthData: _healthData }: Props) {
               <div className="space-y-4">
                 {((leaderboard ?? []).length > 0
                   ? (leaderboard ?? [])
-                  : sampleLeaderboard)
+                  : sampleLeaderboard
+                )
                   .sort((a, b) => b.points - a.points)
                   .map((entry, index) => (
                     <div
@@ -489,9 +485,9 @@ export default function HealthGameCenter({ healthData: _healthData }: Props) {
                       </div>
 
                       <div className="flex gap-1">
-            {entry.badges.slice(0, 3).map((badge) => (
+                        {entry.badges.slice(0, 3).map((badge) => (
                           <Badge
-              key={`${entry.userId}-${badge}`}
+                            key={`${entry.userId}-${badge}`}
                             variant="outline"
                             className="text-xs"
                           >
@@ -517,62 +513,62 @@ export default function HealthGameCenter({ healthData: _healthData }: Props) {
           <div className="grid gap-4 md:grid-cols-3">
             {((achievements ?? []).length > 0
               ? (achievements ?? [])
-              : sampleAchievements).map((achievement) => (
-                <Card
-                  key={achievement.id}
-                  className={achievement.unlocked ? 'border-primary' : ''}
-                >
-                  <CardContent className="p-6">
-                    <div className="space-y-3 text-center">
-                      <div className="text-4xl">{achievement.icon}</div>
-                      <div>
-                        <h3 className="font-bold">{achievement.title}</h3>
-                        <p className="text-muted-foreground text-sm">
-                          {achievement.description}
+              : sampleAchievements
+            ).map((achievement) => (
+              <Card
+                key={achievement.id}
+                className={achievement.unlocked ? 'border-primary' : ''}
+              >
+                <CardContent className="p-6">
+                  <div className="space-y-3 text-center">
+                    <div className="text-4xl">{achievement.icon}</div>
+                    <div>
+                      <h3 className="font-bold">{achievement.title}</h3>
+                      <p className="text-muted-foreground text-sm">
+                        {achievement.description}
+                      </p>
+                    </div>
+
+                    <Badge variant={getAchievementVariant(achievement.type)}>
+                      {achievement.type.toUpperCase()}
+                    </Badge>
+
+                    {!achievement.unlocked && (
+                      <div className="space-y-2">
+                        <Progress
+                          value={
+                            (achievement.progress / achievement.target) * 100
+                          }
+                        />
+                        <p className="text-muted-foreground text-xs">
+                          {achievement.progress} / {achievement.target}
                         </p>
                       </div>
+                    )}
 
-                      <Badge variant={getAchievementVariant(achievement.type)}>
-                        {achievement.type.toUpperCase()}
-                      </Badge>
+                    {achievement.unlocked && achievement.unlockedDate && (
+                      <p className="text-muted-foreground text-xs">
+                        Unlocked{' '}
+                        {new Date(
+                          achievement.unlockedDate
+                        ).toLocaleDateString()}
+                      </p>
+                    )}
 
-                      {!achievement.unlocked && (
-                        <div className="space-y-2">
-                          <Progress
-                            value={
-                              (achievement.progress / achievement.target) * 100
-                            }
-                          />
-                          <p className="text-muted-foreground text-xs">
-                            {achievement.progress} / {achievement.target}
-                          </p>
-                        </div>
+                    {achievement.progress >= achievement.target &&
+                      !achievement.unlocked && (
+                        <Button
+                          onClick={() => claimReward(achievement.id)}
+                          size="sm"
+                        >
+                          <Zap className="mr-2 h-4 w-4" />
+                          Claim Reward
+                        </Button>
                       )}
-
-                      {achievement.unlocked && achievement.unlockedDate && (
-                        <p className="text-muted-foreground text-xs">
-                          Unlocked{' '}
-                          {new Date(
-                            achievement.unlockedDate
-                          ).toLocaleDateString()}
-                        </p>
-                      )}
-
-                      {achievement.progress >= achievement.target &&
-                        !achievement.unlocked && (
-                          <Button
-                            onClick={() => claimReward(achievement.id)}
-                            size="sm"
-                          >
-                            <Zap className="mr-2 h-4 w-4" />
-                            Claim Reward
-                          </Button>
-                        )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </TabsContent>
 

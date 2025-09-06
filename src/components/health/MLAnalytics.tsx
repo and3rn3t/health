@@ -244,17 +244,21 @@ export default function MLAnalytics({
     setIsLoading(false);
   };
 
-  const markTraining = (modelId: string) => (m: MLModel): MLModel =>
-    m.id === modelId ? { ...m, status: 'training' } : m;
-  const finalizeTraining = (modelId: string) => (m: MLModel): MLModel =>
-    m.id === modelId
-      ? {
-          ...m,
-          status: 'active',
-          accuracy: Math.min(100, m.accuracy + Math.random() * 2),
-          lastTrained: new Date().toISOString(),
-        }
-      : m;
+  const markTraining =
+    (modelId: string) =>
+    (m: MLModel): MLModel =>
+      m.id === modelId ? { ...m, status: 'training' } : m;
+  const finalizeTraining =
+    (modelId: string) =>
+    (m: MLModel): MLModel =>
+      m.id === modelId
+        ? {
+            ...m,
+            status: 'active',
+            accuracy: Math.min(100, m.accuracy + Math.random() * 2),
+            lastTrained: new Date().toISOString(),
+          }
+        : m;
   const retrainModel = (modelId: string) => {
     setModels((prev) => prev.map(markTraining(modelId)));
     setTimeout(

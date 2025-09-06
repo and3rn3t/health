@@ -49,7 +49,7 @@ code --install-extension ms-vscode.vscode-json
    ```bash
    # Copy example environment file
    cp .env.example .env.local
-   
+
    # Edit with your configuration
    # Set AUTH0_DOMAIN, AUTH0_CLIENT_ID, etc.
    ```
@@ -59,10 +59,10 @@ code --install-extension ms-vscode.vscode-json
    ```bash
    # Primary development server
    npm run dev
-   
+
    # API server (in separate terminal)
    npm run api:dev
-   
+
    # WebSocket server (in separate terminal)
    npm run ws:dev
    ```
@@ -107,7 +107,7 @@ For detailed iOS setup, see [iOS Development Guide](../ios/IOS_DEVELOPMENT_WINDO
    ```powershell
    # Test deployment
    .\scripts\quick-deploy-auth0.ps1 -TestMode
-   
+
    # Deploy to production
    .\scripts\quick-deploy-auth0.ps1
    ```

@@ -249,7 +249,7 @@ export function useHealthDataActions(
 ) {
   return useMemo(
     () => ({
-  updateRawData: (data: ProcessedHealthRecord[]) =>
+      updateRawData: (data: ProcessedHealthRecord[]) =>
         dispatch({ type: 'UPDATE_RAW_DATA', payload: data }),
 
       addRealTimeData: (data: LiveHealthData) =>

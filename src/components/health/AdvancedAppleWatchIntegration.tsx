@@ -165,37 +165,40 @@ export default function AdvancedAppleWatchIntegration() {
       name: 'Resting Heart Rate',
       value: heartRateScore,
       impact:
-    safeBiometrics.heartRate > 80
+        safeBiometrics.heartRate > 80
           ? 'negative'
           : ('positive' as 'positive' | 'negative'),
       weight: 0.15,
     });
 
-  const hrvScore = Math.min(100, safeBiometrics.heartRateVariability * 2);
+    const hrvScore = Math.min(100, safeBiometrics.heartRateVariability * 2);
     factors.push({
       name: 'Heart Rate Variability',
       value: hrvScore,
       impact:
-  safeBiometrics.heartRateVariability > 40
+        safeBiometrics.heartRateVariability > 40
           ? 'positive'
           : ('negative' as 'positive' | 'negative'),
       weight: 0.15,
     });
 
     // Respiratory factors
-  const oxygenScore = Math.max(0, (safeBiometrics.oxygenSaturation - 90) * 10);
+    const oxygenScore = Math.max(
+      0,
+      (safeBiometrics.oxygenSaturation - 90) * 10
+    );
     factors.push({
       name: 'Oxygen Saturation',
       value: oxygenScore,
       impact:
-  safeBiometrics.oxygenSaturation >= 95
+        safeBiometrics.oxygenSaturation >= 95
           ? 'positive'
           : ('negative' as 'positive' | 'negative'),
       weight: 0.1,
     });
 
     // Movement factors
-  const balanceScore = safeMovement.balanceMetrics;
+    const balanceScore = safeMovement.balanceMetrics;
     factors.push({
       name: 'Balance & Stability',
       value: balanceScore,
@@ -206,7 +209,7 @@ export default function AdvancedAppleWatchIntegration() {
       weight: 0.2,
     });
 
-  const steadinessScore = safeMovement.steadiness;
+    const steadinessScore = safeMovement.steadiness;
     factors.push({
       name: 'Walking Steadiness',
       value: steadinessScore,
@@ -222,13 +225,13 @@ export default function AdvancedAppleWatchIntegration() {
     const respiratory = Math.round(oxygenScore);
     const movement = Math.round((balanceScore + steadinessScore) / 2);
     const recovery = Math.round(
-  75 + (safeBiometrics.heartRateVariability - 40) * 0.5
+      75 + (safeBiometrics.heartRateVariability - 40) * 0.5
     );
     const stress = Math.round(
-  Math.max(0, 100 - (safeBiometrics.heartRate - 60) * 2)
+      Math.max(0, 100 - (safeBiometrics.heartRate - 60) * 2)
     );
     const fatigue = Math.round(
-  85 - Math.abs(safeBiometrics.bodyTemperature - 98.6) * 10
+      85 - Math.abs(safeBiometrics.bodyTemperature - 98.6) * 10
     );
 
     // Calculate weighted overall score
@@ -294,15 +297,42 @@ export default function AdvancedAppleWatchIntegration() {
       setBiometrics((current) => {
         const prev = current ?? DEFAULT_BIOMETRICS;
         return {
-          heartRate: Math.max(55, Math.min(100, prev.heartRate + (Math.random() - 0.5) * 4)),
-          heartRateVariability: Math.max(20, Math.min(80, prev.heartRateVariability + (Math.random() - 0.5) * 3)),
-          oxygenSaturation: Math.max(92, Math.min(100, prev.oxygenSaturation + (Math.random() - 0.5) * 0.5)),
-          respiratoryRate: Math.max(12, Math.min(20, prev.respiratoryRate + (Math.random() - 0.5) * 1)),
+          heartRate: Math.max(
+            55,
+            Math.min(100, prev.heartRate + (Math.random() - 0.5) * 4)
+          ),
+          heartRateVariability: Math.max(
+            20,
+            Math.min(80, prev.heartRateVariability + (Math.random() - 0.5) * 3)
+          ),
+          oxygenSaturation: Math.max(
+            92,
+            Math.min(100, prev.oxygenSaturation + (Math.random() - 0.5) * 0.5)
+          ),
+          respiratoryRate: Math.max(
+            12,
+            Math.min(20, prev.respiratoryRate + (Math.random() - 0.5) * 1)
+          ),
           bloodPressure: {
-            systolic: Math.max(90, Math.min(140, prev.bloodPressure.systolic + (Math.random() - 0.5) * 3)),
-            diastolic: Math.max(60, Math.min(90, prev.bloodPressure.diastolic + (Math.random() - 0.5) * 2)),
+            systolic: Math.max(
+              90,
+              Math.min(
+                140,
+                prev.bloodPressure.systolic + (Math.random() - 0.5) * 3
+              )
+            ),
+            diastolic: Math.max(
+              60,
+              Math.min(
+                90,
+                prev.bloodPressure.diastolic + (Math.random() - 0.5) * 2
+              )
+            ),
           },
-          bodyTemperature: Math.max(97, Math.min(100, prev.bodyTemperature + (Math.random() - 0.5) * 0.2)),
+          bodyTemperature: Math.max(
+            97,
+            Math.min(100, prev.bodyTemperature + (Math.random() - 0.5) * 0.2)
+          ),
           timestamp: new Date(),
         };
       });
@@ -312,8 +342,14 @@ export default function AdvancedAppleWatchIntegration() {
         const prev = current ?? DEFAULT_MOVEMENT;
         return {
           ...prev,
-          balanceMetrics: Math.max(0, Math.min(100, prev.balanceMetrics + (Math.random() - 0.5) * 3)),
-          steadiness: Math.max(0, Math.min(100, prev.steadiness + (Math.random() - 0.5) * 2)),
+          balanceMetrics: Math.max(
+            0,
+            Math.min(100, prev.balanceMetrics + (Math.random() - 0.5) * 3)
+          ),
+          steadiness: Math.max(
+            0,
+            Math.min(100, prev.steadiness + (Math.random() - 0.5) * 2)
+          ),
           timestamp: new Date(),
         };
       });
@@ -330,7 +366,13 @@ export default function AdvancedAppleWatchIntegration() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [safeWatchStatus.connected, isMonitoring, setBiometrics, setMovementData, setWatchStatus]);
+  }, [
+    safeWatchStatus.connected,
+    isMonitoring,
+    setBiometrics,
+    setMovementData,
+    setWatchStatus,
+  ]);
 
   // Calculate health score when data changes
   useEffect(() => {
@@ -339,16 +381,22 @@ export default function AdvancedAppleWatchIntegration() {
       setHealthScore(newScore);
 
       // Add to history
-  setDataHistory((current) => ([...(current ?? []), newScore]).slice(-100));
+      setDataHistory((current) => [...(current ?? []), newScore].slice(-100));
     }
-  }, [safeBiometrics, safeMovement, safeWatchStatus.connected, calculateAdvancedHealthScore, setHealthScore, setDataHistory]);
+  }, [
+    safeBiometrics,
+    safeMovement,
+    safeWatchStatus.connected,
+    calculateAdvancedHealthScore,
+    setHealthScore,
+    setDataHistory,
+  ]);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
     if (score >= 60) return 'text-yellow-600';
     return 'text-red-600';
   };
-
 
   return (
     <div className="space-y-6">
@@ -367,31 +415,31 @@ export default function AdvancedAppleWatchIntegration() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-        {safeWatchStatus.connected ? (
+                {safeWatchStatus.connected ? (
                   <Bluetooth className="h-5 w-5 text-blue-600" />
                 ) : (
                   <WifiOff className="h-5 w-5 text-gray-500" />
                 )}
                 <div>
-      <div className="font-medium">{safeWatchStatus.model}</div>
+                  <div className="font-medium">{safeWatchStatus.model}</div>
                   <div className="text-muted-foreground text-sm">
-        {safeWatchStatus.osVersion}
+                    {safeWatchStatus.osVersion}
                   </div>
                 </div>
               </div>
 
-      {safeWatchStatus.connected && (
+              {safeWatchStatus.connected && (
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-1">
                     <Battery className="h-4 w-4" />
-        <span>{Math.round(safeWatchStatus.batteryLevel)}%</span>
+                    <span>{Math.round(safeWatchStatus.batteryLevel)}%</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Radio className="h-4 w-4" />
-        <span>{safeWatchStatus.signalStrength}/5</span>
+                    <span>{safeWatchStatus.signalStrength}/5</span>
                   </div>
                   <div className="text-muted-foreground">
-        Last sync: {safeWatchStatus.lastSync.toLocaleTimeString()}
+                    Last sync: {safeWatchStatus.lastSync.toLocaleTimeString()}
                   </div>
                 </div>
               )}
@@ -399,17 +447,17 @@ export default function AdvancedAppleWatchIntegration() {
 
             <Button
               onClick={toggleWatchConnection}
-      variant={safeWatchStatus.connected ? 'outline' : 'default'}
+              variant={safeWatchStatus.connected ? 'outline' : 'default'}
               className="flex items-center gap-2"
             >
-      {safeWatchStatus.connected ? 'Disconnect' : 'Connect'}
+              {safeWatchStatus.connected ? 'Disconnect' : 'Connect'}
               <Watch className="h-4 w-4" />
             </Button>
           </div>
         </CardContent>
       </Card>
 
-  {safeWatchStatus.connected && (
+      {safeWatchStatus.connected && (
         <>
           {/* Health Score Overview */}
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
@@ -446,13 +494,21 @@ export default function AdvancedAppleWatchIntegration() {
                 value: safeHealthScore.movement,
                 icon: Activity,
               },
-              { label: 'Recovery', value: safeHealthScore.recovery, icon: Timer },
+              {
+                label: 'Recovery',
+                value: safeHealthScore.recovery,
+                icon: Timer,
+              },
               { label: 'Stress', value: safeHealthScore.stress, icon: Brain },
-              { label: 'Fatigue', value: safeHealthScore.fatigue, icon: Battery },
-      ].map((item) => {
+              {
+                label: 'Fatigue',
+                value: safeHealthScore.fatigue,
+                icon: Battery,
+              },
+            ].map((item) => {
               const IconComponent = item.icon;
               return (
-        <Card key={item.label}>
+                <Card key={item.label}>
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-1 text-sm">
                       <IconComponent className="h-4 w-4" />
@@ -664,7 +720,9 @@ export default function AdvancedAppleWatchIntegration() {
                           className="flex items-center justify-between rounded-lg border p-3"
                         >
                           <div className="flex items-center gap-3">
-                            <div className={`h-3 w-3 rounded-full ${impactBg}`} />
+                            <div
+                              className={`h-3 w-3 rounded-full ${impactBg}`}
+                            />
                             <span className="font-medium">{factor.name}</span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -672,7 +730,10 @@ export default function AdvancedAppleWatchIntegration() {
                               Weight: {Math.round(factor.weight * 100)}%
                             </span>
                             {(() => {
-                              const variant = factor.impact === 'positive' ? 'default' : 'destructive' as const;
+                              const variant =
+                                factor.impact === 'positive'
+                                  ? 'default'
+                                  : ('destructive' as const);
                               return (
                                 <Badge variant={variant}>
                                   {Math.round(factor.value)}
@@ -690,13 +751,13 @@ export default function AdvancedAppleWatchIntegration() {
           </Tabs>
 
           {/* Alerts and Recommendations */}
-      {(safeHealthScore.overall < 70 || safeBiometrics.heartRate > 90) && (
+          {(safeHealthScore.overall < 70 || safeBiometrics.heartRate > 90) && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-        {safeHealthScore.overall < 70 &&
+                {safeHealthScore.overall < 70 &&
                   'Your health score indicates areas needing attention. '}
-        {safeBiometrics.heartRate > 90 &&
+                {safeBiometrics.heartRate > 90 &&
                   'Elevated heart rate detected. Consider resting or consulting healthcare provider.'}
               </AlertDescription>
             </Alert>

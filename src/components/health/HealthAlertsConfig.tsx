@@ -145,13 +145,12 @@ const PRIORITY_COLORS = {
   critical: 'bg-red-100 text-red-800 border-red-200',
 };
 
-export default function HealthAlertsConfig({ healthData: _healthData }: Readonly<AlertsConfigProps>) {
+export default function HealthAlertsConfig({
+  healthData: _healthData,
+}: Readonly<AlertsConfigProps>) {
   const [alertsRaw, setAlerts] = useKV<HealthAlert[]>('health-alerts', []);
   // History is read-only here
-  const [alertHistoryRaw] = useKV<AlertHistoryEntry[]>(
-    'alert-history',
-    []
-  );
+  const [alertHistoryRaw] = useKV<AlertHistoryEntry[]>('alert-history', []);
   interface GlobalSettings {
     enabled: boolean;
     quietHours: { start: string; end: string };
@@ -217,7 +216,7 @@ export default function HealthAlertsConfig({ healthData: _healthData }: Readonly
       description: newAlert.description,
     };
 
-  setAlerts((current) => ([...(current ?? []), alert]));
+    setAlerts((current) => [...(current ?? []), alert]);
     setNewAlert({
       name: '',
       metric: '',
@@ -233,7 +232,9 @@ export default function HealthAlertsConfig({ healthData: _healthData }: Readonly
   };
 
   const deleteAlert = (alertId: string) => {
-  setAlerts((current) => (current ?? []).filter((alert) => alert.id !== alertId));
+    setAlerts((current) =>
+      (current ?? []).filter((alert) => alert.id !== alertId)
+    );
     toast.success('Alert deleted');
   };
 
@@ -323,7 +324,7 @@ export default function HealthAlertsConfig({ healthData: _healthData }: Readonly
         description: alertTemplate.description,
       };
 
-  setAlerts((current) => [...(current ?? []), alert]);
+      setAlerts((current) => [...(current ?? []), alert]);
     });
 
     toast.success(`Smart alerts created for ${metricInfo.label}`);
@@ -490,7 +491,10 @@ export default function HealthAlertsConfig({ healthData: _healthData }: Readonly
                     <Select
                       value={newAlert.condition || 'above'}
                       onValueChange={(value: string) =>
-                        setNewAlert((prev) => ({ ...prev, condition: value as HealthAlert['condition'] }))
+                        setNewAlert((prev) => ({
+                          ...prev,
+                          condition: value as HealthAlert['condition'],
+                        }))
                       }
                     >
                       <SelectTrigger>
@@ -552,7 +556,10 @@ export default function HealthAlertsConfig({ healthData: _healthData }: Readonly
                     <Select
                       value={newAlert.priority || 'medium'}
                       onValueChange={(value: string) =>
-                        setNewAlert((prev) => ({ ...prev, priority: value as HealthAlert['priority'] }))
+                        setNewAlert((prev) => ({
+                          ...prev,
+                          priority: value as HealthAlert['priority'],
+                        }))
                       }
                     >
                       <SelectTrigger>
@@ -572,7 +579,10 @@ export default function HealthAlertsConfig({ healthData: _healthData }: Readonly
                     <Select
                       value={newAlert.frequency || 'immediate'}
                       onValueChange={(value: string) =>
-                        setNewAlert((prev) => ({ ...prev, frequency: value as HealthAlert['frequency'] }))
+                        setNewAlert((prev) => ({
+                          ...prev,
+                          frequency: value as HealthAlert['frequency'],
+                        }))
                       }
                     >
                       <SelectTrigger>
@@ -939,16 +949,21 @@ export default function HealthAlertsConfig({ healthData: _healthData }: Readonly
                   {alertHistory.slice(0, 20).map((entry) => {
                     const date = new Date(entry.timestamp);
                     let priorityColor = 'bg-blue-500';
-                    if (entry.priority === 'critical') priorityColor = 'bg-red-500';
-                    else if (entry.priority === 'high') priorityColor = 'bg-orange-500';
-                    else if (entry.priority === 'medium') priorityColor = 'bg-yellow-500';
+                    if (entry.priority === 'critical')
+                      priorityColor = 'bg-red-500';
+                    else if (entry.priority === 'high')
+                      priorityColor = 'bg-orange-500';
+                    else if (entry.priority === 'medium')
+                      priorityColor = 'bg-yellow-500';
                     return (
                       <div
                         key={entry.id}
                         className="flex items-center justify-between rounded-lg border p-4"
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`h-3 w-3 rounded-full ${priorityColor}`} />
+                          <div
+                            className={`h-3 w-3 rounded-full ${priorityColor}`}
+                          />
                           <div>
                             <p className="font-medium">{entry.alertName}</p>
                             <p className="text-muted-foreground text-sm">
@@ -957,8 +972,12 @@ export default function HealthAlertsConfig({ healthData: _healthData }: Readonly
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-medium">{date.toLocaleDateString()}</p>
-                          <p className="text-muted-foreground text-sm">{date.toLocaleTimeString()}</p>
+                          <p className="text-sm font-medium">
+                            {date.toLocaleDateString()}
+                          </p>
+                          <p className="text-muted-foreground text-sm">
+                            {date.toLocaleTimeString()}
+                          </p>
                         </div>
                       </div>
                     );

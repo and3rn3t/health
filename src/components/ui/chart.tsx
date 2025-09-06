@@ -180,7 +180,7 @@ function ChartTooltipContent({
   return (
     <div
       className={cn(
-        'border-slate-200/50 grid min-w-[8rem] items-start gap-1.5 rounded-lg border bg-white px-2.5 py-1.5 text-xs shadow-xl',
+        'grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-slate-200/50 bg-white px-2.5 py-1.5 text-xs shadow-xl',
         className
       )}
     >
@@ -195,7 +195,7 @@ function ChartTooltipContent({
             <div
               key={item.dataKey}
               className={cn(
-                '[&>svg]:text-slate-500 flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5',
+                'flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-slate-500',
                 indicator === 'dot' && 'items-center'
               )}
             >
@@ -290,7 +290,7 @@ function ChartLegendContent({
           <div
             key={item.value}
             className={cn(
-              '[&>svg]:text-slate-500 flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3'
+              'flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-slate-500'
             )}
           >
             {itemConfig?.icon && !hideIcon ? (

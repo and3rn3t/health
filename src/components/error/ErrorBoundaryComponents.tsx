@@ -141,7 +141,7 @@ export const HealthDataErrorFallback: React.FC<ErrorFallbackProps> = ({
   return (
     <div className="rounded-lg border bg-background p-6">
       <Alert variant="destructive" className="mb-4">
-  <AlertTriangle className="h-4 w-4" />
+        <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Health Data Error</AlertTitle>
         <AlertDescription>
           Unable to process health data. Your data is safe, but we encountered
@@ -183,7 +183,7 @@ export const NetworkErrorFallback: React.FC<ErrorFallbackProps> = ({
   return (
     <div className="rounded-lg border bg-background p-6">
       <Alert variant="destructive" className="mb-4">
-  <AlertTriangle className="h-4 w-4" />
+        <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Connection Error</AlertTitle>
         <AlertDescription>
           {isNetworkError
@@ -198,7 +198,7 @@ export const NetworkErrorFallback: React.FC<ErrorFallbackProps> = ({
         size="sm"
         className="w-full"
       >
-  <RefreshCw className="mr-2 h-4 w-4" />
+        <RefreshCw className="mr-2 h-4 w-4" />
         Try Again
       </Button>
     </div>

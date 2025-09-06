@@ -79,13 +79,12 @@ interface CommunityShareProps {
   healthData: ProcessedHealthData;
 }
 
-export default function CommunityShare({ healthData }: Readonly<CommunityShareProps>) {
+export default function CommunityShare({
+  healthData,
+}: Readonly<CommunityShareProps>) {
   // Optional Spark integration guard
   type SparkLike = {
-    llmPrompt: (
-      strings: TemplateStringsArray,
-      ...expr: unknown[]
-    ) => string;
+    llmPrompt: (strings: TemplateStringsArray, ...expr: unknown[]) => string;
     llm: (prompt: string, model?: string, asJson?: boolean) => Promise<string>;
   };
   const spark = (globalThis as unknown as { spark?: SparkLike }).spark;
@@ -118,7 +117,10 @@ export default function CommunityShare({ healthData }: Readonly<CommunitySharePr
     'members' | 'reports' | 'settings'
   >('members');
 
-  type NewMember = Pick<CommunityMember, 'name' | 'email' | 'relationship' | 'permissions'>;
+  type NewMember = Pick<
+    CommunityMember,
+    'name' | 'email' | 'relationship' | 'permissions'
+  >;
   const [newMember, setNewMember] = useState<NewMember>({
     name: '',
     email: '',
@@ -167,7 +169,8 @@ export default function CommunityShare({ healthData }: Readonly<CommunitySharePr
   };
 
   const generateHealthReport = async () => {
-    const prompt = (spark?.llmPrompt || ((s: TemplateStringsArray) => s.join('')))`
+    const prompt = (spark?.llmPrompt ||
+      ((s: TemplateStringsArray) => s.join('')))`
       Generate a comprehensive health report based on this data:
       Health Score: ${healthData.healthScore || 0}/100
       Fall Risk Factors: ${JSON.stringify(healthData.fallRiskFactors || [])}
@@ -183,7 +186,9 @@ export default function CommunityShare({ healthData }: Readonly<CommunitySharePr
     `;
 
     try {
-      const response = spark?.llm ? await spark.llm(prompt, 'gpt-4o', true) : '{}';
+      const response = spark?.llm
+        ? await spark.llm(prompt, 'gpt-4o', true)
+        : '{}';
       const reportData = JSON.parse(response || '{}') as Partial<{
         summary: string;
         insights: string[];
@@ -191,9 +196,13 @@ export default function CommunityShare({ healthData }: Readonly<CommunitySharePr
         improvements: string[];
       }>;
 
-  const hasHighRisk = !!healthData.fallRiskFactors?.some((f) => f.risk === 'high');
-  const hasModerateRisk = !!healthData.fallRiskFactors?.some((f) => f.risk === 'moderate');
-  let computedRiskLevel: HealthReport['metrics']['fallRiskLevel'];
+      const hasHighRisk = !!healthData.fallRiskFactors?.some(
+        (f) => f.risk === 'high'
+      );
+      const hasModerateRisk = !!healthData.fallRiskFactors?.some(
+        (f) => f.risk === 'moderate'
+      );
+      let computedRiskLevel: HealthReport['metrics']['fallRiskLevel'];
       if (hasHighRisk) {
         computedRiskLevel = 'high';
       } else if (hasModerateRisk) {
@@ -211,17 +220,30 @@ export default function CommunityShare({ healthData }: Readonly<CommunitySharePr
           healthScore: healthData.healthScore || 0,
           fallRiskLevel: computedRiskLevel,
           // Approximate active minutes from steps (simple heuristic)
-          activeMinutes: Math.max(0, Math.round((healthData.metrics?.steps?.average || 0) / 100)),
-          stepCount: Math.max(0, Math.round(healthData.metrics?.steps?.average || 0)),
+          activeMinutes: Math.max(
+            0,
+            Math.round((healthData.metrics?.steps?.average || 0) / 100)
+          ),
+          stepCount: Math.max(
+            0,
+            Math.round(healthData.metrics?.steps?.average || 0)
+          ),
           // Derive sleep quality as percentage of 8 hours target
           sleepQuality: Math.max(
             0,
-            Math.min(100, Math.round(((healthData.metrics?.sleepHours?.average || 0) / 8) * 100))
+            Math.min(
+              100,
+              Math.round(
+                ((healthData.metrics?.sleepHours?.average || 0) / 8) * 100
+              )
+            )
           ),
         },
         insights: Array.isArray(reportData.insights) ? reportData.insights : [],
         concerns: Array.isArray(reportData.concerns) ? reportData.concerns : [],
-        improvements: Array.isArray(reportData.improvements) ? reportData.improvements : [],
+        improvements: Array.isArray(reportData.improvements)
+          ? reportData.improvements
+          : [],
         createdAt: new Date(),
         sharedWith: [],
         viewCount: 0,
@@ -301,11 +323,13 @@ export default function CommunityShare({ healthData }: Readonly<CommunitySharePr
 
       {/* Navigation Tabs */}
       <div className="bg-muted flex space-x-1 rounded-lg p-1">
-        {([
-          { id: 'members', label: 'Community Members', icon: Users },
-          { id: 'reports', label: 'Health Reports', icon: FileText },
-          { id: 'settings', label: 'Privacy Settings', icon: Lock },
-        ] as const).map((tab) => {
+        {(
+          [
+            { id: 'members', label: 'Community Members', icon: Users },
+            { id: 'reports', label: 'Health Reports', icon: FileText },
+            { id: 'settings', label: 'Privacy Settings', icon: Lock },
+          ] as const
+        ).map((tab) => {
           const IconComponent = tab.icon;
           return (
             <Button
@@ -375,10 +399,10 @@ export default function CommunityShare({ healthData }: Readonly<CommunitySharePr
                   <Label htmlFor="relationship">Relationship</Label>
                   <Select
                     value={newMember.relationship}
-          onValueChange={(value) =>
+                    onValueChange={(value) =>
                       setNewMember((prev) => ({
                         ...prev,
-            relationship: value as CommunityMember['relationship'],
+                        relationship: value as CommunityMember['relationship'],
                       }))
                     }
                   >
@@ -637,7 +661,8 @@ export default function CommunityShare({ healthData }: Readonly<CommunitySharePr
                       </h5>
                       <ul className="space-y-1 text-sm">
                         {report.insights.map((insight) => (
-                          <li key={`${report.id}-insight-${insight.slice(0, 24)}`}
+                          <li
+                            key={`${report.id}-insight-${insight.slice(0, 24)}`}
                             className="flex items-start gap-2"
                           >
                             <span className="mt-0.5 text-green-600">•</span>
@@ -657,7 +682,8 @@ export default function CommunityShare({ healthData }: Readonly<CommunitySharePr
                       </h5>
                       <ul className="space-y-1 text-sm">
                         {report.concerns.map((concern) => (
-                          <li key={`${report.id}-concern-${concern.slice(0, 24)}`}
+                          <li
+                            key={`${report.id}-concern-${concern.slice(0, 24)}`}
                             className="flex items-start gap-2"
                           >
                             <span className="mt-0.5 text-yellow-600">•</span>

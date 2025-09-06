@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
 import React from 'react';
+import { vi } from 'vitest';
 
 // Mock AuthProvider for testing
 const MockAuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -16,9 +17,9 @@ const mockAuthContext = {
   },
   isAuthenticated: true,
   isLoading: false,
-  login: jest.fn(),
-  logout: jest.fn(),
-  getAccessToken: jest.fn().mockResolvedValue('mock-token'),
+  login: vi.fn(),
+  logout: vi.fn(),
+  getAccessToken: vi.fn().mockResolvedValue('mock-token'),
 };
 
 // Test wrapper with providers
@@ -46,7 +47,7 @@ export const renderWithProviders = (ui: React.ReactElement) => {
 export const mockUseAuth = () => mockAuthContext;
 
 // Mock the useAuth hook globally for tests
-jest.mock('../../hooks/useAuth', () => ({
+vi.mock('../../hooks/useAuth', () => ({
   useAuth: () => mockAuthContext,
 }));
 

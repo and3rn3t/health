@@ -57,10 +57,7 @@ export default function AIUsagePredictions({
 }: Readonly<AIUsagePredictionsProps>) {
   // Optional Spark LLM integration (guarded for environments without spark)
   type SparkLike = {
-    llmPrompt: (
-      strings: TemplateStringsArray,
-      ...expr: unknown[]
-    ) => string;
+    llmPrompt: (strings: TemplateStringsArray, ...expr: unknown[]) => string;
     llm: (prompt: string, model?: string, asJson?: boolean) => Promise<string>;
   };
   const spark = (globalThis as unknown as { spark?: SparkLike }).spark;
@@ -74,9 +71,8 @@ export default function AIUsagePredictions({
     []
   );
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe>(
-    '30days'
-  );
+  const [selectedTimeframe, setSelectedTimeframe] =
+    useState<Timeframe>('30days');
 
   // Generate AI-powered predictions
   const generatePredictions = useCallback(async () => {
@@ -89,9 +85,7 @@ export default function AIUsagePredictions({
           Based on the following health data, generate detailed usage predictions and engagement forecasts:
 
           Health Score: ${healthData.healthScore || 0}
-          Fall Risk Factors: ${JSON.stringify(
-            healthData.fallRiskFactors || []
-          )}
+          Fall Risk Factors: ${JSON.stringify(healthData.fallRiskFactors || [])}
           Key Metrics: ${JSON.stringify(healthData.metrics || {})}
 
           Generate predictions for:
@@ -119,7 +113,7 @@ export default function AIUsagePredictions({
       const seasonFactor =
         Math.sin((currentTime.getMonth() / 12) * 2 * Math.PI) * 0.1 + 1;
 
-  const newPredictions: UsagePrediction[] = [
+      const newPredictions: UsagePrediction[] = [
         {
           metric: 'Daily Health Monitoring',
           currentTrend:
@@ -337,7 +331,7 @@ export default function AIUsagePredictions({
 
       {/* Engagement Forecasts */}
       <div className="grid gap-6 md:grid-cols-3">
-  {safeForecasts.map((forecast) => (
+        {safeForecasts.map((forecast) => (
           <Card
             key={`forecast-${forecast.period}`}
             className="relative overflow-hidden"
@@ -453,9 +447,9 @@ export default function AIUsagePredictions({
                               Key Factors:
                             </h5>
                             <div className="flex flex-wrap gap-1">
-                {prediction.factors.map((factor) => (
+                              {prediction.factors.map((factor) => (
                                 <Badge
-                  key={`${prediction.metric}-${factor}`}
+                                  key={`${prediction.metric}-${factor}`}
                                   variant="secondary"
                                   className="text-xs"
                                 >

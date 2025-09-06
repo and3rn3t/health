@@ -17,6 +17,11 @@ import {
   Zap,
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import {
+  AdvancedAnalytics,
+  DataSync,
+  LiveDataStream,
+} from './integration-components';
 
 // Import the new components
 // import AdvancedAnalytics from './AdvancedAnalytics';

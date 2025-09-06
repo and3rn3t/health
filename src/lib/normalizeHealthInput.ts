@@ -1,6 +1,12 @@
 import { aggregateHealthRecords } from '@/lib/aggregateHealthRecords';
-import type { MetricData, ProcessedHealthData } from '@/lib/healthDataProcessor';
-import { recordTelemetry, registerNormalizationStatsProvider } from '@/lib/telemetry';
+import type {
+  MetricData,
+  ProcessedHealthData,
+} from '@/lib/healthDataProcessor';
+import {
+  recordTelemetry,
+  registerNormalizationStatsProvider,
+} from '@/lib/telemetry';
 import type { ProcessedHealthRecord } from '@/types';
 
 // Simple in-memory LRU-style cache for aggregated record sets
@@ -18,19 +24,26 @@ let cacheMisses = 0;
 
 function buildRecordsSignature(records: ProcessedHealthRecord[]): string {
   if (!records.length) return 'empty';
-  const sorted = [...records].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  const sorted = [...records].sort((a, b) =>
+    a.timestamp.localeCompare(b.timestamp)
+  );
   const first = sorted[0].timestamp;
   const last = sorted[sorted.length - 1].timestamp;
   // Sample up to first 20 records to keep key small
   const sample = sorted.slice(0, 20);
   const parts: string[] = [String(records.length), first, last];
   for (const r of sample) {
-    parts.push(r.type, Number.isFinite(r.value) ? String(Math.round(r.value * 100) / 100) : 'na');
+    parts.push(
+      r.type,
+      Number.isFinite(r.value) ? String(Math.round(r.value * 100) / 100) : 'na'
+    );
   }
   return parts.join('|');
 }
 
-function getCachedAggregation(records: ProcessedHealthRecord[]): ReturnType<typeof aggregateHealthRecords> {
+function getCachedAggregation(
+  records: ProcessedHealthRecord[]
+): ReturnType<typeof aggregateHealthRecords> {
   const key = buildRecordsSignature(records);
   const entry = aggregationCache.get(key);
   if (entry) {
@@ -59,7 +72,12 @@ function getCachedAggregation(records: ProcessedHealthRecord[]): ReturnType<type
     }
     if (oldestKey) aggregationCache.delete(oldestKey);
   }
-  aggregationCache.set(key, { key, aggregated, lastAccess: Date.now(), hits: 1 });
+  aggregationCache.set(key, {
+    key,
+    aggregated,
+    lastAccess: Date.now(),
+    hits: 1,
+  });
   recordTelemetry('normalization_cache', {
     event: 'miss',
     size: aggregationCache.size,
@@ -73,7 +91,12 @@ export function clearNormalizationCache(): void {
   aggregationCache.clear();
   cacheHits = 0;
   cacheMisses = 0;
-  recordTelemetry('normalization_cache', { event: 'cleared', size: 0, hits: 0, misses: 0 });
+  recordTelemetry('normalization_cache', {
+    event: 'cleared',
+    size: 0,
+    hits: 0,
+    misses: 0,
+  });
 }
 
 // Register stats provider for external inspection
@@ -81,15 +104,20 @@ registerNormalizationStatsProvider(() => ({
   size: aggregationCache.size,
   hits: cacheHits,
   misses: cacheMisses,
-  hitRate: cacheHits + cacheMisses === 0 ? 0 : cacheHits / (cacheHits + cacheMisses),
+  hitRate:
+    cacheHits + cacheMisses === 0 ? 0 : cacheHits / (cacheHits + cacheMisses),
   entries: Array.from(aggregationCache.values())
     .sort((a, b) => b.hits - a.hits)
     .slice(0, 10)
     .map((e) => ({ key: e.key, hits: e.hits, lastAccess: e.lastAccess })),
 }));
 
-export function isProcessedHealthData(obj: unknown): obj is ProcessedHealthData {
-  return !!obj && typeof obj === 'object' && 'metrics' in obj && 'lastUpdated' in obj;
+export function isProcessedHealthData(
+  obj: unknown
+): obj is ProcessedHealthData {
+  return (
+    !!obj && typeof obj === 'object' && 'metrics' in obj && 'lastUpdated' in obj
+  );
 }
 
 /**
@@ -102,7 +130,9 @@ export function normalizeToHealthData(
 ): ProcessedHealthData {
   if (isProcessedHealthData(input)) return input;
   const records = Array.isArray(input) ? input : [input];
-  const agg = options.bypassCache ? aggregateHealthRecords(records) : getCachedAggregation(records);
+  const agg = options.bypassCache
+    ? aggregateHealthRecords(records)
+    : getCachedAggregation(records);
   // Always emit a fresh snapshot object to keep lastUpdated meaningful
   const now = new Date().toISOString();
   const toMetric = (avg: number): MetricData => ({
@@ -132,6 +162,9 @@ export function normalizeToHealthData(
     },
     insights: [],
     fallRiskFactors: [],
-    healthScore: 100 - Math.max(agg.riskScores.fallRisk, agg.riskScores.cardiovascularRisk) * 0.5,
+    healthScore:
+      100 -
+      Math.max(agg.riskScores.fallRisk, agg.riskScores.cardiovascularRisk) *
+        0.5,
   };
 }

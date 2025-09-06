@@ -312,7 +312,10 @@ export default function FallMonitoringTooling() {
 
               <div className="space-y-4">
                 {filteredRequirements.map((req) => (
-                  <div key={req.name} className="space-y-3 rounded-lg border p-4">
+                  <div
+                    key={req.name}
+                    className="space-y-3 rounded-lg border p-4"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {getCategoryIcon(req.category)}

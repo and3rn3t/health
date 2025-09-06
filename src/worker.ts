@@ -5,10 +5,7 @@
 
 // Cloudflare Worker types
 declare global {
-  const WebSocketPair: new () => {
-    0: WebSocket;
-    1: WebSocket;
-  };
+  // WebSocketPair is already declared in @cloudflare/workers-types
 }
 
 interface DurableObjectNamespace {
@@ -150,7 +147,9 @@ async function rateLimitDO(
     u.searchParams.set('intervalMs', String(intervalMs));
     const resp = await stub.fetch(new Request(u.toString()));
     if (!resp.ok) return false;
-    const body = await resp.json().catch(() => ({ ok: false }));
+    const body = (await resp.json().catch(() => ({ ok: false }))) as {
+      ok?: boolean;
+    };
     return Boolean(body.ok);
   } catch {
     // Fallback to in-memory limiter on errors
@@ -627,7 +626,9 @@ app.get('/api/_ratelimit', async (c) => {
     u.searchParams.set('key', key);
     u.searchParams.set('probe', '1');
     const resp = await stub.fetch(new Request(u.toString()));
-    const body = await resp.json().catch(() => ({ ok: false }));
+    const body = (await resp.json().catch(() => ({ ok: false }))) as {
+      remaining?: number;
+    };
     return c.json({ ok: true, key, remaining: body.remaining ?? null });
   } catch (e) {
     return c.json({ ok: false, error: (e as Error).message }, 500);

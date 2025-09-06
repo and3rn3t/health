@@ -1,8 +1,8 @@
 import {
-    TelemetryEvent,
-    getNormalizationStats,
-    getTelemetryBuffer,
-    subscribeTelemetry,
+  TelemetryEvent,
+  getNormalizationStats,
+  getTelemetryBuffer,
+  subscribeTelemetry,
 } from '@/lib/telemetry';
 import { useEffect, useRef, useState } from 'react';
 
@@ -18,11 +18,20 @@ interface TelemetryState {
   normalizationStats?: ReturnType<typeof getNormalizationStats> | null;
 }
 
-export function useTelemetry(options: UseTelemetryOptions = {}): TelemetryState {
-  const { filter, limit = 50, includeNormalizationStats, refreshIntervalMs = 5000 } = options;
+export function useTelemetry(
+  options: UseTelemetryOptions = {}
+): TelemetryState {
+  const {
+    filter,
+    limit = 50,
+    includeNormalizationStats,
+    refreshIntervalMs = 5000,
+  } = options;
   const [state, setState] = useState<TelemetryState>(() => ({
     events: prune(getTelemetryBuffer(filter), limit),
-    normalizationStats: includeNormalizationStats ? getNormalizationStats() : undefined,
+    normalizationStats: includeNormalizationStats
+      ? getNormalizationStats()
+      : undefined,
   }));
   const filterRef = useRef(filter);
   filterRef.current = filter;
@@ -41,7 +50,10 @@ export function useTelemetry(options: UseTelemetryOptions = {}): TelemetryState 
   useEffect(() => {
     if (!includeNormalizationStats) return;
     const interval = setInterval(() => {
-      setState((prev) => ({ ...prev, normalizationStats: getNormalizationStats() }));
+      setState((prev) => ({
+        ...prev,
+        normalizationStats: getNormalizationStats(),
+      }));
     }, refreshIntervalMs);
     return () => clearInterval(interval);
   }, [includeNormalizationStats, refreshIntervalMs]);

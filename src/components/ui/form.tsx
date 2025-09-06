@@ -128,7 +128,7 @@ function FormDescription({ className, ...props }: ComponentProps<'p'>) {
     <p
       data-slot="form-description"
       id={formDescriptionId}
-      className={cn('text-slate-500 text-sm', className)}
+      className={cn('text-sm text-slate-500', className)}
       {...props}
     />
   );
@@ -146,7 +146,7 @@ function FormMessage({ className, ...props }: ComponentProps<'p'>) {
     <p
       data-slot="form-message"
       id={formMessageId}
-      className={cn('text-red-600 text-sm', className)}
+      className={cn('text-sm text-red-600', className)}
       {...props}
     >
       {body}

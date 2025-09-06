@@ -57,13 +57,12 @@ interface AIRecommendationsProps {
   healthData: ProcessedHealthData;
 }
 
-const AIRecommendations = ({ healthData }: Readonly<AIRecommendationsProps>) => {
+const AIRecommendations = ({
+  healthData,
+}: Readonly<AIRecommendationsProps>) => {
   // Optional Spark integration guard
   type SparkLike = {
-    llmPrompt: (
-      strings: TemplateStringsArray,
-      ...expr: unknown[]
-    ) => string;
+    llmPrompt: (strings: TemplateStringsArray, ...expr: unknown[]) => string;
     llm: (prompt: string, model?: string, asJson?: boolean) => Promise<string>;
   };
   const spark = (globalThis as unknown as { spark?: SparkLike }).spark;
@@ -85,7 +84,8 @@ const AIRecommendations = ({ healthData }: Readonly<AIRecommendationsProps>) => 
   const generateRecommendations = useCallback(async () => {
     setIsGenerating(true);
     try {
-      const prompt = (spark?.llmPrompt || ((s: TemplateStringsArray) => s.join('')))`
+      const prompt = (spark?.llmPrompt ||
+        ((s: TemplateStringsArray) => s.join('')))`
         Based on this health data analysis, generate personalized health recommendations:
 
         Health Score: ${healthData.healthScore}/100
@@ -125,24 +125,23 @@ const AIRecommendations = ({ healthData }: Readonly<AIRecommendationsProps>) => 
       const generatedRecs = JSON.parse(response);
 
       // Add unique IDs and format recommendations
-      const formattedRecs: Recommendation[] = (generatedRecs as Array<
-        Partial<Recommendation>
-      >).map((rec, index: number) => ({
-          id: `rec-${Date.now()}-${index}`,
-          title: String(rec.title || `Recommendation ${index + 1}`),
-          description: String(rec.description || ''),
-          category: (rec.category as Recommendation['category']) || 'lifestyle',
-          priority: (rec.priority as Recommendation['priority']) || 'medium',
-          impact: Number(rec.impact ?? 5),
-          difficulty: (rec.difficulty as Recommendation['difficulty']) ||
-            'moderate',
-          timeframe: String(rec.timeframe || '1-2 weeks'),
-          actionSteps: (rec.actionSteps as string[]) || [],
-          reasoning: String(rec.reasoning || ''),
-          evidence: (rec.evidence as string[]) || [],
-          completed: false,
-        })
-      );
+      const formattedRecs: Recommendation[] = (
+        generatedRecs as Array<Partial<Recommendation>>
+      ).map((rec, index: number) => ({
+        id: `rec-${Date.now()}-${index}`,
+        title: String(rec.title || `Recommendation ${index + 1}`),
+        description: String(rec.description || ''),
+        category: (rec.category as Recommendation['category']) || 'lifestyle',
+        priority: (rec.priority as Recommendation['priority']) || 'medium',
+        impact: Number(rec.impact ?? 5),
+        difficulty:
+          (rec.difficulty as Recommendation['difficulty']) || 'moderate',
+        timeframe: String(rec.timeframe || '1-2 weeks'),
+        actionSteps: (rec.actionSteps as string[]) || [],
+        reasoning: String(rec.reasoning || ''),
+        evidence: (rec.evidence as string[]) || [],
+        completed: false,
+      }));
 
       setRecommendations(formattedRecs);
       setLastGenerated(new Date().toISOString());
@@ -235,7 +234,7 @@ const AIRecommendations = ({ healthData }: Readonly<AIRecommendationsProps>) => 
   useEffect(() => {
     // Auto-generate recommendations if none exist and we have health data
     if (
-  safeRecs.length === 0 &&
+      safeRecs.length === 0 &&
       healthData.metrics &&
       Object.keys(healthData.metrics).length > 0
     ) {
@@ -513,7 +512,7 @@ const AIRecommendations = ({ healthData }: Readonly<AIRecommendationsProps>) => 
                                     {recommendation.actionSteps.map(
                                       (step: string, index: number) => (
                                         <li
-                                          key={`step-${recommendation.id}-${index}-${step.slice(0,20)}`}
+                                          key={`step-${recommendation.id}-${index}-${step.slice(0, 20)}`}
                                           className="flex items-start gap-2 text-sm"
                                         >
                                           <span className="text-primary mt-1 font-semibold">
@@ -546,7 +545,7 @@ const AIRecommendations = ({ healthData }: Readonly<AIRecommendationsProps>) => 
                                       {recommendation.evidence.map(
                                         (evidence: string, index: number) => (
                                           <li
-                                            key={`evidence-${recommendation.id}-${index}-${evidence.slice(0,20)}`}
+                                            key={`evidence-${recommendation.id}-${index}-${evidence.slice(0, 20)}`}
                                             className="text-muted-foreground flex items-start gap-1 text-sm"
                                           >
                                             <span className="text-primary">

@@ -163,7 +163,7 @@ export default function FallRiskMonitor({
   setFallRiskScore,
 }: Readonly<FallRiskMonitorProps>) {
   useEffect(() => {
-  if (healthData?.metrics) {
+    if (healthData?.metrics) {
       // Calculate fall risk based on multiple factors
       const walkingSteadiness =
         healthData.metrics.walkingSteadiness?.average || 100;

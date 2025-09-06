@@ -76,7 +76,7 @@ This document provides a comprehensive index of all documentation in the project
 
 ## 🗂️ Archived Documentation
 
-- [`_archive/`](./\_archive/) - Completed projects and obsolete documentation
+- [`_archive/`](./_archive/) - Completed projects and obsolete documentation
   - All `*_COMPLETE.md` status files
   - Obsolete setup guides
   - Completed migration documentation

@@ -199,7 +199,7 @@ export default function CloudInfrastructureStatus() {
     switch (status) {
       case 'good':
         return 'text-green-600';
-  case 'warning':
+      case 'warning':
         return 'text-yellow-600';
       case 'critical':
         return 'text-red-600';

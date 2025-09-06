@@ -118,7 +118,7 @@ const getStatusColor = (
       return (
         HealthColorMap.fallRisk[
           status as keyof typeof HealthColorMap.fallRisk
-  ] || getVitalSenseClasses.text.warning
+        ] || getVitalSenseClasses.text.warning
       );
 
     default:
@@ -205,9 +205,9 @@ export function VitalSenseBrandHeader({
           text: getVitalSenseClasses.text.successContrast,
           accent: getVitalSenseClasses.text.success,
         };
-    case 'warning':
+      case 'warning':
         return {
-      bg: getVitalSenseClasses.bg.warning,
+          bg: getVitalSenseClasses.bg.warning,
           text: getVitalSenseClasses.text.warningContrast,
           accent: getVitalSenseClasses.text.warning,
         };

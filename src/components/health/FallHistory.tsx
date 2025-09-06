@@ -78,7 +78,7 @@ export default function FallHistory() {
       ...newIncident,
     };
 
-    setFallHistory((currentHistory) => [incident, ...(currentHistory || [])]);
+    setFallHistory([incident, ...(fallHistory || [])]);
     setNewIncident({
       date: new Date().toISOString().split('T')[0],
       time: new Date().toTimeString().slice(0, 5),

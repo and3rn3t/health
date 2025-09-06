@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,38 +8,36 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@github/spark/hooks';
 import {
-  Shield,
-  Play,
-  Pause,
+  Activity,
   AlertTriangle,
   CheckCircle,
-  Activity,
-  Watch,
-  Phone,
   Heart,
-  Zap,
+  Pause,
+  Play,
+  Shield,
   TrendingUp,
+  Watch,
   Wifi,
+  Zap,
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { useEffect, useRef, useState } from 'react';
 import {
-  LineChart,
+  CartesianGrid,
   Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
 } from 'recharts';
+import { toast } from 'sonner';
 
 interface SensorData {
   timestamp: number;
@@ -74,7 +73,10 @@ interface CalibrationData {
 }
 
 export default function RealTimeFallDetection() {
-  const [isMonitoring, setIsMonitoring] = useKV('fall-detection-active', false);
+  const [isMonitoring, setIsMonitoring] = useKV<boolean>(
+    'fall-detection-active',
+    false
+  );
   const [calibrationData, setCalibrationData] = useKV<CalibrationData | null>(
     'fall-detection-calibration',
     null
@@ -183,7 +185,7 @@ export default function RealTimeFallDetection() {
     // Fall detection logic
     const impactDetected = impactMagnitude > thresholds.impact;
     const rotationDetected = rotationMagnitude > thresholds.rotation;
-    const heartRateDetected = heartRateSpike > thresholds.heartRateSpike;
+    const _heartRateDetected = heartRateSpike > thresholds.heartRateSpike;
     const confidenceOk = sensorData.confidence > thresholds.confidence;
 
     return impactDetected && rotationDetected && confidenceOk;
@@ -229,7 +231,10 @@ export default function RealTimeFallDetection() {
 
   // Confirm fall event
   const confirmFallEvent = (fallEvent: FallEvent) => {
-    setFallEvents((current) => [...current, { ...fallEvent, confirmed: true }]);
+    setFallEvents((current) => [
+      ...(current || []),
+      { ...fallEvent, confirmed: true },
+    ]);
     setAlertPending(null);
     setCountdownTimer(null);
     if (countdownIntervalRef.current) {
@@ -245,7 +250,7 @@ export default function RealTimeFallDetection() {
   const cancelFallAlert = () => {
     if (alertPending) {
       setFallEvents((current) => [
-        ...current,
+        ...(current || []),
         { ...alertPending, falseAlarm: true },
       ]);
     }
@@ -830,13 +835,13 @@ export default function RealTimeFallDetection() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {fallEvents.length === 0 ? (
+              {(fallEvents || []).length === 0 ? (
                 <div className="text-muted-foreground py-8 text-center">
                   No fall events recorded yet
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {fallEvents.map((event) => (
+                  {(fallEvents || []).map((event) => (
                     <div key={event.id} className="rounded-lg border p-4">
                       <div className="mb-2 flex items-center justify-between">
                         <div className="flex items-center gap-3">

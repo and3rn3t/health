@@ -21,7 +21,10 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { MetricData, ProcessedHealthData } from '@/lib/healthDataProcessor';
+import type {
+  MetricData,
+  ProcessedHealthData,
+} from '@/lib/healthDataProcessor';
 import { useKV } from '@github/spark/hooks';
 import {
   Activity,
@@ -86,7 +89,9 @@ interface PredictiveHealthAlertsProps {
   healthData: ProcessedHealthData;
 }
 
-export default function PredictiveHealthAlerts({ healthData }: Readonly<PredictiveHealthAlertsProps>) {
+export default function PredictiveHealthAlerts({
+  healthData,
+}: Readonly<PredictiveHealthAlertsProps>) {
   const [alerts = [], setAlerts] = useKV<HealthAlert[]>(
     'predictive-health-alerts',
     []
@@ -116,7 +121,11 @@ export default function PredictiveHealthAlerts({ healthData }: Readonly<Predicti
   };
   const shouldGenerateAlert = (trend: TrendAnalysis, decline: number) => {
     if (trend.direction === 'concerning') return true;
-    return trend.direction === 'declining' && trend.confidence > alertConfig.thresholds.confidence && decline >= alertConfig.thresholds.decline;
+    return (
+      trend.direction === 'declining' &&
+      trend.confidence > alertConfig.thresholds.confidence &&
+      decline >= alertConfig.thresholds.decline
+    );
   };
   const generateTrendAnalysis = async (): Promise<void> => {
     setIsAnalyzing(true);
@@ -125,7 +134,9 @@ export default function PredictiveHealthAlerts({ healthData }: Readonly<Predicti
       const metrics = Object.keys(healthData.metrics || {});
       const analysis: TrendAnalysis[] = [];
       for (const metric of metrics.slice(0, 6)) {
-        const currentValueRaw = (healthData.metrics as Record<string, MetricData | undefined>)[metric];
+        const currentValueRaw = (
+          healthData.metrics as Record<string, MetricData | undefined>
+        )[metric];
         const numericValue = currentValueRaw ? currentValueRaw.average : 0;
         const slope = (Math.random() - 0.5) * 0.4;
         const confidence = 0.6 + Math.random() * 0.35;
@@ -143,7 +154,11 @@ export default function PredictiveHealthAlerts({ healthData }: Readonly<Predicti
           direction,
           slope,
           confidence,
-          prediction: { nextWeek: nextWeekPrediction, nextMonth: nextMonthPrediction, confidence },
+          prediction: {
+            nextWeek: nextWeekPrediction,
+            nextMonth: nextMonthPrediction,
+            confidence,
+          },
           riskFactors,
         });
       }
@@ -153,8 +168,8 @@ export default function PredictiveHealthAlerts({ healthData }: Readonly<Predicti
         const decline = Math.abs(trend.slope) * 100;
         if (shouldGenerateAlert(trend, decline)) {
           let severity: HealthAlert['severity'] = 'medium';
-            if (decline > 25) severity = 'critical';
-            else if (decline > 20) severity = 'high';
+          if (decline > 25) severity = 'critical';
+          else if (decline > 20) severity = 'high';
           newAlerts.push({
             id: `alert-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
             type: 'decline',
@@ -162,7 +177,10 @@ export default function PredictiveHealthAlerts({ healthData }: Readonly<Predicti
             title: `Predicted Decline in ${trend.metric}`,
             description: `ML analysis predicts a ${decline.toFixed(1)}% decline in ${trend.metric} over the next ${alertConfig.timeframe} days`,
             metric: trend.metric,
-            currentValue: (healthData.metrics as Record<string, MetricData | undefined>)[trend.metric]?.average ?? 0,
+            currentValue:
+              (healthData.metrics as Record<string, MetricData | undefined>)[
+                trend.metric
+              ]?.average ?? 0,
             predictedValue: trend.prediction.nextMonth,
             confidence: trend.confidence,
             timeframe: `${alertConfig.timeframe} days`,
@@ -174,7 +192,9 @@ export default function PredictiveHealthAlerts({ healthData }: Readonly<Predicti
       }
       if (newAlerts.length > 0) {
         setAlerts([...(alerts || []), ...newAlerts]);
-        toast.warning(`${newAlerts.length} new predictive health alerts generated`);
+        toast.warning(
+          `${newAlerts.length} new predictive health alerts generated`
+        );
       } else {
         toast.success('Analysis complete - no concerning trends detected');
       }
@@ -217,14 +237,16 @@ export default function PredictiveHealthAlerts({ healthData }: Readonly<Predicti
   };
 
   const acknowledgeAlert = (alertId: string) => {
-    setAlerts(alerts.map((alert) =>
-      alert.id === alertId ? { ...alert, acknowledged: true } : alert
-    ));
+    setAlerts(
+      alerts.map((alert) =>
+        alert.id === alertId ? { ...alert, acknowledged: true } : alert
+      )
+    );
     toast.success('Alert acknowledged');
   };
 
   const dismissAlert = (alertId: string) => {
-  setAlerts(alerts.filter((alert) => alert.id !== alertId));
+    setAlerts(alerts.filter((alert) => alert.id !== alertId));
     toast.success('Alert dismissed');
   };
 
@@ -258,8 +280,12 @@ export default function PredictiveHealthAlerts({ healthData }: Readonly<Predicti
     }
   };
 
-  const unacknowledgedAlerts = (alerts || []).filter((alert) => !alert.acknowledged);
-  const criticalAlerts = (alerts || []).filter((alert) => alert.severity === 'critical');
+  const unacknowledgedAlerts = (alerts || []).filter(
+    (alert) => !alert.acknowledged
+  );
+  const criticalAlerts = (alerts || []).filter(
+    (alert) => alert.severity === 'critical'
+  );
 
   return (
     <div className="space-y-6">
@@ -399,9 +425,9 @@ export default function PredictiveHealthAlerts({ healthData }: Readonly<Predicti
             </Card>
           ) : (
             <div className="space-y-4">
-            {alerts.map((alert) => (
+              {alerts.map((alert) => (
                 <Card
-              key={alert.id}
+                  key={alert.id}
                   className={`${alert.acknowledged ? 'opacity-60' : ''}`}
                 >
                   <CardHeader className="pb-4">
@@ -488,9 +514,9 @@ export default function PredictiveHealthAlerts({ healthData }: Readonly<Predicti
                         Recommendations
                       </Label>
                       <ul className="space-y-1">
-            {alert.recommendations.map((rec) => (
+                        {alert.recommendations.map((rec) => (
                           <li
-              key={`${alert.id}-${rec}`}
+                            key={`${alert.id}-${rec}`}
                             className="text-muted-foreground flex items-center gap-2 text-sm"
                           >
                             <div className="bg-primary h-1 w-1 rounded-full" />
@@ -538,8 +564,12 @@ export default function PredictiveHealthAlerts({ healthData }: Readonly<Predicti
                         </div>
                       </div>
                       <Badge
-                        variant={((): 'default' | 'secondary' | 'destructive' => {
-                          if (trend.direction === 'concerning') return 'destructive';
+                        variant={(():
+                          | 'default'
+                          | 'secondary'
+                          | 'destructive' => {
+                          if (trend.direction === 'concerning')
+                            return 'destructive';
                           if (trend.direction === 'improving') return 'default';
                           return 'secondary';
                         })()}
@@ -747,7 +777,10 @@ export default function PredictiveHealthAlerts({ healthData }: Readonly<Predicti
                       onCheckedChange={(email) =>
                         setAlertConfig({
                           ...alertConfig,
-                          notifications: { ...alertConfig.notifications, email },
+                          notifications: {
+                            ...alertConfig.notifications,
+                            email,
+                          },
                         })
                       }
                     />

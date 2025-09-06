@@ -3,7 +3,7 @@
  * Advanced ML library for analyzing movement patterns and predicting falls
  */
 
-import { ProcessedHealthData, MetricData } from './healthDataProcessor';
+import { MetricData, ProcessedHealthData } from './healthDataProcessor';
 
 export interface MovementPattern {
   type: string;
@@ -224,7 +224,7 @@ export class MovementPatternAnalyzer {
    */
   async predictFalls(
     healthData: ProcessedHealthData,
-    timeframe: string
+    _timeframe: string
   ): Promise<FallPrediction[]> {
     const predictions: FallPrediction[] = [];
     const features = this.extractMovementFeatures(healthData);
@@ -298,8 +298,8 @@ export class MovementPatternAnalyzer {
    */
   private classifyGaitPattern(features: any): MovementPattern {
     const walkingSteadiness = features.walkingSteadiness?.average || 0.5;
-    const stepConsistency = features.stepConsistency || 0.5;
-    const gaitStability = features.gaitStability || 0.5;
+    const _stepConsistency = features.stepConsistency || 0.5;
+    const _gaitStability = features.gaitStability || 0.5;
 
     let patternType = 'Normal Gait';
     let riskLevel: 'low' | 'moderate' | 'high' | 'critical' = 'low';
@@ -333,7 +333,7 @@ export class MovementPatternAnalyzer {
         'Physical therapy consultation',
         'Home safety assessment',
       ];
-    } else if (stepConsistency < 0.6) {
+    } else if (_stepConsistency < 0.6) {
       patternType = 'Irregular Gait';
       riskLevel = 'moderate';
       indicators = [

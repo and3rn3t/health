@@ -61,8 +61,7 @@ For authentication issues, see:
 ---
 
 **Total Setup Time**: 15-30 minutes  
-**Support Level**: Complete documentation and automation
-5. Add **Allowed Web Origins**: `https://health.andernet.dev`
+**Support Level**: Complete documentation and automation 5. Add **Allowed Web Origins**: `https://health.andernet.dev`
 
 ### 2. Set Up Management API Access
 
