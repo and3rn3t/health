@@ -3,7 +3,7 @@
 
 # Included rules
 included:
-  - VitalSenseMonitor/
+  - HealthKitBridge/
 
 # Excluded paths
 excluded:

@@ -85,7 +85,11 @@ jobs:
 
       - name: Lint Code
         run: |
+<<<<<<< HEAD
           npm run lint:strict
+=======
+          npm run lint -- --cache --cache-location .eslintcache
+>>>>>>> 25bca184785a27bb61650dca7d3183faa7450ddd
           npm run format:check
 
       - name: Type Check
@@ -207,7 +211,7 @@ jobs:
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '15.0'
+          xcode-version: '16.4'
 
       - name: Cache Homebrew
         uses: actions/cache@v4
