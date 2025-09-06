@@ -3,7 +3,7 @@
  * Optimized header with breadcrumbs, search, and quick actions
  */
 
-import EmergencyTrigger from '@/components/health/EmergencyTrigger';
+import EmergencyButton from '@/components/health/EmergencyButton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -203,7 +203,7 @@ export default function NavigationHeader({
         </div>
 
         {/* Right Section - Actions & User Menu */}
-        <div className="flex shrink-0 items-center gap-3 md:gap-4">
+        <div className="flex shrink-0 items-center gap-2 md:gap-3">
           {/* Health Score Badge */}
           {healthScore !== undefined && (
             <Badge
@@ -238,22 +238,16 @@ export default function NavigationHeader({
             )}
           </Button>
 
-          {/* Theme Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onThemeToggle}
-            className="hidden sm:flex"
-          >
-            {themeMode === 'dark' && <Moon className="h-4 w-4" />}
-            {themeMode === 'light' && <Sun className="h-4 w-4" />}
-            {themeMode === 'system' && <Monitor className="h-4 w-4" />}
-          </Button>
-
-          {/* Emergency Button */}
-          <div className="flex items-center">
-            <EmergencyTrigger />
-          </div>
+          {/* Emergency Button - Takes available space */}
+          <EmergencyButton
+            className="w-32 min-w-[120px]"
+            onClick={() => {
+              // Switch to emergency tab
+              if (typeof onNavigate === 'function') {
+                onNavigate('emergency');
+              }
+            }}
+          />
 
           {/* View Account chip (authenticated users) */}
           {isAuthenticated && user && (

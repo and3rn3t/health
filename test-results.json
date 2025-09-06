@@ -1,0 +1,256 @@
+{
+  "summary": {
+    "total": 16,
+    "passed": 2,
+    "failed": 14,
+    "skipped": 4,
+    "successRate": "12.5"
+  },
+  "errors": [
+    {
+      "endpoint": "/health",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev",
+      "url": "https://health-app-prod.workers.dev"
+    },
+    {
+      "endpoint": "/",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev",
+      "url": "https://health-app-prod.workers.dev"
+    },
+    {
+      "endpoint": "/api/health-data",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev",
+      "url": "https://health-app-prod.workers.dev"
+    },
+    {
+      "endpoint": "/api/health-data?limit=10",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev",
+      "url": "https://health-app-prod.workers.dev"
+    },
+    {
+      "endpoint": "/api/health-data?metric=heart_rate",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev",
+      "url": "https://health-app-prod.workers.dev"
+    },
+    {
+      "endpoint": "/api/_selftest",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev",
+      "url": "https://health-app-prod.workers.dev"
+    },
+    {
+      "endpoint": "/api/_admin/purge-health",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev",
+      "url": "https://health-app-prod.workers.dev"
+    },
+    {
+      "endpoint": "/ws",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev",
+      "url": "https://health-app-prod.workers.dev"
+    },
+    {
+      "endpoint": "/api/health-data",
+      "error": "Expected status 200, got 401",
+      "url": "https://health.andernet.dev"
+    },
+    {
+      "endpoint": "/api/health-data?limit=10",
+      "error": "Expected status 200, got 401",
+      "url": "https://health.andernet.dev"
+    },
+    {
+      "endpoint": "/api/health-data?metric=heart_rate",
+      "error": "Expected status 200, got 401",
+      "url": "https://health.andernet.dev"
+    },
+    {
+      "endpoint": "/api/_selftest",
+      "error": "Expected status 200, got 401",
+      "url": "https://health.andernet.dev"
+    },
+    {
+      "endpoint": "/api/_admin/purge-health",
+      "error": "Expected status 200, got 401",
+      "url": "https://health.andernet.dev"
+    },
+    {
+      "endpoint": "/ws",
+      "error": "Expected status 200, got 426",
+      "url": "https://health.andernet.dev"
+    }
+  ],
+  "details": [
+    {
+      "url": "https://health-app-prod.workers.dev",
+      "endpoint": "/health",
+      "method": "GET",
+      "description": "Health check endpoint",
+      "responseTime": 3138,
+      "timestamp": "2025-09-06T20:29:13.740Z",
+      "status": "FAILED",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev"
+    },
+    {
+      "url": "https://health-app-prod.workers.dev",
+      "endpoint": "/",
+      "method": "GET",
+      "description": "React app main page",
+      "responseTime": 3029,
+      "timestamp": "2025-09-06T20:29:16.770Z",
+      "status": "FAILED",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev"
+    },
+    {
+      "url": "https://health-app-prod.workers.dev",
+      "endpoint": "/api/health-data",
+      "method": "GET",
+      "description": "Get health data (with pagination)",
+      "responseTime": 3035,
+      "timestamp": "2025-09-06T20:29:19.806Z",
+      "status": "FAILED",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev"
+    },
+    {
+      "url": "https://health-app-prod.workers.dev",
+      "endpoint": "/api/health-data?limit=10",
+      "method": "GET",
+      "description": "Health data with limit",
+      "responseTime": 3031,
+      "timestamp": "2025-09-06T20:29:22.837Z",
+      "status": "FAILED",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev"
+    },
+    {
+      "url": "https://health-app-prod.workers.dev",
+      "endpoint": "/api/health-data?metric=heart_rate",
+      "method": "GET",
+      "description": "Filter by heart rate metric",
+      "responseTime": 3030,
+      "timestamp": "2025-09-06T20:29:25.867Z",
+      "status": "FAILED",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev"
+    },
+    {
+      "url": "https://health-app-prod.workers.dev",
+      "endpoint": "/api/_selftest",
+      "method": "GET",
+      "description": "Crypto/auth self-test (non-prod)",
+      "responseTime": 3025,
+      "timestamp": "2025-09-06T20:29:28.892Z",
+      "status": "FAILED",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev"
+    },
+    {
+      "url": "https://health-app-prod.workers.dev",
+      "endpoint": "/api/_admin/purge-health",
+      "method": "POST",
+      "description": "Admin purge endpoint (non-prod)",
+      "responseTime": 3022,
+      "timestamp": "2025-09-06T20:29:31.914Z",
+      "status": "FAILED",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev"
+    },
+    {
+      "url": "https://health-app-prod.workers.dev",
+      "endpoint": "/ws",
+      "method": "GET",
+      "description": "WebSocket endpoint info",
+      "responseTime": 3022,
+      "timestamp": "2025-09-06T20:29:34.937Z",
+      "status": "FAILED",
+      "error": "getaddrinfo ENOTFOUND health-app-prod.workers.dev"
+    },
+    {
+      "url": "https://health.andernet.dev",
+      "endpoint": "/health",
+      "method": "GET",
+      "description": "Health check endpoint",
+      "responseTime": 122,
+      "timestamp": "2025-09-06T20:29:38.091Z",
+      "status": "PASSED",
+      "httpStatus": 200,
+      "responseData": {
+        "status": "healthy",
+        "timestamp": "2025-09-06T20:29:38.240Z",
+        "environment": "production"
+      }
+    },
+    {
+      "url": "https://health.andernet.dev",
+      "endpoint": "/",
+      "method": "GET",
+      "description": "React app main page",
+      "responseTime": 31,
+      "timestamp": "2025-09-06T20:29:38.122Z",
+      "status": "PASSED",
+      "httpStatus": 200,
+      "responseData": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title>VitalSense - Apple Health Insights & Fall Risk Monitor</title>\n    <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\" />\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin />\n    <link\n      href=\"https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap\"\n      rel=\"stylesheet\"\n    />\n    <!-- Styles are imported via modules in src/main.tsx and bundled by ESBuild -->\n    <script>\n      (function () {\n        try {\n          var u = new URL(window.location.href);\n          var hasCode = u.searchParams.has('code');\n          var hasState = u.searchParams.has('state');\n          if ((hasCode || hasState) && u.pathname !== '/callback') {\n            window.location.replace('/callback' + u.search);\n          }\n        } catch (e) {\n          // swallow early redirect normalization errors but log\n          try {\n            console.debug(\n              'redirect-normalize failed',\n              e && e.message ? e.message : e\n            );\n          } catch {}\n        }\n      })();\n    </script>\n    <script>\n      // Load runtime app config without letting Vite try to bundle it\n      (function () {\n        try {\n          var s = document.createElement('script');\n          s.src = '/app-config.js';\n          s.async = true;\n          document.head.appendChild(s);\n        } catch (e) {\n          try {\n            console.debug(\n              'app-config loader failed',\n              e && e.message ? e.message : e\n            );\n          } catch {}\n        }\n      })();\n    </script>\n    <script>\n      // Inline fallbacks to avoid race conditions before app-config.js loads\n      (function () {\n        try {\n          // Prefer local KV mode by default; /app-config.js may override\n          // eslint-disable-next-line no-var\n          var BASE_KV_SERVICE_URL = '';\n          // Expose on window for libraries that read from globals\n          window.BASE_KV_SERVICE_URL = BASE_KV_SERVICE_URL;\n          window.__VITALSENSE_KV_MODE = 'local';\n          // Auto-disable WS on demo routes\n          if (location.pathname.indexOf('/demo') === 0) {\n            window.VITALSENSE_DISABLE_WEBSOCKET = true;\n          }\n        } catch (e) {\n          try {\n            console.debug(\n              'inline-fallback failed',\n              e && e.message ? e.message : e\n            );\n          } catch {}\n        }\n      })();\n    </script>\n    <script type=\"module\" src=\"/main.js?v=1757190477320\"></script>\n    <link rel=\"stylesheet\" href=\"/main.css?v=1757190477320\">\n  </head>\n\n  <body>\n    <div id=\"spark-app\" class=\"min-h-screen bg-background text-foreground\">\n      <div id=\"root\"></div>\n    </div>\n  </body>\n</html>"
+    },
+    {
+      "url": "https://health.andernet.dev",
+      "endpoint": "/api/health-data",
+      "method": "GET",
+      "description": "Get health data (with pagination)",
+      "responseTime": 25,
+      "timestamp": "2025-09-06T20:29:38.147Z",
+      "status": "FAILED",
+      "httpStatus": 401,
+      "expectedStatus": 200
+    },
+    {
+      "url": "https://health.andernet.dev",
+      "endpoint": "/api/health-data?limit=10",
+      "method": "GET",
+      "description": "Health data with limit",
+      "responseTime": 23,
+      "timestamp": "2025-09-06T20:29:38.170Z",
+      "status": "FAILED",
+      "httpStatus": 401,
+      "expectedStatus": 200
+    },
+    {
+      "url": "https://health.andernet.dev",
+      "endpoint": "/api/health-data?metric=heart_rate",
+      "method": "GET",
+      "description": "Filter by heart rate metric",
+      "responseTime": 25,
+      "timestamp": "2025-09-06T20:29:38.196Z",
+      "status": "FAILED",
+      "httpStatus": 401,
+      "expectedStatus": 200
+    },
+    {
+      "url": "https://health.andernet.dev",
+      "endpoint": "/api/_selftest",
+      "method": "GET",
+      "description": "Crypto/auth self-test (non-prod)",
+      "responseTime": 26,
+      "timestamp": "2025-09-06T20:29:38.223Z",
+      "status": "FAILED",
+      "httpStatus": 401,
+      "expectedStatus": 200
+    },
+    {
+      "url": "https://health.andernet.dev",
+      "endpoint": "/api/_admin/purge-health",
+      "method": "POST",
+      "description": "Admin purge endpoint (non-prod)",
+      "responseTime": 23,
+      "timestamp": "2025-09-06T20:29:38.246Z",
+      "status": "FAILED",
+      "httpStatus": 401,
+      "expectedStatus": 200
+    },
+    {
+      "url": "https://health.andernet.dev",
+      "endpoint": "/ws",
+      "method": "GET",
+      "description": "WebSocket endpoint info",
+      "responseTime": 23,
+      "timestamp": "2025-09-06T20:29:38.269Z",
+      "status": "FAILED",
+      "httpStatus": 426,
+      "expectedStatus": 200
+    }
+  ],
+  "timestamp": "2025-09-06T20:29:38.296Z"
+}
