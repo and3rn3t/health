@@ -85,7 +85,7 @@ jobs:
 
       - name: Lint Code
         run: |
-          npm run lint:strict -- --cache --cache-location .eslintcache
+          npm run lint:strict
           npm run format:check
 
       - name: Type Check
