@@ -1,5 +1,7 @@
+import { useKV } from '@/hooks/useCloudflareKV';
 import { useEffect, useRef } from 'react';
-import { useKV } from '@github/spark/hooks';
+
+// ... rest of file
 
 interface UsagePattern {
   feature: string;

@@ -10,8 +10,8 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { ProcessedHealthData } from '@/types';
-import { useKV } from '@github/spark/hooks';
 import {
   Activity,
   AlertTriangle,
@@ -88,7 +88,11 @@ export default function PersonalizedEngagementOptimizer({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Safe fallbacks for KV values to satisfy strict typing
-  const defaultEngagement: { sessions: unknown[]; patterns: EngagementPattern[]; profile: PersonalizationProfile | null } = {
+  const defaultEngagement: {
+    sessions: unknown[];
+    patterns: EngagementPattern[];
+    profile: PersonalizationProfile | null;
+  } = {
     sessions: [],
     patterns: [],
     profile: null,
@@ -97,22 +101,30 @@ export default function PersonalizedEngagementOptimizer({
   const currentRecommendations = recommendations ?? [];
 
   // Generate personalized recommendations using LLM (if available) with a safe fallback
-  const generateRecommendations = useCallback(async (
-    patterns: EngagementPattern[],
-    profile: PersonalizationProfile
-  ): Promise<void> => {
-    try {
-      // Use Spark LLM if available; otherwise fall back
-      interface SparkLike {
-        llm: (prompt: string, model?: string, stream?: boolean) => Promise<string>;
-        llmPrompt: (template: TemplateStringsArray, ...subs: unknown[]) => string;
-      }
-      const s = (globalThis as { spark?: SparkLike }).spark;
-      if (!s) {
-        throw new Error('Spark LLM not available');
-      }
+  const generateRecommendations = useCallback(
+    async (
+      patterns: EngagementPattern[],
+      profile: PersonalizationProfile
+    ): Promise<void> => {
+      try {
+        // Use Spark LLM if available; otherwise fall back
+        interface SparkLike {
+          llm: (
+            prompt: string,
+            model?: string,
+            stream?: boolean
+          ) => Promise<string>;
+          llmPrompt: (
+            template: TemplateStringsArray,
+            ...subs: unknown[]
+          ) => string;
+        }
+        const s = (globalThis as { spark?: SparkLike }).spark;
+        if (!s) {
+          throw new Error('Spark LLM not available');
+        }
 
-      const prompt = s.llmPrompt`
+        const prompt = s.llmPrompt`
         Based on this user's engagement patterns and profile, generate 8-10 personalized optimization recommendations:
 
         Engagement Patterns: ${JSON.stringify(patterns)}
@@ -129,81 +141,85 @@ export default function PersonalizedEngagementOptimizer({
         Return as JSON array with: id, type, priority, title, description, expectedImpact (0-100), timeToImplement, actions (array), implemented (false)
       `;
 
-      const response = await s.llm(prompt, 'gpt-4o', true);
-      const newRecommendations = JSON.parse(response) as OptimizationRecommendation[];
-      setRecommendations(newRecommendations);
-    } catch (error) {
-      console.error('Error generating recommendations:', error);
-      // Fallback recommendations
-      const fallbackRecommendations: OptimizationRecommendation[] = [
-        {
-          id: 'timing-1',
-          type: 'timing',
-          priority: 'high',
-          title: 'Optimize Morning Health Check',
-          description:
-            'Your engagement is highest in the morning. Set up automated daily health summaries at 8 AM.',
-          expectedImpact: 85,
-          timeToImplement: '5 minutes',
-          actions: [
-            'Enable morning notifications',
-            'Customize dashboard priority',
-            'Set health score alerts',
-          ],
-          implemented: false,
-        },
-        {
-          id: 'content-1',
-          type: 'content',
-          priority: 'high',
-          title: 'Data-Driven Dashboard Focus',
-          description:
-            'Emphasize analytical insights and trends to match your data-driven engagement style.',
-          expectedImpact: 78,
-          timeToImplement: '2 minutes',
-          actions: [
-            'Prioritize analytics widgets',
-            'Add trend comparisons',
-            'Enable detailed metrics',
-          ],
-          implemented: false,
-        },
-        {
-          id: 'interaction-1',
-          type: 'interaction',
-          priority: 'medium',
-          title: 'Medium-Depth Content Chunks',
-          description:
-            'Break complex analyses into 10-15 minute digestible sections for optimal attention span.',
-          expectedImpact: 72,
-          timeToImplement: '1 minute',
-          actions: [
-            'Enable progressive disclosure',
-            'Add reading time estimates',
-            'Create summary cards',
-          ],
-          implemented: false,
-        },
-        {
-          id: 'motivation-1',
-          type: 'motivation',
-          priority: 'high',
-          title: 'Progress Achievement System',
-          description:
-            'Activate achievement-based progress tracking to trigger your motivation patterns.',
-          expectedImpact: 82,
-          timeToImplement: '3 minutes',
-          actions: [
-            'Enable health score goals',
-            'Set weekly progress milestones',
-            'Activate achievement badges',
-          ],
-          implemented: false,
-        },
-      ];
-      setRecommendations(fallbackRecommendations);
-    }
-  }, [healthData.healthScore, setRecommendations]);
+        const response = await s.llm(prompt, 'gpt-4o', true);
+        const newRecommendations = JSON.parse(
+          response
+        ) as OptimizationRecommendation[];
+        setRecommendations(newRecommendations);
+      } catch (error) {
+        console.error('Error generating recommendations:', error);
+        // Fallback recommendations
+        const fallbackRecommendations: OptimizationRecommendation[] = [
+          {
+            id: 'timing-1',
+            type: 'timing',
+            priority: 'high',
+            title: 'Optimize Morning Health Check',
+            description:
+              'Your engagement is highest in the morning. Set up automated daily health summaries at 8 AM.',
+            expectedImpact: 85,
+            timeToImplement: '5 minutes',
+            actions: [
+              'Enable morning notifications',
+              'Customize dashboard priority',
+              'Set health score alerts',
+            ],
+            implemented: false,
+          },
+          {
+            id: 'content-1',
+            type: 'content',
+            priority: 'high',
+            title: 'Data-Driven Dashboard Focus',
+            description:
+              'Emphasize analytical insights and trends to match your data-driven engagement style.',
+            expectedImpact: 78,
+            timeToImplement: '2 minutes',
+            actions: [
+              'Prioritize analytics widgets',
+              'Add trend comparisons',
+              'Enable detailed metrics',
+            ],
+            implemented: false,
+          },
+          {
+            id: 'interaction-1',
+            type: 'interaction',
+            priority: 'medium',
+            title: 'Medium-Depth Content Chunks',
+            description:
+              'Break complex analyses into 10-15 minute digestible sections for optimal attention span.',
+            expectedImpact: 72,
+            timeToImplement: '1 minute',
+            actions: [
+              'Enable progressive disclosure',
+              'Add reading time estimates',
+              'Create summary cards',
+            ],
+            implemented: false,
+          },
+          {
+            id: 'motivation-1',
+            type: 'motivation',
+            priority: 'high',
+            title: 'Progress Achievement System',
+            description:
+              'Activate achievement-based progress tracking to trigger your motivation patterns.',
+            expectedImpact: 82,
+            timeToImplement: '3 minutes',
+            actions: [
+              'Enable health score goals',
+              'Set weekly progress milestones',
+              'Activate achievement badges',
+            ],
+            implemented: false,
+          },
+        ];
+        setRecommendations(fallbackRecommendations);
+      }
+    },
+    [healthData.healthScore, setRecommendations]
+  );
 
   const generateEngagementPatterns = useCallback(async () => {
     setIsAnalyzing(true);
@@ -259,13 +275,15 @@ export default function PersonalizedEngagementOptimizer({
     toast.success('Engagement analysis complete!');
   }, [generateRecommendations, setEngagementData]);
 
-
   // Simulate engagement pattern analysis (after callbacks declared)
   useEffect(() => {
     const patternsLen = currentEngagement.patterns.length;
     if (!patternsLen) {
       void generateEngagementPatterns().catch((error) => {
-        console.error('Unhandled error in engagement pattern generation:', error);
+        console.error(
+          'Unhandled error in engagement pattern generation:',
+          error
+        );
       });
     }
   }, [currentEngagement.patterns.length, generateEngagementPatterns]);
@@ -292,7 +310,7 @@ export default function PersonalizedEngagementOptimizer({
   };
 
   const getRecommendationsByType = (type: RecommendationType) => {
-  return currentRecommendations.filter((rec) => rec.type === type);
+    return currentRecommendations.filter((rec) => rec.type === type);
   };
 
   const getPriorityColor = (priority: RecommendationPriority) => {
@@ -410,7 +428,7 @@ export default function PersonalizedEngagementOptimizer({
       </div>
 
       {/* User Profile Insights */}
-  {currentEngagement.profile && (
+      {currentEngagement.profile && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -426,25 +444,25 @@ export default function PersonalizedEngagementOptimizer({
               <div className="space-y-2">
                 <p className="text-sm font-medium">Preferred Time</p>
                 <Badge variant="outline" className="capitalize">
-      {currentEngagement.profile.preferredTime}
+                  {currentEngagement.profile.preferredTime}
                 </Badge>
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-medium">Engagement Style</p>
                 <Badge variant="outline" className="capitalize">
-      {currentEngagement.profile.engagementStyle.replace('-', ' ')}
+                  {currentEngagement.profile.engagementStyle.replace('-', ' ')}
                 </Badge>
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-medium">Attention Span</p>
                 <Badge variant="outline" className="capitalize">
-      {currentEngagement.profile.attentionSpan}
+                  {currentEngagement.profile.attentionSpan}
                 </Badge>
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-medium">Learning Style</p>
                 <Badge variant="outline" className="capitalize">
-      {currentEngagement.profile.learningPreference}
+                  {currentEngagement.profile.learningPreference}
                 </Badge>
               </div>
             </div>
@@ -594,9 +612,9 @@ export default function PersonalizedEngagementOptimizer({
                               Implementation Steps:
                             </h5>
                             <ul className="space-y-1">
-                {rec.actions.map((action, index) => (
+                              {rec.actions.map((action, index) => (
                                 <li
-                  key={`${rec.id}-action-${index}`}
+                                  key={`${rec.id}-action-${index}`}
                                   className="text-muted-foreground flex items-center gap-2 text-sm"
                                 >
                                   <div className="bg-primary h-1.5 w-1.5 rounded-full" />

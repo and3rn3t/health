@@ -1,0 +1,232 @@
+/*
+ * VitalSense CSS - Consolidated & Clean
+ * Apple Health Insights & Fall Risk Monitor
+ */
+
+/* === IMPORTS === */
+@import 'tw-animate-css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* === VITALSENSE BRAND THEME === */
+:root {
+  /* VitalSense Brand Colors - Light Mode */
+  --vitalsense-primary: #2563eb; /* VitalSense Blue */
+  --vitalsense-primary-light: #3b82f6; /* Lighter Blue */
+  --vitalsense-teal: #0891b2; /* VitalSense Teal */
+  --vitalsense-success: #16a34a; /* Health Success Green */
+  --vitalsense-warning: #f59e0b; /* Warning Amber */
+  --vitalsense-error: #dc2626; /* Error Red */
+
+  /* Background & Surface Colors */
+  --background: #f8fafc; /* Light blue-grey */
+  --foreground: #1e293b; /* Dark slate text */
+  --card: #ffffff; /* White cards */
+  --card-foreground: #1e293b; /* Dark text on cards */
+  --popover: #ffffff;
+  --popover-foreground: #1e293b;
+
+  /* Interactive Elements */
+  --primary: var(--vitalsense-primary);
+  --primary-foreground: #ffffff;
+  --secondary: #e2e8f0;
+  --secondary-foreground: #475569;
+  --accent: var(--vitalsense-teal);
+  --accent-foreground: #ffffff;
+  --destructive: var(--vitalsense-error);
+  --destructive-foreground: #ffffff;
+
+  /* Neutral Colors */
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --border: #cbd5e1;
+  --input: #e2e8f0;
+  --ring: var(--vitalsense-primary);
+
+  /* Layout */
+  --radius: 0.5rem;
+}
+
+/* VitalSense Dark Mode */
+[data-appearance='dark'] {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
+  --popover: #1e293b;
+  --popover-foreground: #f8fafc;
+
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #334155;
+  --secondary-foreground: #cbd5e1;
+  --accent: #06b6d4;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --border: #334155;
+  --input: #334155;
+  --ring: #3b82f6;
+}
+
+/* === BASE STYLES === */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+  }
+}
+
+/* === VITALSENSE COMPONENTS === */
+@layer components {
+  /* VitalSense Status Cards */
+  .vitalsense-card {
+    @apply bg-card text-card-foreground rounded-lg border border-border p-4 shadow-sm;
+  }
+
+  .vitalsense-card--success {
+    @apply border-green-200 bg-green-50 text-green-900 dark:border-green-800 dark:bg-green-950 dark:text-green-100;
+  }
+
+  .vitalsense-card--warning {
+    @apply border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100;
+  }
+
+  .vitalsense-card--error {
+    @apply border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-100;
+  }
+
+  /* VitalSense Buttons */
+  .vitalsense-btn {
+    @apply focus-visible:ring-ring inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .vitalsense-btn--primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .vitalsense-btn--teal {
+    @apply bg-cyan-600 text-white hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600;
+  }
+
+  /* VitalSense Health Metrics */
+  .vitalsense-metric {
+    @apply text-2xl font-bold text-foreground;
+  }
+
+  .vitalsense-metric--success {
+    @apply text-green-600 dark:text-green-400;
+  }
+
+  .vitalsense-metric--warning {
+    @apply text-amber-600 dark:text-amber-400;
+  }
+
+  .vitalsense-metric--error {
+    @apply text-red-600 dark:text-red-400;
+  }
+}
+
+/* === VITALSENSE UTILITIES === */
+@layer utilities {
+  /* Background utilities */
+  .bg-vitalsense-primary {
+    background-color: var(--vitalsense-primary);
+  }
+
+  .bg-vitalsense-teal {
+    background-color: var(--vitalsense-teal);
+  }
+
+  /* Text utilities */
+  .text-vitalsense-primary {
+    color: var(--vitalsense-primary);
+  }
+
+  .text-vitalsense-teal {
+    color: var(--vitalsense-teal);
+  }
+
+  /* Border utilities */
+  .border-vitalsense-primary {
+    border-color: var(--vitalsense-primary);
+  }
+
+  .border-vitalsense-teal {
+    border-color: var(--vitalsense-teal);
+  }
+}
+
+/* === HEALTH APP SPECIFIC STYLES === */
+@layer components {
+  /* Dashboard Layout */
+  .vitalsense-dashboard {
+    @apply container mx-auto space-y-6 p-4;
+  }
+
+  .vitalsense-grid {
+    @apply grid gap-4 md:gap-6;
+  }
+
+  .vitalsense-grid--2col {
+    @apply grid-cols-1 md:grid-cols-2;
+  }
+
+  .vitalsense-grid--3col {
+    @apply grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
+  }
+
+  /* Health Score Display */
+  .vitalsense-health-score {
+    @apply rounded-lg border bg-gradient-to-br from-blue-50 to-cyan-50 p-8 text-center dark:from-blue-950 dark:to-cyan-950;
+  }
+
+  .vitalsense-health-score__value {
+    @apply mb-2 text-6xl font-bold text-vitalsense-primary;
+  }
+
+  .vitalsense-health-score__label {
+    @apply text-muted-foreground text-sm uppercase tracking-wide;
+  }
+
+  /* Emergency Alert Styles */
+  .vitalsense-emergency-alert {
+    @apply animate-pulse border-red-500 bg-red-500 text-white;
+  }
+
+  /* Fall Risk Indicator */
+  .vitalsense-fall-risk {
+    @apply flex items-center space-x-2 rounded-full px-3 py-2 text-sm font-medium;
+  }
+
+  .vitalsense-fall-risk--low {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+  }
+
+  .vitalsense-fall-risk--medium {
+    @apply bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200;
+  }
+
+  .vitalsense-fall-risk--high {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+  }
+}

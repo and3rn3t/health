@@ -1,10 +1,5 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
@@ -84,7 +79,7 @@ export default function HealthDataImport({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" style={{ marginBottom: '2rem' }}>
       <Alert>
         <FileText className="h-4 w-4" />
         <AlertDescription>
@@ -146,72 +141,74 @@ export default function HealthDataImport({
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Activity className="h-5 w-5" />
-              What We Analyze
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-center gap-2">
-                <div className="bg-primary h-2 w-2 rounded-full" />
-                Activity metrics (steps, distance, calories)
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="bg-primary h-2 w-2 rounded-full" />
-                Heart rate and cardiovascular data
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="bg-primary h-2 w-2 rounded-full" />
-                Walking steadiness and gait patterns
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="bg-primary h-2 w-2 rounded-full" />
-                Sleep quality and duration
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="bg-primary h-2 w-2 rounded-full" />
-                Balance and mobility indicators
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+      <div style={{ marginTop: '2rem' }}>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Activity className="h-5 w-5" />
+                What We Analyze
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <div className="bg-primary h-2 w-2 rounded-full" />
+                  Activity metrics (steps, distance, calories)
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="bg-primary h-2 w-2 rounded-full" />
+                  Heart rate and cardiovascular data
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="bg-primary h-2 w-2 rounded-full" />
+                  Walking steadiness and gait patterns
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="bg-primary h-2 w-2 rounded-full" />
+                  Sleep quality and duration
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="bg-primary h-2 w-2 rounded-full" />
+                  Balance and mobility indicators
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Brain className="h-5 w-5" />
-              AI-Powered Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-center gap-2">
-                <div className="bg-accent h-2 w-2 rounded-full" />
-                Fall risk assessment and scoring
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="bg-accent h-2 w-2 rounded-full" />
-                Trend analysis and predictions
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="bg-accent h-2 w-2 rounded-full" />
-                Personalized health recommendations
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="bg-accent h-2 w-2 rounded-full" />
-                Data quality and reliability scoring
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="bg-accent h-2 w-2 rounded-full" />
-                Correlation and pattern detection
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Brain className="h-5 w-5" />
+                AI-Powered Insights
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <div className="bg-accent h-2 w-2 rounded-full" />
+                  Fall risk assessment and scoring
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="bg-accent h-2 w-2 rounded-full" />
+                  Trend analysis and predictions
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="bg-accent h-2 w-2 rounded-full" />
+                  Personalized health recommendations
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="bg-accent h-2 w-2 rounded-full" />
+                  Data quality and reliability scoring
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="bg-accent h-2 w-2 rounded-full" />
+                  Correlation and pattern detection
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

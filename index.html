@@ -10,7 +10,8 @@
       href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
       rel="stylesheet"
     />
-    <!-- Styles are imported via modules in src/main.tsx and bundled by Vite -->
+    <link rel="stylesheet" href="/main.css" />
+    <!-- VitalSense consolidated styles -->
     <script>
       (function () {
         try {
@@ -76,7 +77,10 @@
   </head>
 
   <body>
-    <div id="spark-app" class="min-h-screen bg-background text-foreground">
+    <div
+      id="spark-app"
+      class="min-h-screen bg-vitalsense-bg-light text-vitalsense-text-primary"
+    >
       <div id="root"></div>
     </div>
     <script type="module" src="/src/main.tsx"></script>

@@ -318,3 +318,35 @@
     --color-vitalsense-error: #ef4444;
   }
 }
+
+/* VitalSense Color System - Standard CSS Variables */
+/* These variables are used by the VitalSense brand theme */
+:root {
+  /* Primary VitalSense brand colors */
+  --color-vitalsense-primary: #2563eb;
+  --color-vitalsense-primary-light: #3b82f6;
+  --color-vitalsense-primary-dark: #1d4ed8;
+  --color-vitalsense-primary-contrast: #ffffff;
+  --color-vitalsense-teal: #0891b2;
+  --color-vitalsense-teal-light: #06b6d4;
+  --color-vitalsense-teal-dark: #0e7490;
+  --color-vitalsense-teal-contrast: #ffffff;
+  --color-vitalsense-success: #059669;
+  --color-vitalsense-success-light: #10b981;
+  --color-vitalsense-success-dark: #047857;
+  --color-vitalsense-success-contrast: #ffffff;
+  --color-vitalsense-warning: #d97706;
+  --color-vitalsense-warning-light: #f59e0b;
+  --color-vitalsense-warning-dark: #b45309;
+  --color-vitalsense-warning-contrast: #000000;
+  --color-vitalsense-error: #dc2626;
+  --color-vitalsense-error-light: #ef4444;
+  --color-vitalsense-error-dark: #b91c1c;
+  --color-vitalsense-error-contrast: #ffffff;
+  --color-vitalsense-text-primary: #111827;
+  --color-vitalsense-text-muted: #6b7280;
+  --color-vitalsense-bg-light: #ffffff;
+  --color-vitalsense-bg-dark: #1f2937;
+  --color-vitalsense-card-light: #f9fafb;
+  --color-vitalsense-card-dark: #374151;
+}

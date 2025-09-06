@@ -23,7 +23,6 @@ import { Contact, ProcessedHealthData } from '@/types';
 import {
   Activity,
   AlertTriangle,
-  BarChart3,
   Bell,
   Brain,
   Clock,
@@ -40,10 +39,8 @@ import {
   Share,
   Shield,
   Smartphone,
-  Sparkles,
   Sun,
   Target,
-  TrendingUp,
   Trophy,
   Upload,
   Users,
@@ -87,7 +84,6 @@ import UserProfile from '@/components/auth/UserProfile';
 import AdvancedAppleWatchIntegration from '@/components/health/AdvancedAppleWatchIntegration';
 import AppleWatchIntegrationChecklist from '@/components/health/AppleWatchIntegrationChecklist';
 import ComprehensiveAppleHealthKitGuide from '@/components/health/ComprehensiveAppleHealthKitGuide';
-import EmergencyTriggerButton from '@/components/health/EmergencyTriggerButton';
 import { EnhancedHealthDataUpload } from '@/components/health/EnhancedHealthDataUpload';
 import EnhancedHealthInsightsDashboard from '@/components/health/EnhancedHealthInsightsDashboard';
 import HealthAlertsConfig from '@/components/health/HealthAlertsConfig';
@@ -140,367 +136,489 @@ const Sidebar = ({
   toggleThemeMode,
   hasHealthData,
   navigationItems,
-}: SidebarProps) => (
-  <aside
-    className={`
-    bg-card fixed left-0 top-0 z-40 h-screen border-r border-border
-    transition-all duration-300 ease-in-out
-    ${sidebarCollapsed ? 'w-16' : 'w-64'}
-    hidden lg:flex lg:flex-col
-  `}
-  >
-    <div className="flex h-full flex-col overflow-hidden">
-      {/* Header */}
-      <div className="flex-shrink-0 border-b border-border p-4">
-        <div className="flex items-center justify-between">
-          {!sidebarCollapsed && (
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-vitalsense-primary">
-                <Shield className="h-5 w-5 text-vitalsense-primary-contrast" />
-              </div>
-              <div>
-                <h2 className="font-semibold text-vitalsense-text-primary">
-                  VitalSense
-                </h2>
-                <p className="text-xs text-vitalsense-text-muted">
-                  Health Monitor
-                </p>
-                <div className="mt-1">
-                  <Badge
-                    variant="outline"
-                    className="border-vitalsense-teal text-vitalsense-teal"
-                  >
-                    iOS ready
-                  </Badge>
+}: SidebarProps) => {
+  console.log(
+    '🔧 Sidebar render - sidebarCollapsed:',
+    sidebarCollapsed,
+    'width will be:',
+    sidebarCollapsed ? '64px' : '256px'
+  );
+
+  return (
+    <div
+      className="fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-slate-200 bg-white transition-all duration-300 ease-in-out"
+      style={{ width: sidebarCollapsed ? '64px' : '256px' }}
+    >
+      <div className="flex h-full flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex-shrink-0 border-b border-slate-200 p-3">
+          <div className="flex items-center justify-between">
+            {!sidebarCollapsed && (
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-vitalsense-primary">
+                  <Shield className="h-4 w-4 text-vitalsense-primary-contrast" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-vitalsense-text-primary">
+                    VitalSense
+                  </h2>
+                  <p className="text-xs text-vitalsense-text-muted">
+                    Health Monitor
+                  </p>
                 </div>
               </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                console.log(
+                  '🔄 Sidebar toggle clicked! Current state:',
+                  sidebarCollapsed
+                );
+                setSidebarCollapsed(!sidebarCollapsed);
+                console.log('🔄 New state should be:', !sidebarCollapsed);
+              }}
+              className="vitalsense-ghost-button h-8 w-8 p-0"
+            >
+              {sidebarCollapsed ? (
+                <List className="h-4 w-4" />
+              ) : (
+                <X className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav
+          className={`no-scrollbar flex-1 space-y-6 overflow-y-auto ${sidebarCollapsed ? 'px-2 py-4' : 'p-4'}`}
+        >
+          {/* Main Features */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-vitalsense-text-muted">
+                Main Features
+              </h3>
+            )}
+            <div
+              className={`space-y-1 ${sidebarCollapsed ? 'flex flex-col items-center' : ''}`}
+            >
+              {navigationItems.main.map((item: NavigationItem) => {
+                const IconComponent = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                    h-10
+                    ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                  `}
+                    style={
+                      sidebarCollapsed
+                        ? {
+                            width: '2.5rem',
+                            height: '2.5rem',
+                            padding: '0 !important',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }
+                        : {}
+                    }
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Monitoring */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-vitalsense-text-muted">
+                Monitoring & Alerts
+              </h3>
+            )}
+            <div
+              className={`space-y-1 ${sidebarCollapsed ? 'flex flex-col items-center' : ''}`}
+            >
+              {navigationItems.monitoring.map((item: NavigationItem) => {
+                const IconComponent = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                    h-10
+                    ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                  `}
+                    style={
+                      sidebarCollapsed
+                        ? {
+                            width: '2.5rem',
+                            height: '2.5rem',
+                            padding: '0 !important',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }
+                        : {}
+                    }
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* AI & ML */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-vitalsense-text-muted">
+                AI & Machine Learning
+              </h3>
+            )}
+            <div
+              className={`space-y-1 ${sidebarCollapsed ? 'flex flex-col items-center' : ''}`}
+            >
+              {navigationItems.ai.map((item: NavigationItem) => {
+                const IconComponent = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                    h-10
+                    ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                  `}
+                    style={
+                      sidebarCollapsed
+                        ? {
+                            width: '2.5rem',
+                            height: '2.5rem',
+                            padding: '0 !important',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }
+                        : {}
+                    }
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Advanced Features */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-vitalsense-text-muted">
+                Advanced Features
+              </h3>
+            )}
+            <div
+              className={`space-y-1 ${sidebarCollapsed ? 'flex flex-col items-center' : ''}`}
+            >
+              {navigationItems.advanced.map((item: NavigationItem) => {
+                const IconComponent = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                    h-10
+                    ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                  `}
+                    style={
+                      sidebarCollapsed
+                        ? {
+                            width: '2.5rem',
+                            height: '2.5rem',
+                            padding: '0 !important',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }
+                        : {}
+                    }
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Gamification */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-vitalsense-text-muted">
+                Gamification
+              </h3>
+            )}
+            <div
+              className={`space-y-1 ${sidebarCollapsed ? 'flex flex-col items-center' : ''}`}
+            >
+              {navigationItems.gamification.map((item: NavigationItem) => {
+                const IconComponent = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                    h-10
+                    ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                  `}
+                    style={
+                      sidebarCollapsed
+                        ? {
+                            width: '2.5rem',
+                            height: '2.5rem',
+                            padding: '0 !important',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }
+                        : {}
+                    }
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Community */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-vitalsense-text-muted">
+                Community & Care
+              </h3>
+            )}
+            <div
+              className={`space-y-1 ${sidebarCollapsed ? 'flex flex-col items-center' : ''}`}
+            >
+              {navigationItems.community.map((item: NavigationItem) => {
+                const IconComponent = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                    h-10
+                    ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                  `}
+                    style={
+                      sidebarCollapsed
+                        ? {
+                            width: '2.5rem',
+                            height: '2.5rem',
+                            padding: '0 !important',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }
+                        : {}
+                    }
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Management */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-vitalsense-text-muted">
+                Management
+              </h3>
+            )}
+            <div
+              className={`space-y-1 ${sidebarCollapsed ? 'flex flex-col items-center' : ''}`}
+            >
+              {navigationItems.management.map((item: NavigationItem) => {
+                const IconComponent = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                    h-10
+                    ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                  `}
+                    style={
+                      sidebarCollapsed
+                        ? {
+                            width: '2.5rem',
+                            height: '2.5rem',
+                            padding: '0 !important',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }
+                        : {}
+                    }
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Profile */}
+          <div>
+            {!sidebarCollapsed && (
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-vitalsense-text-muted">
+                User Profile
+              </h3>
+            )}
+            <div
+              className={`space-y-1 ${sidebarCollapsed ? 'flex flex-col items-center' : ''}`}
+            >
+              {navigationItems.profile.map((item: NavigationItem) => {
+                const IconComponent = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`
+                    h-10
+                    ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                  `}
+                    style={
+                      sidebarCollapsed
+                        ? {
+                            width: '2.5rem',
+                            height: '2.5rem',
+                            padding: '0 !important',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }
+                        : {}
+                    }
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Setup */}
+        </nav>
+
+        {/* Footer */}
+        <div className="border-t border-slate-200 p-4">
+          {/* Theme mode toggle */}
+          <div className="mb-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleThemeMode}
+              className={`
+              h-8 w-full justify-start
+              px-3
+              hover:bg-slate-100
+            `}
+            >
+              {themeMode === 'dark' && (
+                <Moon className="h-4 w-4 flex-shrink-0" />
+              )}
+              {themeMode === 'light' && (
+                <Sun className="h-4 w-4 flex-shrink-0" />
+              )}
+              {themeMode === 'system' && (
+                <Monitor className="h-4 w-4 flex-shrink-0" />
+              )}
+              {!sidebarCollapsed && (
+                <span className="ml-3">
+                  {themeMode === 'dark' && 'Dark Mode'}
+                  {themeMode === 'light' && 'Light Mode'}
+                  {themeMode === 'system' && 'Auto Mode'}
+                </span>
+              )}
+            </Button>
+          </div>
+
+          {hasHealthData && !sidebarCollapsed && (
+            <div className="space-y-2">
+              <Badge
+                variant="outline"
+                className="border-vitalsense-primary text-vitalsense-primary"
+              >
+                Data Connected
+              </Badge>
             </div>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="h-8 w-8 p-0"
-          >
-            {sidebarCollapsed ? (
-              <List className="h-4 w-4" />
-            ) : (
-              <X className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-      </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 space-y-6 overflow-y-auto p-4">
-        {/* Main Features */}
-        <div>
-          {!sidebarCollapsed && (
-            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-              Main Features
-            </h3>
+          {!hasHealthData && !sidebarCollapsed && (
+            <div className="flex justify-center">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+            </div>
           )}
-          <div className="space-y-1">
-            {navigationItems.main.map((item: NavigationItem) => {
-              const IconComponent = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? 'default' : 'ghost'}
-                  className={`
-                    h-10 w-full justify-start
-                    px-3
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                  `}
-                  onClick={() => setActiveTab(item.id)}
-                >
-                  <IconComponent className="h-4 w-4 flex-shrink-0" />
-                  {!sidebarCollapsed && (
-                    <span className="ml-3">{item.label}</span>
-                  )}
-                </Button>
-              );
-            })}
-          </div>
         </div>
-
-        {/* Monitoring */}
-        <div>
-          {!sidebarCollapsed && (
-            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-              Monitoring & Alerts
-            </h3>
-          )}
-          <div className="space-y-1">
-            {navigationItems.monitoring.map((item: NavigationItem) => {
-              const IconComponent = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? 'default' : 'ghost'}
-                  className={`
-                    h-10 w-full justify-start
-                    px-3
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                  `}
-                  onClick={() => setActiveTab(item.id)}
-                >
-                  <IconComponent className="h-4 w-4 flex-shrink-0" />
-                  {!sidebarCollapsed && (
-                    <span className="ml-3">{item.label}</span>
-                  )}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* AI & ML */}
-        <div>
-          {!sidebarCollapsed && (
-            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-              AI & Machine Learning
-            </h3>
-          )}
-          <div className="space-y-1">
-            {navigationItems.ai.map((item: NavigationItem) => {
-              const IconComponent = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? 'default' : 'ghost'}
-                  className={`
-                    h-10 w-full justify-start
-                    px-3
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                  `}
-                  onClick={() => setActiveTab(item.id)}
-                >
-                  <IconComponent className="h-4 w-4 flex-shrink-0" />
-                  {!sidebarCollapsed && (
-                    <span className="ml-3">{item.label}</span>
-                  )}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Advanced Features */}
-        <div>
-          {!sidebarCollapsed && (
-            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-              Advanced Features
-            </h3>
-          )}
-          <div className="space-y-1">
-            {navigationItems.advanced.map((item: NavigationItem) => {
-              const IconComponent = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? 'default' : 'ghost'}
-                  className={`
-                    h-10 w-full justify-start
-                    px-3
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                  `}
-                  onClick={() => setActiveTab(item.id)}
-                >
-                  <IconComponent className="h-4 w-4 flex-shrink-0" />
-                  {!sidebarCollapsed && (
-                    <span className="ml-3">{item.label}</span>
-                  )}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Gamification */}
-        <div>
-          {!sidebarCollapsed && (
-            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-              Gamification
-            </h3>
-          )}
-          <div className="space-y-1">
-            {navigationItems.gamification.map((item: NavigationItem) => {
-              const IconComponent = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? 'default' : 'ghost'}
-                  className={`
-                    h-10 w-full justify-start
-                    px-3
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                  `}
-                  onClick={() => setActiveTab(item.id)}
-                >
-                  <IconComponent className="h-4 w-4 flex-shrink-0" />
-                  {!sidebarCollapsed && (
-                    <span className="ml-3">{item.label}</span>
-                  )}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Community */}
-        <div>
-          {!sidebarCollapsed && (
-            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-              Community & Care
-            </h3>
-          )}
-          <div className="space-y-1">
-            {navigationItems.community.map((item: NavigationItem) => {
-              const IconComponent = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? 'default' : 'ghost'}
-                  className={`
-                    h-10 w-full justify-start
-                    px-3
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                  `}
-                  onClick={() => setActiveTab(item.id)}
-                >
-                  <IconComponent className="h-4 w-4 flex-shrink-0" />
-                  {!sidebarCollapsed && (
-                    <span className="ml-3">{item.label}</span>
-                  )}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Management */}
-        <div>
-          {!sidebarCollapsed && (
-            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-              Management
-            </h3>
-          )}
-          <div className="space-y-1">
-            {navigationItems.management.map((item: NavigationItem) => {
-              const IconComponent = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? 'default' : 'ghost'}
-                  className={`
-                    h-10 w-full justify-start
-                    px-3
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                  `}
-                  onClick={() => setActiveTab(item.id)}
-                >
-                  <IconComponent className="h-4 w-4 flex-shrink-0" />
-                  {!sidebarCollapsed && (
-                    <span className="ml-3">{item.label}</span>
-                  )}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Profile */}
-        <div>
-          {!sidebarCollapsed && (
-            <h3 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
-              User Profile
-            </h3>
-          )}
-          <div className="space-y-1">
-            {navigationItems.profile.map((item: NavigationItem) => {
-              const IconComponent = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? 'default' : 'ghost'}
-                  className={`
-                    h-10 w-full justify-start
-                    px-3
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
-                  `}
-                  onClick={() => setActiveTab(item.id)}
-                >
-                  <IconComponent className="h-4 w-4 flex-shrink-0" />
-                  {!sidebarCollapsed && (
-                    <span className="ml-3">{item.label}</span>
-                  )}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Setup */}
-      </nav>
-
-      {/* Footer */}
-      <div className="border-t border-border p-4">
-        {/* Theme mode toggle */}
-        <div className="mb-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleThemeMode}
-            className={`
-              hover:bg-muted h-8 w-full
-              justify-start
-              px-3
-            `}
-          >
-            {themeMode === 'dark' && <Moon className="h-4 w-4 flex-shrink-0" />}
-            {themeMode === 'light' && <Sun className="h-4 w-4 flex-shrink-0" />}
-            {themeMode === 'system' && (
-              <Monitor className="h-4 w-4 flex-shrink-0" />
-            )}
-            {!sidebarCollapsed && (
-              <span className="ml-3">
-                {themeMode === 'dark' && 'Dark Mode'}
-                {themeMode === 'light' && 'Light Mode'}
-                {themeMode === 'system' && 'Auto Mode'}
-              </span>
-            )}
-          </Button>
-        </div>
-
-        {hasHealthData && !sidebarCollapsed && (
-          <div className="space-y-2">
-            <Badge
-              variant="outline"
-              className="border-vitalsense-primary text-vitalsense-primary"
-            >
-              Data Connected
-            </Badge>
-          </div>
-        )}
-
-        {!hasHealthData && !sidebarCollapsed && (
-          <div className="flex justify-center">
-            <AlertTriangle className="text-destructive h-5 w-5" />
-          </div>
-        )}
       </div>
     </div>
-  </aside>
-);
+  );
+};
 
 function App() {
   console.log('🚀 VitalSense App component loading...');
@@ -744,10 +862,6 @@ function App() {
 
   const hasHealthData =
     healthData?.metrics && Object.keys(healthData.metrics).length > 0;
-  const isHighRisk =
-    hasHealthData &&
-    ((healthData.healthScore || 0) < 60 ||
-      healthData.fallRiskFactors?.some((factor) => factor.risk === 'high'));
 
   // Dev-only telemetry panel state (persisted)
   const [showTelemetry, setShowTelemetry] = useKV<boolean>(
@@ -758,20 +872,14 @@ function App() {
   // Define navigation structure with categories
   const navigationItems = {
     main: [
-      { id: 'dashboard', label: 'Dashboard', icon: Heart },
-      { id: 'vitalsense-brand', label: 'Brand Colors', icon: Sparkles },
-      { id: 'insights', label: 'Insights', icon: TrendingUp },
-      { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-      { id: 'usage-analytics', label: 'Usage Analytics', icon: Brain },
-      { id: 'usage-predictions', label: 'Usage Predictions', icon: Sparkles },
-      { id: 'fall-risk', label: 'Fall Risk & Walking', icon: Shield },
+      { id: 'dashboard', label: 'VitalSense Dashboard', icon: Heart },
+      { id: 'health-overview', label: 'Health Overview', icon: Monitor },
+      { id: 'fall-detection', label: 'Fall Risk Monitor', icon: Shield },
+      { id: 'posture-analysis', label: 'Posture Analysis', icon: Activity },
+      { id: 'walking-patterns', label: 'Walking Patterns', icon: Activity },
+      { id: 'gait-analysis', label: 'Gait Analysis', icon: Target },
       { id: 'emergency', label: 'Emergency Alert', icon: AlertTriangle },
       { id: 'recommendations', label: 'Recommendations', icon: Lightbulb },
-      {
-        id: 'engagement-optimizer',
-        label: 'Engagement Optimizer',
-        icon: Target,
-      },
       { id: 'smart-notifications', label: 'Smart Notifications', icon: Bell },
       { id: 'search', label: 'Search', icon: Search },
     ],
@@ -856,7 +964,7 @@ function App() {
 
   const currentPageInfo = getCurrentPageInfo();
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-vitalsense-bg-light">
       {/* Sidebar for larger screens */}
       <Sidebar
         sidebarCollapsed={sidebarCollapsed}
@@ -869,43 +977,45 @@ function App() {
         navigationItems={navigationItems}
       />
 
-      {/* Main layout with responsive margin */}
+      {/* Main content area */}
       <div
-        className={`flex min-h-screen flex-1 flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}
+        className="transition-all duration-300"
+        style={{
+          minHeight: '100vh',
+          marginLeft: sidebarCollapsed ? '64px' : '256px',
+        }}
       >
-        {/* Header */}
-        <header className="bg-card border-b lg:hidden">
-          <div className="container mx-auto px-6 py-4">
+        {/* Mobile Header - only show when sidebar would be hidden */}
+        <header className="block border-b bg-vitalsense-card-light lg:hidden">
+          <div className="px-4 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="bg-primary flex h-10 w-10 items-center justify-center rounded-lg">
-                  <Shield className="text-primary-foreground h-6 w-6" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground">
-                    VitalSense
-                  </h1>
-                  <p className="text-muted-foreground text-sm">
-                    Apple Health Insights & Fall Risk Monitor
-                  </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                  className="h-8 w-8 p-0 lg:hidden"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-vitalsense-primary">
+                    <Shield className="h-4 w-4 text-vitalsense-primary-contrast" />
+                  </div>
+                  <div>
+                    <h1 className="text-lg font-semibold text-vitalsense-text-primary">
+                      VitalSense
+                    </h1>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
                 {hasHealthData && (
                   <Badge
                     variant="outline"
-                    className="text-primary border-primary"
+                    className="border-vitalsense-primary text-xs text-vitalsense-primary"
                   >
-                    Health Score: {healthData.healthScore || 0}/100
-                  </Badge>
-                )}
-                {isHighRisk && (
-                  <Badge
-                    variant="destructive"
-                    className="flex items-center gap-2"
-                  >
-                    <AlertTriangle className="h-4 w-4" />
-                    High Fall Risk
+                    {healthData.healthScore || 0}/100
                   </Badge>
                 )}
                 <Button
@@ -918,28 +1028,36 @@ function App() {
                   {themeMode === 'light' && <Sun className="h-4 w-4" />}
                   {themeMode === 'system' && <Monitor className="h-4 w-4" />}
                 </Button>
-                <EmergencyTriggerButton size="sm" />
               </div>
             </div>
           </div>
         </header>
 
-        {/* Enhanced Navigation Header */}
-        <NavigationHeader
-          currentPageInfo={currentPageInfo}
-          onNavigate={setActiveTab}
-          onThemeToggle={toggleThemeMode}
-          themeMode={themeMode || 'system'}
-          onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-          sidebarCollapsed={sidebarCollapsed || false}
-        />
+        {/* Desktop Navigation Header - only show on larger screens */}
+        <div className="hidden lg:block">
+          <NavigationHeader
+            currentPageInfo={currentPageInfo}
+            onNavigate={setActiveTab}
+            onThemeToggle={toggleThemeMode}
+            themeMode={themeMode || 'system'}
+            onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+            sidebarCollapsed={sidebarCollapsed || false}
+          />
+        </div>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto px-6 py-6">
+        <main
+          id="main-content"
+          className="thin-scrollbar flex-1 overflow-y-auto px-6 pb-6 pt-6"
+          style={{ paddingTop: '2rem' }}
+        >
           {!hasHealthData ? (
-            <div className="mx-auto max-w-2xl">
+            <div
+              className="mx-auto mt-6 max-w-2xl"
+              style={{ marginTop: '1.5rem' }}
+            >
               <Card>
-                <CardHeader>
+                <CardHeader style={{ paddingTop: '2rem' }}>
                   <CardTitle className="flex items-center gap-2">
                     <Upload className="h-5 w-5" />
                     Get Started with Your Health Data
@@ -1017,7 +1135,7 @@ function App() {
                   {/* Compact Feature Categories */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-muted-foreground text-sm font-medium">
+                      <h3 className="text-sm font-medium text-vitalsense-text-muted">
                         More Features
                       </h3>
                       <Badge variant="outline" className="text-xs">
@@ -1037,7 +1155,7 @@ function App() {
                     <div className="scrollbar-hide flex gap-4 overflow-x-auto pb-2">
                       {/* Core Features */}
                       <div className="min-w-[140px] flex-shrink-0 space-y-2">
-                        <h4 className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+                        <h4 className="text-xs font-medium uppercase tracking-wider text-vitalsense-text-muted">
                           Core Features
                         </h4>
                         <div className="space-y-1">
@@ -1063,7 +1181,7 @@ function App() {
 
                       {/* Monitoring */}
                       <div className="min-w-[140px] flex-shrink-0 space-y-2">
-                        <h4 className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+                        <h4 className="text-xs font-medium uppercase tracking-wider text-vitalsense-text-muted">
                           Monitoring
                         </h4>
                         <div className="space-y-1">
@@ -1091,7 +1209,7 @@ function App() {
 
                       {/* AI & ML */}
                       <div className="min-w-[140px] flex-shrink-0 space-y-2">
-                        <h4 className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+                        <h4 className="text-xs font-medium uppercase tracking-wider text-vitalsense-text-muted">
                           AI & ML
                         </h4>
                         <div className="space-y-1">
@@ -1117,7 +1235,7 @@ function App() {
 
                       {/* Advanced */}
                       <div className="min-w-[140px] flex-shrink-0 space-y-2">
-                        <h4 className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+                        <h4 className="text-xs font-medium uppercase tracking-wider text-vitalsense-text-muted">
                           Advanced
                         </h4>
                         <div className="space-y-1">
@@ -1143,7 +1261,7 @@ function App() {
 
                       {/* Community */}
                       <div className="min-w-[140px] flex-shrink-0 space-y-2">
-                        <h4 className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+                        <h4 className="text-xs font-medium uppercase tracking-wider text-vitalsense-text-muted">
                           Community
                         </h4>
                         <div className="space-y-1">
@@ -1172,7 +1290,7 @@ function App() {
 
                       {/* Management */}
                       <div className="min-w-[140px] flex-shrink-0 space-y-2">
-                        <h4 className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+                        <h4 className="text-xs font-medium uppercase tracking-wider text-vitalsense-text-muted">
                           Management
                         </h4>
                         <div className="space-y-1">
@@ -1351,16 +1469,18 @@ function App() {
         </main>
 
         {/* Enhanced Footer */}
-        <Footer
-          healthScore={healthData?.healthScore}
-          lastSync={
-            healthData?.lastUpdated
-              ? new Date(healthData.lastUpdated)
-              : undefined
-          }
-          connectionStatus="connected"
-          onNavigate={setActiveTab}
-        />
+        <div style={{ marginTop: '2rem' }}>
+          <Footer
+            healthScore={healthData?.healthScore}
+            lastSync={
+              healthData?.lastUpdated
+                ? new Date(healthData.lastUpdated)
+                : undefined
+            }
+            connectionStatus="connected"
+            onNavigate={setActiveTab}
+          />
+        </div>
       </div>
       <WSTokenSettings />
       {import.meta.env.DEV && <WSHealthPanel />}
@@ -1376,12 +1496,12 @@ function App() {
                 state: next ? 'open' : 'closed',
               });
             }}
-            className="fixed bottom-4 right-4 z-50 rounded-full bg-[var(--color-accent)] text-[var(--color-accent-foreground)] shadow-lg px-4 py-2 text-xs font-semibold hover:opacity-90 transition"
+            className="fixed bottom-4 right-4 z-50 rounded-full bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold text-[var(--color-accent-foreground)] shadow-lg transition hover:opacity-90"
           >
             {showTelemetry ? 'Close Telemetry' : 'Telemetry'}
           </button>
           {showTelemetry && (
-            <div className="fixed bottom-16 right-4 z-50 w-[380px] max-h-[70vh] overflow-hidden rounded-lg border border-border bg-background shadow-xl">
+            <div className="fixed bottom-16 right-4 z-50 max-h-[70vh] w-[380px] overflow-hidden rounded-lg border border-slate-200 bg-vitalsense-bg-light shadow-xl">
               <div className="h-full overflow-y-auto p-2">
                 {/* Import dynamically to avoid impacting initial bundle size if desired */}
                 <TelemetryPanel showNormalizationStats limit={120} />

@@ -3,19 +3,26 @@ import { useLiveHealthData } from '@/hooks/useLiveHealthData';
 import { AlertTriangle, Phone } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-type Props = { readonly userId?: string; readonly size?: 'sm' | 'lg' | 'default' };
+type Props = {
+  readonly userId?: string;
+  readonly size?: 'sm' | 'lg' | 'default';
+};
 
 interface PendingEmergency {
   expiresAt: number;
   timeoutId: number;
 }
 
-export default function EmergencyTriggerButton({ userId = 'default-user', size = 'sm' }: Props) {
+export default function EmergencyTriggerButton({
+  userId = 'default-user',
+  size = 'sm',
+}: Props) {
   // Live metrics hook (for potential future enhancements / status display)
   useLiveHealthData(userId);
 
   // Local emergency trigger state (edge-safe, no PII)
-  const [pendingEmergency, setPendingEmergency] = useState<PendingEmergency | null>(null);
+  const [pendingEmergency, setPendingEmergency] =
+    useState<PendingEmergency | null>(null);
   const sentRef = useRef(false);
 
   const remainingSec = useMemo(() => {
@@ -66,16 +73,23 @@ export default function EmergencyTriggerButton({ userId = 'default-user', size =
   if (size === 'lg') {
     return (
       <Button
-    variant={pendingEmergency ? 'destructive' : 'outline'}
+        variant="destructive"
         size="lg"
         onClick={onTrigger}
-    className={pendingEmergency ? 'animate-pulse' : ''}
-    title={pendingEmergency ? 'Click to cancel emergency' : 'Trigger emergency'}
+        className={`font-medium ${pendingEmergency ? 'animate-pulse' : ''}`}
+        style={{
+          paddingLeft: '2rem',
+          paddingRight: '2rem',
+          minWidth: '140px',
+        }}
+        title={
+          pendingEmergency ? 'Click to cancel emergency' : 'Trigger emergency'
+        }
       >
         {pendingEmergency ? (
           <>
             <AlertTriangle className="mr-2 h-5 w-5" />
-      Sending in {remainingSec}s (click to cancel)
+            Sending in {remainingSec}s (click to cancel)
           </>
         ) : (
           <>
@@ -89,14 +103,21 @@ export default function EmergencyTriggerButton({ userId = 'default-user', size =
 
   return (
     <Button
-      variant="outline"
+      variant="destructive"
       size={size}
       onClick={onTrigger}
-    className={pendingEmergency ? 'text-destructive border-destructive animate-pulse' : ''}
-    title={pendingEmergency ? 'Click to cancel emergency' : 'Trigger emergency'}
+      className={`emergency-button font-medium ${pendingEmergency ? 'animate-pulse' : ''}`}
+      style={{
+        paddingLeft: '1.5rem !important',
+        paddingRight: '1.5rem !important',
+        minWidth: '120px !important',
+      }}
+      title={
+        pendingEmergency ? 'Click to cancel emergency' : 'Trigger emergency'
+      }
     >
       <Phone className="mr-2 h-4 w-4" />
-    {pendingEmergency ? `Sending in ${remainingSec}s (cancel)` : 'Emergency'}
+      {pendingEmergency ? `Sending in ${remainingSec}s (cancel)` : 'Emergency'}
     </Button>
   );
 }

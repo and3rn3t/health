@@ -175,5 +175,71 @@ const defaultTheme = {
 
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  safelist: [
+    // Comprehensive VitalSense brand colors that might be in dynamic classes
+    // Primary colors
+    'bg-vitalsense-primary',
+    'bg-vitalsense-primary-light',
+    'bg-vitalsense-primary-dark',
+    'text-vitalsense-primary',
+    'text-vitalsense-primary-contrast',
+    'border-vitalsense-primary',
+    'hover:bg-vitalsense-primary',
+    'hover:bg-vitalsense-primary-light',
+
+    // Teal colors
+    'bg-vitalsense-teal',
+    'bg-vitalsense-teal-light',
+    'bg-vitalsense-teal-dark',
+    'text-vitalsense-teal',
+    'text-vitalsense-teal-contrast',
+    'border-vitalsense-teal',
+    'hover:bg-vitalsense-teal',
+    'hover:bg-vitalsense-teal-light',
+
+    // Success colors
+    'bg-vitalsense-success',
+    'bg-vitalsense-success-light',
+    'bg-vitalsense-success-dark',
+    'text-vitalsense-success',
+    'text-vitalsense-success-contrast',
+    'border-vitalsense-success',
+    'hover:bg-vitalsense-success',
+
+    // Warning colors
+    'bg-vitalsense-warning',
+    'bg-vitalsense-warning-light',
+    'bg-vitalsense-warning-dark',
+    'text-vitalsense-warning',
+    'text-vitalsense-warning-contrast',
+    'border-vitalsense-warning',
+    'hover:bg-vitalsense-warning',
+
+    // Error colors
+    'bg-vitalsense-error',
+    'bg-vitalsense-error-light',
+    'bg-vitalsense-error-dark',
+    'text-vitalsense-error',
+    'text-vitalsense-error-contrast',
+    'border-vitalsense-error',
+    'hover:bg-vitalsense-error',
+
+    // Text colors
+    'text-vitalsense-text-primary',
+    'text-vitalsense-text-muted',
+
+    // Background colors
+    'bg-vitalsense-bg-light',
+    'bg-vitalsense-bg-dark',
+
+    // Card colors
+    'bg-vitalsense-card-light',
+    'bg-vitalsense-card-dark',
+
+    // Additional common combinations
+    'fill-vitalsense-primary',
+    'stroke-vitalsense-primary',
+    'shadow-vitalsense-primary',
+  ],
   theme: { ...defaultTheme, ...theme },
 };

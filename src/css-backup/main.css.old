@@ -1,0 +1,200 @@
+@import './styles/theme.css';
+@import './styles/vitalsense-classes.css';
+@import './index.css';
+@import 'tw-animate-css';
+/*
+  ---break---
+*/
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+/*
+  ---break---
+*/
+:root {
+  --radius: 0.625rem;
+  /* VitalSense Light Theme */
+  --background: #f8fafc; /* Light blue-grey background */
+  --foreground: #1e293b; /* Dark slate text */
+  --card: #ffffff; /* Pure white cards */
+  --card-foreground: #1e293b; /* Dark slate on cards */
+  --popover: #ffffff; /* White popover */
+  --popover-foreground: #1e293b; /* Dark slate on popover */
+  --primary: #2563eb; /* VitalSense Primary Blue */
+  --primary-foreground: #ffffff; /* White text on primary */
+  --secondary: #e2e8f0; /* Light blue-grey secondary */
+  --secondary-foreground: #475569; /* Slate text on secondary */
+  --muted: #f1f5f9; /* Very light blue background */
+  --muted-foreground: #64748b; /* Muted slate text */
+  --accent: #0891b2; /* VitalSense Teal accent */
+  --accent-foreground: #ffffff; /* White text on accent */
+  --destructive: #dc2626; /* VitalSense Error Red */
+  --border: #cbd5e1; /* Light slate border */
+  --input: #e2e8f0; /* Light blue-grey input */
+  --ring: #2563eb; /* VitalSense Primary Blue focus ring */
+  /* VitalSense Chart Colors */
+  --chart-1: #2563eb; /* Primary Blue */
+  --chart-2: #0891b2; /* Teal */
+  --chart-3: #059669; /* Success Green */
+  --chart-4: #d97706; /* Warning Amber */
+  --chart-5: #dc2626; /* Error Red */
+  /* VitalSense Sidebar Colors */
+  --sidebar: #ffffff; /* White sidebar */
+  --sidebar-foreground: #1e293b; /* Dark slate text */
+  --sidebar-primary: #2563eb; /* VitalSense Primary Blue */
+  --sidebar-primary-foreground: #ffffff; /* White text */
+  --sidebar-accent: #f1f5f9; /* Very light blue accent */
+  --sidebar-accent-foreground: #475569; /* Slate text on accent */
+  --sidebar-border: #cbd5e1; /* Light slate border */
+  --sidebar-ring: #2563eb; /* VitalSense Primary Blue focus ring */
+}
+
+/*
+  ---break---
+*/
+[data-appearance='dark'] {
+  /* VitalSense Dark Theme */
+  --background: #0f172a; /* Dark slate background */
+  --foreground: #f8fafc; /* Light blue-grey text */
+  --card: #1e293b; /* Dark slate cards */
+  --card-foreground: #f8fafc; /* Light text on cards */
+  --popover: #1e293b; /* Dark slate popover */
+  --popover-foreground: #f8fafc; /* Light text on popover */
+  --primary: #3b82f6; /* Lighter VitalSense Blue for dark mode */
+  --primary-foreground: #ffffff; /* White text on primary */
+  --secondary: #334155; /* Dark slate secondary */
+  --secondary-foreground: #cbd5e1; /* Light slate text */
+  --muted: #1e293b; /* Dark slate muted */
+  --muted-foreground: #94a3b8; /* Light slate muted text */
+  --accent: #0891b2; /* VitalSense Teal accent */
+  --accent-foreground: #ffffff; /* White text on accent */
+  --destructive: #ef4444; /* Brighter red for dark mode */
+  --border: #475569; /* Medium slate border */
+  --input: #334155; /* Dark slate input */
+  --ring: #3b82f6; /* Lighter VitalSense Blue focus ring */
+  /* VitalSense Dark Chart Colors */
+  --chart-1: #3b82f6; /* Lighter Primary Blue */
+  --chart-2: #06b6d4; /* Lighter Teal */
+  --chart-3: #10b981; /* Lighter Success Green */
+  --chart-4: #f59e0b; /* Lighter Warning Amber */
+  --chart-5: #ef4444; /* Lighter Error Red */
+  /* VitalSense Dark Sidebar Colors */
+  --sidebar: #1e293b; /* Dark slate sidebar */
+  --sidebar-foreground: #f8fafc; /* Light text */
+  --sidebar-primary: #3b82f6; /* Lighter VitalSense Blue */
+  --sidebar-primary-foreground: #ffffff; /* White text */
+  --sidebar-accent: #334155; /* Dark slate accent */
+  --sidebar-accent-foreground: #cbd5e1; /* Light text on accent */
+  --sidebar-border: #475569; /* Medium slate border */
+  --sidebar-ring: #3b82f6; /* Lighter VitalSense Blue focus ring */
+}
+
+/*
+  ---break---
+*/
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  /*
+  ---break---
+*/
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  /*
+  ---break---
+*/
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
+}
+
+/*
+  ---break---
+*/
+@layer base {
+  * {
+    border-color: #cbd5e1; /* slate-200 fallback instead of @apply */
+  }
+
+  body {
+    font-family:
+      'Inter',
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      Segoe UI,
+      Roboto,
+      Helvetica,
+      Arial,
+      'Apple Color Emoji',
+      'Segoe UI Emoji';
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+}

@@ -119,82 +119,91 @@ export default function NavigationHeader({
   };
 
   return (
-    <header className="bg-card/95 supports-[backdrop-filter]:bg-card/60 sticky top-0 z-30 w-full border-b border-border backdrop-blur">
+    <header className="bg-card/95 supports-[backdrop-filter]:bg-card/60 sticky top-0 z-30 mb-3 w-full border-b border-border backdrop-blur">
       <div className="flex h-16 items-center justify-between px-4 lg:px-6">
-        {/* Left Section - Sidebar Toggle & Breadcrumbs */}
-        <div className="flex items-center gap-4">
+        {/* Left Section - Sidebar Toggle & Page Info */}
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           {/* Sidebar Toggle */}
           <Button
             variant="ghost"
             size="sm"
             onClick={onToggleSidebar}
-            className="lg:hidden"
+            className="shrink-0 lg:hidden"
           >
             <Menu className="h-4 w-4" />
           </Button>
 
-          {/* Breadcrumb Navigation */}
-          <div className="hidden md:block">
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink
-                    onClick={() => onNavigate('dashboard')}
-                    className="flex cursor-pointer items-center gap-1 hover:text-vitalsense-primary"
-                  >
-                    <Home className="h-4 w-4" />
-                    VitalSense
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                {currentPageInfo.label !== 'Dashboard' && (
-                  <>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbLink className="cursor-pointer hover:text-vitalsense-primary">
-                        {currentPageInfo.category}
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage className="font-medium">
-                        {currentPageInfo.label}
-                      </BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </>
-                )}
-              </BreadcrumbList>
-            </Breadcrumb>
+          {/* Page Info Container */}
+          <div className="min-w-0 flex-1">
+            {/* Breadcrumb Navigation - Desktop */}
+            <div className="hidden md:flex md:flex-col md:gap-1">
+              <Breadcrumb>
+                <BreadcrumbList className="text-sm">
+                  <BreadcrumbItem>
+                    <BreadcrumbLink
+                      onClick={() => onNavigate('dashboard')}
+                      className="flex cursor-pointer items-center gap-1.5 hover:text-vitalsense-primary"
+                    >
+                      <Home className="h-3.5 w-3.5" />
+                      VitalSense
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  {currentPageInfo.label !== 'Dashboard' && (
+                    <>
+                      <BreadcrumbSeparator className="mx-1" />
+                      <BreadcrumbItem>
+                        <BreadcrumbLink className="cursor-pointer hover:text-vitalsense-primary">
+                          {currentPageInfo.category}
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator className="mx-1" />
+                      <BreadcrumbItem>
+                        <BreadcrumbPage className="font-medium text-foreground">
+                          {currentPageInfo.label}
+                        </BreadcrumbPage>
+                      </BreadcrumbItem>
+                    </>
+                  )}
+                </BreadcrumbList>
+              </Breadcrumb>
 
-            {/* Page Description */}
-            <p className="text-muted-foreground mt-1 text-sm">
-              {getPageDescription()}
-            </p>
-          </div>
+              {/* Page Description */}
+              <p className="text-muted-foreground truncate text-xs leading-tight">
+                {getPageDescription()}
+              </p>
+            </div>
 
-          {/* Mobile Page Title */}
-          <div className="md:hidden">
-            <h1 className="font-semibold">{currentPageInfo.label}</h1>
-            <p className="text-muted-foreground text-xs">
-              {currentPageInfo.category}
-            </p>
+            {/* Mobile Page Title */}
+            <div className="md:hidden">
+              <h1 className="truncate text-base font-semibold leading-tight">
+                {currentPageInfo.label}
+              </h1>
+              <p className="text-muted-foreground truncate text-xs leading-tight">
+                {currentPageInfo.category}
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Center Section - Search */}
-        <div className="mx-4 hidden max-w-sm flex-1 lg:flex">
+        <div
+          className="mx-10 hidden max-w-md flex-1 lg:flex xl:mx-16"
+          style={{ marginLeft: '2.5rem', marginRight: '2.5rem' }}
+        >
           <form onSubmit={handleSearch} className="relative w-full">
-            <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+            <Search className="text-muted-foreground absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder="Search health data, insights..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4"
+              className="pl-20 pr-6"
+              style={{ paddingLeft: '4.25rem', paddingRight: '1.5rem' }}
             />
           </form>
         </div>
 
         {/* Right Section - Actions & User Menu */}
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-3 md:gap-4">
           {/* Health Score Badge */}
           {healthScore !== undefined && (
             <Badge
@@ -242,7 +251,9 @@ export default function NavigationHeader({
           </Button>
 
           {/* Emergency Button */}
-          <EmergencyTriggerButton size="sm" />
+          <div className="flex items-center">
+            <EmergencyTriggerButton size="sm" />
+          </div>
 
           {/* View Account chip (authenticated users) */}
           {isAuthenticated && user && (

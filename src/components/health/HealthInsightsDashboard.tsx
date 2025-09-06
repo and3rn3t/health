@@ -9,8 +9,8 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { ProcessedHealthData } from '@/types';
-import { useKV } from '@github/spark/hooks';
 import {
   Activity,
   AlertTriangle,
@@ -79,7 +79,10 @@ export default function HealthInsightsDashboard({
   );
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [autoRefresh, setAutoRefresh] = useKV<string>('insights-auto-refresh', 'true');
+  const [autoRefresh, setAutoRefresh] = useKV<string>(
+    'insights-auto-refresh',
+    'true'
+  );
 
   // Simulate real-time data updates
   useEffect(() => {
@@ -102,22 +105,22 @@ export default function HealthInsightsDashboard({
         }
 
         // Steps trends
-    if (healthData.metrics.steps) {
+        if (healthData.metrics.steps) {
           newTrendData.push({
             timestamp: now,
-      value: healthData.metrics.steps.lastValue || 0,
+            value: healthData.metrics.steps.lastValue || 0,
             category: 'activity',
             metric: 'steps',
           });
         }
 
-    // Sleep trends (uses sleepHours metric from processor)
-    if (healthData.metrics.sleepHours) {
+        // Sleep trends (uses sleepHours metric from processor)
+        if (healthData.metrics.sleepHours) {
           newTrendData.push({
             timestamp: now,
-      value: healthData.metrics.sleepHours.average || 0,
+            value: healthData.metrics.sleepHours.average || 0,
             category: 'recovery',
-      metric: 'sleepHours',
+            metric: 'sleepHours',
           });
         }
 
@@ -273,8 +276,8 @@ export default function HealthInsightsDashboard({
 
       // Update live insights (keep last 20)
       setLiveInsights((currentInsights) => {
-    const safeCurrent = currentInsights ?? [];
-    const filtered = safeCurrent.filter(
+        const safeCurrent = currentInsights ?? [];
+        const filtered = safeCurrent.filter(
           (insight) => now - insight.timestamp < 24 * 60 * 60 * 1000 // Keep insights from last 24 hours
         );
         return [...filtered, ...insights].slice(-20);
@@ -365,11 +368,7 @@ export default function HealthInsightsDashboard({
         category: 'activity',
         unit: 'steps',
         status:
-          current >= 8000
-            ? 'good'
-            : current < 5000
-              ? 'warning'
-              : 'neutral',
+          current >= 8000 ? 'good' : current < 5000 ? 'warning' : 'neutral',
         insight:
           current >= 10000
             ? 'Excellent activity level!'
@@ -439,7 +438,7 @@ export default function HealthInsightsDashboard({
     switch (severity) {
       case 'critical':
         return <AlertTriangle className="h-4 w-4" />;
-  case 'warning':
+      case 'warning':
         return <AlertTriangle className="h-4 w-4" />;
       case 'success':
         return <CheckCircle className="h-4 w-4" />;
@@ -452,7 +451,7 @@ export default function HealthInsightsDashboard({
     switch (severity) {
       case 'critical':
         return 'destructive';
-  case 'warning':
+      case 'warning':
         return 'default';
       case 'success':
         return 'default';
@@ -476,7 +475,7 @@ export default function HealthInsightsDashboard({
     switch (status) {
       case 'good':
         return 'bg-green-100 text-green-800 border-green-200';
-  case 'warning':
+      case 'warning':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'critical':
         return 'bg-red-100 text-red-800 border-red-200';
@@ -501,8 +500,14 @@ export default function HealthInsightsDashboard({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setAutoRefresh((current) => current === 'true' ? 'false' : 'true')}
-            className={autoRefresh === 'true' ? 'border-green-200 bg-green-50' : ''}
+            onClick={() =>
+              setAutoRefresh((current) =>
+                current === 'true' ? 'false' : 'true'
+              )
+            }
+            className={
+              autoRefresh === 'true' ? 'border-green-200 bg-green-50' : ''
+            }
           >
             <Zap className="mr-2 h-4 w-4" />
             {autoRefresh === 'true' ? 'Live' : 'Paused'}
@@ -663,9 +668,7 @@ export default function HealthInsightsDashboard({
                           </h4>
                           <div className="flex items-center gap-2">
                             <Badge
-                              variant={
-                                getSeverityColor(insight.severity)
-                              }
+                              variant={getSeverityColor(insight.severity)}
                               className="text-xs"
                             >
                               {insight.category}

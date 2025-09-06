@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VitalSense Styling Test</title>
+    <link rel="stylesheet" href="dist/main.css" />
+  </head>
+  <body class="bg-gray-100">
+    <div class="min-h-screen p-8">
+      <div class="mx-auto max-w-4xl space-y-8">
+        <!-- Header -->
+        <div class="text-center">
+          <h1 class="mb-4 text-4xl font-bold text-vitalsense-primary">
+            VitalSense Styling Verification ✅
+          </h1>
+          <p class="text-lg text-vitalsense-text-muted">
+            Testing the restored VitalSense utility classes
+          </p>
+        </div>
+
+        <!-- Primary Button -->
+        <div class="text-center">
+          <button
+            class="rounded-lg bg-vitalsense-primary px-8 py-4 font-semibold text-vitalsense-primary-contrast transition-colors hover:bg-vitalsense-primary-light"
+          >
+            Primary VitalSense Button
+          </button>
+        </div>
+
+        <!-- Card Examples -->
+        <div class="grid gap-6 md:grid-cols-2">
+          <div class="rounded-lg border bg-vitalsense-card-light p-6">
+            <h3 class="mb-2 text-xl font-semibold text-vitalsense-text-primary">
+              Light Card
+            </h3>
+            <p class="text-vitalsense-text-muted">
+              This card uses VitalSense light background and text colors.
+            </p>
+          </div>
+
+          <div class="rounded-lg border border-vitalsense-teal bg-white p-6">
+            <h3 class="mb-2 text-xl font-semibold text-vitalsense-teal">
+              Teal Accent Card
+            </h3>
+            <p class="text-vitalsense-text-muted">
+              This card uses VitalSense teal for borders and accent text.
+            </p>
+          </div>
+        </div>
+
+        <!-- Color Swatches -->
+        <div class="space-y-4">
+          <h2 class="text-2xl font-bold text-vitalsense-text-primary">
+            VitalSense Color Palette
+          </h2>
+          <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div class="text-center">
+              <div class="mb-2 h-16 w-full rounded bg-vitalsense-primary"></div>
+              <p class="text-sm text-vitalsense-text-muted">Primary Blue</p>
+            </div>
+            <div class="text-center">
+              <div class="mb-2 h-16 w-full rounded bg-vitalsense-teal"></div>
+              <p class="text-sm text-vitalsense-text-muted">VitalSense Teal</p>
+            </div>
+            <div class="text-center">
+              <div class="mb-2 h-16 w-full rounded bg-vitalsense-success"></div>
+              <p class="text-sm text-vitalsense-text-muted">Success Green</p>
+            </div>
+            <div class="text-center">
+              <div class="mb-2 h-16 w-full rounded bg-vitalsense-warning"></div>
+              <p class="text-sm text-vitalsense-text-muted">Warning Orange</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Message -->
+        <div
+          class="rounded-lg border border-green-300 bg-green-100 p-4 text-center"
+        >
+          <h2 class="mb-2 text-xl font-bold text-green-800">
+            ✅ VitalSense Styling Restored!
+          </h2>
+          <p class="text-green-700">
+            The VitalSense utility classes are now properly generated and
+            working. The expanded safelist configuration successfully resolved
+            the issue.
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

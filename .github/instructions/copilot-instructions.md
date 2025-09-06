@@ -1,6 +1,37 @@
 # Copilot Instructions for this repository
 
-These instructions guide GitHub Copilot Chat/Edits to produce code and docs that fit this project’s stack, architecture, and goals.
+These instructions guide GitHub Copilot Chat/Edits to produce code and docs that fit this project’s stack, arc## Example prompts that fit this repo
+
+### React Query + Data Fetching
+
+- "Create a React Query hook for GET /api/health-data with zod validation and a loading/error UI snippet using our Button and Alert components."
+- "Build an infinite query hook for health data pagination using cursor-based pagination with nextCursor and hasMore fields."
+
+### WebSocket Integration
+
+- "Add a WebSocket client utility that connects to ws://localhost:3001, validates message envelopes with zod, and exposes a subscribe API."
+- "Add a WebSocket client that connects to ws://localhost:3001, validates envelopes with messageEnvelopeSchema, and exposes subscribe(type, handler). Include reconnect with backoff and ping/pong."
+
+### API Routes & Validation
+
+- "Add a Hono POST /api/health-data route that validates input, writes to KV if bound, and returns the stored record."
+- "Add a Hono POST /api/health-data route that validates against processedHealthDataSchema, writes to KV if available, and returns the stored record with a 201."
+
+### UI Components & Styling
+
+- "Build a compact card list to display recent health alerts. Use our tokens, Tailwind utilities, and existing ui primitives."
+- "Create a VitalSense-branded health status card using VitalSenseStatusCard component with teal color scheme."
+- "Build a responsive health dashboard using our card components and VitalSense color palette."
+
+### Type Safety & Refactoring
+
+- "Refactor src/lib/liveHealthDataSync.ts to use the zod schemas for parsing incoming WS messages and narrow types across the pipeline."
+- "Add proper TypeScript types for health data processing with zod validation at component boundaries."
+
+### iOS Integration
+
+- "Create a Swift HealthKit manager singleton that follows our AppConfig.shared pattern with proper error handling."
+- "Add iOS WebSocket client with proper ATS configuration and background task management."ture, and goals.
 
 ## Project context
 
@@ -65,6 +96,23 @@ These instructions guide GitHub Copilot Chat/Edits to produce code and docs that
 - Imports: absolute `@/` first, then third-party, then relative. Keep deterministic order. No circular deps.
 - Formatting: Prettier with Tailwind plugin; keep class order normalized.
 
+## Authentication & Security Integration
+
+The app uses Auth0 for authentication with custom branding:
+
+- **Auth0 configuration**: Environment-specific settings in `wrangler.toml`
+- **Custom login page**: `auth0-custom-login/login.html` with VitalSense branding
+- **Device authentication**: JWT-based device authentication for iOS HealthKit integration
+- **Development setup**: Use `scripts/node/auth/auth0-setup.js` for configuration management
+- **Environment domains**: dev-qjdpc81dzr7xrnlu.us.auth0.com for development, production domain TBD
+
+### Auth0 Implementation Patterns
+
+- Always validate JWT tokens server-side in Worker routes
+- Use environment-specific Auth0 client IDs and domains
+- Implement proper logout flows with token cleanup
+- Handle authentication errors gracefully with user-friendly messages
+
 ## Security, privacy, and compliance
 
 - Treat health data as sensitive. Do not log raw health metrics or personally identifiable information.
@@ -111,11 +159,29 @@ These instructions guide GitHub Copilot Chat/Edits to produce code and docs that
 - Libs/utils: `camelCase.ts` in `src/lib/`.
 - Tests (if added): colocate as `*.test.ts(x)` using Vitest. Avoid adding test deps without approval.
 
+## VitalSense Branding & UI Components
+
+The app uses **VitalSense** branding throughout:
+
+- **App name**: VitalSense (not "Health App" - always use VitalSense in user-facing text)
+- **Components**: Use `src/components/ui/vitalsense-components.tsx` for branded UI components
+- **Colors**: VitalSense color palette defined in `src/lib/vitalsense-colors.ts` with `getVitalSenseClasses` utility
+- **Theme**: Custom Tailwind configuration in `theme.json` with VitalSense-specific CSS variables
+- **Branding verification**: Use tasks like `💎 VitalSense Deploy` for branding consistency checks
+
+### VitalSense-Specific Patterns
+
+- Health status indicators should use VitalSense color scheme (teal, success, error variants)
+- All user-facing text should reference "VitalSense" not generic "health app"
+- Status cards and health metrics should use `VitalSenseStatusCard` component
+- Maintain consistent icon usage with health-focused Phosphor icons
+
 ## Integration cues from this repo
 
 - WebSocket message types to handle: `live_health_update`, `historical_data_update`, `emergency_alert`.
 - Existing domains: health analytics, fall risk, caregiver dashboards, notifications, gamification, usage analytics.
 - Styling tokens: `--color-*`, `--radius-*`, spacing via CSS variables (see `tailwind.config.js` and `theme.json`).
+- **VitalSense branding**: Always use VitalSense in user-facing content, leverage branded components and color scheme
 
 ## Example prompts that fit this repo
 
@@ -212,11 +278,21 @@ By following these rules, Copilot should generate code that compiles with Vite +
 - Ask for security review of any code handling health data
 - Reference the problem database before implementing solutions to avoid known issues
 
-## PowerShell & Development Tooling Integration
+## Node.js Scripts & Cross-Platform Development Integration
 
-This project has enhanced PowerShell-VS Code-Copilot integration for optimal development experience:
+This project has been enhanced with Node.js scripts for cross-platform compatibility alongside PowerShell tooling:
 
-### PowerShell Scripts and Utilities
+### Node.js Scripts and Utilities (Phase 4 Enhancement)
+
+- **Core scripts location**: `scripts/node/` - comprehensive Node.js tooling ecosystem (v1.4.0)
+- **Health probing**: `scripts/node/health/simple-probe.js`, `scripts/node/health/probe.js` - cross-platform endpoint testing
+- **Development tools**: `scripts/node/dev/task-runner.js`, `scripts/node/dev/start-dev.js` - unified development workflow
+- **Testing suite**: `scripts/node/test/test-all-endpoints.js`, `scripts/node/test/test-integration.js` - comprehensive testing
+- **Infrastructure**: `scripts/node/infrastructure/setup-production-infrastructure.js` - production deployment automation
+- **Auth0 integration**: `scripts/node/auth/auth0-setup.js` - authentication configuration management
+- **Linting tools**: `scripts/node/dev/lint-runner.js` - TypeScript and Swift linting support
+
+### PowerShell Scripts and Utilities (Legacy Support)
 
 - **Core utilities**: `scripts/VSCodeIntegration.psm1` - shared functions for logging, HTTP requests, process management
 - **Task runner**: `scripts/run-task.ps1` - unified task execution with progress tracking and background support
@@ -232,6 +308,32 @@ This project has enhanced PowerShell-VS Code-Copilot integration for optimal dev
 - **Workspace**: `health.code-workspace` provides multi-folder workspace with optimized settings
 
 ### Development Workflow Commands
+
+**Node.js Commands (Preferred for Cross-Platform)**:
+
+```bash
+# Development server with progress tracking
+npm run start:dev
+
+# Enhanced health checking with context
+npm run probe:dev:nodejs --verbose
+
+# Quick health probes
+npm run probe:simple
+npm run probe:simple:8788
+
+# Task execution
+npm run task:run
+
+# Comprehensive testing
+node scripts/node/test/test-all-endpoints.js --verbose --save=test-results.json
+node scripts/node/test/test-integration.js --verbose
+
+# Infrastructure management
+node scripts/node/infrastructure/setup-production-infrastructure.js --dry-run --verbose
+```
+
+**PowerShell Commands (Windows-Specific)**:
 
 ```powershell
 # Start development server with progress tracking
@@ -279,12 +381,37 @@ When working with PowerShell scripts in this project, always consider VS Code in
 
 The project includes comprehensive VS Code tasks accessible via `Ctrl+Shift+P` → "Tasks: Run Task":
 
-- **Health checking**: `probe-health`, `probe-health-8788`, `probe-health-8789` for endpoint testing
-- **Development servers**: `wrangler-dev-8788`, `wrangler-dev-8789` for Cloudflare Workers development
-- **Enhanced workflow**: `Enhanced Task Runner` with interactive task selection
-- **Context gathering**: `Get Copilot Context` for environment information
-- **iOS development**: Complete iOS build, test, lint, and deployment tasks
-- **Code quality**: Swift linting, formatting, performance analysis, and dependency checking
+**Enhanced Node.js Workflow Tasks (Phase 4)**:
+
+- **🚀 Node.js Development Workflow**: Main development server with pre-checks
+- **⚡ Quick Health Check**: Fast development environment validation
+- **🧪 Full Test Suite**: Comprehensive testing with config validation
+- **🔧 Fix All Issues**: Auto-fix linting issues across TypeScript and Swift
+- **🚀 Deploy (Dry Run)**: Preview deployment changes safely
+- **🌐 DNS Setup (Preview)**: Preview DNS configuration changes
+- **💎 VitalSense Deploy**: VitalSense branding verification and deployment
+- **🧪 Comprehensive API Testing**: Phase 4 API endpoint testing with results export
+- **🔍 Integration Test Suite**: Full system integration testing with health checks
+- **🏗️ Production Infrastructure Setup**: Complete production deployment with safety checks
+- **🔐 Auth0 Configuration Manager**: Auth0 authentication setup and management
+
+**Core Development Tasks**:
+
+- **Health checking**: `probe-health-nodejs`, `probe-health-8788-nodejs`, `enhanced-probe-nodejs`
+- **Development servers**: `wrangler-dev-8788`, `wrangler-dev-8789` for Cloudflare Workers
+- **Node.js tools**: `start-dev-nodejs`, `task-runner-nodejs`, `lint-typescript-nodejs`, `config-validate-nodejs`
+
+**iOS Development Tasks**:
+
+- **iOS: Swift Lint**, **iOS: Swift Format**, **iOS: Format Check (Dry Run)**
+- **iOS: Build Simulator**, **iOS: Check Swift Errors**
+- **iOS: Dependency Analysis**, **iOS: Performance Analysis**
+- **App: Deploy Development**, **App: Deploy Production**, **App: Status Check**
+
+**Legacy PowerShell Tasks**:
+
+- **Enhanced Task Runner**: Interactive task selection with PowerShell backend
+- **Get Copilot Context**: Environment information gathering for AI assistance
 
 ### VS Code Workspace Features
 

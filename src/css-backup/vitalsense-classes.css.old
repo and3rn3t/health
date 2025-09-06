@@ -1,0 +1,48 @@
+/*
+ * VitalSense Tailwind Utility Classes
+ * Force generation of dynamic classes used in template literals
+ */
+
+/* Background classes */
+.bg-vitalsense-primary {
+  background-color: var(--color-vitalsense-primary) !important;
+}
+
+.bg-vitalsense-primary-light {
+  background-color: var(--color-vitalsense-primary-light) !important;
+}
+
+/* Text classes */
+.text-vitalsense-primary-contrast {
+  color: var(--color-vitalsense-primary-contrast) !important;
+}
+
+.text-vitalsense-primary {
+  color: var(--color-vitalsense-primary) !important;
+}
+
+.text-vitalsense-text-primary {
+  color: var(--color-vitalsense-text-primary) !important;
+}
+
+.text-vitalsense-text-muted {
+  color: var(--color-vitalsense-text-muted) !important;
+}
+
+.text-vitalsense-teal {
+  color: var(--color-vitalsense-teal) !important;
+}
+
+/* Border classes */
+.border-vitalsense-teal {
+  border-color: var(--color-vitalsense-teal) !important;
+}
+
+/* Hover states */
+.hover\:bg-vitalsense-primary-light:hover {
+  background-color: var(--color-vitalsense-primary-light) !important;
+}
+
+.hover\:bg-vitalsense-teal:hover {
+  background-color: var(--color-vitalsense-teal) !important;
+}

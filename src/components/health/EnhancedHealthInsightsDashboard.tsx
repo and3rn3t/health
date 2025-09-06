@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -67,7 +67,9 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
   );
 
   // Generate health insights based on current data
-  const generateHealthInsights = useCallback(async (): Promise<HealthInsight[]> => {
+  const generateHealthInsights = useCallback(async (): Promise<
+    HealthInsight[]
+  > => {
     const newInsights: HealthInsight[] = [];
 
     // Heart rate insights
@@ -174,7 +176,9 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
   }, [healthData]);
 
   // Generate predictive alerts using AI
-  const generatePredictiveAlerts = useCallback(async (): Promise<PredictiveAlert[]> => {
+  const generatePredictiveAlerts = useCallback(async (): Promise<
+    PredictiveAlert[]
+  > => {
     const alerts: PredictiveAlert[] = [];
 
     // Cardiovascular risk prediction
@@ -266,13 +270,21 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
     };
 
     initializeInsights();
-  }, [healthData, setInsights, setPredictiveAlerts, setTrends, generateHealthInsights, generatePredictiveAlerts, generateHealthTrends]);
+  }, [
+    healthData,
+    setInsights,
+    setPredictiveAlerts,
+    setTrends,
+    generateHealthInsights,
+    generatePredictiveAlerts,
+    generateHealthTrends,
+  ]);
 
   const getInsightIcon = (type: string) => {
     switch (type) {
       case 'positive':
         return <Heart className="h-4 w-4 text-green-600" />;
-  case 'warning':
+      case 'warning':
         return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
       case 'critical':
         return <AlertTriangle className="h-4 w-4 text-red-600" />;
@@ -285,7 +297,7 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
     switch (type) {
       case 'positive':
         return 'default';
-  case 'warning':
+      case 'warning':
         return 'secondary';
       case 'critical':
         return 'destructive';
@@ -306,9 +318,10 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
   };
 
   // Helpers
-  const resolvedScore = (
-    typeof healthData.healthScore === 'number' ? healthData.healthScore : undefined
-  ) ?? (typeof currentScore === 'number' ? currentScore : 75);
+  const resolvedScore =
+    (typeof healthData.healthScore === 'number'
+      ? healthData.healthScore
+      : undefined) ?? (typeof currentScore === 'number' ? currentScore : 75);
 
   const getScoreLabel = (score: number) => {
     if (score >= 80) return 'Excellent';
@@ -342,9 +355,13 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-primary text-3xl font-bold">{resolvedScore}/100</div>
+            <div className="text-primary text-3xl font-bold">
+              {resolvedScore}/100
+            </div>
             <Progress value={resolvedScore} className="mt-2" />
-            <p className="text-muted-foreground mt-2 text-sm">{getScoreLabel(resolvedScore)}</p>
+            <p className="text-muted-foreground mt-2 text-sm">
+              {getScoreLabel(resolvedScore)}
+            </p>
           </CardContent>
         </Card>
 
@@ -357,11 +374,9 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-        {healthData.fallRiskFactors ? (
-                <Badge
-          variant={getFallRiskVariant()}
-                >
-          {getFallRiskLabel()}
+              {healthData.fallRiskFactors ? (
+                <Badge variant={getFallRiskVariant()}>
+                  {getFallRiskLabel()}
                 </Badge>
               ) : (
                 <Badge variant="outline">Not Assessed</Badge>
@@ -455,7 +470,10 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
               <CardContent>
                 <ul className="space-y-2">
                   {selectedInsight.recommendations.map((rec) => (
-                    <li key={`${selectedInsight.id}:${rec}`} className="flex items-start gap-2">
+                    <li
+                      key={`${selectedInsight.id}:${rec}`}
+                      className="flex items-start gap-2"
+                    >
                       <div className="bg-primary mt-2 h-2 w-2 flex-shrink-0 rounded-full" />
                       <span className="text-sm">{rec}</span>
                     </li>
@@ -469,77 +487,81 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
         <TabsContent value="trends" className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {(trends ?? []).map((trend) => {
-              let trendVariant: 'default' | 'destructive' | 'secondary' = 'secondary';
+              let trendVariant: 'default' | 'destructive' | 'secondary' =
+                'secondary';
               if (trend.trend === 'up') trendVariant = 'default';
               else if (trend.trend === 'down') trendVariant = 'destructive';
               return (
-              <Card key={`${trend.metric}:${trend.timeframe}`}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center justify-between text-sm">
-                    <span>{trend.metric}</span>
-                    {getTrendIcon(trend.trend)}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold">
-                        {trend.current}
-                      </span>
-                      <Badge variant={trendVariant}>
-                        {trend.change > 0 ? '+' : ''}
-                        {trend.change}
-                      </Badge>
+                <Card key={`${trend.metric}:${trend.timeframe}`}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center justify-between text-sm">
+                      <span>{trend.metric}</span>
+                      {getTrendIcon(trend.trend)}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl font-bold">
+                          {trend.current}
+                        </span>
+                        <Badge variant={trendVariant}>
+                          {trend.change > 0 ? '+' : ''}
+                          {trend.change}
+                        </Badge>
+                      </div>
+                      <p className="text-muted-foreground text-xs">
+                        vs {trend.previous} ({trend.timeframe})
+                      </p>
                     </div>
-                    <p className="text-muted-foreground text-xs">
-                      vs {trend.previous} ({trend.timeframe})
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            );})}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </TabsContent>
 
         <TabsContent value="predictions" className="space-y-4">
           {(predictiveAlerts ?? []).map((alert) => {
-            let severityVariant: 'destructive' | 'secondary' | 'outline' = 'outline';
+            let severityVariant: 'destructive' | 'secondary' | 'outline' =
+              'outline';
             if (alert.severity === 'high') severityVariant = 'destructive';
             else if (alert.severity === 'medium') severityVariant = 'secondary';
             return (
-            <Card key={alert.id}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Brain className="h-5 w-5 text-purple-600" />
-                  {alert.title}
-                  <Badge variant={severityVariant}>
-                    {alert.severity} risk
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm">{alert.prediction}</p>
-                <div className="text-muted-foreground flex items-center gap-4 text-sm">
-                  <span>Confidence: {alert.confidence}%</span>
-                  <span>Timeframe: {alert.timeframe}</span>
-                </div>
-                <div>
-                  <h4 className="mb-2 font-medium">Preventive Actions:</h4>
-                  <ul className="space-y-1">
-                    {alert.preventiveActions.map((action) => (
-                      <li
-                        key={`${alert.id}:${action}`}
-                        className="flex items-start gap-2 text-sm"
-                      >
-                        <div className="bg-accent mt-2 h-2 w-2 flex-shrink-0 rounded-full" />
-                        <span>{action}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          );})}
+              <Card key={alert.id}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Brain className="h-5 w-5 text-purple-600" />
+                    {alert.title}
+                    <Badge variant={severityVariant}>
+                      {alert.severity} risk
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm">{alert.prediction}</p>
+                  <div className="text-muted-foreground flex items-center gap-4 text-sm">
+                    <span>Confidence: {alert.confidence}%</span>
+                    <span>Timeframe: {alert.timeframe}</span>
+                  </div>
+                  <div>
+                    <h4 className="mb-2 font-medium">Preventive Actions:</h4>
+                    <ul className="space-y-1">
+                      {alert.preventiveActions.map((action) => (
+                        <li
+                          key={`${alert.id}:${action}`}
+                          className="flex items-start gap-2 text-sm"
+                        >
+                          <div className="bg-accent mt-2 h-2 w-2 flex-shrink-0 rounded-full" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </TabsContent>
 
         <TabsContent value="recommendations" className="space-y-4">

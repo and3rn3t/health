@@ -14,6 +14,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { getLiveHealthDataSync } from '@/lib/liveHealthDataSync';
 import {
   clampTtl,
@@ -21,7 +22,6 @@ import {
   isValidTtl,
   isValidWsUrl,
 } from '@/lib/wsSettings';
-import { useKV } from '@github/spark/hooks';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -93,9 +93,12 @@ export function WSTokenSettings() {
     setDraftUser(userId || 'default-user');
   }, [open, storedToken, wsUrl, userId]);
 
-  const masked = storedToken
-    ? `${storedToken.slice(0, 8)}…${storedToken.slice(-6)}`
-    : 'not set';
+  const masked =
+    storedToken && typeof storedToken === 'string' && storedToken.length > 14
+      ? `${storedToken.slice(0, 8)}…${storedToken.slice(-6)}`
+      : storedToken && typeof storedToken === 'string' && storedToken.length > 0
+        ? `${storedToken.substring(0, Math.min(storedToken.length, 8))}...`
+        : 'not set';
 
   const onSave = () => {
     const url = draftUrl.trim();
@@ -273,7 +276,7 @@ export function WSTokenSettings() {
               <Button
                 variant="secondary"
                 size="sm"
-                className="inline-flex items-center gap-2 shadow"
+                className="ws-token-button inline-flex min-w-[120px] items-center gap-2 px-4 shadow-sm"
               >
                 <span
                   className={

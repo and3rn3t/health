@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useCloudflareKV';
 import {
   AlertTriangle,
   BookOpen,
@@ -228,7 +228,11 @@ function InterventionCard({
   );
 }
 
-function ExerciseProgramCard({ program }: { readonly program: ExerciseProgram }) {
+function ExerciseProgramCard({
+  program,
+}: {
+  readonly program: ExerciseProgram;
+}) {
   const progressPercentage = (program.currentWeek / program.totalWeeks) * 100;
 
   return (
@@ -374,7 +378,10 @@ function InterventionDetailsDialog({
               <h3 className="mb-3 font-semibold">Safety Precautions</h3>
               <ul className="space-y-1">
                 {intervention.precautions.map((precaution) => (
-                  <li key={precaution} className="flex items-center gap-2 text-sm">
+                  <li
+                    key={precaution}
+                    className="flex items-center gap-2 text-sm"
+                  >
                     <AlertTriangle className="h-4 w-4 flex-shrink-0 text-yellow-500" />
                     {precaution}
                   </li>
@@ -423,7 +430,7 @@ export default function FallRiskInterventions() {
   // Initialize with default interventions if empty
   useEffect(() => {
     if (interventions.length === 0) {
-  const defaultInterventions: Intervention[] = [
+      const defaultInterventions: Intervention[] = [
         {
           id: '1',
           category: 'exercise',
@@ -556,7 +563,7 @@ export default function FallRiskInterventions() {
   // Initialize exercise programs
   useEffect(() => {
     if (exercisePrograms.length === 0) {
-  const defaultPrograms: ExerciseProgram[] = [
+      const defaultPrograms: ExerciseProgram[] = [
         {
           id: '1',
           name: 'Fall Prevention Basics',
@@ -710,7 +717,10 @@ export default function FallRiskInterventions() {
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-purple-600">
-                  {(exercisePrograms ?? []).reduce((sum, p) => sum + p.currentWeek, 0)}
+                  {(exercisePrograms ?? []).reduce(
+                    (sum, p) => sum + p.currentWeek,
+                    0
+                  )}
                 </p>
                 <p className="text-muted-foreground text-xs">Exercise Weeks</p>
               </div>

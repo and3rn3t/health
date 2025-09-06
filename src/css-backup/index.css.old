@@ -10,61 +10,61 @@
 }
 
 :root {
-  /* Medical Blue and Warm Orange complementary color scheme - Light Mode */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.25 0.08 250);
+  /* VitalSense Brand Theme - Light Mode */
+  --background: #f8fafc; /* Light blue-grey background */
+  --foreground: #1e293b; /* Dark slate text */
 
-  --card: oklch(0.95 0.01 250);
-  --card-foreground: oklch(0.25 0.08 250);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.08 250);
+  --card: #ffffff; /* Pure white cards */
+  --card-foreground: #1e293b; /* Dark slate on cards */
+  --popover: #ffffff; /* White popover */
+  --popover-foreground: #1e293b; /* Dark slate on popover */
 
-  --primary: oklch(0.45 0.15 250);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.85 0.02 250);
-  --secondary-foreground: oklch(0.25 0.08 250);
-  --accent: oklch(0.7 0.15 45);
-  --accent-foreground: oklch(1 0 0);
+  --primary: #2563eb; /* VitalSense Primary Blue */
+  --primary-foreground: #ffffff; /* White text on primary */
+  --secondary: #e2e8f0; /* Light blue-grey secondary */
+  --secondary-foreground: #475569; /* Slate text on secondary */
+  --accent: #0891b2; /* VitalSense Teal accent */
+  --accent-foreground: #ffffff; /* White text on accent */
 
-  --destructive: oklch(0.6 0.2 20);
-  --destructive-foreground: oklch(1 0 0);
+  --destructive: #dc2626; /* VitalSense Error Red */
+  --destructive-foreground: #ffffff; /* White text on destructive */
 
-  --muted: oklch(0.85 0.02 250);
-  --muted-foreground: oklch(0.45 0.08 250);
+  --muted: #f1f5f9; /* Very light blue background */
+  --muted-foreground: #64748b; /* Muted slate text */
 
-  --border: oklch(0.9 0.01 250);
-  --input: oklch(0.9 0.01 250);
-  --ring: oklch(0.45 0.15 250);
+  --border: #cbd5e1; /* Light slate border */
+  --input: #e2e8f0; /* Light blue-grey input */
+  --ring: #2563eb; /* VitalSense Primary Blue focus ring */
 
   --radius: 0.5rem;
 }
 
 [data-appearance='dark'] {
-  /* Medical Blue and Warm Orange complementary color scheme - Dark Mode */
-  --background: oklch(0.08 0.02 250);
-  --foreground: oklch(0.95 0.01 250);
+  /* VitalSense Brand Theme - Dark Mode */
+  --background: #0f172a; /* Dark slate background */
+  --foreground: #f8fafc; /* Light blue-grey text */
 
-  --card: oklch(0.12 0.03 250);
-  --card-foreground: oklch(0.95 0.01 250);
-  --popover: oklch(0.08 0.02 250);
-  --popover-foreground: oklch(0.95 0.01 250);
+  --card: #1e293b; /* Dark slate cards */
+  --card-foreground: #f8fafc; /* Light text on cards */
+  --popover: #1e293b; /* Dark slate popover */
+  --popover-foreground: #f8fafc; /* Light text on popover */
 
-  --primary: oklch(0.55 0.15 250);
-  --primary-foreground: oklch(0.08 0.02 250);
-  --secondary: oklch(0.18 0.03 250);
-  --secondary-foreground: oklch(0.95 0.01 250);
-  --accent: oklch(0.7 0.15 45);
-  --accent-foreground: oklch(0.08 0.02 250);
+  --primary: #3b82f6; /* Lighter VitalSense Blue for dark mode */
+  --primary-foreground: #ffffff; /* White text on primary */
+  --secondary: #334155; /* Dark slate secondary */
+  --secondary-foreground: #cbd5e1; /* Light slate text */
+  --accent: #0891b2; /* VitalSense Teal accent */
+  --accent-foreground: #ffffff; /* White text on accent */
 
-  --destructive: oklch(0.65 0.2 20);
-  --destructive-foreground: oklch(0.95 0.01 250);
+  --destructive: #ef4444; /* Brighter red for dark mode */
+  --destructive-foreground: #ffffff; /* White text on destructive */
 
-  --muted: oklch(0.15 0.03 250);
-  --muted-foreground: oklch(0.65 0.05 250);
+  --muted: #1e293b; /* Dark slate muted */
+  --muted-foreground: #94a3b8; /* Light slate muted text */
 
-  --border: oklch(0.18 0.03 250);
-  --input: oklch(0.18 0.03 250);
-  --ring: oklch(0.55 0.15 250);
+  --border: #475569; /* Medium slate border */
+  --input: #334155; /* Dark slate input */
+  --ring: #3b82f6; /* Lighter VitalSense Blue focus ring */
 }
 
 @theme {

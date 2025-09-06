@@ -3,9 +3,9 @@
  * Status information, quick links, and branding
  */
 
+import WSTokenSettings from '@/components/health/WSTokenSettings';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import {
   Activity,
   Clock,
@@ -87,18 +87,18 @@ export default function Footer({
   ];
 
   return (
-    <footer className="bg-card/95 supports-[backdrop-filter]:bg-card/60 mt-auto border-t border-border backdrop-blur">
-      <div className="px-4 py-3 lg:px-6">
+    <footer className="bg-card/50 mt-auto border-t">
+      <div className="px-4 py-4 lg:px-6">
         {/* Main Footer Content */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           {/* Left Section - Brand & Status */}
           <div className="flex items-center gap-4">
             {/* Brand */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="flex h-6 w-6 items-center justify-center rounded bg-vitalsense-primary">
                 <Heart className="h-3 w-3 text-vitalsense-primary-contrast" />
               </div>
-              <div className="flex flex-col">
+              <div className="flex items-center gap-3">
                 <span className="text-sm font-medium text-vitalsense-text-primary">
                   VitalSense
                 </span>
@@ -108,76 +108,56 @@ export default function Footer({
               </div>
             </div>
 
-            <Separator orientation="vertical" className="h-6" />
-
             {/* Health Score */}
             {healthScore !== undefined && (
-              <div className="flex items-center gap-2">
+              <>
+                <div className="h-4 w-px bg-border" />
                 <Badge
                   variant="outline"
-                  className="border-vitalsense-primary text-vitalsense-primary"
+                  className="border-vitalsense-primary px-3 py-1 text-vitalsense-primary"
                 >
                   <Shield className="mr-1 h-3 w-3" />
-                  Score: {healthScore}/100
+                  {healthScore}/100
                 </Badge>
-              </div>
+              </>
             )}
           </div>
 
-          {/* Center Section - Quick Links (Desktop) */}
-          <div className="hidden items-center gap-2 lg:flex">
-            {quickLinks.map((link) => {
-              const IconComponent = link.icon;
-              return (
-                <Button
-                  key={link.tab}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onNavigate(link.tab)}
-                  className="h-8 text-xs"
-                >
-                  <IconComponent className="mr-1 h-3 w-3" />
-                  {link.label}
-                </Button>
-              );
-            })}
-          </div>
-
-          {/* Right Section - Connection Status & Time */}
-          <div className="flex items-center gap-4 text-sm">
+          {/* Right Section - Status & Time */}
+          <div className="flex items-center gap-3 text-sm">
             {/* Connection Status */}
             <div className="flex items-center gap-2">
               {getConnectionIcon()}
-              <span className="text-muted-foreground hidden sm:inline">
+              <span className="hidden text-xs text-vitalsense-text-muted sm:inline">
                 {getConnectionText()}
               </span>
             </div>
 
-            <Separator orientation="vertical" className="h-4" />
-
             {/* Last Sync */}
             <div className="flex items-center gap-2">
-              <Clock className="text-muted-foreground h-3 w-3" />
-              <span className="text-muted-foreground text-xs">
-                <span className="hidden sm:inline">Sync: </span>
+              <Clock className="h-3 w-3 text-vitalsense-text-muted" />
+              <span className="text-xs text-vitalsense-text-muted">
                 {formatLastSync()}
               </span>
             </div>
 
-            <Separator orientation="vertical" className="h-4" />
-
             {/* Current Time */}
-            <div className="text-muted-foreground text-xs">
+            <div className="text-xs text-vitalsense-text-muted">
               {currentTime.toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
               })}
             </div>
+
+            {/* WS Token Settings Button */}
+            <div className="hidden sm:block">
+              <WSTokenSettings />
+            </div>
           </div>
         </div>
 
         {/* Mobile Quick Links */}
-        <div className="mt-3 flex items-center justify-center gap-2 lg:hidden">
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-4 sm:hidden">
           {quickLinks.map((link) => {
             const IconComponent = link.icon;
             return (
@@ -186,41 +166,16 @@ export default function Footer({
                 variant="ghost"
                 size="sm"
                 onClick={() => onNavigate(link.tab)}
-                className="h-8 flex-1 text-xs"
+                className="footer-button h-9 min-w-[90px] px-4 text-xs font-medium"
               >
-                <IconComponent className="mr-1 h-3 w-3" />
+                <IconComponent className="mr-2 h-3 w-3" />
                 {link.label}
               </Button>
             );
           })}
-        </div>
-
-        {/* Bottom Info */}
-        <div className="mt-3 flex flex-col gap-2 border-t pt-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-muted-foreground flex items-center gap-4 text-xs">
-            <span>© 2025 VitalSense Health Monitor</span>
-            <Badge
-              variant="outline"
-              className="border-vitalsense-teal text-vitalsense-teal"
-            >
-              <Smartphone className="mr-1 h-2 w-2" />
-              iOS Ready
-            </Badge>
-          </div>
-
-          <div className="text-muted-foreground flex items-center gap-2 text-xs">
-            <span>Powered by Apple HealthKit</span>
-            <span>•</span>
-            <span>AI Enhanced</span>
-            <span>•</span>
-            <Button
-              variant="link"
-              size="sm"
-              onClick={() => onNavigate('system-status')}
-              className="h-auto p-0 text-xs text-vitalsense-primary underline-offset-4 hover:underline"
-            >
-              System Status
-            </Button>
+          {/* Mobile WS Token Settings */}
+          <div className="ml-2">
+            <WSTokenSettings />
           </div>
         </div>
       </div>

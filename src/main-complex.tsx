@@ -3,7 +3,7 @@ import '@github/spark/spark';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createRoot } from 'react-dom/client';
 
-import App from '@/App'; // Switch to main App
+import AuthenticatedApp from '@/components/auth/AuthenticatedApp';
 import { AppErrorBoundary } from '@/components/error/ErrorBoundaryComponents.tsx';
 import { AuthProvider } from '@/contexts/AuthProvider';
 import { setupGlobalErrorHandling } from '@/lib/errorHandling';
@@ -42,7 +42,7 @@ createRoot(rootElement).render(
   <AppErrorBoundary>
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
-        <App />
+        <AuthenticatedApp />
         <Toaster position="top-right" richColors />
       </QueryClientProvider>
     </AuthProvider>
