@@ -359,6 +359,49 @@ async function storeHealthData(data: HealthRecord[], env: Env) {
 
 ## 🔐 Security & Authentication Issues
 
+### Problem: VitalSense Branding Inconsistency Across Platform
+
+**Symptom**: Generic "Health App" branding throughout platform, Auth0 default login styling, inconsistent brand colors
+**Root Cause**: No centralized brand configuration system, missing custom Auth0 login page
+**Solution**: Implement comprehensive VitalSense branding system with custom Auth0 login
+**Files Affected**: `auth0-custom-login/login.html`, `src/lib/auth0Config.ts`, multiple component files
+
+**Implementation Steps**:
+```powershell
+# 1. Create custom Auth0 login page
+# Copy example config and customize
+Copy-Item "auth0-custom-login\auth0-config.example.ps1" "auth0-custom-login\auth0-config.local.ps1"
+
+# 2. Test the implementation
+.\scripts\test-auth0-login-page.ps1
+
+# 3. Deploy in test mode first
+.\scripts\quick-deploy-auth0.ps1 -TestMode
+
+# 4. Deploy to production
+.\scripts\quick-deploy-auth0.ps1
+```
+
+**Key Features Implemented**:
+- VitalSense branding with heart icon (#2563eb primary color)
+- HIPAA/SOC 2/ISO 27001 compliance badges
+- Mobile-responsive design with dark mode support
+- Inter font family consistency
+- Automated deployment pipeline
+
+**VS Code Tasks Available**:
+- `Auth0: Test Custom Login Page`
+- `Auth0: Quick Deploy (Test Mode)`
+- `Auth0: Deploy Custom Login Page`
+
+**Prevention**: Always use centralized brand configuration, test in multiple environments, maintain automated deployment scripts
+
+**Documentation**: See `docs/troubleshooting/VITALSENSE_BRANDING_LESSONS_LEARNED.md` for complete implementation details
+
+---
+
+## 🔐 Security & Authentication Issues
+
 ### Problem: JWT Token Validation Failures
 
 **Symptom**: Authentication randomly failing for valid requests

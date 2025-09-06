@@ -3,7 +3,7 @@
  * Optimized header with breadcrumbs, search, and quick actions
  */
 
-import EmergencyTriggerButton from '@/components/health/EmergencyTriggerButton';
+import EmergencyTrigger from '@/components/health/EmergencyTrigger';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -252,7 +252,7 @@ export default function NavigationHeader({
 
           {/* Emergency Button */}
           <div className="flex items-center">
-            <EmergencyTriggerButton size="sm" />
+            <EmergencyTrigger />
           </div>
 
           {/* View Account chip (authenticated users) */}

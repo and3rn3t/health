@@ -19,10 +19,10 @@ import {
 import { useCallback, useState } from 'react';
 
 // Import the new components
-import AdvancedAnalytics from './AdvancedAnalytics';
-import DataSync from './DataSync';
+// import AdvancedAnalytics from './AdvancedAnalytics';
+// import DataSync from './DataSync';
 import { EnhancedHealthDataUpload } from './EnhancedHealthDataUpload';
-import LiveDataStream from './LiveDataStream';
+// import LiveDataStream from './LiveDataStream';
 import MLAnalytics from './MLAnalytics';
 
 interface FeatureCard {
@@ -220,7 +220,8 @@ export default function HealthSystemIntegration({
                     <CardTitle className="text-lg">{feature.title}</CardTitle>
                   </div>
                   {(() => {
-                    let variant: 'default' | 'secondary' | 'outline' = 'outline';
+                    let variant: 'default' | 'secondary' | 'outline' =
+                      'outline';
                     if (feature.status === 'new') variant = 'default';
                     else if (feature.status === 'beta') variant = 'secondary';
                     return <Badge variant={variant}>{feature.status}</Badge>;

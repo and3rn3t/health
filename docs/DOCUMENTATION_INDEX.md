@@ -2,9 +2,18 @@
 
 This document provides a comprehensive index of all documentation in the project, organized by category.
 
+**📊 Status**: Recently reorganized and consolidated (September 2025)  
+**📁 Total Active Documents**: ~50 active files (+ archived completed documents)
+
 ## 📚 Main Documentation Directories
 
-### Core Architecture & Design
+### 🚀 Getting Started
+
+- [`getting-started/`](./getting-started/) - **Start here!** Quick setup and onboarding
+  - [`README.md`](./getting-started/README.md) - 15-minute quick start guide
+  - [`SETUP_GUIDE.md`](./getting-started/SETUP_GUIDE.md) - Complete development environment setup
+
+### 🏗️ Architecture & Design
 
 - [`architecture/`](./architecture/) - System architecture, API specs, and design documents
   - [`API.md`](./architecture/API.md) - Complete API documentation
@@ -12,80 +21,120 @@ This document provides a comprehensive index of all documentation in the project
   - [`PRD.md`](./architecture/PRD.md) - Product Requirements Document
   - [`WEBSOCKETS.md`](./architecture/WEBSOCKETS.md) - WebSocket protocol specification
 
-### Development
+### 💻 Development
 
-- [`development/`](./development/) - Development guides and workflows
-  - [`endpoint-test-plan.md`](./development/endpoint-test-plan.md) - API endpoint testing plan
-  - [`POWERSHELL_VSCODE_INTEGRATION.md`](./development/POWERSHELL_VSCODE_INTEGRATION.md) - PowerShell-VS Code integration
-  - [`SETUP_GUIDE.md`](./development/SETUP_GUIDE.md) - Development environment setup
+- [`develop/`](./develop/) - Active development guides and workflows
+  - [`POWERSHELL_VSCODE_INTEGRATION.md`](./develop/POWERSHELL_VSCODE_INTEGRATION.md) - PowerShell-VS Code integration
+  - [`endpoint-test-plan.md`](./develop/endpoint-test-plan.md) - API endpoint testing plan
+  - [`enhanced-health-data-features.md`](./develop/enhanced-health-data-features.md) - Advanced health features
+  - [`performance-optimizations.md`](./develop/performance-optimizations.md) - Performance improvements
 
-### iOS Development
+### 📱 iOS Development
 
-- [`ios/`](./ios/) - iOS-specific documentation
+- [`ios/`](./ios/) - Complete iOS development documentation
   - [`IOS_DEVELOPMENT_WINDOWS.md`](./ios/IOS_DEVELOPMENT_WINDOWS.md) - iOS development on Windows
   - [`IOS_TESTING_CONFIG.md`](./ios/IOS_TESTING_CONFIG.md) - iOS testing configuration
   - [`IOS_PRODUCTION_CONFIG_COMPLETE.md`](./ios/IOS_PRODUCTION_CONFIG_COMPLETE.md) - Production configuration
-  - [`IOS_INTEGRATION_TEST_RESULTS.md`](./ios/IOS_INTEGRATION_TEST_RESULTS.md) - Integration test results
+  - [`AppleWatchHealthKitIntegration.md`](./ios/AppleWatchHealthKitIntegration.md) - Apple Watch integration
+  - [`iOS-WEBSOCKET-TESTING.md`](./ios/iOS-WEBSOCKET-TESTING.md) - iOS WebSocket testing
+  - [`iOS-PRODUCTION-READY.md`](./ios/iOS-PRODUCTION-READY.md) - Production readiness
 
-- [`ios-documentation/`](./ios-documentation/) - Detailed iOS project documentation (moved from ios/Documentation/)
-  - [`BUNDLE_ID_UPDATE.md`](./ios-documentation/BUNDLE_ID_UPDATE.md) - Bundle ID update guide
-  - [`CHANGELOG.md`](./ios-documentation/CHANGELOG.md) - iOS project changelog
-  - [`DEVELOPMENT_GUIDE.md`](./ios-documentation/DEVELOPMENT_GUIDE.md) - Comprehensive development guide
-  - [`DOCKER_USAGE.md`](./ios-documentation/DOCKER_USAGE.md) - Docker usage for iOS development
-  - [`INTEGRATION_STATUS.md`](./ios-documentation/INTEGRATION_STATUS.md) - Integration status tracking
-  - [`MIGRATION_GUIDE.md`](./ios-documentation/MIGRATION_GUIDE.md) - Migration guide for updates
-  - [`ORGANIZATION_SUMMARY.md`](./ios-documentation/ORGANIZATION_SUMMARY.md) - Project organization
-  - [`PROJECT_STRUCTURE.md`](./ios-documentation/PROJECT_STRUCTURE.md) - iOS project structure
-  - [`REBRANDING_SUMMARY.md`](./ios-documentation/REBRANDING_SUMMARY.md) - VitalSense rebranding summary
-  - [`WATCH_DEVELOPMENT_PLAN.md`](./ios-documentation/WATCH_DEVELOPMENT_PLAN.md) - Apple Watch development plan
-  - [`WATCH_INTEGRATION_GUIDE.md`](./ios-documentation/WATCH_INTEGRATION_GUIDE.md) - Watch integration guide
+### 🔐 Authentication
 
-### Deployment & Infrastructure
+- [`auth/`](./auth/) - Authentication and authorization documentation
+  - [`AUTH0_CUSTOM_BRANDING_GUIDE.md`](./auth/AUTH0_CUSTOM_BRANDING_GUIDE.md) - Complete Auth0 setup with VitalSense branding
+  - [`AUTH0_INTEGRATION.md`](./auth/AUTH0_INTEGRATION.md) - Technical Auth0 integration
 
-- [`deployment/`](./deployment/) - Deployment guides and infrastructure setup
-  - [`API_SUBDOMAIN_STRATEGY.md`](./deployment/API_SUBDOMAIN_STRATEGY.md) - API subdomain strategy
-  - [`CLOUDFLARE_DNS_SETUP.md`](./deployment/CLOUDFLARE_DNS_SETUP.md) - Cloudflare DNS configuration
-  - [`DEPLOYMENT_COMPLETE.txt`](./deployment/DEPLOYMENT_COMPLETE.txt) - Deployment completion status
-  - [`DEPLOYMENT_PREP_CHECKLIST.md`](./deployment/DEPLOYMENT_PREP_CHECKLIST.md) - Pre-deployment checklist
-  - [`DEPLOYMENT_SUCCESS.md`](./deployment/DEPLOYMENT_SUCCESS.md) - Successful deployment guide
-  - [`DNS_AUTOMATION_GUIDE.md`](./deployment/DNS_AUTOMATION_GUIDE.md) - DNS automation
+### 🚀 Deployment & Infrastructure
 
-### Authentication
+- [`deploy/`](./deploy/) - Deployment guides and infrastructure setup
+  - [`MAIN_APP_DEPLOYMENT.md`](./deploy/MAIN_APP_DEPLOYMENT.md) - Primary deployment workflow
+  - [`CLOUDFLARE_DNS_SETUP.md`](./deploy/CLOUDFLARE_DNS_SETUP.md) - DNS configuration
+  - [`INFRA_HARDENING.md`](./deploy/INFRA_HARDENING.md) - Infrastructure security hardening
+  - [`API_SUBDOMAIN_STRATEGY.md`](./deploy/API_SUBDOMAIN_STRATEGY.md) - API subdomain strategy
 
-- [`authentication/`](./authentication/) - Authentication and authorization documentation
-  - [`AUTH0_CUSTOM_BRANDING_GUIDE.md`](./authentication/AUTH0_CUSTOM_BRANDING_GUIDE.md) - Auth0 custom branding
-
-- [`auth0-custom-login/`](./auth0-custom-login/) - Auth0 custom login implementation (moved from root)
-  - [`IMPLEMENTATION_SUMMARY.md`](./auth0-custom-login/IMPLEMENTATION_SUMMARY.md) - Implementation summary
-  - [`README.md`](./auth0-custom-login/README.md) - Auth0 custom login setup
-  - [`TROUBLESHOOTING.md`](./auth0-custom-login/TROUBLESHOOTING.md) - Auth0 troubleshooting
-
-### Security
+### 🛡️ Security
 
 - [`security/`](./security/) - Security documentation and policies
-  - [`AUTH0_INTEGRATION.md`](./security/AUTH0_INTEGRATION.md) - Auth0 security integration
-  - [`RETENTION_POLICY.md`](./security/RETENTION_POLICY.md) - Data retention policy
   - [`SECURITY_BASELINE.md`](./security/SECURITY_BASELINE.md) - Security baseline requirements
+  - [`RETENTION_POLICY.md`](./security/RETENTION_POLICY.md) - Data retention policy
 
-### Troubleshooting
+### 🔧 Troubleshooting
 
-- [`troubleshooting/`](./troubleshooting/) - Troubleshooting guides and solutions
-  - [`BUILD_TROUBLESHOOTING.md`](./troubleshooting/BUILD_TROUBLESHOOTING.md) - Build troubleshooting
-  - [`PROBLEM_SOLUTIONS_DATABASE.md`](./troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md) - Comprehensive problem database
+- [`troubleshooting/`](./troubleshooting/) - Problem solutions and troubleshooting guides
+  - [`PROBLEM_SOLUTIONS_DATABASE.md`](./troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md) - Comprehensive problem database for AI-assisted development
+  - [`BUILD_TROUBLESHOOTING.md`](./troubleshooting/BUILD_TROUBLESHOOTING.md) - Build and compilation troubleshooting
+  - [`VITALSENSE_BRANDING_LESSONS_LEARNED.md`](./troubleshooting/VITALSENSE_BRANDING_LESSONS_LEARNED.md) - Complete branding implementation guide
+  - [`VITALSENSE_BRANDING_QUICK_REFERENCE.md`](./troubleshooting/VITALSENSE_BRANDING_QUICK_REFERENCE.md) - Quick branding fixes
 
-### Project Management
+### 📋 Project Management
 
 - [`project-management/`](./project-management/) - Project management and planning
-  - [`IMPLEMENTATION_CHECKLIST.md`](./project-management/IMPLEMENTATION_CHECKLIST.md) - Implementation checklist
   - [`LESSONS_LEARNED.md`](./project-management/LESSONS_LEARNED.md) - Project lessons learned
-  - [`NEXT_STEPS.md`](./project-management/NEXT_STEPS.md) - Next development steps
-  - [`PROJECT_CLEANUP_SUMMARY.md`](./project-management/PROJECT_CLEANUP_SUMMARY.md) - Project cleanup summary
+  - [`NEXT_STEPS.md`](./project-management/NEXT_STEPS.md) - Development roadmap
+  - [`IMPLEMENTATION_CHECKLIST.md`](./project-management/IMPLEMENTATION_CHECKLIST.md) - Implementation tracking
 
-### Getting Started
+## 🗂️ Archived Documentation
 
-- [`getting-started/`](./getting-started/) - Quick start guides
-  - [`README_QUICK_START.md`](./getting-started/README_QUICK_START.md) - Quick start guide
-  - [`SETUP_GUIDE.md`](./getting-started/SETUP_GUIDE.md) - Detailed setup guide
+- [`_archive/`](./\_archive/) - Completed projects and obsolete documentation
+  - All `*_COMPLETE.md` status files
+  - Obsolete setup guides
+  - Completed migration documentation
+  - Historical project phases
+
+## 🔍 Finding Documentation
+
+### By Purpose
+
+- **Getting Started**: Start with [`getting-started/`](./getting-started/)
+- **Development Setup**: See [`getting-started/SETUP_GUIDE.md`](./getting-started/SETUP_GUIDE.md)
+- **API Development**: Check [`architecture/API.md`](./architecture/API.md)
+- **iOS Development**: Browse [`ios/`](./ios/) folder
+- **Deployment**: Look in [`deploy/`](./deploy/) folder
+- **Troubleshooting**: Visit [`troubleshooting/`](./troubleshooting/) folder
+
+### By Platform
+
+- **Web/React**: [`architecture/`](./architecture/), [`develop/`](./develop/)
+- **iOS**: [`ios/`](./ios/) - comprehensive iOS documentation
+- **Infrastructure**: [`deploy/`](./deploy/), [`security/`](./security/)
+- **Authentication**: [`auth/`](./auth/) - Auth0 and security
+
+### By Development Phase
+
+- **Planning**: [`project-management/`](./project-management/), [`architecture/PRD.md`](./architecture/PRD.md)
+- **Development**: [`getting-started/`](./getting-started/), [`develop/`](./develop/), [`ios/`](./ios/)
+- **Testing**: [`troubleshooting/`](./troubleshooting/), various test documentation
+- **Deployment**: [`deploy/`](./deploy/) folder
+
+## ✨ Recent Updates (September 2025)
+
+### 🧹 Cleanup & Reorganization
+
+- **Archived 30+ completed documents** to reduce clutter
+- **Consolidated redundant Auth0 documentation** into primary guides
+- **Created getting-started folder** with quick onboarding guides
+- **Moved iOS-specific docs** to proper iOS folder
+- **Standardized naming conventions** across all documentation
+
+### 📚 New Documentation
+
+- **VitalSense Branding Documentation** - Complete implementation and troubleshooting guides
+- **Getting Started Guides** - Quick setup and detailed environment configuration
+- **Consolidated Auth Documentation** - Streamlined Auth0 setup process
+
+### 🎯 Improved Organization
+
+- **Clear folder structure** with purpose-based organization
+- **Reduced redundancy** by consolidating overlapping documentation
+- **Better cross-references** with consistent linking
+- **Active vs. archived** separation for easier maintenance
+
+---
+
+**Last Updated**: September 6, 2025  
+**Documentation Health**: ✅ Excellent - Recently reorganized and consolidated  
+**Total Active Files**: ~50 focused, current documentation files
 
 ## 📄 Root-Level Documentation (Consolidated)
 
@@ -141,6 +190,9 @@ Documentation that was previously in the source code has been moved to [`src-doc
 - **API Development**: Check [`architecture/API.md`](./architecture/API.md)
 - **Deployment**: Look in [`deployment/`](./deployment/)
 - **Troubleshooting**: Visit [`troubleshooting/`](./troubleshooting/)
+  - [`PROBLEM_SOLUTIONS_DATABASE.md`](./troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md) - Comprehensive problem database
+  - [`VITALSENSE_BRANDING_LESSONS_LEARNED.md`](./troubleshooting/VITALSENSE_BRANDING_LESSONS_LEARNED.md) - Complete branding implementation guide
+  - [`VITALSENSE_BRANDING_QUICK_REFERENCE.md`](./troubleshooting/VITALSENSE_BRANDING_QUICK_REFERENCE.md) - Quick branding fixes
 
 ### By Platform
 

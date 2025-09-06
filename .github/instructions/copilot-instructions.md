@@ -98,6 +98,43 @@ These instructions guide GitHub Copilot Chat/Edits to produce code and docs that
 
 ## Authentication & Security Integration
 
+### VitalSense Branding & Auth0 Configuration
+
+**CRITICAL**: This project uses VitalSense branding throughout. When implementing authentication or UI components:
+
+1. **Brand Consistency**: Always use VitalSense branding, never generic "Health App" references
+2. **Color Scheme**: Primary color is `#2563eb` (blue), secondary is `#0891b2` (teal)
+3. **Typography**: Use Inter font family consistently
+4. **Auth0 Integration**: Custom branded login page exists in `auth0-custom-login/`
+
+**Auth0 Branding Implementation**:
+
+- Custom login page: `auth0-custom-login/login.html`
+- Deployment script: `scripts/deploy-auth0-custom-login.ps1`
+- VS Code tasks available: "Auth0: Test Custom Login Page", "Auth0: Deploy Custom Login Page"
+- Configuration: `src/lib/auth0Config.ts` with dynamic environment loading
+
+**Quick Commands for Auth0 Branding**:
+
+```powershell
+# Test custom login page
+.\scripts\test-auth0-login-page.ps1
+
+# Deploy in test mode
+.\scripts\quick-deploy-auth0.ps1 -TestMode
+
+# Deploy to production
+.\scripts\quick-deploy-auth0.ps1
+```
+
+**Common Branding Issues & Solutions**:
+
+- ❌ **Problem**: Generic health app references, inconsistent colors
+- ✅ **Solution**: Use VitalSense branding system, centralized configuration
+- 📝 **Reference**: See `docs/troubleshooting/VITALSENSE_BRANDING_LESSONS_LEARNED.md`
+
+### Authentication Flow
+
 The app uses Auth0 for authentication with custom branding:
 
 - **Auth0 configuration**: Environment-specific settings in `wrangler.toml`

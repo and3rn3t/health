@@ -1,33 +1,67 @@
-# VitalSense Auth0 Custom Login Page Setup Guide
+# 🔐 VitalSense Authentication Documentation
 
-This guide walks you through setting up a custom branded Auth0 login page for your VitalSense health application.
+Complete authentication setup and integration guides for VitalSense.
 
-## Overview
+## 📚 Available Documentation
 
-The custom login page provides:
+### Primary Guides
 
-- VitalSense brand consistency with your main application
-- HIPAA compliance messaging and security features
-- Mobile-responsive design
-- Dark mode support
-- Integration with Auth0 Universal Login
+- **[Auth0 Custom Branding Guide](AUTH0_CUSTOM_BRANDING_GUIDE.md)** - Complete setup for custom branded Auth0 login
+- **[Auth0 Integration Guide](AUTH0_INTEGRATION.md)** - Technical integration documentation
 
-## Prerequisites
+### Quick Actions
 
-1. **Auth0 Account**: You need an Auth0 tenant with a configured application
-2. **Management API Access**: Your Auth0 application needs Management API permissions
-3. **PowerShell**: For running the deployment script
+```powershell
+# Test Auth0 custom login page
+.\scripts\test-auth0-login-page.ps1
 
-## Setup Steps
+# Deploy Auth0 branding (test mode)
+.\scripts\quick-deploy-auth0.ps1 -TestMode
 
-### 1. Configure Auth0 Application
+# Deploy Auth0 branding (production)
+.\scripts\quick-deploy-auth0.ps1
+```
 
-In your Auth0 Dashboard:
+### VS Code Tasks
 
-1. Go to **Applications** → Your VitalSense App
-2. Enable **Token Endpoint Authentication Method**: `POST`
-3. Add **Allowed Callback URLs**: `https://health.andernet.dev/callback`
-4. Add **Allowed Logout URLs**: `https://health.andernet.dev/login`
+Available via `Ctrl+Shift+P` → "Tasks: Run Task":
+
+- **Auth0: Test Custom Login Page** - Validate login page HTML and styling
+- **Auth0: Quick Deploy (Test Mode)** - Safe deployment testing
+- **Auth0: Deploy Custom Login Page** - Production deployment
+
+## 🎯 Quick Start
+
+1. **Prerequisites**: Auth0 account with SPA application configured
+2. **Setup**: Configure credentials in `auth0-custom-login/auth0-config.local.ps1`
+3. **Test**: Run validation script to verify setup
+4. **Deploy**: Use test mode first, then deploy to production
+
+## 🔧 Configuration Files
+
+- **`auth0-custom-login/login.html`** - Custom branded login page
+- **`auth0-custom-login/auth0-config.local.ps1`** - Local configuration
+- **`src/lib/auth0Config.ts`** - Application Auth0 configuration
+
+## 🛡️ Security Features
+
+- HIPAA compliance messaging
+- SOC 2 Type II certification display
+- ISO 27001 compliance indicators
+- Multi-factor authentication support
+- Secure token handling with refresh rotation
+
+## 🆘 Troubleshooting
+
+For authentication issues, see:
+
+- **[VitalSense Branding Quick Reference](../troubleshooting/VITALSENSE_BRANDING_QUICK_REFERENCE.md)** - Quick fixes for branding issues
+- **[Problem Solutions Database](../troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md)** - Comprehensive troubleshooting
+
+---
+
+**Total Setup Time**: 15-30 minutes  
+**Support Level**: Complete documentation and automation
 5. Add **Allowed Web Origins**: `https://health.andernet.dev`
 
 ### 2. Set Up Management API Access

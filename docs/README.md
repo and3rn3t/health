@@ -4,9 +4,18 @@
 
 ## 📚 Complete Documentation Index
 
-**➡️ [View Complete Documentation Index](DOCUMENTATION_INDEX.md)** - Comprehensive index of all 60+ documentation files
+**➡️ [View Complete Documentation Index](DOCUMENTATION_INDEX.md)** - Comprehensive index of all documentation
 
-## � Main Documentation Structure
+**🎉 Recently Reorganized**: Documentation cleaned up and consolidated (September 2025)
+
+## 🏃‍♂️ Quick Navigation
+
+**New to VitalSense?** → Start with [Getting Started](getting-started/)  
+**Setting up development?** → See [Setup Guide](getting-started/SETUP_GUIDE.md)  
+**Having issues?** → Check [Troubleshooting](troubleshooting/)  
+**Need API docs?** → Browse [Architecture](architecture/)
+
+## 📁 Main Documentation Structure
 
 The documentation is organized into topic-based folders for easy navigation:
 
@@ -14,8 +23,8 @@ The documentation is organized into topic-based folders for easy navigation:
 
 **Start here!** Quick setup and onboarding guides.
 
-- **[Quick Start Guide](getting-started/README_QUICK_START.md)** - 15-minute complete setup
-- **[Setup Guide](getting-started/SETUP_GUIDE.md)** - Detailed iOS project configuration
+- **[Quick Start Guide](getting-started/README.md)** - 15-minute complete setup
+- **[Setup Guide](getting-started/SETUP_GUIDE.md)** - Detailed development environment configuration
 
 ### 🏗️ [Architecture & Design](architecture/)
 
@@ -26,38 +35,50 @@ System design, APIs, and technical specifications.
 - **[WebSocket Guide](architecture/WEBSOCKETS.md)** - Real-time communication patterns
 - **[Product Requirements](architecture/PRD.md)** - Features, goals, and user experience design
 
+### � [Development](develop/)
+
+Active development guides and workflows.
+
+- **[PowerShell-VS Code Integration](develop/POWERSHELL_VSCODE_INTEGRATION.md)** - Complete Windows development setup
+- **[Enhanced Health Features](develop/enhanced-health-data-features.md)** - Advanced health data processing
+- **[Performance Optimizations](develop/performance-optimizations.md)** - Platform optimization strategies
+
 ### 📱 [iOS Development](ios/)
 
 Complete iOS development, deployment, and tooling guides.
 
-- **[iOS Deployment Guide](ios/IOS_DEPLOYMENT_GUIDE.md)** - Production deployment workflow
 - **[iOS Development on Windows](ios/IOS_DEVELOPMENT_WINDOWS.md)** - Windows-specific setup and tools
-- **[iOS Tools Complete](ios/IOS_TOOLS_COMPLETE.md)** - Comprehensive development tooling
+- **[Apple Watch Integration](ios/AppleWatchHealthKitIntegration.md)** - HealthKit and Watch development
+- **[iOS Production Setup](ios/iOS-PRODUCTION-READY.md)** - Production deployment readiness
 
-### �️ [Troubleshooting](troubleshooting/)
+### 🔐 [Authentication](auth/)
+
+Authentication setup and security integration.
+
+- **[Auth0 Custom Branding Guide](auth/AUTH0_CUSTOM_BRANDING_GUIDE.md)** - Complete VitalSense-branded Auth0 setup
+- **[Auth0 Integration](auth/AUTH0_INTEGRATION.md)** - Technical integration documentation
+
+### 🔧 [Troubleshooting](troubleshooting/)
 
 Problem solving and debugging guides.
 
 - **[Problem Solutions Database](troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md)** - 50+ documented issues and fixes
+- **[VitalSense Branding Quick Reference](troubleshooting/VITALSENSE_BRANDING_QUICK_REFERENCE.md)** - Branding issue fixes
 - **[Build Troubleshooting](troubleshooting/BUILD_TROUBLESHOOTING.md)** - Swift and TypeScript build errors
 
-### � [Deployment](deployment/)
+### 🚀 [Deployment](deploy/)
 
 Production deployment and infrastructure management.
 
-- **[Main App Deployment](deployment/MAIN_APP_DEPLOYMENT.md)** - Primary deployment workflow
-- **[Infrastructure Hardening](deployment/INFRA_HARDENING.md)** - Production-ready infrastructure setup
+- **[Main App Deployment](deploy/MAIN_APP_DEPLOYMENT.md)** - Primary deployment workflow
+- **[Infrastructure Hardening](deploy/INFRA_HARDENING.md)** - Production-ready infrastructure setup
 
-### 🔐 [Security](security/)
+### �️ [Security](security/)
 
 Security implementation and privacy policies.
 
 - **[Security Baseline](security/SECURITY_BASELINE.md)** - Security implementation and best practices
 - **[Retention Policy](security/RETENTION_POLICY.md)** - Data lifecycle and privacy compliance
-
-### � [Development](development/)
-
-Development workflows and AI-assisted development.
 
 - **[Development Guide](development/DEVELOPMENT.md)** - Development environment and workflow
 - **[Copilot Prompts](development/COPILOT_PROMPTS.md)** - AI-assisted development patterns

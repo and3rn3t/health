@@ -34,16 +34,16 @@ import {
   Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import AdvancedCaregiverAlerts from './AdvancedCaregiverAlerts';
-import EnhancedFallRiskMonitor from './EnhancedFallRiskMonitor';
+// import AdvancedCaregiverAlerts from './AdvancedCaregiverAlerts';
+// import EnhancedFallRiskMonitor from './EnhancedFallRiskMonitor';
 import FallHistory from './FallHistory';
-import FallRiskInterventions from './FallRiskInterventions';
-import FallRiskMonitor from './FallRiskMonitor';
-import FallRiskWalkingDashboard from './FallRiskWalkingDashboard';
-import LiDAREnvironmentalHazardDetector from './LiDAREnvironmentalHazardDetector';
-import LiDARFallPredictionEngine from './LiDARFallPredictionEngine';
-import LiDARTrainingAssistant from './LiDARTrainingAssistant';
-import WalkingPatternMonitor from './WalkingPatternMonitor';
+// import FallRiskInterventions from './FallRiskInterventions';
+// import FallRiskMonitor from './FallRiskMonitor';
+// import FallRiskWalkingDashboard from './FallRiskWalkingDashboard';
+// import LiDAREnvironmentalHazardDetector from './LiDAREnvironmentalHazardDetector';
+// import LiDARFallPredictionEngine from './LiDARFallPredictionEngine';
+// import LiDARTrainingAssistant from './LiDARTrainingAssistant';
+// import WalkingPatternMonitor from './WalkingPatternMonitor';
 
 interface FallRiskWalkingManagerProps {
   healthData: ProcessedHealthData;
