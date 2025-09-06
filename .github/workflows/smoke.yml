@@ -20,7 +20,6 @@ jobs:
       - name: Clean and install dependencies
         run: |
           rm -rf package-lock.json node_modules
-          npm install @rollup/rollup-linux-x64-gnu --no-save
           npm install --force
 
       - name: Build application
