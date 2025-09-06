@@ -21,16 +21,19 @@ if ($All) {
 }
 
 function Test-GitHubCLI {
+  $oldErrorActionPreference = $ErrorActionPreference
   try {
+    $ErrorActionPreference = "Stop"
     $ghVersion = gh --version 2>$null
-    if ($LASTEXITCODE -eq 0) {
-      Write-Host "✅ GitHub CLI is installed: $($ghVersion.Split("`n")[0])" -ForegroundColor Green
-      return $true
-    }
+    Write-Host "✅ GitHub CLI is installed: $($ghVersion.Split("`n")[0])" -ForegroundColor Green
+    return $true
   }
   catch {
     Write-Host "❌ GitHub CLI not found. Please install from: https://cli.github.com/" -ForegroundColor Red
     return $false
+  }
+  finally {
+    $ErrorActionPreference = $oldErrorActionPreference
   }
 }
 
