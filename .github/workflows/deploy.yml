@@ -24,6 +24,7 @@ jobs:
       - name: Clean and install dependencies
         run: |
           rm -rf package-lock.json node_modules
+          npm install @rollup/rollup-linux-x64-gnu --no-save
           npm install --force
 
       - name: Run linting
@@ -52,7 +53,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --prefer-offline
+        run: |
+          npm install @rollup/rollup-linux-x64-gnu --no-save
+          npm ci --prefer-offline
 
       - name: Build for development
         run: npm run build
@@ -82,7 +85,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --prefer-offline
+        run: |
+          npm install @rollup/rollup-linux-x64-gnu --no-save
+          npm ci --prefer-offline
 
       - name: Build for production
         run: npm run build

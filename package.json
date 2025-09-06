@@ -220,9 +220,6 @@
     "vitest": "^2.1.4",
     "yaml": "^2.4.0"
   },
-  "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.29.0"
-  },
   "engines": {
     "node": ">=20.0.0",
     "npm": ">=8.0.0"
