@@ -260,25 +260,49 @@ jobs:
       - name: Build iOS App
         run: |
           cd ios
-          # Use any available iOS simulator device by ID to avoid name matching issues
-          SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone" | head -1 | grep -oE '[0-9A-F-]{36}' || echo "")
-          if [ -z "$SIMULATOR_ID" ]; then
-            echo "No iPhone simulators available, using generic iOS destination"
-            DESTINATION='platform=iOS Simulator,id=dvtdevice-DVTiOSDeviceSimulatorPlaceholder-iphonesimulator:placeholder'
+
+          # First check what simulators are available
+          echo "=== Available iOS Simulators ==="
+          xcrun simctl list devices available | grep "iOS" | head -10
+
+          # Try to use any available iOS device (more flexible approach)
+          SIMULATOR_UDID=$(xcrun simctl list devices available | grep -E "(iPhone|iPad)" | head -1 | grep -oE '[0-9A-F-]{36}' | head -1)
+
+          if [ ! -z "$SIMULATOR_UDID" ]; then
+            echo "Using available simulator: $SIMULATOR_UDID"
+            DESTINATION="platform=iOS Simulator,id=$SIMULATOR_UDID"
+            # Ensure it's booted
+            xcrun simctl boot "$SIMULATOR_UDID" 2>/dev/null || echo "Simulator may already be booted"
           else
-            echo "Using iPhone simulator: $SIMULATOR_ID"
-            DESTINATION="platform=iOS Simulator,id=$SIMULATOR_ID"
+            echo "No specific simulators available, using generic destination"
+            DESTINATION="platform=iOS Simulator,name=Any iOS Simulator Device"
           fi
 
+          echo "Using destination: $DESTINATION"
+
+          # Build with explicit deployment target and better error handling
           xcodebuild clean build \
             -project HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
             -destination "$DESTINATION" \
             -derivedDataPath build \
+            -configuration Debug \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             IPHONEOS_DEPLOYMENT_TARGET=17.0 \
-            -quiet
+            ENABLE_BITCODE=NO \
+            OTHER_SWIFT_FLAGS="-D DEBUG" \
+            -allowProvisioningUpdates || {
+              echo "Build failed, trying with less restrictive settings..."
+              xcodebuild build \
+                -project HealthKitBridge.xcodeproj \
+                -scheme HealthKitBridge \
+                -sdk iphonesimulator \
+                -configuration Debug \
+                CODE_SIGN_IDENTITY="" \
+                CODE_SIGNING_REQUIRED=NO \
+                IPHONEOS_DEPLOYMENT_TARGET=17.0
+            }
 
   deploy-staging:
     name: Deploy to Staging

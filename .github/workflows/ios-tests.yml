@@ -179,36 +179,69 @@ jobs:
 
       - name: Build for Testing
         run: |
-          # Use a conservative deployment target that should be available
+          SIMULATOR_UDID="${{ steps.simulator.outputs.udid }}"
+          echo "Using simulator UDID: $SIMULATOR_UDID"
+
+          # Verify simulator is still available
+          if [ "$SIMULATOR_UDID" != "NONE" ] && [ ! -z "$SIMULATOR_UDID" ]; then
+            xcrun simctl list devices | grep "$SIMULATOR_UDID" || {
+              echo "Simulator not found, trying to find an available one..."
+              NEW_UDID=$(xcrun simctl list devices available | grep -E "(iPhone|iPad)" | head -1 | grep -oE '[0-9A-F-]{36}')
+              if [ ! -z "$NEW_UDID" ]; then
+                echo "Using fallback simulator: $NEW_UDID"
+                SIMULATOR_UDID="$NEW_UDID"
+                xcrun simctl boot "$NEW_UDID" 2>/dev/null || echo "Fallback simulator may already be booted"
+              fi
+            }
+          fi
+
+          # Build for testing with error handling
           xcodebuild build-for-testing \
             -project ios/HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
-            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.udid }}" \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
             -derivedDataPath ios/build \
+            -configuration Debug \
             -enableCodeCoverage YES \
-            IPHONEOS_DEPLOYMENT_TARGET=17.0
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
+            ENABLE_BITCODE=NO
 
       - name: Run Unit Tests
         if: matrix.test-type == 'unit'
         run: |
+          SIMULATOR_UDID="${{ steps.simulator.outputs.udid }}"
+          echo "Running unit tests on simulator: $SIMULATOR_UDID"
+
           xcodebuild test-without-building \
             -project ios/HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
-            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.udid }}" \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
             -derivedDataPath ios/build \
             -enableCodeCoverage YES \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
             IPHONEOS_DEPLOYMENT_TARGET=17.0 \
-            -only-testing HealthKitBridgeTests
+            -only-testing HealthKitBridgeTests \
+            -resultBundlePath ios/build/test-results-unit.xcresult
 
       - name: Run UI Tests
         if: matrix.test-type == 'ui'
         run: |
+          SIMULATOR_UDID="${{ steps.simulator.outputs.udid }}"
+          echo "Running UI tests on simulator: $SIMULATOR_UDID"
+
           xcodebuild test-without-building \
             -project ios/HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
-            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.udid }}" \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
             -derivedDataPath ios/build \
-            -only-testing HealthKitBridgeUITests
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
+            -only-testing HealthKitBridgeUITests \
+            -resultBundlePath ios/build/test-results-ui.xcresult
 
       - name: Generate Coverage Report
         if: matrix.test-type == 'unit'
