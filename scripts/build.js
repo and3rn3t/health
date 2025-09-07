@@ -18,14 +18,28 @@ if (!existsSync(resolve(projectRoot, 'dist'))) {
 // Build CSS with PostCSS and Tailwind
 console.log('🎨 Building VitalSense CSS with PostCSS + Tailwind...');
 try {
-  execSync(
-    `npx postcss ${resolve(projectRoot, 'src/main.css')} -o ${resolve(projectRoot, 'dist/main.css')} --minify`,
-    {
-      stdio: 'inherit',
-      cwd: projectRoot,
-    }
-  );
-  console.log('✅ CSS build completed');
+  // Try with minification first
+  try {
+    execSync(
+      `npx postcss ${resolve(projectRoot, 'src/main.css')} -o ${resolve(projectRoot, 'dist/main.css')} --minify`,
+      {
+        stdio: 'inherit',
+        cwd: projectRoot,
+      }
+    );
+    console.log('✅ CSS build completed with minification');
+  } catch (minifyError) {
+    console.log('⚠️  Minification failed, trying without minify flag...');
+    // Fallback without minification if lightningcss is not available
+    execSync(
+      `npx postcss ${resolve(projectRoot, 'src/main.css')} -o ${resolve(projectRoot, 'dist/main.css')}`,
+      {
+        stdio: 'inherit',
+        cwd: projectRoot,
+      }
+    );
+    console.log('✅ CSS build completed without minification');
+  }
 } catch (error) {
   console.error('❌ CSS build failed:', error.message);
   process.exit(1);
