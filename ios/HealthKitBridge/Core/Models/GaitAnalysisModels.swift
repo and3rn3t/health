@@ -292,13 +292,13 @@ struct EnvironmentalFactors {
     let noiseLevel: Double? // dB
 
     enum SurfaceType: String, CaseIterable {
-        case indoor = "indoor"
-        case outdoor = "outdoor"
-        case carpet = "carpet"
-        case hardwood = "hardwood"
-        case concrete = "concrete"
-        case grass = "grass"
-        case uneven = "uneven"
+        case indoor
+        case outdoor
+        case carpet
+        case hardwood
+        case concrete
+        case grass
+        case uneven
 
         var riskMultiplier: Double {
             switch self {
@@ -311,10 +311,10 @@ struct EnvironmentalFactors {
     }
 
     enum LightingCondition: String, CaseIterable {
-        case bright = "bright"
-        case normal = "normal"
-        case dim = "dim"
-        case dark = "dark"
+        case bright
+        case normal
+        case dim
+        case dark
 
         var riskMultiplier: Double {
             switch self {
@@ -331,21 +331,21 @@ struct EnvironmentalFactors {
         let height: Double? // cm
 
         enum ObstacleType: String, CaseIterable {
-            case step = "step"
-            case curb = "curb"
-            case furniture = "furniture"
-            case person = "person"
-            case pet = "pet"
-            case other = "other"
+            case step
+            case curb
+            case furniture
+            case person
+            case pet
+            case other
         }
     }
 
     enum WeatherCondition: String, CaseIterable {
-        case clear = "clear"
-        case cloudy = "cloudy"
-        case rainy = "rainy"
-        case snowy = "snowy"
-        case windy = "windy"
+        case clear
+        case cloudy
+        case rainy
+        case snowy
+        case windy
 
         var riskMultiplier: Double {
             switch self {
@@ -442,11 +442,11 @@ struct SensorReading: Codable {
     let accuracy: Double?
 
     enum SensorType: String, Codable, CaseIterable {
-        case accelerometer = "accelerometer"
-        case gyroscope = "gyroscope"
-        case magnetometer = "magnetometer"
-        case barometer = "barometer"
-        case gps = "gps"
+        case accelerometer
+        case gyroscope
+        case magnetometer
+        case barometer
+        case gps
     }
 }
 
@@ -484,9 +484,9 @@ struct HistoricalGaitData {
         let monthlyChange: Double // percentage
 
         enum TrendDirection: String, CaseIterable {
-            case improving = "improving"
-            case stable = "stable"
-            case declining = "declining"
+            case improving
+            case stable
+            case declining
 
             var color: Color {
                 switch self {
@@ -515,10 +515,10 @@ struct HistoricalGaitData {
         }
 
         enum AlertSeverity: String, CaseIterable {
-            case low = "low"
-            case medium = "medium"
-            case high = "high"
-            case critical = "critical"
+            case low
+            case medium
+            case high
+            case critical
 
             var color: Color {
                 switch self {
