@@ -205,7 +205,7 @@ jobs:
             -enableCodeCoverage YES \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            IPHONEOS_DEPLOYMENT_TARGET=18.1 \
+            IPHONEOS_DEPLOYMENT_TARGET=17.6 \
             ENABLE_BITCODE=NO
 
       - name: Run Unit Tests
@@ -226,7 +226,7 @@ jobs:
             -enableCodeCoverage YES \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            IPHONEOS_DEPLOYMENT_TARGET=18.1 \
+            IPHONEOS_DEPLOYMENT_TARGET=17.6 \
             -only-testing HealthKitBridgeTests \
             -resultBundlePath ios/build/test-results-unit.xcresult
 
@@ -247,7 +247,7 @@ jobs:
             -derivedDataPath ios/build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            IPHONEOS_DEPLOYMENT_TARGET=18.1 \
+            IPHONEOS_DEPLOYMENT_TARGET=17.6 \
             -only-testing HealthKitBridgeUITests \
             -resultBundlePath ios/build/test-results-ui.xcresult
 

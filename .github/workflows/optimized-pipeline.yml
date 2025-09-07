@@ -280,7 +280,7 @@ jobs:
 
           echo "Using destination: $DESTINATION"
 
-          # Build with explicit deployment target and better error handling
+          # Build with compatible settings for GitHub Actions
           xcodebuild clean build \
             -project HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
@@ -289,11 +289,11 @@ jobs:
             -configuration Debug \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            IPHONEOS_DEPLOYMENT_TARGET=18.1 \
+            IPHONEOS_DEPLOYMENT_TARGET=17.6 \
             ENABLE_BITCODE=NO \
             OTHER_SWIFT_FLAGS="-D DEBUG" \
             -allowProvisioningUpdates || {
-              echo "Build failed, trying with less restrictive settings..."
+              echo "Build failed, trying with SDK-only build..."
               xcodebuild build \
                 -project HealthKitBridge.xcodeproj \
                 -scheme HealthKitBridge \
@@ -301,7 +301,8 @@ jobs:
                 -configuration Debug \
                 CODE_SIGN_IDENTITY="" \
                 CODE_SIGNING_REQUIRED=NO \
-                IPHONEOS_DEPLOYMENT_TARGET=17.0
+                IPHONEOS_DEPLOYMENT_TARGET=17.0 \
+                ENABLE_BITCODE=NO
             }
 
   deploy-staging:
