@@ -179,75 +179,57 @@ jobs:
 
       - name: Build for Testing
         run: |
-          SIMULATOR_UDID="${{ steps.simulator.outputs.udid }}"
-          echo "Using simulator UDID: $SIMULATOR_UDID"
+          echo "Using generic iOS simulator build approach..."
 
-          # Verify simulator is still available
-          if [ "$SIMULATOR_UDID" != "NONE" ] && [ ! -z "$SIMULATOR_UDID" ]; then
-            xcrun simctl list devices | grep "$SIMULATOR_UDID" || {
-              echo "Simulator not found, trying to find an available one..."
-              NEW_UDID=$(xcrun simctl list devices available | grep -E "(iPhone|iPad)" | head -1 | grep -oE '[0-9A-F-]{36}')
-              if [ ! -z "$NEW_UDID" ]; then
-                echo "Using fallback simulator: $NEW_UDID"
-                SIMULATOR_UDID="$NEW_UDID"
-                xcrun simctl boot "$NEW_UDID" 2>/dev/null || echo "Fallback simulator may already be booted"
-              fi
-            }
-          fi
-
-          # Build for testing with error handling
+          # Build for testing without specific simulator UDID to avoid destination issues
           xcodebuild build-for-testing \
             -project ios/HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
-            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
             -derivedDataPath ios/build \
             -configuration Debug \
             -enableCodeCoverage YES \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            IPHONEOS_DEPLOYMENT_TARGET=17.6 \
             ENABLE_BITCODE=NO
 
       - name: Run Unit Tests
         if: matrix.test-type == 'unit'
         run: |
-          SIMULATOR_UDID="${{ steps.simulator.outputs.udid }}"
-          echo "Running unit tests on simulator: $SIMULATOR_UDID"
+          echo "Running unit tests with generic simulator approach"
 
           # Set environment variable to indicate simulator environment for tests
-          export TARGET_DEVICE_IDENTIFIER="$SIMULATOR_UDID"
           export IS_SIMULATOR=true
 
           xcodebuild test-without-building \
             -project ios/HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
-            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
             -derivedDataPath ios/build \
             -enableCodeCoverage YES \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            IPHONEOS_DEPLOYMENT_TARGET=17.6 \
             -only-testing HealthKitBridgeTests \
             -resultBundlePath ios/build/test-results-unit.xcresult
 
       - name: Run UI Tests
         if: matrix.test-type == 'ui'
         run: |
-          SIMULATOR_UDID="${{ steps.simulator.outputs.udid }}"
-          echo "Running UI tests on simulator: $SIMULATOR_UDID"
+          echo "Running UI tests with generic simulator approach"
 
           # Set environment variable to indicate simulator environment for tests
-          export TARGET_DEVICE_IDENTIFIER="$SIMULATOR_UDID"
           export IS_SIMULATOR=true
 
           xcodebuild test-without-building \
             -project ios/HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
-            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
             -derivedDataPath ios/build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            IPHONEOS_DEPLOYMENT_TARGET=17.6 \
             -only-testing HealthKitBridgeUITests \
             -resultBundlePath ios/build/test-results-ui.xcresult
 

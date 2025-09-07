@@ -261,47 +261,29 @@ jobs:
         run: |
           cd ios
 
-          # First check what simulators are available
-          echo "=== Available iOS Simulators ==="
-          xcrun simctl list devices available | grep "iOS" | head -10
+          echo "Building iOS app with generic simulator approach..."
 
-          # Try to use any available iOS device (more flexible approach)
-          SIMULATOR_UDID=$(xcrun simctl list devices available | grep -E "(iPhone|iPad)" | head -1 | grep -oE '[0-9A-F-]{36}' | head -1)
-
-          if [ ! -z "$SIMULATOR_UDID" ]; then
-            echo "Using available simulator: $SIMULATOR_UDID"
-            DESTINATION="platform=iOS Simulator,id=$SIMULATOR_UDID"
-            # Ensure it's booted
-            xcrun simctl boot "$SIMULATOR_UDID" 2>/dev/null || echo "Simulator may already be booted"
-          else
-            echo "No specific simulators available, using generic destination"
-            DESTINATION="platform=iOS Simulator,name=Any iOS Simulator Device"
-          fi
-
-          echo "Using destination: $DESTINATION"
-
-          # Build with compatible settings for GitHub Actions
+          # Build with SDK-specific approach to avoid destination issues
           xcodebuild clean build \
             -project HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
-            -destination "$DESTINATION" \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
             -derivedDataPath build \
             -configuration Debug \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            IPHONEOS_DEPLOYMENT_TARGET=17.6 \
             ENABLE_BITCODE=NO \
             OTHER_SWIFT_FLAGS="-D DEBUG" \
             -allowProvisioningUpdates || {
-              echo "Build failed, trying with SDK-only build..."
-              xcodebuild build \
+              echo "Build failed, trying basic SDK build..."
+              xcodebuild clean build \
                 -project HealthKitBridge.xcodeproj \
                 -scheme HealthKitBridge \
                 -sdk iphonesimulator \
                 -configuration Debug \
                 CODE_SIGN_IDENTITY="" \
                 CODE_SIGNING_REQUIRED=NO \
-                IPHONEOS_DEPLOYMENT_TARGET=17.0 \
                 ENABLE_BITCODE=NO
             }
 
