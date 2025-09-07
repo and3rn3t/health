@@ -53,9 +53,17 @@ jobs:
           echo "Available device types:"
           xcrun simctl list devicetypes | grep iPhone || true
 
-          # Use the latest available iOS runtime
-          DESTINATION="platform=iOS Simulator,OS=18.6,name=iPhone 15 Pro"
-          echo "Using specific destination with available runtime: $DESTINATION"
+          echo "Available simulator devices:"
+          xcrun simctl list devices available | grep iPhone || true
+
+          # Create a simulator device with available runtime if needed
+          echo "Creating iPhone 15 Pro with iOS 18.6 runtime..."
+          DEVICE_ID=$(xcrun simctl create "iPhone 15 Pro iOS 18.6" "iPhone 15 Pro" "com.apple.CoreSimulator.SimRuntime.iOS-18-6")
+          echo "Created simulator device: $DEVICE_ID"
+
+          # Use the newly created device
+          DESTINATION="platform=iOS Simulator,id=$DEVICE_ID"
+          echo "Using created device destination: $DESTINATION"
 
           # Build for testing with more flexible settings
           xcodebuild build-for-testing \
@@ -74,10 +82,12 @@ jobs:
 
       - name: Run Tests
         run: |
-          echo "Running tests with compatible destination..."
+          echo "Running tests with created simulator device..."
 
-          DESTINATION="platform=iOS Simulator,OS=18.6,name=iPhone 15 Pro"
-          echo "Using compatible destination: $DESTINATION"
+          # Find the created device
+          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 15 Pro iOS 18.6" | head -1 | sed -n 's/.*(\([^)]*\)).*/\1/p')
+          DESTINATION="platform=iOS Simulator,id=$DEVICE_ID"
+          echo "Using device ID destination: $DESTINATION"
 
           if [ "${{ matrix.test-type }}" == "unit" ]; then
             TEST_SCHEME="HealthKitBridgeTests"
