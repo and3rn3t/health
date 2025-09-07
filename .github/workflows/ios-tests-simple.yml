@@ -53,9 +53,9 @@ jobs:
           echo "Available device types:"
           xcrun simctl list devicetypes | grep iPhone || true
 
-          # Use the most generic destination possible
-          DESTINATION="platform=iOS Simulator,name=Any iOS Simulator Device"
-          echo "Using generic destination: $DESTINATION"
+          # Use the latest available iOS runtime
+          DESTINATION="platform=iOS Simulator,OS=18.6,name=iPhone 15 Pro"
+          echo "Using specific destination with available runtime: $DESTINATION"
 
           # Build for testing with more flexible settings
           xcodebuild build-for-testing \
@@ -74,10 +74,10 @@ jobs:
 
       - name: Run Tests
         run: |
-          echo "Running tests with simple destination..."
+          echo "Running tests with compatible destination..."
 
-          DESTINATION="platform=iOS Simulator,name=Any iOS Simulator Device"
-          echo "Using generic destination: $DESTINATION"
+          DESTINATION="platform=iOS Simulator,OS=18.6,name=iPhone 15 Pro"
+          echo "Using compatible destination: $DESTINATION"
 
           if [ "${{ matrix.test-type }}" == "unit" ]; then
             TEST_SCHEME="HealthKitBridgeTests"
