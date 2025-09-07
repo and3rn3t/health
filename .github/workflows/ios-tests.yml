@@ -37,8 +37,20 @@ jobs:
 
       - name: Install Tools
         run: |
-          brew list swiftlint &>/dev/null || brew install swiftlint
-          brew list swift-format &>/dev/null || brew install swift-format
+          # Check if tools are already installed to speed up CI
+          if ! command -v swiftlint &> /dev/null; then
+            echo "Installing SwiftLint..."
+            brew install swiftlint
+          else
+            echo "✅ SwiftLint already installed: $(swiftlint version)"
+          fi
+
+          if ! command -v swift-format &> /dev/null; then
+            echo "Installing swift-format..."
+            brew install swift-format
+          else
+            echo "✅ swift-format already installed"
+          fi
 
       - name: Run SwiftLint
         continue-on-error: true
@@ -92,13 +104,32 @@ jobs:
       - name: Setup Simulator
         id: simulator
         run: |
-          # Create and boot simulator
-          UDID=$(xcrun simctl create "CI-${{ matrix.device }}" "${{ matrix.device }}")
+          # Create and boot simulator with more reliable approach
+          DEVICE_NAME="${{ matrix.device }}"
+          # Create simulator with iOS 18.1 (compatible with Xcode 16.1)
+          UDID=$(xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_NAME" "com.apple.CoreSimulator.SimRuntime.iOS-18-1")
+          echo "Created simulator: $UDID"
+
+          # Boot simulator
           xcrun simctl boot "$UDID"
           echo "udid=$UDID" >> $GITHUB_OUTPUT
 
-          # Wait for simulator to be ready
-          xcrun simctl bootstatus "$UDID"
+          # Wait for simulator to be ready with timeout
+          timeout 60 xcrun simctl bootstatus "$UDID" || {
+            echo "Simulator boot timed out, trying to use available simulator"
+            # Fall back to any available simulator of the same device type
+            AVAILABLE_UDID=$(xcrun simctl list devices available | grep "$DEVICE_NAME" | head -1 | grep -oE '[0-9A-F-]{36}')
+            if [ ! -z "$AVAILABLE_UDID" ]; then
+              echo "Using available simulator: $AVAILABLE_UDID"
+              echo "udid=$AVAILABLE_UDID" >> $GITHUB_OUTPUT
+              xcrun simctl boot "$AVAILABLE_UDID" 2>/dev/null || true
+            else
+              echo "No available simulators found, creating with default iOS runtime"
+              FALLBACK_UDID=$(xcrun simctl create "CI-Fallback-$DEVICE_NAME" "$DEVICE_NAME")
+              echo "udid=$FALLBACK_UDID" >> $GITHUB_OUTPUT
+              xcrun simctl boot "$FALLBACK_UDID"
+            fi
+          }
 
       - name: Build for Testing
         run: |
