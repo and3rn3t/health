@@ -196,11 +196,13 @@ jobs:
             # Extract UDID from the device string
             DEVICE_UDID=$(echo "$AVAILABLE_DEVICE" | grep -oE '[A-F0-9-]{36}')
             if [ ! -z "$DEVICE_UDID" ]; then
-              # Get the iOS version from the simulator
-              IOS_VERSION=$(xcrun simctl list devices | grep "$DEVICE_UDID" | sed -n 's/.*iOS \([0-9.]*\).*/\1/p' || echo "")
+              # Get the iOS version by checking which iOS section the device is under
+              # Format: -- iOS 18.4 --
+              #          iPhone 16 Pro (UDID) (Status)
+              IOS_VERSION=$(xcrun simctl list devices | awk '/-- iOS/ {version=$3} /'"$DEVICE_UDID"'/ {print version; exit}')
               if [ ! -z "$IOS_VERSION" ]; then
                 DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID,OS=$IOS_VERSION"
-                echo "Using destination with UDID and OS: $DESTINATION"
+                echo "Using destination with UDID and iOS version: $DESTINATION"
               else
                 DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID"
                 echo "Using destination with UDID only: $DESTINATION"
@@ -248,8 +250,10 @@ jobs:
             # Extract UDID from the device string
             DEVICE_UDID=$(echo "$AVAILABLE_DEVICE" | grep -oE '[A-F0-9-]{36}')
             if [ ! -z "$DEVICE_UDID" ]; then
-              # Get the iOS version from the simulator
-              IOS_VERSION=$(xcrun simctl list devices | grep "$DEVICE_UDID" | sed -n 's/.*iOS \([0-9.]*\).*/\1/p' || echo "")
+              # Get the iOS version by checking which iOS section the device is under
+              # Format: -- iOS 18.4 --
+              #          iPhone 16 Pro (UDID) (Status)
+              IOS_VERSION=$(xcrun simctl list devices | awk '/-- iOS/ {version=$3} /'"$DEVICE_UDID"'/ {print version; exit}')
               if [ ! -z "$IOS_VERSION" ]; then
                 DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID,OS=$IOS_VERSION"
               else
@@ -298,8 +302,10 @@ jobs:
             # Extract UDID from the device string
             DEVICE_UDID=$(echo "$AVAILABLE_DEVICE" | grep -oE '[A-F0-9-]{36}')
             if [ ! -z "$DEVICE_UDID" ]; then
-              # Get the iOS version from the simulator
-              IOS_VERSION=$(xcrun simctl list devices | grep "$DEVICE_UDID" | sed -n 's/.*iOS \([0-9.]*\).*/\1/p' || echo "")
+              # Get the iOS version by checking which iOS section the device is under
+              # Format: -- iOS 18.4 --
+              #          iPhone 16 Pro (UDID) (Status)
+              IOS_VERSION=$(xcrun simctl list devices | awk '/-- iOS/ {version=$3} /'"$DEVICE_UDID"'/ {print version; exit}')
               if [ ! -z "$IOS_VERSION" ]; then
                 DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID,OS=$IOS_VERSION"
               else
