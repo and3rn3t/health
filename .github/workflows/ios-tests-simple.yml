@@ -55,8 +55,8 @@ jobs:
           xcrun simctl list devices available | grep iPhone || true
 
           # Create a compatible iPhone device with iOS 18.4 (available runtime)
-          echo "Creating iPhone 15 Pro with iOS 18.4..."
-          DEVICE_ID=$(xcrun simctl create "iPhone 15 Pro CI" "iPhone 15 Pro" "iOS18.4")
+          echo "Creating iPhone 16 Pro with iOS 18.4..."
+          DEVICE_ID=$(xcrun simctl create "iPhone 16 Pro CI" "iPhone 16 Pro" "com.apple.CoreSimulator.SimRuntime.iOS-18-4")
           echo "Created device ID: $DEVICE_ID"
 
           xcodebuild build-for-testing \
@@ -71,26 +71,28 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             ENABLE_BITCODE=NO \
             ONLY_ACTIVE_ARCH=YES \
-            SKIP_INSTALL=YES      - name: Test without Building
+            SKIP_INSTALL=YES
+
+      - name: Test without Building
         run: |
           echo "Running tests..."
 
           # Find the device we created
-          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 15 Pro CI" | head -1 | grep -o '[A-F0-9-]\{36\}')
+          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 16 Pro CI" | head -1 | grep -o '[A-F0-9-]\{36\}')
           echo "Using device ID: $DEVICE_ID"
 
-          xcodebuild test-without-building
-            -project ios/HealthKitBridge.xcodeproj
-            -scheme HealthKitBridge
-            -destination "platform=iOS Simulator,id=$DEVICE_ID"
-            -derivedDataPath ios/build
-            -configuration Debug
-            -enableCodeCoverage YES
-            CODE_SIGN_IDENTITY=""
-            CODE_SIGNING_REQUIRED=NO
-            CODE_SIGNING_ALLOWED=NO
-            ENABLE_BITCODE=NO
-            ONLY_ACTIVE_ARCH=YES
+          xcodebuild test-without-building \
+            -project ios/HealthKitBridge.xcodeproj \
+            -scheme HealthKitBridge \
+            -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+            -derivedDataPath ios/build \
+            -configuration Debug \
+            -enableCodeCoverage YES \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ENABLE_BITCODE=NO \
+            ONLY_ACTIVE_ARCH=YES \
             SKIP_INSTALL=YES
 
       - name: Upload Test Results
