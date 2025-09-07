@@ -178,6 +178,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build Application
+        run: npm run build
+        env:
+          NODE_ENV: production
+
       - name: Verify esbuild installation
         run: |
           echo "Checking esbuild installation..."
@@ -255,14 +260,24 @@ jobs:
       - name: Build iOS App
         run: |
           cd ios
-          # Use an available iOS device from the error log
+          # Use any available iOS simulator device by ID to avoid name matching issues
+          SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone" | head -1 | grep -oE '[0-9A-F-]{36}' || echo "")
+          if [ -z "$SIMULATOR_ID" ]; then
+            echo "No iPhone simulators available, using generic iOS destination"
+            DESTINATION='platform=iOS Simulator,id=dvtdevice-DVTiOSDeviceSimulatorPlaceholder-iphonesimulator:placeholder'
+          else
+            echo "Using iPhone simulator: $SIMULATOR_ID"
+            DESTINATION="platform=iOS Simulator,id=$SIMULATOR_ID"
+          fi
+
           xcodebuild clean build \
             -project HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+            -destination "$DESTINATION" \
             -derivedDataPath build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
+            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
             -quiet
 
   deploy-staging:
