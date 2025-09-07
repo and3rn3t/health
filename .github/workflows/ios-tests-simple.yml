@@ -42,7 +42,7 @@ jobs:
 
       - name: Build for Testing
         run: |
-          echo "Building for iOS testing with native SDK compatibility..."
+          echo "Building for iOS testing with runtime/SDK compatibility..."
 
           # Debug available iOS versions and SDKs
           echo "Available iOS Simulator SDKs:"
@@ -51,13 +51,18 @@ jobs:
           echo "Available iOS Simulators:"
           xcrun simctl list runtimes | grep iOS || true
 
-          # Use the native iOS 18.1 SDK that comes with Xcode 16.1
-          # and let Xcode choose a compatible simulator device automatically
+          echo "Available existing devices:"
+          xcrun simctl list devices available | grep iPhone || true
+
+          # Create a compatible iPhone device with iOS 18.4 (available runtime)
+          echo "Creating iPhone 15 Pro with iOS 18.4..."
+          DEVICE_ID=$(xcrun simctl create "iPhone 15 Pro CI" "iPhone 15 Pro" "iOS18.4")
+          echo "Created device ID: $DEVICE_ID"
 
           xcodebuild build-for-testing \
             -project ios/HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
-            -destination "platform=iOS Simulator,name=iPhone 15 Pro" \
+            -destination "platform=iOS Simulator,id=$DEVICE_ID" \
             -derivedDataPath ios/build \
             -configuration Debug \
             -enableCodeCoverage YES \
@@ -66,24 +71,26 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             ENABLE_BITCODE=NO \
             ONLY_ACTIVE_ARCH=YES \
-            SKIP_INSTALL=YES
-
-      - name: Test without Building
+            SKIP_INSTALL=YES      - name: Test without Building
         run: |
           echo "Running tests..."
 
-          xcodebuild test-without-building \
-            -project ios/HealthKitBridge.xcodeproj \
-            -scheme HealthKitBridge \
-            -destination "platform=iOS Simulator,name=iPhone 15 Pro" \
-            -derivedDataPath ios/build \
-            -configuration Debug \
-            -enableCodeCoverage YES \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            ENABLE_BITCODE=NO \
-            ONLY_ACTIVE_ARCH=YES \
+          # Find the device we created
+          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 15 Pro CI" | head -1 | grep -o '[A-F0-9-]\{36\}')
+          echo "Using device ID: $DEVICE_ID"
+
+          xcodebuild test-without-building
+            -project ios/HealthKitBridge.xcodeproj
+            -scheme HealthKitBridge
+            -destination "platform=iOS Simulator,id=$DEVICE_ID"
+            -derivedDataPath ios/build
+            -configuration Debug
+            -enableCodeCoverage YES
+            CODE_SIGN_IDENTITY=""
+            CODE_SIGNING_REQUIRED=NO
+            CODE_SIGNING_ALLOWED=NO
+            ENABLE_BITCODE=NO
+            ONLY_ACTIVE_ARCH=YES
             SKIP_INSTALL=YES
 
       - name: Upload Test Results
