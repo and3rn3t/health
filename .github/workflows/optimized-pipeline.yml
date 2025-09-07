@@ -261,22 +261,26 @@ jobs:
         run: |
           cd ios
 
-          echo "Building iOS app with generic simulator approach..."
+          echo "Building iOS app with improved SDK approach..."
 
-          # Build with SDK-specific approach to avoid destination issues
+          # List available simulators for debugging
+          echo "Available iOS Simulators:"
+          xcrun simctl list devices iOS | grep -E "(iPhone|iPad)" | head -3
+
+          # Try multiple build approaches with detailed error output
           xcodebuild clean build \
             -project HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
             -sdk iphonesimulator \
-            -destination "generic/platform=iOS Simulator" \
             -derivedDataPath build \
             -configuration Debug \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
             ENABLE_BITCODE=NO \
-            OTHER_SWIFT_FLAGS="-D DEBUG" \
-            -allowProvisioningUpdates || {
-              echo "Build failed, trying basic SDK build..."
+            ONLY_ACTIVE_ARCH=YES \
+            OTHER_SWIFT_FLAGS="-D DEBUG" || {
+              echo "Build failed, trying simplified approach..."
               xcodebuild clean build \
                 -project HealthKitBridge.xcodeproj \
                 -scheme HealthKitBridge \
