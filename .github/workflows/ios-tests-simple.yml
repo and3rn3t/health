@@ -57,8 +57,8 @@ jobs:
           xcrun simctl list devices available | grep iPhone || true
 
           # Create a simulator device with available runtime if needed
-          echo "Creating iPhone 15 Pro with iOS 18.6 runtime..."
-          DEVICE_ID=$(xcrun simctl create "iPhone 15 Pro iOS 18.6" "iPhone 15 Pro" "com.apple.CoreSimulator.SimRuntime.iOS-18-6")
+          echo "Creating iPhone 15 Pro with iOS 18.4 runtime..."
+          DEVICE_ID=$(xcrun simctl create "iPhone 15 Pro iOS 18.4" "iPhone 15 Pro" "com.apple.CoreSimulator.SimRuntime.iOS-18-4")
           echo "Created simulator device: $DEVICE_ID"
 
           # Use the newly created device
@@ -85,7 +85,7 @@ jobs:
           echo "Running tests with created simulator device..."
 
           # Find the created device
-          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 15 Pro iOS 18.6" | head -1 | sed -n 's/.*(\([^)]*\)).*/\1/p')
+          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 15 Pro iOS 18.4" | head -1 | sed -n 's/.*(\([^)]*\)).*/\1/p')
           DESTINATION="platform=iOS Simulator,id=$DEVICE_ID"
           echo "Using device ID destination: $DESTINATION"
 
