@@ -72,6 +72,7 @@ jobs:
             -destination "$DESTINATION" \
             -derivedDataPath ios/build \
             -configuration Debug \
+            -sdk iphonesimulator \
             -enableCodeCoverage YES \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
@@ -100,6 +101,7 @@ jobs:
             -scheme HealthKitBridge \
             -destination "$DESTINATION" \
             -derivedDataPath ios/build \
+            -sdk iphonesimulator \
             -enableCodeCoverage YES \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
