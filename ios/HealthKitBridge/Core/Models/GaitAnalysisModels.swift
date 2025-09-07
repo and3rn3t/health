@@ -149,20 +149,6 @@ struct DetailedGaitAnalysis {
     let temporalSpatialParameters: TemporalSpatialParameters
     let asymmetryAnalysis: AsymmetryAnalysis
     let variabilityAnalysis: VariabilityAnalysis
-
-    init(
-        gaitCycle: GaitCycleAnalysis,
-        balanceMetrics: BalanceMetrics,
-        temporalSpatialParameters: TemporalSpatialParameters,
-        asymmetryAnalysis: AsymmetryAnalysis,
-        variabilityAnalysis: VariabilityAnalysis
-    ) {
-        self.gaitCycle = gaitCycle
-        self.balanceMetrics = balanceMetrics
-        self.temporalSpatialParameters = temporalSpatialParameters
-        self.asymmetryAnalysis = asymmetryAnalysis
-        self.variabilityAnalysis = variabilityAnalysis
-    }
 }
 
 struct GaitCycleAnalysis {
@@ -176,7 +162,7 @@ struct GaitCycleAnalysis {
 
     var isNormalGaitCycle: Bool {
         // Normal gait cycle: stance ~60%, swing ~40%, double support ~10-12%
-        return stancePhasePercentage >= 55 && stancePhasePercentage <= 65 &&
+        stancePhasePercentage >= 55 && stancePhasePercentage <= 65 &&
                swingPhasePercentage >= 35 && swingPhasePercentage <= 45 &&
                doubleSupportPercentage >= 8 && doubleSupportPercentage <= 15
     }
@@ -191,7 +177,7 @@ struct BalanceMetrics {
 
     var overallBalanceScore: Double {
         // Weighted average of balance components
-        return (postualStability * 0.4) + (dynamicBalance * 0.6)
+        (postualStability * 0.4) + (dynamicBalance * 0.6)
     }
 }
 
@@ -258,7 +244,7 @@ struct AsymmetryAnalysis {
 
     var isSignificantAsymmetry: Bool {
         // Asymmetry > 3% is generally considered significant
-        return stepLengthAsymmetry > 3.0 || stepTimeAsymmetry > 3.0
+        stepLengthAsymmetry > 3.0 || stepTimeAsymmetry > 3.0
     }
 }
 
@@ -293,7 +279,7 @@ struct VariabilityAnalysis {
 
     var isExcessiveVariability: Bool {
         // High variability (CV > 0.05) indicates potential issues
-        return stepTimeVariability > 0.05 || stepLengthVariability > 0.05
+        stepTimeVariability > 0.05 || stepLengthVariability > 0.05
     }
 }
 

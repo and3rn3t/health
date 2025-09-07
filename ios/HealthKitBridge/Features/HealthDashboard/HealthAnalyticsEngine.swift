@@ -100,11 +100,7 @@ class HealthAnalyticsEngine: ObservableObject {
         
         if !normalRange.contains(heartRate) {
             let anomaly = HealthAnomaly(
-                type: "Heart Rate",
-                value: heartRate,
-                expectedRange: normalRange,
-                timestamp: Date(),
-                severity: heartRate > 120 || heartRate < 50 ? .high : .medium
+                type: "Heart Rate", value: heartRate, expectedRange: normalRange, timestamp: Date(), severity: heartRate > 120 || heartRate < 50 ? .high : .medium
             )
             
             // Add anomaly if not duplicate
@@ -133,8 +129,7 @@ class HealthAnalyticsEngine: ObservableObject {
         
         if !stepsHistory.isEmpty {
             let totalSteps = stepsHistory.last ?? 0
-            if totalSteps >= 10000 { score += 20 }
-            else if totalSteps >= 5000 { score += 10 }
+            if totalSteps >= 10000 { score += 20 } else if totalSteps >= 5000 { score += 10 }
         }
         
         if !energyHistory.isEmpty {
@@ -143,12 +138,8 @@ class HealthAnalyticsEngine: ObservableObject {
         }
         
         dailySummary = DailySummary(
-            date: today,
-            totalSteps: Int(stepsHistory.last ?? 0),
-            avgHeartRate: heartRateHistory.isEmpty ? 0 : heartRateHistory.reduce(0, +) / Double(heartRateHistory.count),
-            activeMinutes: Int(energyHistory.count * 5), // Rough estimate
-            caloriesBurned: energyHistory.reduce(0, +),
-            distanceWalked: Double(stepsHistory.last ?? 0) * 0.0008, // Rough km conversion
+            date: today, totalSteps: Int(stepsHistory.last ?? 0), avgHeartRate: heartRateHistory.isEmpty ? 0 : heartRateHistory.reduce(0, +) / Double(heartRateHistory.count), activeMinutes: Int(energyHistory.count * 5), // Rough estimate
+            caloriesBurned: energyHistory.reduce(0, +), distanceWalked: Double(stepsHistory.last ?? 0) * 0.0008, // Rough km conversion
             healthScore: min(100, max(0, score))
         )
     }

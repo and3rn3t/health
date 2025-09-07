@@ -177,8 +177,7 @@ class WatchWorkoutManager: NSObject, ObservableObject {
     }
     
     func endWorkout() async {
-        guard let workoutSession = workoutSession,
-              let workoutBuilder = workoutBuilder else { return }
+        guard let workoutSession = workoutSession, let workoutBuilder = workoutBuilder else { return }
         
         workoutSession.end()
         
@@ -205,11 +204,11 @@ extension WatchWorkoutManager: HKWorkoutSessionDelegate {
     func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {
         DispatchQueue.main.async {
             switch toState {
-            case .running:
+            case .running: 
                 self.isWorkoutActive = true
-            case .ended:
+            case .ended: 
                 self.isWorkoutActive = false
-            default:
+            default: 
                 break
             }
         }

@@ -349,7 +349,7 @@ struct ActivityPattern: Codable {
         let threshold = Double(maxActivity) * 0.8
 
         return hourlyActivity.compactMap { hour, count in
-            return Double(count) >= threshold ? hour : nil
+            Double(count) >= threshold ? hour : nil
         }.sorted()
     }
 }

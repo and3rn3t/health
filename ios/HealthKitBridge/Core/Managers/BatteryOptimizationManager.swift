@@ -24,24 +24,15 @@ class BatteryOptimizationManager: ObservableObject {
     
     private func setupBatteryNotifications() {
         NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(batteryLevelChanged),
-            name: UIDevice.batteryLevelDidChangeNotification,
-            object: nil
+            self, selector: #selector(batteryLevelChanged), name: UIDevice.batteryLevelDidChangeNotification, object: nil
         )
         
         NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(batteryStateChanged),
-            name: UIDevice.batteryStateDidChangeNotification,
-            object: nil
+            self, selector: #selector(batteryStateChanged), name: UIDevice.batteryStateDidChangeNotification, object: nil
         )
         
         NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(powerModeChanged),
-            name: .NSProcessInfoPowerStateDidChange,
-            object: nil
+            self, selector: #selector(powerModeChanged), name: .NSProcessInfoPowerStateDidChange, object: nil
         )
     }
     
@@ -81,11 +72,11 @@ class BatteryOptimizationManager: ObservableObject {
     }
     
     func shouldReduceMonitoring() -> Bool {
-        return isLowPowerModeEnabled || batteryLevel < 0.15
+        isLowPowerModeEnabled || batteryLevel < 0.15
     }
     
     func getOptimalUpdateFrequency() -> TimeInterval {
-        return optimizedSyncInterval
+        optimizedSyncInterval
     }
     
     func getBatteryStatusSummary() -> String {

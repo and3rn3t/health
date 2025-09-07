@@ -109,7 +109,7 @@ struct FallRiskAssessmentView: View {
     }
 
     private func performBalanceTest() async {
-        let _ = await assessmentManager.performBalanceTest()
+        _ = await assessmentManager.performBalanceTest()
     }
 }
 
@@ -237,8 +237,8 @@ struct VitalSenseMetricsGrid: View {
                     value: "\(riskFactors.count)",
                     unit: "active",
                     icon: VitalSenseBrand.Icons.risk,
-                    trend: riskFactors.count == 0 ? .up : riskFactors.count <= 2 ? .stable : .down,
-                    gradient: riskFactors.count == 0 ? VitalSenseBrand.Colors.successGradient :
+                    trend: riskFactors.isEmpty ? .up : riskFactors.count <= 2 ? .stable : .down,
+                    gradient: riskFactors.isEmpty ? VitalSenseBrand.Colors.successGradient :
                              riskFactors.count <= 2 ? VitalSenseBrand.Colors.warningGradient :
                              VitalSenseBrand.Colors.errorGradient,
                     action: nil
@@ -799,9 +799,7 @@ struct BalanceScoreCard: View {
     }
 
     private var balanceScoreColor: Color {
-        if score >= 80 { return .green }
-        else if score >= 60 { return .yellow }
-        else { return .red }
+        if score >= 80 { return .green } else if score >= 60 { return .yellow } else { return .red }
     }
 
     @ViewBuilder
@@ -821,15 +819,11 @@ struct BalanceScoreCard: View {
     }
 
     private var balanceScoreIcon: String {
-        if score >= 80 { return "checkmark.circle.fill" }
-        else if score >= 60 { return "exclamationmark.triangle.fill" }
-        else { return "exclamationmark.octagon.fill" }
+        if score >= 80 { return "checkmark.circle.fill" } else if score >= 60 { return "exclamationmark.triangle.fill" } else { return "exclamationmark.octagon.fill" }
     }
 
     private var balanceScoreText: String {
-        if score >= 80 { return "Excellent balance - low fall risk" }
-        else if score >= 60 { return "Good balance - moderate monitoring" }
-        else { return "Poor balance - increased fall risk" }
+        if score >= 80 { return "Excellent balance - low fall risk" } else if score >= 60 { return "Good balance - moderate monitoring" } else { return "Poor balance - increased fall risk" }
     }
 }
 
@@ -1061,7 +1055,7 @@ struct FallRiskTrendChart: View {
             }
         }
         .chartXAxis {
-            AxisMarks { value in
+            AxisMarks { _ in
                 AxisGridLine()
                 AxisValueLabel(format: .dateTime.month().day())
             }

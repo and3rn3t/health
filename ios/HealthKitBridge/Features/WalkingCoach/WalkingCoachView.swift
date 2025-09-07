@@ -171,7 +171,7 @@ class WalkingCoachManager: NSObject, ObservableObject {
             HKWorkoutType.workoutType()
         ]
 
-        healthStore.requestAuthorization(toShare: typesToWrite, read: typesToRead) { [weak self] success, error in
+        healthStore.requestAuthorization(toShare: typesToWrite, read: typesToRead) { [weak self] _, _ in
             DispatchQueue.main.async {
                 self?.updateCoachingAvailability()
             }
@@ -240,7 +240,7 @@ class WalkingCoachManager: NSObject, ObservableObject {
 
     private func stopWorkoutSession() {
         workoutSession?.stopActivity(with: Date())
-        workoutBuilder?.endCollection(withEnd: Date()) { [weak self] success, error in
+        workoutBuilder?.endCollection(withEnd: Date()) { [weak self] success, _ in
             if success {
                 self?.finishWorkout()
             }
@@ -271,7 +271,7 @@ class WalkingCoachManager: NSObject, ObservableObject {
         guard motionManager.isDeviceMotionAvailable else { return }
 
         motionManager.deviceMotionUpdateInterval = 1.0
-        motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, error in
+        motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
             guard let motion = motion else { return }
             self?.processMotionData(motion)
         }
@@ -415,7 +415,7 @@ class WalkingCoachManager: NSObject, ObservableObject {
 
     private func calculateTotalDistance() -> Double {
         // This would calculate distance from location updates
-        return 0.0 // Placeholder
+        0.0 // Placeholder
     }
 
     private func generateWorkoutSummary() {

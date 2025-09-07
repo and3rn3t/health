@@ -135,12 +135,12 @@ struct VitalSenseMapTab: View {
 
     private func calculateRouteDistance() -> Double {
         // Calculate total route distance
-        return 0.0 // Placeholder
+        0.0 // Placeholder
     }
 
     private func calculateElevationGain() -> Double {
         // Calculate total elevation gain
-        return 0.0 // Placeholder
+        0.0 // Placeholder
     }
 }
 
@@ -269,6 +269,6 @@ struct VitalSenseSessionMetricsGrid: View {
     }
 
     private func formatSpeed(_ speed: Double) -> String {
-        return String(format: "%.1f km/h", speed * 3.6)
+        String(format: "%.1f km/h", speed * 3.6)
     }
 }

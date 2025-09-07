@@ -60,7 +60,7 @@ class PostureMonitoringManager: ObservableObject {
     }
 
     private func startDeviceMotionUpdates() {
-        motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, error in
+        motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
             guard let self = self, let motion = motion else { return }
 
             self.processMotionData(motion)
@@ -142,7 +142,7 @@ class PostureMonitoringManager: ObservableObject {
 
         let recentReadings = postureReadings.suffix(10) // Last 10 readings (last 10 seconds)
         let totalScore = recentReadings.reduce(0.0) { sum, reading in
-            return sum + getScoreForPosture(reading.postureState)
+            sum + getScoreForPosture(reading.postureState)
         }
 
         postureScore = totalScore / Double(recentReadings.count)

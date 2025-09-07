@@ -65,10 +65,7 @@ class iPhoneWatchBridge: NSObject, ObservableObject {
         }
         
         let configData: [String: Any] = [
-            "type": "gait_config_update",
-            "monitoringInterval": config.monitoringInterval,
-            "sensitivityLevel": config.sensitivityLevel.rawValue,
-            "backgroundMonitoring": config.backgroundMonitoring
+            "type": "gait_config_update", "monitoringInterval": config.monitoringInterval, "sensitivityLevel": config.sensitivityLevel.rawValue, "backgroundMonitoring": config.backgroundMonitoring
         ]
         
         session.sendMessage(configData, replyHandler: nil) { error in
@@ -96,19 +93,19 @@ extension iPhoneWatchBridge: WCSessionDelegate {
         }
     }
     
-    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+    func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
         print("📱 Received message from Apple Watch: \(message)")
         
         guard let messageType = message["type"] as? String else { return }
         
         switch messageType {
-        case "realtime_gait":
+        case "realtime_gait": 
             handleRealtimeGaitData(message)
-        case "gait_session_complete":
+        case "gait_session_complete": 
             handleGaitSessionComplete(message)
-        case "watch_status_update":
+        case "watch_status_update": 
             handleWatchStatusUpdate(message)
-        default:
+        default: 
             print("⚠️ Unknown message type from watch: \(messageType)")
         }
     }
@@ -129,24 +126,13 @@ extension iPhoneWatchBridge: WCSessionDelegate {
     
     // MARK: - Message Handlers
     private func handleRealtimeGaitData(_ message: [String: Any]) {
-        guard let userId = message["userId"] as? String,
-              let stepCount = message["stepCount"] as? Int,
-              let stepCadence = message["stepCadence"] as? Double,
-              let stabilityScore = message["stabilityScore"] as? Double,
-              let walkingPattern = message["walkingPattern"] as? String,
-              let sessionDuration = message["sessionDuration"] as? TimeInterval else {
+        guard let userId = message["userId"] as? String, let stepCount = message["stepCount"] as? Int, let stepCadence = message["stepCadence"] as? Double, let stabilityScore = message["stabilityScore"] as? Double, let walkingPattern = message["walkingPattern"] as? String, let sessionDuration = message["sessionDuration"] as? TimeInterval else {
             print("❌ Invalid realtime gait data from watch")
             return
         }
         
         let realtimeData = RealtimeGaitDataPayload(
-            userId: userId,
-            deviceId: "apple_watch",
-            stepCount: stepCount,
-            stepCadence: stepCadence,
-            stabilityScore: stabilityScore,
-            walkingPattern: walkingPattern,
-            sessionDuration: sessionDuration
+            userId: userId, deviceId: "apple_watch", stepCount: stepCount, stepCadence: stepCadence, stabilityScore: stabilityScore, walkingPattern: walkingPattern, sessionDuration: sessionDuration
         )
         
         DispatchQueue.main.async {
@@ -186,11 +172,11 @@ extension iPhoneWatchBridge: WCSessionDelegate {
     
     private func checkWatchAppInstallation() {
         // Check if the watch app is installed
-        session?.sendMessage(["type": "ping"], replyHandler: { response in
+        session?.sendMessage(["type": "ping"], replyHandler: { _ in
             DispatchQueue.main.async {
                 self.isWatchAppInstalled = true
             }
-        }) { error in
+        }) { _ in
             DispatchQueue.main.async {
                 self.isWatchAppInstalled = false
             }
@@ -225,28 +211,12 @@ extension FallRiskGaitManager {
         print("📊 Processing Apple Watch session data")
         
         // Extract session data and integrate with iPhone analysis
-        if let sessionId = sessionData["sessionId"] as? String,
-           let startTime = sessionData["startTime"] as? TimeInterval,
-           let endTime = sessionData["endTime"] as? TimeInterval,
-           let stepCount = sessionData["stepCount"] as? Int,
-           let avgCadence = sessionData["avgCadence"] as? Double,
-           let avgStability = sessionData["avgStability"] as? Double {
+        if let sessionId = sessionData["sessionId"] as? String, let startTime = sessionData["startTime"] as? TimeInterval, let endTime = sessionData["endTime"] as? TimeInterval, let stepCount = sessionData["stepCount"] as? Int, let avgCadence = sessionData["avgCadence"] as? Double, let avgStability = sessionData["avgStability"] as? Double {
             
             // Create combined gait metrics from watch data
             let watchGaitMetrics = GaitMetrics(
-                timestamp: Date(timeIntervalSince1970: endTime),
-                averageWalkingSpeed: nil, // Will be calculated from iPhone HealthKit if available
-                averageStepLength: nil,
-                stepCount: stepCount,
-                walkingAsymmetry: nil,
-                doubleSupportTime: nil,
-                stairAscentSpeed: nil,
-                stairDescentSpeed: nil,
-                averageCadence: avgCadence,
-                averageStability: avgStability,
-                mobilityStatus: avgStability > 7 ? .excellent : avgStability > 5 ? .good : .needsAttention,
-                sessionDuration: endTime - startTime,
-                walkingPattern: nil
+                timestamp: Date(timeIntervalSince1970: endTime), averageWalkingSpeed: nil, // Will be calculated from iPhone HealthKit if available
+                averageStepLength: nil, stepCount: stepCount, walkingAsymmetry: nil, doubleSupportTime: nil, stairAscentSpeed: nil, stairDescentSpeed: nil, averageCadence: avgCadence, averageStability: avgStability, mobilityStatus: avgStability > 7 ? .excellent : avgStability > 5 ? .good : .needsAttention, sessionDuration: endTime - startTime, walkingPattern: nil
             )
             
             // Update current metrics with watch data
@@ -260,12 +230,7 @@ extension FallRiskGaitManager {
             // Send combined analysis to external systems
             if let fallRisk = fallRiskScore {
                 let payload = GaitAnalysisPayload(
-                    userId: AppConfig.shared.userId,
-                    deviceId: "combined_iphone_watch",
-                    gait: watchGaitMetrics,
-                    fallRisk: fallRisk,
-                    balance: balanceAssessment,
-                    mobility: dailyMobilityTrends
+                    userId: AppConfig.shared.userId, deviceId: "combined_iphone_watch", gait: watchGaitMetrics, fallRisk: fallRisk, balance: balanceAssessment, mobility: dailyMobilityTrends
                 )
                 
                 do {

@@ -23,10 +23,7 @@ class DataCacheManager: ObservableObject {
     func cacheHealthData(type: String, value: Double, unit: String) {
         let now = Date()
         let cached = CachedHealthData(
-            value: value,
-            unit: unit,
-            timestamp: now,
-            expiryTime: now.addingTimeInterval(cacheExpiryDuration)
+            value: value, unit: unit, timestamp: now, expiryTime: now.addingTimeInterval(cacheExpiryDuration)
         )
         
         cache[type] = cached
@@ -38,8 +35,7 @@ class DataCacheManager: ObservableObject {
     }
     
     func getCachedData(type: String) -> (value: Double, unit: String, timestamp: Date)? {
-        guard let cached = cache[type],
-              cached.expiryTime > Date() else {
+        guard let cached = cache[type], cached.expiryTime > Date() else {
             return nil
         }
         
@@ -53,7 +49,7 @@ class DataCacheManager: ObservableObject {
     
     private func cleanExpiredEntries() {
         let now = Date()
-        cache = cache.filter { $0.value.expiryTime > now }
+        cache = cache.filter { $0.value.expiryTime > now } 
     }
     
     func clearCache() {
@@ -62,6 +58,6 @@ class DataCacheManager: ObservableObject {
     
     func getCacheStatistics() -> (entries: Int, hitRate: Double) {
         // Could be extended to track hit/miss rates
-        return (cache.count, 0.0)
+        (cache.count, 0.0)
     }
 }

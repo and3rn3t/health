@@ -42,39 +42,19 @@ struct AdvancedHealthInsightsCard: View {
             if let score = advancedMetrics.healthScore {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
                     QuickMetricView(
-                        title: "Heart Rate",
-                        value: advancedMetrics.restingHeartRate.map { "\(Int($0))" } ?? "--",
-                        unit: "BPM",
-                        score: score.heartRateScore,
-                        maxScore: 25,
-                        color: .red
+                        title: "Heart Rate", value: advancedMetrics.restingHeartRate.map { "\(Int($0))" } ?? "--", unit: "BPM", score: score.heartRateScore, maxScore: 25, color: .red
                     )
                     
                     QuickMetricView(
-                        title: "Activity",
-                        value: advancedMetrics.workoutSummary?.totalWorkouts.description ?? "--",
-                        unit: "workouts",
-                        score: score.activityScore,
-                        maxScore: 25,
-                        color: .green
+                        title: "Activity", value: advancedMetrics.workoutSummary?.totalWorkouts.description ?? "--", unit: "workouts", score: score.activityScore, maxScore: 25, color: .green
                     )
                     
                     QuickMetricView(
-                        title: "Sleep",
-                        value: advancedMetrics.sleepAnalysis.isEmpty ? "--" : "\(advancedMetrics.sleepAnalysis.count)",
-                        unit: "sessions",
-                        score: score.sleepScore,
-                        maxScore: 25,
-                        color: .purple
+                        title: "Sleep", value: advancedMetrics.sleepAnalysis.isEmpty ? "--" : "\(advancedMetrics.sleepAnalysis.count)", unit: "sessions", score: score.sleepScore, maxScore: 25, color: .purple
                     )
                     
                     QuickMetricView(
-                        title: "Nutrition",
-                        value: advancedMetrics.nutritionData?.isComplete == true ? "✓" : "--",
-                        unit: "tracked",
-                        score: score.nutritionScore,
-                        maxScore: 25,
-                        color: .orange
+                        title: "Nutrition", value: advancedMetrics.nutritionData?.isComplete == true ? "✓" : "--", unit: "tracked", score: score.nutritionScore, maxScore: 25, color: .orange
                     )
                 }
             } else {
@@ -186,13 +166,13 @@ struct QuickMetricView: View {
     private var scoreColor: Color {
         let percentage = score / maxScore
         switch percentage {
-        case 0.8...1.0:
+        case 0.8...1.0: 
             return .green
-        case 0.6..<0.8:
+        case 0.6..<0.8: 
             return .yellow
-        case 0.4..<0.6:
+        case 0.4..<0.6: 
             return .orange
-        default:
+        default: 
             return .red
         }
     }
@@ -302,22 +282,22 @@ struct TrendRowView: View {
     
     private var directionIcon: String {
         switch trend.direction {
-        case .improving:
+        case .improving: 
             return "arrow.up.circle.fill"
-        case .declining:
+        case .declining: 
             return "arrow.down.circle.fill"
-        case .stable:
+        case .stable: 
             return "minus.circle.fill"
         }
     }
     
     private var directionColor: Color {
         switch trend.direction {
-        case .improving:
+        case .improving: 
             return .green
-        case .declining:
+        case .declining: 
             return .red
-        case .stable:
+        case .stable: 
             return .blue
         }
     }
@@ -327,13 +307,13 @@ struct TrendRowView: View {
 extension HealthTrend.TrendType {
     var displayName: String {
         switch self {
-        case .heartRate:
+        case .heartRate: 
             return "Heart Rate"
-        case .activity:
+        case .activity: 
             return "Activity"
-        case .sleep:
+        case .sleep: 
             return "Sleep"
-        case .weight:
+        case .weight: 
             return "Weight"
         }
     }
@@ -342,11 +322,11 @@ extension HealthTrend.TrendType {
 extension HealthTrend.Direction {
     var displayName: String {
         switch self {
-        case .improving:
+        case .improving: 
             return "Improving"
-        case .declining:
+        case .declining: 
             return "Declining"
-        case .stable:
+        case .stable: 
             return "Stable"
         }
     }

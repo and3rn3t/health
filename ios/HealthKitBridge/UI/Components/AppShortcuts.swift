@@ -328,7 +328,7 @@ struct StartGaitAssessmentIntent: AppIntent {
     
     func perform() async throws -> some IntentResult & ProvidesDialog {
         // This intent opens the app to start the assessment
-        return .result(
+        .result(
             dialog: "Opening VitalSense to start your gait assessment. " +
                     "Please follow the on-screen instructions for the walking test."
         )
@@ -344,7 +344,7 @@ struct EmergencyContactIntent: AppIntent {
     
     func perform() async throws -> some IntentResult & ProvidesDialog {
         // This intent opens the app to handle emergency contact
-        return .result(
+        .result(
             dialog: "Opening VitalSense emergency contacts. " +
                     "You can quickly reach your caregivers or emergency services from here."
         )

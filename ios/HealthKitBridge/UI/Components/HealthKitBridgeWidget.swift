@@ -114,32 +114,32 @@ struct VitalSenseProvider: TimelineProvider {
     
     private func fetchHealthScore() async -> Int {
         // Implementation would calculate overall health score
-        return Int.random(in: 70...95) // Placeholder
+        Int.random(in: 70...95) // Placeholder
     }
     
     private func fetchFallRisk() async -> FallRiskLevel {
         // Implementation would assess current fall risk
-        return .low // Placeholder
+        .low // Placeholder
     }
     
     private func fetchRecentHeartRate() async -> Int {
         // Implementation would get most recent heart rate
-        return Int.random(in: 60...100) // Placeholder
+        Int.random(in: 60...100) // Placeholder
     }
     
     private func fetchTodaySteps() async -> Int {
         // Implementation would get today's step count
-        return Int.random(in: 3000...15000) // Placeholder
+        Int.random(in: 3000...15000) // Placeholder
     }
     
     private func fetchLastNightSleep() async -> Double {
         // Implementation would get last night's sleep duration
-        return Double.random(in: 6.0...9.0) // Placeholder
+        Double.random(in: 6.0...9.0) // Placeholder
     }
     
     private func calculateTrend() async -> TrendDirection {
         // Implementation would compare recent vs historical data
-        return .improving // Placeholder
+        .improving // Placeholder
     }
 }
 

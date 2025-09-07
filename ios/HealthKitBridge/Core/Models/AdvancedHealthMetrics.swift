@@ -132,7 +132,7 @@ class AdvancedHealthMetrics: ObservableObject {
                     ascending: false
                 )
             ]
-        ) { [weak self] query, samples, error in
+        ) { [weak self] _, samples, _ in
             guard let sample = samples?.first as? HKQuantitySample else { return }
 
             DispatchQueue.main.async {
@@ -161,7 +161,7 @@ class AdvancedHealthMetrics: ObservableObject {
                     ascending: false
                 )
             ]
-        ) { [weak self] query, samples, error in
+        ) { [weak self] _, samples, _ in
             guard let sample = samples?.first as? HKQuantitySample else { return }
 
             DispatchQueue.main.async {
@@ -189,7 +189,7 @@ class AdvancedHealthMetrics: ObservableObject {
                     ascending: false
                 )
             ]
-        ) { [weak self] query, samples, error in
+        ) { [weak self] _, samples, _ in
             guard let sample = samples?.first as? HKQuantitySample else { return }
 
             DispatchQueue.main.async {
@@ -224,7 +224,7 @@ class AdvancedHealthMetrics: ObservableObject {
                     ascending: false
                 )
             ]
-        ) { [weak self] query, samples, error in
+        ) { [weak self] _, samples, _ in
             guard let samples = samples as? [HKCategorySample] else { return }
 
             DispatchQueue.main.async {
@@ -254,7 +254,7 @@ class AdvancedHealthMetrics: ObservableObject {
                     ascending: false
                 )
             ]
-        ) { [weak self] query, samples, error in
+        ) { [weak self] _, samples, _ in
             guard let workouts = samples as? [HKWorkout] else { return }
 
             let summary = WorkoutSummary(workouts: workouts)
@@ -283,7 +283,7 @@ class AdvancedHealthMetrics: ObservableObject {
                     ascending: false
                 )
             ]
-        ) { [weak self] query, samples, error in
+        ) { [weak self] _, samples, _ in
             guard let sample = samples?.first as? HKQuantitySample else { return }
 
             DispatchQueue.main.async {
@@ -311,7 +311,7 @@ class AdvancedHealthMetrics: ObservableObject {
                     ascending: false
                 )
             ]
-        ) { [weak self] query, samples, error in
+        ) { [weak self] _, samples, _ in
             guard let sample = samples?.first as? HKQuantitySample else { return }
 
             DispatchQueue.main.async {
@@ -345,7 +345,7 @@ class AdvancedHealthMetrics: ObservableObject {
                             ascending: false
                         )
                     ]
-                ) { [weak self] query, samples, error in
+                ) { [weak self] _, samples, _ in
                     guard let sample = samples?.first as? HKQuantitySample else { return }
 
                     let systolic = sample.quantity.doubleValue(
@@ -378,7 +378,7 @@ class AdvancedHealthMetrics: ObservableObject {
                             ascending: false
                         )
                     ]
-                ) { [weak self] query, samples, error in
+                ) { [weak self] _, samples, _ in
                     guard let sample = samples?.first as? HKQuantitySample else { return }
 
                     let diastolic = sample.quantity.doubleValue(
@@ -417,7 +417,7 @@ class AdvancedHealthMetrics: ObservableObject {
                     ascending: false
                 )
             ]
-        ) { [weak self] query, samples, error in
+        ) { [weak self] _, samples, _ in
             guard let sample = samples?.first as? HKQuantitySample else { return }
 
             DispatchQueue.main.async {
@@ -442,7 +442,7 @@ class AdvancedHealthMetrics: ObservableObject {
             quantityType: audioType,
             quantitySamplePredicate: predicate,
             options: .discreteAverage
-        ) { [weak self] query, statistics, error in
+        ) { [weak self] _, statistics, _ in
             guard let statistics = statistics,
                   let average = statistics.averageQuantity() else { return }
 
@@ -475,7 +475,7 @@ class AdvancedHealthMetrics: ObservableObject {
                     ascending: false
                 )
             ]
-        ) { [weak self] query, samples, error in
+        ) { [weak self] _, samples, _ in
             guard let samples = samples as? [HKCategorySample] else { return }
 
             let menstrualData = MenstrualHealthData(samples: samples)
@@ -507,7 +507,7 @@ class AdvancedHealthMetrics: ObservableObject {
                     ascending: false
                 )
             ]
-        ) { [weak self] query, samples, error in
+        ) { [weak self] _, samples, _ in
             guard let samples = samples as? [HKCategorySample] else { return }
 
             let totalMinutes = samples.reduce(0) { total, sample in
@@ -662,7 +662,7 @@ class AdvancedHealthMetrics: ObservableObject {
             let observer = HKObserverQuery(
                 sampleType: type,
                 predicate: nil
-            ) { [weak self] query, completionHandler, error in
+            ) { [weak self] _, completionHandler, _ in
                 // Fetch latest data when new samples are available
                 Task {
                     await self?.fetchAdvancedMetrics()
@@ -708,7 +708,7 @@ class AdvancedHealthMetrics: ObservableObject {
                 quantityType: type,
                 quantitySamplePredicate: predicate,
                 options: .cumulativeSum
-            ) { query, statistics, error in
+            ) { _, statistics, _ in
                 guard let statistics = statistics,
                       let sum = statistics.sumQuantity() else { return }
 
@@ -759,9 +759,9 @@ struct WorkoutSummary {
         totalEnergyBurned = workouts.compactMap {
             $0.totalEnergyBurned?.doubleValue(for: .kilocalorie())
         }.reduce(0, +)
-        averageHeartRate = workouts.compactMap { workout in
+        averageHeartRate = workouts.compactMap { _ in
             // This would need additional queries to get heart rate data during workouts
-            return nil
+            nil
         }.first
         workoutTypes = Array(Set(workouts.map { $0.workoutActivityType }))
     }

@@ -64,9 +64,7 @@ class SmartNotificationManager: NSObject, ObservableObject {
         
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
         let request = UNNotificationRequest(
-            identifier: "anomaly_\(anomaly.type)_\(Date().timeIntervalSince1970)",
-            content: content,
-            trigger: trigger
+            identifier: "anomaly_\(anomaly.type)_\(Date().timeIntervalSince1970)", content: content, trigger: trigger
         )
         
         UNUserNotificationCenter.current().add(request) { error in

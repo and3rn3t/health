@@ -216,7 +216,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
 
     private func analyzeBalance() -> BalanceAnalysisResult {
         // Implement balance-specific analysis
-        return BalanceAnalysisResult(
+        BalanceAnalysisResult(
             stabilityIndex: 85.0,
             swayVelocity: 12.5,
             confidenceEllipse: CGSize(width: 15, height: 12),
@@ -227,7 +227,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
 
     private func analyzeEnvironment() -> EnvironmentAnalysisResult {
         // Analyze environmental hazards using LiDAR mesh data
-        return EnvironmentAnalysisResult(
+        EnvironmentAnalysisResult(
             obstacles: detectObstacles(),
             surfaceAnalysis: analyzeSurfaceConditions(),
             lighting: assessLightingConditions(),
@@ -257,7 +257,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
     }
 
     private func extractPosition(from transform: simd_float4x4) -> SIMD3<Float> {
-        return SIMD3<Float>(transform.columns.3.x, transform.columns.3.y, transform.columns.3.z)
+        SIMD3<Float>(transform.columns.3.x, transform.columns.3.y, transform.columns.3.z)
     }
 
     private func calculatePosturalSway(from poses: [BodyPose]) -> PosturalSwayMetrics {
@@ -318,7 +318,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
 
     private func calculateLumbarLordosis(pose: BodyPose) -> Float {
         // Simplified calculation - would need more spine joints for accuracy
-        return 35.0 + Float.random(in: -10...10)
+        35.0 + Float.random(in: -10...10)
     }
 
     private func calculateHeadForwardPosture(pose: BodyPose) -> Float {
@@ -357,7 +357,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
 
     private func calculateWeightDistribution(from poses: [BodyPose]) -> WeightDistribution {
         // Simplified - would need foot tracking for accuracy
-        return WeightDistribution(
+        WeightDistribution(
             left: 48.0 + Float.random(in: -3...3),
             right: 52.0 + Float.random(in: -3...3)
         )
@@ -365,7 +365,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
 
     private func calculateReactionTime(from poses: [BodyPose]) -> Float {
         // Estimate based on movement responsiveness
-        return 180.0 + Float.random(in: -30...50)
+        180.0 + Float.random(in: -30...50)
     }
 
     private func identifyPostureRiskFactors(
@@ -403,7 +403,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
     }
 
     private func getLiDARDeviceInfo() -> DeviceInfo {
-        return DeviceInfo(
+        DeviceInfo(
             model: UIDevice.current.model,
             lidarVersion: "ARKit 6.0",
             accuracy: 0.98
@@ -413,11 +413,11 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
     // MARK: - Gait Analysis Helpers
     private func extractWalkingSequences(from anchors: [ARBodyAnchor]) -> [WalkingSequence] {
         // Group consecutive walking frames
-        return [] // Placeholder implementation
+        [] // Placeholder implementation
     }
 
     private func calculateSpatialGaitMetrics(from sequences: [WalkingSequence]) -> SpatialGaitMetrics {
-        return SpatialGaitMetrics(
+        SpatialGaitMetrics(
             stepWidth: 10.5,
             stepLength: 65.2,
             strideLength: 130.4,
@@ -426,7 +426,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
     }
 
     private func calculateTemporalGaitMetrics(from sequences: [WalkingSequence]) -> TemporalGaitMetrics {
-        return TemporalGaitMetrics(
+        TemporalGaitMetrics(
             cadence: 112.0,
             velocityVariability: 4.2,
             rhythmIndex: 88.5
@@ -434,7 +434,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
     }
 
     private func analyzeKinematicChain(from sequences: [WalkingSequence]) -> KinematicChainMetrics {
-        return KinematicChainMetrics(
+        KinematicChainMetrics(
             ankleFlexion: Array(repeating: 15.0, count: 10),
             kneeFlexion: Array(repeating: 45.0, count: 10),
             hipFlexion: Array(repeating: 25.0, count: 10),
@@ -443,7 +443,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
     }
 
     private func calculateGaitAsymmetry(from sequences: [WalkingSequence]) -> AsymmetryMetrics {
-        return AsymmetryMetrics(
+        AsymmetryMetrics(
             spatialAsymmetry: 3.2,
             temporalAsymmetry: 2.8,
             kinematicAsymmetry: 4.1
@@ -451,7 +451,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
     }
 
     private func analyzeWalkingEnvironment() -> EnvironmentalContext {
-        return EnvironmentalContext(
+        EnvironmentalContext(
             surfaceType: "Level",
             obstacles: 0,
             lighting: "Optimal"
@@ -483,19 +483,19 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
 
     // MARK: - Environment Analysis Helpers
     private func detectObstacles() -> [EnvironmentalObstacle] {
-        return [] // Placeholder
+        [] // Placeholder
     }
 
     private func analyzeSurfaceConditions() -> SurfaceAnalysis {
-        return SurfaceAnalysis(type: "Level", roughness: 0.1, stability: 0.95)
+        SurfaceAnalysis(type: "Level", roughness: 0.1, stability: 0.95)
     }
 
     private func assessLightingConditions() -> LightingConditions {
-        return LightingConditions(quality: "Optimal", intensity: 80.0)
+        LightingConditions(quality: "Optimal", intensity: 80.0)
     }
 
     private func calculateEnvironmentalHazardScore() -> Float {
-        return 15.0 // Low hazard score
+        15.0 // Low hazard score
     }
 }
 

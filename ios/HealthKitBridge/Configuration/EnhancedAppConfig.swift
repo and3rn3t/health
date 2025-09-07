@@ -33,8 +33,7 @@ class EnhancedAppConfig {
     
     private init() {
         // Determine environment from build configuration or plist
-        if let envString = Bundle.main.object(forInfoDictionaryKey: "Environment") as? String,
-           let env = Environment(rawValue: envString) {
+        if let envString = Bundle.main.object(forInfoDictionaryKey: "Environment") as? String, let env = Environment(rawValue: envString) {
             currentEnvironment = env
         } else {
             #if DEBUG
@@ -72,8 +71,7 @@ class EnhancedAppConfig {
     
     private static func loadConfiguration(for environment: Environment) -> [String: Any] {
         // Try to load from Config.plist first
-        if let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
-           let plist = NSDictionary(contentsOfFile: path) {
+        if let path = Bundle.main.path(forResource: "Config", ofType: "plist"), let plist = NSDictionary(contentsOfFile: path) {
             
             // Check for environment-specific section
             if let envConfig = plist[environment.rawValue] as? [String: Any] {
@@ -90,64 +88,24 @@ class EnhancedAppConfig {
     
     private static func defaultConfiguration(for environment: Environment) -> [String: Any] {
         switch environment {
-        case .development:
+        case .development: 
             return [
-                "apiBaseURL": "http://localhost:3000/api",
-                "webSocketURL": "ws://localhost:8080/ws",
-                "enableDebugLogging": true,
-                "mockHealthData": true,
-                "autoReconnect": true,
-                "connectionTimeout": 5.0,
-                "healthDataBatchSize": 10,
-                "dataSyncInterval": 2.0,
-                "enablePerformanceMonitoring": true,
-                "showConnectionStats": true,
-                "maxRetryAttempts": 3
+                "apiBaseURL": "http://localhost:3000/api", "webSocketURL": "ws://localhost:8080/ws", "enableDebugLogging": true, "mockHealthData": true, "autoReconnect": true, "connectionTimeout": 5.0, "healthDataBatchSize": 10, "dataSyncInterval": 2.0, "enablePerformanceMonitoring": true, "showConnectionStats": true, "maxRetryAttempts": 3
             ]
             
-        case .staging:
+        case .staging: 
             return [
-                "apiBaseURL": "https://staging-api.andernet.dev/api",
-                "webSocketURL": "wss://staging-api.andernet.dev/ws",
-                "enableDebugLogging": true,
-                "mockHealthData": false,
-                "autoReconnect": true,
-                "connectionTimeout": 8.0,
-                "healthDataBatchSize": 25,
-                "dataSyncInterval": 3.0,
-                "enablePerformanceMonitoring": true,
-                "showConnectionStats": true,
-                "maxRetryAttempts": 4
+                "apiBaseURL": "https://staging-api.andernet.dev/api", "webSocketURL": "wss://staging-api.andernet.dev/ws", "enableDebugLogging": true, "mockHealthData": false, "autoReconnect": true, "connectionTimeout": 8.0, "healthDataBatchSize": 25, "dataSyncInterval": 3.0, "enablePerformanceMonitoring": true, "showConnectionStats": true, "maxRetryAttempts": 4
             ]
             
-        case .production:
+        case .production: 
             return [
-                "apiBaseURL": "https://api.andernet.dev/api",
-                "webSocketURL": "wss://api.andernet.dev/ws",
-                "enableDebugLogging": false,
-                "mockHealthData": false,
-                "autoReconnect": true,
-                "connectionTimeout": 10.0,
-                "healthDataBatchSize": 50,
-                "dataSyncInterval": 5.0,
-                "enablePerformanceMonitoring": false,
-                "showConnectionStats": false,
-                "maxRetryAttempts": 5
+                "apiBaseURL": "https://api.andernet.dev/api", "webSocketURL": "wss://api.andernet.dev/ws", "enableDebugLogging": false, "mockHealthData": false, "autoReconnect": true, "connectionTimeout": 10.0, "healthDataBatchSize": 50, "dataSyncInterval": 5.0, "enablePerformanceMonitoring": false, "showConnectionStats": false, "maxRetryAttempts": 5
             ]
             
-        case .testing:
+        case .testing: 
             return [
-                "apiBaseURL": "http://test-server:3000/api",
-                "webSocketURL": "ws://test-server:8080/ws",
-                "enableDebugLogging": true,
-                "mockHealthData": true,
-                "autoReconnect": false,
-                "connectionTimeout": 1.0,
-                "healthDataBatchSize": 5,
-                "dataSyncInterval": 0.5,
-                "enablePerformanceMonitoring": true,
-                "showConnectionStats": true,
-                "maxRetryAttempts": 1
+                "apiBaseURL": "http://test-server:3000/api", "webSocketURL": "ws://test-server:8080/ws", "enableDebugLogging": true, "mockHealthData": true, "autoReconnect": false, "connectionTimeout": 1.0, "healthDataBatchSize": 5, "dataSyncInterval": 0.5, "enablePerformanceMonitoring": true, "showConnectionStats": true, "maxRetryAttempts": 1
             ]
         }
     }
@@ -176,7 +134,7 @@ class EnhancedAppConfig {
     
     func getOptimalSyncInterval() -> TimeInterval {
         // Adjust sync interval based on network conditions and environment
-        return dataSyncInterval
+        dataSyncInterval
     }
     
     // MARK: - Environment Info

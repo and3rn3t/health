@@ -34,8 +34,7 @@ class SecurityManager: ObservableObject {
         
         do {
             let success = try await biometricContext.evaluatePolicy(
-                .deviceOwnerAuthenticationWithBiometrics,
-                localizedReason: reason
+                .deviceOwnerAuthenticationWithBiometrics, localizedReason: reason
             )
             
             if success {
@@ -59,8 +58,7 @@ class SecurityManager: ObservableObject {
         
         do {
             return try await biometricContext.evaluatePolicy(
-                .deviceOwnerAuthenticationWithBiometrics,
-                localizedReason: reason
+                .deviceOwnerAuthenticationWithBiometrics, localizedReason: reason
             )
         } catch {
             print("❌ User authentication failed: \(error)")
@@ -111,20 +109,14 @@ class SecurityManager: ObservableObject {
             // Check for jailbreak
             if isDeviceJailbroken() {
                 threats.append(SecurityThreat(
-                    type: .jailbreak,
-                    severity: .high,
-                    description: "Device appears to be jailbroken",
-                    recommendation: "Health data may be at risk on jailbroken devices"
+                    type: .jailbreak, severity: .high, description: "Device appears to be jailbroken", recommendation: "Health data may be at risk on jailbroken devices"
                 ))
             }
             
             // Check network security
             if await isUsingUnsecureNetwork() {
                 threats.append(SecurityThreat(
-                    type: .unsecureNetwork,
-                    severity: .medium,
-                    description: "Connected to potentially unsecure network",
-                    recommendation: "Avoid transmitting sensitive data on public networks"
+                    type: .unsecureNetwork, severity: .medium, description: "Connected to potentially unsecure network", recommendation: "Avoid transmitting sensitive data on public networks"
                 ))
             }
             
@@ -142,11 +134,7 @@ class SecurityManager: ObservableObject {
     private func isDeviceJailbroken() -> Bool {
         // Check for common jailbreak indicators
         let jailbreakPaths = [
-            "/Applications/Cydia.app",
-            "/usr/sbin/sshd",
-            "/bin/bash",
-            "/etc/apt",
-            "/private/var/lib/apt/"
+            "/Applications/Cydia.app", "/usr/sbin/sshd", "/bin/bash", "/etc/apt", "/private/var/lib/apt/"
         ]
         
         for path in jailbreakPaths {
@@ -171,7 +159,7 @@ class SecurityManager: ObservableObject {
     private func isUsingUnsecureNetwork() async -> Bool {
         // This would require network analysis capabilities
         // For now, return false as a placeholder
-        return false
+        false
     }
     
     private func checkAppPermissions() -> [SecurityThreat] {
@@ -181,10 +169,7 @@ class SecurityManager: ObservableObject {
         let healthManager = HealthKitManager.shared
         if !healthManager.isAuthorized {
             threats.append(SecurityThreat(
-                type: .insufficientPermissions,
-                severity: .medium,
-                description: "HealthKit access not granted",
-                recommendation: "Grant HealthKit permissions for full functionality"
+                type: .insufficientPermissions, severity: .medium, description: "HealthKit access not granted", recommendation: "Grant HealthKit permissions for full functionality"
             ))
         }
         
@@ -202,9 +187,7 @@ class SecurityManager: ObservableObject {
         let signature = try createSignature(for: encryptedData)
         
         return SecurePayload(
-            encryptedData: encryptedData,
-            signature: signature,
-            timestamp: timestamp
+            encryptedData: encryptedData, signature: signature, timestamp: timestamp
         )
     }
     
@@ -265,7 +248,7 @@ class KeychainManager {
     private init() {}
     
     func storeEncryptionKey(_ key: SymmetricKey, tag: String) throws {
-        let keyData = key.withUnsafeBytes { Data($0) }
+        let keyData = key.withUnsafeBytes { Data($0) } 
         try storeData(keyData, tag: tag, accessibility: .whenUnlockedThisDeviceOnly)
     }
     
@@ -298,10 +281,7 @@ class KeychainManager {
     
     private func storeData(_ data: Data, tag: String, accessibility: CFString) throws {
         let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: tag,
-            kSecValueData as String: data,
-            kSecAttrAccessible as String: accessibility
+            kSecClass as String: kSecClassGenericPassword, kSecAttrAccount as String: tag, kSecValueData as String: data, kSecAttrAccessible as String: accessibility
         ]
         
         let status = SecItemAdd(query as CFDictionary, nil)
@@ -309,8 +289,7 @@ class KeychainManager {
         if status == errSecDuplicateItem {
             // Update existing item
             let updateQuery: [String: Any] = [
-                kSecClass as String: kSecClassGenericPassword,
-                kSecAttrAccount as String: tag
+                kSecClass as String: kSecClassGenericPassword, kSecAttrAccount as String: tag
             ]
             
             let updateAttributes: [String: Any] = [
@@ -330,10 +309,7 @@ class KeychainManager {
     
     private func getData(tag: String) throws -> Data? {
         let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: tag,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
+            kSecClass as String: kSecClassGenericPassword, kSecAttrAccount as String: tag, kSecReturnData as String: true, kSecMatchLimit as String: kSecMatchLimitOne
         ]
         
         var result: AnyObject?

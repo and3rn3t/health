@@ -24,11 +24,7 @@ class ApiClient: ObservableObject {
         let deviceId = await UIDevice.current.identifierForVendor?.uuidString ?? "unknown"
         
         let requestBody: [String: Any] = [
-            "userId": userId,
-            "deviceId": deviceId,
-            "deviceType": deviceType,
-            "appVersion": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0",
-            "platform": "ios"
+            "userId": userId, "deviceId": deviceId, "deviceType": deviceType, "appVersion": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0", "platform": "ios"
         ]
         
         var request = URLRequest(url: url)
@@ -44,8 +40,7 @@ class ApiClient: ObservableObject {
                 print("🔐 Token request response: \(httpResponse.statusCode)")
                 
                 if httpResponse.statusCode == 200 {
-                    if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                       let token = json["token"] as? String {
+                    if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any], let token = json["token"] as? String {
                         print("✅ Got device token successfully")
                         await MainActor.run {
                             self.lastError = nil
@@ -86,12 +81,7 @@ class ApiClient: ObservableObject {
         }
         
         let requestBody: [String: Any] = [
-            "type": healthData.type,
-            "value": healthData.value,
-            "unit": healthData.unit,
-            "timestamp": ISO8601DateFormatter().string(from: healthData.timestamp),
-            "deviceId": healthData.deviceId,
-            "userId": healthData.userId
+            "type": healthData.type, "value": healthData.value, "unit": healthData.unit, "timestamp": ISO8601DateFormatter().string(from: healthData.timestamp), "deviceId": healthData.deviceId, "userId": healthData.userId
         ]
         
         var request = URLRequest(url: url)

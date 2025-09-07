@@ -239,11 +239,7 @@ struct EnhancedGaitDashboardView: View {
 
     private func getWalkingQualityColor() -> Color {
         let score = walkingCalculator.walkingQualityScore
-        if score >= 85 { return .green }
-        else if score >= 70 { return .blue }
-        else if score >= 55 { return .yellow }
-        else if score >= 40 { return .orange }
-        else { return .red }
+        if score >= 85 { return .green } else if score >= 70 { return .blue } else if score >= 55 { return .yellow } else if score >= 40 { return .orange } else { return .red }
     }
 }
 
@@ -319,20 +315,12 @@ struct WalkingQualityScoreCard: View {
 
     private func getScoreColor() -> Color {
         let score = walkingCalculator.walkingQualityScore
-        if score >= 85 { return .green }
-        else if score >= 70 { return .blue }
-        else if score >= 55 { return .yellow }
-        else if score >= 40 { return .orange }
-        else { return .red }
+        if score >= 85 { return .green } else if score >= 70 { return .blue } else if score >= 55 { return .yellow } else if score >= 40 { return .orange } else { return .red }
     }
 
     private func getQualityDescription() -> String {
         let score = walkingCalculator.walkingQualityScore
-        if score >= 85 { return "Excellent walking quality with optimal gait patterns" }
-        else if score >= 70 { return "Good walking quality with minor areas for improvement" }
-        else if score >= 55 { return "Acceptable walking quality with some concerns" }
-        else if score >= 40 { return "Walking quality needs attention and improvement" }
-        else { return "Significant walking quality issues requiring intervention" }
+        if score >= 85 { return "Excellent walking quality with optimal gait patterns" } else if score >= 70 { return "Good walking quality with minor areas for improvement" } else if score >= 55 { return "Acceptable walking quality with some concerns" } else if score >= 40 { return "Walking quality needs attention and improvement" } else { return "Significant walking quality issues requiring intervention" }
     }
 }
 
