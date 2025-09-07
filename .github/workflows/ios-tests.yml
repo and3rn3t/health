@@ -179,18 +179,33 @@ jobs:
 
       - name: Build for Testing
         run: |
-          echo "Building for iOS testing with simplified approach..."
+          echo "Building for iOS testing with available simulator detection..."
 
           # List available simulators for debugging
           echo "Available iOS Simulators:"
-          xcrun simctl list devices iOS | grep -E "(iPhone|iPad)" | head -5
+          xcrun simctl list devices available | grep -E "(iPhone|iPad)" | head -5
 
-          # Try multiple build approaches with detailed error output
-          echo "Attempting build-for-testing with iphonesimulator SDK..."
+          # Find any available iOS simulator
+          AVAILABLE_DEVICE=$(xcrun simctl list devices available | grep -E "iPhone.*Booted|iPad.*Booted" | head -1)
+          if [ -z "$AVAILABLE_DEVICE" ]; then
+            AVAILABLE_DEVICE=$(xcrun simctl list devices available | grep -E "iPhone|iPad" | head -1)
+          fi
+
+          if [ ! -z "$AVAILABLE_DEVICE" ]; then
+            echo "Found available device: $AVAILABLE_DEVICE"
+            DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/.*\((.*)\).*/\1/')
+            DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
+            echo "Using destination: $DESTINATION"
+          else
+            echo "No available simulators found, using Any iOS Simulator Device"
+            DESTINATION="platform=iOS Simulator,name=Any iOS Simulator Device"
+          fi
+
+          # Build for testing with detected destination
           xcodebuild build-for-testing \
             -project ios/HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
-            -sdk iphonesimulator \
+            -destination "$DESTINATION" \
             -derivedDataPath ios/build \
             -configuration Debug \
             -enableCodeCoverage YES \
@@ -199,7 +214,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             ENABLE_BITCODE=NO \
             ONLY_ACTIVE_ARCH=YES || {
-              echo "First build attempt failed. Trying with more basic settings..."
+              echo "Build failed with destination, trying SDK-only approach..."
               xcodebuild clean build \
                 -project ios/HealthKitBridge.xcodeproj \
                 -scheme HealthKitBridge \
@@ -214,18 +229,32 @@ jobs:
       - name: Run Unit Tests
         if: matrix.test-type == 'unit'
         run: |
-          echo "Running unit tests with SDK-based approach"
+          echo "Running unit tests with auto-detected destination"
 
           # Set environment variable to indicate simulator environment for tests
           export IS_SIMULATOR=true
 
-          # Try test execution with SDK approach
-          xcodebuild test \
+          # Find the same destination we used for building
+          AVAILABLE_DEVICE=$(xcrun simctl list devices available | grep -E "iPhone.*Booted|iPad.*Booted" | head -1)
+          if [ -z "$AVAILABLE_DEVICE" ]; then
+            AVAILABLE_DEVICE=$(xcrun simctl list devices available | grep -E "iPhone|iPad" | head -1)
+          fi
+
+          if [ ! -z "$AVAILABLE_DEVICE" ]; then
+            DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/.*\((.*)\).*/\1/')
+            DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
+          else
+            DESTINATION="platform=iOS Simulator,name=Any iOS Simulator Device"
+          fi
+
+          echo "Running tests with destination: $DESTINATION"
+
+          # Try test execution
+          xcodebuild test-without-building \
             -project ios/HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
-            -sdk iphonesimulator \
+            -destination "$DESTINATION" \
             -derivedDataPath ios/build \
-            -destination "platform=iOS Simulator,name=Any iOS Simulator Device" \
             -enableCodeCoverage YES \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
@@ -237,17 +266,31 @@ jobs:
       - name: Run UI Tests
         if: matrix.test-type == 'ui'
         run: |
-          echo "Running UI tests with SDK-based approach"
+          echo "Running UI tests with auto-detected destination"
 
           # Set environment variable to indicate simulator environment for tests
           export IS_SIMULATOR=true
 
-          xcodebuild test \
+          # Find the same destination we used for building
+          AVAILABLE_DEVICE=$(xcrun simctl list devices available | grep -E "iPhone.*Booted|iPad.*Booted" | head -1)
+          if [ -z "$AVAILABLE_DEVICE" ]; then
+            AVAILABLE_DEVICE=$(xcrun simctl list devices available | grep -E "iPhone|iPad" | head -1)
+          fi
+
+          if [ ! -z "$AVAILABLE_DEVICE" ]; then
+            DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/.*\((.*)\).*/\1/')
+            DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
+          else
+            DESTINATION="platform=iOS Simulator,name=Any iOS Simulator Device"
+          fi
+
+          echo "Running UI tests with destination: $DESTINATION"
+
+          xcodebuild test-without-building \
             -project ios/HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
-            -sdk iphonesimulator \
+            -destination "$DESTINATION" \
             -derivedDataPath ios/build \
-            -destination "platform=iOS Simulator,name=Any iOS Simulator Device" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
