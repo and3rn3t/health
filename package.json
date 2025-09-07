@@ -242,9 +242,13 @@
   },
   "optionalDependencies": {
     "@parcel/watcher-win32-x64": "^2.5.1",
+    "@parcel/watcher-linux-x64-gnu": "^2.5.1",
     "@rollup/rollup-win32-x64-msvc": "4.50.0",
+    "@rollup/rollup-linux-x64-gnu": "4.50.0",
     "@tailwindcss/oxide-win32-x64-msvc": "4.1.13",
-    "lightningcss-win32-x64-msvc": "1.30.1"
+    "@tailwindcss/oxide-linux-x64-gnu": "4.1.13",
+    "lightningcss-win32-x64-msvc": "1.30.1",
+    "lightningcss-linux-x64-gnu": "1.30.1"
   },
   "engines": {
     "node": ">=20.0.0",

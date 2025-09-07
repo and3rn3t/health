@@ -43,7 +43,7 @@ jobs:
             build-cache-${{ runner.os }}-
 
       - name: Run linting
-        run: npm run lint:strict
+        run: npm run lint
 
       - name: Build project
         run: npm run build

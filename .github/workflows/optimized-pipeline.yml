@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: read
     outputs:
       webapp: ${{ steps.changes.outputs.webapp }}
       ios: ${{ steps.changes.outputs.ios }}
