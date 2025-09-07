@@ -1,0 +1,124 @@
+name: iOS Testing Simple
+
+on:
+  push:
+    branches: [main, develop, test-optimized-workflows]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios-tests-simple.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'ios/**'
+  workflow_dispatch:
+
+env:
+  XCODE_VERSION: '16.1'
+
+jobs:
+  test:
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        test-type: ['unit', 'ui']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Cache Xcode Derived Data
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData
+            ios/build
+          key: xcode-${{ runner.os }}-${{ env.XCODE_VERSION }}-simple-${{ hashFiles('ios/**/*.swift', 'ios/**/*.xcodeproj/**') }}
+
+      - name: Build for Testing
+        run: |
+          echo "Building for iOS testing with native SDK compatibility..."
+
+          # Debug available iOS versions and SDKs
+          echo "Available iOS Simulator SDKs:"
+          xcrun xcodebuild -showsdks | grep simulator || true
+
+          echo "Available iOS Simulators:"
+          xcrun simctl list runtimes | grep iOS || true
+
+          # Use the native iOS 18.1 SDK that comes with Xcode 16.1
+          # and let Xcode choose a compatible simulator device automatically
+
+          xcodebuild build-for-testing \
+            -project ios/HealthKitBridge.xcodeproj \
+            -scheme HealthKitBridge \
+            -destination "platform=iOS Simulator,name=iPhone 15 Pro" \
+            -derivedDataPath ios/build \
+            -configuration Debug \
+            -enableCodeCoverage YES \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ENABLE_BITCODE=NO \
+            ONLY_ACTIVE_ARCH=YES \
+            SKIP_INSTALL=YES
+
+      - name: Test without Building
+        run: |
+          echo "Running tests..."
+
+          xcodebuild test-without-building \
+            -project ios/HealthKitBridge.xcodeproj \
+            -scheme HealthKitBridge \
+            -destination "platform=iOS Simulator,name=iPhone 15 Pro" \
+            -derivedDataPath ios/build \
+            -configuration Debug \
+            -enableCodeCoverage YES \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ENABLE_BITCODE=NO \
+            ONLY_ACTIVE_ARCH=YES \
+            SKIP_INSTALL=YES
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.test-type }}
+          path: |
+            ios/build/Logs/Test/*.xcresult
+            ios/build/Build/Intermediates.noindex/XCBuildData/build.db
+          retention-days: 5
+
+      - name: Generate Test Summary
+        if: always()
+        run: |
+          echo "## iOS ${{ matrix.test-type }} Test Results" >> $GITHUB_STEP_SUMMARY
+
+          if [ -d "ios/build/Logs/Test" ]; then
+            echo "- Test logs generated successfully" >> $GITHUB_STEP_SUMMARY
+            ls -la ios/build/Logs/Test/ >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- No test logs found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Test Type:** ${{ matrix.test-type }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Xcode Version:** ${{ env.XCODE_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Runner OS:** ${{ runner.os }}" >> $GITHUB_STEP_SUMMARY
+
+  summary:
+    needs: test
+    runs-on: macos-15
+    if: always()
+    steps:
+      - name: Test Summary
+        run: |
+          echo "iOS Testing Simple workflow completed"
+          echo "Unit tests status: ${{ needs.test.result }}"
