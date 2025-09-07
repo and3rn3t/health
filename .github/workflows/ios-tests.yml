@@ -193,10 +193,17 @@ jobs:
 
           if [ ! -z "$AVAILABLE_DEVICE" ]; then
             echo "Found available device: $AVAILABLE_DEVICE"
-            # Extract device name - everything before the first opening parenthesis, trimmed
-            DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | sed 's/[[:space:]]*$//')
-            DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
-            echo "Using destination: $DESTINATION"
+            # Extract UDID from the device string
+            DEVICE_UDID=$(echo "$AVAILABLE_DEVICE" | grep -oE '[A-F0-9-]{36}')
+            if [ ! -z "$DEVICE_UDID" ]; then
+              DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID"
+              echo "Using destination with UDID: $DESTINATION"
+            else
+              # Fallback to device name extraction
+              DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | sed 's/[[:space:]]*$//')
+              DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
+              echo "Using destination with name: $DESTINATION"
+            fi
           else
             echo "No available simulators found, using Any iOS Simulator Device"
             DESTINATION="platform=iOS Simulator,name=Any iOS Simulator Device"
@@ -243,9 +250,15 @@ jobs:
           fi
 
           if [ ! -z "$AVAILABLE_DEVICE" ]; then
-            # Extract device name - everything before the first opening parenthesis, trimmed
-            DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | sed 's/[[:space:]]*$//')
-            DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
+            # Extract UDID from the device string
+            DEVICE_UDID=$(echo "$AVAILABLE_DEVICE" | grep -oE '[A-F0-9-]{36}')
+            if [ ! -z "$DEVICE_UDID" ]; then
+              DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID"
+            else
+              # Fallback to device name extraction
+              DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | sed 's/[[:space:]]*$//')
+              DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
+            fi
           else
             DESTINATION="platform=iOS Simulator,name=Any iOS Simulator Device"
           fi
@@ -281,9 +294,15 @@ jobs:
           fi
 
           if [ ! -z "$AVAILABLE_DEVICE" ]; then
-            # Extract device name - everything before the first opening parenthesis, trimmed
-            DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | sed 's/[[:space:]]*$//')
-            DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
+            # Extract UDID from the device string
+            DEVICE_UDID=$(echo "$AVAILABLE_DEVICE" | grep -oE '[A-F0-9-]{36}')
+            if [ ! -z "$DEVICE_UDID" ]; then
+              DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID"
+            else
+              # Fallback to device name extraction
+              DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | sed 's/[[:space:]]*$//')
+              DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
+            fi
           else
             DESTINATION="platform=iOS Simulator,name=Any iOS Simulator Device"
           fi
