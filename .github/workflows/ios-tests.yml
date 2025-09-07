@@ -193,7 +193,8 @@ jobs:
 
           if [ ! -z "$AVAILABLE_DEVICE" ]; then
             echo "Found available device: $AVAILABLE_DEVICE"
-            DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/.*\((.*)\).*/\1/')
+            # Extract device name - everything before the first opening parenthesis, trimmed
+            DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | sed 's/[[:space:]]*$//')
             DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
             echo "Using destination: $DESTINATION"
           else
@@ -223,6 +224,7 @@ jobs:
                 -configuration Debug \
                 CODE_SIGN_IDENTITY="" \
                 CODE_SIGNING_REQUIRED=NO \
+                CODE_SIGNING_ALLOWED=NO \
                 ENABLE_BITCODE=NO
             }
 
@@ -241,7 +243,8 @@ jobs:
           fi
 
           if [ ! -z "$AVAILABLE_DEVICE" ]; then
-            DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/.*\((.*)\).*/\1/')
+            # Extract device name - everything before the first opening parenthesis, trimmed
+            DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | sed 's/[[:space:]]*$//')
             DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
           else
             DESTINATION="platform=iOS Simulator,name=Any iOS Simulator Device"
@@ -278,7 +281,8 @@ jobs:
           fi
 
           if [ ! -z "$AVAILABLE_DEVICE" ]; then
-            DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/.*\((.*)\).*/\1/')
+            # Extract device name - everything before the first opening parenthesis, trimmed
+            DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | sed 's/[[:space:]]*$//')
             DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
           else
             DESTINATION="platform=iOS Simulator,name=Any iOS Simulator Device"
