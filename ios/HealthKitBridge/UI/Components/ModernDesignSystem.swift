@@ -1,462 +1,447 @@
-//
-//  ModernDesignSystem.swift
-//  VitalSense Monitor
-//
-
 import SwiftUI
+import UIKit
 
-// MARK: - Design System Colors
-extension Color {
-    static let primaryBrand = Color("PrimaryBrand")
-    static let secondaryBrand = Color("SecondaryBrand")
-    static let accentBrand = Color("AccentBrand")
+// MARK: - Modern Design System
+struct ModernDesignSystem {
     
-    // Health Status Colors
-    static let healthGreen = Color.green
-    static let healthYellow = Color.yellow
-    static let healthOrange = Color.orange
-    static let healthRed = Color.red
+    // MARK: - Color Palette
+    struct Colors {
+        // Primary Colors
+        static let primary = Color(red: 0.145, green: 0.388, blue: 0.922) // #2563eb
+        static let primaryDark = Color(red: 0.118, green: 0.322, blue: 0.769) // #1e40af
+        static let primaryLight = Color(red: 0.376, green: 0.584, blue: 0.961) // #6086f5
+        
+        // Secondary Colors
+        static let secondary = Color(red: 0.034, green: 0.569, blue: 0.698) // #0891b2
+        static let secondaryDark = Color(red: 0.027, green: 0.475, blue: 0.584) // #0e7490
+        static let secondaryLight = Color(red: 0.165, green: 0.682, blue: 0.792) // #22d3ee
+        
+        // Health Status Colors
+        static let healthGreen = Color(red: 0.137, green: 0.596, blue: 0.133) // #22c55e
+        static let healthYellow = Color(red: 0.918, green: 0.690, blue: 0.067) // #eab308
+        static let healthOrange = Color(red: 0.918, green: 0.502, blue: 0.137) // #ea8022
+        static let healthRed = Color(red: 0.937, green: 0.267, blue: 0.267) // #ef4444
+        
+        // Neutral Colors
+        static let background = Color(.systemBackground)
+        static let secondaryBackground = Color(.secondarySystemBackground)
+        static let tertiaryBackground = Color(.tertiarySystemBackground)
+        static let surface = Color(.systemGray6)
+        
+        // Text Colors
+        static let textPrimary = Color(.label)
+        static let textSecondary = Color(.secondaryLabel)
+        static let textTertiary = Color(.tertiaryLabel)
+        
+        // Border Colors
+        static let border = Color(.separator)
+        static let borderLight = Color(.systemGray5)
+        static let borderDark = Color(.systemGray3)
+    }
     
-    // Gait Analysis Colors
-    static let gaitNormal = Color.green
-    static let gaitConcern = Color.orange
-    static let gaitRisk = Color.red
+    // MARK: - Typography
+    struct Typography {
+        // Headlines
+        static let largeTitle = Font.custom("Inter", size: 34, relativeTo: .largeTitle)
+            .weight(.bold)
+        static let title1 = Font.custom("Inter", size: 28, relativeTo: .title)
+            .weight(.bold)
+        static let title2 = Font.custom("Inter", size: 22, relativeTo: .title2)
+            .weight(.bold)
+        static let title3 = Font.custom("Inter", size: 20, relativeTo: .title3)
+            .weight(.semibold)
+        
+        // Body Text
+        static let body = Font.custom("Inter", size: 17, relativeTo: .body)
+        static let bodyEmphasized = Font.custom("Inter", size: 17, relativeTo: .body)
+            .weight(.medium)
+        static let callout = Font.custom("Inter", size: 16, relativeTo: .callout)
+        
+        // Supporting Text
+        static let subheadline = Font.custom("Inter", size: 15, relativeTo: .subheadline)
+        static let footnote = Font.custom("Inter", size: 13, relativeTo: .footnote)
+        static let caption = Font.custom("Inter", size: 12, relativeTo: .caption)
+        static let caption2 = Font.custom("Inter", size: 11, relativeTo: .caption2)
+        
+        // Numeric Display
+        static let numericLarge = Font.custom("SF Mono", size: 24, relativeTo: .title2)
+            .weight(.semibold)
+            .monospacedDigit()
+        static let numericMedium = Font.custom("SF Mono", size: 20, relativeTo: .title3)
+            .weight(.medium)
+            .monospacedDigit()
+        static let numericSmall = Font.custom("SF Mono", size: 16, relativeTo: .callout)
+            .monospacedDigit()
+    }
     
-    // Background Colors
-    static let backgroundPrimary = Color(.systemBackground)
-    static let backgroundSecondary = Color(.secondarySystemBackground)
-    static let backgroundTertiary = Color(.tertiarySystemBackground)
+    // MARK: - Spacing
+    struct Spacing {
+        static let xxxSmall: CGFloat = 2
+        static let xxSmall: CGFloat = 4
+        static let xSmall: CGFloat = 8
+        static let small: CGFloat = 12
+        static let medium: CGFloat = 16
+        static let large: CGFloat = 20
+        static let xLarge: CGFloat = 24
+        static let xxLarge: CGFloat = 32
+        static let xxxLarge: CGFloat = 40
+        static let giant: CGFloat = 48
+        static let colossal: CGFloat = 64
+    }
+    
+    // MARK: - Corner Radius
+    struct CornerRadius {
+        static let small: CGFloat = 4
+        static let medium: CGFloat = 8
+        static let large: CGFloat = 12
+        static let xLarge: CGFloat = 16
+        static let xxLarge: CGFloat = 24
+        static let round: CGFloat = 50
+    }
+    
+    // MARK: - Shadow
+    struct Shadows {
+        static let small = Shadow(
+            color: Color.black.opacity(0.1),
+            radius: 2,
+            x: 0,
+            y: 1
+        )
+        
+        static let medium = Shadow(
+            color: Color.black.opacity(0.15),
+            radius: 4,
+            x: 0,
+            y: 2
+        )
+        
+        static let large = Shadow(
+            color: Color.black.opacity(0.2),
+            radius: 8,
+            x: 0,
+            y: 4
+        )
+    }
 }
 
-// MARK: - Typography
-extension Font {
-    // Headers
-    static let heroTitle = Font.largeTitle.weight(.bold)
-    static let sectionHeader = Font.title2.weight(.semibold)
-    static let cardTitle = Font.headline.weight(.medium)
+// MARK: - Design System Extensions
+extension View {
+    // MARK: - Card Styles
+    func cardStyle(
+        backgroundColor: Color = ModernDesignSystem.Colors.surface,
+        cornerRadius: CGFloat = ModernDesignSystem.CornerRadius.large,
+        shadow: Shadow = ModernDesignSystem.Shadows.medium
+    ) -> some View {
+        self
+            .background(backgroundColor)
+            .cornerRadius(cornerRadius)
+            .shadow(
+                color: shadow.color,
+                radius: shadow.radius,
+                x: shadow.x,
+                y: shadow.y
+            )
+    }
     
-    // Body Text
-    static let bodyRegular = Font.body
-    static let bodyMedium = Font.body.weight(.medium)
-    static let captionRegular = Font.caption
-    static let captionMedium = Font.caption.weight(.medium)
+    // MARK: - Health Status Styling
+    func healthStatusStyle(
+        for status: HealthStatus
+    ) -> some View {
+        self
+            .padding(.horizontal, ModernDesignSystem.Spacing.medium)
+            .padding(.vertical, ModernDesignSystem.Spacing.small)
+            .background(status.backgroundColor)
+            .foregroundColor(status.foregroundColor)
+            .cornerRadius(ModernDesignSystem.CornerRadius.medium)
+    }
     
-    // Metrics Display
-    static let metricValue = Font.title3.weight(.semibold)
-    static let metricLabel = Font.caption.weight(.medium)
+    // MARK: - Button Styles
+    func primaryButtonStyle() -> some View {
+        self
+            .font(ModernDesignSystem.Typography.bodyEmphasized)
+            .foregroundColor(.white)
+            .padding(.horizontal, ModernDesignSystem.Spacing.xLarge)
+            .padding(.vertical, ModernDesignSystem.Spacing.medium)
+            .background(ModernDesignSystem.Colors.primary)
+            .cornerRadius(ModernDesignSystem.CornerRadius.medium)
+            .shadow(
+                color: ModernDesignSystem.Colors.primary.opacity(0.3),
+                radius: 4,
+                x: 0,
+                y: 2
+            )
+    }
+    
+    func secondaryButtonStyle() -> some View {
+        self
+            .font(ModernDesignSystem.Typography.bodyEmphasized)
+            .foregroundColor(ModernDesignSystem.Colors.primary)
+            .padding(.horizontal, ModernDesignSystem.Spacing.xLarge)
+            .padding(.vertical, ModernDesignSystem.Spacing.medium)
+            .background(Color.clear)
+            .overlay(
+                RoundedRectangle(cornerRadius: ModernDesignSystem.CornerRadius.medium)
+                    .stroke(ModernDesignSystem.Colors.primary, lineWidth: 2)
+            )
+    }
+    
+    // MARK: - Input Field Styling
+    func textFieldStyle() -> some View {
+        self
+            .font(ModernDesignSystem.Typography.body)
+            .padding(ModernDesignSystem.Spacing.medium)
+            .background(ModernDesignSystem.Colors.secondaryBackground)
+            .cornerRadius(ModernDesignSystem.CornerRadius.medium)
+            .overlay(
+                RoundedRectangle(cornerRadius: ModernDesignSystem.CornerRadius.medium)
+                    .stroke(ModernDesignSystem.Colors.border, lineWidth: 1)
+            )
+    }
 }
 
-// MARK: - Spacing
-struct Spacing {
-    static let xs: CGFloat = 4
-    static let sm: CGFloat = 8
-    static let md: CGFloat = 16
-    static let lg: CGFloat = 24
-    static let xl: CGFloat = 32
-    static let xxl: CGFloat = 48
+// MARK: - Health Status Enum
+enum HealthStatus: CaseIterable {
+    case excellent
+    case good
+    case fair
+    case poor
+    case critical
+    
+    var backgroundColor: Color {
+        switch self {
+        case .excellent:
+            return ModernDesignSystem.Colors.healthGreen.opacity(0.15)
+        case .good:
+            return ModernDesignSystem.Colors.healthGreen.opacity(0.1)
+        case .fair:
+            return ModernDesignSystem.Colors.healthYellow.opacity(0.15)
+        case .poor:
+            return ModernDesignSystem.Colors.healthOrange.opacity(0.15)
+        case .critical:
+            return ModernDesignSystem.Colors.healthRed.opacity(0.15)
+        }
+    }
+    
+    var foregroundColor: Color {
+        switch self {
+        case .excellent, .good:
+            return ModernDesignSystem.Colors.healthGreen
+        case .fair:
+            return ModernDesignSystem.Colors.healthYellow
+        case .poor:
+            return ModernDesignSystem.Colors.healthOrange
+        case .critical:
+            return ModernDesignSystem.Colors.healthRed
+        }
+    }
+    
+    var displayName: String {
+        switch self {
+        case .excellent:
+            return "Excellent"
+        case .good:
+            return "Good"
+        case .fair:
+            return "Fair"
+        case .poor:
+            return "Poor"
+        case .critical:
+            return "Critical"
+        }
+    }
 }
 
-// MARK: - Border Radius
-struct BorderRadius {
-    static let sm: CGFloat = 8
-    static let md: CGFloat = 12
-    static let lg: CGFloat = 16
-    static let xl: CGFloat = 20
+// MARK: - Custom Components
+struct VitalSenseCard<Content: View>: View {
+    let title: String
+    let subtitle: String?
+    let content: Content
+    let backgroundColor: Color
+    let cornerRadius: CGFloat
+    
+    init(
+        title: String,
+        subtitle: String? = nil,
+        backgroundColor: Color = ModernDesignSystem.Colors.surface,
+        cornerRadius: CGFloat = ModernDesignSystem.CornerRadius.large,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.title = title
+        self.subtitle = subtitle
+        self.backgroundColor = backgroundColor
+        self.cornerRadius = cornerRadius
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: ModernDesignSystem.Spacing.medium) {
+            VStack(alignment: .leading, spacing: ModernDesignSystem.Spacing.xxSmall) {
+                Text(title)
+                    .font(ModernDesignSystem.Typography.title3)
+                    .foregroundColor(ModernDesignSystem.Colors.textPrimary)
+                
+                if let subtitle = subtitle {
+                    Text(subtitle)
+                        .font(ModernDesignSystem.Typography.caption)
+                        .foregroundColor(ModernDesignSystem.Colors.textSecondary)
+                }
+            }
+            
+            content
+        }
+        .padding(ModernDesignSystem.Spacing.medium)
+        .cardStyle(
+            backgroundColor: backgroundColor,
+            cornerRadius: cornerRadius
+        )
+    }
 }
 
-// MARK: - Shadow Styles
-struct ShadowStyle {
+struct HealthMetricDisplayView: View {
+    let title: String
+    let value: String
+    let unit: String
+    let trend: TrendDirection
+    let status: HealthStatus
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: ModernDesignSystem.Spacing.small) {
+            HStack {
+                Text(title)
+                    .font(ModernDesignSystem.Typography.subheadline)
+                    .foregroundColor(ModernDesignSystem.Colors.textSecondary)
+                
+                Spacer()
+                
+                TrendIndicator(direction: trend)
+            }
+            
+            HStack(alignment: .firstTextBaseline, spacing: ModernDesignSystem.Spacing.xxSmall) {
+                Text(value)
+                    .font(ModernDesignSystem.Typography.numericLarge)
+                    .foregroundColor(status.foregroundColor)
+                
+                Text(unit)
+                    .font(ModernDesignSystem.Typography.caption)
+                    .foregroundColor(ModernDesignSystem.Colors.textTertiary)
+            }
+            
+            Text(status.displayName)
+                .font(ModernDesignSystem.Typography.caption)
+                .healthStatusStyle(for: status)
+        }
+    }
+}
+
+struct TrendIndicator: View {
+    let direction: TrendDirection
+    
+    var body: some View {
+        HStack(spacing: ModernDesignSystem.Spacing.xxxSmall) {
+            Image(systemName: direction.iconName)
+                .font(.caption)
+                .foregroundColor(direction.color)
+            
+            Text(direction.displayName)
+                .font(ModernDesignSystem.Typography.caption2)
+                .foregroundColor(direction.color)
+        }
+    }
+}
+
+enum TrendDirection: CaseIterable {
+    case improving
+    case stable
+    case declining
+    
+    var iconName: String {
+        switch self {
+        case .improving:
+            return "arrow.up.right"
+        case .stable:
+            return "arrow.right"
+        case .declining:
+            return "arrow.down.right"
+        }
+    }
+    
+    var color: Color {
+        switch self {
+        case .improving:
+            return ModernDesignSystem.Colors.healthGreen
+        case .stable:
+            return ModernDesignSystem.Colors.textSecondary
+        case .declining:
+            return ModernDesignSystem.Colors.healthRed
+        }
+    }
+    
+    var displayName: String {
+        switch self {
+        case .improving:
+            return "Improving"
+        case .stable:
+            return "Stable"
+        case .declining:
+            return "Declining"
+        }
+    }
+}
+
+// MARK: - Shadow Helper
+struct Shadow {
     let color: Color
     let radius: CGFloat
     let x: CGFloat
     let y: CGFloat
-    
-    static let cardShadow = ShadowStyle(color: .black.opacity(0.1), radius: 8, x: 0, y: 2)
-    static let buttonShadow = ShadowStyle(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
-    static let modalShadow = ShadowStyle(color: .black.opacity(0.25), radius: 20, x: 0, y: 10)
 }
 
-// MARK: - Card Styles
-struct CardStyle: ViewModifier {
-    let backgroundColor: Color
-    let cornerRadius: CGFloat
-    let shadow: ShadowStyle
+// MARK: - Animation Presets
+extension Animation {
+    static let vitalSenseSpring = Animation.spring(
+        response: 0.5,
+        dampingFraction: 0.7,
+        blendDuration: 0.2
+    )
     
-    func body(content: Content) -> some View {
-        content
-            .background(backgroundColor)
-            .cornerRadius(cornerRadius)
-            .shadow(color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y)
-    }
+    static let vitalSenseEaseInOut = Animation.easeInOut(duration: 0.3)
+    
+    static let vitalSenseBouncy = Animation.spring(
+        response: 0.6,
+        dampingFraction: 0.6,
+        blendDuration: 0.1
+    )
 }
 
-extension View {
-    func modernCard(
-        backgroundColor: Color = .backgroundSecondary,
-        cornerRadius: CGFloat = BorderRadius.md,
-        shadow: ShadowStyle = ShadowStyle.cardShadow
-    ) -> some View {
-        self.modifier(CardStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, shadow: shadow))
-    }
-}
-
-// MARK: - Button Styles
-struct PrimaryButtonStyle: ButtonStyle {
-    let backgroundColor: Color
-    let foregroundColor: Color
-    
-    init(backgroundColor: Color = .accentColor, foregroundColor: Color = .white) {
-        self.backgroundColor = backgroundColor
-        self.foregroundColor = foregroundColor
+// MARK: - Haptic Feedback Helper
+struct HapticFeedback {
+    static func light() {
+        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+        impactFeedback.impactOccurred()
     }
     
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .padding(.horizontal, Spacing.lg)
-            .padding(.vertical, Spacing.md)
-            .background(backgroundColor.opacity(configuration.isPressed ? 0.8 : 1.0))
-            .foregroundColor(foregroundColor)
-            .font(.bodyMedium)
-            .cornerRadius(BorderRadius.md)
-            .shadow(color: ShadowStyle.buttonShadow.color, radius: ShadowStyle.buttonShadow.radius, x: ShadowStyle.buttonShadow.x, y: ShadowStyle.buttonShadow.y)
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
-    }
-}
-
-struct SecondaryButtonStyle: ButtonStyle {
-    let borderColor: Color
-    let foregroundColor: Color
-    
-    init(borderColor: Color = .accentColor, foregroundColor: Color = .accentColor) {
-        self.borderColor = borderColor
-        self.foregroundColor = foregroundColor
+    static func medium() {
+        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        impactFeedback.impactOccurred()
     }
     
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .padding(.horizontal, Spacing.lg)
-            .padding(.vertical, Spacing.md)
-            .background(Color.clear)
-            .foregroundColor(foregroundColor.opacity(configuration.isPressed ? 0.7 : 1.0))
-            .font(.bodyMedium)
-            .overlay(
-                RoundedRectangle(cornerRadius: BorderRadius.md)
-                    .stroke(borderColor.opacity(configuration.isPressed ? 0.7 : 1.0), lineWidth: 2)
-            )
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
-    }
-}
-
-// MARK: - Status Indicator
-struct StatusIndicator: View {
-    let status: String
-    let color: Color
-    let size: CGFloat
-    
-    init(status: String, color: Color, size: CGFloat = 12) {
-        self.status = status
-        self.color = color
-        self.size = size
+    static func heavy() {
+        let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
+        impactFeedback.impactOccurred()
     }
     
-    var body: some View {
-        HStack(spacing: Spacing.xs) {
-            Circle()
-                .fill(color)
-                .frame(width: size, height: size)
-            
-            Text(status)
-                .font(.captionMedium)
-                .foregroundColor(.primary)
-        }
-    }
-}
-
-// MARK: - Metric Display Card
-struct MetricDisplayCard: View {
-    let title: String
-    let value: String
-    let unit: String?
-    let status: String?
-    let statusColor: Color?
-    let icon: String?
-    
-    init(
-        title: String,
-        value: String,
-        unit: String? = nil,
-        status: String? = nil,
-        statusColor: Color? = nil,
-        icon: String? = nil
-    ) {
-        self.title = title
-        self.value = value
-        self.unit = unit
-        self.status = status
-        self.statusColor = statusColor
-        self.icon = icon
+    static func success() {
+        let notificationFeedback = UINotificationFeedbackGenerator()
+        notificationFeedback.notificationOccurred(.success)
     }
     
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack {
-                if let icon = icon {
-                    Image(systemName: icon)
-                        .foregroundColor(.accentColor)
-                        .font(.headline)
-                }
-                
-                Text(title)
-                    .font(.metricLabel)
-                    .foregroundColor(.secondary)
-                
-                Spacer()
-                
-                if let status = status, let statusColor = statusColor {
-                    StatusIndicator(status: status, color: statusColor, size: 8)
-                }
-            }
-            
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(value)
-                    .font(.metricValue)
-                    .foregroundColor(.primary)
-                
-                if let unit = unit {
-                    Text(unit)
-                        .font(.captionRegular)
-                        .foregroundColor(.secondary)
-                }
-            }
-        }
-        .padding(Spacing.md)
-        .modernCard()
-    }
-}
-
-// MARK: - Progress Ring
-struct ProgressRing: View {
-    let progress: Double
-    let color: Color
-    let lineWidth: CGFloat
-    let size: CGFloat
-    
-    init(progress: Double, color: Color = .accentColor, lineWidth: CGFloat = 8, size: CGFloat = 60) {
-        self.progress = progress
-        self.color = color
-        self.lineWidth = lineWidth
-        self.size = size
+    static func warning() {
+        let notificationFeedback = UINotificationFeedbackGenerator()
+        notificationFeedback.notificationOccurred(.warning)
     }
     
-    var body: some View {
-        ZStack {
-            Circle()
-                .stroke(color.opacity(0.2), lineWidth: lineWidth)
-                .frame(width: size, height: size)
-            
-            Circle()
-                .trim(from: 0, to: progress)
-                .stroke(color, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                .frame(width: size, height: size)
-                .rotationEffect(.degrees(-90))
-                .animation(.easeInOut(duration: 1.0), value: progress)
-        }
+    static func error() {
+        let notificationFeedback = UINotificationFeedbackGenerator()
+        notificationFeedback.notificationOccurred(.error)
     }
-}
-
-// MARK: - Section Header
-struct SectionHeaderView: View {
-    let title: String
-    let subtitle: String?
-    let action: (() -> Void)?
-    let actionTitle: String?
-    
-    init(title: String, subtitle: String? = nil, actionTitle: String? = nil, action: (() -> Void)? = nil) {
-        self.title = title
-        self.subtitle = subtitle
-        self.actionTitle = actionTitle
-        self.action = action
-    }
-    
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.sectionHeader)
-                    .foregroundColor(.primary)
-                
-                if let subtitle = subtitle {
-                    Text(subtitle)
-                        .font(.captionRegular)
-                        .foregroundColor(.secondary)
-                }
-            }
-            
-            Spacer()
-            
-            if let action = action, let actionTitle = actionTitle {
-                Button(actionTitle, action: action)
-                    .font(.captionMedium)
-                    .foregroundColor(.accentColor)
-            }
-        }
-        .padding(.horizontal, Spacing.md)
-        .padding(.vertical, Spacing.sm)
-    }
-}
-
-// MARK: - Alert Banner
-struct AlertBanner: View {
-    let message: String
-    let type: AlertType
-    let dismissAction: (() -> Void)?
-    
-    enum AlertType {
-        case info, success, warning, error
-        
-        var color: Color {
-            switch self {
-            case .info: return .blue
-            case .success: return .green
-            case .warning: return .orange
-            case .error: return .red
-            }
-        }
-        
-        var icon: String {
-            switch self {
-            case .info: return "info.circle.fill"
-            case .success: return "checkmark.circle.fill"
-            case .warning: return "exclamationmark.triangle.fill"
-            case .error: return "xmark.circle.fill"
-            }
-        }
-    }
-    
-    var body: some View {
-        HStack(spacing: Spacing.sm) {
-            Image(systemName: type.icon)
-                .foregroundColor(type.color)
-                .font(.headline)
-            
-            Text(message)
-                .font(.bodyRegular)
-                .foregroundColor(.primary)
-                .multilineTextAlignment(.leading)
-            
-            Spacer()
-            
-            if let dismissAction = dismissAction {
-                Button(action: dismissAction) {
-                    Image(systemName: "xmark")
-                        .foregroundColor(.secondary)
-                        .font(.caption)
-                }
-            }
-        }
-        .padding(Spacing.md)
-        .background(type.color.opacity(0.1))
-        .cornerRadius(BorderRadius.md)
-        .overlay(
-            RoundedRectangle(cornerRadius: BorderRadius.md)
-                .stroke(type.color.opacity(0.3), lineWidth: 1)
-        )
-    }
-}
-
-// MARK: - Loading View
-struct LoadingView: View {
-    let message: String?
-    
-    init(message: String? = "Loading...") {
-        self.message = message
-    }
-    
-    var body: some View {
-        VStack(spacing: Spacing.md) {
-            ProgressView()
-                .scaleEffect(1.5)
-                .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
-            
-            if let message = message {
-                Text(message)
-                    .font(.bodyRegular)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding(Spacing.xl)
-        .modernCard()
-    }
-}
-
-// MARK: - Empty State View
-struct EmptyStateView: View {
-    let title: String
-    let message: String
-    let icon: String
-    let actionTitle: String?
-    let action: (() -> Void)?
-    
-    init(
-        title: String,
-        message: String,
-        icon: String,
-        actionTitle: String? = nil,
-        action: (() -> Void)? = nil
-    ) {
-        self.title = title
-        self.message = message
-        self.icon = icon
-        self.actionTitle = actionTitle
-        self.action = action
-    }
-    
-    var body: some View {
-        VStack(spacing: Spacing.lg) {
-            Image(systemName: icon)
-                .font(.system(size: 64))
-                .foregroundColor(.secondary)
-            
-            VStack(spacing: Spacing.sm) {
-                Text(title)
-                    .font(.sectionHeader)
-                    .foregroundColor(.primary)
-                
-                Text(message)
-                    .font(.bodyRegular)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            
-            if let action = action, let actionTitle = actionTitle {
-                Button(actionTitle, action: action)
-                    .buttonStyle(PrimaryButtonStyle())
-            }
-        }
-        .padding(Spacing.xl)
-    }
-}
-
-#Preview {
-    VStack(spacing: Spacing.lg) {
-        MetricDisplayCard(
-            title: "Walking Speed",
-            value: "1.25",
-            unit: "m/s",
-            status: "Normal",
-            statusColor: .green,
-            icon: "figure.walk"
-        )
-        
-        AlertBanner(
-            message: "Fall risk assessment completed successfully",
-            type: .success,
-            dismissAction: {}
-        )
-        
-        LoadingView(message: "Analyzing gait data...")
-    }
-    .padding()
 }

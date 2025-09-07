@@ -82,11 +82,14 @@ jobs:
             build-${{ runner.os }}-node${{ matrix.node-version }}-
 
       - name: Install Dependencies
-        run: npm ci --prefer-offline --silent
+        run: |
+          npm ci --prefer-offline --silent
+          # Install Node.js script dependencies
+          cd scripts/node && npm ci --prefer-offline --silent
 
       - name: Lint Code
         run: |
-          npm run lint -- --cache --cache-location .eslintcache
+          npm run lint
           npm run format:check
 
       - name: Type Check
@@ -208,7 +211,7 @@ jobs:
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.4'
+          xcode-version: '15.4'
 
       - name: Cache Homebrew
         uses: actions/cache@v4

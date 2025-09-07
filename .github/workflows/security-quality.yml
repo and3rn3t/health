@@ -33,7 +33,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --prefer-offline
+        run: |
+          npm ci --prefer-offline
+          cd scripts/node && npm ci --prefer-offline
 
       - name: Run npm audit
         run: |
@@ -88,7 +90,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --prefer-offline
+        run: |
+          npm ci --prefer-offline
+          cd scripts/node && npm ci --prefer-offline
 
       - name: Run linting with reports
         run: |
@@ -136,7 +140,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --prefer-offline
+        run: |
+          npm ci --prefer-offline
+          cd scripts/node && npm ci --prefer-offline
 
       - name: Install license checker
         run: npm install -g license-checker

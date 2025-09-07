@@ -8,149 +8,63 @@ struct GaitMetrics {
     var averageStepLength: Double? // meters
     var walkingAsymmetry: Double? // percentage
     var doubleSupportTime: Double? // percentage of gait cycle
-    var stairAscentSpeed: Double? // m/s
-    var stairDescentSpeed: Double? // m/s
-    var cadence: Double? // steps per minute
-    var lastUpdated: Date?
-    
+    var stanceTime: Double? // percentage of gait cycle
+    var swingTime: Double? // percentage of gait cycle
+    var stepFrequency: Double? // steps per minute
+    var strideLength: Double? // meters
+    var walkingSpeedVariability: Double? // coefficient of variation
+    var stepLengthVariability: Double? // coefficient of variation
+    var mobilityStatus: MobilityStatus
+    var riskLevel: RiskLevel?
+
     init() {
-        self.lastUpdated = Date()
-    }
-    
-    var isComplete: Bool {
-        averageWalkingSpeed != nil && averageStepLength != nil && 
-        walkingAsymmetry != nil && doubleSupportTime != nil
-    }
-    
-    var mobilityStatus: MobilityStatus {
-        guard let speed = averageWalkingSpeed else { return .unknown }
-        
-        if speed >= 1.2 {
-            return .excellent
-        } else if speed >= 1.0 {
-            return .good
-        } else if speed >= 0.8 {
-            return .concerning
-        } else {
-            return .impaired
-        }
+        self.mobilityStatus = .unknown
     }
 }
 
-enum MobilityStatus: String, CaseIterable {
-    case excellent = "Excellent"
-    case good = "Good"
-    case concerning = "Concerning"
-    case impaired = "Impaired"
-    case unknown = "Unknown"
-    
+enum MobilityStatus: String, CaseIterable, Codable {
+    case excellent = "excellent"
+    case good = "good"
+    case fair = "fair"
+    case poor = "poor"
+    case unknown = "unknown"
+
+    var displayName: String {
+        switch self {
+        case .excellent: return "Excellent"
+        case .good: return "Good"
+        case .fair: return "Fair"
+        case .poor: return "Poor"
+        case .unknown: return "Unknown"
+        }
+    }
+
     var color: Color {
         switch self {
         case .excellent: return .green
         case .good: return .blue
-        case .concerning: return .orange
-        case .impaired: return .red
+        case .fair: return .orange
+        case .poor: return .red
         case .unknown: return .gray
         }
     }
-    
-    var description: String {
+}
+
+enum RiskLevel: String, CaseIterable, Codable {
+    case low = "low"
+    case moderate = "moderate"
+    case high = "high"
+    case critical = "critical"
+
+    var displayName: String {
         switch self {
-        case .excellent: return "Walking speed and gait patterns are optimal"
-        case .good: return "Good mobility with minor variations"
-        case .concerning: return "Some mobility concerns detected"
-        case .impaired: return "Significant mobility limitations present"
-        case .unknown: return "Insufficient data for assessment"
+        case .low: return "Low Risk"
+        case .moderate: return "Moderate Risk"
+        case .high: return "High Risk"
+        case .critical: return "Critical Risk"
         }
     }
-}
 
-// MARK: - Fall Risk Assessment Models
-
-struct FallRiskScore {
-    let overallScore: Double // 1.0 (low) to 4.0 (critical)
-    let riskLevel: FallRiskLevel
-    let riskFactors: [FallRiskFactor]
-    let lastAssessment: Date
-    
-    var recommendations: [String] {
-        var recs: [String] = []
-        
-        switch riskLevel {
-        case .low:
-            recs.append("Continue current activity level")
-            recs.append("Regular walking for maintenance")
-        case .moderate:
-            recs.append("Consider balance exercises")
-            recs.append("Review home safety")
-            recs.append("Monitor gait changes")
-        case .high:
-            recs.append("Consult healthcare provider")
-            recs.append("Consider physical therapy")
-            recs.append("Implement fall prevention strategies")
-        case .critical:
-            recs.append("Immediate medical evaluation recommended")
-            recs.append("Consider mobility aids")
-            recs.append("Home safety assessment needed")
-        }
-        
-        return recs
-    }
-}
-
-enum FallRiskLevel: String, CaseIterable {
-    case low = "Low Risk"
-    case moderate = "Moderate Risk"
-    case high = "High Risk"
-    case critical = "Critical Risk"
-    
-    static func fromScore(_ score: Double) -> FallRiskLevel {
-        if score <= 1.5 {
-            return .low
-        } else if score <= 2.5 {
-            return .moderate
-        } else if score <= 3.5 {
-            return .high
-        } else {
-            return .critical
-        }
-    }
-    
-    var color: Color {
-        switch self {
-        case .low: return .green
-        case .moderate: return .yellow
-        case .high: return .orange
-        case .critical: return .red
-        }
-    }
-    
-    var iconName: String {
-        switch self {
-        case .low: return "checkmark.shield.fill"
-        case .moderate: return "exclamationmark.shield.fill"
-        case .high: return "exclamationmark.triangle.fill"
-        case .critical: return "xmark.shield.fill"
-        }
-    }
-}
-
-struct FallRiskFactor {
-    let name: String
-    let value: Double
-    let unit: String
-    let score: Double // 1.0 (low risk) to 4.0 (high risk)
-    let severity: FallRiskSeverity
-    let description: String
-    let recommendation: String
-}
-
-enum FallRiskSeverity: String, CaseIterable {
-    case low = "Low"
-    case moderate = "Moderate"
-    case high = "High"
-    case critical = "Critical"
-    
     var color: Color {
         switch self {
         case .low: return .green
@@ -161,324 +75,473 @@ enum FallRiskSeverity: String, CaseIterable {
     }
 }
 
-// MARK: - Balance Assessment Models
-
-struct BalanceAssessment {
-    let score: Double // 0-10 scale
-    let maxScore: Double
-    let indicators: [BalanceIndicator]
+// MARK: - Gait Assessment Result
+struct GaitAssessment {
     let timestamp: Date
-    
-    var balanceLevel: BalanceLevel {
-        let percentage = score / maxScore
-        
-        if percentage >= 0.8 {
-            return .good
-        } else if percentage >= 0.6 {
-            return .fair
-        } else if percentage >= 0.4 {
-            return .poor
-        } else {
-            return .concerning
-        }
-    }
-}
+    let metrics: GaitMetrics
+    let riskScore: FallRiskScore
+    let recommendations: [String]
+    let detailedAnalysis: DetailedGaitAnalysis
+    let environmentalFactors: EnvironmentalFactors?
 
-enum BalanceLevel: String, CaseIterable {
-    case good = "Good"
-    case fair = "Fair"
-    case poor = "Poor"
-    case concerning = "Concerning"
-    
-    var color: Color {
-        switch self {
-        case .good: return .green
-        case .fair: return .blue
-        case .poor: return .orange
-        case .concerning: return .red
-        }
-    }
-}
-
-struct BalanceIndicator {
-    let type: BalanceIndicatorType
-    let severity: FallRiskSeverity
-    let description: String
-}
-
-enum BalanceIndicatorType: String, CaseIterable {
-    case asymmetry = "Gait Asymmetry"
-    case stability = "Dynamic Stability"
-    case mobility = "Mobility"
-    case coordination = "Coordination"
-}
-
-// MARK: - Daily Mobility Trends
-
-struct DailyMobilityTrends {
-    var stepCount: Int?
-    var walkingDistance: Double? // meters
-    var standTime: Double? // minutes
-    var exerciseTime: Double? // minutes
-    var flightsClimbed: Int?
-    var mobilityScore: Double?
-    var date: Date
-    
-    init() {
-        self.date = Date()
-    }
-    
-    var activityLevel: ActivityLevel {
-        guard let steps = stepCount else { return .unknown }
-        
-        if steps >= 8000 {
-            return .active
-        } else if steps >= 5000 {
-            return .moderate
-        } else if steps >= 2000 {
-            return .limited
-        } else {
-            return .sedentary
-        }
-    }
-}
-
-enum ActivityLevel: String, CaseIterable {
-    case active = "Active"
-    case moderate = "Moderate"
-    case limited = "Limited"
-    case sedentary = "Sedentary"
-    case unknown = "Unknown"
-    
-    var color: Color {
-        switch self {
-        case .active: return .green
-        case .moderate: return .blue
-        case .limited: return .orange
-        case .sedentary: return .red
-        case .unknown: return .gray
-        }
-    }
-    
-    var description: String {
-        switch self {
-        case .active: return "Great mobility and activity level"
-        case .moderate: return "Good daily movement"
-        case .limited: return "Limited daily activity"
-        case .sedentary: return "Very low activity level"
-        case .unknown: return "Insufficient activity data"
-        }
-    }
-}
-
-// MARK: - Walking Stability Data
-
-struct WalkingStabilityReading {
-    let timestamp: Date
-    let stabilityScore: Double // 0-1 scale
-    let confidence: Double // measurement confidence
-    let context: WalkingContext
-}
-
-enum WalkingContext: String, CaseIterable {
-    case indoor = "Indoor"
-    case outdoor = "Outdoor"
-    case stairs = "Stairs"
-    case uneven = "Uneven Surface"
-    case unknown = "Unknown"
-}
-
-// MARK: - Gait Analysis for Data Transmission
-
-struct GaitAnalysisPayload: Codable {
-    let userId: String
-    let deviceId: String
-    let timestamp: Date
-    let gaitMetrics: GaitMetricsData
-    let fallRiskAssessment: FallRiskData
-    let balanceAssessment: BalanceData?
-    let dailyMobility: DailyMobilityData?
-    let analysisVersion: String
-    
-    init(userId: String, deviceId: String, gait: GaitMetrics, fallRisk: FallRiskScore, balance: BalanceAssessment?, mobility: DailyMobilityTrends?) {
-        self.userId = userId
-        self.deviceId = deviceId
+    init(
+        metrics: GaitMetrics,
+        riskScore: FallRiskScore,
+        recommendations: [String] = [],
+        detailedAnalysis: DetailedGaitAnalysis,
+        environmentalFactors: EnvironmentalFactors? = nil
+    ) {
         self.timestamp = Date()
-        self.gaitMetrics = GaitMetricsData(from: gait)
-        self.fallRiskAssessment = FallRiskData(from: fallRisk)
-        self.balanceAssessment = balance.map { BalanceData(from: $0) }
-        self.dailyMobility = mobility.map { DailyMobilityData(from: $0) }
-        self.analysisVersion = "1.0"
+        self.metrics = metrics
+        self.riskScore = riskScore
+        self.recommendations = recommendations
+        self.detailedAnalysis = detailedAnalysis
+        self.environmentalFactors = environmentalFactors
     }
 }
 
-struct GaitMetricsData: Codable {
+// MARK: - Fall Risk Score
+struct FallRiskScore {
+    let score: Double // 0-100 scale
+    let confidence: Double // 0-1 scale
+    let riskLevel: RiskLevel
+    let factors: [RiskFactor]
+
+    init(score: Double, confidence: Double, factors: [RiskFactor] = []) {
+        self.score = max(0, min(100, score))
+        self.confidence = max(0, min(1, confidence))
+        self.factors = factors
+
+        // Determine risk level based on score
+        switch score {
+        case 0..<25:
+            self.riskLevel = .low
+        case 25..<50:
+            self.riskLevel = .moderate
+        case 50..<75:
+            self.riskLevel = .high
+        default:
+            self.riskLevel = .critical
+        }
+    }
+}
+
+struct RiskFactor {
+    let name: String
+    let severity: Double // 0-1 scale
+    let description: String
+    let category: RiskCategory
+
+    enum RiskCategory: String, CaseIterable {
+        case gaitPattern = "Gait Pattern"
+        case balance = "Balance"
+        case strength = "Strength"
+        case cognitive = "Cognitive"
+        case environmental = "Environmental"
+        case medical = "Medical History"
+    }
+}
+
+// MARK: - Detailed Gait Analysis
+struct DetailedGaitAnalysis {
+    let gaitCycle: GaitCycleAnalysis
+    let balanceMetrics: BalanceMetrics
+    let temporalSpatialParameters: TemporalSpatialParameters
+    let asymmetryAnalysis: AsymmetryAnalysis
+    let variabilityAnalysis: VariabilityAnalysis
+
+    init(
+        gaitCycle: GaitCycleAnalysis,
+        balanceMetrics: BalanceMetrics,
+        temporalSpatialParameters: TemporalSpatialParameters,
+        asymmetryAnalysis: AsymmetryAnalysis,
+        variabilityAnalysis: VariabilityAnalysis
+    ) {
+        self.gaitCycle = gaitCycle
+        self.balanceMetrics = balanceMetrics
+        self.temporalSpatialParameters = temporalSpatialParameters
+        self.asymmetryAnalysis = asymmetryAnalysis
+        self.variabilityAnalysis = variabilityAnalysis
+    }
+}
+
+struct GaitCycleAnalysis {
+    let stancePhasePercentage: Double
+    let swingPhasePercentage: Double
+    let doubleSupportPercentage: Double
+    let singleSupportPercentage: Double
+    let cadence: Double // steps per minute
+    let strideTime: Double // seconds
+    let stepTime: Double // seconds
+
+    var isNormalGaitCycle: Bool {
+        // Normal gait cycle: stance ~60%, swing ~40%, double support ~10-12%
+        return stancePhasePercentage >= 55 && stancePhasePercentage <= 65 &&
+               swingPhasePercentage >= 35 && swingPhasePercentage <= 45 &&
+               doubleSupportPercentage >= 8 && doubleSupportPercentage <= 15
+    }
+}
+
+struct BalanceMetrics {
+    let mediolateralSway: Double // mm
+    let anteroposteriorSway: Double // mm
+    let swayVelocity: Double // mm/s
+    let postualStability: Double // 0-100 scale
+    let dynamicBalance: Double // 0-100 scale
+
+    var overallBalanceScore: Double {
+        // Weighted average of balance components
+        return (postualStability * 0.4) + (dynamicBalance * 0.6)
+    }
+}
+
+struct TemporalSpatialParameters {
+    let stepLength: StepMeasurement
+    let strideLength: StepMeasurement
+    let stepWidth: Double // cm
+    let walkingSpeed: Double // m/s
+    let cadence: Double // steps/min
+    let stepTime: StepTiming
+    let strideTime: Double // seconds
+
+    struct StepMeasurement {
+        let left: Double // cm
+        let right: Double // cm
+        let average: Double // cm
+
+        var asymmetryPercentage: Double {
+            guard average > 0 else { return 0 }
+            return abs(left - right) / average * 100
+        }
+    }
+
+    struct StepTiming {
+        let left: Double // seconds
+        let right: Double // seconds
+        let average: Double // seconds
+
+        var asymmetryPercentage: Double {
+            guard average > 0 else { return 0 }
+            return abs(left - right) / average * 100
+        }
+    }
+}
+
+struct AsymmetryAnalysis {
+    let stepLengthAsymmetry: Double // percentage
+    let stepTimeAsymmetry: Double // percentage
+    let swingTimeAsymmetry: Double // percentage
+    let stanceTimeAsymmetry: Double // percentage
+    let overallAsymmetryScore: Double // 0-100 scale
+
+    init(
+        stepLengthAsymmetry: Double,
+        stepTimeAsymmetry: Double,
+        swingTimeAsymmetry: Double,
+        stanceTimeAsymmetry: Double
+    ) {
+        self.stepLengthAsymmetry = stepLengthAsymmetry
+        self.stepTimeAsymmetry = stepTimeAsymmetry
+        self.swingTimeAsymmetry = swingTimeAsymmetry
+        self.stanceTimeAsymmetry = stanceTimeAsymmetry
+
+        // Calculate overall asymmetry score (lower is better)
+        let asymmetries = [
+            stepLengthAsymmetry,
+            stepTimeAsymmetry,
+            swingTimeAsymmetry,
+            stanceTimeAsymmetry
+        ]
+        let averageAsymmetry = asymmetries.reduce(0, +) / Double(asymmetries.count)
+        self.overallAsymmetryScore = max(0, 100 - (averageAsymmetry * 10))
+    }
+
+    var isSignificantAsymmetry: Bool {
+        // Asymmetry > 3% is generally considered significant
+        return stepLengthAsymmetry > 3.0 || stepTimeAsymmetry > 3.0
+    }
+}
+
+struct VariabilityAnalysis {
+    let stepTimeVariability: Double // coefficient of variation
+    let stepLengthVariability: Double // coefficient of variation
+    let walkingSpeedVariability: Double // coefficient of variation
+    let strideTimeVariability: Double // coefficient of variation
+    let overallVariabilityScore: Double // 0-100 scale
+
+    init(
+        stepTimeVariability: Double,
+        stepLengthVariability: Double,
+        walkingSpeedVariability: Double,
+        strideTimeVariability: Double
+    ) {
+        self.stepTimeVariability = stepTimeVariability
+        self.stepLengthVariability = stepLengthVariability
+        self.walkingSpeedVariability = walkingSpeedVariability
+        self.strideTimeVariability = strideTimeVariability
+
+        // Calculate overall variability score (lower variability = higher score)
+        let variabilities = [
+            stepTimeVariability,
+            stepLengthVariability,
+            walkingSpeedVariability,
+            strideTimeVariability
+        ]
+        let averageVariability = variabilities.reduce(0, +) / Double(variabilities.count)
+        self.overallVariabilityScore = max(0, 100 - (averageVariability * 100))
+    }
+
+    var isExcessiveVariability: Bool {
+        // High variability (CV > 0.05) indicates potential issues
+        return stepTimeVariability > 0.05 || stepLengthVariability > 0.05
+    }
+}
+
+// MARK: - Environmental Factors
+struct EnvironmentalFactors {
+    let surface: SurfaceType
+    let lighting: LightingCondition
+    let obstacles: [Obstacle]
+    let weatherConditions: WeatherCondition?
+    let noiseLevel: Double? // dB
+
+    enum SurfaceType: String, CaseIterable {
+        case indoor = "indoor"
+        case outdoor = "outdoor"
+        case carpet = "carpet"
+        case hardwood = "hardwood"
+        case concrete = "concrete"
+        case grass = "grass"
+        case uneven = "uneven"
+
+        var riskMultiplier: Double {
+            switch self {
+            case .indoor, .hardwood, .concrete: return 1.0
+            case .carpet: return 1.1
+            case .outdoor, .grass: return 1.2
+            case .uneven: return 1.5
+            }
+        }
+    }
+
+    enum LightingCondition: String, CaseIterable {
+        case bright = "bright"
+        case normal = "normal"
+        case dim = "dim"
+        case dark = "dark"
+
+        var riskMultiplier: Double {
+            switch self {
+            case .bright, .normal: return 1.0
+            case .dim: return 1.2
+            case .dark: return 1.5
+            }
+        }
+    }
+
+    struct Obstacle {
+        let type: ObstacleType
+        let distance: Double // meters from user
+        let height: Double? // cm
+
+        enum ObstacleType: String, CaseIterable {
+            case step = "step"
+            case curb = "curb"
+            case furniture = "furniture"
+            case person = "person"
+            case pet = "pet"
+            case other = "other"
+        }
+    }
+
+    enum WeatherCondition: String, CaseIterable {
+        case clear = "clear"
+        case cloudy = "cloudy"
+        case rainy = "rainy"
+        case snowy = "snowy"
+        case windy = "windy"
+
+        var riskMultiplier: Double {
+            switch self {
+            case .clear, .cloudy: return 1.0
+            case .windy: return 1.1
+            case .rainy: return 1.3
+            case .snowy: return 1.5
+            }
+        }
+    }
+}
+
+// MARK: - Gait Data Transmission Models
+struct GaitDataPayload: Codable {
+    let deviceId: String
+    let userId: String
+    let timestamp: Date
+    let sessionId: String
+    let gaitMetrics: CodableGaitMetrics
+    let assessment: CodableGaitAssessment?
+    let rawSensorData: [SensorReading]?
+
+    init(
+        deviceId: String,
+        userId: String,
+        sessionId: String,
+        gaitMetrics: GaitMetrics,
+        assessment: GaitAssessment? = nil,
+        rawSensorData: [SensorReading]? = nil
+    ) {
+        self.deviceId = deviceId
+        self.userId = userId
+        self.timestamp = Date()
+        self.sessionId = sessionId
+        self.gaitMetrics = CodableGaitMetrics(from: gaitMetrics)
+        self.assessment = assessment.map(CodableGaitAssessment.init)
+        self.rawSensorData = rawSensorData
+    }
+}
+
+// Codable versions of the main structs
+struct CodableGaitMetrics: Codable {
     let averageWalkingSpeed: Double?
     let averageStepLength: Double?
     let walkingAsymmetry: Double?
     let doubleSupportTime: Double?
-    let stairAscentSpeed: Double?
-    let stairDescentSpeed: Double?
-    let cadence: Double?
+    let stanceTime: Double?
+    let swingTime: Double?
+    let stepFrequency: Double?
+    let strideLength: Double?
+    let walkingSpeedVariability: Double?
+    let stepLengthVariability: Double?
     let mobilityStatus: String
-    
-    init(from gait: GaitMetrics) {
-        self.averageWalkingSpeed = gait.averageWalkingSpeed
-        self.averageStepLength = gait.averageStepLength
-        self.walkingAsymmetry = gait.walkingAsymmetry
-        self.doubleSupportTime = gait.doubleSupportTime
-        self.stairAscentSpeed = gait.stairAscentSpeed
-        self.stairDescentSpeed = gait.stairDescentSpeed
-        self.cadence = gait.cadence
-        self.mobilityStatus = gait.mobilityStatus.rawValue
+    let riskLevel: String?
+
+    init(from metrics: GaitMetrics) {
+        self.averageWalkingSpeed = metrics.averageWalkingSpeed
+        self.averageStepLength = metrics.averageStepLength
+        self.walkingAsymmetry = metrics.walkingAsymmetry
+        self.doubleSupportTime = metrics.doubleSupportTime
+        self.stanceTime = metrics.stanceTime
+        self.swingTime = metrics.swingTime
+        self.stepFrequency = metrics.stepFrequency
+        self.strideLength = metrics.strideLength
+        self.walkingSpeedVariability = metrics.walkingSpeedVariability
+        self.stepLengthVariability = metrics.stepLengthVariability
+        self.mobilityStatus = metrics.mobilityStatus.rawValue
+        self.riskLevel = metrics.riskLevel?.rawValue
     }
 }
 
-struct FallRiskData: Codable {
-    let overallScore: Double
+struct CodableGaitAssessment: Codable {
+    let timestamp: Date
+    let riskScore: Double
     let riskLevel: String
-    let riskFactors: [FallRiskFactorData]
-    let lastAssessment: Date
-    
-    init(from fallRisk: FallRiskScore) {
-        self.overallScore = fallRisk.overallScore
-        self.riskLevel = fallRisk.riskLevel.rawValue
-        self.riskFactors = fallRisk.riskFactors.map { FallRiskFactorData(from: $0) }
-        self.lastAssessment = fallRisk.lastAssessment
+    let confidence: Double
+    let recommendations: [String]
+
+    init(from assessment: GaitAssessment) {
+        self.timestamp = assessment.timestamp
+        self.riskScore = assessment.riskScore.score
+        self.riskLevel = assessment.riskScore.riskLevel.rawValue
+        self.confidence = assessment.riskScore.confidence
+        self.recommendations = assessment.recommendations
     }
 }
 
-struct FallRiskFactorData: Codable {
-    let name: String
-    let value: Double
-    let unit: String
-    let score: Double
-    let severity: String
-    let description: String
-    
-    init(from factor: FallRiskFactor) {
-        self.name = factor.name
-        self.value = factor.value
-        self.unit = factor.unit
-        self.score = factor.score
-        self.severity = factor.severity.rawValue
-        self.description = factor.description
-    }
-}
-
-struct BalanceData: Codable {
-    let score: Double
-    let maxScore: Double
-    let balanceLevel: String
-    let indicators: [BalanceIndicatorData]
-    let assessmentDate: Date
-    
-    init(from balance: BalanceAssessment) {
-        self.score = balance.score
-        self.maxScore = balance.maxScore
-        self.balanceLevel = balance.balanceLevel.rawValue
-        self.indicators = balance.indicators.map { BalanceIndicatorData(from: $0) }
-        self.assessmentDate = balance.timestamp
-    }
-}
-
-struct BalanceIndicatorData: Codable {
-    let type: String
-    let severity: String
-    let description: String
-    
-    init(from indicator: BalanceIndicator) {
-        self.type = indicator.type.rawValue
-        self.severity = indicator.severity.rawValue
-        self.description = indicator.description
-    }
-}
-
-struct DailyMobilityData: Codable {
-    let stepCount: Int?
-    let walkingDistance: Double?
-    let standTime: Double?
-    let activityLevel: String
-    let trendDate: Date
-    
-    init(from mobility: DailyMobilityTrends) {
-        self.stepCount = mobility.stepCount
-        self.walkingDistance = mobility.walkingDistance
-        self.standTime = mobility.standTime
-        self.activityLevel = mobility.activityLevel.rawValue
-        self.trendDate = mobility.date
-    }
-}
-
-// MARK: - Additional Payload Types for WebSocket Transmission
-
-struct RealtimeGaitDataPayload: Codable {
-    let userId: String
-    let deviceId: String
+struct SensorReading: Codable {
     let timestamp: Date
-    let stepCount: Int
-    let stepCadence: Double
-    let stabilityScore: Double
-    let walkingPattern: String
-    let sessionDuration: TimeInterval
-    
-    init(userId: String, deviceId: String, stepCount: Int, stepCadence: Double, stabilityScore: Double, walkingPattern: String, sessionDuration: TimeInterval) {
-        self.userId = userId
-        self.deviceId = deviceId
-        self.timestamp = Date()
-        self.stepCount = stepCount
-        self.stepCadence = stepCadence
-        self.stabilityScore = stabilityScore
-        self.walkingPattern = walkingPattern
-        self.sessionDuration = sessionDuration
+    let sensorType: SensorType
+    let x: Double
+    let y: Double
+    let z: Double
+    let accuracy: Double?
+
+    enum SensorType: String, Codable, CaseIterable {
+        case accelerometer = "accelerometer"
+        case gyroscope = "gyroscope"
+        case magnetometer = "magnetometer"
+        case barometer = "barometer"
+        case gps = "gps"
     }
 }
 
-struct FallRiskAssessmentPayload: Codable {
+// MARK: - Historical Gait Data
+struct HistoricalGaitData {
     let userId: String
-    let deviceId: String
-    let timestamp: Date
-    let fallRiskScore: FallRiskData
-    let assessmentTrigger: String // "scheduled", "threshold", "manual"
-    let dataQuality: String // "high", "medium", "low"
-    
-    init(userId: String, deviceId: String, fallRisk: FallRiskScore, trigger: String = "manual") {
-        self.userId = userId
-        self.deviceId = deviceId
-        self.timestamp = Date()
-        self.fallRiskScore = FallRiskData(from: fallRisk)
-        self.assessmentTrigger = trigger
-        self.dataQuality = "high" // Default to high quality
-    }
-}
+    let dateRange: DateInterval
+    let dailyMetrics: [DailyGaitMetrics]
+    let trends: GaitTrends
+    let alerts: [GaitAlert]
 
-// MARK: - Dictionary Conversion Extensions
-extension GaitAnalysisPayload {
-    func toDictionary() throws -> [String: Any] {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        let data = try encoder.encode(self)
-        let json = try JSONSerialization.jsonObject(with: data, options: [])
-        return json as? [String: Any] ?? [:]
+    struct DailyGaitMetrics {
+        let date: Date
+        let totalSteps: Int
+        let totalDistance: Double // meters
+        let averageSpeed: Double // m/s
+        let activeMinutes: Double
+        let gaitSessions: [GaitSession]
+        let riskScore: Double
     }
-}
 
-extension RealtimeGaitDataPayload {
-    func toDictionary() throws -> [String: Any] {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        let data = try encoder.encode(self)
-        let json = try JSONSerialization.jsonObject(with: data, options: [])
-        return json as? [String: Any] ?? [:]
+    struct GaitSession {
+        let startTime: Date
+        let duration: TimeInterval
+        let metrics: GaitMetrics
+        let location: String?
     }
-}
 
-extension FallRiskAssessmentPayload {
-    func toDictionary() throws -> [String: Any] {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        let data = try encoder.encode(self)
-        let json = try JSONSerialization.jsonObject(with: data, options: [])
-        return json as? [String: Any] ?? [:]
+    struct GaitTrends {
+        let speedTrend: TrendDirection
+        let asymmetryTrend: TrendDirection
+        let variabilityTrend: TrendDirection
+        let riskTrend: TrendDirection
+        let weeklyChange: Double // percentage
+        let monthlyChange: Double // percentage
+
+        enum TrendDirection: String, CaseIterable {
+            case improving = "improving"
+            case stable = "stable"
+            case declining = "declining"
+
+            var color: Color {
+                switch self {
+                case .improving: return .green
+                case .stable: return .blue
+                case .declining: return .red
+                }
+            }
+        }
+    }
+
+    struct GaitAlert {
+        let id: UUID
+        let timestamp: Date
+        let type: AlertType
+        let severity: AlertSeverity
+        let message: String
+        let acknowledged: Bool
+
+        enum AlertType: String, CaseIterable {
+            case fallRiskIncrease = "fall_risk_increase"
+            case asymmetryDetected = "asymmetry_detected"
+            case speedDecrease = "speed_decrease"
+            case variabilityIncrease = "variability_increase"
+            case missedSession = "missed_session"
+        }
+
+        enum AlertSeverity: String, CaseIterable {
+            case low = "low"
+            case medium = "medium"
+            case high = "high"
+            case critical = "critical"
+
+            var color: Color {
+                switch self {
+                case .low: return .green
+                case .medium: return .yellow
+                case .high: return .orange
+                case .critical: return .red
+                }
+            }
+        }
     }
 }

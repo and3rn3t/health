@@ -28,7 +28,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --prefer-offline
+        run: |
+          npm ci --prefer-offline
+          # Install Node.js script dependencies
+          cd scripts/node && npm ci --prefer-offline
 
       - name: Cache build artifacts
         uses: actions/cache@v4
@@ -87,7 +90,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --prefer-offline
+        run: |
+          npm ci --prefer-offline
+          cd scripts/node && npm ci --prefer-offline
 
       - name: Restore build cache
         uses: actions/cache@v4
@@ -128,7 +133,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --prefer-offline
+        run: |
+          npm ci --prefer-offline
+          cd scripts/node && npm ci --prefer-offline
 
       - name: Restore build cache
         uses: actions/cache@v4
