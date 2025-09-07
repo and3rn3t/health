@@ -68,7 +68,7 @@ jobs:
 
           # Build for testing with most compatible SDK available
           echo "Finding available iOS Simulator SDK..."
-          AVAILABLE_SDK=$(xcrun xcodebuild -showsdks | grep "Simulator - iOS" | tail -1 | awk '{print $4}')
+          AVAILABLE_SDK=$(xcrun xcodebuild -showsdks | grep "Simulator - iOS" | tail -1 | awk '{print $6}')
           echo "Using SDK: $AVAILABLE_SDK"
 
           xcodebuild build-for-testing \
@@ -96,7 +96,7 @@ jobs:
           echo "Using device ID destination: $DESTINATION"
 
           # Find available SDK
-          AVAILABLE_SDK=$(xcrun xcodebuild -showsdks | grep "Simulator - iOS" | tail -1 | awk '{print $4}')
+          AVAILABLE_SDK=$(xcrun xcodebuild -showsdks | grep "Simulator - iOS" | tail -1 | awk '{print $6}')
           echo "Using SDK: $AVAILABLE_SDK"
 
           if [ "${{ matrix.test-type }}" == "unit" ]; then
