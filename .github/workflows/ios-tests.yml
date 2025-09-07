@@ -221,19 +221,7 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             ENABLE_BITCODE=NO \
-            ONLY_ACTIVE_ARCH=YES || {
-              echo "Build failed with destination, trying SDK-only approach..."
-              xcodebuild clean build \
-                -project ios/HealthKitBridge.xcodeproj \
-                -scheme HealthKitBridge \
-                -sdk iphonesimulator \
-                -derivedDataPath ios/build \
-                -configuration Debug \
-                CODE_SIGN_IDENTITY="" \
-                CODE_SIGNING_REQUIRED=NO \
-                CODE_SIGNING_ALLOWED=NO \
-                ENABLE_BITCODE=NO
-            }
+            ONLY_ACTIVE_ARCH=YES
 
       - name: Run Unit Tests
         if: matrix.test-type == 'unit'
