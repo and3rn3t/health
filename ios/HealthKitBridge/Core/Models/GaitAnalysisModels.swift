@@ -438,7 +438,7 @@ struct SensorReading: Codable {
     let sensorType: SensorType
     let x: Double
     let y: Double
-    let z: Double
+    let zValue: Double
     let accuracy: Double?
 
     enum SensorType: String, Codable, CaseIterable {
