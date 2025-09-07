@@ -110,20 +110,27 @@ jobs:
           # List available runtimes for debugging
           echo "Available iOS runtimes:"
           xcrun simctl list runtimes | grep iOS
+          echo "Available device types:"
+          xcrun simctl list devicetypes | grep "$DEVICE_NAME"
 
-          # Create simulator with fallback runtime options (iOS 18.0 should be available with Xcode 16.1)
-          UDID=$(xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_NAME" "iOS-18-0" 2>/dev/null || \
-                 xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_NAME" "iOS18.0" 2>/dev/null || \
-                 xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_NAME" 2>/dev/null)
+          # Try to find the newest available iOS runtime
+          RUNTIME=$(xcrun simctl list runtimes | grep iOS | tail -1 | grep -o 'com.apple.CoreSimulator.SimRuntime.iOS-[0-9-]*')
+          echo "Using runtime: $RUNTIME"
+
+          # Create simulator with the detected runtime
+          if [ ! -z "$RUNTIME" ]; then
+            UDID=$(xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_NAME" "$RUNTIME" 2>/dev/null)
+          else
+            # Fallback to default runtime
+            UDID=$(xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_NAME" 2>/dev/null)
+          fi
 
           if [ -z "$UDID" ]; then
             echo "Failed to create simulator"
             exit 1
           fi
 
-          echo "Created simulator: $UDID"
-
-          # Boot simulator
+          echo "Created simulator: $UDID"          # Boot simulator
           xcrun simctl boot "$UDID"
           echo "udid=$UDID" >> $GITHUB_OUTPUT
 
@@ -146,12 +153,14 @@ jobs:
 
       - name: Build for Testing
         run: |
+          # Use a conservative deployment target that should be available
           xcodebuild build-for-testing \
             -project ios/HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
             -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.udid }}" \
             -derivedDataPath ios/build \
-            -enableCodeCoverage YES
+            -enableCodeCoverage YES \
+            IPHONEOS_DEPLOYMENT_TARGET=17.0
 
       - name: Run Unit Tests
         if: matrix.test-type == 'unit'
@@ -162,6 +171,7 @@ jobs:
             -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.udid }}" \
             -derivedDataPath ios/build \
             -enableCodeCoverage YES \
+            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
             -only-testing HealthKitBridgeTests
 
       - name: Run UI Tests
