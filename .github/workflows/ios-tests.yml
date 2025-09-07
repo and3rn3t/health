@@ -105,8 +105,22 @@ jobs:
         id: simulator
         run: |
           DEVICE_NAME="${{ matrix.device }}"
-          # Create simulator with fallback runtime options
-          UDID=$(xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_NAME" 2>/dev/null)
+          echo "Setting up simulator for: $DEVICE_NAME"
+
+          # List available runtimes for debugging
+          echo "Available iOS runtimes:"
+          xcrun simctl list runtimes | grep iOS
+
+          # Create simulator with fallback runtime options (iOS 18.0 should be available with Xcode 16.1)
+          UDID=$(xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_NAME" "iOS-18-0" 2>/dev/null || \
+                 xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_NAME" "iOS18.0" 2>/dev/null || \
+                 xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_NAME" 2>/dev/null)
+
+          if [ -z "$UDID" ]; then
+            echo "Failed to create simulator"
+            exit 1
+          fi
+
           echo "Created simulator: $UDID"
 
           # Boot simulator
