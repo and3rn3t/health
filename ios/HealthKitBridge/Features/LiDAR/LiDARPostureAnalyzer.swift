@@ -578,10 +578,10 @@ extension LiDARPostureAnalyzer: ARSessionDelegate {
 
 // MARK: - Data Models
 enum AnalysisType: String, CaseIterable {
-    case posture = "posture"
-    case gait = "gait"
-    case balance = "balance"
-    case environment = "environment"
+    case posture
+    case gait
+    case balance
+    case environment
 }
 
 struct LiDARPoint {

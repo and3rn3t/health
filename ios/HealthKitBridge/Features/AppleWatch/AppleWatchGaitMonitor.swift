@@ -371,10 +371,10 @@ struct RealtimeGaitMetrics {
 }
 
 enum WalkingPattern: String, CaseIterable {
-    case normal = "normal"
-    case irregular = "irregular"
-    case asymmetric = "asymmetric"
-    case unstable = "unstable"
+    case normal
+    case irregular
+    case asymmetric
+    case unstable
     
     var color: Color {
         switch self {

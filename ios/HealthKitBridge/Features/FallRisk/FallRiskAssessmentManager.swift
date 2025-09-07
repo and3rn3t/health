@@ -564,10 +564,10 @@ class FallRiskAssessmentManager: ObservableObject {
 // MARK: - Supporting Types
 
 enum FallRiskLevel: String, Codable, CaseIterable {
-    case low = "low"
-    case medium = "medium"
-    case high = "high"
-    case unknown = "unknown"
+    case low
+    case medium
+    case high
+    case unknown
 
     var color: Color {
         switch self {
@@ -602,9 +602,9 @@ enum FallRiskFactorType: String, Codable, CaseIterable {
 }
 
 enum RiskSeverity: String, Codable {
-    case low = "low"
-    case medium = "medium"
-    case high = "high"
+    case low
+    case medium
+    case high
 }
 
 struct FallRiskFactor: Codable, Identifiable {
@@ -682,9 +682,9 @@ enum FallRiskRecommendationType: String, Codable {
 }
 
 enum RecommendationPriority: String, Codable {
-    case low = "low"
-    case medium = "medium"
-    case high = "high"
+    case low
+    case medium
+    case high
 }
 
 struct FallRiskRecommendation: Codable, Identifiable {
