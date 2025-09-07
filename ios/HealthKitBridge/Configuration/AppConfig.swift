@@ -29,4 +29,3 @@ class AppConfig {
         print("   WebSocket URL: \(webSocketURL)")
     }
 }
-
