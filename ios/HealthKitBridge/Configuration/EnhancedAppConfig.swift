@@ -90,22 +90,62 @@ class EnhancedAppConfig {
         switch environment {
         case .development: 
             return [
-                "apiBaseURL": "http://localhost:3000/api", "webSocketURL": "ws://localhost:8080/ws", "enableDebugLogging": true, "mockHealthData": true, "autoReconnect": true, "connectionTimeout": 5.0, "healthDataBatchSize": 10, "dataSyncInterval": 2.0, "enablePerformanceMonitoring": true, "showConnectionStats": true, "maxRetryAttempts": 3
+                "apiBaseURL": "http://localhost:3000/api",
+                "webSocketURL": "ws://localhost:8080/ws",
+                "enableDebugLogging": true,
+                "mockHealthData": true,
+                "autoReconnect": true,
+                "connectionTimeout": 5.0,
+                "healthDataBatchSize": 10,
+                "dataSyncInterval": 2.0,
+                "enablePerformanceMonitoring": true,
+                "showConnectionStats": true,
+                "maxRetryAttempts": 3
             ]
             
         case .staging: 
             return [
-                "apiBaseURL": "https://staging-api.andernet.dev/api", "webSocketURL": "wss://staging-api.andernet.dev/ws", "enableDebugLogging": true, "mockHealthData": false, "autoReconnect": true, "connectionTimeout": 8.0, "healthDataBatchSize": 25, "dataSyncInterval": 3.0, "enablePerformanceMonitoring": true, "showConnectionStats": true, "maxRetryAttempts": 4
+                "apiBaseURL": "https://staging-api.andernet.dev/api",
+                "webSocketURL": "wss://staging-api.andernet.dev/ws",
+                "enableDebugLogging": true,
+                "mockHealthData": false,
+                "autoReconnect": true,
+                "connectionTimeout": 8.0,
+                "healthDataBatchSize": 25,
+                "dataSyncInterval": 3.0,
+                "enablePerformanceMonitoring": true,
+                "showConnectionStats": true,
+                "maxRetryAttempts": 4
             ]
             
         case .production: 
             return [
-                "apiBaseURL": "https://api.andernet.dev/api", "webSocketURL": "wss://api.andernet.dev/ws", "enableDebugLogging": false, "mockHealthData": false, "autoReconnect": true, "connectionTimeout": 10.0, "healthDataBatchSize": 50, "dataSyncInterval": 5.0, "enablePerformanceMonitoring": false, "showConnectionStats": false, "maxRetryAttempts": 5
+                "apiBaseURL": "https://api.andernet.dev/api",
+                "webSocketURL": "wss://api.andernet.dev/ws",
+                "enableDebugLogging": false,
+                "mockHealthData": false,
+                "autoReconnect": true,
+                "connectionTimeout": 10.0,
+                "healthDataBatchSize": 50,
+                "dataSyncInterval": 5.0,
+                "enablePerformanceMonitoring": false,
+                "showConnectionStats": false,
+                "maxRetryAttempts": 5
             ]
             
         case .testing: 
             return [
-                "apiBaseURL": "http://test-server:3000/api", "webSocketURL": "ws://test-server:8080/ws", "enableDebugLogging": true, "mockHealthData": true, "autoReconnect": false, "connectionTimeout": 1.0, "healthDataBatchSize": 5, "dataSyncInterval": 0.5, "enablePerformanceMonitoring": true, "showConnectionStats": true, "maxRetryAttempts": 1
+                "apiBaseURL": "http://test-server:3000/api",
+                "webSocketURL": "ws://test-server:8080/ws",
+                "enableDebugLogging": true,
+                "mockHealthData": true,
+                "autoReconnect": false,
+                "connectionTimeout": 1.0,
+                "healthDataBatchSize": 5,
+                "dataSyncInterval": 0.5,
+                "enablePerformanceMonitoring": true,
+                "showConnectionStats": true,
+                "maxRetryAttempts": 1
             ]
         }
     }

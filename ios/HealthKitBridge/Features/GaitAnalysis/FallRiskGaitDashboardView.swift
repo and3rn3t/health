@@ -38,7 +38,9 @@ struct FallRiskGaitDashboardView: View {
                     
                     // Data Transmission Card
                     DataTransmissionCard(
-                        isConnected: webSocketManager.isConnected, lastSent: lastDataSent, onSendData: sendGaitAnalysis
+                        isConnected: webSocketManager.isConnected,
+                        lastSent: lastDataSent,
+                        onSendData: sendGaitAnalysis
                     )
                 }
                 .padding()
@@ -50,7 +52,7 @@ struct FallRiskGaitDashboardView: View {
                     Button(action: refreshAnalysis) {
                         Image(systemName: "arrow.clockwise")
                             .rotationEffect(.degrees(refreshing ? 360 : 0))
-                            .animation(.linear(duration: 1).repeatCount(refreshing ? .max : 1, autoreverses: false), value: refreshing)
+                            .animation(.linear(duration: 1).repeatCount(refreshing ? .max : 1, autoreverses: false),value: refreshing)
                     }
                 }
             }

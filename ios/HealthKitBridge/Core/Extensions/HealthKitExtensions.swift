@@ -85,7 +85,10 @@ extension HealthKitManager {
                 
                 Task {
                     await self?.sendHealthData(
-                        type: "heart_rate", value: heartRateValue, unit: "count/min", timestamp: sample.endDate
+                        type: "heart_rate",
+                        value: heartRateValue,
+                        unit: "count/min",
+                        timestamp: sample.endDate
                     )
                 }
                 
@@ -276,7 +279,10 @@ extension HealthKitManager {
                 Task {
                     do {
                         await self?.sendHealthData(
-                            type: "distance_walking_running", value: distance, unit: "m", timestamp: now
+                            type: "distance_walking_running",
+                            value: distance,
+                            unit: "m",
+                            timestamp: now
                         )
                     } catch {
                         print("❌ Failed to send distance data: \(error)")
@@ -316,7 +322,13 @@ enum HealthKitError: Error, LocalizedError {
 extension HKQuantityType {
     static var gaitAnalysisTypes: Set<HKQuantityType> {
         let gaitTypes: [HKQuantityTypeIdentifier] = [
-            .walkingSpeed, .walkingStepLength, .walkingAsymmetryPercentage, .walkingDoubleSupportPercentage, .stairAscentSpeed, .stairDescentSpeed, .sixMinuteWalkTestDistance
+            .walkingSpeed,
+            .walkingStepLength,
+            .walkingAsymmetryPercentage,
+            .walkingDoubleSupportPercentage,
+            .stairAscentSpeed,
+            .stairDescentSpeed,
+            .sixMinuteWalkTestDistance
         ]
         
         return Set(gaitTypes.compactMap { HKQuantityType.quantityType(forIdentifier: $0) })
@@ -324,7 +336,12 @@ extension HKQuantityType {
     
     static var mobilityTypes: Set<HKQuantityType> {
         let mobilityTypes: [HKQuantityTypeIdentifier] = [
-            .stepCount, .distanceWalkingRunning, .flightsClimbed, .appleMoveTime, .appleStandTime, .appleExerciseTime
+            .stepCount,
+            .distanceWalkingRunning,
+            .flightsClimbed,
+            .appleMoveTime,
+            .appleStandTime,
+            .appleExerciseTime
         ]
         
         return Set(mobilityTypes.compactMap { HKQuantityType.quantityType(forIdentifier: $0) })
@@ -334,7 +351,13 @@ extension HKQuantityType {
 extension HKUnit {
     static var gaitAnalysisUnits: [HKQuantityTypeIdentifier: HKUnit] {
         [
-            .walkingSpeed: HKUnit.meter().unitDivided(by: .second()), .walkingStepLength: HKUnit.meter(), .walkingAsymmetryPercentage: HKUnit.percent(), .walkingDoubleSupportPercentage: HKUnit.percent(), .stairAscentSpeed: HKUnit.meter().unitDivided(by: .second()), .stairDescentSpeed: HKUnit.meter().unitDivided(by: .second()), .sixMinuteWalkTestDistance: HKUnit.meter()
+            .walkingSpeed: HKUnit.meter().unitDivided(by: .second()),
+            .walkingStepLength: HKUnit.meter(),
+            .walkingAsymmetryPercentage: HKUnit.percent(),
+            .walkingDoubleSupportPercentage: HKUnit.percent(),
+            .stairAscentSpeed: HKUnit.meter().unitDivided(by: .second()),
+            .stairDescentSpeed: HKUnit.meter().unitDivided(by: .second()),
+            .sixMinuteWalkTestDistance: HKUnit.meter()
         ]
     }
 }

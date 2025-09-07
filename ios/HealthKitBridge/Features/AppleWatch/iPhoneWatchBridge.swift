@@ -3,8 +3,8 @@ import WatchConnectivity
 import HealthKit
 
 // MARK: - iPhone-Watch Communication Bridge
-class iPhoneWatchBridge: NSObject, ObservableObject {
-    static let shared = iPhoneWatchBridge()
+class IPhoneWatchBridge: NSObject, ObservableObject {
+    static let shared = IPhoneWatchBridge()
     
     @Published var isWatchAppInstalled = false
     @Published var isWatchConnected = false
@@ -75,7 +75,7 @@ class iPhoneWatchBridge: NSObject, ObservableObject {
 }
 
 // MARK: - Watch Connectivity Delegate
-extension iPhoneWatchBridge: WCSessionDelegate {
+extension IPhoneWatchBridge: WCSessionDelegate {
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         DispatchQueue.main.async {
             self.isWatchConnected = activationState == .activated

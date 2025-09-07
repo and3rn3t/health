@@ -408,7 +408,10 @@ class HealthKitManager: NSObject, ObservableObject {
     
     func testAllDataTypes() async {
         let testTypes: [(String, HKQuantityType?)] = [
-            ("Heart Rate", HKQuantityType.quantityType(forIdentifier: .heartRate)), ("Step Count", HKQuantityType.quantityType(forIdentifier: .stepCount)), ("Distance", HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)), ("Active Energy", HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned))
+            ("Heart Rate", HKQuantityType.quantityType(forIdentifier: .heartRate)),
+            ("Step Count", HKQuantityType.quantityType(forIdentifier: .stepCount)),
+            ("Distance", HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)),
+            ("Active Energy", HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned))
         ]
         
         for (name, optionalType) in testTypes {
@@ -475,7 +478,9 @@ class HealthKitManager: NSObject, ObservableObject {
     private func checkAuthorizationStatus() {
         // Check authorization for multiple key types to get a better picture with safe initialization
         let keyTypes: [HKQuantityType] = [
-            HKQuantityType.quantityType(forIdentifier: .heartRate), HKQuantityType.quantityType(forIdentifier: .stepCount), HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)
+            HKQuantityType.quantityType(forIdentifier: .heartRate),
+            HKQuantityType.quantityType(forIdentifier: .stepCount),
+            HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)
         ].compactMap { $0 } // Remove any nil values safely
         
         var statusMessages: [String] = []
@@ -1145,7 +1150,12 @@ class HealthKitManager: NSObject, ObservableObject {
         // Send fall risk data through WebSocket for analysis
         if let webSocketManager = webSocketManager {
             let riskData = HealthData(
-                type: "fall_risk_assessment", value: fallRiskEngine.riskScore, unit: "score", timestamp: Date(), deviceId: await UIDevice.current.identifierForVendor?.uuidString ?? "unknown", userId: userId
+                type: "fall_risk_assessment",
+                value: fallRiskEngine.riskScore,
+                unit: "score",
+                timestamp: Date(),
+                deviceId: await UIDevice.current.identifierForVendor?.uuidString ?? "unknown",
+                userId: userId
             )
             
             do {

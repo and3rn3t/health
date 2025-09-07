@@ -565,7 +565,7 @@ extension LiDARPostureAnalyzer: ARSessionDelegate {
                 let lidarPoint = LiDARPoint(
                     x: point.x,
                     y: point.y,
-                    z: depth,
+                    zCoordinate: depth,
                     intensity: Float.random(in: 0...255),
                     timestamp: Date().timeIntervalSince1970
                 )
@@ -587,7 +587,7 @@ enum AnalysisType: String, CaseIterable {
 struct LiDARPoint {
     let x: Float
     let y: Float
-    let z: Float
+    let zCoordinate: Float
     let intensity: Float
     let timestamp: TimeInterval
 }

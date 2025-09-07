@@ -16,9 +16,9 @@ struct WalkingCoachView: View {
             ScrollView {
                 LazyVStack(spacing: 20) {
                     if isCoachingActive {
-                        ActiveCoachingView()
+                        activeCoachingView()
                     } else {
-                        CoachingSetupView()
+                        coachingSetupView()
                     }
                 }
                 .padding()
@@ -49,7 +49,7 @@ struct WalkingCoachView: View {
     // MARK: - Active Coaching View
 
     @ViewBuilder
-    private func ActiveCoachingView() -> some View {
+    private func activeCoachingView() -> some View {
         // Real-time Metrics
         RealTimeMetricsCard()
 
@@ -76,7 +76,7 @@ struct WalkingCoachView: View {
     // MARK: - Coaching Setup View
 
     @ViewBuilder
-    private func CoachingSetupView() -> some View {
+    private func coachingSetupView() -> some View {
         // Welcome Card
         WelcomeToCoachingCard()
 

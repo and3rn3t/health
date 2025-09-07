@@ -17,7 +17,7 @@ struct EnhancedGaitDashboardView: View {
         NavigationView {
             TabView(selection: $selectedTab) {
                 // Overview Tab
-                OverviewTabView()
+                overviewTabView()
                     .tabItem {
                         Image(systemName: "chart.bar.fill")
                         Text("Overview")
@@ -25,7 +25,7 @@ struct EnhancedGaitDashboardView: View {
                     .tag(DashboardTab.overview)
 
                 // Walking Analysis Tab
-                WalkingAnalysisTabView()
+                walkingAnalysisTabView()
                     .tabItem {
                         Image(systemName: "figure.walk")
                         Text("Walking")
@@ -33,7 +33,7 @@ struct EnhancedGaitDashboardView: View {
                     .tag(DashboardTab.walking)
 
                 // Posture Tab
-                PostureTabView()
+                postureTabView()
                     .tabItem {
                         Image(systemName: "person.fill")
                         Text("Posture")
@@ -41,7 +41,7 @@ struct EnhancedGaitDashboardView: View {
                     .tag(DashboardTab.posture)
 
                 // Fall Risk Tab
-                FallRiskTabView()
+                fallRiskTabView()
                     .tabItem {
                         Image(systemName: "exclamationmark.shield.fill")
                         Text("Fall Risk")
@@ -78,7 +78,7 @@ struct EnhancedGaitDashboardView: View {
     // MARK: - Tab Views
 
     @ViewBuilder
-    private func OverviewTabView() -> some View {
+    private func overviewTabView() -> some View {
         ScrollView {
             LazyVStack(spacing: 20) {
                 // Quick Status Cards
@@ -121,7 +121,7 @@ struct EnhancedGaitDashboardView: View {
     }
 
     @ViewBuilder
-    private func WalkingAnalysisTabView() -> some View {
+    private func walkingAnalysisTabView() -> some View {
         ScrollView {
             LazyVStack(spacing: 20) {
                 // Walking Quality Score
@@ -154,7 +154,7 @@ struct EnhancedGaitDashboardView: View {
     }
 
     @ViewBuilder
-    private func PostureTabView() -> some View {
+    private func postureTabView() -> some View {
         ScrollView {
             LazyVStack(spacing: 20) {
                 // Current Posture Status
@@ -181,7 +181,7 @@ struct EnhancedGaitDashboardView: View {
     }
 
     @ViewBuilder
-    private func FallRiskTabView() -> some View {
+    private func fallRiskTabView() -> some View {
         ScrollView {
             LazyVStack(spacing: 20) {
                 // Fall Risk Assessment
