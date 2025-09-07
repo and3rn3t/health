@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 env:
-  XCODE_VERSION: '16.1'
+  XCODE_VERSION: '16.4'
 
 jobs:
   test:
