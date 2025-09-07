@@ -196,8 +196,15 @@ jobs:
             # Extract UDID from the device string
             DEVICE_UDID=$(echo "$AVAILABLE_DEVICE" | grep -oE '[A-F0-9-]{36}')
             if [ ! -z "$DEVICE_UDID" ]; then
-              DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID"
-              echo "Using destination with UDID: $DESTINATION"
+              # Get the iOS version from the simulator
+              IOS_VERSION=$(xcrun simctl list devices | grep "$DEVICE_UDID" | sed -n 's/.*iOS \([0-9.]*\).*/\1/p' || echo "")
+              if [ ! -z "$IOS_VERSION" ]; then
+                DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID,OS=$IOS_VERSION"
+                echo "Using destination with UDID and OS: $DESTINATION"
+              else
+                DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID"
+                echo "Using destination with UDID only: $DESTINATION"
+              fi
             else
               # Fallback to device name extraction
               DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | sed 's/[[:space:]]*$//')
@@ -241,7 +248,13 @@ jobs:
             # Extract UDID from the device string
             DEVICE_UDID=$(echo "$AVAILABLE_DEVICE" | grep -oE '[A-F0-9-]{36}')
             if [ ! -z "$DEVICE_UDID" ]; then
-              DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID"
+              # Get the iOS version from the simulator
+              IOS_VERSION=$(xcrun simctl list devices | grep "$DEVICE_UDID" | sed -n 's/.*iOS \([0-9.]*\).*/\1/p' || echo "")
+              if [ ! -z "$IOS_VERSION" ]; then
+                DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID,OS=$IOS_VERSION"
+              else
+                DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID"
+              fi
             else
               # Fallback to device name extraction
               DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | sed 's/[[:space:]]*$//')
@@ -285,7 +298,13 @@ jobs:
             # Extract UDID from the device string
             DEVICE_UDID=$(echo "$AVAILABLE_DEVICE" | grep -oE '[A-F0-9-]{36}')
             if [ ! -z "$DEVICE_UDID" ]; then
-              DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID"
+              # Get the iOS version from the simulator
+              IOS_VERSION=$(xcrun simctl list devices | grep "$DEVICE_UDID" | sed -n 's/.*iOS \([0-9.]*\).*/\1/p' || echo "")
+              if [ ! -z "$IOS_VERSION" ]; then
+                DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID,OS=$IOS_VERSION"
+              else
+                DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID"
+              fi
             else
               # Fallback to device name extraction
               DEVICE_NAME=$(echo "$AVAILABLE_DEVICE" | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | sed 's/[[:space:]]*$//')
