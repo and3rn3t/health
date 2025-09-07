@@ -86,6 +86,9 @@ jobs:
           npm ci --prefer-offline --silent
           # Install Node.js script dependencies
           cd scripts/node && npm ci --prefer-offline --silent
+          # Install platform-specific packages for Linux builds
+          cd ../..
+          npm install lightningcss-linux-x64-gnu @rollup/rollup-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu --save-optional
 
       - name: Lint Code
         run: |

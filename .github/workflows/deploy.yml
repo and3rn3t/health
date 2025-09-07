@@ -32,6 +32,9 @@ jobs:
           npm ci --prefer-offline
           # Install Node.js script dependencies
           cd scripts/node && npm ci --prefer-offline
+          # Install platform-specific packages for Linux builds
+          cd ../..
+          npm install lightningcss-linux-x64-gnu @rollup/rollup-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu --save-optional
 
       - name: Cache build artifacts
         uses: actions/cache@v4
@@ -93,6 +96,8 @@ jobs:
         run: |
           npm ci --prefer-offline
           cd scripts/node && npm ci --prefer-offline
+          cd ../..
+          npm install lightningcss-linux-x64-gnu @rollup/rollup-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu --save-optional
 
       - name: Restore build cache
         uses: actions/cache@v4
@@ -136,6 +141,8 @@ jobs:
         run: |
           npm ci --prefer-offline
           cd scripts/node && npm ci --prefer-offline
+          cd ../..
+          npm install lightningcss-linux-x64-gnu @rollup/rollup-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu --save-optional
 
       - name: Restore build cache
         uses: actions/cache@v4

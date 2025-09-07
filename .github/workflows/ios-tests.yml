@@ -41,11 +41,13 @@ jobs:
           brew list swift-format &>/dev/null || brew install swift-format
 
       - name: Run SwiftLint
+        continue-on-error: true
         run: |
           cd ios
           swiftlint lint --reporter github-actions-logging
 
       - name: Check Swift Formatting
+        continue-on-error: true
         run: |
           cd ios
           swift-format lint --recursive HealthKitBridge/

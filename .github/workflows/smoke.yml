@@ -25,8 +25,8 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci --prefer-offline
-          # Install Node.js script dependencies
           cd scripts/node && npm ci --prefer-offline
+          npm install lightningcss-linux-x64-gnu @rollup/rollup-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu --save-optional
 
       - name: Build application
         run: npm run build
