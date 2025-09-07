@@ -75,11 +75,11 @@ jobs:
       fail-fast: false
       matrix:
         test-type: ['unit', 'ui']
-        device: ['iPhone 15', 'iPad Air (5th generation)']
+        device: ['iPhone 16', 'iPad Air 11-inch (M2)']
         exclude:
           # Only run UI tests on iPhone to reduce CI time
           - test-type: 'ui'
-            device: 'iPad Air (5th generation)'
+            device: 'iPad Air 11-inch (M2)'
 
     steps:
       - name: Checkout
@@ -107,48 +107,61 @@ jobs:
           DEVICE_NAME="${{ matrix.device }}"
           echo "Setting up simulator for: $DEVICE_NAME"
 
-          # List available runtimes for debugging
+          # List available runtimes and devices for debugging
           echo "Available iOS runtimes:"
-          xcrun simctl list runtimes | grep iOS
-          echo "Available device types:"
-          xcrun simctl list devicetypes | grep "$DEVICE_NAME"
+          xcrun simctl list runtimes | grep iOS || true
+          echo "Available device types matching '$DEVICE_NAME':"
+          xcrun simctl list devicetypes | grep "$DEVICE_NAME" || true
 
-          # Try to find the newest available iOS runtime
-          RUNTIME=$(xcrun simctl list runtimes | grep iOS | tail -1 | grep -o 'com.apple.CoreSimulator.SimRuntime.iOS-[0-9-]*')
-          echo "Using runtime: $RUNTIME"
+          # Check if device already exists and is available
+          EXISTING_UDID=$(xcrun simctl list devices available | grep "$DEVICE_NAME" | head -1 | grep -oE '[0-9A-F-]{36}' || echo "")
 
-          # Create simulator with the detected runtime
-          if [ ! -z "$RUNTIME" ]; then
-            UDID=$(xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_NAME" "$RUNTIME" 2>/dev/null)
+          if [ ! -z "$EXISTING_UDID" ]; then
+            echo "Using existing available simulator: $EXISTING_UDID"
+            echo "udid=$EXISTING_UDID" >> $GITHUB_OUTPUT
+            xcrun simctl boot "$EXISTING_UDID" 2>/dev/null || true
           else
-            # Fallback to default runtime
-            UDID=$(xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_NAME" 2>/dev/null)
-          fi
+            # Try to find the newest available iOS runtime
+            RUNTIME=$(xcrun simctl list runtimes | grep iOS | tail -1 | grep -o 'com.apple.CoreSimulator.SimRuntime.iOS-[0-9-]*' || echo "")
+            echo "Using runtime: $RUNTIME"
 
-          if [ -z "$UDID" ]; then
-            echo "Failed to create simulator"
-            exit 1
-          fi
+            # Create new simulator
+            if [ ! -z "$RUNTIME" ]; then
+              UDID=$(xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_NAME" "$RUNTIME" 2>/dev/null || echo "")
+            else
+              # Fallback to default runtime
+              UDID=$(xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_NAME" 2>/dev/null || echo "")
+            fi
 
-          echo "Created simulator: $UDID"          # Boot simulator
-          xcrun simctl boot "$UDID"
-          echo "udid=$UDID" >> $GITHUB_OUTPUT
+            if [ -z "$UDID" ]; then
+              echo "Failed to create simulator, trying any available iPhone/iPad..."
+              # Final fallback - use any available iPhone or iPad
+              if [[ "$DEVICE_NAME" == *"iPhone"* ]]; then
+                FALLBACK_UDID=$(xcrun simctl list devices available | grep "iPhone" | head -1 | grep -oE '[0-9A-F-]{36}' || echo "")
+              else
+                FALLBACK_UDID=$(xcrun simctl list devices available | grep "iPad" | head -1 | grep -oE '[0-9A-F-]{36}' || echo "")
+              fi
+
+              if [ ! -z "$FALLBACK_UDID" ]; then
+                echo "Using fallback device: $FALLBACK_UDID"
+                echo "udid=$FALLBACK_UDID" >> $GITHUB_OUTPUT
+                xcrun simctl boot "$FALLBACK_UDID" 2>/dev/null || true
+              else
+                echo "No suitable simulators found"
+                exit 1
+              fi
+            else
+              echo "Created simulator: $UDID"
+              echo "udid=$UDID" >> $GITHUB_OUTPUT
+              xcrun simctl boot "$UDID"
+            fi
+          fi
 
           # Wait for simulator to be ready with timeout
-          timeout 60 xcrun simctl bootstatus "$UDID" || {
-            echo "Simulator boot timed out, trying to use available simulator"
-            # Fall back to any available simulator of the same device type
-            AVAILABLE_UDID=$(xcrun simctl list devices available | grep "$DEVICE_NAME" | head -1 | grep -oE '[0-9A-F-]{36}')
-            if [ ! -z "$AVAILABLE_UDID" ]; then
-              echo "Using available simulator: $AVAILABLE_UDID"
-              echo "udid=$AVAILABLE_UDID" >> $GITHUB_OUTPUT
-              xcrun simctl boot "$AVAILABLE_UDID" 2>/dev/null || true
-            else
-              echo "No available simulators found, creating with default iOS runtime"
-              FALLBACK_UDID=$(xcrun simctl create "CI-Fallback-$DEVICE_NAME" "$DEVICE_NAME")
-              echo "udid=$FALLBACK_UDID" >> $GITHUB_OUTPUT
-              xcrun simctl boot "$FALLBACK_UDID"
-            fi
+          FINAL_UDID=$(cat $GITHUB_OUTPUT | grep "udid=" | cut -d= -f2)
+          timeout 60 xcrun simctl bootstatus "$FINAL_UDID" || {
+            echo "Simulator boot may have timed out, but continuing..."
+            xcrun simctl list devices | grep "$FINAL_UDID" || echo "Device not found in list"
           }
 
       - name: Build for Testing
@@ -240,7 +253,7 @@ jobs:
 
       - name: Run Performance Tests
         run: |
-          UDID=$(xcrun simctl create "Perf-iPhone" "iPhone 15")
+          UDID=$(xcrun simctl create "Perf-iPhone" "iPhone 16")
           xcrun simctl boot "$UDID"
           xcrun simctl bootstatus "$UDID"
 
