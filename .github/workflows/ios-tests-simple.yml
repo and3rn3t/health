@@ -41,13 +41,23 @@ jobs:
 
       - name: Build for Testing
         run: |
-          echo "Building for iOS testing with simplified destination..."
-          
-          # Use a simple, reliable destination
-          DESTINATION="platform=iOS Simulator,name=iPhone 16 Pro"
-          echo "Using destination: $DESTINATION"
+          echo "Building for iOS testing with debugging..."
 
-          # Build for testing
+          # Debug available iOS versions and SDKs
+          echo "Available iOS Simulator SDKs:"
+          xcrun xcodebuild -showsdks | grep simulator || true
+
+          echo "Available iOS Simulators:"
+          xcrun simctl list runtimes | grep iOS || true
+
+          echo "Available device types:"
+          xcrun simctl list devicetypes | grep iPhone || true
+
+          # Use the most generic destination possible
+          DESTINATION="platform=iOS Simulator,name=Any iOS Simulator Device"
+          echo "Using generic destination: $DESTINATION"
+
+          # Build for testing with more flexible settings
           xcodebuild build-for-testing \
             -project ios/HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
@@ -59,14 +69,15 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             ENABLE_BITCODE=NO \
-            ONLY_ACTIVE_ARCH=YES
+            ONLY_ACTIVE_ARCH=YES \
+            SKIP_INSTALL=YES
 
       - name: Run Tests
         run: |
           echo "Running tests with simple destination..."
-          
-          DESTINATION="platform=iOS Simulator,name=iPhone 16 Pro"
-          echo "Using destination: $DESTINATION"
+
+          DESTINATION="platform=iOS Simulator,name=Any iOS Simulator Device"
+          echo "Using generic destination: $DESTINATION"
 
           if [ "${{ matrix.test-type }}" == "unit" ]; then
             TEST_SCHEME="HealthKitBridgeTests"
