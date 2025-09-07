@@ -109,14 +109,20 @@ class SecurityManager: ObservableObject {
             // Check for jailbreak
             if isDeviceJailbroken() {
                 threats.append(SecurityThreat(
-                    type: .jailbreak, severity: .high, description: "Device appears to be jailbroken", recommendation: "Health data may be at risk on jailbroken devices"
+                    type: .jailbreak,
+                    severity: .high,
+                    description: "Device appears to be jailbroken",
+                    recommendation: "Health data may be at risk on jailbroken devices"
                 ))
             }
             
             // Check network security
             if await isUsingUnsecureNetwork() {
                 threats.append(SecurityThreat(
-                    type: .unsecureNetwork, severity: .medium, description: "Connected to potentially unsecure network", recommendation: "Avoid transmitting sensitive data on public networks"
+                    type: .unsecureNetwork,
+                    severity: .medium,
+                    description: "Connected to potentially unsecure network",
+                    recommendation: "Avoid transmitting sensitive data on public networks"
                 ))
             }
             
@@ -169,7 +175,10 @@ class SecurityManager: ObservableObject {
         let healthManager = HealthKitManager.shared
         if !healthManager.isAuthorized {
             threats.append(SecurityThreat(
-                type: .insufficientPermissions, severity: .medium, description: "HealthKit access not granted", recommendation: "Grant HealthKit permissions for full functionality"
+                type: .insufficientPermissions,
+                severity: .medium,
+                description: "HealthKit access not granted",
+                recommendation: "Grant HealthKit permissions for full functionality"
             ))
         }
         
@@ -281,7 +290,10 @@ class KeychainManager {
     
     private func storeData(_ data: Data, tag: String, accessibility: CFString) throws {
         let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword, kSecAttrAccount as String: tag, kSecValueData as String: data, kSecAttrAccessible as String: accessibility
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: tag,
+            kSecValueData as String: data,
+            kSecAttrAccessible as String: accessibility
         ]
         
         let status = SecItemAdd(query as CFDictionary, nil)
@@ -309,7 +321,10 @@ class KeychainManager {
     
     private func getData(tag: String) throws -> Data? {
         let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword, kSecAttrAccount as String: tag, kSecReturnData as String: true, kSecMatchLimit as String: kSecMatchLimitOne
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: tag,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
         ]
         
         var result: AnyObject?

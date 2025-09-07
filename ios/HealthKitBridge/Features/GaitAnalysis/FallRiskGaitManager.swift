@@ -20,7 +20,18 @@ class FallRiskGaitManager: ObservableObject {
     
     // Core gait and mobility data types
     private let gaitDataTypes: Set<HKObjectType> = [
-        HKQuantityType.quantityType(forIdentifier: .walkingSpeed)!, HKQuantityType.quantityType(forIdentifier: .walkingStepLength)!, HKQuantityType.quantityType(forIdentifier: .walkingAsymmetryPercentage)!, HKQuantityType.quantityType(forIdentifier: .walkingDoubleSupportPercentage)!, HKQuantityType.quantityType(forIdentifier: .stairAscentSpeed)!, HKQuantityType.quantityType(forIdentifier: .stairDescentSpeed)!, HKQuantityType.quantityType(forIdentifier: .sixMinuteWalkTestDistance)!, HKQuantityType.quantityType(forIdentifier: .appleMoveTime)!, HKQuantityType.quantityType(forIdentifier: .appleStandTime)!, HKQuantityType.quantityType(forIdentifier: .stepCount)!, HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)! ]
+        HKQuantityType.quantityType(forIdentifier: .walkingSpeed)!,
+        HKQuantityType.quantityType(forIdentifier: .walkingStepLength)!,
+        HKQuantityType.quantityType(forIdentifier: .walkingAsymmetryPercentage)!,
+        HKQuantityType.quantityType(forIdentifier: .walkingDoubleSupportPercentage)!,
+        HKQuantityType.quantityType(forIdentifier: .stairAscentSpeed)!,
+        HKQuantityType.quantityType(forIdentifier: .stairDescentSpeed)!,
+        HKQuantityType.quantityType(forIdentifier: .sixMinuteWalkTestDistance)!,
+        HKQuantityType.quantityType(forIdentifier: .appleMoveTime)!,
+        HKQuantityType.quantityType(forIdentifier: .appleStandTime)!,
+        HKQuantityType.quantityType(forIdentifier: .stepCount)!,
+        HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!
+    ]
     
     private init() {
         setupGaitMonitoring()
@@ -172,7 +183,10 @@ class FallRiskGaitManager: ObservableObject {
                 guard let ascentType = HKQuantityType.quantityType(forIdentifier: .stairAscentSpeed) else { return }
                 
                 let query = HKSampleQuery(
-                    sampleType: ascentType, predicate: nil, limit: 10, sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)]
+                    sampleType: ascentType,
+                    predicate: nil,
+                    limit: 10,
+                    sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)]
                 ) { [weak self] _, samples, _ in
                     guard let samples = samples as? [HKQuantitySample], !samples.isEmpty else { return }
                     
@@ -195,7 +209,10 @@ class FallRiskGaitManager: ObservableObject {
                 guard let descentType = HKQuantityType.quantityType(forIdentifier: .stairDescentSpeed) else { return }
                 
                 let query = HKSampleQuery(
-                    sampleType: descentType, predicate: nil, limit: 10, sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)]
+                    sampleType: descentType,
+                    predicate: nil,
+                    limit: 10,
+                    sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)]
                 ) { [weak self] _, samples, _ in
                     guard let samples = samples as? [HKQuantitySample], !samples.isEmpty else { return }
                     
@@ -360,7 +377,13 @@ class FallRiskGaitManager: ObservableObject {
         }
         
         return FallRiskFactor(
-            name: "Walking Speed", value: speed, unit: "m/s", score: riskScore, severity: severity, description: "Average walking speed over 7 days", recommendation: speed < 1.0 ? "Consider gait training or physical therapy" : "Maintain current activity level"
+            name: "Walking Speed",
+            value: speed,
+            unit: "m/s",
+            score: riskScore,
+            severity: severity,
+            description: "Average walking speed over 7 days",
+            recommendation: speed < 1.0 ? "Consider gait training or physical therapy" : "Maintain current activity level"
         )
     }
     
@@ -384,7 +407,13 @@ class FallRiskGaitManager: ObservableObject {
         }
         
         return FallRiskFactor(
-            name: "Gait Asymmetry", value: asymmetry, unit: "%", score: riskScore, severity: severity, description: "Difference between left and right step timing", recommendation: asymmetry > 5.0 ? "Evaluate for balance disorders or leg strength differences" : "Good gait symmetry"
+            name: "Gait Asymmetry",
+            value: asymmetry,
+            unit: "%",
+            score: riskScore,
+            severity: severity,
+            description: "Difference between left and right step timing",
+            recommendation: asymmetry > 5.0 ? "Evaluate for balance disorders or leg strength differences" : "Good gait symmetry"
         )
     }
     
@@ -408,7 +437,13 @@ class FallRiskGaitManager: ObservableObject {
         }
         
         return FallRiskFactor(
-            name: "Double Support Time", value: doubleSupport, unit: "%", score: riskScore, severity: severity, description: "Time with both feet on ground during walking", recommendation: doubleSupport > 30.0 ? "Consider balance training exercises" : "Normal gait stability"
+            name: "Double Support Time",
+            value: doubleSupport,
+            unit: "%",
+            score: riskScore,
+            severity: severity,
+            description: "Time with both feet on ground during walking",
+            recommendation: doubleSupport > 30.0 ? "Consider balance training exercises" : "Normal gait stability"
         )
     }
     
@@ -432,7 +467,13 @@ class FallRiskGaitManager: ObservableObject {
         }
         
         return FallRiskFactor(
-            name: "Step Length", value: stepLength, unit: "m", score: riskScore, severity: severity, description: "Average distance covered per step", recommendation: stepLength < 0.5 ? "Consider strength training and gait therapy" : "Good step length"
+            name: "Step Length",
+            value: stepLength,
+            unit: "m",
+            score: riskScore,
+            severity: severity,
+            description: "Average distance covered per step",
+            recommendation: stepLength < 0.5 ? "Consider strength training and gait therapy" : "Good step length"
         )
     }
     
@@ -458,7 +499,13 @@ class FallRiskGaitManager: ObservableObject {
         }
         
         return FallRiskFactor(
-            name: "Stair Navigation", value: avgStairSpeed, unit: "m/s", score: riskScore, severity: severity, description: "Speed navigating stairs (up/down)", recommendation: avgStairSpeed < 0.3 ? "Practice stair climbing with assistance" : "Good stair navigation ability"
+            name: "Stair Navigation",
+            value: avgStairSpeed,
+            unit: "m/s",
+            score: riskScore,
+            severity: severity,
+            description: "Speed navigating stairs (up/down)",
+            recommendation: avgStairSpeed < 0.3 ? "Practice stair climbing with assistance" : "Good stair navigation ability"
         )
     }
     
@@ -503,7 +550,9 @@ class FallRiskGaitManager: ObservableObject {
     // MARK: - Real-time Monitoring Setup
     private func setupGaitMonitoring() {
         let criticalGaitTypes = [
-            HKQuantityType.quantityType(forIdentifier: .walkingSpeed)!, HKQuantityType.quantityType(forIdentifier: .walkingAsymmetryPercentage)!, HKQuantityType.quantityType(forIdentifier: .walkingDoubleSupportPercentage)!
+            HKQuantityType.quantityType(forIdentifier: .walkingSpeed)!,
+            HKQuantityType.quantityType(forIdentifier: .walkingAsymmetryPercentage)!,
+            HKQuantityType.quantityType(forIdentifier: .walkingDoubleSupportPercentage)!
         ]
         
         for type in criticalGaitTypes {

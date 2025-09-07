@@ -235,10 +235,26 @@ struct FallRiskDashboardView: View {
             LazyVGrid(columns: [
                 GridItem(.flexible()), GridItem(.flexible())
             ], spacing: 12) {
-                gaitMetricItem("Speed", "\(String(format: "%.2f", gaitAnalysis.averageSpeed)) m/s", gaitAnalysis.averageSpeed > 0.8 ? .green : .orange)
-                gaitMetricItem("Step Length", "\(String(format: "%.2f", gaitAnalysis.stepLength)) m", gaitAnalysis.stepLength > 0.6 ? .green : .orange)
-                gaitMetricItem("Cadence", "\(Int(gaitAnalysis.cadence)) steps/min", gaitAnalysis.cadence > 100 ? .green : .orange)
-                gaitMetricItem("Symmetry", "\(Int(gaitAnalysis.symmetry * 100))%", gaitAnalysis.symmetry > 0.85 ? .green : .orange)
+                gaitMetricItem(
+                    "Speed",
+                    "\(String(format: "%.2f", gaitAnalysis.averageSpeed)) m/s",
+                    gaitAnalysis.averageSpeed > 0.8 ? .green : .orange
+                )
+                gaitMetricItem(
+                    "Step Length",
+                    "\(String(format: "%.2f", gaitAnalysis.stepLength)) m",
+                    gaitAnalysis.stepLength > 0.6 ? .green : .orange
+                )
+                gaitMetricItem(
+                    "Cadence",
+                    "\(Int(gaitAnalysis.cadence)) steps/min",
+                    gaitAnalysis.cadence > 100 ? .green : .orange
+                )
+                gaitMetricItem(
+                    "Symmetry",
+                    "\(Int(gaitAnalysis.symmetry * 100))%",
+                    gaitAnalysis.symmetry > 0.85 ? .green : .orange
+                )
             }
         }
         .padding()

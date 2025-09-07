@@ -42,19 +42,39 @@ struct AdvancedHealthInsightsCard: View {
             if let score = advancedMetrics.healthScore {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
                     QuickMetricView(
-                        title: "Heart Rate", value: advancedMetrics.restingHeartRate.map { "\(Int($0))" } ?? "--", unit: "BPM", score: score.heartRateScore, maxScore: 25, color: .red
+                        title: "Heart Rate",
+                        value: advancedMetrics.restingHeartRate.map { "\(Int($0))" } ?? "--",
+                        unit: "BPM",
+                        score: score.heartRateScore,
+                        maxScore: 25,
+                        color: .red
                     )
                     
                     QuickMetricView(
-                        title: "Activity", value: advancedMetrics.workoutSummary?.totalWorkouts.description ?? "--", unit: "workouts", score: score.activityScore, maxScore: 25, color: .green
+                        title: "Activity",
+                        value: advancedMetrics.workoutSummary?.totalWorkouts.description ?? "--",
+                        unit: "workouts",
+                        score: score.activityScore,
+                        maxScore: 25,
+                        color: .green
                     )
                     
                     QuickMetricView(
-                        title: "Sleep", value: advancedMetrics.sleepAnalysis.isEmpty ? "--" : "\(advancedMetrics.sleepAnalysis.count)", unit: "sessions", score: score.sleepScore, maxScore: 25, color: .purple
+                        title: "Sleep",
+                        value: advancedMetrics.sleepAnalysis.isEmpty ? "--" : "\(advancedMetrics.sleepAnalysis.count)",
+                        unit: "sessions",
+                        score: score.sleepScore,
+                        maxScore: 25,
+                        color: .purple
                     )
                     
                     QuickMetricView(
-                        title: "Nutrition", value: advancedMetrics.nutritionData?.isComplete == true ? "✓" : "--", unit: "tracked", score: score.nutritionScore, maxScore: 25, color: .orange
+                        title: "Nutrition",
+                        value: advancedMetrics.nutritionData?.isComplete == true ? "✓" : "--",
+                        unit: "tracked",
+                        score: score.nutritionScore,
+                        maxScore: 25,
+                        color: .orange
                     )
                 }
             } else {

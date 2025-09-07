@@ -201,7 +201,12 @@ class WatchWorkoutManager: NSObject, ObservableObject {
 
 // MARK: - Workout Session Delegate
 extension WatchWorkoutManager: HKWorkoutSessionDelegate {
-    func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {
+    func workoutSession(
+        _ workoutSession: HKWorkoutSession,
+        didChangeTo toState: HKWorkoutSessionState,
+        from fromState: HKWorkoutSessionState,
+        date: Date
+    ) {
         DispatchQueue.main.async {
             switch toState {
             case .running: 

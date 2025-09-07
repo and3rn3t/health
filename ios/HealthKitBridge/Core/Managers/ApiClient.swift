@@ -24,7 +24,11 @@ class ApiClient: ObservableObject {
         let deviceId = await UIDevice.current.identifierForVendor?.uuidString ?? "unknown"
         
         let requestBody: [String: Any] = [
-            "userId": userId, "deviceId": deviceId, "deviceType": deviceType, "appVersion": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0", "platform": "ios"
+            "userId": userId,
+            "deviceId": deviceId,
+            "deviceType": deviceType,
+            "appVersion": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0",
+            "platform": "ios"
         ]
         
         var request = URLRequest(url: url)
@@ -81,7 +85,12 @@ class ApiClient: ObservableObject {
         }
         
         let requestBody: [String: Any] = [
-            "type": healthData.type, "value": healthData.value, "unit": healthData.unit, "timestamp": ISO8601DateFormatter().string(from: healthData.timestamp), "deviceId": healthData.deviceId, "userId": healthData.userId
+            "type": healthData.type,
+            "value": healthData.value,
+            "unit": healthData.unit,
+            "timestamp": ISO8601DateFormatter().string(from: healthData.timestamp),
+            "deviceId": healthData.deviceId,
+            "userId": healthData.userId
         ]
         
         var request = URLRequest(url: url)

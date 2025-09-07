@@ -163,7 +163,14 @@ class FallRiskAnalysisEngine: ObservableObject {
     
     // MARK: - Analysis Parameters
     private let riskFactorWeights: [RiskFactor.RiskType: Double] = [
-        .walkingSteadiness: 0.25, .gaitSpeed: 0.20, .balanceStability: 0.20, .previousFalls: 0.15, .muscleWeakness: 0.10, .medicationSideEffect: 0.05, .visionImpairment: 0.03, .cognitiveDecline: 0.02
+        .walkingSteadiness: 0.25,
+        .gaitSpeed: 0.20,
+        .balanceStability: 0.20,
+        .previousFalls: 0.15,
+        .muscleWeakness: 0.10,
+        .medicationSideEffect: 0.05,
+        .visionImpairment: 0.03,
+        .cognitiveDecline: 0.02
     ]
     
     private init() {
@@ -295,7 +302,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         if steadiness < 50 {
             let severity: RiskFactor.Severity = steadiness < 25 ? .critical : .high
             let riskFactor = RiskFactor(
-                type: .walkingSteadiness, severity: severity, value: steadiness, description: "Walking steadiness is \(Int(steadiness))% - indicates increased fall risk", detectedAt: Date()
+                type: .walkingSteadiness,
+                severity: severity,
+                value: steadiness,
+                description: "Walking steadiness is \(Int(steadiness))% - indicates increased fall risk",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -310,9 +321,13 @@ class FallRiskAnalysisEngine: ObservableObject {
         let avgSpeed = distance / timeWindow // m/s approximation
         
         let gaitAnalysis = GaitAnalysis(
-            averageSpeed: avgSpeed, stepLength: distance / steps, cadence: steps / (timeWindow / 60), symmetry: 0.9, // Would need more sophisticated analysis
+            averageSpeed: avgSpeed,
+            stepLength: distance / steps,
+            cadence: steps / (timeWindow / 60),
+            symmetry: 0.9, // Would need more sophisticated analysis
             steadiness: 0.8, // Would need accelerometer data
-            confidence: 0.7, timestamp: Date()
+            confidence: 0.7,
+            timestamp: Date()
         )
         
         await MainActor.run {
@@ -321,7 +336,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         
         if gaitAnalysis.isAbnormal {
             let riskFactor = RiskFactor(
-                type: .gaitSpeed, severity: avgSpeed < 0.6 ? .high : .moderate, value: avgSpeed, description: "Gait speed of \(String(format: "%.2f", avgSpeed)) m/s indicates mobility concerns", detectedAt: Date()
+                type: .gaitSpeed,
+                severity: avgSpeed < 0.6 ? .high : .moderate,
+                value: avgSpeed,
+                description: "Gait speed of \(String(format: "%.2f", avgSpeed)) m/s indicates mobility concerns",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -334,7 +353,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         // Ground contact time analysis (normal range: 150-300ms)
         if groundContactTime > 300 { // ms
             let riskFactor = RiskFactor(
-                type: .gaitSpeed, severity: groundContactTime > 400 ? .high : .moderate, value: groundContactTime, description: "Ground contact time of \(Int(groundContactTime))ms indicates potential gait instability", detectedAt: Date()
+                type: .gaitSpeed,
+                severity: groundContactTime > 400 ? .high : .moderate,
+                value: groundContactTime,
+                description: "Ground contact time of \(Int(groundContactTime))ms indicates potential gait instability",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -350,7 +373,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         
         if vo2Max < lowThreshold {
             let riskFactor = RiskFactor(
-                type: .muscleWeakness, severity: vo2Max < 20 ? .high : .moderate, value: vo2Max, description: "VO2 Max of \(String(format: "%.1f", vo2Max)) ml/kg/min indicates poor cardiovascular fitness", detectedAt: Date()
+                type: .muscleWeakness,
+                severity: vo2Max < 20 ? .high : .moderate,
+                value: vo2Max,
+                description: "VO2 Max of \(String(format: "%.1f", vo2Max)) ml/kg/min indicates poor cardiovascular fitness",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -364,7 +391,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         // Low daily stair climbing suggests mobility limitations
         if flightsClimbed < 3 { // Less than 3 flights per day
             let riskFactor = RiskFactor(
-                type: .muscleWeakness, severity: flightsClimbed < 1 ? .high : .moderate, value: flightsClimbed, description: "Only \(Int(flightsClimbed)) flights climbed today suggests limited mobility", detectedAt: Date()
+                type: .muscleWeakness,
+                severity: flightsClimbed < 1 ? .high : .moderate,
+                value: flightsClimbed,
+                description: "Only \(Int(flightsClimbed)) flights climbed today suggests limited mobility",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -378,7 +409,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         // This would be more sophisticated with continuous monitoring
         if heartRate > 100 || heartRate < 50 {
             let riskFactor = RiskFactor(
-                type: .medicationSideEffect, severity: .moderate, value: heartRate, description: "Heart rate of \(Int(heartRate)) BPM may indicate medication effects or cardiovascular issues", detectedAt: Date()
+                type: .medicationSideEffect,
+                severity: .moderate,
+                value: heartRate,
+                description: "Heart rate of \(Int(heartRate)) BPM may indicate medication effects or cardiovascular issues",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -392,7 +427,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         // Normal HRV is typically 20-50ms (simplified)
         if hrv < 20 {
             let riskFactor = RiskFactor(
-                type: .balanceStability, severity: hrv < 15 ? .high : .moderate, value: hrv, description: "Heart rate variability of \(String(format: "%.1f", hrv))ms suggests autonomic dysfunction affecting balance", detectedAt: Date()
+                type: .balanceStability,
+                severity: hrv < 15 ? .high : .moderate,
+                value: hrv,
+                description: "Heart rate variability of \(String(format: "%.1f", hrv))ms suggests autonomic dysfunction affecting balance",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -406,7 +445,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         let dailyTarget: Double = 400 // kcal
         if activeEnergy < dailyTarget * 0.5 {
             let riskFactor = RiskFactor(
-                type: .muscleWeakness, severity: activeEnergy < dailyTarget * 0.25 ? .high : .moderate, value: activeEnergy, description: "Low activity level (\(Int(activeEnergy)) kcal) suggests muscle weakness risk", detectedAt: Date()
+                type: .muscleWeakness,
+                severity: activeEnergy < dailyTarget * 0.25 ? .high : .moderate,
+                value: activeEnergy,
+                description: "Low activity level (\(Int(activeEnergy)) kcal) suggests muscle weakness risk",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -421,7 +464,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         
         if standTime < dailyTarget * 0.3 { // Less than 2.4 hours standing
             let riskFactor = RiskFactor(
-                type: .muscleWeakness, severity: standTime < dailyTarget * 0.15 ? .high : .moderate, value: standTime, description: "Only \(Int(standTime / 60)) hours standing today indicates sedentary lifestyle", detectedAt: Date()
+                type: .muscleWeakness,
+                severity: standTime < dailyTarget * 0.15 ? .high : .moderate,
+                value: standTime,
+                description: "Only \(Int(standTime / 60)) hours standing today indicates sedentary lifestyle",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -437,7 +484,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         if systolic < 90 || diastolic < 60 {
             // Hypotension - major fall risk
             let riskFactor = RiskFactor(
-                type: .medicationSideEffect, severity: systolic < 80 ? .critical : .high, value: systolic, description: "Blood pressure \(Int(systolic))/\(Int(diastolic)) indicates hypotension - major fall risk", detectedAt: Date()
+                type: .medicationSideEffect,
+                severity: systolic < 80 ? .critical : .high,
+                value: systolic,
+                description: "Blood pressure \(Int(systolic))/\(Int(diastolic)) indicates hypotension - major fall risk",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -446,7 +497,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         } else if systolic > 180 || diastolic > 110 {
             // Severe hypertension can also affect balance
             let riskFactor = RiskFactor(
-                type: .medicationSideEffect, severity: .moderate, value: systolic, description: "Severe hypertension \(Int(systolic))/\(Int(diastolic)) may affect balance and medication side effects", detectedAt: Date()
+                type: .medicationSideEffect,
+                severity: .moderate,
+                value: systolic,
+                description: "Severe hypertension \(Int(systolic))/\(Int(diastolic)) may affect balance and medication side effects",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -461,7 +516,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         
         if timeInDaylight < minimumDaylight {
             let riskFactor = RiskFactor(
-                type: .cognitiveDecline, severity: timeInDaylight < 60 ? .high : .moderate, value: timeInDaylight, description: "Only \(Int(timeInDaylight / 60)) hours daylight exposure affects circadian rhythm and balance", detectedAt: Date()
+                type: .cognitiveDecline,
+                severity: timeInDaylight < 60 ? .high : .moderate,
+                value: timeInDaylight,
+                description: "Only \(Int(timeInDaylight / 60)) hours daylight exposure affects circadian rhythm and balance",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -476,7 +535,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         
         if respiratoryRate > 24 || respiratoryRate < 10 {
             let riskFactor = RiskFactor(
-                type: .medicationSideEffect, severity: respiratoryRate > 30 || respiratoryRate < 8 ? .high : .moderate, value: respiratoryRate, description: "Respiratory rate of \(Int(respiratoryRate)) breaths/min indicates physical stress affecting balance", detectedAt: Date()
+                type: .medicationSideEffect,
+                severity: respiratoryRate > 30 || respiratoryRate < 8 ? .high : .moderate,
+                value: respiratoryRate,
+                description: "Respiratory rate of \(Int(respiratoryRate)) breaths/min indicates physical stress affecting balance",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -491,7 +554,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         
         if oxygenSat < 95 {
             let riskFactor = RiskFactor(
-                type: .cognitiveDecline, severity: oxygenSat < 90 ? .critical : .high, value: oxygenSat, description: "Oxygen saturation of \(Int(oxygenSat))% affects cognitive function and balance", detectedAt: Date()
+                type: .cognitiveDecline,
+                severity: oxygenSat < 90 ? .critical : .high,
+                value: oxygenSat,
+                description: "Oxygen saturation of \(Int(oxygenSat))% affects cognitive function and balance",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -506,7 +573,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         
         if bodyTemp > 38.0 || bodyTemp < 35.0 { // °C
             let riskFactor = RiskFactor(
-                type: .medicationSideEffect, severity: bodyTemp > 39.0 || bodyTemp < 34.0 ? .high : .moderate, value: bodyTemp, description: "Body temperature of \(String(format: "%.1f", bodyTemp))°C affects balance and coordination", detectedAt: Date()
+                type: .medicationSideEffect,
+                severity: bodyTemp > 39.0 || bodyTemp < 34.0 ? .high : .moderate,
+                value: bodyTemp,
+                description: "Body temperature of \(String(format: "%.1f", bodyTemp))°C affects balance and coordination",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -521,7 +592,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         
         if cyclingCadence < 50 && cyclingCadence > 0 {
             let riskFactor = RiskFactor(
-                type: .balanceStability, severity: cyclingCadence < 40 ? .moderate : .low, value: cyclingCadence, description: "Low cycling cadence of \(Int(cyclingCadence)) RPM suggests coordination concerns", detectedAt: Date()
+                type: .balanceStability,
+                severity: cyclingCadence < 40 ? .moderate : .low,
+                value: cyclingCadence,
+                description: "Low cycling cadence of \(Int(cyclingCadence)) RPM suggests coordination concerns",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -537,7 +612,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         
         if swimmingStrokes > 100 { // Simplified threshold
             let riskFactor = RiskFactor(
-                type: .balanceStability, severity: .low, value: swimmingStrokes, description: "High swimming stroke count may indicate coordination inefficiency", detectedAt: Date()
+                type: .balanceStability,
+                severity: .low,
+                value: swimmingStrokes,
+                description: "High swimming stroke count may indicate coordination inefficiency",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -553,7 +632,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         // This would be more sophisticated with resting HR comparison
         if walkingHR > 140 {
             let riskFactor = RiskFactor(
-                type: .muscleWeakness, severity: walkingHR > 160 ? .high : .moderate, value: walkingHR, description: "Walking heart rate of \(Int(walkingHR)) BPM indicates poor cardiovascular fitness", detectedAt: Date()
+                type: .muscleWeakness,
+                severity: walkingHR > 160 ? .high : .moderate,
+                value: walkingHR,
+                description: "Walking heart rate of \(Int(walkingHR)) BPM indicates poor cardiovascular fitness",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -577,7 +660,11 @@ class FallRiskAnalysisEngine: ObservableObject {
         
         if balanceMetrics.isImpaired {
             let riskFactor = RiskFactor(
-                type: .balanceStability, severity: .moderate, value: balanceMetrics.staticBalance, description: "Balance analysis shows stability concerns", detectedAt: Date()
+                type: .balanceStability,
+                severity: .moderate,
+                value: balanceMetrics.staticBalance,
+                description: "Balance analysis shows stability concerns",
+                detectedAt: Date()
             )
             
             await MainActor.run {
@@ -619,36 +706,66 @@ class FallRiskAnalysisEngine: ObservableObject {
         // Exercise recommendations
         if riskFactors.contains(where: { $0.type == .muscleWeakness || $0.type == .balanceStability }) {
             recommendations.append(Recommendation(
-                category: .exercise, title: "Balance Training Program", description: "Perform tai chi or yoga for 20 minutes, 3 times per week to improve balance and strength", priority: .high, actionable: true, estimatedImpact: 0.7
+                category: .exercise,
+                title: "Balance Training Program",
+                description: "Perform tai chi or yoga for 20 minutes, 3 times per week to improve balance and strength",
+                priority: .high,
+                actionable: true,
+                estimatedImpact: 0.7
             ))
             
             recommendations.append(Recommendation(
-                category: .exercise, title: "Strength Training", description: "Focus on leg strengthening exercises 2-3 times per week", priority: .medium, actionable: true, estimatedImpact: 0.6
+                category: .exercise,
+                title: "Strength Training",
+                description: "Focus on leg strengthening exercises 2-3 times per week",
+                priority: .medium,
+                actionable: true,
+                estimatedImpact: 0.6
             ))
         }
         
         // Gait-specific recommendations
         if riskFactors.contains(where: { $0.type == .gaitSpeed || $0.type == .walkingSteadiness }) {
             recommendations.append(Recommendation(
-                category: .medical, title: "Gait Assessment", description: "Consider physical therapy evaluation for gait training", priority: .high, actionable: true, estimatedImpact: 0.8
+                category: .medical,
+                title: "Gait Assessment",
+                description: "Consider physical therapy evaluation for gait training",
+                priority: .high,
+                actionable: true,
+                estimatedImpact: 0.8
             ))
         }
         
         // Safety recommendations
         if currentRiskLevel == .high || currentRiskLevel == .critical {
             recommendations.append(Recommendation(
-                category: .safety, title: "Home Safety Audit", description: "Remove throw rugs, improve lighting, install grab bars in bathroom", priority: .urgent, actionable: true, estimatedImpact: 0.9
+                category: .safety,
+                title: "Home Safety Audit",
+                description: "Remove throw rugs, improve lighting, install grab bars in bathroom",
+                priority: .urgent,
+                actionable: true,
+                estimatedImpact: 0.9
             ))
             
             recommendations.append(Recommendation(
-                category: .safety, title: "Emergency Response Plan", description: "Consider a medical alert device and emergency contact system", priority: .high, actionable: true, estimatedImpact: 0.8
+                category: .safety,
+                title: "Emergency Response Plan",
+                description: "Consider a medical alert device and emergency contact system",
+                priority: .high,
+                actionable: true,
+                estimatedImpact: 0.8
             ))
         }
         
         // Medication review
         if riskFactors.contains(where: { $0.type == .medicationSideEffect }) {
             recommendations.append(Recommendation(
-                category: .medical, title: "Medication Review", description: "Discuss current medications with healthcare provider for fall risk assessment", priority: .high, actionable: true, estimatedImpact: 0.7
+                category: .medical,
+                title: "Medication Review",
+                description: "Discuss current medications with healthcare provider for fall risk assessment",
+                priority: .high,
+                actionable: true,
+                estimatedImpact: 0.7
             ))
         }
         

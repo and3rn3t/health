@@ -49,7 +49,12 @@ class AppleWatchGaitMonitor: NSObject, ObservableObject {
         do {
             // Request HealthKit permissions for Apple Watch
             let gaitTypes: Set<HKSampleType> = [
-                HKQuantityType.quantityType(forIdentifier: .walkingSpeed)!, HKQuantityType.quantityType(forIdentifier: .stepLength)!, HKQuantityType.quantityType(forIdentifier: .walkingAsymmetryPercentage)!, HKQuantityType.quantityType(forIdentifier: .walkingDoubleSupportPercentage)!, HKQuantityType.quantityType(forIdentifier: .stairAscentSpeed)!, HKQuantityType.quantityType(forIdentifier: .stairDescentSpeed)!
+                HKQuantityType.quantityType(forIdentifier: .walkingSpeed)!,
+                HKQuantityType.quantityType(forIdentifier: .stepLength)!,
+                HKQuantityType.quantityType(forIdentifier: .walkingAsymmetryPercentage)!,
+                HKQuantityType.quantityType(forIdentifier: .walkingDoubleSupportPercentage)!,
+                HKQuantityType.quantityType(forIdentifier: .stairAscentSpeed)!,
+                HKQuantityType.quantityType(forIdentifier: .stairDescentSpeed)!
             ]
             
             try await healthStore.requestAuthorization(toShare: gaitTypes, read: gaitTypes)
@@ -149,7 +154,12 @@ class AppleWatchGaitMonitor: NSObject, ObservableObject {
         // Update realtime metrics
         DispatchQueue.main.async {
             self.realtimeMetrics.updateWithMotion(
-                timestamp: timestamp, acceleration: acceleration, rotationRate: rotationRate, stepCadence: stepCadence, stability: gaitStability, walkingPattern: walkingPattern
+                timestamp: timestamp,
+                acceleration: acceleration,
+                rotationRate: rotationRate,
+                stepCadence: stepCadence,
+                stability: gaitStability,
+                walkingPattern: walkingPattern
             )
         }
         
@@ -238,7 +248,13 @@ class AppleWatchGaitMonitor: NSObject, ObservableObject {
         guard let session = session, session.isReachable else { return }
         
         let realtimeData: [String: Any] = [
-            "type": "realtime_gait", "timestamp": Date().timeIntervalSince1970, "stepCount": realtimeMetrics.stepCount, "stepCadence": realtimeMetrics.currentCadence, "stabilityScore": realtimeMetrics.averageStability, "walkingPattern": realtimeMetrics.currentWalkingPattern.rawValue, "sessionDuration": currentSession?.duration ?? 0
+            "type": "realtime_gait",
+            "timestamp": Date().timeIntervalSince1970,
+            "stepCount": realtimeMetrics.stepCount,
+            "stepCadence": realtimeMetrics.currentCadence,
+            "stabilityScore": realtimeMetrics.averageStability,
+            "walkingPattern": realtimeMetrics.currentWalkingPattern.rawValue,
+            "sessionDuration": currentSession?.duration ?? 0
         ]
         
         session.sendMessage(realtimeData, replyHandler: nil) { error in
@@ -250,7 +266,15 @@ class AppleWatchGaitMonitor: NSObject, ObservableObject {
         guard let wcSession = self.session, wcSession.isReachable else { return }
         
         let sessionData: [String: Any] = [
-            "type": "gait_session_complete", "sessionId": session.sessionId, "startTime": session.startTime.timeIntervalSince1970, "endTime": session.endTime?.timeIntervalSince1970 ?? Date().timeIntervalSince1970, "duration": session.duration, "stepCount": session.finalMetrics?.stepCount ?? 0, "avgCadence": session.finalMetrics?.averageCadence ?? 0, "avgStability": session.finalMetrics?.averageStability ?? 0, "deviceType": session.deviceType.rawValue
+            "type": "gait_session_complete",
+            "sessionId": session.sessionId,
+            "startTime": session.startTime.timeIntervalSince1970,
+            "endTime": session.endTime?.timeIntervalSince1970 ?? Date().timeIntervalSince1970,
+            "duration": session.duration,
+            "stepCount": session.finalMetrics?.stepCount ?? 0,
+            "avgCadence": session.finalMetrics?.averageCadence ?? 0,
+            "avgStability": session.finalMetrics?.averageStability ?? 0,
+            "deviceType": session.deviceType.rawValue
         ]
         
         wcSession.sendMessage(sessionData, replyHandler: nil) { error in
@@ -322,7 +346,12 @@ struct RealtimeGaitMetrics {
     private var cadenceReadings: [Double] = []
     
     mutating func updateWithMotion(
-        timestamp: Date, acceleration: CMAcceleration, rotationRate: CMRotationRate, stepCadence: Double, stability: Double, walkingPattern: WalkingPattern
+        timestamp: Date,
+        acceleration: CMAcceleration,
+        rotationRate: CMRotationRate,
+        stepCadence: Double,
+        stability: Double,
+        walkingPattern: WalkingPattern
     ) {
         currentCadence = stepCadence
         currentWalkingPattern = walkingPattern
@@ -365,7 +394,13 @@ struct RealtimeGaitMetrics {
             averageStepLength: nil, // Would be calculated from HealthKit
             stepCount: stepCount, walkingAsymmetry: nil, // Would be calculated from HealthKit
             doubleSupportTime: nil, // Would be calculated from HealthKit
-            stairAscentSpeed: nil, stairDescentSpeed: nil, averageCadence: avgCadence, averageStability: averageStability, mobilityStatus: averageStability > 7 ? .excellent : averageStability > 5 ? .good : .needsAttention, sessionDuration: sessionDuration, walkingPattern: currentWalkingPattern
+            stairAscentSpeed: nil,
+            stairDescentSpeed: nil,
+            averageCadence: avgCadence,
+            averageStability: averageStability,
+            mobilityStatus: averageStability > 7 ? .excellent : averageStability > 5 ? .good : .needsAttention,
+            sessionDuration: sessionDuration,
+            walkingPattern: currentWalkingPattern
         )
     }
 }

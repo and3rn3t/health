@@ -739,7 +739,8 @@ class HealthKitManager: NSObject, ObservableObject {
         let startOfDay = calendar.startOfDay(for: now)
         let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: now, options: .strictStartDate)
 
-        let query = HKStatisticsQuery(quantityType: energyType, quantitySamplePredicate: predicate, options: .cumulativeSum) { [weak self] _, result, error in
+        let query = HKStatisticsQuery(quantityType: energyType,
+        quantitySamplePredicate: predicate, options: .cumulativeSum) { [weak self] _, result, error in
 
             if let error = error {
                 print("❌ Active energy fetch error: \(error)")
@@ -771,7 +772,11 @@ class HealthKitManager: NSObject, ObservableObject {
         let startOfDay = calendar.startOfDay(for: now)
         let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: now, options: .strictStartDate)
 
-        let query = HKStatisticsQuery(quantityType: distanceType, quantitySamplePredicate: predicate, options: .cumulativeSum) { [weak self] _, result, error in
+        let query = HKStatisticsQuery(quantityType: distanceType,
+        quantitySamplePredicate: predicate,
+        options: .cumulativeSum) { [weak self] _,
+        result,
+        error in
 
             if let error = error {
                 print("❌ Distance fetch error: \(error)")
@@ -799,7 +804,12 @@ class HealthKitManager: NSObject, ObservableObject {
         }
 
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: heartRateType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, error in
+        let query = HKSampleQuery(sampleType: heartRateType,
+        predicate: nil,
+        limit: 1,
+        sortDescriptors: [sortDescriptor]) { [weak self] _,
+        samples,
+        error in
 
             if let error = error {
                 print("❌ Heart rate fetch error: \(error)")
@@ -830,7 +840,11 @@ class HealthKitManager: NSObject, ObservableObject {
         let startOfDay = calendar.startOfDay(for: now)
         let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: now, options: .strictStartDate)
 
-        let query = HKStatisticsQuery(quantityType: stepType, quantitySamplePredicate: predicate, options: .cumulativeSum) { [weak self] _, result, error in
+        let query = HKStatisticsQuery(quantityType: stepType,
+        quantitySamplePredicate: predicate,
+        options: .cumulativeSum) { [weak self] _,
+        result,
+        error in
 
             if let error = error {
                 print("❌ Step count fetch error: \(error)")
@@ -857,7 +871,12 @@ class HealthKitManager: NSObject, ObservableObject {
         }
 
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: steadinessType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, error in
+        let query = HKSampleQuery(sampleType: steadinessType,
+        predicate: nil,
+        limit: 1,
+        sortDescriptors: [sortDescriptor]) { [weak self] _,
+        samples,
+        error in
 
             if let error = error {
                 print("❌ Walking steadiness fetch error: \(error)")
@@ -955,7 +974,12 @@ class HealthKitManager: NSObject, ObservableObject {
         }
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: walkingSpeedType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, _ in
+        let query = HKSampleQuery(sampleType: walkingSpeedType,
+        predicate: nil,
+        limit: 1,
+        sortDescriptors: [sortDescriptor]) { [weak self] _,
+        samples,
+        _ in
             
             guard let sample = samples?.first as? HKQuantitySample else {
                 completion(nil)
@@ -982,7 +1006,12 @@ class HealthKitManager: NSObject, ObservableObject {
         }
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: stepLengthType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, _ in
+        let query = HKSampleQuery(sampleType: stepLengthType,
+        predicate: nil,
+        limit: 1,
+        sortDescriptors: [sortDescriptor]) { [weak self] _,
+        samples,
+        _ in
             
             guard let sample = samples?.first as? HKQuantitySample else {
                 completion(nil)
@@ -1009,7 +1038,12 @@ class HealthKitManager: NSObject, ObservableObject {
         }
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: asymmetryType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, _ in
+        let query = HKSampleQuery(sampleType: asymmetryType,
+        predicate: nil,
+        limit: 1,
+        sortDescriptors: [sortDescriptor]) { [weak self] _,
+        samples,
+        _ in
             
             guard let sample = samples?.first as? HKQuantitySample else {
                 completion(nil)
@@ -1036,7 +1070,12 @@ class HealthKitManager: NSObject, ObservableObject {
         }
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: doubleSupportType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, _ in
+        let query = HKSampleQuery(sampleType: doubleSupportType,
+        predicate: nil,
+        limit: 1,
+        sortDescriptors: [sortDescriptor]) { [weak self] _,
+        samples,
+        _ in
             
             guard let sample = samples?.first as? HKQuantitySample else {
                 completion(nil)
@@ -1063,7 +1102,12 @@ class HealthKitManager: NSObject, ObservableObject {
         }
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: stairAscentType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, _ in
+        let query = HKSampleQuery(sampleType: stairAscentType,
+        predicate: nil,
+        limit: 1,
+        sortDescriptors: [sortDescriptor]) { [weak self] _,
+        samples,
+        _ in
             
             guard let sample = samples?.first as? HKQuantitySample else {
                 completion(nil)
@@ -1090,7 +1134,12 @@ class HealthKitManager: NSObject, ObservableObject {
         }
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: stairDescentType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, _ in
+        let query = HKSampleQuery(sampleType: stairDescentType,
+        predicate: nil,
+        limit: 1,
+        sortDescriptors: [sortDescriptor]) { [weak self] _,
+        samples,
+        _ in
             
             guard let sample = samples?.first as? HKQuantitySample else {
                 completion(nil)
@@ -1117,7 +1166,12 @@ class HealthKitManager: NSObject, ObservableObject {
         }
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: sixMinuteWalkType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, _ in
+        let query = HKSampleQuery(sampleType: sixMinuteWalkType,
+        predicate: nil,
+        limit: 1,
+        sortDescriptors: [sortDescriptor]) { [weak self] _,
+        samples,
+        _ in
             
             guard let sample = samples?.first as? HKQuantitySample else {
                 completion(nil)
@@ -1198,7 +1252,12 @@ class HealthKitManager: NSObject, ObservableObject {
         }
         
         let healthData = HealthData(
-            type: type, value: value, unit: unit, timestamp: timestamp, deviceId: UIDevice.current.identifierForVendor?.uuidString ?? "unknown", userId: userId
+            type: type,
+            value: value,
+            unit: unit,
+            timestamp: timestamp,
+            deviceId: UIDevice.current.identifierForVendor?.uuidString ?? "unknown",
+            userId: userId
         )
         
         do {

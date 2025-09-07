@@ -731,7 +731,14 @@ class LiDARSessionData: ObservableObject {
     var balanceAnalysis: BalanceAnalysisResult?
     var environmentAnalysis: EnvironmentAnalysisResult?
 
-    init(sessionId: String, startTime: Date, duration: TimeInterval, analysisType: AnalysisType, pointCloudData: [LiDARPoint], deviceInfo: DeviceInfo) {
+    init(
+        sessionId: String,
+        startTime: Date,
+        duration: TimeInterval,
+        analysisType: AnalysisType,
+        pointCloudData: [LiDARPoint],
+        deviceInfo: DeviceInfo
+    ) {
         self.sessionId = sessionId
         self.startTime = startTime
         self.duration = duration

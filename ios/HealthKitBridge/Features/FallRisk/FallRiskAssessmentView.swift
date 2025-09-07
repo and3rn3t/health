@@ -819,11 +819,23 @@ struct BalanceScoreCard: View {
     }
 
     private var balanceScoreIcon: String {
-        if score >= 80 { return "checkmark.circle.fill" } else if score >= 60 { return "exclamationmark.triangle.fill" } else { return "exclamationmark.octagon.fill" }
+        if score >= 80 {
+            return "checkmark.circle.fill"
+        } else if score >= 60 {
+            return "exclamationmark.triangle.fill"
+        } else {
+            return "exclamationmark.octagon.fill"
+        }
     }
 
     private var balanceScoreText: String {
-        if score >= 80 { return "Excellent balance - low fall risk" } else if score >= 60 { return "Good balance - moderate monitoring" } else { return "Poor balance - increased fall risk" }
+        if score >= 80 {
+            return "Excellent balance - low fall risk"
+        } else if score >= 60 {
+            return "Good balance - moderate monitoring"
+        } else {
+            return "Poor balance - increased fall risk"
+        }
     }
 }
 
@@ -999,7 +1011,11 @@ struct AssessmentHistoryCard: View {
     }
 
     private var filteredAssessments: [FallRiskAssessment] {
-        let cutoffDate = Calendar.current.date(byAdding: selectedTimeRange.dateComponent, value: -selectedTimeRange.value, to: Date()) ?? Date.distantPast
+        let cutoffDate = Calendar.current.date(
+            byAdding: selectedTimeRange.dateComponent,
+            value: -selectedTimeRange.value,
+            to: Date()
+        ) ?? Date.distantPast
         return assessments.filter { $0.timestamp >= cutoffDate }
     }
 }

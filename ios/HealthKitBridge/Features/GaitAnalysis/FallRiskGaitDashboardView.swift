@@ -90,7 +90,12 @@ struct FallRiskGaitDashboardView: View {
         Task {
             do {
                 let payload = GaitAnalysisPayload(
-                    userId: AppConfig.shared.userId, deviceId: UIDevice.current.identifierForVendor?.uuidString ?? "unknown", gait: gait, fallRisk: fallRisk, balance: gaitManager.balanceAssessment, mobility: gaitManager.dailyMobilityTrends
+                    userId: AppConfig.shared.userId,
+                    deviceId: UIDevice.current.identifierForVendor?.uuidString ?? "unknown",
+                    gait: gait,
+                    fallRisk: fallRisk,
+                    balance: gaitManager.balanceAssessment,
+                    mobility: gaitManager.dailyMobilityTrends
                 )
                 
                 try await webSocketManager.sendGaitAnalysis(payload)
@@ -236,25 +241,45 @@ struct GaitMetricsCard: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
                 if let speed = gaitMetrics.averageWalkingSpeed {
                     GaitMetricView(
-                        title: "Walking Speed", value: String(format: "%.2f", speed), unit: "m/s", normalRange: "1.2-1.4", isNormal: speed >= 1.0, icon: "speedometer"
+                        title: "Walking Speed",
+                        value: String(format: "%.2f", speed),
+                        unit: "m/s",
+                        normalRange: "1.2-1.4",
+                        isNormal: speed >= 1.0,
+                        icon: "speedometer"
                     )
                 }
                 
                 if let stepLength = gaitMetrics.averageStepLength {
                     GaitMetricView(
-                        title: "Step Length", value: String(format: "%.2f", stepLength), unit: "m", normalRange: "0.6-0.8", isNormal: stepLength >= 0.5, icon: "ruler"
+                        title: "Step Length",
+                        value: String(format: "%.2f", stepLength),
+                        unit: "m",
+                        normalRange: "0.6-0.8",
+                        isNormal: stepLength >= 0.5,
+                        icon: "ruler"
                     )
                 }
                 
                 if let asymmetry = gaitMetrics.walkingAsymmetry {
                     GaitMetricView(
-                        title: "Asymmetry", value: String(format: "%.1f", asymmetry), unit: "%", normalRange: "< 3%", isNormal: asymmetry <= 3.0, icon: "scale.3d"
+                        title: "Asymmetry",
+                        value: String(format: "%.1f", asymmetry),
+                        unit: "%",
+                        normalRange: "< 3%",
+                        isNormal: asymmetry <= 3.0,
+                        icon: "scale.3d"
                     )
                 }
                 
                 if let doubleSupport = gaitMetrics.doubleSupportTime {
                     GaitMetricView(
-                        title: "Double Support", value: String(format: "%.1f", doubleSupport), unit: "%", normalRange: "20-25%", isNormal: doubleSupport <= 25.0, icon: "timer"
+                        title: "Double Support",
+                        value: String(format: "%.1f", doubleSupport),
+                        unit: "%",
+                        normalRange: "20-25%",
+                        isNormal: doubleSupport <= 25.0,
+                        icon: "timer"
                     )
                 }
             }
@@ -417,13 +442,19 @@ struct DailyMobilityCard: View {
                 
                 if let distance = mobility.walkingDistance {
                     MobilityMetricView(
-                        title: "Distance", value: String(format: "%.1f km", distance / 1000), icon: "map", color: distance >= 3000 ? .green : .orange
+                        title: "Distance",
+                        value: String(format: "%.1f km", distance / 1000),
+                        icon: "map",
+                        color: distance >= 3000 ? .green : .orange
                     )
                 }
                 
                 if let standTime = mobility.standTime {
                     MobilityMetricView(
-                        title: "Stand Time", value: "\(Int(standTime))m", icon: "figure.stand", color: standTime >= 360 ? .green : .orange // 6 hours
+                        title: "Stand Time",
+                        value: "\(Int(standTime))m",
+                        icon: "figure.stand",
+                        color: standTime >= 360 ? .green : .orange // 6 hours
                     )
                 }
             }
