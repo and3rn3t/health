@@ -23,11 +23,11 @@ struct GaitMetrics {
 }
 
 enum MobilityStatus: String, CaseIterable, Codable {
-    case excellent = "excellent"
-    case good = "good"
-    case fair = "fair"
-    case poor = "poor"
-    case unknown = "unknown"
+    case excellent
+    case good
+    case fair
+    case poor
+    case unknown
 
     var displayName: String {
         switch self {
@@ -51,10 +51,10 @@ enum MobilityStatus: String, CaseIterable, Codable {
 }
 
 enum RiskLevel: String, CaseIterable, Codable {
-    case low = "low"
-    case moderate = "moderate"
-    case high = "high"
-    case critical = "critical"
+    case low
+    case moderate
+    case high
+    case critical
 
     var displayName: String {
         switch self {
