@@ -205,7 +205,7 @@ jobs:
             -enableCodeCoverage YES \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
+            IPHONEOS_DEPLOYMENT_TARGET=18.1 \
             ENABLE_BITCODE=NO
 
       - name: Run Unit Tests
@@ -213,6 +213,10 @@ jobs:
         run: |
           SIMULATOR_UDID="${{ steps.simulator.outputs.udid }}"
           echo "Running unit tests on simulator: $SIMULATOR_UDID"
+
+          # Set environment variable to indicate simulator environment for tests
+          export TARGET_DEVICE_IDENTIFIER="$SIMULATOR_UDID"
+          export IS_SIMULATOR=true
 
           xcodebuild test-without-building \
             -project ios/HealthKitBridge.xcodeproj \
@@ -222,7 +226,7 @@ jobs:
             -enableCodeCoverage YES \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
+            IPHONEOS_DEPLOYMENT_TARGET=18.1 \
             -only-testing HealthKitBridgeTests \
             -resultBundlePath ios/build/test-results-unit.xcresult
 
@@ -232,6 +236,10 @@ jobs:
           SIMULATOR_UDID="${{ steps.simulator.outputs.udid }}"
           echo "Running UI tests on simulator: $SIMULATOR_UDID"
 
+          # Set environment variable to indicate simulator environment for tests
+          export TARGET_DEVICE_IDENTIFIER="$SIMULATOR_UDID"
+          export IS_SIMULATOR=true
+
           xcodebuild test-without-building \
             -project ios/HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
@@ -239,7 +247,7 @@ jobs:
             -derivedDataPath ios/build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
+            IPHONEOS_DEPLOYMENT_TARGET=18.1 \
             -only-testing HealthKitBridgeUITests \
             -resultBundlePath ios/build/test-results-ui.xcresult
 
