@@ -1,82 +1,163 @@
-//
-//  HealthKitBridgeWidget.swift
-//  VitalSense Monitor
-//
-
 import WidgetKit
 import SwiftUI
+import HealthKit
 
-// MARK: - VitalSense Monitor Widget
-struct VitalSenseMonitorWidget: Widget {
-    let kind: String = "VitalSenseMonitorWidget"
-    
+// MARK: - Widget Configuration
+struct HealthKitBridgeWidget: Widget {
+    let kind: String = "HealthKitBridgeWidget"
+
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: GaitMetricsProvider()) { entry in
-            VitalSenseMonitorWidgetEntryView(entry: entry)
+        StaticConfiguration(
+            kind: kind,
+            provider: VitalSenseProvider()
+        ) { entry in
+            VitalSenseWidgetView(entry: entry)
         }
-        .configurationDisplayName("VitalSense Monitor")
-        .description("Monitor your gait metrics and fall risk assessment.")
+        .configurationDisplayName("VitalSense Health")
+        .description("Monitor your health metrics and fall risk at a glance.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .contentMarginsDisabled()
     }
 }
 
 // MARK: - Timeline Provider
-struct GaitMetricsProvider: TimelineProvider {
-    func placeholder(in context: Context) -> GaitMetricsEntry {
-        GaitMetricsEntry(
+struct VitalSenseProvider: TimelineProvider {
+    func placeholder(in context: Context) -> VitalSenseEntry {
+        VitalSenseEntry(
             date: Date(),
-            walkingSpeed: 1.25,
-            asymmetry: 2.1,
-            fallRisk: "Low Risk",
-            isMonitoring: true
+            healthScore: 85,
+            fallRisk: .low,
+            heartRate: 72,
+            steps: 8547,
+            sleepHours: 7.5,
+            trend: .improving,
+            lastUpdate: Date()
         )
     }
-    
-    func getSnapshot(in context: Context, completion: @escaping (GaitMetricsEntry) -> ()) {
-        let entry = GaitMetricsEntry(
-            date: Date(),
-            walkingSpeed: 1.25,
-            asymmetry: 2.1,
-            fallRisk: "Low Risk",
-            isMonitoring: true
-        )
-        completion(entry)
-    }
-    
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        var entries: [GaitMetricsEntry] = []
-        
-        // Generate a timeline consisting of five entries an hour apart, starting from the current date.
-        let currentDate = Date()
-        for hourOffset in 0 ..< 5 {
-            let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = GaitMetricsEntry(
-                date: entryDate,
-                walkingSpeed: Double.random(in: 1.0...1.5),
-                asymmetry: Double.random(in: 1.0...4.0),
-                fallRisk: ["Low Risk", "Moderate Risk"].randomElement()!,
-                isMonitoring: true
-            )
-            entries.append(entry)
+
+    func getSnapshot(
+        in context: Context,
+        completion: @escaping (VitalSenseEntry) -> Void
+    ) {
+        Task {
+            let entry = await fetchHealthData()
+            completion(entry)
         }
+    }
+
+    func getTimeline(
+        in context: Context,
+        completion: @escaping (Timeline<Entry>) -> Void
+    ) {
+        Task {
+            let currentEntry = await fetchHealthData()
+            
+            // Create timeline entries for the next 6 hours, updating every hour
+            var entries: [VitalSenseEntry] = []
+            let now = Date()
+            
+            for hourOffset in 0..<6 {
+                let entryDate = Calendar.current.date(
+                    byAdding: .hour,
+                    value: hourOffset,
+                    to: now
+                ) ?? now
+                
+                // For future entries, we'll use current data but update the date
+                let entry = VitalSenseEntry(
+                    date: entryDate,
+                    healthScore: currentEntry.healthScore,
+                    fallRisk: currentEntry.fallRisk,
+                    heartRate: currentEntry.heartRate,
+                    steps: currentEntry.steps,
+                    sleepHours: currentEntry.sleepHours,
+                    trend: currentEntry.trend,
+                    lastUpdate: currentEntry.lastUpdate
+                )
+                entries.append(entry)
+            }
+            
+            // Refresh timeline every hour
+            let nextUpdate = Calendar.current.date(
+                byAdding: .hour,
+                value: 1,
+                to: now
+            ) ?? now
+            
+            let timeline = Timeline(entries: entries, policy: .after(nextUpdate))
+            completion(timeline)
+        }
+    }
+    
+    private func fetchHealthData() async -> VitalSenseEntry {
+        let healthManager = HealthKitManager.shared
         
-        let timeline = Timeline(entries: entries, policy: .atEnd)
-        completion(timeline)
+        // Fetch recent health data
+        let healthScore = await fetchHealthScore()
+        let fallRisk = await fetchFallRisk()
+        let heartRate = await fetchRecentHeartRate()
+        let steps = await fetchTodaySteps()
+        let sleepHours = await fetchLastNightSleep()
+        let trend = await calculateTrend()
+        
+        return VitalSenseEntry(
+            date: Date(),
+            healthScore: healthScore,
+            fallRisk: fallRisk,
+            heartRate: heartRate,
+            steps: steps,
+            sleepHours: sleepHours,
+            trend: trend,
+            lastUpdate: Date()
+        )
+    }
+    
+    private func fetchHealthScore() async -> Int {
+        // Implementation would calculate overall health score
+        Int.random(in: 70...95) // Placeholder
+    }
+    
+    private func fetchFallRisk() async -> FallRiskLevel {
+        // Implementation would assess current fall risk
+        .low // Placeholder
+    }
+    
+    private func fetchRecentHeartRate() async -> Int {
+        // Implementation would get most recent heart rate
+        Int.random(in: 60...100) // Placeholder
+    }
+    
+    private func fetchTodaySteps() async -> Int {
+        // Implementation would get today's step count
+        Int.random(in: 3000...15000) // Placeholder
+    }
+    
+    private func fetchLastNightSleep() async -> Double {
+        // Implementation would get last night's sleep duration
+        Double.random(in: 6.0...9.0) // Placeholder
+    }
+    
+    private func calculateTrend() async -> TrendDirection {
+        // Implementation would compare recent vs historical data
+        .improving // Placeholder
     }
 }
 
-// MARK: - Timeline Entry
-struct GaitMetricsEntry: TimelineEntry {
+// MARK: - Widget Entry
+struct VitalSenseEntry: TimelineEntry {
     let date: Date
-    let walkingSpeed: Double
-    let asymmetry: Double
-    let fallRisk: String
-    let isMonitoring: Bool
+    let healthScore: Int
+    let fallRisk: FallRiskLevel
+    let heartRate: Int
+    let steps: Int
+    let sleepHours: Double
+    let trend: TrendDirection
+    let lastUpdate: Date
 }
 
 // MARK: - Widget Views
-struct VitalSenseMonitorWidgetEntryView: View {
-    var entry: GaitMetricsProvider.Entry
+struct VitalSenseWidgetView: View {
+    let entry: VitalSenseProvider.Entry
     @Environment(\.widgetFamily) var family
     
     var body: some View {
@@ -93,322 +174,460 @@ struct VitalSenseMonitorWidgetEntryView: View {
     }
 }
 
+// MARK: - Small Widget (Health Score Focus)
 struct SmallWidgetView: View {
-    let entry: GaitMetricsEntry
+    let entry: VitalSenseEntry
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "figure.walk")
-                    .foregroundColor(.accentColor)
-                    .font(.headline)
-                Text("VitalSense Monitor")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
-                Spacer()
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Fall Risk")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                Text(entry.fallRisk)
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(fallRiskColor(entry.fallRisk))
-            }
-            
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Speed")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    Text(String(format: "%.2f", entry.walkingSpeed))
-                        .font(.caption)
-                        .fontWeight(.medium)
-                }
-                
-                Spacer()
-                
-                Circle()
-                    .fill(entry.isMonitoring ? .green : .red)
-                    .frame(width: 8, height: 8)
-            }
-        }
-        .padding()
-        .background(Color(.systemBackground))
-    }
-    
-    private func fallRiskColor(_ risk: String) -> Color {
-        switch risk {
-        case "Low Risk": return .green
-        case "Moderate Risk": return .orange
-        case "High Risk": return .red
-        default: return .gray
-        }
-    }
-}
-
-struct MediumWidgetView: View {
-    let entry: GaitMetricsEntry
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "figure.walk")
-                    .foregroundColor(.accentColor)
-                    .font(.title2)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("VitalSense Monitor")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-                    
-                    Text("Gait Analysis")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                VStack {
-                    Circle()
-                        .fill(entry.isMonitoring ? .green : .red)
-                        .frame(width: 12, height: 12)
-                    Text(entry.isMonitoring ? "Active" : "Inactive")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-            }
-            
-            HStack(spacing: 20) {
-                MetricColumn(
-                    title: "Fall Risk",
-                    value: entry.fallRisk,
-                    color: fallRiskColor(entry.fallRisk)
-                )
-                
-                MetricColumn(
-                    title: "Walking Speed",
-                    value: String(format: "%.2f m/s", entry.walkingSpeed),
-                    color: .primary
-                )
-                
-                MetricColumn(
-                    title: "Asymmetry",
-                    value: String(format: "%.1f%%", entry.asymmetry),
-                    color: entry.asymmetry > 3.0 ? .orange : .green
-                )
-            }
-        }
-        .padding()
-        .background(Color(.systemBackground))
-    }
-    
-    private func fallRiskColor(_ risk: String) -> Color {
-        switch risk {
-        case "Low Risk": return .green
-        case "Moderate Risk": return .orange
-        case "High Risk": return .red
-        default: return .gray
-        }
-    }
-}
-
-struct LargeWidgetView: View {
-    let entry: GaitMetricsEntry
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(spacing: 8) {
             // Header
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Image(systemName: "figure.walk")
-                            .foregroundColor(.accentColor)
-                            .font(.title2)
-                        
-                        Text("VitalSense Monitor")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                    }
-                    
-                    Text("Advanced Gait Analysis & Fall Risk Assessment")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                Image(systemName: "heart.fill")
+                    .foregroundColor(ModernDesignSystem.Colors.primary)
+                    .font(.caption)
+                
+                Text("VitalSense")
+                    .font(ModernDesignSystem.Typography.caption)
+                    .foregroundColor(ModernDesignSystem.Colors.textSecondary)
                 
                 Spacer()
                 
-                VStack(alignment: .trailing, spacing: 4) {
-                    HStack {
-                        Circle()
-                            .fill(entry.isMonitoring ? .green : .red)
-                            .frame(width: 8, height: 8)
-                        Text(entry.isMonitoring ? "Monitoring Active" : "Monitoring Inactive")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Text("Updated: \(entry.date, style: .time)")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-            }
-            
-            // Main Metrics
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Current Assessment")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                
-                HStack(spacing: 16) {
-                    // Fall Risk - Prominent Display
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Fall Risk Level")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        Text(entry.fallRisk)
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .foregroundColor(fallRiskColor(entry.fallRisk))
-                    }
-                    .padding()
-                    .background(fallRiskColor(entry.fallRisk).opacity(0.1))
-                    .cornerRadius(12)
-                    
-                    Spacer()
-                    
-                    // Secondary Metrics
-                    VStack(alignment: .leading, spacing: 8) {
-                        MetricRow(
-                            title: "Walking Speed",
-                            value: String(format: "%.2f m/s", entry.walkingSpeed),
-                            status: entry.walkingSpeed >= 1.2 ? "Normal" : "Concern"
-                        )
-                        
-                        MetricRow(
-                            title: "Gait Asymmetry",
-                            value: String(format: "%.1f%%", entry.asymmetry),
-                            status: entry.asymmetry <= 3.0 ? "Normal" : "Elevated"
-                        )
-                    }
-                }
-            }
-        }
-        .padding()
-        .background(Color(.systemBackground))
-    }
-    
-    private func fallRiskColor(_ risk: String) -> Color {
-        switch risk {
-        case "Low Risk": return .green
-        case "Moderate Risk": return .orange
-        case "High Risk": return .red
-        default: return .gray
-        }
-    }
-}
-
-struct MetricColumn: View {
-    let title: String
-    let value: String
-    let color: Color
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.caption2)
-                .foregroundColor(.secondary)
-            Text(value)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundColor(color)
-        }
-    }
-}
-
-struct MetricRow: View {
-    let title: String
-    let value: String
-    let status: String
-    
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                Text(value)
-                    .font(.caption)
-                    .fontWeight(.medium)
+                TrendIcon(direction: entry.trend)
             }
             
             Spacer()
             
-            Text(status)
-                .font(.caption2)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(statusColor(status).opacity(0.2))
-                .foregroundColor(statusColor(status))
-                .cornerRadius(4)
+            // Main Health Score
+            VStack(spacing: 4) {
+                Text("\(entry.healthScore)")
+                    .font(ModernDesignSystem.Typography.numericLarge)
+                    .foregroundColor(healthScoreColor(entry.healthScore))
+                
+                Text("Health Score")
+                    .font(ModernDesignSystem.Typography.caption)
+                    .foregroundColor(ModernDesignSystem.Colors.textSecondary)
+            }
+            
+            Spacer()
+            
+            // Fall Risk Indicator
+            HStack {
+                Circle()
+                    .fill(entry.fallRisk.color)
+                    .frame(width: 6, height: 6)
+                
+                Text(entry.fallRisk.shortDisplayName)
+                    .font(ModernDesignSystem.Typography.caption2)
+                    .foregroundColor(ModernDesignSystem.Colors.textTertiary)
+                
+                Spacer()
+            }
+        }
+        .padding(12)
+        .background(ModernDesignSystem.Colors.surface)
+        .cornerRadius(16)
+    }
+    
+    private func healthScoreColor(_ score: Int) -> Color {
+        switch score {
+        case 90...100:
+            return ModernDesignSystem.Colors.healthGreen
+        case 80..<90:
+            return ModernDesignSystem.Colors.primary
+        case 70..<80:
+            return ModernDesignSystem.Colors.healthYellow
+        case 60..<70:
+            return ModernDesignSystem.Colors.healthOrange
+        default:
+            return ModernDesignSystem.Colors.healthRed
+        }
+    }
+}
+
+// MARK: - Medium Widget (Key Metrics)
+struct MediumWidgetView: View {
+    let entry: VitalSenseEntry
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            // Header
+            HStack {
+                HStack(spacing: 6) {
+                    Image(systemName: "heart.fill")
+                        .foregroundColor(ModernDesignSystem.Colors.primary)
+                        .font(.callout)
+                    
+                    Text("VitalSense")
+                        .font(ModernDesignSystem.Typography.callout)
+                        .fontWeight(.medium)
+                        .foregroundColor(ModernDesignSystem.Colors.textPrimary)
+                }
+                
+                Spacer()
+                
+                HStack(spacing: 4) {
+                    TrendIcon(direction: entry.trend)
+                    Text(entry.trend.displayName)
+                        .font(ModernDesignSystem.Typography.caption2)
+                        .foregroundColor(entry.trend.color)
+                }
+            }
+            
+            // Metrics Grid
+            HStack(spacing: 16) {
+                // Health Score
+                VStack(spacing: 4) {
+                    Text("\(entry.healthScore)")
+                        .font(ModernDesignSystem.Typography.numericMedium)
+                        .foregroundColor(healthScoreColor(entry.healthScore))
+                    
+                    Text("Health")
+                        .font(ModernDesignSystem.Typography.caption)
+                        .foregroundColor(ModernDesignSystem.Colors.textSecondary)
+                }
+                
+                Divider()
+                
+                // Heart Rate
+                VStack(spacing: 4) {
+                    Text("\(entry.heartRate)")
+                        .font(ModernDesignSystem.Typography.numericMedium)
+                        .foregroundColor(ModernDesignSystem.Colors.textPrimary)
+                    
+                    Text("BPM")
+                        .font(ModernDesignSystem.Typography.caption)
+                        .foregroundColor(ModernDesignSystem.Colors.textSecondary)
+                }
+                
+                Divider()
+                
+                // Steps
+                VStack(spacing: 4) {
+                    Text("\(entry.steps.formatted(.number.notation(.compactName)))")
+                        .font(ModernDesignSystem.Typography.numericMedium)
+                        .foregroundColor(ModernDesignSystem.Colors.textPrimary)
+                    
+                    Text("Steps")
+                        .font(ModernDesignSystem.Typography.caption)
+                        .foregroundColor(ModernDesignSystem.Colors.textSecondary)
+                }
+            }
+            
+            // Fall Risk Status
+            HStack {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(entry.fallRisk.color)
+                        .frame(width: 8, height: 8)
+                    
+                    Text("Fall Risk: \(entry.fallRisk.displayName)")
+                        .font(ModernDesignSystem.Typography.caption)
+                        .foregroundColor(ModernDesignSystem.Colors.textSecondary)
+                }
+                
+                Spacer()
+                
+                Text(timeAgoString(from: entry.lastUpdate))
+                    .font(ModernDesignSystem.Typography.caption2)
+                    .foregroundColor(ModernDesignSystem.Colors.textTertiary)
+            }
+        }
+        .padding(16)
+        .background(ModernDesignSystem.Colors.surface)
+        .cornerRadius(16)
+    }
+    
+    private func healthScoreColor(_ score: Int) -> Color {
+        switch score {
+        case 90...100:
+            return ModernDesignSystem.Colors.healthGreen
+        case 80..<90:
+            return ModernDesignSystem.Colors.primary
+        case 70..<80:
+            return ModernDesignSystem.Colors.healthYellow
+        case 60..<70:
+            return ModernDesignSystem.Colors.healthOrange
+        default:
+            return ModernDesignSystem.Colors.healthRed
+        }
+    }
+}
+
+// MARK: - Large Widget (Comprehensive View)
+struct LargeWidgetView: View {
+    let entry: VitalSenseEntry
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            // Header with Branding
+            HStack {
+                HStack(spacing: 8) {
+                    Image(systemName: "heart.fill")
+                        .foregroundColor(ModernDesignSystem.Colors.primary)
+                        .font(.title3)
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("VitalSense")
+                            .font(ModernDesignSystem.Typography.title3)
+                            .fontWeight(.semibold)
+                            .foregroundColor(ModernDesignSystem.Colors.textPrimary)
+                        
+                        Text("Health Dashboard")
+                            .font(ModernDesignSystem.Typography.caption)
+                            .foregroundColor(ModernDesignSystem.Colors.textSecondary)
+                    }
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: 2) {
+                    HStack(spacing: 4) {
+                        TrendIcon(direction: entry.trend)
+                        Text(entry.trend.displayName)
+                            .font(ModernDesignSystem.Typography.caption)
+                            .foregroundColor(entry.trend.color)
+                    }
+                    
+                    Text(timeAgoString(from: entry.lastUpdate))
+                        .font(ModernDesignSystem.Typography.caption2)
+                        .foregroundColor(ModernDesignSystem.Colors.textTertiary)
+                }
+            }
+            
+            // Primary Health Score
+            VStack(spacing: 8) {
+                HStack {
+                    Text("\(entry.healthScore)")
+                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                        .foregroundColor(healthScoreColor(entry.healthScore))
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Health Score")
+                            .font(ModernDesignSystem.Typography.subheadline)
+                            .foregroundColor(ModernDesignSystem.Colors.textSecondary)
+                        
+                        Text(healthScoreDescription(entry.healthScore))
+                            .font(ModernDesignSystem.Typography.caption)
+                            .foregroundColor(healthScoreColor(entry.healthScore))
+                    }
+                    
+                    Spacer()
+                }
+                
+                // Health Score Progress Bar
+                ProgressView(value: Double(entry.healthScore), total: 100)
+                    .progressViewStyle(
+                        LinearProgressViewStyle(
+                            tint: healthScoreColor(entry.healthScore)
+                        )
+                    )
+                    .scaleEffect(y: 2)
+            }
+            
+            // Metrics Grid
+            HStack(spacing: 20) {
+                MetricCard(
+                    title: "Heart Rate",
+                    value: "\(entry.heartRate)",
+                    unit: "BPM",
+                    icon: "heart",
+                    color: ModernDesignSystem.Colors.healthRed
+                )
+                
+                MetricCard(
+                    title: "Steps",
+                    value: entry.steps.formatted(.number.notation(.compactName)),
+                    unit: "today",
+                    icon: "figure.walk",
+                    color: ModernDesignSystem.Colors.primary
+                )
+                
+                MetricCard(
+                    title: "Sleep",
+                    value: String(format: "%.1f", entry.sleepHours),
+                    unit: "hours",
+                    icon: "bed.double",
+                    color: ModernDesignSystem.Colors.secondary
+                )
+            }
+            
+            // Fall Risk Assessment
+            HStack {
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(entry.fallRisk.color)
+                        .frame(width: 10, height: 10)
+                    
+                    Text("Fall Risk Assessment:")
+                        .font(ModernDesignSystem.Typography.caption)
+                        .foregroundColor(ModernDesignSystem.Colors.textSecondary)
+                    
+                    Text(entry.fallRisk.displayName)
+                        .font(ModernDesignSystem.Typography.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(entry.fallRisk.color)
+                }
+                
+                Spacer()
+            }
+        }
+        .padding(20)
+        .background(ModernDesignSystem.Colors.surface)
+        .cornerRadius(20)
+    }
+    
+    private func healthScoreColor(_ score: Int) -> Color {
+        switch score {
+        case 90...100:
+            return ModernDesignSystem.Colors.healthGreen
+        case 80..<90:
+            return ModernDesignSystem.Colors.primary
+        case 70..<80:
+            return ModernDesignSystem.Colors.healthYellow
+        case 60..<70:
+            return ModernDesignSystem.Colors.healthOrange
+        default:
+            return ModernDesignSystem.Colors.healthRed
         }
     }
     
-    private func statusColor(_ status: String) -> Color {
-        switch status {
-        case "Normal": return .green
-        case "Concern", "Elevated": return .orange
-        case "Risk": return .red
-        default: return .gray
+    private func healthScoreDescription(_ score: Int) -> String {
+        switch score {
+        case 90...100:
+            return "Excellent"
+        case 80..<90:
+            return "Good"
+        case 70..<80:
+            return "Fair"
+        case 60..<70:
+            return "Needs Attention"
+        default:
+            return "Critical"
         }
     }
 }
 
-// MARK: - Widget Bundle
-struct VitalSenseMonitorWidgetBundle: WidgetBundle {
-    var body: some Widget {
-        VitalSenseMonitorWidget()
+// MARK: - Supporting Views
+struct TrendIcon: View {
+    let direction: TrendDirection
+    
+    var body: some View {
+        Image(systemName: direction.iconName)
+            .font(.caption2)
+            .foregroundColor(direction.color)
     }
 }
 
-#Preview("Small Widget", as: .systemSmall) {
-    VitalSenseMonitorWidget()
-} timeline: {
-    GaitMetricsEntry(
-        date: Date(),
-        walkingSpeed: 1.25,
-        asymmetry: 2.1,
-        fallRisk: "Low Risk",
-        isMonitoring: true
-    )
+struct MetricCard: View {
+    let title: String
+    let value: String
+    let unit: String
+    let icon: String
+    let color: Color
+    
+    var body: some View {
+        VStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.callout)
+                .foregroundColor(color)
+            
+            Text(value)
+                .font(ModernDesignSystem.Typography.numericSmall)
+                .fontWeight(.semibold)
+                .foregroundColor(ModernDesignSystem.Colors.textPrimary)
+            
+            VStack(spacing: 1) {
+                Text(title)
+                    .font(ModernDesignSystem.Typography.caption2)
+                    .foregroundColor(ModernDesignSystem.Colors.textSecondary)
+                
+                Text(unit)
+                    .font(ModernDesignSystem.Typography.caption2)
+                    .foregroundColor(ModernDesignSystem.Colors.textTertiary)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
 }
 
-#Preview("Medium Widget", as: .systemMedium) {
-    VitalSenseMonitorWidget()
-} timeline: {
-    GaitMetricsEntry(
-        date: Date(),
-        walkingSpeed: 1.25,
-        asymmetry: 2.1,
-        fallRisk: "Low Risk",
-        isMonitoring: true
-    )
+// MARK: - Fall Risk Level
+enum FallRiskLevel: CaseIterable {
+    case low
+    case moderate
+    case high
+    case critical
+    
+    var displayName: String {
+        switch self {
+        case .low:
+            return "Low Risk"
+        case .moderate:
+            return "Moderate Risk"
+        case .high:
+            return "High Risk"
+        case .critical:
+            return "Critical Risk"
+        }
+    }
+    
+    var shortDisplayName: String {
+        switch self {
+        case .low:
+            return "Low"
+        case .moderate:
+            return "Moderate"
+        case .high:
+            return "High"
+        case .critical:
+            return "Critical"
+        }
+    }
+    
+    var color: Color {
+        switch self {
+        case .low:
+            return ModernDesignSystem.Colors.healthGreen
+        case .moderate:
+            return ModernDesignSystem.Colors.healthYellow
+        case .high:
+            return ModernDesignSystem.Colors.healthOrange
+        case .critical:
+            return ModernDesignSystem.Colors.healthRed
+        }
+    }
 }
 
-#Preview("Large Widget", as: .systemLarge) {
-    VitalSenseMonitorWidget()
-} timeline: {
-    GaitMetricsEntry(
-        date: Date(),
-        walkingSpeed: 1.25,
-        asymmetry: 2.1,
-        fallRisk: "Low Risk",
-        isMonitoring: true
-    )
+// MARK: - Utility Functions
+private func timeAgoString(from date: Date) -> String {
+    let formatter = RelativeDateTimeFormatter()
+    formatter.timeStyle = .abbreviated
+    formatter.dateStyle = .omitted
+    return formatter.localizedString(for: date, relativeTo: Date())
+}
+
+// MARK: - Widget Preview
+struct VitalSenseWidget_Previews: PreviewProvider {
+    static var previews: some View {
+        let sampleEntry = VitalSenseEntry(
+            date: Date(),
+            healthScore: 85,
+            fallRisk: .low,
+            heartRate: 72,
+            steps: 8547,
+            sleepHours: 7.5,
+            trend: .improving,
+            lastUpdate: Date().addingTimeInterval(-300) // 5 minutes ago
+        )
+        
+        Group {
+            VitalSenseWidgetView(entry: sampleEntry)
+                .previewContext(WidgetPreviewContext(family: .systemSmall))
+            
+            VitalSenseWidgetView(entry: sampleEntry)
+                .previewContext(WidgetPreviewContext(family: .systemMedium))
+            
+            VitalSenseWidgetView(entry: sampleEntry)
+                .previewContext(WidgetPreviewContext(family: .systemLarge))
+        }
+    }
 }

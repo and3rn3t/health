@@ -246,7 +246,7 @@ struct ScoreComponent {
     let recommendation: String
 
     var percentage: Double {
-        return (score / maxScore) * 100
+        (score / maxScore) * 100
     }
 }
 

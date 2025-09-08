@@ -52,7 +52,7 @@ struct FallRiskGaitDashboardView: View {
                     Button(action: refreshAnalysis) {
                         Image(systemName: "arrow.clockwise")
                             .rotationEffect(.degrees(refreshing ? 360 : 0))
-                            .animation(.linear(duration: 1).repeatCount(refreshing ? .max : 1, autoreverses: false), value: refreshing)
+                            .animation(.linear(duration: 1).repeatCount(refreshing ? .max : 1, autoreverses: false),value: refreshing)
                     }
                 }
             }
@@ -82,8 +82,7 @@ struct FallRiskGaitDashboardView: View {
     }
     
     private func sendGaitAnalysis() {
-        guard let gait = gaitManager.currentGaitMetrics,
-              let fallRisk = gaitManager.fallRiskScore else {
+        guard let gait = gaitManager.currentGaitMetrics, let fallRisk = gaitManager.fallRiskScore else {
             print("❌ Insufficient gait data for transmission")
             return
         }
@@ -286,8 +285,7 @@ struct GaitMetricsCard: View {
             }
             
             // Stair Navigation (if available)
-            if let ascentSpeed = gaitMetrics.stairAscentSpeed,
-               let descentSpeed = gaitMetrics.stairDescentSpeed {
+            if let ascentSpeed = gaitMetrics.stairAscentSpeed, let descentSpeed = gaitMetrics.stairDescentSpeed {
                 
                 Divider()
                 
@@ -438,10 +436,7 @@ struct DailyMobilityCard: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 12) {
                 if let steps = mobility.stepCount {
                     MobilityMetricView(
-                        title: "Steps",
-                        value: "\(steps)",
-                        icon: "figure.walk",
-                        color: steps >= 5000 ? .green : .orange
+                        title: "Steps", value: "\(steps)", icon: "figure.walk", color: steps >= 5000 ? .green : .orange
                     )
                 }
                 

@@ -39,7 +39,7 @@ struct RealtimeGaitMetrics: Codable {
     var asymmetry: Double = 0.0
     var doubleSupportTime: Double = 0.0
     var cadence: Double = 0.0
-    var stabilityIndex: Double? = nil
+    var stabilityIndex: Double?
     var sessionStepCount: Int = 0
     var sessionDistance: Double = 0.0
     var sessionStartTime: Date?

@@ -28,10 +28,17 @@ These instructions guide GitHub Copilot Chat/Edits to produce code and docs that
 - "Refactor src/lib/liveHealthDataSync.ts to use the zod schemas for parsing incoming WS messages and narrow types across the pipeline."
 - "Add proper TypeScript types for health data processing with zod validation at component boundaries."
 
+### iOS Development & SwiftLint Compliance
+
+- "Create a Swift HealthKit manager singleton that follows our AppConfig.shared pattern with proper SwiftLint formatting - break long initializers into multi-line format."
+- "Add iOS WebSocket client with proper ATS configuration and SwiftLint-compliant code formatting (lines under 150 characters)."
+- "Refactor this Swift function to follow SwiftLint rules - break long parameter lists into multi-line format and use proper conditional formatting."
+- "Create a RiskFactor initialization that follows SwiftLint compliance - each parameter on its own line with proper indentation."
+
 ### iOS Integration
 
 - "Create a Swift HealthKit manager singleton that follows our AppConfig.shared pattern with proper error handling."
-- "Add iOS WebSocket client with proper ATS configuration and background task management."ture, and goals.
+- "Add iOS WebSocket client with proper ATS configuration and background task management."
 
 ## Project context
 
@@ -255,6 +262,140 @@ By following these rules, Copilot should generate code that compiles with Vite +
 - **Core files**: `HealthKitManager.swift`, `WebSocketManager.swift`, `ApiClient.swift`, `AppConfig.swift`
 - **Configuration**: Environment-specific configs in `Config.plist`, `TestConfig.plist`
 - **Tests**: Unit tests in `HealthKitBridgeTests/`, UI tests in `HealthKitBridgeUITests/`
+
+### SwiftLint Code Quality Standards
+
+This project enforces **strict SwiftLint compliance** for maintainable, readable Swift code. **ALL Swift code must pass SwiftLint validation** before commit.
+
+#### **Critical SwiftLint Rules**:
+
+**Line Length Violations**:
+
+- **ERROR**: Lines >150 characters (build-blocking)
+- **WARNING**: Lines >120 characters (code quality)
+- **Target**: Keep lines under 120 characters ideally
+
+#### **Required Swift Patterns for SwiftLint Compliance**:
+
+**1. Long Function Calls - Break into Multi-line Format**:
+
+```swift
+// ❌ BAD - SwiftLint ERROR
+let payload = GaitAnalysisPayload(userId: userId, deviceId: "combined_iphone_watch", gait: watchGaitMetrics, fallRisk: fallRisk, balance: balanceAssessment, mobility: dailyMobilityTrends)
+
+// ✅ GOOD - SwiftLint Compliant
+let payload = GaitAnalysisPayload(
+    userId: userId,
+    deviceId: "combined_iphone_watch",
+    gait: watchGaitMetrics,
+    fallRisk: fallRisk,
+    balance: balanceAssessment,
+    mobility: dailyMobilityTrends
+)
+```
+
+**2. Dictionary Declarations - One Key-Value Per Line**:
+
+```swift
+// ❌ BAD - SwiftLint ERROR
+let configData: [String: Any] = ["type": "gait_config_update", "monitoringInterval": config.monitoringInterval, "sensitivityLevel": config.sensitivityLevel.rawValue, "backgroundMonitoring": config.backgroundMonitoring]
+
+// ✅ GOOD - SwiftLint Compliant
+let configData: [String: Any] = [
+    "type": "gait_config_update",
+    "monitoringInterval": config.monitoringInterval,
+    "sensitivityLevel": config.sensitivityLevel.rawValue,
+    "backgroundMonitoring": config.backgroundMonitoring
+]
+```
+
+**3. Complex Conditionals - Use Multi-line If-Else**:
+
+```swift
+// ❌ BAD - SwiftLint ERROR
+if score >= 85 { return .green } else if score >= 70 { return .blue } else if score >= 55 { return .yellow } else if score >= 40 { return .orange } else { return .red }
+
+// ✅ GOOD - SwiftLint Compliant
+if score >= 85 {
+    return .green
+} else if score >= 70 {
+    return .blue
+} else if score >= 55 {
+    return .yellow
+} else if score >= 40 {
+    return .orange
+} else {
+    return .red
+}
+```
+
+**4. Long String Concatenations - Split with + Operator**:
+
+```swift
+// ❌ BAD - SwiftLint ERROR
+description: "Your resting heart rate has \(change > 0 ? "increased" : "decreased") by \(String(format: "%.1f", abs(change))) BPM this week"
+
+// ✅ GOOD - SwiftLint Compliant
+description: "Your resting heart rate has \(change > 0 ? "increased" : "decreased") " +
+            "by \(String(format: "%.1f", abs(change))) BPM this week"
+```
+
+**5. HK Query Initializations - Break Parameters**:
+
+```swift
+// ❌ BAD - SwiftLint ERROR
+let query = HKSampleQuery(sampleType: ascentType, predicate: nil, limit: 10, sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)])
+
+// ✅ GOOD - SwiftLint Compliant
+let query = HKSampleQuery(
+    sampleType: ascentType,
+    predicate: nil,
+    limit: 10,
+    sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)]
+)
+```
+
+#### **SwiftLint Validation Workflow**:
+
+**During Development**:
+
+- Use Docker SwiftLint container: `docker run --rm -v "c:\git\health\ios:/workspace" ghcr.io/realm/swiftlint:latest swiftlint /workspace`
+- VS Code task: "iOS: Swift Lint" for quick validation
+- PowerShell script: `ios/scripts/swift-lint-windows.ps1` for Windows integration
+
+**Pre-Commit Checklist**:
+
+```powershell
+# Quick line length check (Windows)
+$files = Get-ChildItem "ios\HealthKitBridge" -Recurse -Filter "*.swift"
+foreach ($file in $files) {
+    $longLines = Get-Content $file.FullName | Where-Object { $_.Length -gt 150 }
+    if ($longLines) { Write-Host "❌ ERROR: $($file.Name) has lines >150 chars" }
+}
+```
+
+**Common SwiftLint Violations to Avoid**:
+
+- `line_length`: Always break long lines using patterns above
+- `force_unwrapping`: Use safe unwrapping (`if let`, `guard let`) instead of `!`
+- `file_length`: Keep files under 600 lines, split large classes
+- `type_body_length`: Keep class bodies under 800 lines
+- `conditional_returns_on_newline`: Put return statements on new lines
+- `multiline_arguments`: Use proper multi-line argument formatting
+
+#### **SwiftLint Integration Commands**:
+
+```bash
+# Docker SwiftLint validation (recommended)
+docker run --rm -v "$(pwd)/ios:/workspace" ghcr.io/realm/swiftlint:latest swiftlint /workspace
+
+# VS Code tasks for SwiftLint
+# - "iOS: Swift Lint" - Full linting
+# - "iOS: Swift Format" - Auto-formatting
+# - "iOS: Format Check (Dry Run)" - Preview formatting changes
+```
+
+**Remember**: SwiftLint compliance is **mandatory** - ERROR-level violations will block builds. Always format code properly using the patterns above to ensure smooth development workflow.
 
 ## WebSocket & Networking Resilience
 

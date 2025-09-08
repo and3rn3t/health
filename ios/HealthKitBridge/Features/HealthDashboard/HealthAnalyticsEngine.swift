@@ -56,13 +56,13 @@ class HealthAnalyticsEngine: ObservableObject {
             checkHeartRateAnomalies(hr)
         }
         
-        if let s = steps {
-            addToHistory(&stepsHistory, value: s)
+        if let stepsValue = steps {
+            addToHistory(&stepsHistory, value: stepsValue)
             stepsTrend = calculateTrend(stepsHistory)
         }
         
-        if let e = energy {
-            addToHistory(&energyHistory, value: e)
+        if let energyValue = energy {
+            addToHistory(&energyHistory, value: energyValue)
             energyTrend = calculateTrend(energyHistory)
         }
         
@@ -133,8 +133,7 @@ class HealthAnalyticsEngine: ObservableObject {
         
         if !stepsHistory.isEmpty {
             let totalSteps = stepsHistory.last ?? 0
-            if totalSteps >= 10000 { score += 20 }
-            else if totalSteps >= 5000 { score += 10 }
+            if totalSteps >= 10000 { score += 20 } else if totalSteps >= 5000 { score += 10 }
         }
         
         if !energyHistory.isEmpty {

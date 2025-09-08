@@ -266,10 +266,10 @@ struct VitalSenseTabView<Content: View>: View {
 
 // MARK: - Session Tab Enum
 enum SessionTab: String, CaseIterable {
-    case overview = "overview"
-    case realTime = "realTime"
-    case map = "map"
-    case analysis = "analysis"
+    case overview
+    case realTime
+    case map
+    case analysis
 
     var title: String {
         switch self {

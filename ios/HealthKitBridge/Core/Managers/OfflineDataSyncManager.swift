@@ -116,11 +116,9 @@ class OfflineDataSyncManager: ObservableObject {
             return (nil, nil, 0)
         }
         
-        let timestamps = dataQueue.map { $0.timestamp }
+        let timestamps = dataQueue.map { $0.timestamp } 
         return (
-            oldest: timestamps.min(),
-            newest: timestamps.max(),
-            size: dataQueue.count
+            oldest: timestamps.min(), newest: timestamps.max(), size: dataQueue.count
         )
     }
 }

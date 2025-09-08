@@ -87,7 +87,7 @@ struct VitalSenseProgressIndicator: View {
     @State private var animateProgress = false
 
     private var progressPercentage: Double {
-        return value / target
+        value / target
     }
 
     var body: some View {

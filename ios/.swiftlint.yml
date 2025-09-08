@@ -3,13 +3,13 @@
 
 # Included rules
 included:
-  - VitalSenseMonitor/
+  - HealthKitBridge/
 
 # Excluded paths
 excluded:
   - build/
-  - VitalSenseMonitorTests/
-  - VitalSenseMonitorUITests/
+  - HealthKitBridgeTests/
+  - HealthKitBridgeUITests/
   - Pods/
   - .build/
 
@@ -47,6 +47,19 @@ disabled_rules:
   - todo # Allow TODO comments during development
 
 # Rule configurations
+identifier_name:
+  min_length:
+    warning: 3
+    error: 2
+  excluded:
+    - x
+    - y
+    - xs
+    - sm
+    - md
+    - lg
+    - xl
+
 line_length:
   warning: 120
   error: 150

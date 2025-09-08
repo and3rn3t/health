@@ -20,7 +20,7 @@ class FallRiskAnalysisEngine: ObservableObject {
     
     // Additional computed properties for UI integration
     var latestRiskLevel: FallRiskLevel? {
-        return currentRiskLevel != .unknown ? currentRiskLevel : nil
+        currentRiskLevel != .unknown ? currentRiskLevel : nil
     }
     
     var latestRiskFactors: [String]? {
@@ -29,7 +29,7 @@ class FallRiskAnalysisEngine: ObservableObject {
     }
     
     var lastAssessmentTime: Date? {
-        return lastAssessment
+        lastAssessment
     }
     
     // MARK: - Risk Levels
@@ -101,7 +101,7 @@ class FallRiskAnalysisEngine: ObservableObject {
         let timestamp: Date
         
         var isAbnormal: Bool {
-            return averageSpeed < 0.8 || // Slow walking speed
+            averageSpeed < 0.8 || // Slow walking speed
                    symmetry < 0.85 || // Poor symmetry
                    steadiness < 0.7 || // Poor steadiness
                    cadence < 100 // Low cadence
@@ -117,7 +117,7 @@ class FallRiskAnalysisEngine: ObservableObject {
         let timestamp: Date
         
         var isImpaired: Bool {
-            return staticBalance < 0.7 ||
+            staticBalance < 0.7 ||
                    dynamicBalance < 0.6 ||
                    posturaSwayArea > 5.0 ||
                    reactionTime > 500
@@ -467,7 +467,7 @@ class FallRiskAnalysisEngine: ObservableObject {
                 type: .muscleWeakness,
                 severity: standTime < dailyTarget * 0.15 ? .high : .moderate,
                 value: standTime,
-                description: "Only \(Int(standTime/60)) hours standing today indicates sedentary lifestyle",
+                description: "Only \(Int(standTime / 60)) hours standing today indicates sedentary lifestyle",
                 detectedAt: Date()
             )
             
@@ -519,7 +519,7 @@ class FallRiskAnalysisEngine: ObservableObject {
                 type: .cognitiveDecline,
                 severity: timeInDaylight < 60 ? .high : .moderate,
                 value: timeInDaylight,
-                description: "Only \(Int(timeInDaylight/60)) hours daylight exposure affects circadian rhythm and balance",
+                description: "Only \(Int(timeInDaylight / 60)) hours daylight exposure affects circadian rhythm and balance",
                 detectedAt: Date()
             )
             
@@ -651,11 +651,7 @@ class FallRiskAnalysisEngine: ObservableObject {
         // for balance and stability patterns
         
         let balanceMetrics = BalanceMetrics(
-            staticBalance: 0.8,
-            dynamicBalance: 0.7,
-            posturaSwayArea: 3.2,
-            reactionTime: 350,
-            timestamp: Date()
+            staticBalance: 0.8, dynamicBalance: 0.7, posturaSwayArea: 3.2, reactionTime: 350, timestamp: Date()
         )
         
         await MainActor.run {
@@ -773,7 +769,7 @@ class FallRiskAnalysisEngine: ObservableObject {
             ))
         }
         
-        return recommendations.sorted { $0.priority.rawValue > $1.priority.rawValue }
+        return recommendations.sorted { $0.priority.rawValue > $1.priority.rawValue } 
     }
     
     // MARK: - Motion Tracking Setup
@@ -799,7 +795,7 @@ class FallRiskAnalysisEngine: ObservableObject {
     }
     
     func getTopRecommendations(limit: Int = 3) -> [Recommendation] {
-        return Array(recommendations.prefix(limit))
+        Array(recommendations.prefix(limit))
     }
     
     func clearAssessment() {

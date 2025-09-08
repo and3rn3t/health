@@ -44,8 +44,7 @@ class ApiClient: ObservableObject {
                 print("🔐 Token request response: \(httpResponse.statusCode)")
                 
                 if httpResponse.statusCode == 200 {
-                    if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                       let token = json["token"] as? String {
+                    if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any], let token = json["token"] as? String {
                         print("✅ Got device token successfully")
                         await MainActor.run {
                             self.lastError = nil

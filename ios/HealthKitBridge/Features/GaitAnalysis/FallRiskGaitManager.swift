@@ -30,7 +30,7 @@ class FallRiskGaitManager: ObservableObject {
         HKQuantityType.quantityType(forIdentifier: .appleMoveTime)!,
         HKQuantityType.quantityType(forIdentifier: .appleStandTime)!,
         HKQuantityType.quantityType(forIdentifier: .stepCount)!,
-        HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!,
+        HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!
     ]
     
     private init() {
@@ -50,13 +50,13 @@ class FallRiskGaitManager: ObservableObject {
     // MARK: - Core Gait Data Collection
     func fetchGaitMetrics() async {
         await withTaskGroup(of: Void.self) { group in
-            group.addTask { await self.fetchWalkingSpeed() }
-            group.addTask { await self.fetchStepLength() }
-            group.addTask { await self.fetchWalkingAsymmetry() }
-            group.addTask { await self.fetchDoubleSupportTime() }
-            group.addTask { await self.fetchStairSpeeds() }
-            group.addTask { await self.fetchDailyMobility() }
-            group.addTask { await self.assessBalance() }
+            group.addTask { await self.fetchWalkingSpeed() } 
+            group.addTask { await self.fetchStepLength() } 
+            group.addTask { await self.fetchWalkingAsymmetry() } 
+            group.addTask { await self.fetchDoubleSupportTime() } 
+            group.addTask { await self.fetchStairSpeeds() } 
+            group.addTask { await self.fetchDailyMobility() } 
+            group.addTask { await self.assessBalance() } 
         }
         
         await MainActor.run {
@@ -72,14 +72,11 @@ class FallRiskGaitManager: ObservableObject {
         
         await withCheckedContinuation { continuation in
             let query = HKStatisticsQuery(
-                quantityType: walkingSpeedType,
-                quantitySamplePredicate: predicate,
-                options: .discreteAverage
-            ) { [weak self] query, statistics, error in
+                quantityType: walkingSpeedType, quantitySamplePredicate: predicate, options: .discreteAverage
+            ) { [weak self] _, statistics, _ in
                 defer { continuation.resume() }
                 
-                guard let statistics = statistics,
-                      let average = statistics.averageQuantity() else { return }
+                guard let statistics = statistics, let average = statistics.averageQuantity() else { return }
                 
                 let speedMPS = average.doubleValue(for: HKUnit.meter().unitDivided(by: .second()))
                 
@@ -103,14 +100,11 @@ class FallRiskGaitManager: ObservableObject {
         
         await withCheckedContinuation { continuation in
             let query = HKStatisticsQuery(
-                quantityType: stepLengthType,
-                quantitySamplePredicate: predicate,
-                options: .discreteAverage
-            ) { [weak self] query, statistics, error in
+                quantityType: stepLengthType, quantitySamplePredicate: predicate, options: .discreteAverage
+            ) { [weak self] _, statistics, _ in
                 defer { continuation.resume() }
                 
-                guard let statistics = statistics,
-                      let average = statistics.averageQuantity() else { return }
+                guard let statistics = statistics, let average = statistics.averageQuantity() else { return }
                 
                 let lengthMeters = average.doubleValue(for: HKUnit.meter())
                 
@@ -134,14 +128,11 @@ class FallRiskGaitManager: ObservableObject {
         
         await withCheckedContinuation { continuation in
             let query = HKStatisticsQuery(
-                quantityType: asymmetryType,
-                quantitySamplePredicate: predicate,
-                options: .discreteAverage
-            ) { [weak self] query, statistics, error in
+                quantityType: asymmetryType, quantitySamplePredicate: predicate, options: .discreteAverage
+            ) { [weak self] _, statistics, _ in
                 defer { continuation.resume() }
                 
-                guard let statistics = statistics,
-                      let average = statistics.averageQuantity() else { return }
+                guard let statistics = statistics, let average = statistics.averageQuantity() else { return }
                 
                 let asymmetryPercent = average.doubleValue(for: HKUnit.percent()) * 100
                 
@@ -165,14 +156,11 @@ class FallRiskGaitManager: ObservableObject {
         
         await withCheckedContinuation { continuation in
             let query = HKStatisticsQuery(
-                quantityType: doubleSupportType,
-                quantitySamplePredicate: predicate,
-                options: .discreteAverage
-            ) { [weak self] query, statistics, error in
+                quantityType: doubleSupportType, quantitySamplePredicate: predicate, options: .discreteAverage
+            ) { [weak self] _, statistics, _ in
                 defer { continuation.resume() }
                 
-                guard let statistics = statistics,
-                      let average = statistics.averageQuantity() else { return }
+                guard let statistics = statistics, let average = statistics.averageQuantity() else { return }
                 
                 let doubleSupportPercent = average.doubleValue(for: HKUnit.percent()) * 100
                 
@@ -199,11 +187,10 @@ class FallRiskGaitManager: ObservableObject {
                     predicate: nil,
                     limit: 10,
                     sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)]
-                ) { [weak self] query, samples, error in
-                    guard let samples = samples as? [HKQuantitySample],
-                          !samples.isEmpty else { return }
+                ) { [weak self] _, samples, _ in
+                    guard let samples = samples as? [HKQuantitySample], !samples.isEmpty else { return }
                     
-                    let speeds = samples.map { $0.quantity.doubleValue(for: HKUnit.meter().unitDivided(by: .second())) }
+                    let speeds = samples.map { $0.quantity.doubleValue(for: HKUnit.meter().unitDivided(by: .second())) } 
                     let averageSpeed = speeds.reduce(0, +) / Double(speeds.count)
                     
                     DispatchQueue.main.async {
@@ -226,11 +213,10 @@ class FallRiskGaitManager: ObservableObject {
                     predicate: nil,
                     limit: 10,
                     sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)]
-                ) { [weak self] query, samples, error in
-                    guard let samples = samples as? [HKQuantitySample],
-                          !samples.isEmpty else { return }
+                ) { [weak self] _, samples, _ in
+                    guard let samples = samples as? [HKQuantitySample], !samples.isEmpty else { return }
                     
-                    let speeds = samples.map { $0.quantity.doubleValue(for: HKUnit.meter().unitDivided(by: .second())) }
+                    let speeds = samples.map { $0.quantity.doubleValue(for: HKUnit.meter().unitDivided(by: .second())) } 
                     let averageSpeed = speeds.reduce(0, +) / Double(speeds.count)
                     
                     DispatchQueue.main.async {
@@ -257,12 +243,9 @@ class FallRiskGaitManager: ObservableObject {
                 guard let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount) else { return }
                 
                 let query = HKStatisticsQuery(
-                    quantityType: stepType,
-                    quantitySamplePredicate: predicate,
-                    options: .cumulativeSum
-                ) { [weak self] query, statistics, error in
-                    guard let statistics = statistics,
-                          let sum = statistics.sumQuantity() else { return }
+                    quantityType: stepType, quantitySamplePredicate: predicate, options: .cumulativeSum
+                ) { [weak self] _, statistics, _ in
+                    guard let statistics = statistics, let sum = statistics.sumQuantity() else { return }
                     
                     let steps = Int(sum.doubleValue(for: .count()))
                     
@@ -282,12 +265,9 @@ class FallRiskGaitManager: ObservableObject {
                 guard let distanceType = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning) else { return }
                 
                 let query = HKStatisticsQuery(
-                    quantityType: distanceType,
-                    quantitySamplePredicate: predicate,
-                    options: .cumulativeSum
-                ) { [weak self] query, statistics, error in
-                    guard let statistics = statistics,
-                          let sum = statistics.sumQuantity() else { return }
+                    quantityType: distanceType, quantitySamplePredicate: predicate, options: .cumulativeSum
+                ) { [weak self] _, statistics, _ in
+                    guard let statistics = statistics, let sum = statistics.sumQuantity() else { return }
                     
                     let distance = sum.doubleValue(for: HKUnit.meter())
                     
@@ -307,12 +287,9 @@ class FallRiskGaitManager: ObservableObject {
                 guard let standType = HKQuantityType.quantityType(forIdentifier: .appleStandTime) else { return }
                 
                 let query = HKStatisticsQuery(
-                    quantityType: standType,
-                    quantitySamplePredicate: predicate,
-                    options: .cumulativeSum
-                ) { [weak self] query, statistics, error in
-                    guard let statistics = statistics,
-                          let sum = statistics.sumQuantity() else { return }
+                    quantityType: standType, quantitySamplePredicate: predicate, options: .cumulativeSum
+                ) { [weak self] _, statistics, _ in
+                    guard let statistics = statistics, let sum = statistics.sumQuantity() else { return }
                     
                     let standMinutes = sum.doubleValue(for: HKUnit.minute())
                     
@@ -366,8 +343,7 @@ class FallRiskGaitManager: ObservableObject {
             }
             
             // Stair navigation assessment
-            if let ascentSpeed = gait.stairAscentSpeed,
-               let descentSpeed = gait.stairDescentSpeed {
+            if let ascentSpeed = gait.stairAscentSpeed, let descentSpeed = gait.stairDescentSpeed {
                 let stairRisk = assessStairNavigationRisk(ascentSpeed, descentSpeed)
                 riskFactors.append(stairRisk)
                 totalScore += stairRisk.score
@@ -376,10 +352,7 @@ class FallRiskGaitManager: ObservableObject {
             let averageScore = riskFactors.isEmpty ? 0 : totalScore / Double(riskFactors.count)
             
             self.fallRiskScore = FallRiskScore(
-                overallScore: averageScore,
-                riskLevel: FallRiskLevel.fromScore(averageScore),
-                riskFactors: riskFactors,
-                lastAssessment: Date()
+                overallScore: averageScore, riskLevel: FallRiskLevel.fromScore(averageScore), riskFactors: riskFactors, lastAssessment: Date()
             )
         }
     }
@@ -563,10 +536,7 @@ class FallRiskGaitManager: ObservableObject {
             balanceScore = max(0, balanceScore)
             
             self.balanceAssessment = BalanceAssessment(
-                score: balanceScore,
-                maxScore: 10.0,
-                indicators: indicators,
-                assessmentDate: Date()
+                score: balanceScore, maxScore: 10.0, indicators: indicators, assessmentDate: Date()
             )
         }
     }
@@ -586,7 +556,7 @@ class FallRiskGaitManager: ObservableObject {
         ]
         
         for type in criticalGaitTypes {
-            let observer = HKObserverQuery(sampleType: type, predicate: nil) { [weak self] query, completionHandler, error in
+            let observer = HKObserverQuery(sampleType: type, predicate: nil) { [weak self] _, completionHandler, _ in
                 Task {
                     await self?.fetchGaitMetrics()
                     await self?.calculateFallRisk()

@@ -202,7 +202,7 @@ class WalkingSessionTracker: ObservableObject {
     private func startMotionTracking() {
         guard motionManager.isDeviceMotionAvailable else { return }
 
-        motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, error in
+        motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
             guard let self = self, let motion = motion else { return }
 
             Task { @MainActor in
@@ -351,7 +351,7 @@ class WalkingSessionTracker: ObservableObject {
             HKWorkoutType.workoutType()
         ]
 
-        healthStore.requestAuthorization(toShare: typesToShare, read: typesToRead) { success, error in
+        healthStore.requestAuthorization(toShare: typesToShare, read: typesToRead) { _, error in
             if let error = error {
                 print("❌ HealthKit authorization error: \(error)")
             }
@@ -567,7 +567,7 @@ extension CLLocationCoordinate2D: Codable {
 
 extension GaitMetrics {
     func toDictionary() -> [String: Any] {
-        return [
+        [
             "walkingSpeed": averageWalkingSpeed ?? 0,
             "cadence": cadence ?? 0,
             "stepLength": averageStepLength ?? 0,

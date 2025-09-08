@@ -233,13 +233,28 @@ struct FallRiskDashboardView: View {
             }
             
             LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
+                GridItem(.flexible()), GridItem(.flexible())
             ], spacing: 12) {
-                gaitMetricItem("Speed", "\(String(format: "%.2f", gaitAnalysis.averageSpeed)) m/s", gaitAnalysis.averageSpeed > 0.8 ? .green : .orange)
-                gaitMetricItem("Step Length", "\(String(format: "%.2f", gaitAnalysis.stepLength)) m", gaitAnalysis.stepLength > 0.6 ? .green : .orange)
-                gaitMetricItem("Cadence", "\(Int(gaitAnalysis.cadence)) steps/min", gaitAnalysis.cadence > 100 ? .green : .orange)
-                gaitMetricItem("Symmetry", "\(Int(gaitAnalysis.symmetry * 100))%", gaitAnalysis.symmetry > 0.85 ? .green : .orange)
+                gaitMetricItem(
+                    "Speed",
+                    "\(String(format: "%.2f", gaitAnalysis.averageSpeed)) m/s",
+                    gaitAnalysis.averageSpeed > 0.8 ? .green : .orange
+                )
+                gaitMetricItem(
+                    "Step Length",
+                    "\(String(format: "%.2f", gaitAnalysis.stepLength)) m",
+                    gaitAnalysis.stepLength > 0.6 ? .green : .orange
+                )
+                gaitMetricItem(
+                    "Cadence",
+                    "\(Int(gaitAnalysis.cadence)) steps/min",
+                    gaitAnalysis.cadence > 100 ? .green : .orange
+                )
+                gaitMetricItem(
+                    "Symmetry",
+                    "\(Int(gaitAnalysis.symmetry * 100))%",
+                    gaitAnalysis.symmetry > 0.85 ? .green : .orange
+                )
             }
         }
         .padding()
@@ -323,8 +338,7 @@ struct FallRiskDashboardView: View {
                 .fontWeight(.semibold)
             
             LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
+                GridItem(.flexible()), GridItem(.flexible())
             ], spacing: 12) {
                 if let steadiness = healthManager.lastWalkingSteadiness {
                     healthMetricItem("Walking Steadiness", "\(Int(steadiness))%", steadiness > 50 ? .green : .red)
@@ -479,11 +493,11 @@ struct FallRiskDashboardView: View {
         if interval < 60 {
             return "\(Int(interval))s ago"
         } else if interval < 3600 {
-            return "\(Int(interval/60))m ago"
+            return "\(Int(interval / 60))m ago"
         } else if interval < 86400 {
-            return "\(Int(interval/3600))h ago"
+            return "\(Int(interval / 3600))h ago"
         } else {
-            return "\(Int(interval/86400))d ago"
+            return "\(Int(interval / 86400))d ago"
         }
     }
     

@@ -33,8 +33,7 @@ class EnhancedAppConfig {
     
     private init() {
         // Determine environment from build configuration or plist
-        if let envString = Bundle.main.object(forInfoDictionaryKey: "Environment") as? String,
-           let env = Environment(rawValue: envString) {
+        if let envString = Bundle.main.object(forInfoDictionaryKey: "Environment") as? String, let env = Environment(rawValue: envString) {
             currentEnvironment = env
         } else {
             #if DEBUG
@@ -72,8 +71,7 @@ class EnhancedAppConfig {
     
     private static func loadConfiguration(for environment: Environment) -> [String: Any] {
         // Try to load from Config.plist first
-        if let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
-           let plist = NSDictionary(contentsOfFile: path) {
+        if let path = Bundle.main.path(forResource: "Config", ofType: "plist"), let plist = NSDictionary(contentsOfFile: path) {
             
             // Check for environment-specific section
             if let envConfig = plist[environment.rawValue] as? [String: Any] {
@@ -90,7 +88,7 @@ class EnhancedAppConfig {
     
     private static func defaultConfiguration(for environment: Environment) -> [String: Any] {
         switch environment {
-        case .development:
+        case .development: 
             return [
                 "apiBaseURL": "http://localhost:3000/api",
                 "webSocketURL": "ws://localhost:8080/ws",
@@ -105,7 +103,7 @@ class EnhancedAppConfig {
                 "maxRetryAttempts": 3
             ]
             
-        case .staging:
+        case .staging: 
             return [
                 "apiBaseURL": "https://staging-api.andernet.dev/api",
                 "webSocketURL": "wss://staging-api.andernet.dev/ws",
@@ -120,7 +118,7 @@ class EnhancedAppConfig {
                 "maxRetryAttempts": 4
             ]
             
-        case .production:
+        case .production: 
             return [
                 "apiBaseURL": "https://api.andernet.dev/api",
                 "webSocketURL": "wss://api.andernet.dev/ws",
@@ -135,7 +133,7 @@ class EnhancedAppConfig {
                 "maxRetryAttempts": 5
             ]
             
-        case .testing:
+        case .testing: 
             return [
                 "apiBaseURL": "http://test-server:3000/api",
                 "webSocketURL": "ws://test-server:8080/ws",
@@ -176,7 +174,7 @@ class EnhancedAppConfig {
     
     func getOptimalSyncInterval() -> TimeInterval {
         // Adjust sync interval based on network conditions and environment
-        return dataSyncInterval
+        dataSyncInterval
     }
     
     // MARK: - Environment Info

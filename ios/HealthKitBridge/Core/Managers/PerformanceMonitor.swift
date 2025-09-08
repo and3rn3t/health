@@ -43,7 +43,7 @@ class PerformanceMonitor {
         
         let now = Date()
         let oneMinuteAgo = now.addingTimeInterval(-60)
-        let recentPoints = dataPoints.filter { $0 > oneMinuteAgo }
+        let recentPoints = dataPoints.filter { $0 > oneMinuteAgo } 
         
         return Double(recentPoints.count)
     }

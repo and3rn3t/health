@@ -62,10 +62,7 @@ class AppleWatchGaitMonitor: NSObject, ObservableObject {
             // Initialize monitoring session
             sessionStartTime = Date()
             currentSession = GaitMonitoringSession(
-                sessionId: UUID().uuidString,
-                startTime: sessionStartTime!,
-                deviceType: .appleWatch,
-                monitoringMode: .realtime
+                sessionId: UUID().uuidString, startTime: sessionStartTime!, deviceType: .appleWatch, monitoringMode: .realtime
             )
             
             // Start motion updates
@@ -116,7 +113,7 @@ class AppleWatchGaitMonitor: NSObject, ObservableObject {
     private func startMotionUpdates() {
         // Device Motion for comprehensive gait analysis
         if motionManager.isDeviceMotionAvailable {
-            motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, error in
+            motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
                 guard let self = self, let motion = motion else { return }
                 
                 self.deviceMotion = motion
@@ -126,7 +123,7 @@ class AppleWatchGaitMonitor: NSObject, ObservableObject {
         
         // Accelerometer for step detection and gait patterns
         if motionManager.isAccelerometerAvailable {
-            motionManager.startAccelerometerUpdates(to: .main) { [weak self] data, error in
+            motionManager.startAccelerometerUpdates(to: .main) { [weak self] data, _ in
                 guard let self = self, let data = data else { return }
                 self.processAccelerometerData(data)
             }
@@ -134,7 +131,7 @@ class AppleWatchGaitMonitor: NSObject, ObservableObject {
         
         // Gyroscope for stability and balance analysis
         if motionManager.isGyroAvailable {
-            motionManager.startGyroUpdates(to: .main) { [weak self] data, error in
+            motionManager.startGyroUpdates(to: .main) { [weak self] data, _ in
                 guard let self = self, let data = data else { return }
                 self.processGyroscopeData(data)
             }
@@ -238,12 +235,12 @@ class AppleWatchGaitMonitor: NSObject, ObservableObject {
     private func detectStep(from magnitude: Double) -> Bool {
         // Simple step detection threshold
         // Real implementation would use sophisticated peak detection algorithms
-        return magnitude > 1.2
+        magnitude > 1.2
     }
     
     private func calculateStabilityScore(from rotationMagnitude: Double) -> Double {
         // Convert rotation magnitude to stability score (0-10)
-        return max(0, 10 - (rotationMagnitude * 2))
+        max(0, 10 - (rotationMagnitude * 2))
     }
     
     // MARK: - Data Transmission to iPhone
@@ -296,19 +293,19 @@ extension AppleWatchGaitMonitor: WCSessionDelegate {
         }
     }
     
-    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+    func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
         // Handle messages from iPhone app
         if let messageType = message["type"] as? String {
             switch messageType {
-            case "start_gait_monitoring":
+            case "start_gait_monitoring": 
                 Task {
                     await startGaitMonitoring()
                 }
-            case "stop_gait_monitoring":
+            case "stop_gait_monitoring": 
                 Task {
                     await stopGaitMonitoring()
                 }
-            default:
+            default: 
                 break
             }
         }
@@ -393,11 +390,9 @@ struct RealtimeGaitMetrics {
         let avgCadence = cadenceReadings.isEmpty ? 0 : cadenceReadings.reduce(0, +) / Double(cadenceReadings.count)
         
         return GaitMetrics(
-            timestamp: Date(),
-            averageWalkingSpeed: nil, // Would be calculated from HealthKit
+            timestamp: Date(), averageWalkingSpeed: nil, // Would be calculated from HealthKit
             averageStepLength: nil, // Would be calculated from HealthKit
-            stepCount: stepCount,
-            walkingAsymmetry: nil, // Would be calculated from HealthKit
+            stepCount: stepCount, walkingAsymmetry: nil, // Would be calculated from HealthKit
             doubleSupportTime: nil, // Would be calculated from HealthKit
             stairAscentSpeed: nil,
             stairDescentSpeed: nil,
@@ -411,10 +406,10 @@ struct RealtimeGaitMetrics {
 }
 
 enum WalkingPattern: String, CaseIterable {
-    case normal = "normal"
-    case irregular = "irregular"
-    case asymmetric = "asymmetric"
-    case unstable = "unstable"
+    case normal
+    case irregular
+    case asymmetric
+    case unstable
     
     var color: Color {
         switch self {

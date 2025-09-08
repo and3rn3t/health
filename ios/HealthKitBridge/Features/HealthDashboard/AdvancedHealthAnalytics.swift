@@ -16,11 +16,11 @@ class AdvancedHealthAnalytics: ObservableObject {
     
     func generateComprehensiveAnalysis() async {
         await withTaskGroup(of: Void.self) { group in
-            group.addTask { await self.analyzeHeartRatePatterns() }
-            group.addTask { await self.analyzeActivityPatterns() }
-            group.addTask { await self.analyzeSleepQuality() }
-            group.addTask { await self.generateHealthPredictions() }
-            group.addTask { await self.findHealthCorrelations() }
+            group.addTask { await self.analyzeHeartRatePatterns() } 
+            group.addTask { await self.analyzeActivityPatterns() } 
+            group.addTask { await self.analyzeSleepQuality() } 
+            group.addTask { await self.generateHealthPredictions() } 
+            group.addTask { await self.findHealthCorrelations() } 
         }
     }
     
@@ -35,8 +35,9 @@ class AdvancedHealthAnalytics: ObservableObject {
                 sampleType: heartRateType,
                 predicate: predicate,
                 limit: HKObjectQueryNoLimit,
-                sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: true)]
-            ) { [weak self] query, samples, error in
+                sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierEndDate,
+                ascending: true)]
+            ) { [weak self] _, samples, _ in
                 defer { continuation.resume() }
                 
                 guard let samples = samples as? [HKQuantitySample] else { return }
@@ -63,7 +64,10 @@ class AdvancedHealthAnalytics: ObservableObject {
         var insights: [HealthInsight] = []
         
         // Analyze resting heart rate trends
-        let restingHR = data.filter { Calendar.current.component(.hour, from: $0.date) >= 22 || Calendar.current.component(.hour, from: $0.date) <= 6 }
+        let restingHR = data.filter { 
+            Calendar.current.component(.hour, from: $0.date) >= 22 || 
+            Calendar.current.component(.hour, from: $0.date) <= 6 
+        } 
         
         if restingHR.count > 7 {
             let recentWeek = Array(restingHR.suffix(7))
@@ -78,9 +82,14 @@ class AdvancedHealthAnalytics: ObservableObject {
                 insights.append(HealthInsight(
                     type: .heartRate,
                     title: "Resting Heart Rate Change",
-                    description: "Your resting heart rate has \(change > 0 ? "increased" : "decreased") by \(String(format: "%.1f", abs(change))) BPM this week",
+                    description: "Your resting heart rate has \(change > 0 ? "increased" : "decreased") " +
+                                "by \(String(format: "%.1f", abs(change))) BPM this week",
                     severity: abs(change) > 5 ? .high : .medium,
-                    recommendations: change > 0 ? ["Consider stress management", "Ensure adequate sleep", "Review medication timing"] : ["Great improvement! Keep up current habits"],
+                    recommendations: change > 0 ? [
+                        "Consider stress management",
+                        "Ensure adequate sleep",
+                        "Review medication timing"
+                    ] : ["Great improvement! Keep up current habits"],
                     date: Date()
                 ))
             }
@@ -96,7 +105,7 @@ class AdvancedHealthAnalytics: ObservableObject {
     }
     
     private func analyzeWeeklyPatterns(_ data: [HeartRatePoint]) -> HealthInsight? {
-        let grouped = Dictionary(grouping: data) { Calendar.current.component(.weekday, from: $0.date) }
+        let grouped = Dictionary(grouping: data) { Calendar.current.component(.weekday, from: $0.date) } 
         
         var dayAverages: [Int: Double] = [:]
         for (weekday, points) in grouped {
@@ -105,7 +114,7 @@ class AdvancedHealthAnalytics: ObservableObject {
         
         guard dayAverages.count >= 5 else { return nil }
         
-        let sortedAverages = dayAverages.sorted { $0.key < $1.key }
+        let sortedAverages = dayAverages.sorted { $0.key < $1.key } 
         let values = sortedAverages.map(\.value)
         let variance = calculateVariance(values)
         
@@ -115,7 +124,11 @@ class AdvancedHealthAnalytics: ObservableObject {
                 title: "Weekly Heart Rate Pattern",
                 description: "Your heart rate varies significantly between days of the week",
                 severity: .medium,
-                recommendations: ["Maintain consistent sleep schedule", "Consider weekly stress patterns", "Monitor workload balance"],
+                recommendations: [
+                    "Maintain consistent sleep schedule",
+                    "Consider weekly stress patterns",
+                    "Monitor workload balance"
+                ],
                 date: Date()
             )
         }
@@ -139,17 +152,16 @@ class AdvancedHealthAnalytics: ObservableObject {
                 intervalComponents: DateComponents(day: 1)
             )
             
-            query.initialResultsHandler = { [weak self] query, results, error in
+            query.initialResultsHandler = { [weak self] _, results, _ in
                 defer { continuation.resume() }
                 
                 guard let results = results else { return }
                 
                 var dailySteps: [DailyStepData] = []
-                results.enumerateStatistics(from: thirtyDaysAgo, to: Date()) { statistics, stop in
+                results.enumerateStatistics(from: thirtyDaysAgo, to: Date()) { statistics, _ in
                     if let quantity = statistics.sumQuantity() {
                         dailySteps.append(DailyStepData(
-                            date: statistics.startDate,
-                            steps: Int(quantity.doubleValue(for: .count()))
+                            date: statistics.startDate, steps: Int(quantity.doubleValue(for: .count()))
                         ))
                     }
                 }
@@ -182,9 +194,12 @@ class AdvancedHealthAnalytics: ObservableObject {
                 insights.append(HealthInsight(
                     type: .activity,
                     title: "Activity Level Change",
-                    description: "Your daily steps have \(percentChange > 0 ? "increased" : "decreased") by \(String(format: "%.0f", abs(percentChange)))% this week",
+                    description: "Your daily steps have \(percentChange > 0 ? "increased" : "decreased") " +
+                                "by \(String(format: "%.0f", abs(percentChange)))% this week",
                     severity: percentChange < -25 ? .high : .low,
-                    recommendations: percentChange > 0 ? ["Great progress! Consider setting new goals"] : ["Try to increase daily movement", "Set reminders to walk", "Consider indoor activities"],
+                    recommendations: percentChange > 0 
+                        ? ["Great progress! Consider setting new goals"] 
+                        : ["Try to increase daily movement", "Set reminders to walk", "Consider indoor activities"],
                     date: Date()
                 ))
             }
@@ -202,7 +217,11 @@ class AdvancedHealthAnalytics: ObservableObject {
                 title: "Activity Consistency",
                 description: "Your daily activity levels vary significantly",
                 severity: .medium,
-                recommendations: ["Aim for more consistent daily activity", "Set minimum daily step goals", "Plan regular exercise schedule"],
+                recommendations: [
+                    "Aim for more consistent daily activity",
+                    "Set minimum daily step goals",
+                    "Plan regular exercise schedule"
+                ],
                 date: Date()
             ))
         }
@@ -224,7 +243,8 @@ class AdvancedHealthAnalytics: ObservableObject {
             let prediction = HealthPrediction(
                 type: .heartRate,
                 timeframe: .oneMonth,
-                prediction: "Based on current trends, your average heart rate may \(heartRateTrend.direction == .improving ? "continue to improve" : "need attention")",
+                prediction: "Based on current trends, your average heart rate may " +
+                           "\(heartRateTrend.direction == .improving ? "continue to improve" : "need attention")",
                 confidence: heartRateTrend.consistency > 0.7 ? .high : .medium,
                 date: Date()
             )
@@ -245,7 +265,7 @@ class AdvancedHealthAnalytics: ObservableObject {
         guard !values.isEmpty else { return 0 }
         
         let mean = values.reduce(0, +) / Double(values.count)
-        let squaredDifferences = values.map { pow($0 - mean, 2) }
+        let squaredDifferences = values.map { pow($0 - mean, 2) } 
         return squaredDifferences.reduce(0, +) / Double(values.count)
     }
 }

@@ -2,45 +2,21 @@ name: Deploy to Cloudflare Workers
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
   pull_request:
-    branches:
-      - main
+    branches: [main, develop]
+
+env:
+  NODE_OPTIONS: --max-old-space-size=4096
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-
-      - name: Clean and install dependencies
-        run: |
-          rm -rf package-lock.json node_modules
-          npm install --force
-
-      - name: Run linting
-        run: npm run lint
-
-      - name: Build project
-        run: npm run build
-
-      - name: Verify build outputs
-        run: |
-          ls -la dist/
-          ls -la dist-worker/
-
-  deploy-dev:
-    if: github.ref == 'refs/heads/develop'
-    needs: test
-    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      should-deploy-dev: ${{ steps.check-deploy.outputs.should-deploy-dev }}
+      should-deploy-prod: ${{ steps.check-deploy.outputs.should-deploy-prod }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -52,7 +28,85 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --prefer-offline
+        run: |
+          npm ci --prefer-offline
+          # Install Node.js script dependencies
+          cd scripts/node && npm ci --prefer-offline
+          # Install platform-specific packages for Linux builds
+          cd ../..
+          npm install lightningcss-linux-x64-gnu @rollup/rollup-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu --save-optional
+
+      - name: Cache build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            dist/
+            dist-worker/
+            node_modules/.cache/
+          key: build-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**/*', 'scripts/**/*') }}
+          restore-keys: |
+            build-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+            build-cache-${{ runner.os }}-
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Build project
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Verify build outputs
+        run: |
+          ls -la dist/ || echo "No dist directory"
+          ls -la dist-worker/ || echo "No dist-worker directory"
+
+      - name: Check deployment conditions
+        id: check-deploy
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/develop" && "${{ github.event_name }}" == "push" ]]; then
+            echo "should-deploy-dev=true" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy-dev=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [[ "${{ github.ref }}" == "refs/heads/main" && "${{ github.event_name }}" == "push" ]]; then
+            echo "should-deploy-prod=true" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy-prod=false" >> $GITHUB_OUTPUT
+          fi
+
+  deploy-dev:
+    if: needs.test.outputs.should-deploy-dev == 'true'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci --prefer-offline
+          cd scripts/node && npm ci --prefer-offline
+          cd ../..
+          npm install lightningcss-linux-x64-gnu @rollup/rollup-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu --save-optional
+
+      - name: Restore build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            dist/
+            dist-worker/
+            node_modules/.cache/
+          key: build-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**/*', 'scripts/**/*') }}
 
       - name: Build for development
         run: npm run build
@@ -68,9 +122,11 @@ jobs:
           packageManager: npm
 
   deploy-prod:
-    if: github.ref == 'refs/heads/main'
+    if: needs.test.outputs.should-deploy-prod == 'true'
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -82,7 +138,20 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --prefer-offline
+        run: |
+          npm ci --prefer-offline
+          cd scripts/node && npm ci --prefer-offline
+          cd ../..
+          npm install lightningcss-linux-x64-gnu @rollup/rollup-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu --save-optional
+
+      - name: Restore build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            dist/
+            dist-worker/
+            node_modules/.cache/
+          key: build-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**/*', 'scripts/**/*') }}
 
       - name: Build for production
         run: npm run build

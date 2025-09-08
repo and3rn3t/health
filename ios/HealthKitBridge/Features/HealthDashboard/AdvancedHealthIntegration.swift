@@ -186,13 +186,13 @@ struct QuickMetricView: View {
     private var scoreColor: Color {
         let percentage = score / maxScore
         switch percentage {
-        case 0.8...1.0:
+        case 0.8...1.0: 
             return .green
-        case 0.6..<0.8:
+        case 0.6..<0.8: 
             return .yellow
-        case 0.4..<0.6:
+        case 0.4..<0.6: 
             return .orange
-        default:
+        default: 
             return .red
         }
     }
@@ -302,22 +302,22 @@ struct TrendRowView: View {
     
     private var directionIcon: String {
         switch trend.direction {
-        case .improving:
+        case .improving: 
             return "arrow.up.circle.fill"
-        case .declining:
+        case .declining: 
             return "arrow.down.circle.fill"
-        case .stable:
+        case .stable: 
             return "minus.circle.fill"
         }
     }
     
     private var directionColor: Color {
         switch trend.direction {
-        case .improving:
+        case .improving: 
             return .green
-        case .declining:
+        case .declining: 
             return .red
-        case .stable:
+        case .stable: 
             return .blue
         }
     }
@@ -327,13 +327,13 @@ struct TrendRowView: View {
 extension HealthTrend.TrendType {
     var displayName: String {
         switch self {
-        case .heartRate:
+        case .heartRate: 
             return "Heart Rate"
-        case .activity:
+        case .activity: 
             return "Activity"
-        case .sleep:
+        case .sleep: 
             return "Sleep"
-        case .weight:
+        case .weight: 
             return "Weight"
         }
     }
@@ -342,11 +342,11 @@ extension HealthTrend.TrendType {
 extension HealthTrend.Direction {
     var displayName: String {
         switch self {
-        case .improving:
+        case .improving: 
             return "Improving"
-        case .declining:
+        case .declining: 
             return "Declining"
-        case .stable:
+        case .stable: 
             return "Stable"
         }
     }

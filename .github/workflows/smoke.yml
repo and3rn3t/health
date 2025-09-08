@@ -2,25 +2,31 @@ name: Smoke Test
 
 on:
   push:
+    branches: [main, develop]
   pull_request:
+    branches: [main, develop]
 
 jobs:
   smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
+          cache: 'npm'
 
-      - name: Clean and install dependencies
+      - name: Install dependencies
         run: |
-          rm -rf package-lock.json node_modules
-          npm install --force
+          npm ci --prefer-offline
+          cd scripts/node && npm ci --prefer-offline
+          npm install lightningcss-linux-x64-gnu @rollup/rollup-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu --save-optional
 
       - name: Build application
         run: npm run build
@@ -29,26 +35,30 @@ jobs:
         run: |
           npx wrangler --version
           # Start local Worker in background on 8787 with a CI-only secret
-          npx wrangler dev --env development --local \
+          timeout 90s bash -c 'until npx wrangler dev --env development --local \
             --port 8787 \
             --var DEVICE_JWT_SECRET:ci \
-            > wrangler.log 2>&1 &
-          echo $! > wrangler.pid
-          # Wait for /health to be available (up to ~60s)
-          for i in {1..60}; do
-            if curl -fsS http://127.0.0.1:8787/health >/dev/null; then echo "Worker ready"; break; fi
-            sleep 1
-          done
-          curl -fsS http://127.0.0.1:8787/health || (echo "Worker failed to start"; tail -n +1 wrangler.log; exit 1)
+            > wrangler.log 2>&1 & echo $! > wrangler.pid && \
+            until curl -fsS http://127.0.0.1:8787/health >/dev/null 2>&1; do sleep 1; done; do
+            echo "Retrying wrangler start..."; sleep 2
+          done'
 
-      - name: Probe endpoints (/health and /api/device/auth)
-        shell: pwsh
+          # Final health check
+          curl -fsS http://127.0.0.1:8787/health || (echo "Worker failed to start"; cat wrangler.log; exit 1)
+
+      - name: Run health checks
         run: |
-          pwsh -NoProfile -File scripts/probe.ps1 -HostUrl http://127.0.0.1 -Port 8787 -UserId ci-user
+          # Use Node.js script for better cross-platform compatibility
+          node scripts/node/health/simple-probe.js --port 8787 --timeout 30
 
       - name: Teardown and logs
         if: always()
         run: |
-          if [ -f wrangler.pid ]; then kill $(cat wrangler.pid) || true; fi
-          echo "--- wrangler.log ---"
-          tail -n +1 wrangler.log || true
+          if [ -f wrangler.pid ]; then
+            kill $(cat wrangler.pid) 2>/dev/null || true
+            rm -f wrangler.pid
+          fi
+          if [ -f wrangler.log ]; then
+            echo "--- Wrangler Logs ---"
+            cat wrangler.log
+          fi

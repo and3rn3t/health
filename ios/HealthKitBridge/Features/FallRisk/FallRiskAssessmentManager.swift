@@ -121,14 +121,14 @@ class FallRiskAssessmentManager: ObservableObject {
     }
 
     private func performSingleLegStandTest() async -> Double {
-        return await withCheckedContinuation { continuation in
+        await withCheckedContinuation { continuation in
             var swayMeasurements: [Double] = []
             var isStable = true
             let testDuration: TimeInterval = 30.0
             let startTime = Date()
 
             motionManager.deviceMotionUpdateInterval = 0.1
-            motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, error in
+            motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
                 guard let motion = motion, let self = self else { return }
 
                 let elapsed = Date().timeIntervalSince(startTime)
@@ -170,24 +170,24 @@ class FallRiskAssessmentManager: ObservableObject {
 
     private func performEyesClosedBalanceTest() async -> Double {
         // Similar implementation to single leg stand but with different scoring
-        return await performStabilityTest(duration: 10.0, testType: .eyesClosed)
+        await performStabilityTest(duration: 10.0, testType: .eyesClosed)
     }
 
     private func performDynamicBalanceTest() async -> Double {
-        return await performStabilityTest(duration: 15.0, testType: .dynamic)
+        await performStabilityTest(duration: 15.0, testType: .dynamic)
     }
 
     private func performTandemWalkTest() async -> Double {
-        return await performStabilityTest(duration: 20.0, testType: .tandemWalk)
+        await performStabilityTest(duration: 20.0, testType: .tandemWalk)
     }
 
     private func performStabilityTest(duration: TimeInterval, testType: BalanceTestType) async -> Double {
-        return await withCheckedContinuation { continuation in
+        await withCheckedContinuation { continuation in
             var measurements: [Double] = []
             let startTime = Date()
 
             motionManager.deviceMotionUpdateInterval = 0.1
-            motionManager.startDeviceMotionUpdates(to: .main) { motion, error in
+            motionManager.startDeviceMotionUpdates(to: .main) { motion, _ in
                 guard let motion = motion else { return }
 
                 let elapsed = Date().timeIntervalSince(startTime)
@@ -210,7 +210,7 @@ class FallRiskAssessmentManager: ObservableObject {
 
     private func collectGaitData() async -> GaitMetrics? {
         // Get the latest gait analysis from the gait manager
-        return gaitAnalysisManager.latestGaitMetrics
+        gaitAnalysisManager.latestGaitMetrics
     }
 
     private func collectHealthMetrics() async -> HealthRiskMetrics {
@@ -236,7 +236,7 @@ class FallRiskAssessmentManager: ObservableObject {
 
     private func assessEnvironmentalFactors() async -> EnvironmentalRiskFactors {
         // This would typically involve user input or smart home integration
-        return EnvironmentalRiskFactors(
+        EnvironmentalRiskFactors(
             homeHazards: .medium,
             lightingQuality: .good,
             floorSurfaces: .mixed,
@@ -516,7 +516,7 @@ class FallRiskAssessmentManager: ObservableObject {
     }
 
     private func getDateOfBirth() async throws -> Date? {
-        return try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { continuation in
             do {
                 let dateOfBirth = try healthStore.dateOfBirthComponents()
                 continuation.resume(returning: dateOfBirth.date)
@@ -528,17 +528,17 @@ class FallRiskAssessmentManager: ObservableObject {
 
     private func assessMedicationRisk() async -> Double {
         // Placeholder - would need medication data from HealthKit or user input
-        return 0.3
+        0.3
     }
 
     private func getPreviousFallCount() async -> Int {
         // Placeholder - would query HealthKit for fall incidents
-        return 0
+        0
     }
 
     private func assessChronicConditions() async -> [String] {
         // Placeholder - would query HealthKit for relevant conditions
-        return []
+        []
     }
 
     // MARK: - Persistence
@@ -564,10 +564,10 @@ class FallRiskAssessmentManager: ObservableObject {
 // MARK: - Supporting Types
 
 enum FallRiskLevel: String, Codable, CaseIterable {
-    case low = "low"
-    case medium = "medium"
-    case high = "high"
-    case unknown = "unknown"
+    case low
+    case medium
+    case high
+    case unknown
 
     var color: Color {
         switch self {
@@ -602,9 +602,9 @@ enum FallRiskFactorType: String, Codable, CaseIterable {
 }
 
 enum RiskSeverity: String, Codable {
-    case low = "low"
-    case medium = "medium"
-    case high = "high"
+    case low
+    case medium
+    case high
 }
 
 struct FallRiskFactor: Codable, Identifiable {
@@ -682,9 +682,9 @@ enum FallRiskRecommendationType: String, Codable {
 }
 
 enum RecommendationPriority: String, Codable {
-    case low = "low"
-    case medium = "medium"
-    case high = "high"
+    case low
+    case medium
+    case high
 }
 
 struct FallRiskRecommendation: Codable, Identifiable {

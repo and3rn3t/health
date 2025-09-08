@@ -34,8 +34,7 @@ class SecurityManager: ObservableObject {
         
         do {
             let success = try await biometricContext.evaluatePolicy(
-                .deviceOwnerAuthenticationWithBiometrics,
-                localizedReason: reason
+                .deviceOwnerAuthenticationWithBiometrics, localizedReason: reason
             )
             
             if success {
@@ -59,8 +58,7 @@ class SecurityManager: ObservableObject {
         
         do {
             return try await biometricContext.evaluatePolicy(
-                .deviceOwnerAuthenticationWithBiometrics,
-                localizedReason: reason
+                .deviceOwnerAuthenticationWithBiometrics, localizedReason: reason
             )
         } catch {
             print("❌ User authentication failed: \(error)")
@@ -142,11 +140,7 @@ class SecurityManager: ObservableObject {
     private func isDeviceJailbroken() -> Bool {
         // Check for common jailbreak indicators
         let jailbreakPaths = [
-            "/Applications/Cydia.app",
-            "/usr/sbin/sshd",
-            "/bin/bash",
-            "/etc/apt",
-            "/private/var/lib/apt/"
+            "/Applications/Cydia.app", "/usr/sbin/sshd", "/bin/bash", "/etc/apt", "/private/var/lib/apt/"
         ]
         
         for path in jailbreakPaths {
@@ -171,7 +165,7 @@ class SecurityManager: ObservableObject {
     private func isUsingUnsecureNetwork() async -> Bool {
         // This would require network analysis capabilities
         // For now, return false as a placeholder
-        return false
+        false
     }
     
     private func checkAppPermissions() -> [SecurityThreat] {
@@ -202,9 +196,7 @@ class SecurityManager: ObservableObject {
         let signature = try createSignature(for: encryptedData)
         
         return SecurePayload(
-            encryptedData: encryptedData,
-            signature: signature,
-            timestamp: timestamp
+            encryptedData: encryptedData, signature: signature, timestamp: timestamp
         )
     }
     
@@ -265,7 +257,7 @@ class KeychainManager {
     private init() {}
     
     func storeEncryptionKey(_ key: SymmetricKey, tag: String) throws {
-        let keyData = key.withUnsafeBytes { Data($0) }
+        let keyData = key.withUnsafeBytes { Data($0) } 
         try storeData(keyData, tag: tag, accessibility: .whenUnlockedThisDeviceOnly)
     }
     
@@ -309,8 +301,7 @@ class KeychainManager {
         if status == errSecDuplicateItem {
             // Update existing item
             let updateQuery: [String: Any] = [
-                kSecClass as String: kSecClassGenericPassword,
-                kSecAttrAccount as String: tag
+                kSecClass as String: kSecClassGenericPassword, kSecAttrAccount as String: tag
             ]
             
             let updateAttributes: [String: Any] = [

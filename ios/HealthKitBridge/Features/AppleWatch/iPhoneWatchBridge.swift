@@ -3,8 +3,8 @@ import WatchConnectivity
 import HealthKit
 
 // MARK: - iPhone-Watch Communication Bridge
-class iPhoneWatchBridge: NSObject, ObservableObject {
-    static let shared = iPhoneWatchBridge()
+class IPhoneWatchBridge: NSObject, ObservableObject {
+    static let shared = IPhoneWatchBridge()
     
     @Published var isWatchAppInstalled = false
     @Published var isWatchConnected = false
@@ -78,7 +78,7 @@ class iPhoneWatchBridge: NSObject, ObservableObject {
 }
 
 // MARK: - Watch Connectivity Delegate
-extension iPhoneWatchBridge: WCSessionDelegate {
+extension IPhoneWatchBridge: WCSessionDelegate {
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         DispatchQueue.main.async {
             self.isWatchConnected = activationState == .activated
@@ -96,19 +96,19 @@ extension iPhoneWatchBridge: WCSessionDelegate {
         }
     }
     
-    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+    func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
         print("📱 Received message from Apple Watch: \(message)")
         
         guard let messageType = message["type"] as? String else { return }
         
         switch messageType {
-        case "realtime_gait":
+        case "realtime_gait": 
             handleRealtimeGaitData(message)
-        case "gait_session_complete":
+        case "gait_session_complete": 
             handleGaitSessionComplete(message)
-        case "watch_status_update":
+        case "watch_status_update": 
             handleWatchStatusUpdate(message)
-        default:
+        default: 
             print("⚠️ Unknown message type from watch: \(messageType)")
         }
     }
@@ -186,11 +186,11 @@ extension iPhoneWatchBridge: WCSessionDelegate {
     
     private func checkWatchAppInstallation() {
         // Check if the watch app is installed
-        session?.sendMessage(["type": "ping"], replyHandler: { response in
+        session?.sendMessage(["type": "ping"], replyHandler: { _ in
             DispatchQueue.main.async {
                 self.isWatchAppInstalled = true
             }
-        }) { error in
+        }) { _ in
             DispatchQueue.main.async {
                 self.isWatchAppInstalled = false
             }
