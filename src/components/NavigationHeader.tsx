@@ -4,6 +4,7 @@
  */
 
 import EmergencyButton from '@/components/health/EmergencyButton';
+import { LiveConnectionStatus } from '@/components/live/LiveConnectionStatus';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -260,6 +261,9 @@ export default function NavigationHeader({
               View Account
             </Button>
           )}
+
+          {/* Live Connection Status */}
+          <LiveConnectionStatus />
 
           {/* User Menu */}
           <DropdownMenu>

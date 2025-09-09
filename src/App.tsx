@@ -70,12 +70,14 @@ import FamilyDashboard from '@/components/health/FamilyDashboard';
 import HealthcarePortal from '@/components/health/HealthcarePortal';
 import HealthSearch from '@/components/health/HealthSearch';
 import HealthSystemIntegration from '@/components/health/HealthSystemIntegration';
-import LiveHealthDataIntegration from '@/components/health/LiveHealthDataIntegration';
+import { GaitDashboard } from '@/components/health/GaitDashboardClean';
+import { EnhancedGaitAnalyzer } from '@/components/health/EnhancedGaitAnalyzer';
 import MLPredictionsDashboard from '@/components/health/MLPredictionsDashboard';
 import MovementPatternAnalysis from '@/components/health/MovementPatternAnalysis';
 import RealTimeFallDetection from '@/components/health/RealTimeFallDetection';
 import RealTimeMonitoringHub from '@/components/health/RealTimeMonitoringHub';
 import LandingPage from '@/components/LandingPage';
+import LiveConnectionDashboard from '@/components/live/LiveConnectionDashboard';
 import NavigationHeader from '@/components/NavigationHeader';
 // import HealthInsightsDashboard from '@/components/health/HealthInsightsDashboard'
 import AIUsagePredictions from '@/components/analytics/AIUsagePredictions';
@@ -878,6 +880,7 @@ function App() {
       { id: 'posture-analysis', label: 'Posture Analysis', icon: Activity },
       { id: 'walking-patterns', label: 'Walking Patterns', icon: Activity },
       { id: 'gait-analysis', label: 'Gait Analysis', icon: Target },
+      { id: 'real-sensor-gait', label: 'Real Sensor Analysis', icon: Smartphone },
       { id: 'emergency', label: 'Emergency Alert', icon: AlertTriangle },
       { id: 'recommendations', label: 'Recommendations', icon: Lightbulb },
       { id: 'smart-notifications', label: 'Smart Notifications', icon: Bell },
@@ -1384,6 +1387,12 @@ function App() {
                 {activeTab === 'movement-patterns' && healthData && (
                   <MovementPatternAnalysis healthData={healthData} />
                 )}
+                {activeTab === 'gait-analysis' && (
+                  <GaitDashboard />
+                )}
+                {activeTab === 'real-sensor-gait' && (
+                  <EnhancedGaitAnalyzer />
+                )}
                 {activeTab === 'realtime' && <RealTimeFallDetection />}
                 {activeTab === 'enhanced-health-system' && (
                   <HealthSystemIntegration
@@ -1395,7 +1404,7 @@ function App() {
                   <RealTimeMonitoringHub healthData={healthData} />
                 )}
                 {activeTab === 'live-integration' && (
-                  <LiveHealthDataIntegration />
+                  <LiveConnectionDashboard />
                 )}
                 {activeTab === 'advanced-Watch' && (
                   <AdvancedAppleWatchIntegration />
