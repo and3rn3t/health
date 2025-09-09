@@ -24,34 +24,45 @@ declare global {
   }
 }
 
+// For development, use hardcoded values since ESBuild doesn't have import.meta.env
+// In production, these would be injected via build-time environment variables
+const getEnvVar = (key: string, fallback: string = ''): string => {
+  // For now, return fallback values for development
+  return fallback;
+};
+
 export const auth0Config = {
   // Auth0 Application Configuration
   domain:
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.auth0?.domain) ||
-    import.meta.env.VITE_AUTH0_DOMAIN ||
-    'vitalsense-health.auth0.com',
+    getEnvVar('VITE_AUTH0_DOMAIN') ||
+    'dev-qjdpc81dzr7xrnlu.us.auth0.com', // VitalSense development domain
   clientId:
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.auth0?.clientId) ||
-    import.meta.env.VITE_AUTH0_CLIENT_ID ||
-    'your-client-id',
+    getEnvVar('VITE_AUTH0_CLIENT_ID') ||
+    'vitalsense-dev-client-id',
 
   // Security Configuration
   redirectUri:
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.auth0?.redirectUri) ||
-    import.meta.env.VITE_AUTH0_REDIRECT_URI ||
-    `${window.location.origin}/callback`,
+    getEnvVar('VITE_AUTH0_REDIRECT_URI') ||
+    (typeof window !== 'undefined'
+      ? `${window.location.origin}/callback`
+      : 'http://localhost:5173/callback'),
   logoutUri:
-    import.meta.env.VITE_AUTH0_LOGOUT_URI || `${window.location.origin}/login`,
+    getEnvVar('VITE_AUTH0_LOGOUT_URI') ||
+    (typeof window !== 'undefined'
+      ? `${window.location.origin}/login`
+      : 'http://localhost:5173/login'),
 
   // HIPAA Compliance Settings
   audience:
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.auth0?.audience) ||
-    import.meta.env.VITE_AUTH0_AUDIENCE ||
-    'https://vitalsense-health-api',
+    getEnvVar('VITE_AUTH0_AUDIENCE', 'https://vitalsense-health-api'),
   scope:
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.auth0?.scope) ||
@@ -136,8 +147,7 @@ export const getAuth0ConfigForEnvironment = () => {
   const environment =
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.environment) ||
-    import.meta.env.VITE_ENVIRONMENT ||
-    'development';
+    getEnvVar('VITE_ENVIRONMENT', 'development');
 
   const baseConfig = { ...auth0Config };
 

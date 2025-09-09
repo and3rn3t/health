@@ -4,14 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { HealthDataProcessor } from '@/lib/healthDataProcessor';
-import type { ProcessedHealthData } from '@/types';
 import { Activity, Brain, CheckCircle, FileText, Upload } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
-interface HealthDataImportProps {
-  readonly onDataImported: (data: ProcessedHealthData) => void;
-}
 
 export default function HealthDataImport({
   onDataImported,

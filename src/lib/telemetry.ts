@@ -2,6 +2,9 @@
  * Lightweight in-memory telemetry emitter (PII-safe).
  * Only emits aggregate/system metrics – never raw health values.
  */
+
+import { isDev } from '@/lib/env';
+
 export interface TelemetryEvent {
   name: string;
   timestamp: string;
@@ -34,7 +37,7 @@ export function recordTelemetry(
       }
     }
   }
-  if (import.meta.env.DEV) {
+  if (isDev()) {
     // Dev-only console emission to avoid noise in production logs
     // Redact any suspicious keys defensively
     const blocked = /value|payload|health|steps|heart|sleep|raw|record/i;

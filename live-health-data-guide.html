@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🚀 VitalSense Live Health Data Upload Guide</title>
+    <style>
+      body {
+        font-family: Inter, system-ui, sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        line-height: 1.6;
+      }
+      .hero {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        padding: 32px;
+        border-radius: 16px;
+        margin-bottom: 24px;
+        text-align: center;
+      }
+      .hero h1 {
+        margin: 0 0 12px 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+      }
+      .hero p {
+        margin: 0;
+        font-size: 1.2rem;
+        opacity: 0.9;
+      }
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+      }
+      .card h2 {
+        margin: 0 0 16px 0;
+        color: #1e293b;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .card h3 {
+        margin: 24px 0 12px 0;
+        color: #374151;
+        font-size: 1.2rem;
+      }
+      .step {
+        background: #f1f5f9;
+        border-left: 4px solid #3b82f6;
+        padding: 16px;
+        margin: 16px 0;
+        border-radius: 0 8px 8px 0;
+      }
+      .step-number {
+        background: #3b82f6;
+        color: white;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-right: 12px;
+      }
+      .feature {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: #f8fafc;
+        border-radius: 8px;
+        margin: 8px 0;
+      }
+      .feature-icon {
+        width: 40px;
+        height: 40px;
+        background: #dbeafe;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        background: #dcfce7;
+        color: #166534;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin: 0 8px 8px 0;
+      }
+      .warning {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+      }
+      .success {
+        background: #dcfce7;
+        border: 1px solid #16a34a;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+      }
+      button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-block;
+        margin: 8px 8px 8px 0;
+        transition: background 0.2s;
+      }
+      button:hover {
+        background: #2563eb;
+      }
+      .btn-secondary {
+        background: #64748b;
+      }
+      .btn-secondary:hover {
+        background: #475569;
+      }
+      code {
+        background: #f1f5f9;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Fira Code', monospace;
+        font-size: 0.9rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hero">
+      <h1>🚀 VitalSense Live Health Data</h1>
+      <p>
+        Upload and simulate real-time health data for development and testing
+      </p>
+    </div>
+
+    <div class="success">
+      <strong>✅ Live Data Upload System Ready!</strong><br />
+      The new LiveHealthDataUpload component has been successfully integrated
+      into VitalSense, replacing the previous upload system with advanced
+      real-time capabilities.
+    </div>
+
+    <div class="card">
+      <h2>🎯 Quick Start Guide</h2>
+
+      <div class="step">
+        <span class="step-number">1</span>
+        <strong>Open VitalSense App:</strong> Navigate to
+        <code>http://localhost:5173</code>
+      </div>
+
+      <div class="step">
+        <span class="step-number">2</span>
+        <strong>Find Upload Section:</strong> Look for "Enhanced Health Data
+        Processing" in the sidebar navigation
+      </div>
+
+      <div class="step">
+        <span class="step-number">3</span>
+        <strong>Choose Upload Method:</strong> Select from Manual Entry, Live
+        Simulation, or Bulk Upload tabs
+      </div>
+
+      <div class="step">
+        <span class="step-number">4</span>
+        <strong>Start Adding Data:</strong> Use any of the three methods to
+        begin populating your health dashboard
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>📝 Manual Entry</h2>
+        <p>
+          Perfect for testing specific scenarios and entering precise values.
+        </p>
+
+        <div class="feature">
+          <div class="feature-icon">💓</div>
+          <div>
+            <strong>Individual Metrics</strong><br />
+            <small
+              >Enter one health metric at a time with immediate
+              processing</small
+            >
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-icon">🎯</div>
+          <div>
+            <strong>Validation</strong><br />
+            <small>Real-time validation with realistic value ranges</small>
+          </div>
+        </div>
+
+        <h3>Available Metrics:</h3>
+        <span class="badge">Daily Steps</span>
+        <span class="badge">Heart Rate</span>
+        <span class="badge">Sleep Hours</span>
+        <span class="badge">Walking Steadiness</span>
+        <span class="badge">Body Weight</span>
+        <span class="badge">Walking Distance</span>
+      </div>
+
+      <div class="card">
+        <h2>⚡ Live Simulation</h2>
+        <p>
+          Automatically generate realistic health data streams for testing
+          real-time features.
+        </p>
+
+        <div class="feature">
+          <div class="feature-icon">🔄</div>
+          <div>
+            <strong>Auto-Generation</strong><br />
+            <small>Continuous realistic data every 5-300 seconds</small>
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-icon">🧠</div>
+          <div>
+            <strong>Smart Patterns</strong><br />
+            <small>Time-aware values (more steps during day, etc.)</small>
+          </div>
+        </div>
+
+        <h3>Simulation Features:</h3>
+        <span class="badge">Realistic Ranges</span>
+        <span class="badge">Time Patterns</span>
+        <span class="badge">Trend Analysis</span>
+        <span class="badge">Automatic Trends</span>
+      </div>
+
+      <div class="card">
+        <h2>📦 Bulk Upload</h2>
+        <p>Upload multiple metrics at once using JSON or CSV format.</p>
+
+        <div class="feature">
+          <div class="feature-icon">📄</div>
+          <div>
+            <strong>Multiple Formats</strong><br />
+            <small>Support for JSON and CSV data formats</small>
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-icon">🎲</div>
+          <div>
+            <strong>Sample Generation</strong><br />
+            <small>One-click realistic sample data generation</small>
+          </div>
+        </div>
+
+        <h3>Example JSON:</h3>
+        <code style="display: block; padding: 12px; margin: 8px 0">
+          [{"metric": "steps", "value": 8500}, {"metric": "heartRate", "value":
+          72}]
+        </code>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔬 Development Features</h2>
+
+      <div class="grid">
+        <div>
+          <h3>Data Persistence</h3>
+          <p>
+            Health data is automatically saved using KV storage and persists
+            across page reloads.
+          </p>
+
+          <h3>Real-time Updates</h3>
+          <p>
+            All health analysis components (Gait Analysis, Walking Patterns,
+            etc.) update immediately when new data is added.
+          </p>
+        </div>
+
+        <div>
+          <h3>Data Quality Tracking</h3>
+          <p>
+            Automatic scoring of data completeness, consistency, and recency
+            with visual indicators.
+          </p>
+
+          <h3>Health Score Calculation</h3>
+          <p>
+            Dynamic health score calculation based on uploaded metrics with
+            trend analysis.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>💡 Testing Scenarios</h2>
+
+      <div class="step">
+        <strong>Basic Testing:</strong> Use Manual Entry to add a few metrics
+        and verify they appear in the analysis components
+      </div>
+
+      <div class="step">
+        <strong>Live Stream Testing:</strong> Enable Live Simulation and watch
+        real-time updates in Gait Analysis, Walking Patterns, and Posture
+        Analysis
+      </div>
+
+      <div class="step">
+        <strong>Bulk Data Testing:</strong> Generate sample data and upload it
+        to quickly populate the dashboard with comprehensive metrics
+      </div>
+
+      <div class="step">
+        <strong>Integration Testing:</strong> Navigate between analysis
+        components to verify cross-component data sharing
+      </div>
+    </div>
+
+    <div class="warning">
+      <strong>⚠️ Development Note:</strong> This system is designed for
+      development and testing. For production use, you would integrate with
+      actual health data sources like Apple HealthKit, Fitbit API, or other
+      health platforms.
+    </div>
+
+    <div class="card">
+      <h2>🚀 Quick Actions</h2>
+      <button onclick="window.open('http://localhost:5173', '_blank')">
+        🌐 Open VitalSense App
+      </button>
+      <button class="btn-secondary" onclick="window.location.reload()">
+        🔄 Refresh Guide
+      </button>
+    </div>
+
+    <div class="card">
+      <h2>📊 What's Connected</h2>
+      <p>
+        The new live data upload system automatically updates all health
+        analysis components:
+      </p>
+
+      <div class="grid">
+        <div class="feature">
+          <div class="feature-icon">📈</div>
+          <div>
+            <strong>Enhanced Analytics</strong><br />
+            <small>Comprehensive health dashboard with trends</small>
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-icon">🚶</div>
+          <div>
+            <strong>Walking Patterns</strong><br />
+            <small>Steadiness and mobility tracking</small>
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-icon">🏃</div>
+          <div>
+            <strong>Gait Analysis</strong><br />
+            <small>Advanced biomechanical movement analysis</small>
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-icon">🧘</div>
+          <div>
+            <strong>Posture Analysis</strong><br />
+            <small>Spinal health from activity data</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="success">
+      <strong>🎉 Ready to Use!</strong><br />
+      Your VitalSense development environment now supports live health data
+      upload with real-time processing, automatic persistence, and comprehensive
+      analysis integration.
+    </div>
+  </body>
+</html>

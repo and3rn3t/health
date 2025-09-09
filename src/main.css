@@ -4,7 +4,212 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* VitalSense CSS Variables - Light Mode */
+    --color-vitalsense-primary: #2563eb;
+    --color-vitalsense-primary-light: #3b82f6;
+    --color-vitalsense-primary-dark: #1d4ed8;
+    --color-vitalsense-primary-contrast: #ffffff;
+    --color-vitalsense-teal: #0891b2;
+    --color-vitalsense-teal-light: #06b6d4;
+    --color-vitalsense-teal-dark: #0e7490;
+    --color-vitalsense-teal-contrast: #ffffff;
+    --color-vitalsense-success: #059669;
+    --color-vitalsense-success-light: #10b981;
+    --color-vitalsense-success-dark: #047857;
+    --color-vitalsense-success-contrast: #ffffff;
+    --color-vitalsense-warning: #d97706;
+    --color-vitalsense-warning-light: #f59e0b;
+    --color-vitalsense-warning-dark: #b45309;
+    --color-vitalsense-warning-contrast: #ffffff;
+    --color-vitalsense-error: #dc2626;
+    --color-vitalsense-error-light: #ef4444;
+    --color-vitalsense-error-dark: #b91c1c;
+    --color-vitalsense-error-contrast: #ffffff;
+    --color-vitalsense-text-primary: #1f2937;
+    --color-vitalsense-text-muted: #6b7280;
+    --color-vitalsense-bg-light: #ffffff;
+    --color-vitalsense-bg-dark: #111827;
+    --color-vitalsense-card-light: #ffffff;
+    --color-vitalsense-card-dark: #1f2937;
+    /* Sidebar and Navigation */
+    --color-sidebar-bg: #ffffff;
+    --color-sidebar-border: #e2e8f0;
+    --color-nav-hover: #f1f5f9;
+    --color-nav-text: #475569;
+  }
+
+  [data-appearance='dark'] {
+    /* VitalSense CSS Variables - Dark Mode */
+    --color-vitalsense-primary: #3b82f6;
+    --color-vitalsense-primary-light: #60a5fa;
+    --color-vitalsense-primary-dark: #2563eb;
+    --color-vitalsense-primary-contrast: #ffffff;
+    --color-vitalsense-teal: #06b6d4;
+    --color-vitalsense-teal-light: #22d3ee;
+    --color-vitalsense-teal-dark: #0891b2;
+    --color-vitalsense-teal-contrast: #ffffff;
+    --color-vitalsense-success: #10b981;
+    --color-vitalsense-success-light: #34d399;
+    --color-vitalsense-success-dark: #059669;
+    --color-vitalsense-success-contrast: #ffffff;
+    --color-vitalsense-warning: #f59e0b;
+    --color-vitalsense-warning-light: #fbbf24;
+    --color-vitalsense-warning-dark: #d97706;
+    --color-vitalsense-warning-contrast: #000000;
+    --color-vitalsense-error: #ef4444;
+    --color-vitalsense-error-light: #f87171;
+    --color-vitalsense-error-dark: #dc2626;
+    --color-vitalsense-error-contrast: #ffffff;
+    --color-vitalsense-text-primary: #f9fafb;
+    --color-vitalsense-text-muted: #9ca3af;
+    --color-vitalsense-bg-light: #111827;
+    --color-vitalsense-bg-dark: #111827;
+    --color-vitalsense-card-light: #1f2937;
+    --color-vitalsense-card-dark: #1f2937;
+    /* Sidebar and Navigation - Dark Mode */
+    --color-sidebar-bg: #1f2937;
+    --color-sidebar-border: #374151;
+    --color-nav-hover: #374151;
+    --color-nav-text: #d1d5db;
+  }
+}
+
 @layer utilities {
+  .vitalsense-ghost-button {
+    @apply bg-transparent;
+    color: var(--color-nav-text);
+  }
+
+  .vitalsense-ghost-button:hover {
+    background-color: var(--color-nav-hover);
+  }
+
+  .vitalsense-sidebar {
+    background-color: var(--color-sidebar-bg);
+    border-color: var(--color-sidebar-border);
+  }
+
+  .vitalsense-nav-button {
+    color: var(--color-nav-text);
+  }
+
+  .vitalsense-nav-button:hover {
+    background-color: var(--color-nav-hover);
+  }
+
+  /* Override hover:bg-slate-100 in sidebar buttons */
+  .vitalsense-sidebar .hover\:bg-slate-100:hover {
+    background-color: var(--color-nav-hover) !important;
+  }
+
+  /* VitalSense Button System - Consistent sizing and styling */
+  .vitalsense-btn {
+    @apply inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .vitalsense-btn-sm {
+    @apply h-8 px-4 text-sm;
+  }
+
+  .vitalsense-btn-md {
+    @apply h-10 px-6 py-2 text-sm;
+  }
+
+  .vitalsense-btn-lg {
+    @apply h-12 px-8 py-3 text-base;
+  }
+
+  .vitalsense-btn-primary {
+    background-color: var(--color-vitalsense-primary);
+    color: var(--color-vitalsense-primary-contrast);
+  }
+
+  .vitalsense-btn-primary:hover {
+    background-color: var(--color-vitalsense-primary-light);
+  }
+
+  .vitalsense-btn-secondary {
+    @apply border border-slate-300;
+    background-color: var(--color-sidebar-bg);
+    color: var(--color-nav-text);
+  }
+
+  .vitalsense-btn-secondary:hover {
+    background-color: var(--color-nav-hover);
+  }
+
+  .vitalsense-btn-success {
+    background-color: var(--color-vitalsense-success);
+    color: var(--color-vitalsense-success-contrast);
+  }
+
+  .vitalsense-btn-success:hover {
+    background-color: var(--color-vitalsense-success-light);
+  }
+
+  .vitalsense-btn-warning {
+    background-color: var(--color-vitalsense-warning);
+    color: var(--color-vitalsense-warning-contrast);
+  }
+
+  .vitalsense-btn-warning:hover {
+    background-color: var(--color-vitalsense-warning-light);
+  }
+
+  .vitalsense-btn-error {
+    background-color: var(--color-vitalsense-error);
+    color: var(--color-vitalsense-error-contrast);
+  }
+
+  .vitalsense-btn-error:hover {
+    background-color: var(--color-vitalsense-error-light);
+  }
+
+  .vitalsense-btn-ghost {
+    @apply bg-transparent;
+    color: var(--color-nav-text);
+  }
+
+  .vitalsense-btn-ghost:hover {
+    background-color: var(--color-nav-hover);
+  }
+
+  /* Special button sizes for specific use cases */
+  .vitalsense-btn-xs {
+    @apply h-6 px-3 text-xs;
+  }
+
+  .vitalsense-btn-xl {
+    @apply h-14 px-10 py-4 text-lg;
+  }
+
+  .vitalsense-btn-icon-sm {
+    @apply h-6 w-6 p-0;
+  }
+
+  .vitalsense-btn-icon-md {
+    @apply h-8 w-8 p-0;
+  }
+
+  .vitalsense-btn-icon-lg {
+    @apply h-10 w-10 p-0;
+  }
+
+  .vitalsense-btn-emergency {
+    @apply h-16 flex-col gap-2;
+  }
+
+  /* VitalSense Background Utilities */
+  .bg-vitalsense-bg {
+    background-color: var(--color-vitalsense-bg);
+  }
+
+  .bg-vitalsense-card {
+    background-color: var(--color-vitalsense-card);
+  }
+
   .no-scrollbar {
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;

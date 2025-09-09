@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useCloudflareKV';
 import {
   Activity,
   AlertTriangle,

@@ -1,5 +1,7 @@
 import { createRoot } from 'react-dom/client';
 
+import { Button } from '@/components/ui/button';
+
 const SimpleApp = () => {
   return (
     <div className="min-h-screen bg-vitalsense-bg-light p-8">
@@ -59,12 +61,12 @@ const SimpleApp = () => {
               Interactive Elements
             </h2>
             <div className="space-y-3">
-              <button className="hover:bg-vitalsense-primary-hover w-full rounded-md bg-vitalsense-primary px-4 py-2 text-vitalsense-primary-contrast transition-colors">
+              <Button variant="default" className="w-full">
                 Primary Button
-              </button>
-              <button className="border-vitalsense-border hover:bg-vitalsense-surface-hover w-full rounded-md border px-4 py-2 text-vitalsense-text-primary transition-colors">
+              </Button>
+              <Button variant="secondary" className="w-full">
                 Secondary Button
-              </button>
+              </Button>
             </div>
           </div>
         </div>

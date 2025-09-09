@@ -300,23 +300,23 @@ function ActionPanel() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <Button className="w-full justify-start" variant="outline">
+        <Button className="w-full justify-start" variant="outline" size="lg">
           <Activity className="mr-2 h-4 w-4" />
           Start Walking Session
         </Button>
-        <Button className="w-full justify-start" variant="outline">
+        <Button className="w-full justify-start" variant="outline" size="lg">
           <BarChart3 className="mr-2 h-4 w-4" />
           Run Fall Risk Assessment
         </Button>
-        <Button className="w-full justify-start" variant="outline">
+        <Button className="w-full justify-start" variant="outline" size="lg">
           <Users className="mr-2 h-4 w-4" />
           Contact Caregiver
         </Button>
-        <Button className="w-full justify-start" variant="outline">
+        <Button className="w-full justify-start" variant="outline" size="lg">
           <Phone className="mr-2 h-4 w-4" />
           Emergency Contacts
         </Button>
-        <Button className="w-full justify-start" variant="outline">
+        <Button className="w-full justify-start" variant="outline" size="lg">
           <Download className="mr-2 h-4 w-4" />
           Export Health Report
         </Button>
@@ -541,15 +541,27 @@ export default function FallRiskWalkingManager({
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <Button className="w-full justify-start" variant="outline">
+                  <Button
+                    className="w-full justify-start"
+                    variant="outline"
+                    size="lg"
+                  >
                     <Phone className="mr-2 h-4 w-4" />
                     Contact Healthcare Provider
                   </Button>
-                  <Button className="w-full justify-start" variant="outline">
+                  <Button
+                    className="w-full justify-start"
+                    variant="outline"
+                    size="lg"
+                  >
                     <Users className="mr-2 h-4 w-4" />
                     Notify Emergency Contact
                   </Button>
-                  <Button className="w-full justify-start" variant="outline">
+                  <Button
+                    className="w-full justify-start"
+                    variant="outline"
+                    size="lg"
+                  >
                     <Calendar className="mr-2 h-4 w-4" />
                     Schedule Assessment
                   </Button>

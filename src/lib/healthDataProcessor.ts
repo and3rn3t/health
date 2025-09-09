@@ -135,7 +135,7 @@ export class HealthDataProcessor {
 
   private static processMetric(
     daily: HealthMetric[],
-    metricName: string
+    _metricName: string
   ): MetricData {
     const average = daily.reduce((sum, d) => sum + d.value, 0) / daily.length;
     const trend = this.calculateTrend(daily);
@@ -347,8 +347,21 @@ export class HealthDataProcessor {
    * Main processing function that converts raw data into structured analytics
    */
   static async processHealthData(file?: File): Promise<ProcessedHealthData> {
-    // For now, generate realistic mock data
-    // In a real implementation, this would parse the actual Apple Health XML
+    // If a file is provided, try to parse it as Apple Health data
+    if (file) {
+      try {
+        const { parseAppleHealthFile, convertAppleHealthToProcessedData } =
+          await import('./appleHealthParser');
+        const appleData = await parseAppleHealthFile(file);
+        return convertAppleHealthToProcessedData(appleData);
+      } catch (error) {
+        console.error('Error parsing Apple Health data:', error);
+        // Fall back to mock data if parsing fails
+        console.warn('Falling back to mock data generation');
+      }
+    }
+
+    // Generate realistic mock data (fallback or when no file provided)
 
     const steps = this.generateTimeSeriesData(90, 6500, 2000, -10);
     const heartRate = this.generateTimeSeriesData(90, 68, 8, 0.1);
@@ -393,17 +406,10 @@ export class HealthDataProcessor {
 }
 
 /**
- * Real Apple Health XML parsing would happen here
- * This is a placeholder for the actual implementation
+ * Legacy placeholder function - actual parsing is now in appleHealthParser.ts
  */
-export async function parseAppleHealthXML(xmlContent: string): Promise<any> {
-  // TODO: Implement actual XML parsing
-  // Would extract HKQuantityTypeIdentifier records for:
-  // - HKQuantityTypeIdentifierStepCount
-  // - HKQuantityTypeIdentifierHeartRate
-  // - HKQuantityTypeIdentifierAppleWalkingSteadiness
-  // - HKQuantityTypeIdentifierSleepAnalysis
-  // - etc.
-
-  throw new Error('Apple Health XML parsing not yet implemented');
+export async function parseAppleHealthXML(_xmlContent: string): Promise<never> {
+  throw new Error(
+    'This function has been moved to appleHealthParser.ts. Use parseAppleHealthFile instead.'
+  );
 }

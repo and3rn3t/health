@@ -1,0 +1,36 @@
+{
+  "healthData": {
+    "metrics": {
+      "heartRate": {
+        "average": 72,
+        "min": 65,
+        "max": 85,
+        "lastValue": 68,
+        "trend": "improving"
+      },
+      "steps": {
+        "total": 8500,
+        "average": 8200,
+        "lastValue": 9100,
+        "goal": 10000
+      },
+      "sleepHours": {
+        "average": 7.5,
+        "lastValue": 8.2,
+        "quality": "good"
+      },
+      "walkingSteadiness": {
+        "score": 0.85,
+        "risk": "low",
+        "lastValue": 0.87
+      }
+    },
+    "healthScore": 85,
+    "lastUpdated": "2024-12-15T04:26:53.000Z",
+    "source": "Apple Health",
+    "deviceInfo": {
+      "name": "iPhone 15 Pro",
+      "model": "iPhone16,1"
+    }
+  }
+}

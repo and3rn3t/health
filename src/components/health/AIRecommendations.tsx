@@ -11,8 +11,8 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { ProcessedHealthData } from '@/types';
-import { useKV } from '@github/spark/hooks';
 import {
   Activity,
   AlertTriangle,
@@ -30,6 +30,263 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
+// Helper Components
+interface RecommendationsListProps {
+  recommendations: Recommendation[];
+  onComplete: (id: string) => void;
+  onDismiss: (id: string) => void;
+  getCategoryIcon: (
+    category: Recommendation['category']
+  ) => React.ComponentType<{ className?: string }>;
+  getPriorityColor: (priority: Recommendation['priority']) => string;
+  showPriorityFirst?: boolean;
+  showCompleted?: boolean;
+}
+
+const RecommendationsList: React.FC<RecommendationsListProps> = ({
+  recommendations,
+  onComplete,
+  onDismiss,
+  getCategoryIcon,
+  getPriorityColor,
+  showPriorityFirst = false,
+  showCompleted = false,
+}) => {
+  const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 } as const;
+
+  const sorted = [...recommendations].sort(
+    (a: Recommendation, b: Recommendation) => {
+      if (showPriorityFirst) {
+        const aPriority = priorityOrder[a.priority] || 0;
+        const bPriority = priorityOrder[b.priority] || 0;
+        if (aPriority !== bPriority) return bPriority - aPriority;
+      }
+      return b.impact - a.impact;
+    }
+  );
+
+  return (
+    <ScrollArea className="h-[600px]">
+      <div className="space-y-4">
+        {sorted.map((recommendation: Recommendation) => {
+          const CategoryIcon = getCategoryIcon(recommendation.category);
+          return (
+            <Card
+              key={recommendation.id}
+              className={`transition-all ${recommendation.completed ? 'opacity-75' : ''} ${
+                showCompleted && recommendation.completed
+                  ? 'border-green-200 bg-green-50/50'
+                  : ''
+              }`}
+            >
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="mb-2 flex items-center gap-3">
+                      <CategoryIcon className="text-primary h-5 w-5" />
+                      <Badge
+                        variant="outline"
+                        className={getPriorityColor(recommendation.priority)}
+                      >
+                        {recommendation.priority.toUpperCase()}
+                      </Badge>
+                      <Badge variant="secondary">
+                        Impact: {recommendation.impact}/10
+                      </Badge>
+                      <Badge variant="outline">
+                        {recommendation.difficulty}
+                      </Badge>
+                      {recommendation.completed && (
+                        <Badge className="bg-green-100 text-green-800">
+                          ✓ Completed
+                        </Badge>
+                      )}
+                    </div>
+                    <CardTitle
+                      className={recommendation.completed ? 'line-through' : ''}
+                    >
+                      {recommendation.title}
+                    </CardTitle>
+                    <CardDescription>
+                      {recommendation.description}
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    {!recommendation.completed && (
+                      <Button
+                        onClick={() => onComplete(recommendation.id)}
+                        className="flex items-center gap-1"
+                      >
+                        <CheckCircle className="h-4 w-4" />
+                        Complete
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      onClick={() => onDismiss(recommendation.id)}
+                    >
+                      {recommendation.completed ? 'Remove' : 'Dismiss'}
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="text-muted-foreground flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      {recommendation.timeframe}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <CategoryIcon className="h-4 w-4" />
+                      {recommendation.category.replace('-', ' ')}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="mb-2 font-semibold">Action Steps:</h4>
+                    <ul className="space-y-1">
+                      {recommendation.actionSteps.map(
+                        (step: string, index: number) => (
+                          <li
+                            key={`step-${recommendation.id}-${index}-${step.slice(0, 20)}`}
+                            className="flex items-start gap-2 text-sm"
+                          >
+                            <span className="text-primary mt-1 font-semibold">
+                              {index + 1}.
+                            </span>
+                            <span>{step}</span>
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+
+                  <Separator />
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <h4 className="mb-2 font-semibold">Why This Helps:</h4>
+                      <p className="text-muted-foreground text-sm">
+                        {recommendation.reasoning}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="mb-2 font-semibold">
+                        Supporting Evidence:
+                      </h4>
+                      <ul className="space-y-1">
+                        {recommendation.evidence.map(
+                          (evidence: string, index: number) => (
+                            <li
+                              key={`evidence-${recommendation.id}-${index}-${evidence.slice(0, 20)}`}
+                              className="text-muted-foreground flex items-start gap-1 text-sm"
+                            >
+                              <span className="text-primary">•</span>
+                              <span>{evidence}</span>
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </ScrollArea>
+  );
+};
+
+interface CategorySpecificViewProps {
+  category: Recommendation['category'];
+  recommendations: Recommendation[];
+  onComplete: (id: string) => void;
+  onDismiss: (id: string) => void;
+  getCategoryIcon: (
+    category: Recommendation['category']
+  ) => React.ComponentType<{ className?: string }>;
+  getPriorityColor: (priority: Recommendation['priority']) => string;
+}
+
+const CategorySpecificView: React.FC<CategorySpecificViewProps> = ({
+  category,
+  recommendations,
+  onComplete,
+  onDismiss,
+  getCategoryIcon,
+  getPriorityColor,
+}) => {
+  const CategoryIcon = getCategoryIcon(category);
+  const activeRecs = recommendations.filter((r) => !r.completed);
+  const completedRecs = recommendations.filter((r) => r.completed);
+
+  const getCategoryDescription = (cat: string) => {
+    switch (cat) {
+      case 'exercise':
+        return 'Physical activity and movement recommendations';
+      case 'nutrition':
+        return 'Dietary and nutritional guidance';
+      case 'sleep':
+        return 'Sleep quality and schedule improvements';
+      case 'medical':
+        return 'Medical check-ups and health monitoring';
+      case 'lifestyle':
+        return 'General lifestyle and habit improvements';
+      case 'fall-prevention':
+        return 'Safety measures and balance training';
+      default:
+        return 'Health recommendations in this category';
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-4">
+        <CategoryIcon className="text-primary h-8 w-8" />
+        <div>
+          <h3 className="text-lg font-semibold capitalize">
+            {category.replace('-', ' ')} Recommendations
+          </h3>
+          <p className="text-muted-foreground text-sm">
+            {getCategoryDescription(category)}
+          </p>
+        </div>
+        <div className="ml-auto flex gap-2">
+          <Badge variant="secondary">{activeRecs.length} active</Badge>
+          <Badge variant="outline" className="bg-green-100 text-green-800">
+            {completedRecs.length} completed
+          </Badge>
+        </div>
+      </div>
+
+      {recommendations.length === 0 ? (
+        <div className="py-8 text-center">
+          <CategoryIcon className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+          <h3 className="mb-2 text-lg font-semibold">
+            No {category.replace('-', ' ')} recommendations yet
+          </h3>
+          <p className="text-muted-foreground">
+            Generate AI recommendations to get personalized{' '}
+            {category.replace('-', ' ')} guidance.
+          </p>
+        </div>
+      ) : (
+        <RecommendationsList
+          recommendations={recommendations}
+          onComplete={onComplete}
+          onDismiss={onDismiss}
+          getCategoryIcon={getCategoryIcon}
+          getPriorityColor={getPriorityColor}
+          showPriorityFirst={true}
+        />
+      )}
+    </div>
+  );
+};
 
 interface Recommendation {
   id: string;
@@ -377,7 +634,7 @@ const AIRecommendations = ({
         </CardHeader>
         <CardContent>
           <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9">
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="completed">Completed</TabsTrigger>
@@ -385,10 +642,12 @@ const AIRecommendations = ({
               <TabsTrigger value="nutrition">Nutrition</TabsTrigger>
               <TabsTrigger value="sleep">Sleep</TabsTrigger>
               <TabsTrigger value="medical">Medical</TabsTrigger>
+              <TabsTrigger value="lifestyle">Lifestyle</TabsTrigger>
               <TabsTrigger value="fall-prevention">Fall Prevention</TabsTrigger>
             </TabsList>
 
-            <TabsContent value={activeCategory} className="mt-6">
+            {/* All Recommendations Tab */}
+            <TabsContent value="all" className="mt-6">
               {filteredRecommendations.length === 0 ? (
                 <div className="py-8 text-center">
                   <Lightbulb className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
@@ -398,176 +657,138 @@ const AIRecommendations = ({
                   <p className="text-muted-foreground">
                     {safeRecs.length === 0
                       ? 'Generate AI recommendations to get personalized health interventions.'
-                      : 'Try a different category or generate new recommendations.'}
+                      : 'All recommendations have been completed or dismissed.'}
+                  </p>
+                  {safeRecs.length === 0 && (
+                    <Button
+                      onClick={generateRecommendations}
+                      disabled={isGenerating}
+                      className="mt-4"
+                    >
+                      <Brain className="mr-2 h-4 w-4" />
+                      Generate AI Recommendations
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <RecommendationsList
+                  recommendations={filteredRecommendations}
+                  onComplete={completeRecommendation}
+                  onDismiss={dismissRecommendation}
+                  getCategoryIcon={getCategoryIcon}
+                  getPriorityColor={getPriorityColor}
+                />
+              )}
+            </TabsContent>
+
+            {/* Active Recommendations Tab */}
+            <TabsContent value="active" className="mt-6">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    Active Recommendations
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Focus on these recommendations to improve your health
+                  </p>
+                </div>
+                <Badge variant="secondary">
+                  {filteredRecommendations.length} active
+                </Badge>
+              </div>
+              {filteredRecommendations.length === 0 ? (
+                <div className="py-8 text-center">
+                  <CheckCircle className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                  <h3 className="mb-2 text-lg font-semibold">All caught up!</h3>
+                  <p className="text-muted-foreground">
+                    You've completed all your active recommendations. Great job!
                   </p>
                 </div>
               ) : (
-                <ScrollArea className="h-[600px]">
-                  <div className="space-y-4">
-                    {(() => {
-                      const priorityOrder = {
-                        critical: 4,
-                        high: 3,
-                        medium: 2,
-                        low: 1,
-                      } as const;
-                      const sorted = [...filteredRecommendations].sort(
-                        (a: Recommendation, b: Recommendation) => {
-                          const aPriority = priorityOrder[a.priority] || 0;
-                          const bPriority = priorityOrder[b.priority] || 0;
-                          if (aPriority !== bPriority)
-                            return bPriority - aPriority;
-                          return b.impact - a.impact;
-                        }
-                      );
-                      return sorted.map((recommendation: Recommendation) => {
-                        const CategoryIcon = getCategoryIcon(
-                          recommendation.category
-                        );
-                        return (
-                          <Card
-                            key={recommendation.id}
-                            className={`transition-all ${recommendation.completed ? 'opacity-75' : ''}`}
-                          >
-                            <CardHeader>
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="mb-2 flex items-center gap-3">
-                                    <CategoryIcon className="text-primary h-5 w-5" />
-                                    <Badge
-                                      variant="outline"
-                                      className={getPriorityColor(
-                                        recommendation.priority
-                                      )}
-                                    >
-                                      {recommendation.priority.toUpperCase()}
-                                    </Badge>
-                                    <Badge variant="secondary">
-                                      Impact: {recommendation.impact}/10
-                                    </Badge>
-                                    <Badge variant="outline">
-                                      {recommendation.difficulty}
-                                    </Badge>
-                                  </div>
-                                  <CardTitle
-                                    className={
-                                      recommendation.completed
-                                        ? 'line-through'
-                                        : ''
-                                    }
-                                  >
-                                    {recommendation.title}
-                                  </CardTitle>
-                                  <CardDescription>
-                                    {recommendation.description}
-                                  </CardDescription>
-                                </div>
-                                <div className="flex gap-2">
-                                  {!recommendation.completed && (
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        completeRecommendation(
-                                          recommendation.id
-                                        )
-                                      }
-                                      className="flex items-center gap-1"
-                                    >
-                                      <CheckCircle className="h-4 w-4" />
-                                      Complete
-                                    </Button>
-                                  )}
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      dismissRecommendation(recommendation.id)
-                                    }
-                                  >
-                                    Dismiss
-                                  </Button>
-                                </div>
-                              </div>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="space-y-4">
-                                {/* Timeframe and Category */}
-                                <div className="text-muted-foreground flex items-center gap-4 text-sm">
-                                  <div className="flex items-center gap-1">
-                                    <Calendar className="h-4 w-4" />
-                                    {recommendation.timeframe}
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <CategoryIcon className="h-4 w-4" />
-                                    {recommendation.category.replace('-', ' ')}
-                                  </div>
-                                </div>
-
-                                {/* Action Steps */}
-                                <div>
-                                  <h4 className="mb-2 font-semibold">
-                                    Action Steps:
-                                  </h4>
-                                  <ul className="space-y-1">
-                                    {recommendation.actionSteps.map(
-                                      (step: string, index: number) => (
-                                        <li
-                                          key={`step-${recommendation.id}-${index}-${step.slice(0, 20)}`}
-                                          className="flex items-start gap-2 text-sm"
-                                        >
-                                          <span className="text-primary mt-1 font-semibold">
-                                            {index + 1}.
-                                          </span>
-                                          <span>{step}</span>
-                                        </li>
-                                      )
-                                    )}
-                                  </ul>
-                                </div>
-
-                                <Separator />
-
-                                {/* Reasoning and Evidence */}
-                                <div className="grid gap-4 md:grid-cols-2">
-                                  <div>
-                                    <h4 className="mb-2 font-semibold">
-                                      Why This Helps:
-                                    </h4>
-                                    <p className="text-muted-foreground text-sm">
-                                      {recommendation.reasoning}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <h4 className="mb-2 font-semibold">
-                                      Supporting Evidence:
-                                    </h4>
-                                    <ul className="space-y-1">
-                                      {recommendation.evidence.map(
-                                        (evidence: string, index: number) => (
-                                          <li
-                                            key={`evidence-${recommendation.id}-${index}-${evidence.slice(0, 20)}`}
-                                            className="text-muted-foreground flex items-start gap-1 text-sm"
-                                          >
-                                            <span className="text-primary">
-                                              •
-                                            </span>
-                                            <span>{evidence}</span>
-                                          </li>
-                                        )
-                                      )}
-                                    </ul>
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      });
-                    })()}
-                  </div>
-                </ScrollArea>
+                <RecommendationsList
+                  recommendations={filteredRecommendations}
+                  onComplete={completeRecommendation}
+                  onDismiss={dismissRecommendation}
+                  getCategoryIcon={getCategoryIcon}
+                  getPriorityColor={getPriorityColor}
+                  showPriorityFirst={true}
+                />
               )}
             </TabsContent>
+
+            {/* Completed Recommendations Tab */}
+            <TabsContent value="completed" className="mt-6">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    Completed Recommendations
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Your health improvement achievements
+                  </p>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="bg-green-100 text-green-800"
+                >
+                  {filteredRecommendations.length} completed
+                </Badge>
+              </div>
+              {filteredRecommendations.length === 0 ? (
+                <div className="py-8 text-center">
+                  <Target className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                  <h3 className="mb-2 text-lg font-semibold">
+                    No completed recommendations yet
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Complete your active recommendations to see them here
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="rounded-lg bg-green-50 p-4">
+                    <h4 className="mb-2 font-semibold text-green-800">
+                      🎉 Congratulations on your progress!
+                    </h4>
+                    <p className="text-sm text-green-700">
+                      You've completed {filteredRecommendations.length}{' '}
+                      recommendation
+                      {filteredRecommendations.length !== 1 ? 's' : ''}. Each
+                      completion brings you closer to optimal health.
+                    </p>
+                  </div>
+                  <RecommendationsList
+                    recommendations={filteredRecommendations}
+                    onComplete={completeRecommendation}
+                    onDismiss={dismissRecommendation}
+                    getCategoryIcon={getCategoryIcon}
+                    getPriorityColor={getPriorityColor}
+                    showCompleted={true}
+                  />
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Category-specific tabs */}
+            {[
+              'exercise',
+              'nutrition',
+              'sleep',
+              'medical',
+              'lifestyle',
+              'fall-prevention',
+            ].map((category) => (
+              <TabsContent key={category} value={category} className="mt-6">
+                <CategorySpecificView
+                  category={category as Recommendation['category']}
+                  recommendations={filteredRecommendations}
+                  onComplete={completeRecommendation}
+                  onDismiss={dismissRecommendation}
+                  getCategoryIcon={getCategoryIcon}
+                  getPriorityColor={getPriorityColor}
+                />
+              </TabsContent>
+            ))}
           </Tabs>
         </CardContent>
       </Card>

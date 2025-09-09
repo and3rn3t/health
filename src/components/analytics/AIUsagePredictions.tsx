@@ -10,8 +10,8 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { ProcessedHealthData } from '@/types';
-import { useKV } from '@github/spark/hooks';
 import {
   Activity,
   Brain,

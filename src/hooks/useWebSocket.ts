@@ -1,3 +1,4 @@
+import { isDev } from '@/lib/env';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
 
@@ -48,7 +49,7 @@ export function useWebSocket(
     __VITALSENSE_KV_MODE?: 'local' | 'network';
   };
   // Check if we're in development mode and if WebSocket should be enabled
-  const isDevelopment = import.meta.env.DEV;
+  const isDevelopment = isDev();
   // Demo mode flag injected by Worker for /demo route
   type WindowWithDemo = Window & { VITALSENSE_DISABLE_WEBSOCKET?: boolean };
   const isDemoMode =

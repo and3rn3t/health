@@ -367,10 +367,13 @@ window.__VITALSENSE_CONFIG__ = ${JSON.stringify({
 // KV mode hint: 'local' => client-only storage; 'network' => use server endpoint
 window.__VITALSENSE_KV_MODE = ${JSON.stringify(kvMode)};
 
-// Compatibility for @github/spark/hooks (expects a global var, not just window prop)
-var BASE_KV_SERVICE_URL = ${JSON.stringify(kvMode === 'network' ? '/api' : '')};
-// also expose on window for code that reads from window
-window.BASE_KV_SERVICE_URL = BASE_KV_SERVICE_URL;
+// VitalSense app configuration - no longer needs Spark compatibility
+var VITALSENSE_CONFIG = {
+  kvMode: ${JSON.stringify(kvMode)},
+  apiUrl: ${JSON.stringify(kvMode === 'network' ? '/api' : '')},
+  dev: true
+};
+window.VITALSENSE_CONFIG = VITALSENSE_CONFIG;
 `;
   return new Response(js, {
     headers: { 'content-type': 'application/javascript; charset=utf-8' },

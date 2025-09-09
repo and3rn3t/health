@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useCloudflareKV';
 import {
   Crown,
   Flame,
@@ -61,13 +61,15 @@ interface FamilyGoal {
 }
 
 export default function FamilyGameification() {
-  // Only consuming stored values; setters omitted to avoid unused variable lint warnings
-  const [familyMembers = []] = useKV<FamilyMember[]>('family-members', []);
-  const [familyActivities = []] = useKV<FamilyActivity[]>(
-    'family-activities',
-    []
-  );
-  const [familyGoals = []] = useKV<FamilyGoal[]>('family-goals', []);
+  // Using our custom localStorage-based useKV hook
+  const [familyMembers] = useKV<FamilyMember[]>('family-members', []);
+  const [familyActivities] = useKV<FamilyActivity[]>('family-activities', []);
+  const [familyGoals] = useKV<FamilyGoal[]>('family-goals', []);
+
+  // Fallback data for when no stored data exists
+  // const familyMembers: FamilyMember[] = [];
+  // const familyActivities: FamilyActivity[] = [];
+  // const familyGoals: FamilyGoal[] = [];
 
   // Sample data
   const sampleMembers: FamilyMember[] = [

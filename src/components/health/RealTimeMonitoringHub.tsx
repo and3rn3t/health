@@ -10,9 +10,9 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { useLiveHealthData } from '@/hooks/useLiveHealthData';
 import { ProcessedHealthData } from '@/types';
-import { useKV } from '@github/spark/hooks';
 import {
   Activity,
   AlertTriangle,
@@ -355,11 +355,11 @@ function EmergencyResponseCard({
             Emergency Alert
           </Button>
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline">
               <Users className="mr-2 h-4 w-4" />
               Call Family
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline">
               <Shield className="mr-2 h-4 w-4" />
               Medical ID
             </Button>

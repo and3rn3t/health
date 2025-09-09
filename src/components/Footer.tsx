@@ -3,7 +3,6 @@
  * Status information, quick links, and branding
  */
 
-import WSTokenSettings from '@/components/health/WSTokenSettings';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -148,11 +147,6 @@ export default function Footer({
                 minute: '2-digit',
               })}
             </div>
-
-            {/* WS Token Settings Button */}
-            <div className="hidden sm:block">
-              <WSTokenSettings />
-            </div>
           </div>
         </div>
 
@@ -166,17 +160,13 @@ export default function Footer({
                 variant="ghost"
                 size="sm"
                 onClick={() => onNavigate(link.tab)}
-                className="footer-button h-9 min-w-[90px] px-4 text-xs font-medium"
+                className="footer-button min-w-[90px] px-4 text-xs font-medium"
               >
                 <IconComponent className="mr-2 h-3 w-3" />
                 {link.label}
               </Button>
             );
           })}
-          {/* Mobile WS Token Settings */}
-          <div className="ml-2">
-            <WSTokenSettings />
-          </div>
         </div>
       </div>
     </footer>

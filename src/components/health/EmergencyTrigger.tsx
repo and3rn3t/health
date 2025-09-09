@@ -312,10 +312,10 @@ export function EmergencyTrigger() {
             </p>
           </div>
           <div className="mt-4 flex gap-2">
-            <Button size="sm" variant="outline" className="flex-1">
+            <Button variant="outline" className="flex-1">
               Update Medical Info
             </Button>
-            <Button size="sm" variant="outline" className="flex-1">
+            <Button variant="outline" className="flex-1">
               Add Allergies
             </Button>
           </div>
@@ -335,10 +335,18 @@ export function EmergencyTrigger() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Button variant="outline">Auto-Call Delay: 10s</Button>
-            <Button variant="outline">GPS Sharing: Enabled</Button>
-            <Button variant="outline">Medical Data: Enabled</Button>
-            <Button variant="outline">Test Emergency System</Button>
+            <Button variant="outline" size="lg">
+              Auto-Call Delay: 10s
+            </Button>
+            <Button variant="outline" size="lg">
+              GPS Sharing: Enabled
+            </Button>
+            <Button variant="outline" size="lg">
+              Medical Data: Enabled
+            </Button>
+            <Button variant="outline" size="lg">
+              Test Emergency System
+            </Button>
           </div>
         </CardContent>
       </Card>

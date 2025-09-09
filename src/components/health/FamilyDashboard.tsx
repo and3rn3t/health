@@ -9,8 +9,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { ProcessedHealthData } from '@/types';
-import { useKV } from '@github/spark/hooks';
 import {
   Activity,
   AlertTriangle,
@@ -124,18 +124,26 @@ export default function FamilyDashboard({
   );
 
   const addReaction = (shareId: string, memberId: string, reaction: string) => {
+    interface ProgressShareReaction {
+      memberId: string;
+      reaction: string;
+    }
+
     setProgressShares(
-      (current) =>
-        current?.map((share) =>
-          share.id === shareId
-            ? {
-                ...share,
-                reactions: [
-                  ...share.reactions.filter((r) => r.memberId !== memberId),
-                  { memberId, reaction },
-                ],
-              }
-            : share
+      (current: ProgressShare[] | undefined): ProgressShare[] =>
+        current?.map(
+          (share: ProgressShare): ProgressShare =>
+            share.id === shareId
+              ? {
+                  ...share,
+                  reactions: [
+                    ...share.reactions.filter(
+                      (r: ProgressShareReaction) => r.memberId !== memberId
+                    ),
+                    { memberId, reaction } as ProgressShareReaction,
+                  ],
+                }
+              : share
         ) || []
     );
   };
@@ -154,7 +162,12 @@ export default function FamilyDashboard({
       reactions: [],
     };
 
-    setProgressShares((current) => [newShare, ...(current || [])]);
+    setProgressShares(
+      (current: ProgressShare[] | undefined): ProgressShare[] => [
+        newShare,
+        ...(current || []),
+      ]
+    );
   };
 
   const getTypeIcon = (type: string) => {
@@ -388,10 +401,10 @@ export default function FamilyDashboard({
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                    <Button variant="ghost" size="icon-sm">
                       <MessageCircle className="h-3 w-3" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                    <Button variant="ghost" size="icon-sm">
                       <Phone className="h-3 w-3" />
                     </Button>
                   </div>
@@ -422,7 +435,7 @@ export default function FamilyDashboard({
                   <div className="mb-3 flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`rounded-full bg-gray-100 p-2 ${getTypeColor(share.type)}`}
+                        className={`rounded-full bg-gray-100 p-2 dark:bg-gray-800 ${getTypeColor(share.type)}`}
                       >
                         <IconComponent className="h-5 w-5" />
                       </div>
@@ -516,19 +529,19 @@ export default function FamilyDashboard({
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
-            <Button variant="outline" className="flex h-16 flex-col gap-2">
+            <Button variant="outline" size="emergency">
               <Phone className="h-6 w-6 text-red-600" />
               <span className="text-sm">Emergency Call</span>
             </Button>
-            <Button variant="outline" className="flex h-16 flex-col gap-2">
+            <Button variant="outline" size="emergency">
               <MessageCircle className="h-6 w-6 text-blue-600" />
               <span className="text-sm">Send Check-in</span>
             </Button>
-            <Button variant="outline" className="flex h-16 flex-col gap-2">
+            <Button variant="outline" size="emergency">
               <MapPin className="h-6 w-6 text-green-600" />
               <span className="text-sm">Share Location</span>
             </Button>
-            <Button variant="outline" className="flex h-16 flex-col gap-2">
+            <Button variant="outline" size="emergency">
               <Bell className="h-6 w-6 text-purple-600" />
               <span className="text-sm">Test Alert System</span>
             </Button>

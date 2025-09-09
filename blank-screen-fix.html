@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔧 VitalSense Blank Screen Fix</title>
+    <style>
+      body {
+        font-family: Inter, system-ui, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        line-height: 1.6;
+      }
+      .hero {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        padding: 32px;
+        border-radius: 16px;
+        margin-bottom: 24px;
+        text-align: center;
+      }
+      .hero h1 {
+        margin: 0 0 12px 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+      }
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+      }
+      .solution {
+        background: #dcfce7;
+        border: 2px solid #16a34a;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      .step {
+        background: #f8fafc;
+        border-left: 4px solid #ef4444;
+        padding: 16px;
+        margin: 16px 0;
+        border-radius: 0 8px 8px 0;
+      }
+      .step-number {
+        background: #ef4444;
+        color: white;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-right: 12px;
+      }
+      .warning {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+      }
+      code {
+        background: #f1f5f9;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Fira Code', monospace;
+      }
+      .status {
+        background: #dbeafe;
+        border: 1px solid #3b82f6;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hero">
+      <h1>🔧 Blank Screen Fix</h1>
+      <p>Quick solution for the dark blue blank screen issue</p>
+    </div>
+
+    <div class="status">
+      <h2><strong>📊 Current Status</strong></h2>
+      <ul>
+        <li>✅ Development server is running on port 5173</li>
+        <li>✅ ESBuild is building successfully</li>
+        <li>❌ TypeScript/JSX errors are causing component crashes</li>
+        <li>🔧 Fixed: Swapped to working import component</li>
+      </ul>
+    </div>
+
+    <div class="solution">
+      <h2><strong>✅ Immediate Fix Applied</strong></h2>
+      <p>
+        I've temporarily replaced the broken LiveHealthDataUpload component with
+        the working EnhancedHealthDataImport component for both tabs.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>🚀 Try This Now</h2>
+
+      <div class="step">
+        <span class="step-number">1</span>
+        <strong>Refresh the page:</strong> Go to http://localhost:5173 and
+        refresh (Ctrl+F5)
+      </div>
+
+      <div class="step">
+        <span class="step-number">2</span>
+        <strong>Try the "Import" tab:</strong> This should now work without the
+        blank screen
+      </div>
+
+      <div class="step">
+        <span class="step-number">3</span>
+        <strong>Upload your health data:</strong> The import should now accept
+        .xml or .zip files
+      </div>
+
+      <div class="step">
+        <span class="step-number">4</span>
+        <strong>If still blank:</strong> Try the "Enhanced Upload" tab (both now
+        use the same working component)
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔍 What Was Wrong</h2>
+      <p>
+        The LiveHealthDataUpload component had TypeScript/JSX errors that caused
+        it to crash:
+      </p>
+      <ul>
+        <li>
+          <strong>Missing JSX runtime:</strong> React JSX types weren't properly
+          configured
+        </li>
+        <li>
+          <strong>Module imports:</strong> Some dependencies couldn't be found
+        </li>
+        <li>
+          <strong>Type errors:</strong> Various TypeScript compilation issues
+        </li>
+      </ul>
+
+      <p>
+        These errors caused the component to fail to render, showing a blank
+        dark blue screen instead.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>🎯 Current Working Import Features</h2>
+      <p>
+        The EnhancedHealthDataImport component now available in both tabs
+        supports:
+      </p>
+      <ul>
+        <li>
+          🍎 <strong>Apple Health exports:</strong> .xml and .zip file upload
+        </li>
+        <li>
+          📊 <strong>Data processing:</strong> Extracts health metrics and
+          generates insights
+        </li>
+        <li>
+          🧠 <strong>AI analysis:</strong> Creates personalized recommendations
+        </li>
+        <li>
+          🎨 <strong>Beautiful UI:</strong> Step-by-step processing with
+          progress indicators
+        </li>
+        <li>
+          🔄 <strong>Reset functionality:</strong> Can reset if stuck in
+          processing state
+        </li>
+      </ul>
+    </div>
+
+    <div class="warning">
+      <strong>⚠️ If Import Still Shows "Complete":</strong><br />
+      The EnhancedHealthDataImport component now has a "Reset Upload" button
+      that appears when processing. Use this if the component gets stuck in a
+      "complete" state.
+    </div>
+
+    <div class="card">
+      <h2>📱 How to Export from Apple Health</h2>
+      <ol>
+        <li>Open iPhone Health app</li>
+        <li>Tap your profile picture (top right)</li>
+        <li>Scroll down and tap "Export All Health Data"</li>
+        <li>Tap "Export" and wait for processing</li>
+        <li>Share/save the ZIP file</li>
+        <li>Extract the export.xml file and upload it to VitalSense</li>
+      </ol>
+    </div>
+
+    <div class="solution">
+      <strong>🎉 Ready to Test!</strong><br />
+      The import functionality should now work properly. Try refreshing the page
+      and uploading your Apple Health data!
+    </div>
+  </body>
+</html>

@@ -5,6 +5,7 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ErrorContext } from '@/hooks/useErrorHandling';
+import { isDev, isProd } from '@/lib/env';
 import { AppErrorHandler, ErrorFactory, SafeLogger } from '@/lib/errorHandling';
 import { AlertTriangle, Bug, RefreshCw } from 'lucide-react';
 import React from 'react';
@@ -40,11 +41,11 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
   }, [appError]);
 
   // Don't show error boundary in development - let React DevTools handle it
-  if (import.meta.env.DEV && !(error instanceof AppErrorHandler)) {
+  if (isDev() && !(error instanceof AppErrorHandler)) {
     throw error;
   }
 
-  const isProductionBuild = import.meta.env.PROD;
+  const isProductionBuild = isProd();
   const showTechnicalDetails = !isProductionBuild;
 
   return (

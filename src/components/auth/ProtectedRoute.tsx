@@ -26,7 +26,7 @@ const anyOrAll = <T,>(items: T[], all: boolean, pred: (t: T) => boolean) =>
   all ? items.every(pred) : items.some(pred);
 
 const LoadingView = () => (
-  <div className="flex min-h-screen items-center justify-center bg-gray-50">
+  <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
         <div className="mb-4 flex justify-center">

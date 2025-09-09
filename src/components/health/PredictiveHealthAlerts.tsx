@@ -21,11 +21,11 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@/hooks/useCloudflareKV';
 import type {
   MetricData,
   ProcessedHealthData,
 } from '@/lib/healthDataProcessor';
-import { useKV } from '@github/spark/hooks';
 import {
   Activity,
   AlertTriangle,

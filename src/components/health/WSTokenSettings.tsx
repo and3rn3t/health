@@ -25,7 +25,11 @@ import {
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-export function WSTokenSettings() {
+interface WSTokenSettingsProps {
+  inline?: boolean;
+}
+
+export function WSTokenSettings({ inline = false }: WSTokenSettingsProps) {
   // Restored KV persistence for production use
   const [storedToken, setStoredToken] = useKV<string>('ws-device-token', '');
 
@@ -266,6 +270,129 @@ export function WSTokenSettings() {
     userId,
     setStoredToken,
   ]);
+
+  // If rendered inline (in Developer Tools), don't show floating button
+  if (inline) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="text-center">
+          <div className="mb-4">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
+              <span
+                className={
+                  'inline-block h-3 w-3 rounded-full ' +
+                  (connected ? 'bg-green-400' : 'bg-gray-300')
+                }
+              />
+            </div>
+            <h1 className="mb-2 text-2xl font-bold text-gray-900">
+              WebSocket Token Settings
+            </h1>
+            <p className="text-gray-600">
+              Configure WebSocket authentication and connection parameters
+            </p>
+          </div>
+        </div>
+
+        <div className="mx-auto max-w-md space-y-4">
+          <div className="flex items-center justify-between rounded-md border p-3">
+            <div className="text-sm">
+              <div className="font-medium">Live updates</div>
+              <div className="text-muted-foreground text-xs">
+                Enable realtime WebSocket processing
+              </div>
+            </div>
+            <Button
+              variant={liveEnabled ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setLiveEnabled(!liveEnabled)}
+            >
+              {liveEnabled ? 'On' : 'Off'}
+            </Button>
+          </div>
+
+          <div className="grid gap-1">
+            <Label htmlFor="ws-url-inline">WebSocket URL</Label>
+            <Input
+              id="ws-url-inline"
+              type="text"
+              placeholder={`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`}
+              value={draftUrl}
+              onChange={(e) => setDraftUrl(e.currentTarget.value)}
+              autoComplete="off"
+            />
+            <p className="text-muted-foreground mt-1 text-[11px]">
+              Effective:{' '}
+              <span className="font-mono">
+                {wsUrl ||
+                  `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`}
+              </span>
+            </p>
+          </div>
+
+          <div className="grid gap-1">
+            <Label htmlFor="ws-user-inline">User ID</Label>
+            <Input
+              id="ws-user-inline"
+              type="text"
+              placeholder="default-user"
+              value={draftUser}
+              onChange={(e) => setDraftUser(e.currentTarget.value)}
+              autoComplete="off"
+            />
+          </div>
+
+          <div className="grid gap-1">
+            <Label htmlFor="ws-ttl-inline">Token TTL (seconds)</Label>
+            <Input
+              id="ws-ttl-inline"
+              type="number"
+              min={60}
+              max={3600}
+              value={ttlSec}
+              onChange={(e) => setTtlSec(Number(e.currentTarget.value) || 600)}
+            />
+          </div>
+
+          <div className="grid gap-1">
+            <Label htmlFor="ws-token-inline">Token</Label>
+            <Input
+              id="ws-token-inline"
+              type="text"
+              placeholder="eyJhbGciOi..."
+              value={draft}
+              onChange={(e) => setDraft(e.currentTarget.value)}
+              autoComplete="off"
+            />
+          </div>
+
+          <p className="text-muted-foreground text-xs">
+            Current: <span className="font-mono">{masked}</span>
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-2 pt-4">
+            <Button variant="secondary" onClick={onTestConnection}>
+              Test connection
+            </Button>
+            <Button variant="outline" onClick={onGetToken} disabled={loading}>
+              {loading ? 'Issuing…' : 'Get web token'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={onGetIosToken}
+              disabled={loading}
+            >
+              {loading ? 'Issuing…' : 'Get iOS token'}
+            </Button>
+            <Button variant="outline" onClick={onClear}>
+              Clear
+            </Button>
+            <Button onClick={onSave}>Save</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed bottom-4 right-4 z-50">

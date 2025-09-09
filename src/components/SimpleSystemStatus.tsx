@@ -405,14 +405,14 @@ export default function SimpleSystemStatus() {
         </Alert>
       )}
 
-      <div className="rounded-lg bg-gray-50 p-4 text-center">
-        <p className="text-sm font-medium text-gray-700">
+      <div className="rounded-lg bg-gray-50 p-4 text-center dark:bg-gray-800">
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
           🕐 Last updated:{' '}
           <span className="font-bold">
             {systemHealth.lastUpdated.toLocaleTimeString()}
           </span>
         </p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           ⚡ API Response time:{' '}
           <span className="font-bold">{systemHealth.responseTime}ms</span>
         </p>

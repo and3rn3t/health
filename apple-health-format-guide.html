@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🍎 Apple Health Export Format Guide</title>
+    <style>
+      body {
+        font-family: Inter, system-ui, sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        line-height: 1.6;
+      }
+      .hero {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        padding: 32px;
+        border-radius: 16px;
+        margin-bottom: 24px;
+        text-align: center;
+      }
+      .hero h1 {
+        margin: 0 0 12px 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+      }
+      .hero p {
+        margin: 0;
+        font-size: 1.2rem;
+        opacity: 0.9;
+      }
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+      }
+      .card h2 {
+        margin: 0 0 16px 0;
+        color: #1e293b;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .step {
+        background: #f1f5f9;
+        border-left: 4px solid #ef4444;
+        padding: 16px;
+        margin: 16px 0;
+        border-radius: 0 8px 8px 0;
+      }
+      .step-number {
+        background: #ef4444;
+        color: white;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-right: 12px;
+      }
+      .format-info {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+      }
+      .file-structure {
+        background: #f3f4f6;
+        border-radius: 8px;
+        padding: 16px;
+        font-family: 'Fira Code', monospace;
+        margin: 16px 0;
+      }
+      .warning {
+        background: #fef2f2;
+        border: 1px solid #ef4444;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+      }
+      .success {
+        background: #dcfce7;
+        border: 1px solid #16a34a;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+      }
+      code {
+        background: #f1f5f9;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Fira Code', monospace;
+        font-size: 0.9rem;
+      }
+      .data-types {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin: 16px 0;
+      }
+      .data-type {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+      }
+      .limitation {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 12px;
+        margin: 8px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hero">
+      <h1>🍎 Apple Health Export Format</h1>
+      <p>
+        Understanding the structure and data inside Apple Health ZIP exports
+      </p>
+    </div>
+
+    <div class="success">
+      <strong>✅ Apple Health Parser Implemented!</strong><br />
+      VitalSense now supports parsing real Apple Health data exports with
+      comprehensive XML processing and data conversion.
+    </div>
+
+    <div class="card">
+      <h2>📦 ZIP File Structure</h2>
+      <p>
+        When you export data from Apple Health, you get a ZIP file containing:
+      </p>
+
+      <div class="file-structure">
+        apple_health_export.zip ├── apple_health_export/ │ ├── export.xml ← Main
+        health data (90% of content) │ ├── export_cda.xml ← Clinical Document
+        format (optional) │ ├── workout-routes/ ← GPS workout data │ │ ├──
+        route_2024-01-01_*.gpx │ │ └── ... │ └── electrocardiograms/ ← ECG data
+        (if available) │ ├── ecg_2024-01-01_*.csv │ └── ...
+      </div>
+
+      <div class="format-info">
+        <strong>💡 Key File:</strong> The <code>export.xml</code> file contains
+        all your health metrics in a standardized XML format with timestamps,
+        values, units, and source information.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔍 What Data VitalSense Can Extract</h2>
+
+      <div class="data-types">
+        <div class="data-type">
+          <strong>📱 Steps</strong><br />
+          <code>HKQuantityTypeIdentifierStepCount</code>
+        </div>
+        <div class="data-type">
+          <strong>💓 Heart Rate</strong><br />
+          <code>HKQuantityTypeIdentifierHeartRate</code>
+        </div>
+        <div class="data-type">
+          <strong>🚶 Walking Steadiness</strong><br />
+          <code>HKQuantityTypeIdentifierAppleWalkingSteadiness</code>
+        </div>
+        <div class="data-type">
+          <strong>😴 Sleep Analysis</strong><br />
+          <code>HKCategoryTypeIdentifierSleepAnalysis</code>
+        </div>
+        <div class="data-type">
+          <strong>⚖️ Body Weight</strong><br />
+          <code>HKQuantityTypeIdentifierBodyMass</code>
+        </div>
+        <div class="data-type">
+          <strong>🏃 Distance Walking</strong><br />
+          <code>HKQuantityTypeIdentifierDistanceWalkingRunning</code>
+        </div>
+        <div class="data-type">
+          <strong>🔥 Active Energy</strong><br />
+          <code>HKQuantityTypeIdentifierActiveEnergyBurned</code>
+        </div>
+        <div class="data-type">
+          <strong>🩸 Blood Pressure</strong><br />
+          <code>HKQuantityTypeIdentifierBloodPressure*</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📋 How to Export from Apple Health</h2>
+
+      <div class="step">
+        <span class="step-number">1</span>
+        <strong>Open Health App:</strong> Launch the Health app on your iPhone
+      </div>
+
+      <div class="step">
+        <span class="step-number">2</span>
+        <strong>Go to Summary:</strong> Tap the "Summary" tab at the bottom
+      </div>
+
+      <div class="step">
+        <span class="step-number">3</span>
+        <strong>Access Profile:</strong> Tap your profile picture in the top
+        right
+      </div>
+
+      <div class="step">
+        <span class="step-number">4</span>
+        <strong>Export Health Data:</strong> Scroll down and tap "Export All
+        Health Data"
+      </div>
+
+      <div class="step">
+        <span class="step-number">5</span>
+        <strong>Prepare Export:</strong> Tap "Export" and wait for processing
+        (can take several minutes)
+      </div>
+
+      <div class="step">
+        <span class="step-number">6</span>
+        <strong>Share/Save:</strong> Use AirDrop, email, or save to Files app
+      </div>
+
+      <div class="warning">
+        <strong>⏱️ Processing Time:</strong> Large health databases can take
+        5-15 minutes to export. The file size can range from a few MB to several
+        GB depending on your data history.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔧 VitalSense Processing Capabilities</h2>
+
+      <h3>📊 Data Conversion</h3>
+      <p>VitalSense automatically:</p>
+      <ul>
+        <li>
+          <strong>Parses XML:</strong> Extracts all health records with
+          timestamps and values
+        </li>
+        <li>
+          <strong>Aggregates Daily:</strong> Converts individual readings to
+          daily summaries
+        </li>
+        <li>
+          <strong>Calculates Trends:</strong> Analyzes
+          increasing/decreasing/stable patterns
+        </li>
+        <li>
+          <strong>Assesses Quality:</strong> Evaluates data completeness and
+          consistency
+        </li>
+        <li>
+          <strong>Generates Insights:</strong> Creates personalized health
+          recommendations
+        </li>
+      </ul>
+
+      <h3>🎯 Supported Analysis</h3>
+      <ul>
+        <li>
+          <strong>Gait Analysis:</strong> Biomechanical movement patterns from
+          steps and walking data
+        </li>
+        <li>
+          <strong>Fall Risk Assessment:</strong> Uses walking steadiness and
+          activity levels
+        </li>
+        <li><strong>Sleep Quality:</strong> Duration and pattern analysis</li>
+        <li>
+          <strong>Heart Rate Variability:</strong> Cardiovascular health
+          indicators
+        </li>
+        <li>
+          <strong>Activity Trends:</strong> Long-term mobility and fitness
+          patterns
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>⚠️ Current Limitations</h2>
+
+      <div class="limitation">
+        <strong>ZIP File Handling:</strong> Currently requires manual extraction
+        of <code>export.xml</code> from the ZIP file. Upload the XML file
+        directly for now.
+      </div>
+
+      <div class="limitation">
+        <strong>Data Volume:</strong> Processing very large files (>100MB XML)
+        may take time. Consider using recent exports for faster processing.
+      </div>
+
+      <div class="limitation">
+        <strong>Data Types:</strong> Focuses on movement, heart rate, and sleep
+        data. Specialized data types (ECG, blood glucose) are parsed but not yet
+        analyzed.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🚀 Example XML Structure</h2>
+      <p>Here's what a typical health record looks like in the XML:</p>
+
+      <div class="file-structure">
+        &lt;Record type="HKQuantityTypeIdentifierStepCount" sourceName="iPhone"
+        sourceVersion="17.0" device="&lt;&lt;HKDevice: 0x...&gt;&gt;"
+        unit="count" creationDate="2024-01-01 10:00:00 +0000"
+        startDate="2024-01-01 09:00:00 +0000" endDate="2024-01-01 10:00:00
+        +0000" value="1247"/&gt;
+      </div>
+
+      <p>VitalSense extracts:</p>
+      <ul>
+        <li>
+          <strong>Type:</strong> What kind of measurement (steps, heart rate,
+          etc.)
+        </li>
+        <li><strong>Value:</strong> The actual number with units</li>
+        <li><strong>Dates:</strong> When the measurement was taken</li>
+        <li><strong>Source:</strong> Which device or app recorded it</li>
+      </ul>
+    </div>
+
+    <div class="success">
+      <strong>🎉 Ready to Import!</strong><br />
+      With your Apple Health export ready, you can now upload it to VitalSense
+      for comprehensive health analysis, fall risk assessment, and personalized
+      insights.
+    </div>
+  </body>
+</html>
