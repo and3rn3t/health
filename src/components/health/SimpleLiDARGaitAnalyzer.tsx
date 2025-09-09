@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Activity, BarChart3, CheckCircle, Play, Target } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 // LiDAR Gait Analysis Types

@@ -8,15 +8,13 @@ import { DeviceSensorManager } from './DeviceSensorManager';
 
 export class SensorIntegrationTest {
   private sensorManager: DeviceSensorManager;
-  private testResults: {
-    permissionTest: boolean;
-    initializationTest: boolean;
-    gaitAnalysisTest: boolean;
-    errorHandlingTest: boolean;
-  } = {
+  private testResults = {
     permissionTest: false,
     initializationTest: false,
     gaitAnalysisTest: false,
+    stepDetectionTest: false,
+    sensorDataTest: false,
+    realTimeUpdateTest: false,
     errorHandlingTest: false,
   };
 
@@ -26,7 +24,15 @@ export class SensorIntegrationTest {
 
   async runAllTests(): Promise<{
     success: boolean;
-    results: typeof this.testResults;
+    results: {
+      permissionTest: boolean;
+      initializationTest: boolean;
+      gaitAnalysisTest: boolean;
+      stepDetectionTest: boolean;
+      sensorDataTest: boolean;
+      realTimeUpdateTest: boolean;
+      errorHandlingTest: boolean;
+    };
     errors: string[];
   }> {
     const errors: string[] = [];

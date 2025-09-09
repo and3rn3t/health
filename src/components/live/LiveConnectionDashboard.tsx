@@ -12,6 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import { useKV } from '@github/spark/hooks';
 import {
   Activity,
   AlertTriangle,
@@ -49,7 +50,10 @@ interface ConnectionMetrics {
 }
 
 export default function LiveConnectionDashboard() {
-  const [isEnabled, setIsEnabled] = useKV('live-connection-enabled', false);
+  const [isEnabled, setIsEnabled] = useKV<boolean>(
+    'live-connection-enabled',
+    false
+  );
   const [liveMetrics, setLiveMetrics] = useState<LiveMetric[]>([]);
   const [connectionMetrics, setConnectionMetrics] = useState<ConnectionMetrics>(
     {

@@ -67,6 +67,14 @@ export function EnhancedGaitAnalyzer() {
     };
   }, []);
 
+  // Add notification (must be defined before being used in callbacks)
+  const addNotification = useCallback((message: string) => {
+    setNotifications((prev) => [message, ...prev.slice(0, 4)]); // Keep last 5
+    setTimeout(() => {
+      setNotifications((prev) => prev.slice(0, -1));
+    }, 5000);
+  }, []);
+
   // Start real sensor analysis
   const startRealSensorAnalysis = useCallback(async () => {
     if (!sensorManager) return;
@@ -166,14 +174,6 @@ export function EnhancedGaitAnalyzer() {
     setCurrentSession(updatedSession);
     addNotification('🛑 Analysis session completed');
   }, [sensorManager, currentSession, metrics, addNotification]);
-
-  // Add notification
-  const addNotification = useCallback((message: string) => {
-    setNotifications((prev) => [message, ...prev.slice(0, 4)]); // Keep last 5
-    setTimeout(() => {
-      setNotifications((prev) => prev.slice(0, -1));
-    }, 5000);
-  }, []);
 
   // Generate recommendations based on metrics
   const generateRecommendations = (gaitMetrics: GaitMetrics): string[] => {

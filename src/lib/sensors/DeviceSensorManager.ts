@@ -3,19 +3,6 @@
  * Handles real sensor integration for motion detection and analysis
  */
 
-// Device Motion and Orientation API types
-interface DeviceMotionEventAcceleration {
-  x: number | null;
-  y: number | null;
-  z: number | null;
-}
-
-interface DeviceMotionEventRotationRate {
-  alpha: number | null;
-  beta: number | null;
-  gamma: number | null;
-}
-
 // Sensor data interfaces
 export interface AccelerometerData {
   x: number;
@@ -159,6 +146,43 @@ export class DeviceSensorManager {
     this.callbacks = callbacks;
   }
 
+  // Check if sensors are supported on this device
+  isSensorSupported(): boolean {
+    return 'DeviceMotionEvent' in window && 'DeviceOrientationEvent' in window;
+  }
+
+  // Start analysis with callbacks (unified interface)
+  async startAnalysis(options: {
+    onGaitUpdate?: (metrics: GaitMetrics) => void;
+    onStepDetected?: (data: StepDetectionData) => void;
+    onError?: (error: string) => void;
+  }): Promise<boolean> {
+    try {
+      // Set callbacks
+      this.setCallbacks({
+        onGaitMetrics: options.onGaitUpdate,
+        onStepDetected: options.onStepDetected,
+      });
+
+      // Start monitoring
+      const success = await this.startMonitoring();
+      if (!success && options.onError) {
+        options.onError('Failed to start sensor monitoring');
+      }
+      return success;
+    } catch (error) {
+      if (options.onError) {
+        options.onError(`Error starting analysis: ${error}`);
+      }
+      return false;
+    }
+  }
+
+  // Stop analysis (unified interface)
+  stopAnalysis(): void {
+    this.stopMonitoring();
+  }
+
   // Start sensor monitoring
   async startMonitoring(): Promise<boolean> {
     if (this.isActive) return true;
@@ -267,7 +291,7 @@ export class DeviceSensorManager {
 
   // Handle device orientation events
   private readonly handleDeviceOrientation = (
-    event: DeviceOrientationEvent
+    _event: DeviceOrientationEvent
   ): void => {
     if (!this.isActive) return;
     // Additional orientation processing can be added here
@@ -459,7 +483,7 @@ class GaitAnalyzer {
     return Math.max(40, Math.min(80, 50 + avgMagnitude * 2)); // 40-80 cm range
   }
 
-  private calculateDoubleSupport(data: AccelerometerData[]): number {
+  private calculateDoubleSupport(_data: AccelerometerData[]): number {
     // Estimate double support phase percentage
     return Math.random() * 5 + 10; // 10-15% typical range
   }

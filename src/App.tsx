@@ -868,14 +868,68 @@ function App() {
   // Always show content for testing and debugging
   const hasHealthData = true;
 
-  // Create minimal test data when healthData is null
-  const effectiveHealthData = healthData || {
+  // Create minimal test data when healthData is null with complete ProcessedHealthData structure
+  const effectiveHealthData: ProcessedHealthData = healthData || {
     healthScore: 75,
     lastUpdated: new Date().toISOString(),
-    metrics: {
-      steps: { current: 8500, goal: 10000 },
-      heartRate: { resting: 68, max: 150 },
+    dataQuality: {
+      completeness: 85,
+      consistency: 90,
+      recency: 95,
+      overall: 'good',
     },
+    metrics: {
+      steps: {
+        daily: [],
+        weekly: [],
+        monthly: [],
+        average: 8500,
+        trend: 'stable',
+        variability: 12,
+        reliability: 85,
+        lastValue: 8500,
+        percentileRank: 75,
+      },
+      heartRate: {
+        daily: [],
+        weekly: [],
+        monthly: [],
+        average: 68,
+        trend: 'stable',
+        variability: 8,
+        reliability: 90,
+        lastValue: 68,
+        percentileRank: 65,
+      },
+      walkingSteadiness: {
+        daily: [],
+        weekly: [],
+        monthly: [],
+        average: 78,
+        trend: 'stable',
+        variability: 5,
+        reliability: 88,
+        lastValue: 78,
+        percentileRank: 70,
+      },
+      sleepHours: {
+        daily: [],
+        weekly: [],
+        monthly: [],
+        average: 7.5,
+        trend: 'stable',
+        variability: 1.2,
+        reliability: 82,
+        lastValue: 7.5,
+        percentileRank: 60,
+      },
+    },
+    insights: [
+      'Your daily activity levels are within healthy ranges.',
+      'Walking steadiness shows good stability.',
+      'Heart rate patterns indicate good cardiovascular health.',
+    ],
+    fallRiskFactors: [],
   };
 
   // Dev-only telemetry panel state (persisted)
@@ -1491,7 +1545,7 @@ function App() {
                   </Card>
                 )}
                 {activeTab === 'export' && (
-                  <ExportData healthData={healthData} />
+                  <ExportData healthData={healthData || undefined} />
                 )}
                 {activeTab === 'devices' && <ConnectedDevices />}
                 {/* MedicationTracker / WorkoutTracker components not present; placeholders removed */}
