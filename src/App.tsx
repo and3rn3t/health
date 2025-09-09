@@ -795,13 +795,6 @@ function App() {
 
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // Debug logging for tab changes
-  useEffect(() => {
-    console.log(`[DEBUG] Active tab changed to: ${activeTab}`);
-    console.log(`[DEBUG] Has health data: ${healthData ? 'yes' : 'no'}`);
-    console.log(`[DEBUG] Dev mode: ${import.meta.env.DEV}`);
-  }, [activeTab, healthData]);
-
   const [sidebarCollapsed, setSidebarCollapsed] = useKV<boolean>(
     'sidebar-collapsed',
     false
@@ -872,8 +865,18 @@ function App() {
   //   return themeMode
   // }
 
-  const hasHealthData = true; // Force to true for debugging
-  // (healthData?.metrics && Object.keys(healthData.metrics).length > 0) || true; // Always show content for testing - was: import.meta.env.DEV;
+  // Always show content for testing and debugging
+  const hasHealthData = true;
+
+  // Create minimal test data when healthData is null
+  const effectiveHealthData = healthData || {
+    healthScore: 75,
+    lastUpdated: new Date().toISOString(),
+    metrics: {
+      steps: { current: 8500, goal: 10000 },
+      heartRate: { resting: 68, max: 150 },
+    },
+  };
 
   // Dev-only telemetry panel state (persisted)
   const [showTelemetry, setShowTelemetry] = useKV<boolean>(
@@ -1032,7 +1035,7 @@ function App() {
                     variant="outline"
                     className="border-vitalsense-primary text-xs text-vitalsense-primary"
                   >
-                    {healthData.healthScore || 0}/100
+                    {effectiveHealthData?.healthScore || 0}/100
                   </Badge>
                 )}
                 <Button
@@ -1068,19 +1071,6 @@ function App() {
           className="thin-scrollbar flex-1 overflow-y-auto px-6 pb-6 pt-6"
           style={{ paddingTop: '2rem' }}
         >
-          {/* TEMPORARY TEST - If you see this, builds are working */}
-          <div
-            style={{
-              background: 'red',
-              color: 'white',
-              padding: '10px',
-              margin: '10px 0',
-            }}
-          >
-            🚨 TEST MESSAGE - hasHealthData = {String(hasHealthData)} -
-            activeTab = {activeTab}
-          </div>
-
           {!hasHealthData ? (
             <div
               className="mx-auto mt-6 max-w-2xl"
@@ -1137,6 +1127,15 @@ function App() {
               {/* Mobile Navigation */}
               <div className="lg:hidden">
                 <div className="space-y-4">
+                  {/* TEST BUTTON - Simple tab switching test */}
+                  <Button
+                    variant={activeTab === 'test' ? 'default' : 'outline'}
+                    onClick={() => setActiveTab('test')}
+                    className="w-full"
+                  >
+                    🧪 TEST TAB (Click to test tab switching)
+                  </Button>
+
                   {/* Primary Navigation - Main Features */}
                   <div>
                     <div className="bg-muted grid h-auto w-full grid-cols-2 gap-1 rounded-lg p-1 sm:grid-cols-3">
@@ -1148,10 +1147,7 @@ function App() {
                             variant={
                               activeTab === item.id ? 'default' : 'ghost'
                             }
-                            onClick={() => {
-                              console.log(`[DEBUG] Button clicked: ${item.id}`);
-                              setActiveTab(item.id);
-                            }}
+                            onClick={() => setActiveTab(item.id)}
                             className="flex min-h-12 flex-col items-center gap-1 px-1 py-2 text-xs"
                           >
                             <IconComponent className="h-4 w-4" />
@@ -1352,82 +1348,65 @@ function App() {
 
               {/* Content Area */}
               <div className="space-y-6">
-                {/* DEBUG INFO - Remove when fixed */}
-                <Card className="border-red-500 bg-red-50 dark:bg-red-900/20">
-                  <CardContent className="pt-4">
-                    <div className="text-sm">
-                      <p>
-                        <strong>Debug Info:</strong>
-                      </p>
-                      <p>
-                        Active Tab:{' '}
-                        <code className="rounded bg-gray-100 px-1">
-                          {activeTab}
-                        </code>
-                      </p>
-                      <p>
-                        Has Health Data:{' '}
-                        <code className="rounded bg-gray-100 px-1">
-                          {String(!!healthData)}
-                        </code>
-                      </p>
-                      <p>
-                        hasHealthData:{' '}
-                        <code className="rounded bg-gray-100 px-1">
-                          {String(hasHealthData)}
-                        </code>
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* Simple tab indicator - always visible */}
+                <div className="rounded-lg bg-blue-100 p-3 font-mono text-sm">
+                  Current Tab: <strong>{activeTab}</strong>
+                </div>
 
-                {activeTab === 'dashboard' && healthData && (
+                {activeTab === 'dashboard' && (
                   <LandingPage
-                    healthData={healthData}
+                    healthData={effectiveHealthData}
                     onNavigateToFeature={setActiveTab}
                     fallRiskScore={75} // This would normally come from health data processing
                   />
                 )}
                 {activeTab === 'user-profile' && <UserProfile />}
+                {/* TEST TAB - Simple content that should always work */}
+                {activeTab === 'test' && (
+                  <div className="rounded-lg bg-green-100 p-8">
+                    <h2 className="text-2xl font-bold">Test Tab Working!</h2>
+                    <p>If you see this, tab switching is working.</p>
+                  </div>
+                )}
                 {/* Removed VitalSenseBrandShowcase (component not found) */}
-                {activeTab === 'insights' && healthData && (
-                  <EnhancedHealthInsightsDashboard healthData={healthData} />
+                {activeTab === 'insights' && (
+                  <EnhancedHealthInsightsDashboard
+                    healthData={effectiveHealthData}
+                  />
                 )}
-                {activeTab === 'usage-analytics' && healthData && (
-                  <UsageAnalyticsDashboard />
+                {activeTab === 'usage-analytics' && <UsageAnalyticsDashboard />}
+                {activeTab === 'usage-predictions' && (
+                  <AIUsagePredictions healthData={effectiveHealthData} />
                 )}
-                {activeTab === 'usage-predictions' && healthData && (
-                  <AIUsagePredictions healthData={healthData} />
-                )}
-                {activeTab === 'recommendations' && healthData && (
+                {activeTab === 'recommendations' && (
                   <SmartFeatureRecommendations />
                 )}
-                {activeTab === 'engagement-optimizer' && healthData && (
+                {activeTab === 'engagement-optimizer' && (
                   <PersonalizedEngagementOptimizer
-                    healthData={healthData}
+                    healthData={effectiveHealthData}
                     onNavigateToFeature={setActiveTab}
                   />
                 )}
-                {activeTab === 'smart-notifications' && healthData && (
-                  <SmartNotificationEngine healthData={healthData} />
+                {activeTab === 'smart-notifications' && (
+                  <SmartNotificationEngine healthData={effectiveHealthData} />
                 )}
                 {activeTab === 'realtime-scoring' && <RealTimeHealthScoring />}
-                {activeTab === 'analytics' && healthData && (
-                  <HealthAnalytics healthData={healthData} />
+                {activeTab === 'analytics' && (
+                  <HealthAnalytics healthData={effectiveHealthData} />
                 )}
                 {activeTab === 'fall-risk' && (
-                  <FallRiskWalkingManager healthData={healthData} />
+                  <FallRiskWalkingManager healthData={effectiveHealthData} />
                 )}
                 {activeTab === 'emergency' && <EmergencyTrigger />}
-                {activeTab === 'alerts' && healthData && (
-                  <HealthAlertsConfig healthData={healthData} />
+                {activeTab === 'alerts' && (
+                  <HealthAlertsConfig healthData={effectiveHealthData} />
                 )}
-                {activeTab === 'predictive-alerts' && healthData && (
-                  <PredictiveHealthAlerts healthData={healthData} />
+                {activeTab === 'predictive-alerts' && (
+                  <PredictiveHealthAlerts healthData={effectiveHealthData} />
                 )}
-                {activeTab === 'search' && healthData && (
+                {activeTab === 'search' && (
                   <HealthSearch
-                    healthData={healthData}
+                    healthData={effectiveHealthData}
                     onNavigateToInsight={(tab, metric) => {
                       setActiveTab(tab);
                       if (metric) {
@@ -1436,14 +1415,14 @@ function App() {
                     }}
                   />
                 )}
-                {activeTab === 'ai-recommendations' && healthData && (
-                  <AIRecommendations healthData={healthData} />
+                {activeTab === 'ai-recommendations' && (
+                  <AIRecommendations healthData={effectiveHealthData} />
                 )}
-                {activeTab === 'ml-predictions' && healthData && (
-                  <MLPredictionsDashboard healthData={healthData} />
+                {activeTab === 'ml-predictions' && (
+                  <MLPredictionsDashboard healthData={effectiveHealthData} />
                 )}
-                {activeTab === 'movement-patterns' && healthData && (
-                  <MovementPatternAnalysis healthData={healthData} />
+                {activeTab === 'movement-patterns' && (
+                  <MovementPatternAnalysis healthData={effectiveHealthData} />
                 )}
                 {activeTab === 'gait-analysis' && <GaitDashboard />}
                 {activeTab === 'real-sensor-gait' && <EnhancedGaitAnalyzer />}
@@ -1454,8 +1433,8 @@ function App() {
                     initialData={healthData ? [healthData] : undefined}
                   />
                 )}
-                {activeTab === 'monitoring-hub' && healthData && (
-                  <RealTimeMonitoringHub healthData={healthData} />
+                {activeTab === 'monitoring-hub' && (
+                  <RealTimeMonitoringHub healthData={effectiveHealthData} />
                 )}
                 {activeTab === 'live-integration' && (
                   <LiveConnectionDashboard />
@@ -1464,18 +1443,18 @@ function App() {
                   <AdvancedAppleWatchIntegration />
                 )}
                 {activeTab === 'history' && <FallHistory />}
-                {activeTab === 'game-center' && healthData && (
-                  <HealthGameCenter healthData={healthData} />
+                {activeTab === 'game-center' && (
+                  <HealthGameCenter healthData={effectiveHealthData} />
                 )}
                 {activeTab === 'family-challenges' && <FamilyGameification />}
-                {activeTab === 'family' && healthData && (
-                  <FamilyDashboard healthData={healthData} />
+                {activeTab === 'family' && (
+                  <FamilyDashboard healthData={effectiveHealthData} />
                 )}
-                {activeTab === 'community' && healthData && (
-                  <CommunityShare healthData={healthData} />
+                {activeTab === 'community' && (
+                  <CommunityShare healthData={effectiveHealthData} />
                 )}
-                {activeTab === 'healthcare' && healthData && (
-                  <HealthcarePortal healthData={healthData} />
+                {activeTab === 'healthcare' && (
+                  <HealthcarePortal healthData={effectiveHealthData} />
                 )}
                 {activeTab === 'contacts' && (
                   <EmergencyContacts
@@ -1597,10 +1576,10 @@ function App() {
         {/* Enhanced Footer */}
         <div style={{ marginTop: '2rem' }}>
           <Footer
-            healthScore={healthData?.healthScore}
+            healthScore={effectiveHealthData?.healthScore}
             lastSync={
-              healthData?.lastUpdated
-                ? new Date(healthData.lastUpdated)
+              effectiveHealthData?.lastUpdated
+                ? new Date(effectiveHealthData.lastUpdated)
                 : undefined
             }
             connectionStatus="connected"

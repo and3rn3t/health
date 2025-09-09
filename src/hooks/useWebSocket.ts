@@ -61,10 +61,8 @@ export function useWebSocket(
     (window as WindowWithLive).VITALSENSE_LIVE_DISABLED === true;
   const enableInDev = config.enableInDevelopment ?? false;
 
-  // In development mode, skip WebSocket unless explicitly enabled
-  // In demo mode, never connect. In development, only connect when explicitly enabled.
-  const shouldConnect =
-    !isDemoMode && !isLiveDisabled && (!isDevelopment || enableInDev);
+  // TEMPORARY FIX - Disable WebSocket entirely to stop message flood
+  const shouldConnect = false; // !isDemoMode && !isLiveDisabled && (!isDevelopment || enableInDev);
 
   // Production-ready WebSocket hook with proper connection limits
   const [connectionState, setConnectionState] = useState<ConnectionState>({
