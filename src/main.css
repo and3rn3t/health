@@ -515,21 +515,21 @@ body {
 
 /* Button hover states */
 .hover\:bg-slate-100:hover {
-  background-color: #f1f5f9; /* slate-100 */
+  background-color: var(--muted); /* theme-aware */
 }
 .hover\:text-slate-900:hover {
-  color: #0f172a; /* slate-900 */
+  color: var(--foreground); /* theme-aware */
 }
 
 /* Make ghost buttons more visible */
 .vitalsense-ghost-button {
-  background-color: rgba(241, 245, 249, 0.5); /* semi-transparent slate-100 */
-  border: 1px solid #e2e8f0; /* slate-200 */
+  background-color: var(--muted-foreground); /* theme-aware */
+  border: 1px solid var(--border); /* theme-aware */
   transition: all 0.2s ease;
 }
 .vitalsense-ghost-button:hover {
-  background-color: #f1f5f9; /* slate-100 */
-  border-color: #cbd5e1; /* slate-300 */
+  background-color: var(--muted); /* theme-aware */
+  border-color: var(--border); /* theme-aware */
 }
 
 /* Responsive margin utilities for sidebar */
@@ -1001,17 +1001,6 @@ body {
 }
 .bg-vitalsense-card-dark {
   background-color: #1e293b; /* slate-800 */
-}
-
-/* Text colors */
-.text-vitalsense-text-primary {
-  color: #0f172a; /* slate-900 */
-}
-.text-vitalsense-text-muted {
-  color: #64748b; /* slate-500 */
-}
-.text-vitalsense-text-secondary {
-  color: #475569; /* slate-600 */
 }
 
 /* Border colors */

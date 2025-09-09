@@ -67,11 +67,19 @@ export function LiDARGaitAnalyzer({
   const [sessionHistory, setSessionHistory] = useState<LiDARSession[]>([]);
   const [recordingProgress, setRecordingProgress] = useState(0);
   const [isLiDARAvailable, setIsLiDARAvailable] = useState(false);
-  const [selectedAnalysisType, setSelectedAnalysisType] = useState<'quick' | 'comprehensive'>('quick');
-  const [showNotification, setShowNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [selectedAnalysisType, setSelectedAnalysisType] = useState<
+    'quick' | 'comprehensive'
+  >('quick');
+  const [showNotification, setShowNotification] = useState<{
+    message: string;
+    type: 'success' | 'error';
+  } | null>(null);
 
   // Simple notification system
-  const showMessage = (message: string, type: 'success' | 'error' = 'success') => {
+  const showMessage = (
+    message: string,
+    type: 'success' | 'error' = 'success'
+  ) => {
     setShowNotification({ message, type });
     setTimeout(() => setShowNotification(null), 3000);
   };
@@ -218,7 +226,7 @@ export function LiDARGaitAnalyzer({
     return (
       <Card className="text-center">
         <CardContent className="pt-6">
-          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xl">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-xl text-gray-400">
             🎯
           </div>
           <h3 className="mb-2 text-lg font-semibold">LiDAR Not Available</h3>
@@ -235,13 +243,17 @@ export function LiDARGaitAnalyzer({
     <div className="space-y-6">
       {/* Notification */}
       {showNotification && (
-        <Alert className={showNotification.type === 'error' ? 'border-red-500' : 'border-green-500'}>
-          <AlertDescription>
-            {showNotification.message}
-          </AlertDescription>
+        <Alert
+          className={
+            showNotification.type === 'error'
+              ? 'border-red-500'
+              : 'border-green-500'
+          }
+        >
+          <AlertDescription>{showNotification.message}</AlertDescription>
         </Alert>
       )}
-      
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -275,7 +287,9 @@ export function LiDARGaitAnalyzer({
               Quick Analysis (5 min)
             </Button>
             <Button
-              variant={selectedAnalysisType === 'comprehensive' ? 'default' : 'outline'}
+              variant={
+                selectedAnalysisType === 'comprehensive' ? 'default' : 'outline'
+              }
               onClick={() => setSelectedAnalysisType('comprehensive')}
             >
               Comprehensive (30 min)
@@ -285,16 +299,15 @@ export function LiDARGaitAnalyzer({
           {currentSession ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">
-                  Recording Progress
-                </span>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm font-medium">Recording Progress</span>
+                <span className="text-muted-foreground text-sm">
                   {Math.round(recordingProgress)}%
                 </span>
               </div>
               <Progress value={recordingProgress} className="w-full" />
-              <p className="text-sm text-muted-foreground">
-                Keep walking naturally. The LiDAR sensor is analyzing your movement patterns.
+              <p className="text-muted-foreground text-sm">
+                Keep walking naturally. The LiDAR sensor is analyzing your
+                movement patterns.
               </p>
             </div>
           ) : (
@@ -310,175 +323,196 @@ export function LiDARGaitAnalyzer({
       </Card>
 
       {/* Current Session Results */}
-      {currentSession && currentSession.status === 'completed' && currentSession.metrics && (
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="metrics">Detailed Metrics</TabsTrigger>
-            <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
-          </TabsList>
+      {currentSession &&
+        currentSession.status === 'completed' &&
+        currentSession.metrics && (
+          <Tabs defaultValue="overview" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="metrics">Detailed Metrics</TabsTrigger>
+              <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="overview" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span>📊</span>
-                  Analysis Overview
-                </CardTitle>
-                <CardDescription>
-                  Session completed at {currentSession.endTime?.toLocaleTimeString()}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium">Step Length</p>
-                    <p className="text-2xl font-bold">
-                      {currentSession.metrics.spatialMetrics.stepLength} cm
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Cadence</p>
-                    <p className="text-2xl font-bold">
-                      {currentSession.metrics.temporalMetrics.cadence} steps/min
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Balance Score</p>
-                    <p className="text-2xl font-bold">
-                      {currentSession.metrics.stabilityMetrics.balanceScore}%
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Overall Status</p>
-                    <Badge variant="default">
-                      ✅ Analysis Complete
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="metrics" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-3">
+            <TabsContent value="overview" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">📏 Spatial Metrics</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <span>📊</span>
+                    Analysis Overview
+                  </CardTitle>
+                  <CardDescription>
+                    Session completed at{' '}
+                    {currentSession.endTime?.toLocaleTimeString()}
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Step Width:</span>
-                    <span className="font-mono">
-                      {currentSession.metrics.spatialMetrics.stepWidth} cm
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Step Length:</span>
-                    <span className="font-mono">
-                      {currentSession.metrics.spatialMetrics.stepLength} cm
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Stride Length:</span>
-                    <span className="font-mono">
-                      {currentSession.metrics.spatialMetrics.strideLength} cm
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Foot Clearance:</span>
-                    <span className="font-mono">
-                      {currentSession.metrics.spatialMetrics.footClearance} cm
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">⏱️ Temporal Metrics</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Cadence:</span>
-                    <span className="font-mono">
-                      {currentSession.metrics.temporalMetrics.cadence} steps/min
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Swing Time:</span>
-                    <span className="font-mono">
-                      {currentSession.metrics.temporalMetrics.swingTime}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Stance Time:</span>
-                    <span className="font-mono">
-                      {currentSession.metrics.temporalMetrics.stanceTime}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Double Support:</span>
-                    <span className="font-mono">
-                      {currentSession.metrics.temporalMetrics.doubleSupportTime}%
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">⚖️ Stability Metrics</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Lateral Variability:</span>
-                    <span className="font-mono">
-                      {currentSession.metrics.stabilityMetrics.lateralVariability} cm
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Posture Stability:</span>
-                    <span className="font-mono">
-                      {currentSession.metrics.stabilityMetrics.postureStability}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Balance Score:</span>
-                    <span className="font-mono">
-                      {currentSession.metrics.stabilityMetrics.balanceScore}%
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="recommendations" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span>🎯</span>
-                  Personalized Recommendations
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {currentSession.recommendations.map((rec, index) => (
-                    <div
-                      key={`rec-${rec.slice(0, 20)}-${index}`}
-                      className="flex items-start gap-2"
-                    >
-                      <span className="text-green-500 mt-0.5">✅</span>
-                      <span className="text-sm">{rec}</span>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium">Step Length</p>
+                      <p className="text-2xl font-bold">
+                        {currentSession.metrics.spatialMetrics.stepLength} cm
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      )}
+                    <div>
+                      <p className="text-sm font-medium">Cadence</p>
+                      <p className="text-2xl font-bold">
+                        {currentSession.metrics.temporalMetrics.cadence}{' '}
+                        steps/min
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Balance Score</p>
+                      <p className="text-2xl font-bold">
+                        {currentSession.metrics.stabilityMetrics.balanceScore}%
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Overall Status</p>
+                      <Badge variant="default">✅ Analysis Complete</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="metrics" className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">
+                      📏 Spatial Metrics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>Step Width:</span>
+                      <span className="font-mono">
+                        {currentSession.metrics.spatialMetrics.stepWidth} cm
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Step Length:</span>
+                      <span className="font-mono">
+                        {currentSession.metrics.spatialMetrics.stepLength} cm
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Stride Length:</span>
+                      <span className="font-mono">
+                        {currentSession.metrics.spatialMetrics.strideLength} cm
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Foot Clearance:</span>
+                      <span className="font-mono">
+                        {currentSession.metrics.spatialMetrics.footClearance} cm
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">
+                      ⏱️ Temporal Metrics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>Cadence:</span>
+                      <span className="font-mono">
+                        {currentSession.metrics.temporalMetrics.cadence}{' '}
+                        steps/min
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Swing Time:</span>
+                      <span className="font-mono">
+                        {currentSession.metrics.temporalMetrics.swingTime}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Stance Time:</span>
+                      <span className="font-mono">
+                        {currentSession.metrics.temporalMetrics.stanceTime}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Double Support:</span>
+                      <span className="font-mono">
+                        {
+                          currentSession.metrics.temporalMetrics
+                            .doubleSupportTime
+                        }
+                        %
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">
+                      ⚖️ Stability Metrics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>Lateral Variability:</span>
+                      <span className="font-mono">
+                        {
+                          currentSession.metrics.stabilityMetrics
+                            .lateralVariability
+                        }{' '}
+                        cm
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Posture Stability:</span>
+                      <span className="font-mono">
+                        {
+                          currentSession.metrics.stabilityMetrics
+                            .postureStability
+                        }
+                        %
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Balance Score:</span>
+                      <span className="font-mono">
+                        {currentSession.metrics.stabilityMetrics.balanceScore}%
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="recommendations" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <span>🎯</span>
+                    Personalized Recommendations
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {currentSession.recommendations.map((rec, index) => (
+                      <div
+                        key={`rec-${rec.slice(0, 20)}-${index}`}
+                        className="flex items-start gap-2"
+                      >
+                        <span className="mt-0.5 text-green-500">✅</span>
+                        <span className="text-sm">{rec}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        )}
 
       {/* Session History */}
       {sessionHistory.length > 0 && (
@@ -494,19 +528,24 @@ export function LiDARGaitAnalyzer({
               {sessionHistory.slice(0, 3).map((session) => (
                 <div
                   key={session.id}
-                  className="flex items-center justify-between p-2 rounded border"
+                  className="flex items-center justify-between rounded border p-2"
                 >
                   <div>
                     <p className="text-sm font-medium">
-                      {session.analysisType === 'quick' ? 'Quick' : 'Comprehensive'} Analysis
+                      {session.analysisType === 'quick'
+                        ? 'Quick'
+                        : 'Comprehensive'}{' '}
+                      Analysis
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       {session.startTime.toLocaleDateString()} at{' '}
                       {session.startTime.toLocaleTimeString()}
                     </p>
                   </div>
                   <Badge variant="outline">
-                    {session.status === 'completed' ? 'Completed' : 'In Progress'}
+                    {session.status === 'completed'
+                      ? 'Completed'
+                      : 'In Progress'}
                   </Badge>
                 </div>
               ))}

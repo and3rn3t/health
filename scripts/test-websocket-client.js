@@ -8,38 +8,44 @@ const ws = new WebSocket('ws://localhost:3001');
 
 ws.on('open', () => {
   console.log('✅ Connected to VitalSense WebSocket server');
-  
+
   // Send client identification
-  ws.send(JSON.stringify({
-    type: 'client_identification',
-    data: {
-      clientType: 'test_client',
-      userId: 'test-user',
-      version: '1.0.0',
-    },
-    timestamp: new Date().toISOString(),
-  }));
-  
-  // Subscribe to health updates
-  setTimeout(() => {
-    ws.send(JSON.stringify({
-      type: 'subscribe_health_updates',
+  ws.send(
+    JSON.stringify({
+      type: 'client_identification',
       data: {
-        metrics: ['heart_rate', 'steps', 'walking_steadiness'],
+        clientType: 'test_client',
         userId: 'test-user',
+        version: '1.0.0',
       },
       timestamp: new Date().toISOString(),
-    }));
+    })
+  );
+
+  // Subscribe to health updates
+  setTimeout(() => {
+    ws.send(
+      JSON.stringify({
+        type: 'subscribe_health_updates',
+        data: {
+          metrics: ['heart_rate', 'steps', 'walking_steadiness'],
+          userId: 'test-user',
+        },
+        timestamp: new Date().toISOString(),
+      })
+    );
   }, 1000);
-  
+
   // Send a ping every 10 seconds
   setInterval(() => {
     if (ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({
-        type: 'ping',
-        data: { timestamp: Date.now() },
-        timestamp: new Date().toISOString(),
-      }));
+      ws.send(
+        JSON.stringify({
+          type: 'ping',
+          data: { timestamp: Date.now() },
+          timestamp: new Date().toISOString(),
+        })
+      );
       console.log('📤 Sent ping');
     }
   }, 10000);
@@ -48,22 +54,25 @@ ws.on('open', () => {
 ws.on('message', (data) => {
   try {
     const message = JSON.parse(data.toString());
-    console.log(`📥 Received [${message.type}]:`, 
-      message.type === 'live_health_update' 
-        ? `${message.data.metrics?.length || 0} metrics from ${message.data.deviceId}` 
+    console.log(
+      `📥 Received [${message.type}]:`,
+      message.type === 'live_health_update'
+        ? `${message.data.metrics?.length || 0} metrics from ${message.data.deviceId}`
         : message.data
     );
-    
+
     // Log specific health data
     if (message.type === 'live_health_update' && message.data.metrics) {
-      message.data.metrics.forEach(metric => {
+      message.data.metrics.forEach((metric) => {
         console.log(`   💓 ${metric.type}: ${metric.value} ${metric.unit}`);
       });
     }
-    
+
     // Log emergency alerts
     if (message.type === 'emergency_alert') {
-      console.log(`🚨 EMERGENCY ALERT: ${message.data.alert.kind} - ${message.data.alert.message}`);
+      console.log(
+        `🚨 EMERGENCY ALERT: ${message.data.alert.kind} - ${message.data.alert.message}`
+      );
     }
   } catch (error) {
     console.error('❌ Error parsing message:', error.message);

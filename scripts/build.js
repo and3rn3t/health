@@ -38,7 +38,9 @@ try {
     );
     console.log('✅ CSS build completed with cssnano minification');
   } catch (minifyError) {
-    console.log('⚠️  CSS minification with cssnano failed, using unminified CSS');
+    console.log(
+      '⚠️  CSS minification with cssnano failed, using unminified CSS'
+    );
     console.log('✅ CSS build completed without minification');
   }
 } catch (error) {

@@ -25,12 +25,12 @@ We have successfully implemented comprehensive **real device sensor integration*
 
 ```typescript
 interface GaitMetrics {
-  speed: number;        // Actual walking speed in m/s
-  cadence: number;      // Real steps per minute
-  stepLength: number;   // Calculated step length in cm
-  rhythm: number;       // Consistency score 0-100
-  symmetry: number;     // Left-right balance 0-100
-  stability: number;    // Movement steadiness 0-100
+  speed: number; // Actual walking speed in m/s
+  cadence: number; // Real steps per minute
+  stepLength: number; // Calculated step length in cm
+  rhythm: number; // Consistency score 0-100
+  symmetry: number; // Left-right balance 0-100
+  stability: number; // Movement steadiness 0-100
   doubleSupport: number; // Walking phase analysis
 }
 ```
@@ -114,7 +114,7 @@ Gyroscope Data     Signal Processing    Metrics          Analyzer UI
 - **Step Length**: Estimated from acceleration magnitude (40-80 cm range)
 - **Gait Symmetry**: Left-right balance analysis (0-100% score)
 
-### Temporal Metrics  
+### Temporal Metrics
 
 - **Cadence**: Real step counting with peak detection (steps/minute)
 - **Rhythm Consistency**: Step timing regularity (0-100% score)

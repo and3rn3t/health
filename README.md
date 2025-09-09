@@ -1,12 +1,15 @@
 # 🏥 VitalSense - Apple Health Insights & Fall Risk Monitor
 
-> **A comprehensive health data analysis platform that transforms Apple Health data into actionable insights while providing proactive fall risk monitoring and emergency response capabilities.**
+> **A comprehensive health data analysis platform that transforms Apple Health data into actionable insights while providing proactive fall risk monitoring, real-time gait analysis, and emergency response capabilities.**
+
+**🚀 Now Live:** [https://health.andernet.dev](https://health.andernet.dev)
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-blue.svg)](https://reactjs.org/)
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-orange.svg)](https://workers.cloudflare.com/)
 [![iOS](https://img.shields.io/badge/iOS-16+-black.svg)](https://developer.apple.com/ios/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Production](https://img.shields.io/badge/Status-Live-brightgreen.svg)](https://health.andernet.dev)
 
 ## 🚀 Quick Start
 

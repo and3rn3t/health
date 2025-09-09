@@ -17,7 +17,9 @@ import { LiDARGaitAnalyzer } from './LiDARGaitAnalyzerClean';
 import { WalkingPatternVisualizer } from './WalkingPatternVisualizerClean';
 
 export function GaitDashboard() {
-  const [activeAnalysisMode, setActiveAnalysisMode] = useState<'overview' | 'lidar' | 'walking'>('overview');
+  const [activeAnalysisMode, setActiveAnalysisMode] = useState<
+    'overview' | 'lidar' | 'walking'
+  >('overview');
 
   return (
     <div className="space-y-6">
@@ -29,7 +31,8 @@ export function GaitDashboard() {
             Gait Analysis Dashboard
           </h1>
           <p className="text-muted-foreground mt-1">
-            Comprehensive walking pattern analysis using advanced sensors and real-time tracking
+            Comprehensive walking pattern analysis using advanced sensors and
+            real-time tracking
           </p>
         </div>
         <Badge variant="outline" className="text-xs">
@@ -45,25 +48,28 @@ export function GaitDashboard() {
             Analysis Mode
           </CardTitle>
           <CardDescription>
-            Choose your preferred analysis method based on available sensors and requirements
+            Choose your preferred analysis method based on available sensors and
+            requirements
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <Button
-              variant={activeAnalysisMode === 'overview' ? 'default' : 'outline'}
+              variant={
+                activeAnalysisMode === 'overview' ? 'default' : 'outline'
+              }
               onClick={() => setActiveAnalysisMode('overview')}
               className="h-auto flex-col gap-2 p-4"
             >
               <span className="text-lg">📊</span>
               <div className="text-center">
                 <div className="font-semibold">Overview</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   Quick insights and comparison
                 </div>
               </div>
             </Button>
-            
+
             <Button
               variant={activeAnalysisMode === 'lidar' ? 'default' : 'outline'}
               onClick={() => setActiveAnalysisMode('lidar')}
@@ -72,12 +78,12 @@ export function GaitDashboard() {
               <span className="text-lg">🎯</span>
               <div className="text-center">
                 <div className="font-semibold">LiDAR Analysis</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   High-precision depth sensing
                 </div>
               </div>
             </Button>
-            
+
             <Button
               variant={activeAnalysisMode === 'walking' ? 'default' : 'outline'}
               onClick={() => setActiveAnalysisMode('walking')}
@@ -86,7 +92,7 @@ export function GaitDashboard() {
               <span className="text-lg">👟</span>
               <div className="text-center">
                 <div className="font-semibold">Walking Tracker</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   Real-time movement analysis
                 </div>
               </div>
@@ -105,7 +111,9 @@ export function GaitDashboard() {
                 <CardContent className="pt-4">
                   <div className="text-center">
                     <p className="text-2xl font-bold">85%</p>
-                    <p className="text-xs text-muted-foreground">Gait Quality</p>
+                    <p className="text-muted-foreground text-xs">
+                      Gait Quality
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -113,7 +121,9 @@ export function GaitDashboard() {
                 <CardContent className="pt-4">
                   <div className="text-center">
                     <p className="text-2xl font-bold">1.4</p>
-                    <p className="text-xs text-muted-foreground">Avg Speed (m/s)</p>
+                    <p className="text-muted-foreground text-xs">
+                      Avg Speed (m/s)
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -121,7 +131,9 @@ export function GaitDashboard() {
                 <CardContent className="pt-4">
                   <div className="text-center">
                     <p className="text-2xl font-bold">95</p>
-                    <p className="text-xs text-muted-foreground">Cadence (steps/min)</p>
+                    <p className="text-muted-foreground text-xs">
+                      Cadence (steps/min)
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -129,7 +141,9 @@ export function GaitDashboard() {
                 <CardContent className="pt-4">
                   <div className="text-center">
                     <p className="text-2xl font-bold">78%</p>
-                    <p className="text-xs text-muted-foreground">Balance Score</p>
+                    <p className="text-muted-foreground text-xs">
+                      Balance Score
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -140,18 +154,20 @@ export function GaitDashboard() {
               <CardHeader>
                 <CardTitle>Choose Your Analysis Method</CardTitle>
                 <CardDescription>
-                  Select the appropriate analysis tool based on your device capabilities and analysis needs
+                  Select the appropriate analysis tool based on your device
+                  capabilities and analysis needs
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-3 p-4 border rounded-lg">
+                  <div className="space-y-3 rounded-lg border p-4">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">🎯</span>
                       <h3 className="font-semibold">LiDAR Gait Analysis</h3>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      High-precision analysis using LiDAR depth sensing technology for detailed spatial metrics
+                    <p className="text-muted-foreground text-sm">
+                      High-precision analysis using LiDAR depth sensing
+                      technology for detailed spatial metrics
                     </p>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-xs">
@@ -167,23 +183,26 @@ export function GaitDashboard() {
                         <span>Posture stability assessment</span>
                       </div>
                     </div>
-                    <Button 
+                    <Button
                       onClick={() => setActiveAnalysisMode('lidar')}
-                      variant="outline" 
-                      size="sm" 
+                      variant="outline"
+                      size="sm"
                       className="w-full"
                     >
                       Start LiDAR Analysis
                     </Button>
                   </div>
 
-                  <div className="space-y-3 p-4 border rounded-lg">
+                  <div className="space-y-3 rounded-lg border p-4">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">👟</span>
-                      <h3 className="font-semibold">Walking Pattern Tracking</h3>
+                      <h3 className="font-semibold">
+                        Walking Pattern Tracking
+                      </h3>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Real-time movement tracking using accelerometer and gyroscope for rhythm and symmetry analysis
+                    <p className="text-muted-foreground text-sm">
+                      Real-time movement tracking using accelerometer and
+                      gyroscope for rhythm and symmetry analysis
                     </p>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-xs">
@@ -199,10 +218,10 @@ export function GaitDashboard() {
                         <span>Gait symmetry assessment</span>
                       </div>
                     </div>
-                    <Button 
+                    <Button
                       onClick={() => setActiveAnalysisMode('walking')}
-                      variant="outline" 
-                      size="sm" 
+                      variant="outline"
+                      size="sm"
                       className="w-full"
                     >
                       Start Walking Tracker
@@ -222,24 +241,36 @@ export function GaitDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 border rounded">
+                  <div className="flex items-center justify-between rounded border p-3">
                     <div>
-                      <p className="font-medium text-sm">LiDAR Analysis Session</p>
-                      <p className="text-xs text-muted-foreground">Today at 2:30 PM • 5 minutes</p>
+                      <p className="text-sm font-medium">
+                        LiDAR Analysis Session
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        Today at 2:30 PM • 5 minutes
+                      </p>
                     </div>
                     <Badge variant="outline">87% Quality</Badge>
                   </div>
-                  <div className="flex items-center justify-between p-3 border rounded">
+                  <div className="flex items-center justify-between rounded border p-3">
                     <div>
-                      <p className="font-medium text-sm">Walking Pattern Session</p>
-                      <p className="text-xs text-muted-foreground">Today at 1:15 PM • 12 minutes</p>
+                      <p className="text-sm font-medium">
+                        Walking Pattern Session
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        Today at 1:15 PM • 12 minutes
+                      </p>
                     </div>
                     <Badge variant="outline">82% Quality</Badge>
                   </div>
-                  <div className="flex items-center justify-between p-3 border rounded">
+                  <div className="flex items-center justify-between rounded border p-3">
                     <div>
-                      <p className="font-medium text-sm">Comprehensive Analysis</p>
-                      <p className="text-xs text-muted-foreground">Yesterday at 4:45 PM • 30 minutes</p>
+                      <p className="text-sm font-medium">
+                        Comprehensive Analysis
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        Yesterday at 4:45 PM • 30 minutes
+                      </p>
                     </div>
                     <Badge variant="outline">91% Quality</Badge>
                   </div>
@@ -252,8 +283,8 @@ export function GaitDashboard() {
         {activeAnalysisMode === 'lidar' && (
           <div>
             <div className="mb-4">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 onClick={() => setActiveAnalysisMode('overview')}
                 className="gap-2"
               >
@@ -267,8 +298,8 @@ export function GaitDashboard() {
         {activeAnalysisMode === 'walking' && (
           <div>
             <div className="mb-4">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 onClick={() => setActiveAnalysisMode('overview')}
                 className="gap-2"
               >

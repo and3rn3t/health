@@ -80,9 +80,20 @@ export class DeviceSensorManager {
     };
 
     // Check for permissions API (iOS 13+ requirement)
-    if ('DeviceMotionEvent' in window && typeof (DeviceMotionEvent as unknown as { requestPermission: () => Promise<string> }).requestPermission === 'function') {
+    if (
+      'DeviceMotionEvent' in window &&
+      typeof (
+        DeviceMotionEvent as unknown as {
+          requestPermission: () => Promise<string>;
+        }
+      ).requestPermission === 'function'
+    ) {
       try {
-        const permission = await (DeviceMotionEvent as unknown as { requestPermission: () => Promise<string> }).requestPermission();
+        const permission = await (
+          DeviceMotionEvent as unknown as {
+            requestPermission: () => Promise<string>;
+          }
+        ).requestPermission();
         availability.permissions = permission === 'granted';
       } catch (error) {
         console.warn('Motion permission request failed:', error);
@@ -98,15 +109,39 @@ export class DeviceSensorManager {
   // Request sensor permissions (required for iOS 13+)
   static async requestSensorPermissions(): Promise<boolean> {
     try {
-      if ('DeviceMotionEvent' in window && typeof (DeviceMotionEvent as unknown as { requestPermission: () => Promise<string> }).requestPermission === 'function') {
-        const motionPermission = await (DeviceMotionEvent as unknown as { requestPermission: () => Promise<string> }).requestPermission();
-        
+      if (
+        'DeviceMotionEvent' in window &&
+        typeof (
+          DeviceMotionEvent as unknown as {
+            requestPermission: () => Promise<string>;
+          }
+        ).requestPermission === 'function'
+      ) {
+        const motionPermission = await (
+          DeviceMotionEvent as unknown as {
+            requestPermission: () => Promise<string>;
+          }
+        ).requestPermission();
+
         let orientationPermission = 'granted';
-        if ('DeviceOrientationEvent' in window && typeof (DeviceOrientationEvent as unknown as { requestPermission: () => Promise<string> }).requestPermission === 'function') {
-          orientationPermission = await (DeviceOrientationEvent as unknown as { requestPermission: () => Promise<string> }).requestPermission();
+        if (
+          'DeviceOrientationEvent' in window &&
+          typeof (
+            DeviceOrientationEvent as unknown as {
+              requestPermission: () => Promise<string>;
+            }
+          ).requestPermission === 'function'
+        ) {
+          orientationPermission = await (
+            DeviceOrientationEvent as unknown as {
+              requestPermission: () => Promise<string>;
+            }
+          ).requestPermission();
         }
 
-        return motionPermission === 'granted' && orientationPermission === 'granted';
+        return (
+          motionPermission === 'granted' && orientationPermission === 'granted'
+        );
       }
       return true;
     } catch (error) {
@@ -154,7 +189,10 @@ export class DeviceSensorManager {
 
     this.isActive = false;
     window.removeEventListener('devicemotion', this.handleDeviceMotion);
-    window.removeEventListener('deviceorientation', this.handleDeviceOrientation);
+    window.removeEventListener(
+      'deviceorientation',
+      this.handleDeviceOrientation
+    );
 
     console.log('Sensor monitoring stopped');
   }
@@ -189,7 +227,9 @@ export class DeviceSensorManager {
 
       // Gait analysis (every 100 samples)
       if (this.accelerometerData.length % 100 === 0) {
-        const gaitMetrics = this.gaitAnalyzer.analyzeGait(this.accelerometerData.slice(-100));
+        const gaitMetrics = this.gaitAnalyzer.analyzeGait(
+          this.accelerometerData.slice(-100)
+        );
         if (gaitMetrics && this.callbacks.onGaitMetrics) {
           this.callbacks.onGaitMetrics(gaitMetrics);
         }
@@ -198,7 +238,12 @@ export class DeviceSensorManager {
 
     // Handle gyroscope data
     const rotation = event.rotationRate;
-    if (rotation && rotation.alpha !== null && rotation.beta !== null && rotation.gamma !== null) {
+    if (
+      rotation &&
+      rotation.alpha !== null &&
+      rotation.beta !== null &&
+      rotation.gamma !== null
+    ) {
       const gyroscopeData: GyroscopeData = {
         alpha: rotation.alpha,
         beta: rotation.beta,
@@ -213,14 +258,17 @@ export class DeviceSensorManager {
 
       // Call sensor data callback if set
       if (this.callbacks.onSensorData && this.accelerometerData.length > 0) {
-        const latestAccel = this.accelerometerData[this.accelerometerData.length - 1];
+        const latestAccel =
+          this.accelerometerData[this.accelerometerData.length - 1];
         this.callbacks.onSensorData(latestAccel, gyroscopeData);
       }
     }
   };
 
   // Handle device orientation events
-  private readonly handleDeviceOrientation = (event: DeviceOrientationEvent): void => {
+  private readonly handleDeviceOrientation = (
+    event: DeviceOrientationEvent
+  ): void => {
     if (!this.isActive) return;
     // Additional orientation processing can be added here
   };
@@ -263,24 +311,28 @@ class StepDetector {
     // Simple peak detection algorithm
     if (magnitude > this.lastPeak + this.threshold) {
       this.lastPeak = magnitude;
-    } else if (magnitude < this.lastPeak - this.threshold && this.lastPeak > this.threshold) {
+    } else if (
+      magnitude < this.lastPeak - this.threshold &&
+      this.lastPeak > this.threshold
+    ) {
       // Detected a step
       this.stepCount++;
       this.stepTimes.push(timestamp);
-      
+
       // Keep only last 20 steps for cadence calculation
       if (this.stepTimes.length > 20) {
         this.stepTimes.shift();
       }
 
-      const stepInterval = this.lastStepTime > 0 ? timestamp - this.lastStepTime : 0;
+      const stepInterval =
+        this.lastStepTime > 0 ? timestamp - this.lastStepTime : 0;
       this.lastStepTime = timestamp;
 
       // Calculate cadence (steps per minute)
       const cadence = this.calculateCadence();
 
       this.lastPeak = magnitude;
-      
+
       return {
         stepCount: this.stepCount,
         cadence,
@@ -295,11 +347,12 @@ class StepDetector {
   private calculateCadence(): number {
     if (this.stepTimes.length < 2) return 0;
 
-    const timeSpan = this.stepTimes[this.stepTimes.length - 1] - this.stepTimes[0];
+    const timeSpan =
+      this.stepTimes[this.stepTimes.length - 1] - this.stepTimes[0];
     const steps = this.stepTimes.length - 1;
-    
+
     if (timeSpan <= 0) return 0;
-    
+
     // Convert to steps per minute
     return (steps / (timeSpan / 1000)) * 60;
   }
@@ -351,10 +404,13 @@ class GaitAnalyzer {
       const next = data[i + 1];
 
       // Detect peak in magnitude (step event)
-      if (current.magnitude > prev.magnitude && 
-          current.magnitude > next.magnitude && 
-          current.magnitude > 1.5 && // Threshold for step detection
-          (current.timestamp - this.lastStepTime) > 300) { // Minimum 300ms between steps
+      if (
+        current.magnitude > prev.magnitude &&
+        current.magnitude > next.magnitude &&
+        current.magnitude > 1.5 && // Threshold for step detection
+        current.timestamp - this.lastStepTime > 300
+      ) {
+        // Minimum 300ms between steps
         this.stepCount++;
         this.lastStepTime = current.timestamp;
       }
@@ -363,39 +419,43 @@ class GaitAnalyzer {
 
   private calculateCadence(): number {
     const sessionDurationMinutes = (Date.now() - this.sessionStartTime) / 60000;
-    return sessionDurationMinutes > 0 ? Math.round(this.stepCount / sessionDurationMinutes) : 0;
+    return sessionDurationMinutes > 0
+      ? Math.round(this.stepCount / sessionDurationMinutes)
+      : 0;
   }
 
   private calculateSpeed(data: AccelerometerData[]): number {
     // Estimate walking speed based on acceleration patterns
-    const avgMagnitude = data.reduce((sum, d) => sum + d.magnitude, 0) / data.length;
+    const avgMagnitude =
+      data.reduce((sum, d) => sum + d.magnitude, 0) / data.length;
     return Math.max(0, Math.min(3, avgMagnitude * 0.1)); // 0-3 m/s range
   }
 
   private calculateRhythm(data: AccelerometerData[]): number {
     // Analyze rhythm regularity (0-100 scale)
-    const magnitudes = data.map(d => d.magnitude);
+    const magnitudes = data.map((d) => d.magnitude);
     const variance = this.calculateVariance(magnitudes);
     return Math.max(0, Math.min(100, 100 - variance * 10));
   }
 
   private calculateSymmetry(data: AccelerometerData[]): number {
     // Analyze left-right symmetry based on lateral acceleration
-    const lateralAccel = data.map(d => Math.abs(d.x));
+    const lateralAccel = data.map((d) => Math.abs(d.x));
     const symmetryScore = 100 - this.calculateVariance(lateralAccel) * 20;
     return Math.max(0, Math.min(100, symmetryScore));
   }
 
   private calculateStability(data: AccelerometerData[]): number {
     // Analyze stability based on vertical acceleration consistency
-    const verticalAccel = data.map(d => Math.abs(d.z));
+    const verticalAccel = data.map((d) => Math.abs(d.z));
     const stability = 100 - this.calculateVariance(verticalAccel) * 15;
     return Math.max(0, Math.min(100, stability));
   }
 
   private estimateStepLength(data: AccelerometerData[]): number {
     // Estimate step length based on acceleration patterns
-    const avgMagnitude = data.reduce((sum, d) => sum + d.magnitude, 0) / data.length;
+    const avgMagnitude =
+      data.reduce((sum, d) => sum + d.magnitude, 0) / data.length;
     return Math.max(40, Math.min(80, 50 + avgMagnitude * 2)); // 40-80 cm range
   }
 
@@ -406,7 +466,8 @@ class GaitAnalyzer {
 
   private calculateVariance(values: number[]): number {
     const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
-    const variance = values.reduce((sum, val) => sum + (val - mean) ** 2, 0) / values.length;
+    const variance =
+      values.reduce((sum, val) => sum + (val - mean) ** 2, 0) / values.length;
     return Math.sqrt(variance);
   }
 }

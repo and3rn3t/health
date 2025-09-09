@@ -16,7 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useKV } from '@/hooks/useCloudflareKV';
 import { recordTelemetry } from '@/lib/telemetry';
 import { Contact, ProcessedHealthData } from '@/types';
@@ -66,12 +65,12 @@ import HealthGameCenter from '@/components/gamification/HealthGameCenter';
 import Footer from '@/components/Footer';
 import AIRecommendations from '@/components/health/AIRecommendations';
 import CommunityShare from '@/components/health/CommunityShare';
+import { EnhancedGaitAnalyzer } from '@/components/health/EnhancedGaitAnalyzer';
 import FamilyDashboard from '@/components/health/FamilyDashboard';
+import { GaitDashboard } from '@/components/health/GaitDashboardClean';
 import HealthcarePortal from '@/components/health/HealthcarePortal';
 import HealthSearch from '@/components/health/HealthSearch';
 import HealthSystemIntegration from '@/components/health/HealthSystemIntegration';
-import { GaitDashboard } from '@/components/health/GaitDashboardClean';
-import { EnhancedGaitAnalyzer } from '@/components/health/EnhancedGaitAnalyzer';
 import MLPredictionsDashboard from '@/components/health/MLPredictionsDashboard';
 import MovementPatternAnalysis from '@/components/health/MovementPatternAnalysis';
 import RealTimeFallDetection from '@/components/health/RealTimeFallDetection';
@@ -148,12 +147,12 @@ const Sidebar = ({
 
   return (
     <div
-      className="fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-slate-200 bg-white transition-all duration-300 ease-in-out"
+      className="bg-card fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-border transition-all duration-300 ease-in-out"
       style={{ width: sidebarCollapsed ? '64px' : '256px' }}
     >
       <div className="flex h-full flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex-shrink-0 border-b border-slate-200 p-3">
+        <div className="flex-shrink-0 border-b border-border p-3">
           <div className="flex items-center justify-between">
             {!sidebarCollapsed && (
               <div className="flex items-center gap-2">
@@ -216,7 +215,7 @@ const Sidebar = ({
                     className={`
                     h-10
                     ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                   `}
                     style={
                       sidebarCollapsed
@@ -262,7 +261,7 @@ const Sidebar = ({
                     className={`
                     h-10
                     ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                   `}
                     style={
                       sidebarCollapsed
@@ -308,7 +307,7 @@ const Sidebar = ({
                     className={`
                     h-10
                     ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                   `}
                     style={
                       sidebarCollapsed
@@ -354,7 +353,7 @@ const Sidebar = ({
                     className={`
                     h-10
                     ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                   `}
                     style={
                       sidebarCollapsed
@@ -400,7 +399,7 @@ const Sidebar = ({
                     className={`
                     h-10
                     ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                   `}
                     style={
                       sidebarCollapsed
@@ -446,7 +445,7 @@ const Sidebar = ({
                     className={`
                     h-10
                     ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                   `}
                     style={
                       sidebarCollapsed
@@ -492,7 +491,7 @@ const Sidebar = ({
                     className={`
                     h-10
                     ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                   `}
                     style={
                       sidebarCollapsed
@@ -538,7 +537,7 @@ const Sidebar = ({
                     className={`
                     h-10
                     ${sidebarCollapsed ? 'w-10 justify-center px-0' : 'w-full justify-start px-3'}
-                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-slate-100'}
+                    ${isActive ? 'bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light' : 'hover:bg-muted'}
                   `}
                     style={
                       sidebarCollapsed
@@ -568,7 +567,7 @@ const Sidebar = ({
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-slate-200 p-4">
+        <div className="border-t border-border p-4">
           {/* Theme mode toggle */}
           <div className="mb-3">
             <Button
@@ -576,9 +575,9 @@ const Sidebar = ({
               size="sm"
               onClick={toggleThemeMode}
               className={`
-              h-8 w-full justify-start
+              hover:bg-muted h-8 w-full
+              justify-start
               px-3
-              hover:bg-slate-100
             `}
             >
               {themeMode === 'dark' && (
@@ -637,103 +636,107 @@ function App() {
 
   // Development mode: Load comprehensive test data
   useEffect(() => {
-    if (import.meta.env.DEV && !healthData) {
-      const testHealthData: ProcessedHealthData = {
-        healthScore: 78,
-        lastUpdated: new Date().toISOString(),
-        dataQuality: {
-          completeness: 92,
-          consistency: 88,
-          recency: 95,
-          overall: 'excellent',
-        },
-        metrics: {
-          steps: {
-            daily: [],
-            weekly: [],
-            monthly: [],
-            average: 8750,
-            lastValue: 9234,
-            trend: 'increasing',
-            variability: 12.5,
-            reliability: 94,
-            percentileRank: 75,
+    if (import.meta.env.DEV) {
+      console.log('🔍 DEV mode detected, healthData state:', healthData);
+      if (!healthData) {
+        const testHealthData: ProcessedHealthData = {
+          healthScore: 78,
+          lastUpdated: new Date().toISOString(),
+          dataQuality: {
+            completeness: 92,
+            consistency: 88,
+            recency: 95,
+            overall: 'excellent',
           },
-          heartRate: {
-            daily: [],
-            weekly: [],
-            monthly: [],
-            average: 72,
-            lastValue: 68,
-            trend: 'stable',
-            variability: 8.2,
-            reliability: 91,
-            percentileRank: 82,
+          metrics: {
+            steps: {
+              daily: [],
+              weekly: [],
+              monthly: [],
+              average: 8750,
+              lastValue: 9234,
+              trend: 'increasing',
+              variability: 12.5,
+              reliability: 94,
+              percentileRank: 75,
+            },
+            heartRate: {
+              daily: [],
+              weekly: [],
+              monthly: [],
+              average: 72,
+              lastValue: 68,
+              trend: 'stable',
+              variability: 8.2,
+              reliability: 91,
+              percentileRank: 82,
+            },
+            sleepHours: {
+              daily: [],
+              weekly: [],
+              monthly: [],
+              average: 7.2,
+              lastValue: 7.8,
+              trend: 'increasing',
+              variability: 15.3,
+              reliability: 87,
+              percentileRank: 68,
+            },
+            walkingSteadiness: {
+              daily: [],
+              weekly: [],
+              monthly: [],
+              average: 3.2,
+              lastValue: 3.4,
+              trend: 'increasing',
+              variability: 6.3,
+              reliability: 89,
+              percentileRank: 71,
+            },
+            bodyWeight: {
+              daily: [],
+              weekly: [],
+              monthly: [],
+              average: 165.3,
+              lastValue: 164.8,
+              trend: 'decreasing',
+              variability: 2.1,
+              reliability: 96,
+              percentileRank: 58,
+            },
           },
-          sleepHours: {
-            daily: [],
-            weekly: [],
-            monthly: [],
-            average: 7.2,
-            lastValue: 7.8,
-            trend: 'increasing',
-            variability: 15.3,
-            reliability: 87,
-            percentileRank: 68,
-          },
-          walkingSteadiness: {
-            daily: [],
-            weekly: [],
-            monthly: [],
-            average: 3.2,
-            lastValue: 3.4,
-            trend: 'increasing',
-            variability: 6.3,
-            reliability: 89,
-            percentileRank: 71,
-          },
-          bodyWeight: {
-            daily: [],
-            weekly: [],
-            monthly: [],
-            average: 165.3,
-            lastValue: 164.8,
-            trend: 'decreasing',
-            variability: 2.1,
-            reliability: 96,
-            percentileRank: 58,
-          },
-        },
-        fallRiskFactors: [
-          {
-            factor: 'Walking Speed',
-            risk: 'low',
-            impact: 15,
-            recommendation: 'Walking speed is above safe threshold',
-          },
-          {
-            factor: 'Balance Stability',
-            risk: 'moderate',
-            impact: 35,
-            recommendation: 'Slight decrease in balance stability detected',
-          },
-          {
-            factor: 'Medication Effects',
-            risk: 'low',
-            impact: 10,
-            recommendation: 'Current medications have minimal fall risk impact',
-          },
-        ],
-        insights: [
-          'Your sleep quality has improved by 8% this week. Keep up the consistent bedtime routine!',
-          'Recent balance stability readings suggest scheduling a balance assessment.',
-          "You're exceeding your daily step goal by 12%. Great progress!",
-          'Your resting heart rate has improved, indicating better cardiovascular fitness.',
-        ],
-      };
+          fallRiskFactors: [
+            {
+              factor: 'Walking Speed',
+              risk: 'low',
+              impact: 15,
+              recommendation: 'Walking speed is above safe threshold',
+            },
+            {
+              factor: 'Balance Stability',
+              risk: 'moderate',
+              impact: 35,
+              recommendation: 'Slight decrease in balance stability detected',
+            },
+            {
+              factor: 'Medication Effects',
+              risk: 'low',
+              impact: 10,
+              recommendation:
+                'Current medications have minimal fall risk impact',
+            },
+          ],
+          insights: [
+            'Your sleep quality has improved by 8% this week. Keep up the consistent bedtime routine!',
+            'Recent balance stability readings suggest scheduling a balance assessment.',
+            "You're exceeding your daily step goal by 12%. Great progress!",
+            'Your resting heart rate has improved, indicating better cardiovascular fitness.',
+          ],
+        };
 
-      console.log('🎯 Loading development test data...');
-      setHealthData(testHealthData);
+        console.log('🎯 Loading development test data...');
+        setHealthData(testHealthData);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [healthData]); // setHealthData is stable from useKV
@@ -791,6 +794,13 @@ function App() {
   }, [emergencyContacts]); // setEmergencyContacts is stable from useKV
 
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  // Debug logging for tab changes
+  useEffect(() => {
+    console.log(`[DEBUG] Active tab changed to: ${activeTab}`);
+    console.log(`[DEBUG] Has health data: ${healthData ? 'yes' : 'no'}`);
+    console.log(`[DEBUG] Dev mode: ${import.meta.env.DEV}`);
+  }, [activeTab, healthData]);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useKV<boolean>(
     'sidebar-collapsed',
@@ -862,8 +872,8 @@ function App() {
   //   return themeMode
   // }
 
-  const hasHealthData =
-    healthData?.metrics && Object.keys(healthData.metrics).length > 0;
+  const hasHealthData = true; // Force to true for debugging
+  // (healthData?.metrics && Object.keys(healthData.metrics).length > 0) || true; // Always show content for testing - was: import.meta.env.DEV;
 
   // Dev-only telemetry panel state (persisted)
   const [showTelemetry, setShowTelemetry] = useKV<boolean>(
@@ -880,7 +890,11 @@ function App() {
       { id: 'posture-analysis', label: 'Posture Analysis', icon: Activity },
       { id: 'walking-patterns', label: 'Walking Patterns', icon: Activity },
       { id: 'gait-analysis', label: 'Gait Analysis', icon: Target },
-      { id: 'real-sensor-gait', label: 'Real Sensor Analysis', icon: Smartphone },
+      {
+        id: 'real-sensor-gait',
+        label: 'Real Sensor Analysis',
+        icon: Smartphone,
+      },
       { id: 'emergency', label: 'Emergency Alert', icon: AlertTriangle },
       { id: 'recommendations', label: 'Recommendations', icon: Lightbulb },
       { id: 'smart-notifications', label: 'Smart Notifications', icon: Bell },
@@ -967,7 +981,7 @@ function App() {
 
   const currentPageInfo = getCurrentPageInfo();
   return (
-    <div className="flex min-h-screen bg-vitalsense-bg-light">
+    <div className="flex min-h-screen bg-background">
       {/* Sidebar for larger screens */}
       <Sidebar
         sidebarCollapsed={sidebarCollapsed}
@@ -989,7 +1003,7 @@ function App() {
         }}
       >
         {/* Mobile Header - only show when sidebar would be hidden */}
-        <header className="block border-b bg-vitalsense-card-light lg:hidden">
+        <header className="bg-card block border-b lg:hidden">
           <div className="px-4 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1054,6 +1068,19 @@ function App() {
           className="thin-scrollbar flex-1 overflow-y-auto px-6 pb-6 pt-6"
           style={{ paddingTop: '2rem' }}
         >
+          {/* TEMPORARY TEST - If you see this, builds are working */}
+          <div
+            style={{
+              background: 'red',
+              color: 'white',
+              padding: '10px',
+              margin: '10px 0',
+            }}
+          >
+            🚨 TEST MESSAGE - hasHealthData = {String(hasHealthData)} -
+            activeTab = {activeTab}
+          </div>
+
           {!hasHealthData ? (
             <div
               className="mx-auto mt-6 max-w-2xl"
@@ -1109,30 +1136,32 @@ function App() {
 
               {/* Mobile Navigation */}
               <div className="lg:hidden">
-                <Tabs
-                  value={activeTab}
-                  onValueChange={setActiveTab}
-                  className="space-y-4"
-                >
+                <div className="space-y-4">
                   {/* Primary Navigation - Main Features */}
                   <div>
-                    <TabsList className="grid h-auto w-full grid-cols-2 gap-1 p-1 sm:grid-cols-3">
+                    <div className="bg-muted grid h-auto w-full grid-cols-2 gap-1 rounded-lg p-1 sm:grid-cols-3">
                       {navigationItems.main.slice(0, 6).map((item) => {
                         const IconComponent = item.icon;
                         return (
-                          <TabsTrigger
+                          <Button
                             key={item.id}
-                            value={item.id}
-                            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex min-h-12 flex-col items-center gap-1 px-1 py-2 text-xs"
+                            variant={
+                              activeTab === item.id ? 'default' : 'ghost'
+                            }
+                            onClick={() => {
+                              console.log(`[DEBUG] Button clicked: ${item.id}`);
+                              setActiveTab(item.id);
+                            }}
+                            className="flex min-h-12 flex-col items-center gap-1 px-1 py-2 text-xs"
                           >
                             <IconComponent className="h-4 w-4" />
                             <span className="text-center text-xs leading-tight">
                               {item.label}
                             </span>
-                          </TabsTrigger>
+                          </Button>
                         );
                       })}
-                    </TabsList>
+                    </div>
                   </div>
 
                   {/* Compact Feature Categories */}
@@ -1318,11 +1347,40 @@ function App() {
                       </div>
                     </div>
                   </div>
-                </Tabs>
+                </div>
               </div>
 
               {/* Content Area */}
               <div className="space-y-6">
+                {/* DEBUG INFO - Remove when fixed */}
+                <Card className="border-red-500 bg-red-50 dark:bg-red-900/20">
+                  <CardContent className="pt-4">
+                    <div className="text-sm">
+                      <p>
+                        <strong>Debug Info:</strong>
+                      </p>
+                      <p>
+                        Active Tab:{' '}
+                        <code className="rounded bg-gray-100 px-1">
+                          {activeTab}
+                        </code>
+                      </p>
+                      <p>
+                        Has Health Data:{' '}
+                        <code className="rounded bg-gray-100 px-1">
+                          {String(!!healthData)}
+                        </code>
+                      </p>
+                      <p>
+                        hasHealthData:{' '}
+                        <code className="rounded bg-gray-100 px-1">
+                          {String(hasHealthData)}
+                        </code>
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {activeTab === 'dashboard' && healthData && (
                   <LandingPage
                     healthData={healthData}
@@ -1387,12 +1445,8 @@ function App() {
                 {activeTab === 'movement-patterns' && healthData && (
                   <MovementPatternAnalysis healthData={healthData} />
                 )}
-                {activeTab === 'gait-analysis' && (
-                  <GaitDashboard />
-                )}
-                {activeTab === 'real-sensor-gait' && (
-                  <EnhancedGaitAnalyzer />
-                )}
+                {activeTab === 'gait-analysis' && <GaitDashboard />}
+                {activeTab === 'real-sensor-gait' && <EnhancedGaitAnalyzer />}
                 {activeTab === 'realtime' && <RealTimeFallDetection />}
                 {activeTab === 'enhanced-health-system' && (
                   <HealthSystemIntegration
@@ -1472,6 +1526,69 @@ function App() {
                 {activeTab === 'integration-checklist' && (
                   <AppleWatchIntegrationChecklist />
                 )}
+
+                {/* Debug fallback - temporary */}
+                {![
+                  'dashboard',
+                  'user-profile',
+                  'insights',
+                  'usage-analytics',
+                  'usage-predictions',
+                  'recommendations',
+                  'engagement-optimizer',
+                  'smart-notifications',
+                  'realtime-scoring',
+                  'analytics',
+                  'fall-risk',
+                  'emergency',
+                  'alerts',
+                  'predictive-alerts',
+                  'search',
+                  'ai-recommendations',
+                  'ml-predictions',
+                  'movement-patterns',
+                  'gait-analysis',
+                  'real-sensor-gait',
+                  'realtime',
+                  'enhanced-health-system',
+                  'monitoring-hub',
+                  'live-integration',
+                  'advanced-Watch',
+                  'history',
+                  'game-center',
+                  'family-challenges',
+                  'family',
+                  'community',
+                  'upload',
+                  'import',
+                  'export',
+                  'settings',
+                  'healthkit-guide',
+                  'websocket-guide',
+                  'integration-checklist',
+                ].includes(activeTab) && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Debug Info</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>
+                        Active tab: <code>{activeTab}</code>
+                      </p>
+                      <p>
+                        Has health data:{' '}
+                        <code>{healthData ? 'true' : 'false'}</code>
+                      </p>
+                      <p>
+                        Dev mode: <code>{String(import.meta.env.DEV)}</code>
+                      </p>
+                      <p>
+                        If you see this, the tab '{activeTab}' is not rendering
+                        any content.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </div>
           )}
@@ -1510,7 +1627,7 @@ function App() {
             {showTelemetry ? 'Close Telemetry' : 'Telemetry'}
           </button>
           {showTelemetry && (
-            <div className="fixed bottom-16 right-4 z-50 max-h-[70vh] w-[380px] overflow-hidden rounded-lg border border-slate-200 bg-vitalsense-bg-light shadow-xl">
+            <div className="fixed bottom-16 right-4 z-50 max-h-[70vh] w-[380px] overflow-hidden rounded-lg border border-border bg-background shadow-xl">
               <div className="h-full overflow-y-auto p-2">
                 {/* Import dynamically to avoid impacting initial bundle size if desired */}
                 <TelemetryPanel showNormalizationStats limit={120} />

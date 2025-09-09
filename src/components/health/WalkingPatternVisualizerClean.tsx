@@ -54,16 +54,18 @@ export function WalkingPatternVisualizer() {
     if (!isTracking) return;
 
     const interval = setInterval(() => {
-      setCurrentMetrics(prev => ({
+      setCurrentMetrics((prev) => ({
         stepCount: prev.stepCount + Math.floor(Math.random() * 3) + 1,
-        distance: parseFloat((prev.distance + (Math.random() * 0.1) + 0.05).toFixed(2)),
+        distance: parseFloat(
+          (prev.distance + Math.random() * 0.1 + 0.05).toFixed(2)
+        ),
         speed: parseFloat((1.2 + Math.random() * 0.8).toFixed(1)), // 1.2-2.0 m/s
         rhythm: Math.floor(85 + Math.random() * 30), // 85-115 steps/min
         symmetry: Math.floor(70 + Math.random() * 25), // 70-95%
         stability: Math.floor(65 + Math.random() * 30), // 65-95%
       }));
 
-      setTrackingDuration(prev => prev + 1);
+      setTrackingDuration((prev) => prev + 1);
     }, 1000);
 
     return () => clearInterval(interval);
@@ -72,7 +74,9 @@ export function WalkingPatternVisualizer() {
   // Calculate quality score based on metrics
   useEffect(() => {
     const { rhythm, symmetry, stability } = currentMetrics;
-    const score = Math.round((rhythm * 0.4 + symmetry * 0.3 + stability * 0.3) / 100 * 100);
+    const score = Math.round(
+      ((rhythm * 0.4 + symmetry * 0.3 + stability * 0.3) / 100) * 100
+    );
     setQualityScore(Math.min(score, 100));
   }, [currentMetrics]);
 
@@ -92,7 +96,7 @@ export function WalkingPatternVisualizer() {
 
   const stopTracking = () => {
     setIsTracking(false);
-    
+
     // Save session
     const session: WalkingSession = {
       id: `session-${Date.now()}`,
@@ -103,7 +107,7 @@ export function WalkingPatternVisualizer() {
       recommendations: generateRecommendations(),
     };
 
-    setSessionHistory(prev => [session, ...prev.slice(0, 9)]);
+    setSessionHistory((prev) => [session, ...prev.slice(0, 9)]);
   };
 
   const generateRecommendations = (): string[] => {
@@ -114,13 +118,19 @@ export function WalkingPatternVisualizer() {
       recommendations.push('Try to increase your walking pace slightly');
     }
     if (symmetry < 80) {
-      recommendations.push('Focus on maintaining equal stride length for both legs');
+      recommendations.push(
+        'Focus on maintaining equal stride length for both legs'
+      );
     }
     if (stability < 75) {
-      recommendations.push('Consider balance exercises to improve walking stability');
+      recommendations.push(
+        'Consider balance exercises to improve walking stability'
+      );
     }
     if (recommendations.length === 0) {
-      recommendations.push('Excellent walking pattern! Keep up the great work.');
+      recommendations.push(
+        'Excellent walking pattern! Keep up the great work.'
+      );
     }
 
     return recommendations;
@@ -162,7 +172,9 @@ export function WalkingPatternVisualizer() {
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-sm font-medium">Session Duration</p>
-              <p className="text-2xl font-bold">{formatTime(trackingDuration)}</p>
+              <p className="text-2xl font-bold">
+                {formatTime(trackingDuration)}
+              </p>
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium">Quality Score</p>
@@ -176,7 +188,11 @@ export function WalkingPatternVisualizer() {
                 ▶️ Start Tracking
               </Button>
             ) : (
-              <Button onClick={stopTracking} variant="destructive" className="flex-1">
+              <Button
+                onClick={stopTracking}
+                variant="destructive"
+                className="flex-1"
+              >
                 ⏹️ Stop Tracking
               </Button>
             )}
@@ -201,44 +217,60 @@ export function WalkingPatternVisualizer() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Steps</span>
-                  <span className="text-lg font-bold">{currentMetrics.stepCount}</span>
+                  <span className="text-lg font-bold">
+                    {currentMetrics.stepCount}
+                  </span>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Distance</span>
-                  <span className="text-lg font-bold">{currentMetrics.distance} m</span>
+                  <span className="text-lg font-bold">
+                    {currentMetrics.distance} m
+                  </span>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Speed</span>
-                  <span className="text-lg font-bold">{currentMetrics.speed} m/s</span>
+                  <span className="text-lg font-bold">
+                    {currentMetrics.speed} m/s
+                  </span>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Rhythm</span>
-                  <span className="text-lg font-bold">{currentMetrics.rhythm} steps/min</span>
+                  <span className="text-lg font-bold">
+                    {currentMetrics.rhythm} steps/min
+                  </span>
                 </div>
-                <Progress value={currentMetrics.rhythm} max={120} className="h-2" />
+                <Progress
+                  value={currentMetrics.rhythm}
+                  max={120}
+                  className="h-2"
+                />
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Symmetry</span>
-                  <span className="text-lg font-bold">{currentMetrics.symmetry}%</span>
+                  <span className="text-lg font-bold">
+                    {currentMetrics.symmetry}%
+                  </span>
                 </div>
                 <Progress value={currentMetrics.symmetry} className="h-2" />
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Stability</span>
-                  <span className="text-lg font-bold">{currentMetrics.stability}%</span>
+                  <span className="text-lg font-bold">
+                    {currentMetrics.stability}%
+                  </span>
                 </div>
                 <Progress value={currentMetrics.stability} className="h-2" />
               </div>
@@ -268,13 +300,14 @@ export function WalkingPatternVisualizer() {
                   {sessionHistory.slice(0, 3).map((session) => (
                     <div
                       key={session.id}
-                      className="flex items-center justify-between p-3 rounded border"
+                      className="flex items-center justify-between rounded border p-3"
                     >
                       <div>
                         <p className="text-sm font-medium">
-                          {formatTime(session.duration)} • {session.metrics.stepCount} steps
+                          {formatTime(session.duration)} •{' '}
+                          {session.metrics.stepCount} steps
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           {session.startTime.toLocaleDateString()} at{' '}
                           {session.startTime.toLocaleTimeString()}
                         </p>
@@ -283,7 +316,7 @@ export function WalkingPatternVisualizer() {
                         <Badge variant="outline" className="mb-1">
                           {session.qualityScore}% Quality
                         </Badge>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           {session.metrics.distance}m distance
                         </p>
                       </div>
@@ -300,58 +333,87 @@ export function WalkingPatternVisualizer() {
                       <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-sm font-medium">Session Metrics</p>
+                            <p className="text-sm font-medium">
+                              Session Metrics
+                            </p>
                             <div className="space-y-1 text-sm">
                               <div className="flex justify-between">
                                 <span>Duration:</span>
-                                <span>{formatTime(sessionHistory[0].duration)}</span>
+                                <span>
+                                  {formatTime(sessionHistory[0].duration)}
+                                </span>
                               </div>
                               <div className="flex justify-between">
                                 <span>Total Steps:</span>
-                                <span>{sessionHistory[0].metrics.stepCount}</span>
+                                <span>
+                                  {sessionHistory[0].metrics.stepCount}
+                                </span>
                               </div>
                               <div className="flex justify-between">
                                 <span>Distance:</span>
-                                <span>{sessionHistory[0].metrics.distance}m</span>
+                                <span>
+                                  {sessionHistory[0].metrics.distance}m
+                                </span>
                               </div>
                               <div className="flex justify-between">
                                 <span>Avg Speed:</span>
-                                <span>{sessionHistory[0].metrics.speed} m/s</span>
+                                <span>
+                                  {sessionHistory[0].metrics.speed} m/s
+                                </span>
                               </div>
                             </div>
                           </div>
                           <div>
-                            <p className="text-sm font-medium">Quality Metrics</p>
+                            <p className="text-sm font-medium">
+                              Quality Metrics
+                            </p>
                             <div className="space-y-1 text-sm">
                               <div className="flex justify-between">
                                 <span>Rhythm:</span>
-                                <span>{sessionHistory[0].metrics.rhythm} steps/min</span>
+                                <span>
+                                  {sessionHistory[0].metrics.rhythm} steps/min
+                                </span>
                               </div>
                               <div className="flex justify-between">
                                 <span>Symmetry:</span>
-                                <span>{sessionHistory[0].metrics.symmetry}%</span>
+                                <span>
+                                  {sessionHistory[0].metrics.symmetry}%
+                                </span>
                               </div>
                               <div className="flex justify-between">
                                 <span>Stability:</span>
-                                <span>{sessionHistory[0].metrics.stability}%</span>
+                                <span>
+                                  {sessionHistory[0].metrics.stability}%
+                                </span>
                               </div>
                               <div className="flex justify-between">
                                 <span>Overall Score:</span>
-                                <span className="font-semibold">{sessionHistory[0].qualityScore}%</span>
+                                <span className="font-semibold">
+                                  {sessionHistory[0].qualityScore}%
+                                </span>
                               </div>
                             </div>
                           </div>
                         </div>
-                        
+
                         <div>
-                          <p className="text-sm font-medium mb-2">Recommendations</p>
+                          <p className="mb-2 text-sm font-medium">
+                            Recommendations
+                          </p>
                           <div className="space-y-1">
-                            {sessionHistory[0].recommendations.map((rec, index) => (
-                              <div key={index} className="flex items-start gap-2 text-sm">
-                                <span className="text-green-500 mt-0.5">✅</span>
-                                <span>{rec}</span>
-                              </div>
-                            ))}
+                            {sessionHistory[0].recommendations.map(
+                              (rec, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-start gap-2 text-sm"
+                                >
+                                  <span className="mt-0.5 text-green-500">
+                                    ✅
+                                  </span>
+                                  <span>{rec}</span>
+                                </div>
+                              )
+                            )}
                           </div>
                         </div>
                       </div>
