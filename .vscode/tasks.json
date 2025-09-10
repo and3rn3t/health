@@ -412,6 +412,94 @@
       "detail": "VitalSense branding verification and deployment"
     },
     {
+      "label": "🎨 CSS Bundle Optimizer",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/css-optimizer.js"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "icon": {
+        "id": "paintcan",
+        "color": "terminal.ansiMagenta"
+      },
+      "detail": "Analyze and optimize CSS bundle size (122KB → <50KB target)"
+    },
+    {
+      "label": "⚙️ Build Config Optimizer",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/build-optimizer.js"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "icon": {
+        "id": "gear",
+        "color": "terminal.ansiBlue"
+      },
+      "detail": "Generate optimized build configurations for smaller bundles"
+    },
+    {
+      "label": "🧪 Bundle Optimization Tester",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/bundle-optimization-tester.js"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "dependsOrder": "sequence",
+      "dependsOn": ["🎨 CSS Bundle Optimizer", "⚙️ Build Config Optimizer"],
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiYellow"
+      },
+      "detail": "Test all optimizations and measure bundle size reduction (1.83MB → <400KB)"
+    },
+    {
+      "label": "🚀 Optimized Build",
+      "type": "shell",
+      "command": "vite",
+      "args": [
+        "build",
+        "--config",
+        "vite.config.optimized.ts",
+        "--mode",
+        "production"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "icon": {
+        "id": "rocket",
+        "color": "terminal.ansiGreen"
+      },
+      "detail": "Build with optimized configuration for production deployment"
+    },
+    {
       "label": "lint-quick-nodejs",
       "type": "shell",
       "command": "node",
@@ -1047,6 +1135,91 @@
         "color": "terminal.ansiYellow"
       },
       "detail": "Phase 4: Auth0 authentication setup and configuration management"
+    },
+    {
+      "label": "📦 Quick Bundle Check",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile", "-File", "scripts/check-bundle-size.ps1"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "icon": {
+        "id": "package",
+        "color": "terminal.ansiCyan"
+      },
+      "detail": "Quick analysis of current bundle sizes with performance recommendations"
+    },
+    {
+      "label": "🔍 Full Bundle Analysis",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/bundle-analyzer.js", "--save", "--verbose"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "icon": {
+        "id": "graph",
+        "color": "terminal.ansiBlue"
+      },
+      "detail": "Comprehensive bundle analysis with build and composition details"
+    },
+    {
+      "label": "📊 Performance Monitor",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/performance-monitor.js", "--verbose"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "icon": {
+        "id": "pulse",
+        "color": "terminal.ansiGreen"
+      },
+      "detail": "Performance monitoring with historical tracking and alerts"
+    },
+    {
+      "label": "🔄 Continuous Performance Monitor",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/performance-monitor.js",
+        "--continuous",
+        "--interval=600000"
+      ],
+      "group": "test",
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "icon": {
+        "id": "sync",
+        "color": "terminal.ansiMagenta"
+      },
+      "detail": "Continuous performance monitoring every 10 minutes"
     },
     {
       "label": "Check VitalSense App Status",

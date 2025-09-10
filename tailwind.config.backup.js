@@ -1,0 +1,245 @@
+import fs from 'fs';
+
+/** @type {import('tailwindcss').Config} */
+
+let theme = {};
+try {
+  const themePath = './theme.json';
+
+  if (fs.existsSync(themePath)) {
+    theme = JSON.parse(fs.readFileSync(themePath, 'utf-8'));
+  }
+} catch (err) {
+  console.error('failed to parse custom styles', err);
+}
+const defaultTheme = {
+  container: {
+    center: true,
+    padding: '2rem',
+  },
+  extend: {
+    screens: {
+      coarse: { raw: '(pointer: coarse)' },
+      fine: { raw: '(pointer: fine)' },
+      pwa: { raw: '(display-mode: standalone)' },
+    },
+    colors: {
+      // VitalSense Brand Colors
+      vitalsense: {
+        primary: 'var(--color-vitalsense-primary)',
+        'primary-light': 'var(--color-vitalsense-primary-light)',
+        'primary-dark': 'var(--color-vitalsense-primary-dark)',
+        'primary-contrast': 'var(--color-vitalsense-primary-contrast)',
+        teal: 'var(--color-vitalsense-teal)',
+        'teal-light': 'var(--color-vitalsense-teal-light)',
+        'teal-dark': 'var(--color-vitalsense-teal-dark)',
+        'teal-contrast': 'var(--color-vitalsense-teal-contrast)',
+        success: 'var(--color-vitalsense-success)',
+        'success-light': 'var(--color-vitalsense-success-light)',
+        'success-dark': 'var(--color-vitalsense-success-dark)',
+        'success-contrast': 'var(--color-vitalsense-success-contrast)',
+        warning: 'var(--color-vitalsense-warning)',
+        'warning-light': 'var(--color-vitalsense-warning-light)',
+        'warning-dark': 'var(--color-vitalsense-warning-dark)',
+        'warning-contrast': 'var(--color-vitalsense-warning-contrast)',
+        error: 'var(--color-vitalsense-error)',
+        'error-light': 'var(--color-vitalsense-error-light)',
+        'error-dark': 'var(--color-vitalsense-error-dark)',
+        'error-contrast': 'var(--color-vitalsense-error-contrast)',
+        'text-primary': 'var(--color-vitalsense-text-primary)',
+        'text-muted': 'var(--color-vitalsense-text-muted)',
+        'bg-light': 'var(--color-vitalsense-bg-light)',
+        'bg-dark': 'var(--color-vitalsense-bg-dark)',
+        'card-light': 'var(--color-vitalsense-card-light)',
+        'card-dark': 'var(--color-vitalsense-card-dark)',
+      },
+      neutral: {
+        1: 'var(--color-neutral-1)',
+        2: 'var(--color-neutral-2)',
+        3: 'var(--color-neutral-3)',
+        4: 'var(--color-neutral-4)',
+        5: 'var(--color-neutral-5)',
+        6: 'var(--color-neutral-6)',
+        7: 'var(--color-neutral-7)',
+        8: 'var(--color-neutral-8)',
+        9: 'var(--color-neutral-9)',
+        10: 'var(--color-neutral-10)',
+        11: 'var(--color-neutral-11)',
+        12: 'var(--color-neutral-12)',
+        a1: 'var(--color-neutral-a1)',
+        a2: 'var(--color-neutral-a2)',
+        a3: 'var(--color-neutral-a3)',
+        a4: 'var(--color-neutral-a4)',
+        a5: 'var(--color-neutral-a5)',
+        a6: 'var(--color-neutral-a6)',
+        a7: 'var(--color-neutral-a7)',
+        a8: 'var(--color-neutral-a8)',
+        a9: 'var(--color-neutral-a9)',
+        a10: 'var(--color-neutral-a10)',
+        a11: 'var(--color-neutral-a11)',
+        a12: 'var(--color-neutral-a12)',
+        contrast: 'var(--color-neutral-contrast)',
+      },
+      accent: {
+        1: 'var(--color-accent-1)',
+        2: 'var(--color-accent-2)',
+        3: 'var(--color-accent-3)',
+        4: 'var(--color-accent-4)',
+        5: 'var(--color-accent-5)',
+        6: 'var(--color-accent-6)',
+        7: 'var(--color-accent-7)',
+        8: 'var(--color-accent-8)',
+        9: 'var(--color-accent-9)',
+        10: 'var(--color-accent-10)',
+        11: 'var(--color-accent-11)',
+        12: 'var(--color-accent-12)',
+        contrast: 'var(--color-accent-contrast)',
+      },
+      'accent-secondary': {
+        1: 'var(--color-accent-secondary-1)',
+        2: 'var(--color-accent-secondary-2)',
+        3: 'var(--color-accent-secondary-3)',
+        4: 'var(--color-accent-secondary-4)',
+        5: 'var(--color-accent-secondary-5)',
+        6: 'var(--color-accent-secondary-6)',
+        7: 'var(--color-accent-secondary-7)',
+        8: 'var(--color-accent-secondary-8)',
+        9: 'var(--color-accent-secondary-9)',
+        10: 'var(--color-accent-secondary-10)',
+        11: 'var(--color-accent-secondary-11)',
+        12: 'var(--color-accent-secondary-12)',
+        contrast: 'var(--color-accent-secondary-contrast)',
+      },
+      fg: {
+        DEFAULT: 'var(--color-fg)',
+        secondary: 'var(--color-fg-secondary)',
+      },
+      bg: {
+        DEFAULT: 'var(--color-bg)',
+        inset: 'var(--color-bg-inset)',
+        overlay: 'var(--color-bg-overlay)',
+      },
+      background: 'var(--color-bg)',
+      foreground: 'var(--color-fg)',
+      border: 'var(--color-border)',
+      'focus-ring': 'var(--color-focus-ring)',
+    },
+    borderRadius: {
+      sm: 'var(--radius-sm)',
+      md: 'var(--radius-md)',
+      lg: 'var(--radius-lg)',
+      xl: 'var(--radius-xl)',
+      '2xl': 'var(--radius-2xl)',
+      full: 'var(--radius-full)',
+    },
+  },
+  spacing: {
+    px: 'var(--size-px)',
+    0: 'var(--size-0)',
+    0.5: 'var(--size-0-5)',
+    1: 'var(--size-1)',
+    1.5: 'var(--size-1-5)',
+    2: 'var(--size-2)',
+    2.5: 'var(--size-2-5)',
+    3: 'var(--size-3)',
+    3.5: 'var(--size-3-5)',
+    4: 'var(--size-4)',
+    5: 'var(--size-5)',
+    6: 'var(--size-6)',
+    7: 'var(--size-7)',
+    8: 'var(--size-8)',
+    9: 'var(--size-9)',
+    10: 'var(--size-10)',
+    11: 'var(--size-11)',
+    12: 'var(--size-12)',
+    14: 'var(--size-14)',
+    16: 'var(--size-16)',
+    20: 'var(--size-20)',
+    24: 'var(--size-24)',
+    28: 'var(--size-28)',
+    32: 'var(--size-32)',
+    36: 'var(--size-36)',
+    40: 'var(--size-40)',
+    44: 'var(--size-44)',
+    48: 'var(--size-48)',
+    52: 'var(--size-52)',
+    56: 'var(--size-56)',
+    60: 'var(--size-60)',
+    64: 'var(--size-64)',
+    72: 'var(--size-72)',
+    80: 'var(--size-80)',
+    96: 'var(--size-96)',
+  },
+  darkMode: ['selector', '[data-appearance="dark"]'],
+};
+
+export default {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  safelist: [
+    // Comprehensive VitalSense brand colors that might be in dynamic classes
+    // Primary colors
+    'bg-vitalsense-primary',
+    'bg-vitalsense-primary-light',
+    'bg-vitalsense-primary-dark',
+    'text-vitalsense-primary',
+    'text-vitalsense-primary-contrast',
+    'border-vitalsense-primary',
+    'hover:bg-vitalsense-primary',
+    'hover:bg-vitalsense-primary-light',
+
+    // Teal colors
+    'bg-vitalsense-teal',
+    'bg-vitalsense-teal-light',
+    'bg-vitalsense-teal-dark',
+    'text-vitalsense-teal',
+    'text-vitalsense-teal-contrast',
+    'border-vitalsense-teal',
+    'hover:bg-vitalsense-teal',
+    'hover:bg-vitalsense-teal-light',
+
+    // Success colors
+    'bg-vitalsense-success',
+    'bg-vitalsense-success-light',
+    'bg-vitalsense-success-dark',
+    'text-vitalsense-success',
+    'text-vitalsense-success-contrast',
+    'border-vitalsense-success',
+    'hover:bg-vitalsense-success',
+
+    // Warning colors
+    'bg-vitalsense-warning',
+    'bg-vitalsense-warning-light',
+    'bg-vitalsense-warning-dark',
+    'text-vitalsense-warning',
+    'text-vitalsense-warning-contrast',
+    'border-vitalsense-warning',
+    'hover:bg-vitalsense-warning',
+
+    // Error colors
+    'bg-vitalsense-error',
+    'bg-vitalsense-error-light',
+    'bg-vitalsense-error-dark',
+    'text-vitalsense-error',
+    'text-vitalsense-error-contrast',
+    'border-vitalsense-error',
+    'hover:bg-vitalsense-error',
+
+    // Text colors
+    'text-vitalsense-text-primary',
+    'text-vitalsense-text-muted',
+
+    // Background colors
+    'bg-vitalsense-bg-light',
+    'bg-vitalsense-bg-dark',
+
+    // Card colors
+    'bg-vitalsense-card-light',
+    'bg-vitalsense-card-dark',
+
+    // Additional common combinations
+    'fill-vitalsense-primary',
+    'stroke-vitalsense-primary',
+    'shadow-vitalsense-primary',
+  ],
+  theme: { ...defaultTheme, ...theme },
+};
