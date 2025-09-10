@@ -1,3 +1,4 @@
+import { lazy, memo, Suspense, useCallback, useMemo } from 'react';
 import TelemetryPanel from '@/components/dev/TelemetryPanel';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -76,16 +77,19 @@ import HealthGameCenter from '@/components/gamification/HealthGameCenter';
 // Enhanced UI Components
 import Footer from '@/components/Footer';
 import AIRecommendations from '@/components/health/AIRecommendations';
+// Lazy-loaded heavy components for better performance
+const EnhancedHealthInsightsDashboard = lazy(() => import('@/components/health/EnhancedHealthInsightsDashboard'));
+const MLPredictionsDashboard = lazy(() => import('@/components/health/MLPredictionsDashboard'));
+const GaitDashboard = lazy(() => import('@/components/health/GaitDashboardClean').then(module => ({ default: module.GaitDashboard })));
+const EnhancedGaitAnalyzer = lazy(() => import('@/components/health/EnhancedGaitAnalyzer').then(module => ({ default: module.EnhancedGaitAnalyzer })));
+const HealthSearch = lazy(() => import('@/components/health/HealthSearch'));
+const RealTimeFallDetection = lazy(() => import('@/components/health/RealTimeFallDetection'));
+
 import CommunityShare from '@/components/health/CommunityShare';
-import { EnhancedGaitAnalyzer } from '@/components/health/EnhancedGaitAnalyzer';
 import FamilyDashboard from '@/components/health/FamilyDashboard';
-import { GaitDashboard } from '@/components/health/GaitDashboardClean';
 import HealthcarePortal from '@/components/health/HealthcarePortal';
-import HealthSearch from '@/components/health/HealthSearch';
 import HealthSystemIntegration from '@/components/health/HealthSystemIntegration';
-import MLPredictionsDashboard from '@/components/health/MLPredictionsDashboard';
 import MovementPatternAnalysis from '@/components/health/MovementPatternAnalysis';
-import RealTimeFallDetection from '@/components/health/RealTimeFallDetection';
 import RealTimeMonitoringHub from '@/components/health/RealTimeMonitoringHub';
 import LandingPage from '@/components/LandingPage';
 import LiveConnectionDashboard from '@/components/live/LiveConnectionDashboard';
@@ -98,7 +102,6 @@ import AdvancedAppleWatchIntegration from '@/components/health/AdvancedAppleWatc
 import AppleWatchIntegrationChecklist from '@/components/health/AppleWatchIntegrationChecklist';
 import ComprehensiveAppleHealthKitGuide from '@/components/health/ComprehensiveAppleHealthKitGuide';
 import { EnhancedHealthDataUpload } from '@/components/health/EnhancedHealthDataUpload';
-import EnhancedHealthInsightsDashboard from '@/components/health/EnhancedHealthInsightsDashboard';
 import HealthAlertsConfig from '@/components/health/HealthAlertsConfig';
 import PredictiveHealthAlerts from '@/components/health/PredictiveHealthAlerts';
 import RealTimeHealthScoring from '@/components/health/RealTimeHealthScoring';
@@ -115,6 +118,14 @@ interface NavigationItem {
   label: string;
   icon: React.ElementType;
 }
+
+// Loading component for better UX
+const LoadingFallback = memo(() => (
+  <div className="flex items-center justify-center p-8" role="status" aria-label="Loading">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-vitalsense-primary"></div>
+  </div>
+));
+LoadingFallback.displayName = 'LoadingFallback';
 
 // Define navigation items categories
 interface NavigationItems {
@@ -851,7 +862,7 @@ function App() {
     }
   }, [themeMode]);
 
-  const toggleThemeMode = () => {
+  const toggleThemeMode = useCallback(() => {
     const modes: Array<'light' | 'dark' | 'system'> = [
       'light',
       'dark',
@@ -867,7 +878,7 @@ function App() {
       system: 'System preference',
     };
     toast.success(`Switched to ${modeLabels[nextMode]}`);
-  };
+  }, [themeMode, setThemeMode]);
 
   // Helper to get current effective theme
   // const getEffectiveTheme = () => {
@@ -881,7 +892,7 @@ function App() {
   const hasHealthData = true;
 
   // Create minimal test data when healthData is null with complete ProcessedHealthData structure
-  const effectiveHealthData: ProcessedHealthData = healthData || {
+  const effectiveHealthData: ProcessedHealthData = useMemo(() => healthData || {
     healthScore: 75,
     lastUpdated: new Date().toISOString(),
     dataQuality: {
@@ -942,7 +953,7 @@ function App() {
       'Heart rate patterns indicate good cardiovascular health.',
     ],
     fallRiskFactors: [],
-  };
+  } as ProcessedHealthData, [healthData]);
 
   // Dev-only telemetry panel state (persisted)
   const [showTelemetry, setShowTelemetry] = useKV<boolean>(
@@ -950,8 +961,8 @@ function App() {
     false
   );
 
-  // Define navigation structure with categories
-  const navigationItems = {
+  // Define navigation structure with categories - memoized for performance
+  const navigationItems = useMemo(() => ({
     main: [
       { id: 'dashboard', label: 'VitalSense Dashboard', icon: Heart },
       { id: 'health-overview', label: 'Health Overview', icon: Monitor },
@@ -1016,10 +1027,10 @@ function App() {
       { id: 'settings', label: 'Health Settings', icon: Settings },
     ],
     profile: [{ id: 'user-profile', label: 'User Profile', icon: Users }],
-  };
+  }), []);
 
-  // Get current page details for breadcrumb
-  const getCurrentPageInfo = () => {
+  // Get current page details for breadcrumb - memoized for performance
+  const getCurrentPageInfo = useCallback(() => {
     const allItems = [
       ...navigationItems.main,
       ...navigationItems.monitoring,
@@ -1051,7 +1062,7 @@ function App() {
       category = 'Profile';
 
     return { label: currentItem.label, category };
-  };
+  }, [activeTab, navigationItems]);
 
   const currentPageInfo = getCurrentPageInfo();
   return (
@@ -1827,9 +1838,11 @@ function App() {
                 )}
                 {/* Removed VitalSenseBrandShowcase (component not found) */}
                 {activeTab === 'insights' && (
-                  <EnhancedHealthInsightsDashboard
-                    healthData={effectiveHealthData}
-                  />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <EnhancedHealthInsightsDashboard
+                      healthData={effectiveHealthData}
+                    />
+                  </Suspense>
                 )}
                 {activeTab === 'usage-analytics' && <UsageAnalyticsDashboard />}
                 {activeTab === 'usage-predictions' && (
@@ -1862,15 +1875,17 @@ function App() {
                   <PredictiveHealthAlerts healthData={effectiveHealthData} />
                 )}
                 {activeTab === 'search' && (
-                  <HealthSearch
-                    healthData={effectiveHealthData}
-                    onNavigateToInsight={(tab, metric) => {
-                      setActiveTab(tab);
-                      if (metric) {
-                        toast.success(`Navigated to ${metric} in ${tab}`);
-                      }
-                    }}
-                  />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <HealthSearch
+                      healthData={effectiveHealthData}
+                      onNavigateToInsight={(tab, metric) => {
+                        setActiveTab(tab);
+                        if (metric) {
+                          toast.success(`Navigated to ${metric} in ${tab}`);
+                        }
+                      }}
+                    />
+                  </Suspense>
                 )}
                 {activeTab === 'ai-recommendations' && (
                   <AIRecommendations healthData={effectiveHealthData} />
@@ -1881,9 +1896,21 @@ function App() {
                 {activeTab === 'movement-patterns' && (
                   <MovementPatternAnalysis healthData={effectiveHealthData} />
                 )}
-                {activeTab === 'gait-analysis' && <GaitDashboard />}
-                {activeTab === 'real-sensor-gait' && <EnhancedGaitAnalyzer />}
-                {activeTab === 'realtime' && <RealTimeFallDetection />}
+                {activeTab === 'gait-analysis' && (
+                  <Suspense fallback={<LoadingFallback />}>
+                    <GaitDashboard />
+                  </Suspense>
+                )}
+                {activeTab === 'real-sensor-gait' && (
+                  <Suspense fallback={<LoadingFallback />}>
+                    <EnhancedGaitAnalyzer />
+                  </Suspense>
+                )}
+                {activeTab === 'realtime' && (
+                  <Suspense fallback={<LoadingFallback />}>
+                    <RealTimeFallDetection />
+                  </Suspense>
+                )}
                 {activeTab === 'enhanced-health-system' && (
                   <HealthSystemIntegration
                     userId="demo-user"
