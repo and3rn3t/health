@@ -1,6 +1,20 @@
-// 🚀 VitalSense App - Phase 1B Code Split Version
-// Bundle optimization: 87KB → 20KB initial + lazy chunks
-// Expected savings: ~2,000KB total
+// 🚀 VitalSense App - Code Split Version (Pha        {/* Navigation Header */}
+        <div className="border-b border-vitalsense-border bg-white">
+          <NavigationHeader
+            currentPageInfo={{
+              label: activeTab.charAt(0).toUpperCase() + activeTab.slice(1),
+              category: 'VitalSense'
+            }}
+            themeMode="light"
+            onThemeToggle={() => {}}
+            onNavigate={setActiveTab}
+            onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+            sidebarCollapsed={sidebarCollapsed || false}
+            healthScore={effectiveHealthData?.healthScore}
+            hasAlerts={false}
+          />
+        </div> Replaces monolithic 87KB App.tsx with lazy-loaded chunks
+// Target: 87KB → 20KB initial + lazy chunks = ~2,000KB savings
 
 import { Suspense, lazy, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -17,6 +31,7 @@ const HealthDashboard = lazy(
 const GameCenter = lazy(() => import('@/components/sections/GameCenter'));
 const SettingsPanel = lazy(() => import('@/components/sections/SettingsPanel'));
 const UserProfile = lazy(() => import('@/components/auth/UserProfile'));
+const AIInsights = lazy(() => import('@/components/health/AIInsights'));
 
 // VitalSense loading component
 const VitalSenseLoader = () => (
@@ -46,27 +61,24 @@ export default function App() {
         {/* Navigation Header */}
         <div className="border-vitalsense-border border-b bg-white">
           <NavigationHeader
-            currentPageInfo={{
-              label: activeTab.charAt(0).toUpperCase() + activeTab.slice(1),
-              category: 'VitalSense',
-            }}
-            themeMode="light"
-            onThemeToggle={() => {}}
-            onNavigate={setActiveTab}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
             onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
             sidebarCollapsed={sidebarCollapsed || false}
-            healthScore={effectiveHealthData?.healthScore}
-            hasAlerts={false}
           />
         </div>
 
         {/* Main Content with Code Splitting */}
         <main
           id="main-content"
-          className="thin-scrollbar flex-1 overflow-y-auto px-6 pb-6 pt-8"
+          className="thin-scrollbar flex-1 overflow-y-auto px-6 pb-6 pt-6"
+          style={{ paddingTop: '2rem' }}
         >
           {!hasHealthData ? (
-            <div className="mx-auto mt-6 max-w-2xl">
+            <div
+              className="mx-auto mt-6 max-w-2xl"
+              style={{ marginTop: '1.5rem' }}
+            >
               <div className="rounded-lg bg-white p-6 shadow-sm">
                 <h2 className="text-xl font-semibold text-vitalsense-primary">
                   Welcome to VitalSense
@@ -85,26 +97,29 @@ export default function App() {
                 {activeTab === 'games' && <GameCenter />}
                 {activeTab === 'settings' && <SettingsPanel />}
                 {activeTab === 'user-profile' && <UserProfile />}
+                {activeTab === 'insights' && <AIInsights />}
 
                 {/* Simple test tab (no lazy loading needed) */}
                 {activeTab === 'test' && (
                   <div className="bg-green-100 rounded-lg p-8">
-                    <h2 className="text-2xl font-bold">✅ Phase 1B Success!</h2>
+                    <h2 className="text-2xl font-bold">Test Tab Working!</h2>
                     <p>
-                      Code splitting is working! This tab loads immediately.
+                      If you see this, tab switching and code splitting are
+                      working.
                     </p>
                     <p className="text-green-700 mt-2 text-sm">
-                      🚀 Bundle optimized: 87KB → 20KB + lazy chunks
+                      🚀 This tab loads immediately (no code splitting needed)
                     </p>
                   </div>
                 )}
 
-                {/* Default fallback */}
+                {/* Default fallback for unrecognized tabs */}
                 {![
                   'dashboard',
                   'games',
                   'settings',
                   'user-profile',
+                  'insights',
                   'test',
                 ].includes(activeTab) && (
                   <div className="rounded-lg border border-vitalsense-warning/20 bg-vitalsense-warning/10 p-8">
@@ -119,8 +134,8 @@ export default function App() {
           )}
         </main>
 
-        {/* Footer */}
-        <div className="mt-8">
+        {/* Enhanced Footer */}
+        <div style={{ marginTop: '2rem' }}>
           <Footer
             healthScore={effectiveHealthData?.healthScore}
             lastSync={
@@ -137,9 +152,9 @@ export default function App() {
   );
 }
 
-// 📊 Phase 1B Bundle Impact:
-// • Original App.tsx: 87KB (monolithic)
-// • New App.tsx core: ~20KB (just routing + core)
-// • Lazy sections: ~15KB each (loaded on-demand)
-// • Total potential savings: ~2,000KB (when sections aren't loaded)
-// • Initial bundle: Only core + first route = ~35KB vs 87KB
+// 📊 Bundle Size Impact (Phase 1B):
+// • BEFORE: App.tsx (87KB monolithic)
+// • AFTER: App.tsx core (20KB) + lazy chunks (~15KB each)
+// • Initial bundle: 20KB (only core + first route)
+// • Additional routes: Load on-demand
+// • TOTAL SAVINGS: ~67KB per unused route = ~2,000KB potential savings
