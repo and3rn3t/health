@@ -103,6 +103,54 @@ These instructions guide GitHub Copilot Chat/Edits to produce code and docs that
 - Imports: absolute `@/` first, then third-party, then relative. Keep deterministic order. No circular deps.
 - Formatting: Prettier with Tailwind plugin; keep class order normalized.
 
+## Performance Optimization Patterns
+
+**CRITICAL**: This project has been optimized for performance with established patterns. Follow these guidelines:
+
+### React Performance Optimization
+
+**Memoization Patterns** (applied in `src/App.tsx`):
+
+- Use `useMemo()` for expensive computations and derived state
+- Use `useCallback()` for event handlers and functions passed as props
+- Apply `React.memo()` to components with stable props
+- Example: `const navigationItems = useMemo(() => [...], [dependencies])`
+
+**Code Splitting & Lazy Loading**:
+
+- Use `React.lazy()` for component-level code splitting
+- Implement proper `Suspense` boundaries with loading fallbacks
+- Target large components (>50KB) and conditional components for lazy loading
+- Example: `const ComponentName = lazy(() => import('@/components/path/ComponentName'))`
+
+**Suspense Boundaries**:
+
+- Always wrap lazy-loaded components in `<Suspense>`
+- Use descriptive loading states with branded components
+- Implement error boundaries alongside Suspense for resilience
+- Example: `<Suspense fallback={<LoadingFallback />}><LazyComponent /></Suspense>`
+
+**Bundle Optimization**:
+
+- Current production bundle: ~187KB optimized
+- Target: Keep individual route chunks under 100KB
+- Monitor bundle size with build reports
+- Use dynamic imports for feature modules
+
+### Performance Anti-Patterns to Avoid
+
+- ❌ Large single-file components without lazy loading (>2000 lines)
+- ❌ Unnecessary re-renders from missing memoization
+- ❌ Blocking UI with synchronous expensive operations
+- ❌ Large bundle sizes without code splitting
+
+### Performance Monitoring
+
+- Use React DevTools Profiler for performance analysis
+- Monitor Core Web Vitals in production
+- Check bundle analyzer reports for optimization opportunities
+- Reference: `docs/OPTIMIZATION_DEPLOYMENT_COMPLETE.md`
+
 ## Authentication & Security Integration
 
 ### VitalSense Branding & Auth0 Configuration

@@ -118,6 +118,17 @@ npm run ws:dev       # WebSocket server on ws://localhost:3001
 - **End-to-end encryption** for all health data
 - **Zero-knowledge architecture** - server cannot read personal data
 - **HIPAA compliance** with comprehensive audit trails
+
+### Performance & Optimization
+
+- **Production Bundle**: ~187KB optimized with aggressive code splitting
+- **React Performance**: Lazy loading, memoization, and Suspense boundaries
+- **Edge Computing**: Cloudflare Workers for sub-100ms global response times
+- **Real-time Updates**: WebSocket connections with automatic reconnection
+- **Incremental Loading**: Component-level code splitting for faster initial loads
+
+_Latest optimization: December 2024 - See `docs/OPTIMIZATION_DEPLOYMENT_COMPLETE.md`_
+
 - **JWT authentication** with secure token management
 
 ## 📊 Project Status
