@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { EnhancedVitalSenseStatusCard } from '@/components/ui/ios26-enhanced-components';
 import { Progress } from '@/components/ui/progress';
 import { ProcessedHealthData } from '@/types';
 import {
@@ -254,7 +255,43 @@ export default function LandingPage({
         {/* Health Status Overview */}
         {healthData && (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {quickStats.map((stat) => {
+            {quickStats.slice(0, 2).map((stat) => {
+              // Use Enhanced Status Cards for first two critical stats
+              const getTrendDirection = (
+                trend: string
+              ): 'up' | 'down' | 'stable' => {
+                if (trend === 'Excellent' || trend === 'Great!') return 'up';
+                if (trend === 'High Risk' || trend === 'Monitor') return 'down';
+                return 'stable';
+              };
+
+              return (
+                <EnhancedVitalSenseStatusCard
+                  key={stat.label}
+                  type={stat.label.includes('Risk') ? 'fallRisk' : 'health'}
+                  status={
+                    stat.trend === 'Excellent'
+                      ? 'excellent'
+                      : stat.trend === 'Good'
+                        ? 'good'
+                        : 'fair'
+                  }
+                  title={stat.label}
+                  value={stat.value}
+                  subtitle={`Current ${stat.label.toLowerCase()} status`}
+                  showTrend={true}
+                  trendDirection={getTrendDirection(stat.trend || '')}
+                  trendValue={stat.trend}
+                  interactive={true}
+                  onCardClick={() =>
+                    stat.action && onNavigateToFeature(stat.action)
+                  }
+                  className="cursor-pointer"
+                />
+              );
+            })}
+            {quickStats.slice(2).map((stat) => {
+              // Use standard cards for remaining stats
               const IconComponent = stat.icon;
               return (
                 <Card
@@ -297,13 +334,15 @@ export default function LandingPage({
                 Welcome to VitalSense! Get started by importing your Apple
                 Health data.
               </p>
-              <Button
+              <iOS26Button
+                variant="primary"
+                size="md"
+                icon={Smartphone}
                 onClick={() => onNavigateToFeature('import')}
                 className="bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light"
               >
-                <Smartphone className="mr-2 h-4 w-4" />
                 Import Health Data
-              </Button>
+              </iOS26Button>
             </div>
           </AlertDescription>
         </Alert>
@@ -457,20 +496,23 @@ export default function LandingPage({
             </p>
           </div>
           <div className="flex gap-2">
-            <Button
+            <iOS26Button
               variant="outline"
+              size="md"
+              icon={Smartphone}
               onClick={() => onNavigateToFeature('healthkit-guide')}
             >
-              <Smartphone className="mr-2 h-4 w-4" />
               Setup Guide
-            </Button>
-            <Button
+            </iOS26Button>
+            <iOS26Button
+              variant="primary"
+              size="md"
+              icon={Clock}
               onClick={() => onNavigateToFeature('system-status')}
               className="bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light"
             >
-              <Clock className="mr-2 h-4 w-4" />
               System Status
-            </Button>
+            </iOS26Button>
           </div>
         </div>
       </div>

@@ -1,13 +1,12 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getVitalSenseClasses, HealthColorMap } from '@/lib/vitalsense-colors';
 import {
-  Activity,
-  AlertTriangle,
-  CheckCircle,
-  Heart,
-  Shield,
-} from 'lucide-react';
+  HIGIcon,
+  IOSHIGIcons,
+  SemanticIcons,
+} from '@/components/ui/ios-hig-icons';
+import { getiOS26TypographyClass } from '@/lib/ios26-dynamic-type';
+import { getVitalSenseClasses, HealthColorMap } from '@/lib/vitalsense-colors';
 
 interface VitalSenseStatusCardProps {
   type: 'health' | 'emergency' | 'activity' | 'fallRisk' | 'system';
@@ -26,63 +25,72 @@ interface VitalSenseStatusCardProps {
   value?: string | number;
   subtitle?: string;
   className?: string;
+  // iOS 26 enhancements
+  supportsDynamicType?: boolean;
+  accessibilityLevel?: 'standard' | 'enhanced';
 }
 
 const getStatusIcon = (
   type: VitalSenseStatusCardProps['type'],
   status: VitalSenseStatusCardProps['status']
 ) => {
-  const iconProps = { className: 'h-5 w-5' };
-
+  // Use iOS HIG-compliant icons with proper accessibility
   if (type === 'emergency' && status === 'critical') {
     return (
-      <AlertTriangle
-        {...iconProps}
-        className={`${iconProps.className} ${getVitalSenseClasses.text.error}`}
+      <HIGIcon
+        icon={IOSHIGIcons.status.warning}
+        size="medium"
+        className={`${getVitalSenseClasses.text.error} animate-pulse`}
+        aria-label={`Critical ${type} status`}
       />
     );
   }
 
   if (type === 'health' && (status === 'excellent' || status === 'good')) {
     return (
-      <Heart
-        {...iconProps}
-        className={`${iconProps.className} ${getVitalSenseClasses.text.success}`}
+      <SemanticIcons.HealthScore
+        size="medium"
+        className={getVitalSenseClasses.text.success}
       />
     );
   }
 
   if (type === 'activity') {
     return (
-      <Activity
-        {...iconProps}
-        className={`${iconProps.className} ${getVitalSenseClasses.text.teal}`}
+      <SemanticIcons.Activity
+        size="medium"
+        className={getVitalSenseClasses.text.teal}
       />
     );
   }
 
   if (type === 'fallRisk' && status === 'low') {
     return (
-      <CheckCircle
-        {...iconProps}
-        className={`${iconProps.className} ${getVitalSenseClasses.text.success}`}
+      <SemanticIcons.FallRisk
+        size="medium"
+        className={getVitalSenseClasses.text.success}
       />
     );
   }
 
   if (type === 'system') {
     return (
-      <Shield
-        {...iconProps}
-        className={`${iconProps.className} ${getVitalSenseClasses.text.primary}`}
+      <HIGIcon
+        icon={IOSHIGIcons.status.shield}
+        size="medium"
+        className={getVitalSenseClasses.text.primary}
+        aria-label="System status"
       />
     );
   }
 
+  // Default fallback with proper semantics
   return (
-    <CheckCircle
-      {...iconProps}
-      className={`${iconProps.className} ${getVitalSenseClasses.text.primary}`}
+    <HIGIcon
+      icon={IOSHIGIcons.status.success}
+      size="medium"
+      className={getVitalSenseClasses.text.primary}
+      aria-label={`${type} status: ${status}`}
     />
   );
 };
@@ -132,41 +140,75 @@ export function VitalSenseStatusCard({
   title,
   value,
   subtitle,
-  className = '',
+  className,
+  supportsDynamicType = true,
+  accessibilityLevel = 'enhanced',
 }: Readonly<VitalSenseStatusCardProps>) {
-  const statusColorClass = getStatusColor(type, status);
   const icon = getStatusIcon(type, status);
+  const colorClasses = getStatusColor(type, status);
+
+  // iOS 26 Dynamic Type classes
+  const titleClass = supportsDynamicType
+    ? getiOS26TypographyClass('headline')
+    : 'text-lg font-semibold';
+  const valueClass = supportsDynamicType
+    ? getiOS26TypographyClass('large-title')
+    : 'text-2xl font-bold';
+  const subtitleClass = supportsDynamicType
+    ? getiOS26TypographyClass('footnote')
+    : 'text-sm';
+
+  // iOS 26 Enhanced Accessibility
+  const ariaLabel = `${title}: ${value || status}`;
+  const fullAriaLabel = subtitle ? `${ariaLabel}. ${subtitle}` : ariaLabel;
+
+  const ariaLive: 'assertive' | 'polite' =
+    type === 'emergency' || type === 'health' ? 'assertive' : 'polite';
+  const accessibilityProps =
+    accessibilityLevel === 'enhanced'
+      ? {
+          role: 'status' as const,
+          'aria-live': ariaLive,
+          'aria-label': fullAriaLabel,
+        }
+      : {};
 
   return (
     <Card
-      className={`border-l-4 transition-all duration-200 hover:shadow-md ${className}`}
-      style={{ borderLeftColor: 'var(--color-vitalsense-primary)' }}
+      className={`${getVitalSenseClasses.bg.primary} ${className || ''} ios-26-card`}
+      {...accessibilityProps}
     >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-vitalsense-text-primary">
-          {title}
-        </CardTitle>
-        {icon}
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-baseline space-x-2">
-          {value && (
-            <div
-              className={`text-2xl font-bold ${getVitalSenseClasses.text.primary}`}
-            >
-              {value}
-            </div>
-          )}
-          <Badge
-            variant="secondary"
-            className={`text-xs capitalize ${statusColorClass} bg-opacity-10`}
-          >
-            {status}
-          </Badge>
+      <CardHeader className="ios-26-surface-secondary pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className={`${titleClass} text-ios-label-primary`}>
+            {title}
+          </CardTitle>
+          <div className="ios-26-icon-adaptive" aria-hidden="true">
+            {icon}
+          </div>
         </div>
-        {subtitle && (
-          <p className="mt-1 text-xs text-vitalsense-text-muted">{subtitle}</p>
+      </CardHeader>
+      <CardContent className="ios-26-surface-primary pt-0">
+        {value && (
+          <div
+            className={`${valueClass} ${colorClasses} ios-26-color-adaptive mb-1`}
+          >
+            {value}
+          </div>
         )}
+        {subtitle && (
+          <p
+            className={`${subtitleClass} text-ios-label-secondary ios-26-text-secondary`}
+          >
+            {subtitle}
+          </p>
+        )}
+        <Badge
+          variant="secondary"
+          className={`mt-2 ${colorClasses} ios-26-badge ${accessibilityLevel === 'enhanced' ? 'ios-26-enhanced-contrast' : ''}`}
+        >
+          {status}
+        </Badge>
       </CardContent>
     </Card>
   );
@@ -175,6 +217,7 @@ export function VitalSenseStatusCard({
 /**
  * VitalSense Brand Header Component
  * Provides consistent branding across different sections of the app
+ * Enhanced with iOS 26 HIG compliance and Dynamic Type
  */
 interface VitalSenseBrandHeaderProps {
   title: string;
@@ -182,6 +225,8 @@ interface VitalSenseBrandHeaderProps {
   icon?: React.ReactNode;
   children?: React.ReactNode;
   variant?: 'primary' | 'teal' | 'success' | 'warning' | 'error';
+  supportsDynamicType?: boolean;
+  accessibilityLevel?: 'standard' | 'enhanced';
 }
 
 export function VitalSenseBrandHeader({
@@ -190,6 +235,8 @@ export function VitalSenseBrandHeader({
   icon,
   children,
   variant = 'primary',
+  supportsDynamicType = true,
+  accessibilityLevel = 'enhanced',
 }: Readonly<VitalSenseBrandHeaderProps>) {
   const getVariantClasses = () => {
     switch (variant) {
@@ -227,23 +274,71 @@ export function VitalSenseBrandHeader({
   };
 
   const classes = getVariantClasses();
+  const headerId = `header-${title.replace(/\s+/g, '-').toLowerCase()}`;
+
+  // iOS 26 Dynamic Type classes
+  const titleClass = supportsDynamicType
+    ? getiOS26TypographyClass('title-1')
+    : 'text-2xl font-bold';
+  const subtitleClass = supportsDynamicType
+    ? getiOS26TypographyClass('subheadline')
+    : 'text-sm';
+
+  // iOS 26 Enhanced Accessibility
+  const headerProps =
+    accessibilityLevel === 'enhanced'
+      ? {
+          role: 'banner' as const,
+        }
+      : {};
+
+  const toolbarAttributes =
+    accessibilityLevel === 'enhanced'
+      ? {
+          role: 'toolbar' as const,
+          'aria-label': 'Header actions',
+        }
+      : {};
 
   return (
-    <div className={`${classes.bg} mb-6 rounded-lg p-6`}>
+    <header
+      className={`${classes.bg} ios-26-surface-elevated ios-26-enhanced-contrast mb-6 rounded-lg p-6 focus-within:ring-2 focus-within:ring-current focus-within:ring-opacity-50`}
+      aria-labelledby={headerId}
+      {...headerProps}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          {icon && <div className={`${classes.text} opacity-90`}>{icon}</div>}
+          {icon && (
+            <div
+              className={`${classes.text} ios-26-icon-adaptive opacity-90`}
+              aria-hidden="true"
+            >
+              {icon}
+            </div>
+          )}
           <div>
-            <h1 className={`text-2xl font-bold ${classes.text}`}>{title}</h1>
+            <h1
+              id={headerId}
+              className={`${titleClass} ${classes.text} ios-26-text-primary leading-tight`}
+            >
+              {title}
+            </h1>
             {subtitle && (
-              <p className={`${classes.text} mt-1 opacity-80`}>{subtitle}</p>
+              <p
+                className={`${subtitleClass} ${classes.text} ios-26-text-secondary mt-1 leading-relaxed opacity-80`}
+                aria-describedby={headerId}
+              >
+                {subtitle}
+              </p>
             )}
           </div>
         </div>
         {children && (
-          <div className="flex items-center space-x-2">{children}</div>
+          <div className="flex items-center space-x-2" {...toolbarAttributes}>
+            {children}
+          </div>
         )}
       </div>
-    </div>
+    </header>
   );
 }

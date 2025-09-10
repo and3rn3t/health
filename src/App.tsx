@@ -16,6 +16,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+// iOS 26 Enhanced Components
+import {
+  EnhancedVitalSenseNavigation,
+  EnhancedVitalSenseStatusCard,
+} from '@/components/ui/ios26-enhanced-components';
 import { useKV } from '@/hooks/useCloudflareKV';
 import { recordTelemetry } from '@/lib/telemetry';
 import { Contact, ProcessedHealthData } from '@/types';
@@ -978,6 +983,11 @@ function App() {
       { id: 'monitoring-hub', label: 'Monitoring Hub', icon: Activity },
       { id: 'live-integration', label: 'Live Integration', icon: CloudUpload },
       { id: 'advanced-Watch', label: 'Watch Integration', icon: Activity },
+      {
+        id: 'ios26-navigation',
+        label: 'iOS 26 Advanced Navigation',
+        icon: List,
+      },
     ],
     gamification: [
       { id: 'game-center', label: 'Game Center', icon: Trophy },
@@ -1413,6 +1423,326 @@ function App() {
                     onNavigateToFeature={setActiveTab}
                     fallRiskScore={75} // This would normally come from health data processing
                   />
+                )}
+                {activeTab === 'health-overview' && (
+                  <div className="space-y-6">
+                    {/* Enhanced VitalSense Status Cards with Priority 2 improvements */}
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                      <EnhancedVitalSenseStatusCard
+                        title="Overall Health Score"
+                        value="85"
+                        unit="/ 100"
+                        trend="up"
+                        trendValue="+5%"
+                        description="Your health metrics have improved this week"
+                        priority="high"
+                        interactive={true}
+                        onClick={() => setActiveTab('insights')}
+                        className="col-span-full lg:col-span-1"
+                      />
+                      <EnhancedVitalSenseStatusCard
+                        title="Fall Risk Assessment"
+                        value="Low"
+                        trend="stable"
+                        description="Your fall risk remains low based on recent gait analysis"
+                        priority="medium"
+                        interactive={true}
+                        onClick={() => setActiveTab('fall-detection')}
+                      />
+                      <EnhancedVitalSenseStatusCard
+                        title="Activity Level"
+                        value="8,432"
+                        unit="steps"
+                        trend="up"
+                        trendValue="+12%"
+                        description="Daily step count trending upward"
+                        priority="low"
+                        interactive={true}
+                        onClick={() => setActiveTab('walking-patterns')}
+                      />
+                    </div>
+
+                    {/* Enhanced Navigation for Health Overview */}
+                    <div className="mt-8">
+                      <EnhancedVitalSenseNavigation
+                        tabs={[
+                          {
+                            id: 'fall-detection',
+                            label: 'Fall Risk',
+                            icon: Shield,
+                          },
+                          {
+                            id: 'posture-analysis',
+                            label: 'Posture',
+                            icon: Activity,
+                          },
+                          {
+                            id: 'walking-patterns',
+                            label: 'Walking',
+                            icon: Activity,
+                          },
+                          {
+                            id: 'gait-analysis',
+                            label: 'Gait Analysis',
+                            icon: Target,
+                          },
+                        ]}
+                        activeTab={activeTab}
+                        onTabChange={setActiveTab}
+                        showSearch={true}
+                        onSearchChange={(query) =>
+                          console.log('Search:', query)
+                        }
+                        className="rounded-lg bg-white shadow-sm"
+                      />
+                    </div>
+
+                    {/* Quick Actions with Enhanced Buttons */}
+                    <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+                      <Button
+                        variant="default"
+                        size="lg"
+                        onClick={() => setActiveTab('emergency')}
+                        className="hover:bg-vitalsense-primary/90 w-full bg-vitalsense-primary text-white"
+                      >
+                        <AlertTriangle className="mr-2 h-5 w-5" />
+                        Emergency Alert
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="lg"
+                        onClick={() => setActiveTab('recommendations')}
+                        className="w-full"
+                      >
+                        <Lightbulb className="mr-2 h-5 w-5" />
+                        Get Recommendations
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={() => setActiveTab('smart-notifications')}
+                        className="w-full"
+                      >
+                        <Bell className="mr-2 h-5 w-5" />
+                        Notifications
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="lg"
+                        onClick={() => setActiveTab('search')}
+                        className="w-full"
+                      >
+                        <Search className="mr-2 h-5 w-5" />
+                        Search
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {activeTab === 'ios26-navigation' && (
+                  <div className="space-y-6 p-6">
+                    {/* Priority 3: iOS 26 Advanced Navigation System */}
+                    <div className="text-center">
+                      <h2 className="ios-label-primary mb-2 text-3xl font-bold">
+                        iOS 26 Advanced Navigation
+                      </h2>
+                      <p className="ios-label-secondary text-lg">
+                        Priority 3: Premium navigation patterns with iOS 26
+                        design guidelines
+                      </p>
+                    </div>
+
+                    {/* Enhanced Breadcrumb Demo */}
+                    <div className="space-y-4">
+                      <h3 className="ios-label-primary text-xl font-semibold">
+                        Enhanced Breadcrumb Navigation
+                      </h3>
+                      <div className="ios-26-surface ios-label-secondary flex items-center space-x-2 rounded-lg border border-white/5 px-4 py-3 text-sm backdrop-blur-sm">
+                        <House className="h-4 w-4" />
+                        <span className="ios-label-secondary">Home</span>
+                        <div className="ios-label-secondary h-3 w-3">/</div>
+                        <span className="ios-label-secondary">Health</span>
+                        <div className="ios-label-secondary h-3 w-3">/</div>
+                        <span className="ios-label-secondary">Metrics</span>
+                        <div className="ios-label-secondary h-3 w-3">/</div>
+                        <span className="ios-label-primary font-medium">
+                          Heart Rate
+                        </span>
+                      </div>
+                      <p className="ios-label-secondary text-sm">
+                        Enhanced with gesture support and overflow handling
+                      </p>
+                    </div>
+
+                    {/* Floating Tab Bar Preview */}
+                    <div className="space-y-4">
+                      <h3 className="ios-label-primary text-xl font-semibold">
+                        Floating Tab Bar (Mobile-First)
+                      </h3>
+                      <div className="ios-26-surface relative h-40 overflow-hidden rounded-lg border border-white/10">
+                        <div className="absolute bottom-4 left-1/2 w-80 max-w-full -translate-x-1/2 transform">
+                          <nav className="ios-26-surface-elevated rounded-2xl border border-white/10 p-2 shadow-2xl backdrop-blur-xl">
+                            <div className="flex items-center justify-between space-x-1">
+                              <button className="bg-vitalsense-primary/10 relative flex flex-1 flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-vitalsense-primary shadow-sm">
+                                <Heart className="h-5 w-5" />
+                                <span className="truncate leading-none">
+                                  Overview
+                                </span>
+                                <div className="absolute bottom-0 left-1/2 h-1 w-6 -translate-x-1/2 transform rounded-full bg-vitalsense-primary" />
+                              </button>
+                              <button className="ios-label-secondary hover:ios-label-primary relative flex flex-1 flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs font-medium hover:bg-black/5">
+                                <Activity className="h-5 w-5" />
+                                <span className="truncate leading-none">
+                                  Health
+                                </span>
+                                <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-vitalsense-error text-[10px] font-bold text-white">
+                                  3
+                                </div>
+                              </button>
+                              <button className="ios-label-secondary hover:ios-label-primary relative flex flex-1 flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs font-medium hover:bg-black/5">
+                                <Brain className="h-5 w-5" />
+                                <span className="truncate leading-none">
+                                  Insights
+                                </span>
+                              </button>
+                              <button className="ios-label-secondary hover:ios-label-primary relative flex flex-1 flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs font-medium hover:bg-black/5">
+                                <Settings className="h-5 w-5" />
+                                <span className="truncate leading-none">
+                                  Settings
+                                </span>
+                              </button>
+                            </div>
+                          </nav>
+                        </div>
+                      </div>
+                      <p className="ios-label-secondary text-sm">
+                        Auto-hide on scroll with premium materials and
+                        micro-interactions
+                      </p>
+                    </div>
+
+                    {/* Sidebar Navigation Preview */}
+                    <div className="space-y-4">
+                      <h3 className="ios-label-primary text-xl font-semibold">
+                        Collapsible Sidebar Navigation
+                      </h3>
+                      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        <div className="ios-26-surface rounded-lg border border-white/10 p-4">
+                          <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
+                            <h4 className="ios-label-primary text-lg font-semibold">
+                              VitalSense
+                            </h4>
+                            <button className="ios-label-secondary hover:ios-label-primary rounded-lg p-2 transition-colors">
+                              <List className="h-5 w-5" />
+                            </button>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="ios-label-secondary hover:ios-label-primary flex items-center space-x-3 rounded-lg px-3 py-2 hover:bg-white/5">
+                              <Heart className="h-4 w-4" />
+                              <span className="text-sm">Dashboard</span>
+                            </div>
+                            <div className="bg-vitalsense-primary/10 flex items-center space-x-3 rounded-lg px-3 py-2 text-vitalsense-primary">
+                              <Activity className="h-4 w-4" />
+                              <span className="text-sm">Health Overview</span>
+                              <div className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-vitalsense-primary text-[10px] font-bold text-white">
+                                2
+                              </div>
+                            </div>
+                            <div className="ios-label-secondary hover:ios-label-primary flex items-center space-x-3 rounded-lg px-3 py-2 hover:bg-white/5">
+                              <Shield className="h-4 w-4" />
+                              <span className="text-sm">Fall Detection</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="ios-26-surface rounded-lg border border-white/10 p-4">
+                          <h4 className="ios-label-primary mb-3 font-medium">
+                            Advanced Search
+                          </h4>
+                          <div className="space-y-3">
+                            <div className="relative">
+                              <Search className="ios-label-secondary absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+                              <input
+                                type="search"
+                                placeholder="Search VitalSense..."
+                                className="ios-26-surface ios-label-primary placeholder-ios-label-secondary focus:ring-vitalsense-primary/20 w-full rounded-xl border border-white/10 py-3 pl-10 pr-4 text-sm focus:border-vitalsense-primary focus:outline-none focus:ring-2"
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <button className="flex items-center rounded-lg bg-vitalsense-primary px-3 py-1.5 text-xs font-medium text-white">
+                                <Activity className="mr-1.5 h-3 w-3" />
+                                Health
+                              </button>
+                              <button className="ios-26-surface ios-label-secondary hover:ios-label-primary flex items-center rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium">
+                                <Settings className="mr-1.5 h-3 w-3" />
+                                Settings
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Implementation Status */}
+                    <div className="ios-26-surface rounded-lg border border-white/10 p-6">
+                      <h4 className="ios-label-primary mb-4 text-lg font-medium">
+                        Priority 3 Implementation Status
+                      </h4>
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="space-y-3">
+                          <h5 className="ios-label-primary font-medium">
+                            ✅ Completed Features:
+                          </h5>
+                          <ul className="ios-label-secondary space-y-1 text-sm">
+                            <li className="flex items-center">
+                              <div className="mr-2 h-2 w-2 rounded-full bg-vitalsense-success"></div>
+                              Floating Tab Bar structure
+                            </li>
+                            <li className="flex items-center">
+                              <div className="mr-2 h-2 w-2 rounded-full bg-vitalsense-success"></div>
+                              Enhanced Breadcrumb navigation
+                            </li>
+                            <li className="flex items-center">
+                              <div className="mr-2 h-2 w-2 rounded-full bg-vitalsense-success"></div>
+                              iOS 26 color system integration
+                            </li>
+                            <li className="flex items-center">
+                              <div className="mr-2 h-2 w-2 rounded-full bg-vitalsense-success"></div>
+                              Gesture support patterns
+                            </li>
+                          </ul>
+                        </div>
+                        <div className="space-y-3">
+                          <h5 className="ios-label-primary font-medium">
+                            🚧 In Progress:
+                          </h5>
+                          <ul className="ios-label-secondary space-y-1 text-sm">
+                            <li className="flex items-center">
+                              <div className="mr-2 h-2 w-2 rounded-full bg-vitalsense-warning"></div>
+                              Full sidebar implementation
+                            </li>
+                            <li className="flex items-center">
+                              <div className="mr-2 h-2 w-2 rounded-full bg-vitalsense-warning"></div>
+                              Advanced search with scopes
+                            </li>
+                            <li className="flex items-center">
+                              <div className="mr-2 h-2 w-2 rounded-full bg-vitalsense-warning"></div>
+                              Auto-hide scroll behavior
+                            </li>
+                            <li className="flex items-center">
+                              <div className="mr-2 h-2 w-2 rounded-full bg-vitalsense-warning"></div>
+                              TypeScript component optimization
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                      <div className="bg-vitalsense-info/10 border-vitalsense-info/20 mt-4 rounded-lg border p-4">
+                        <p className="ios-label-primary text-sm">
+                          <strong>Next Steps:</strong> Complete TypeScript
+                          component definitions and integrate fully interactive
+                          components into the main navigation system.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 )}
                 {activeTab === 'user-profile' && <UserProfile />}
                 {/* TEST TAB - Simple content that should always work */}

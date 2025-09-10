@@ -1,6 +1,7 @@
 /*
- * VitalSense CSS - Consolidated & Clean
+ * VitalSense CSS - iOS 26 HIG Enhanced (2025)
  * Apple Health Insights & Fall Risk Monitor
+ * Updated for iOS 26 design standards and enhanced accessibility
  */
 
 /* === IMPORTS === */
@@ -9,9 +10,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* === VITALSENSE BRAND THEME === */
+/* === VITALSENSE BRAND THEME - iOS 26 ENHANCED === */
 :root {
-  /* VitalSense Brand Colors - Light Mode */
+  /* VitalSense Brand Colors - iOS 26 Enhanced */
   --vitalsense-primary: #2563eb; /* VitalSense Blue */
   --vitalsense-primary-light: #3b82f6; /* Lighter Blue */
   --vitalsense-teal: #0891b2; /* VitalSense Teal */
@@ -19,13 +20,28 @@
   --vitalsense-warning: #f59e0b; /* Warning Amber */
   --vitalsense-error: #dc2626; /* Error Red */
 
-  /* Background & Surface Colors */
-  --background: #f8fafc; /* Light blue-grey */
-  --foreground: #1e293b; /* Dark slate text */
-  --card: #ffffff; /* White cards */
-  --card-foreground: #1e293b; /* Dark text on cards */
-  --popover: #ffffff;
-  --popover-foreground: #1e293b;
+  /* iOS 26 Enhanced Brand Colors (using color-mix for better adaptation) */
+  --vitalsense-primary-ios26: color-mix(in oklch, #2563eb, transparent 0%);
+  --vitalsense-teal-ios26: color-mix(in oklch, #0891b2, transparent 0%);
+  --vitalsense-success-ios26: color-mix(in oklch, #16a34a, transparent 0%);
+  --vitalsense-warning-ios26: color-mix(in oklch, #f59e0b, transparent 0%);
+  --vitalsense-error-ios26: color-mix(in oklch, #dc2626, transparent 0%);
+
+  /* iOS 26 Adaptive Surface Colors */
+  --adaptive-surface: light-dark(#ffffff, #1c1c1e);
+  --adaptive-surface-secondary: light-dark(#f2f2f7, #2c2c2e);
+  --adaptive-surface-tertiary: light-dark(#ffffff, #3a3a3c);
+  --adaptive-label: light-dark(#000000, #ffffff);
+  --adaptive-label-secondary: light-dark(#3c3c43, #ebebf5);
+  --adaptive-label-tertiary: light-dark(#3c3c4399, #ebebf560);
+
+  /* Background & Surface Colors - iOS 26 Enhanced */
+  --background: var(--adaptive-surface);
+  --foreground: var(--adaptive-label);
+  --card: var(--adaptive-surface);
+  --card-foreground: var(--adaptive-label);
+  --popover: var(--adaptive-surface);
+  --popover-foreground: var(--adaptive-label);
 
   /* Interactive Elements */
   --primary: var(--vitalsense-primary);
@@ -96,8 +112,247 @@
   }
 }
 
+/* === iOS 26 ENHANCED FEATURES (Critical Priority 1) === */
+
+/* iOS 26 Dynamic Type Support */
+.ios26-dynamic-type {
+  font-feature-settings:
+    'kern' 1,
+    'liga' 1,
+    'calt' 1;
+}
+
+/* iOS 26 Text Scale Classes for Enhanced Dynamic Type */
+.ios26-text-scale-xs {
+  font-size: clamp(0.75rem, 0.875rem, 1.125rem);
+  line-height: clamp(1.45, 1.5, 1.6);
+}
+
+.ios26-text-scale-sm {
+  font-size: clamp(0.875rem, 1rem, 1.375rem);
+  line-height: clamp(1.4, 1.47, 1.6);
+}
+
+.ios26-text-scale-base {
+  font-size: clamp(1rem, 1.125rem, 1.5rem);
+  line-height: clamp(1.35, 1.47, 1.65);
+}
+
+.ios26-text-scale-md {
+  font-size: clamp(1.125rem, 1.25rem, 1.75rem);
+  line-height: clamp(1.3, 1.35, 1.5);
+}
+
+.ios26-text-scale-lg {
+  font-size: clamp(1.25rem, 1.5rem, 2rem);
+  line-height: clamp(1.25, 1.3, 1.4);
+}
+
+.ios26-text-scale-xl {
+  font-size: clamp(1.5rem, 2rem, 2.5rem);
+  line-height: clamp(1.2, 1.25, 1.35);
+}
+
+/* iOS 26 Accessibility Enhanced Typography */
+.ios26-a11y-enhanced {
+  font-feature-settings:
+    'kern' 1,
+    'liga' 1,
+    'calt' 1,
+    'case' 1;
+  text-rendering: optimizeLegibility;
+}
+
+/* iOS 26 Health Metrics Display (Tabular Numbers) */
+.ios26-numeric-display {
+  font-feature-settings:
+    'tnum' 1,
+    'lnum' 1;
+  font-variant-numeric: tabular-nums lining-nums;
+  text-rendering: optimizeLegibility;
+}
+
+/* iOS 26 Accessibility Media Queries */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .ios26-dynamic-type {
+    transition: none !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  :root {
+    --border: #000000;
+    --vitalsense-primary: #0066cc;
+    --vitalsense-teal: #006666;
+    --vitalsense-success: #006600;
+    --vitalsense-warning: #cc6600;
+    --vitalsense-error: #cc0000;
+  }
+
+  .vitalsense-btn--ios26-primary {
+    border: 2px solid var(--adaptive-label);
+  }
+}
+
+/* iOS 26 Color Scheme Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-elevated: color-mix(in oklch, #000000, #ffffff 8%);
+    --surface-elevated-secondary: color-mix(in oklch, #000000, #ffffff 12%);
+    --surface-elevated-tertiary: color-mix(in oklch, #000000, #ffffff 16%);
+  }
+}
+
+/* iOS 26 System Colors - Missing Components */
+:root {
+  /* iOS 26 Label Colors */
+  --ios-label-primary: rgba(0, 0, 0, 0.87);
+  --ios-label-secondary: rgba(0, 0, 0, 0.6);
+  --ios-label-tertiary: rgba(0, 0, 0, 0.4);
+  --ios-label-quaternary: rgba(0, 0, 0, 0.2);
+
+  /* iOS 26 System Backgrounds */
+  --ios-system-background: #ffffff;
+  --ios-system-grouped-background: #f2f2f7;
+  --ios-secondary-system-background: #ffffff;
+  --ios-tertiary-system-background: #ffffff;
+
+  /* iOS 26 Surface Elevated */
+  --ios-26-surface-elevated: color-mix(in oklch, #ffffff, #f8fafc 15%);
+  --ios-26-surface-elevated-secondary: color-mix(
+    in oklch,
+    #ffffff,
+    #f1f5f9 25%
+  );
+  --ios-26-surface-elevated-tertiary: color-mix(in oklch, #ffffff, #e2e8f0 35%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* iOS 26 Label Colors - Dark Mode */
+    --ios-label-primary: rgba(255, 255, 255, 0.87);
+    --ios-label-secondary: rgba(255, 255, 255, 0.6);
+    --ios-label-tertiary: rgba(255, 255, 255, 0.4);
+    --ios-label-quaternary: rgba(255, 255, 255, 0.18);
+
+    /* iOS 26 System Backgrounds - Dark Mode */
+    --ios-system-background: #000000;
+    --ios-system-grouped-background: #000000;
+    --ios-secondary-system-background: #1c1c1e;
+    --ios-tertiary-system-background: #2c2c2e;
+
+    /* iOS 26 Surface Elevated - Dark Mode */
+    --ios-26-surface-elevated: color-mix(in oklch, #000000, #ffffff 8%);
+    --ios-26-surface-elevated-secondary: color-mix(
+      in oklch,
+      #000000,
+      #ffffff 12%
+    );
+    --ios-26-surface-elevated-tertiary: color-mix(
+      in oklch,
+      #000000,
+      #ffffff 16%
+    );
+
+    --surface-elevated: color-mix(in oklch, #000000, #ffffff 8%);
+    --surface-elevated-secondary: color-mix(in oklch, #000000, #ffffff 12%);
+    --surface-elevated-tertiary: color-mix(in oklch, #000000, #ffffff 16%);
+  }
+}
+
+/* iOS 26 High Contrast Mode Support */
+@media (prefers-contrast: more) {
+  :root {
+    /* Enhanced contrast colors for better accessibility */
+    --ios-label-primary: #000000;
+    --ios-label-secondary: rgba(0, 0, 0, 0.8);
+    --vitalsense-primary: #1e3a8a; /* Darker blue for better contrast */
+    --vitalsense-teal: #0f766e; /* Darker teal for better contrast */
+
+    /* Enhanced border contrast */
+    --border: rgba(0, 0, 0, 0.3);
+    --vitalsense-border: rgba(37, 99, 235, 0.4);
+  }
+}
+
+@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
+  :root {
+    /* Enhanced contrast colors for dark mode */
+    --ios-label-primary: #ffffff;
+    --ios-label-secondary: rgba(255, 255, 255, 0.9);
+    --vitalsense-primary: #60a5fa; /* Brighter blue for dark mode contrast */
+    --vitalsense-teal: #2dd4bf; /* Brighter teal for dark mode contrast */
+
+    /* Enhanced border contrast in dark mode */
+    --border: rgba(255, 255, 255, 0.3);
+    --vitalsense-border: rgba(96, 165, 250, 0.4);
+  }
+}
+
+/* iOS 26 Enhanced Focus States */
+.focus-visible\:ring-2:focus-visible {
+  outline: 2px solid var(--vitalsense-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.ios26-focus-enhanced:focus-visible {
+  outline: 3px solid var(--vitalsense-primary-ios26);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px
+    color-mix(in oklch, var(--vitalsense-primary-ios26), transparent 80%);
+}
+
 /* === VITALSENSE COMPONENTS === */
 @layer components {
+  /* iOS 26 System Color Utilities */
+  .ios-label-primary {
+    color: var(--ios-label-primary);
+  }
+
+  .ios-label-secondary {
+    color: var(--ios-label-secondary);
+  }
+
+  .ios-system-background {
+    background-color: var(--ios-system-background);
+  }
+
+  .ios-26-surface-elevated {
+    background-color: var(--ios-26-surface-elevated);
+    border: 1px solid
+      color-mix(in oklch, var(--ios-label-primary), transparent 85%);
+  }
+
+  .ios-26-surface-elevated-secondary {
+    background-color: var(--ios-26-surface-elevated-secondary);
+  }
+
+  .ios-26-surface-elevated-tertiary {
+    background-color: var(--ios-26-surface-elevated-tertiary);
+  }
+
+  /* iOS 26 Enhanced Accessibility */
+  .ios-26-enhanced-contrast {
+    transition: all 0.2s ease-in-out;
+  }
+
+  @media (prefers-contrast: more) {
+    .ios-26-enhanced-contrast {
+      border-width: 2px;
+      font-weight: 600;
+    }
+  }
+
   /* VitalSense Status Cards */
   .vitalsense-card {
     @apply bg-card text-card-foreground rounded-lg border border-border p-4 shadow-sm;

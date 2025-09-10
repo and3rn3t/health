@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev-esbuild.js",
     "kill": "fuser -k 5000/tcp",
     "build": "node scripts/build.js",
     "build:app": "tsc --noEmit && node scripts/build.js",
