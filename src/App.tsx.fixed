@@ -1,0 +1,471 @@
+// 🚀 VitalSense App - Complete Navigation Restored
+import { Suspense, lazy, useCallback, useMemo, useState } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
+
+// Core components
+import Footer from '@/components/Footer';
+import NavigationHeader from '@/components/NavigationHeader';
+import { ErrorFallback } from '@/components/ErrorFallback';
+
+// Icons for navigation - Complete set
+import { Button } from '@/components/ui/button';
+import {
+  Activity,
+  AlertTriangle,
+  Bell,
+  Brain,
+  Clock,
+  CloudUpload,
+  Heart,
+  Lightbulb,
+  Menu as List,
+  Monitor,
+  Pill,
+  Search,
+  Settings,
+  Share,
+  Shield,
+  Smartphone,
+  Target,
+  TrendingUp,
+  Upload,
+  Users,
+} from 'lucide-react';
+
+// Lazy loaded components
+const HealthDashboard = lazy(() => import('@/components/HealthDashboard'));
+const GameCenter = lazy(() => import('@/components/GameCenter'));
+const SettingsPanel = lazy(() => import('@/components/SettingsPanel'));
+const UserProfile = lazy(() => import('@/components/UserProfile'));
+const VitalSenseLoader = lazy(() => import('@/components/VitalSenseLoader'));
+
+// Define navigation item structure
+interface NavigationItem {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+}
+
+// Define navigation categories
+interface NavigationItems {
+  main: NavigationItem[];
+  monitoring: NavigationItem[];
+  ai: NavigationItem[];
+  advanced: NavigationItem[];
+  gamification: NavigationItem[];
+  community: NavigationItem[];
+  management: NavigationItem[];
+  profile: NavigationItem[];
+}
+
+// Main App component
+function App() {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Toggle sidebar function with debug logging
+  const toggleSidebar = useCallback(() => {
+    console.log('🔄 toggleSidebar called!');
+    console.log('Current sidebarOpen:', sidebarOpen);
+    setSidebarOpen((prev) => {
+      console.log('Setting sidebarOpen from', prev, 'to', !prev);
+      return !prev;
+    });
+  }, [sidebarOpen]);
+
+  // Mock health data
+  const effectiveHealthData = {
+    healthScore: 85,
+    lastUpdated: new Date().toISOString(),
+  };
+
+  const hasHealthData = true;
+
+  // Complete navigation structure (restored from original)
+  const navigationItems = useMemo(
+    (): NavigationItems => ({
+      main: [
+        { id: 'dashboard', label: 'VitalSense Dashboard', icon: Heart },
+        { id: 'health-overview', label: 'Health Overview', icon: Monitor },
+        { id: 'fall-detection', label: 'Fall Risk Monitor', icon: Shield },
+        { id: 'posture-analysis', label: 'Posture Analysis', icon: Activity },
+        { id: 'walking-patterns', label: 'Walking Patterns', icon: Activity },
+        { id: 'gait-analysis', label: 'Gait Analysis', icon: Target },
+        {
+          id: 'real-sensor-gait',
+          label: 'Real Sensor Analysis',
+          icon: Smartphone,
+        },
+        { id: 'emergency', label: 'Emergency Alert', icon: AlertTriangle },
+      ],
+      monitoring: [
+        { id: 'ws-health-panel', label: 'Live Health Stream', icon: Activity },
+        { id: 'real-time-scoring', label: 'Real-time Scoring', icon: TrendingUp },
+        { id: 'health-alerts-config', label: 'Alert Configuration', icon: Bell },
+        {
+          id: 'predictive-alerts',
+          label: 'Predictive Health Alerts',
+          icon: Brain,
+        },
+        {
+          id: 'smart-notifications',
+          label: 'Smart Notifications',
+          icon: Bell,
+        },
+      ],
+      ai: [
+        {
+          id: 'smart-recommendations',
+          label: 'Smart Feature Recommendations',
+          icon: Brain,
+        },
+        {
+          id: 'engagement-optimizer',
+          label: 'Engagement Optimizer',
+          icon: TrendingUp,
+        },
+        { id: 'ai-insights', label: 'AI Health Insights', icon: Lightbulb },
+      ],
+      advanced: [
+        { id: 'apple-watch-guide', label: 'Apple Watch Setup', icon: Smartphone },
+        {
+          id: 'comprehensive-healthkit',
+          label: 'HealthKit Integration',
+          icon: Heart,
+        },
+        { id: 'websocket-guide', label: 'WebSocket Architecture', icon: Share },
+        { id: 'ws-token-settings', label: 'WebSocket Settings', icon: Settings },
+        { id: 'ios26-navigation', label: 'iOS 26 Navigation', icon: List },
+      ],
+      gamification: [
+        { id: 'games', label: 'Health Games', icon: Target },
+        { id: 'achievements', label: 'Achievements', icon: Target },
+        { id: 'challenges', label: 'Health Challenges', icon: TrendingUp },
+      ],
+      community: [
+        { id: 'social', label: 'Social Features', icon: Users },
+        { id: 'sharing', label: 'Data Sharing', icon: Share },
+        { id: 'care-team', label: 'Care Team', icon: Users },
+      ],
+      management: [
+        { id: 'contacts', label: 'Emergency Contacts', icon: Users },
+        { id: 'enhanced-upload', label: 'Enhanced Upload', icon: CloudUpload },
+        { id: 'import', label: 'Import Data', icon: Upload },
+        { id: 'export', label: 'Export Data', icon: Upload },
+        { id: 'devices', label: 'Connected Devices', icon: Smartphone },
+        { id: 'medications', label: 'Medications', icon: Pill },
+        { id: 'workouts', label: 'Workouts', icon: Activity },
+        { id: 'settings', label: 'Health Settings', icon: Settings },
+      ],
+      profile: [{ id: 'user-profile', label: 'User Profile', icon: Users }],
+    }),
+    []
+  );
+
+  // Flatten all navigation items for tabs
+  const allNavigationTabs = useMemo(
+    () => [
+      ...navigationItems.main,
+      ...navigationItems.monitoring,
+      ...navigationItems.ai,
+      ...navigationItems.advanced,
+      ...navigationItems.gamification,
+      ...navigationItems.community,
+      ...navigationItems.management,
+      ...navigationItems.profile,
+    ],
+    [navigationItems]
+  );
+
+  // Get current page details for breadcrumb
+  const getCurrentPageInfo = useCallback(() => {
+    const currentItem = allNavigationTabs.find((item) => item.id === activeTab);
+
+    if (!currentItem) return { label: 'Dashboard', category: 'Main' };
+
+    let category = 'Main';
+    if (navigationItems.monitoring.find((item) => item.id === activeTab))
+      category = 'Monitoring';
+    if (navigationItems.ai.find((item) => item.id === activeTab))
+      category = 'AI & ML';
+    if (navigationItems.advanced.find((item) => item.id === activeTab))
+      category = 'Advanced';
+    if (navigationItems.gamification.find((item) => item.id === activeTab))
+      category = 'Gamification';
+    if (navigationItems.community.find((item) => item.id === activeTab))
+      category = 'Community';
+    if (navigationItems.management.find((item) => item.id === activeTab))
+      category = 'Management';
+    if (navigationItems.profile.find((item) => item.id === activeTab))
+      category = 'Profile';
+
+    return {
+      label: currentItem.label,
+      category,
+    };
+  }, [activeTab, allNavigationTabs, navigationItems]);
+
+  const currentPageInfo = getCurrentPageInfo();
+
+  // Render sidebar section helper
+  const renderSidebarSection = (title: string, items: NavigationItem[]) => (
+    <div className="mb-6">
+      <h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+        {title}
+      </h3>
+      <div className="space-y-1">
+        {items.map((item) => {
+          const IconComponent = item.icon;
+          const isActive = item.id === activeTab;
+
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveTab(item.id);
+                setSidebarOpen(false); // Close sidebar on mobile after selection
+              }}
+              className={`
+                group flex w-full items-center rounded-lg px-2 py-2 text-sm font-medium
+                ${
+                  isActive
+                    ? 'bg-blue-100 text-blue-900'
+                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                }
+              `}
+            >
+              <IconComponent
+                className={`mr-3 h-5 w-5 flex-shrink-0 ${
+                  isActive
+                    ? 'text-blue-500'
+                    : 'text-gray-400 group-hover:text-gray-500'
+                }`}
+              />
+              <span className="truncate">{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  return (
+    <ErrorBoundary fallback={<ErrorFallback />}>
+      <div className="flex h-screen bg-gray-50">
+        {/* Sidebar */}
+        <div
+          className={`
+            fixed inset-y-0 left-0 z-50 w-64 transform bg-white shadow-lg transition-transform duration-300 ease-in-out
+            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+            lg:relative lg:translate-x-0
+          `}
+        >
+          {/* Sidebar Header */}
+          <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4">
+            <div className="flex items-center gap-2">
+              <Heart className="h-6 w-6 text-blue-600" />
+              <span className="text-lg font-bold text-gray-900">VitalSense</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden"
+            >
+              ×
+            </Button>
+          </div>
+
+          {/* Sidebar Navigation */}
+          <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-4">
+            {renderSidebarSection('Main Features', navigationItems.main)}
+            {renderSidebarSection(
+              'Monitoring & Alerts',
+              navigationItems.monitoring
+            )}
+            {renderSidebarSection('AI & ML', navigationItems.ai)}
+            {renderSidebarSection('Advanced Features', navigationItems.advanced)}
+            {renderSidebarSection('Gamification', navigationItems.gamification)}
+            {renderSidebarSection(
+              'Community & Care',
+              navigationItems.community
+            )}
+            {renderSidebarSection('Management', navigationItems.management)}
+            {renderSidebarSection('User Profile', navigationItems.profile)}
+          </nav>
+
+          {/* Sidebar Footer */}
+          <div className="flex-shrink-0 border-t border-gray-200 p-4">
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <Activity className="h-3 w-3" />
+              <span>Health Score: {effectiveHealthData?.healthScore}/100</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Overlay when sidebar is open */}
+        {sidebarOpen && (
+          <button
+            className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+            onKeyDown={(e) => e.key === 'Escape' && setSidebarOpen(false)}
+            aria-label="Close sidebar"
+          />
+        )}
+
+        {/* Main Content Area */}
+        <div className="flex-1 lg:ml-0">
+          {/* Navigation Header */}
+          <div className="border-b border-gray-200 bg-white">
+            <NavigationHeader
+              currentPageInfo={currentPageInfo}
+              themeMode="light"
+              onThemeToggle={() => {}}
+              onNavigate={setActiveTab}
+              onToggleSidebar={toggleSidebar}
+              sidebarCollapsed={!sidebarOpen}
+              healthScore={effectiveHealthData?.healthScore}
+              hasAlerts={false}
+            />
+          </div>
+
+          {/* Tab Navigation - Show subset of main tabs */}
+          <div className="sticky top-16 z-20 border-b border-gray-100 bg-white">
+            <div className="px-4 lg:px-8">
+              <div
+                className="flex overflow-x-auto"
+                role="tablist"
+                aria-label="Main navigation"
+              >
+                {navigationItems.main.slice(0, 8).map((tab) => {
+                  const isActive = tab.id === activeTab;
+                  const IconComponent = tab.icon;
+
+                  return (
+                    <button
+                      key={tab.id}
+                      role="tab"
+                      aria-selected={isActive}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`
+                        flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors
+                        ${
+                          isActive
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                        }
+                      `}
+                    >
+                      <IconComponent className="h-4 w-4" />
+                      <span className="hidden sm:inline">{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <main className="flex-1 overflow-auto p-4 lg:p-8">
+            <div className="mx-auto max-w-7xl space-y-8">
+              <Suspense fallback={<VitalSenseLoader />}>
+                {(activeTab === 'dashboard' ||
+                  activeTab === 'health-overview') && <HealthDashboard />}
+                {(activeTab === 'games' || activeTab === 'game-center') && (
+                  <GameCenter />
+                )}
+                {activeTab === 'settings' && <SettingsPanel />}
+                {activeTab === 'user-profile' && <UserProfile />}
+                {activeTab === 'test' && (
+                  <div className="rounded-xl border border-green-200 bg-green-50 p-8 shadow-sm">
+                    <h2 className="mb-4 text-2xl font-bold text-green-800">
+                      ✅ Complete Navigation Restored!
+                    </h2>
+                    <p className="mb-3 text-green-700">
+                      Full VitalSense navigation system with{' '}
+                      {allNavigationTabs.length} components! Sidebar state:{' '}
+                      {sidebarOpen ? 'Open' : 'Closed'}
+                    </p>
+                    <div className="mt-4 space-y-2">
+                      <p className="text-sm text-green-600">
+                        <strong>Navigation sections:</strong>
+                      </p>
+                      <ul className="space-y-1 text-sm text-green-600">
+                        <li>
+                          • Main Features ({navigationItems.main.length} items)
+                        </li>
+                        <li>
+                          • Monitoring & Alerts (
+                          {navigationItems.monitoring.length} items)
+                        </li>
+                        <li>• AI & ML ({navigationItems.ai.length} items)</li>
+                        <li>
+                          • Advanced ({navigationItems.advanced.length} items)
+                        </li>
+                        <li>
+                          • Gamification (
+                          {navigationItems.gamification.length} items)
+                        </li>
+                        <li>
+                          • Community ({navigationItems.community.length} items)
+                        </li>
+                        <li>
+                          • Management ({navigationItems.management.length}{' '}
+                          items)
+                        </li>
+                        <li>
+                          • Profile ({navigationItems.profile.length} items)
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
+                {/* Default message for other tabs */}
+                {![
+                  'dashboard',
+                  'health-overview',
+                  'games',
+                  'game-center',
+                  'settings',
+                  'user-profile',
+                  'test',
+                ].includes(activeTab) && (
+                  <div className="rounded-lg border border-gray-200 bg-white p-8 text-center shadow-sm">
+                    <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-blue-100 p-3">
+                      {(() => {
+                        const currentItem = allNavigationTabs.find(
+                          (item) => item.id === activeTab
+                        );
+                        const IconComponent = currentItem?.icon || Heart;
+                        return <IconComponent className="h-6 w-6 text-blue-600" />;
+                      })()}
+                    </div>
+                    <h2 className="mb-2 text-xl font-semibold text-gray-900">
+                      {currentPageInfo.label}
+                    </h2>
+                    <p className="text-gray-600">
+                      This feature is coming soon. Check back for updates!
+                    </p>
+                    <div className="mt-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => setActiveTab('dashboard')}
+                      >
+                        Return to Dashboard
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </Suspense>
+            </div>
+          </main>
+
+          {/* Footer */}
+          <Footer />
+        </div>
+      </div>
+    </ErrorBoundary>
+  );
+}
+
+export default App;

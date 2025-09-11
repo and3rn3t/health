@@ -12,12 +12,16 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
   error,
   resetErrorBoundary,
 }) => {
-  // When encountering an error in the development mode, rethrow it and don't display the boundary.
+  // Check if we're in development (localhost)
+  const isDev =
+    typeof window !== 'undefined' && window.location.hostname === 'localhost';
+
+  // When encountering an error in development mode, rethrow it and don't display the boundary.
   // The parent UI will take care of showing a more helpful dialog.
-  if (import.meta.env.DEV) throw error;
+  if (isDev) throw error;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="bg-background flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Alert variant="destructive" className="mb-6">
           <AlertTriangle />
@@ -33,7 +37,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
           <h3 className="text-muted-foreground mb-2 text-sm font-semibold">
             Error Details:
           </h3>
-          <pre className="text-destructive bg-muted/50 max-h-32 overflow-auto rounded border p-3 text-xs">
+          <pre className="text-destructive bg-muted/50 max-h-32 p-3 text-xs overflow-auto rounded border">
             {error.message}
           </pre>
         </div>

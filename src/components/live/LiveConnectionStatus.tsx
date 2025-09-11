@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/popover';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { RefreshCw, Signal, Wifi, WifiOff } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface ConnectionStats {
   totalMessages: number;
@@ -23,42 +23,45 @@ export function LiveConnectionStatus() {
   });
 
   // Get WebSocket URL from window globals or use default
-  const getWebSocketUrl = () => {
+  const getWebSocketUrl = useCallback(() => {
     if (typeof window !== 'undefined') {
-      const customUrl = (window as any).__WS_URL__;
+      const customUrl = (window as Window & { __WS_URL__?: string }).__WS_URL__;
       if (customUrl) return customUrl;
     }
     return 'ws://localhost:3001';
-  };
+  }, []);
 
-  // WebSocket message handlers
-  const messageHandlers = {
-    connection_established: () => {
-      setStats((prev) => ({
-        ...prev,
-        lastHeartbeat: new Date().toISOString(),
-      }));
-    },
+  // WebSocket message handlers - memoized to prevent infinite loops
+  const messageHandlers = useMemo(
+    () => ({
+      connection_established: () => {
+        setStats((prev) => ({
+          ...prev,
+          lastHeartbeat: new Date().toISOString(),
+        }));
+      },
 
-    live_health_update: () => {
-      setStats((prev) => ({
-        ...prev,
-        totalMessages: prev.totalMessages + 1,
-        lastHeartbeat: new Date().toISOString(),
-      }));
-    },
+      live_health_update: () => {
+        setStats((prev) => ({
+          ...prev,
+          totalMessages: prev.totalMessages + 1,
+          lastHeartbeat: new Date().toISOString(),
+        }));
+      },
 
-    pong: () => {
-      setStats((prev) => ({
-        ...prev,
-        lastHeartbeat: new Date().toISOString(),
-      }));
-    },
-  };
+      pong: () => {
+        setStats((prev) => ({
+          ...prev,
+          lastHeartbeat: new Date().toISOString(),
+        }));
+      },
+    }),
+    []
+  ); // Empty deps since handlers don't depend on external values
 
-  // Initialize WebSocket connection
-  const { connectionState, sendMessage, connect, disconnect } = useWebSocket(
-    {
+  // WebSocket config - memoized to prevent infinite loops
+  const webSocketConfig = useMemo(
+    () => ({
       url: getWebSocketUrl(),
       enableInDevelopment: true,
       reconnectAttempts: 5,
@@ -66,26 +69,38 @@ export function LiveConnectionStatus() {
       pingInterval: 30000,
       onConnect: () => {
         console.log('Connection status widget connected');
-        // Send client identification
-        sendMessage({
-          type: 'client_identification',
-          data: {
-            clientType: 'status_widget',
-            userId: 'demo-user',
-            version: '1.0.0',
-          },
-          timestamp: new Date().toISOString(),
-        });
       },
-    },
+    }),
+    [getWebSocketUrl]
+  );
+
+  // Initialize WebSocket connection
+  const { connectionState, sendMessage, connect, disconnect } = useWebSocket(
+    webSocketConfig,
     messageHandlers
   );
 
-  // Auto-connect when component mounts
+  // Send identification when connected - separate useEffect
+  useEffect(() => {
+    if (connectionState.isConnected) {
+      sendMessage({
+        type: 'client_identification',
+        data: {
+          clientType: 'status_widget',
+          userId: 'demo-user',
+          version: '1.0.0',
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, [connectionState.isConnected, sendMessage]);
+
+  // Auto-connect when component mounts - use empty deps to avoid infinite loop
   useEffect(() => {
     connect();
     return () => disconnect();
-  }, [connect, disconnect]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount/unmount
 
   // Update uptime
   useEffect(() => {
@@ -115,7 +130,7 @@ export function LiveConnectionStatus() {
   // Get status icon and color
   const getStatusIcon = () => {
     if (connectionState.isConnecting) {
-      return <RefreshCw className="h-4 w-4 animate-spin" />;
+      return <RefreshCw className="animate-spin h-4 w-4" />;
     }
     if (connectionState.isConnected) {
       return <Wifi className="h-4 w-4" />;
@@ -172,7 +187,7 @@ export function LiveConnectionStatus() {
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Server</span>
-              <span className="font-mono text-xs">{getWebSocketUrl()}</span>
+              <span className="text-xs font-mono">{getWebSocketUrl()}</span>
             </div>
 
             {connectionState.isConnected && (
@@ -191,7 +206,7 @@ export function LiveConnectionStatus() {
 
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Last Heartbeat</span>
-                  <span className="font-mono text-xs">
+                  <span className="text-xs font-mono">
                     {stats.lastHeartbeat
                       ? new Date(stats.lastHeartbeat).toLocaleTimeString()
                       : 'Never'}
@@ -201,13 +216,13 @@ export function LiveConnectionStatus() {
             )}
 
             {connectionState.error && (
-              <div className="rounded bg-red-50 p-2 text-sm text-red-600">
+              <div className="bg-red-50 text-red-600 rounded p-2 text-sm">
                 <strong>Error:</strong> {connectionState.error}
               </div>
             )}
 
             {connectionState.reconnectAttempts > 0 && (
-              <div className="rounded bg-yellow-50 p-2 text-sm text-yellow-600">
+              <div className="bg-yellow-50 text-yellow-600 rounded p-2 text-sm">
                 Reconnect attempt: {connectionState.reconnectAttempts}
               </div>
             )}

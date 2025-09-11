@@ -29,28 +29,28 @@ export const auth0Config = {
   domain:
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.auth0?.domain) ||
-    import.meta.env.VITE_AUTH0_DOMAIN ||
     'vitalsense-health.auth0.com',
   clientId:
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.auth0?.clientId) ||
-    import.meta.env.VITE_AUTH0_CLIENT_ID ||
     'your-client-id',
 
   // Security Configuration
   redirectUri:
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.auth0?.redirectUri) ||
-    import.meta.env.VITE_AUTH0_REDIRECT_URI ||
-    `${window.location.origin}/callback`,
+    (typeof window !== 'undefined'
+      ? `${window.location.origin}/callback`
+      : '/callback'),
   logoutUri:
-    import.meta.env.VITE_AUTH0_LOGOUT_URI || `${window.location.origin}/login`,
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/login`
+      : '/login',
 
   // HIPAA Compliance Settings
   audience:
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.auth0?.audience) ||
-    import.meta.env.VITE_AUTH0_AUDIENCE ||
     'https://vitalsense-health-api',
   scope:
     (typeof window !== 'undefined' &&

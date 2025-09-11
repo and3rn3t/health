@@ -43,31 +43,40 @@ import {
 import { useState } from 'react';
 
 interface NavigationHeaderProps {
-  currentPageInfo: {
+  onSidebarToggle: () => void;
+  sidebarOpen: boolean;
+  currentPageInfo?: {
     label: string;
     category: string;
   };
-  themeMode: 'light' | 'dark' | 'system';
-  onThemeToggle: () => void;
-  onNavigate: (tab: string) => void;
-  onToggleSidebar: () => void;
-  sidebarCollapsed: boolean;
+  themeMode?: 'light' | 'dark' | 'system';
+  onThemeToggle?: () => void;
+  onNavigate?: (tab: string) => void;
+  sidebarCollapsed?: boolean;
   healthScore?: number;
   hasAlerts?: boolean;
 }
 
 export default function NavigationHeader({
-  currentPageInfo,
-  themeMode,
-  onThemeToggle,
-  onNavigate,
-  onToggleSidebar,
-  sidebarCollapsed: _sidebarCollapsed,
-  healthScore,
+  onSidebarToggle,
+  sidebarOpen,
+  currentPageInfo = { label: 'Dashboard', category: 'Health' },
+  themeMode = 'light',
+  onThemeToggle = () => {},
+  onNavigate = () => {},
+  sidebarCollapsed = false,
+  healthScore = 85,
   hasAlerts = false,
 }: Readonly<NavigationHeaderProps>) {
   const [searchQuery, setSearchQuery] = useState('');
   const { user, isAuthenticated, isLoading, login, logout } = useAuth();
+
+  console.log('🧭 NavigationHeader rendering...'); // Debug log
+
+  const handleSidebarToggle = () => {
+    console.log('🍔 Hamburger menu clicked!'); // Debug log
+    onSidebarToggle();
+  };
 
   const initials = (name?: string) => {
     if (!name) return 'U';
@@ -120,16 +129,17 @@ export default function NavigationHeader({
   };
 
   return (
-    <header className="bg-card/95 supports-[backdrop-filter]:bg-card/60 sticky top-0 z-30 mb-3 w-full border-b border-border backdrop-blur">
-      <div className="flex h-16 items-center justify-between px-4 lg:px-6">
+    <header className="border-gray-200 sticky top-0 z-30 mb-4 w-full border-b bg-white">
+      <div className="h-16 flex items-center justify-between px-4 lg:px-8">
         {/* Left Section - Sidebar Toggle & Page Info */}
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          {/* Sidebar Toggle */}
+        <div className="flex min-w-0 flex-1 items-center gap-4">
+          {/* Sidebar Toggle - Always visible */}
           <Button
             variant="ghost"
             size="sm"
-            onClick={onToggleSidebar}
-            className="shrink-0 lg:hidden"
+            onClick={handleSidebarToggle}
+            className="shrink-0 hover:bg-gray-100"
+            aria-label="Toggle navigation sidebar"
           >
             <Menu className="h-4 w-4" />
           </Button>
@@ -137,13 +147,13 @@ export default function NavigationHeader({
           {/* Page Info Container */}
           <div className="min-w-0 flex-1">
             {/* Breadcrumb Navigation - Desktop */}
-            <div className="hidden md:flex md:flex-col md:gap-1">
+            <div className="md:flex md:flex-col md:gap-2 hidden">
               <Breadcrumb>
                 <BreadcrumbList className="text-sm">
                   <BreadcrumbItem>
                     <BreadcrumbLink
                       onClick={() => onNavigate('dashboard')}
-                      className="flex cursor-pointer items-center gap-1.5 hover:text-vitalsense-primary"
+                      className="gap-1.5 flex cursor-pointer items-center hover:text-vitalsense-primary"
                     >
                       <Home className="h-3.5 w-3.5" />
                       VitalSense
@@ -151,15 +161,15 @@ export default function NavigationHeader({
                   </BreadcrumbItem>
                   {currentPageInfo.label !== 'Dashboard' && (
                     <>
-                      <BreadcrumbSeparator className="mx-1" />
+                      <BreadcrumbSeparator className="mx-2" />
                       <BreadcrumbItem>
                         <BreadcrumbLink className="cursor-pointer hover:text-vitalsense-primary">
                           {currentPageInfo.category}
                         </BreadcrumbLink>
                       </BreadcrumbItem>
-                      <BreadcrumbSeparator className="mx-1" />
+                      <BreadcrumbSeparator className="mx-2" />
                       <BreadcrumbItem>
-                        <BreadcrumbPage className="font-medium text-foreground">
+                        <BreadcrumbPage className="text-foreground font-medium">
                           {currentPageInfo.label}
                         </BreadcrumbPage>
                       </BreadcrumbItem>
@@ -169,7 +179,7 @@ export default function NavigationHeader({
               </Breadcrumb>
 
               {/* Page Description */}
-              <p className="text-muted-foreground truncate text-xs leading-tight">
+              <p className="text-muted-foreground text-xs truncate leading-tight">
                 {getPageDescription()}
               </p>
             </div>
@@ -179,7 +189,7 @@ export default function NavigationHeader({
               <h1 className="truncate text-base font-semibold leading-tight">
                 {currentPageInfo.label}
               </h1>
-              <p className="text-muted-foreground truncate text-xs leading-tight">
+              <p className="text-muted-foreground text-xs truncate leading-tight">
                 {currentPageInfo.category}
               </p>
             </div>
@@ -187,31 +197,27 @@ export default function NavigationHeader({
         </div>
 
         {/* Center Section - Search */}
-        <div
-          className="mx-10 hidden max-w-md flex-1 lg:flex xl:mx-16"
-          style={{ marginLeft: '2.5rem', marginRight: '2.5rem' }}
-        >
+        <div className="xl:mx-20 mx-8 hidden max-w-md flex-1 lg:flex">
           <form onSubmit={handleSearch} className="relative w-full">
             <Search className="text-muted-foreground absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder="Search health data, insights..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-20 pr-6"
-              style={{ paddingLeft: '4.25rem', paddingRight: '1.5rem' }}
+              className="pl-12 h-10 pr-6"
             />
           </form>
         </div>
 
         {/* Right Section - Actions & User Menu */}
-        <div className="flex shrink-0 items-center gap-2 md:gap-3">
+        <div className="gap-3 md:gap-4 flex shrink-0 items-center">
           {/* Health Score Badge */}
           {healthScore !== undefined && (
             <Badge
               variant="outline"
-              className="hidden border-vitalsense-primary text-vitalsense-primary sm:flex"
+              className="px-3 hidden border-vitalsense-primary py-1 text-vitalsense-primary sm:flex"
             >
-              <Shield className="mr-1 h-3 w-3" />
+              <Shield className="h-3 w-3 mr-2" />
               {healthScore}/100
             </Badge>
           )}
@@ -235,7 +241,7 @@ export default function NavigationHeader({
           >
             <Bell className="h-4 w-4" />
             {hasAlerts && (
-              <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
+              <span className="bg-red-500 absolute -right-1 -top-1 h-2 w-2 rounded-full" />
             )}
           </Button>
 
@@ -256,7 +262,7 @@ export default function NavigationHeader({
               variant="outline"
               size="sm"
               onClick={() => onNavigate('user-profile')}
-              className="hidden rounded-full px-3 md:inline-flex"
+              className="px-3 md:inline-flex hidden rounded-full"
             >
               View Account
             </Button>

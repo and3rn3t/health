@@ -40,15 +40,20 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
   }, [appError]);
 
   // Don't show error boundary in development - let React DevTools handle it
-  if (import.meta.env.DEV && !(error instanceof AppErrorHandler)) {
+  if (
+    typeof window !== 'undefined' &&
+    window.location.hostname === 'localhost' &&
+    !(error instanceof AppErrorHandler)
+  ) {
     throw error;
   }
 
-  const isProductionBuild = import.meta.env.PROD;
+  const isProductionBuild =
+    typeof window !== 'undefined' && window.location.hostname !== 'localhost';
   const showTechnicalDetails = !isProductionBuild;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="bg-background flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Alert variant="destructive" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
@@ -67,7 +72,7 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
                 Technical Details
               </h3>
             </div>
-            <div className="text-muted-foreground space-y-2 text-xs">
+            <div className="text-muted-foreground text-xs space-y-2">
               <div>
                 <span className="font-medium">Error ID:</span> {appError.id}
               </div>
@@ -86,7 +91,7 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
             </div>
             {error.message && (
               <div className="mt-3">
-                <pre className="text-destructive bg-muted/50 max-h-32 overflow-auto whitespace-pre-wrap break-words rounded border p-3 text-xs">
+                <pre className="text-destructive bg-muted/50 max-h-32 p-3 text-xs overflow-auto whitespace-pre-wrap break-words rounded border">
                   {error.message}
                 </pre>
               </div>
@@ -109,7 +114,7 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
               <p className="text-muted-foreground text-xs">
                 Error ID: {appError.id}
               </p>
-              <p className="text-muted-foreground mt-1 text-xs">
+              <p className="text-muted-foreground text-xs mt-1">
                 Please provide this ID when contacting support
               </p>
             </div>
@@ -139,7 +144,7 @@ export const HealthDataErrorFallback: React.FC<ErrorFallbackProps> = ({
   }, [appError]);
 
   return (
-    <div className="rounded-lg border bg-background p-6">
+    <div className="bg-background rounded-lg border p-6">
       <Alert variant="destructive" className="mb-4">
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Health Data Error</AlertTitle>
@@ -160,7 +165,7 @@ export const HealthDataErrorFallback: React.FC<ErrorFallbackProps> = ({
           Retry Loading Data
         </Button>
 
-        <p className="text-muted-foreground text-center text-xs">
+        <p className="text-muted-foreground text-xs text-center">
           If this problem persists, please refresh the page
         </p>
       </div>
@@ -181,7 +186,7 @@ export const NetworkErrorFallback: React.FC<ErrorFallbackProps> = ({
     error.message.includes('timeout');
 
   return (
-    <div className="rounded-lg border bg-background p-6">
+    <div className="bg-background rounded-lg border p-6">
       <Alert variant="destructive" className="mb-4">
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Connection Error</AlertTitle>

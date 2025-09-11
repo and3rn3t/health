@@ -239,7 +239,7 @@ export function EnhancedGaitAnalyzer() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-3">
+          <div className="gap-3 flex">
             {!isAnalyzing ? (
               <Button
                 onClick={startRealSensorAnalysis}
@@ -276,7 +276,7 @@ export function EnhancedGaitAnalyzer() {
 
           {/* Session Info */}
           {currentSession && (
-            <div className="rounded-lg bg-gray-50 p-3">
+            <div className="bg-gray-50 p-3 rounded-lg">
               <div className="space-y-1 text-sm">
                 <div>
                   <strong>Session:</strong> {currentSession.id}
@@ -314,20 +314,20 @@ export function EnhancedGaitAnalyzer() {
 
           {/* Current Real-time Metrics */}
           <TabsContent value="current" className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="md:grid-cols-2 grid grid-cols-1 gap-4 lg:grid-cols-3">
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">Walking Speed</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-blue-600 text-2xl font-bold">
                     {formatMetric(metrics.realTime.speed, ' m/s')}
                   </div>
                   <Progress
                     value={metrics.realTime.speed * 33.33}
                     className="mt-2"
                   />
-                  <p className="text-muted-foreground mt-1 text-xs">
+                  <p className="text-muted-foreground text-xs mt-1">
                     Target: 1.2-1.8 m/s
                   </p>
                 </CardContent>
@@ -338,14 +338,14 @@ export function EnhancedGaitAnalyzer() {
                   <CardTitle className="text-base">Step Cadence</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-green-600 text-2xl font-bold">
                     {formatMetric(metrics.realTime.cadence, ' spm', 0)}
                   </div>
                   <Progress
                     value={(metrics.realTime.cadence / 180) * 100}
                     className="mt-2"
                   />
-                  <p className="text-muted-foreground mt-1 text-xs">
+                  <p className="text-muted-foreground text-xs mt-1">
                     Target: 120-140 steps/min
                   </p>
                 </CardContent>
@@ -356,11 +356,11 @@ export function EnhancedGaitAnalyzer() {
                   <CardTitle className="text-base">Rhythm Score</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-purple-600">
+                  <div className="text-purple-600 text-2xl font-bold">
                     {formatMetric(metrics.realTime.rhythm, '%', 0)}
                   </div>
                   <Progress value={metrics.realTime.rhythm} className="mt-2" />
-                  <p className="text-muted-foreground mt-1 text-xs">
+                  <p className="text-muted-foreground text-xs mt-1">
                     Consistency rating
                   </p>
                 </CardContent>
@@ -371,14 +371,14 @@ export function EnhancedGaitAnalyzer() {
                   <CardTitle className="text-base">Gait Symmetry</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-orange-600">
+                  <div className="text-orange-600 text-2xl font-bold">
                     {formatMetric(metrics.realTime.symmetry, '%', 0)}
                   </div>
                   <Progress
                     value={metrics.realTime.symmetry}
                     className="mt-2"
                   />
-                  <p className="text-muted-foreground mt-1 text-xs">
+                  <p className="text-muted-foreground text-xs mt-1">
                     Left-right balance
                   </p>
                 </CardContent>
@@ -389,14 +389,14 @@ export function EnhancedGaitAnalyzer() {
                   <CardTitle className="text-base">Stability Score</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-teal-600">
+                  <div className="text-teal-600 text-2xl font-bold">
                     {formatMetric(metrics.realTime.stability, '%', 0)}
                   </div>
                   <Progress
                     value={metrics.realTime.stability}
                     className="mt-2"
                   />
-                  <p className="text-muted-foreground mt-1 text-xs">
+                  <p className="text-muted-foreground text-xs mt-1">
                     Movement steadiness
                   </p>
                 </CardContent>
@@ -407,14 +407,14 @@ export function EnhancedGaitAnalyzer() {
                   <CardTitle className="text-base">Step Length</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-red-600">
+                  <div className="text-red-600 text-2xl font-bold">
                     {formatMetric(metrics.realTime.stepLength, ' cm', 0)}
                   </div>
                   <Progress
                     value={(metrics.realTime.stepLength / 80) * 100}
                     className="mt-2"
                   />
-                  <p className="text-muted-foreground mt-1 text-xs">
+                  <p className="text-muted-foreground text-xs mt-1">
                     Average stride distance
                   </p>
                 </CardContent>
@@ -425,7 +425,7 @@ export function EnhancedGaitAnalyzer() {
           {/* Session Summary */}
           <TabsContent value="session" className="space-y-4">
             {metrics.session && (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="md:grid-cols-2 grid grid-cols-1 gap-4">
                 <Card>
                   <CardHeader>
                     <CardTitle>Session Statistics</CardTitle>
@@ -497,7 +497,7 @@ export function EnhancedGaitAnalyzer() {
           <TabsContent value="trends" className="space-y-4">
             {metrics.trends && (
               <>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="md:grid-cols-2 grid grid-cols-1 gap-4">
                   <Card>
                     <CardHeader>
                       <CardTitle>Trend Analysis</CardTitle>
@@ -602,3 +602,6 @@ export function EnhancedGaitAnalyzer() {
     </div>
   );
 }
+
+// Default export for lazy loading
+export default EnhancedGaitAnalyzer;

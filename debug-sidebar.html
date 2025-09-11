@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VitalSense Sidebar Debug</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .debug-red {
+        background-color: rgba(255, 0, 0, 0.3) !important;
+      }
+      .debug-blue {
+        background-color: rgba(0, 0, 255, 0.3) !important;
+      }
+      .debug-green {
+        background-color: rgba(0, 255, 0, 0.3) !important;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <div class="flex min-h-screen">
+      <!-- Sidebar -->
+      <div
+        id="sidebar"
+        class="w-64 border-gray-200 fixed inset-y-0 left-0 z-50 -translate-x-full transform border-r bg-white transition-transform duration-300 ease-in-out"
+      >
+        <!-- Sidebar Header -->
+        <div
+          class="h-16 border-gray-200 flex items-center justify-between border-b px-4"
+        >
+          <div class="flex items-center gap-2">
+            <div class="h-5 w-5 bg-blue-600 rounded"></div>
+            <span class="font-semibold text-gray-900">VitalSense</span>
+          </div>
+          <button id="closeSidebar" class="rounded p-1 hover:bg-gray-100">
+            <svg
+              class="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Sidebar Content -->
+        <nav class="flex-1 px-4 py-6">
+          <div class="space-y-2">
+            <a
+              href="#"
+              class="gap-3 px-3 text-gray-700 flex items-center rounded-md py-2 hover:bg-gray-100"
+            >
+              <div class="bg-gray-400 h-4 w-4 rounded"></div>
+              <span>Dashboard</span>
+            </a>
+            <a
+              href="#"
+              class="gap-3 px-3 text-gray-700 flex items-center rounded-md py-2 hover:bg-gray-100"
+            >
+              <div class="bg-gray-400 h-4 w-4 rounded"></div>
+              <span>Health Overview</span>
+            </a>
+            <a
+              href="#"
+              class="gap-3 px-3 text-gray-700 flex items-center rounded-md py-2 hover:bg-gray-100"
+            >
+              <div class="bg-gray-400 h-4 w-4 rounded"></div>
+              <span>Settings</span>
+            </a>
+          </div>
+        </nav>
+      </div>
+
+      <!-- Overlay -->
+      <div
+        id="overlay"
+        class="bg-opacity-50 fixed inset-0 z-40 hidden bg-black"
+      ></div>
+
+      <!-- Main Content -->
+      <div class="flex-1">
+        <!-- Header with Hamburger -->
+        <header class="border-gray-200 border-b bg-white">
+          <div class="h-16 flex items-center justify-between px-4">
+            <button
+              id="hamburger"
+              class="debug-red rounded p-2 hover:bg-gray-100"
+            >
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                ></path>
+              </svg>
+              <span class="ml-2">☰ Menu</span>
+            </button>
+            <h1 class="font-semibold">VitalSense Debug</h1>
+          </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="p-8">
+          <div class="max-w-2xl">
+            <h2 class="mb-4 text-2xl font-bold">Sidebar Debug Test</h2>
+            <div
+              id="status"
+              class="bg-blue-50 border-blue-200 mb-4 rounded border p-4"
+            >
+              <p>
+                <strong>Sidebar State:</strong>
+                <span id="sidebarState">Closed</span>
+              </p>
+              <p>
+                <strong>Test:</strong> Click the red hamburger menu button to
+                toggle the sidebar.
+              </p>
+            </div>
+
+            <div class="space-y-4">
+              <p>
+                This is a simplified test to debug the sidebar functionality:
+              </p>
+              <ul class="list-disc space-y-2 pl-6">
+                <li>The hamburger menu has a red debug background</li>
+                <li>Click it to toggle the sidebar</li>
+                <li>The sidebar should slide in from the left</li>
+                <li>Click the overlay or X button to close</li>
+                <li>Console logs will show click events</li>
+              </ul>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      const hamburger = document.getElementById('hamburger');
+      const closeSidebar = document.getElementById('closeSidebar');
+      const sidebarState = document.getElementById('sidebarState');
+
+      let isOpen = false;
+
+      function toggleSidebar() {
+        isOpen = !isOpen;
+        console.log(
+          '🔄 Toggling sidebar. New state:',
+          isOpen ? 'OPEN' : 'CLOSED'
+        );
+
+        if (isOpen) {
+          sidebar.classList.remove('-translate-x-full');
+          sidebar.classList.add('translate-x-0');
+          overlay.classList.remove('hidden');
+          sidebarState.textContent = 'Open';
+        } else {
+          sidebar.classList.remove('translate-x-0');
+          sidebar.classList.add('-translate-x-full');
+          overlay.classList.add('hidden');
+          sidebarState.textContent = 'Closed';
+        }
+      }
+
+      function closeSidebarFn() {
+        console.log('🚪 Closing sidebar');
+        isOpen = false;
+        sidebar.classList.remove('translate-x-0');
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+        sidebarState.textContent = 'Closed';
+      }
+
+      // Event listeners
+      hamburger.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🍔 Hamburger clicked!');
+        toggleSidebar();
+      });
+
+      closeSidebar.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('❌ Close button clicked!');
+        closeSidebarFn();
+      });
+
+      overlay.addEventListener('click', (e) => {
+        console.log('🌫️ Overlay clicked!');
+        closeSidebarFn();
+      });
+
+      // Debug: Log all clicks
+      document.addEventListener('click', (e) => {
+        console.log('🖱️ Document click:', e.target.tagName, e.target.className);
+      });
+
+      console.log(
+        '✅ Sidebar debug script loaded. Current state:',
+        isOpen ? 'OPEN' : 'CLOSED'
+      );
+    </script>
+  </body>
+</html>

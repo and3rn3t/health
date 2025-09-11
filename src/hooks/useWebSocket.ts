@@ -48,7 +48,8 @@ export function useWebSocket(
     __VITALSENSE_KV_MODE?: 'local' | 'network';
   };
   // Check if we're in development mode and if WebSocket should be enabled
-  const isDevelopment = import.meta.env.DEV;
+  const isDevelopment =
+    typeof window !== 'undefined' && window.location.hostname === 'localhost';
   // Demo mode flag injected by Worker for /demo route
   type WindowWithDemo = Window & { VITALSENSE_DISABLE_WEBSOCKET?: boolean };
   const isDemoMode =
