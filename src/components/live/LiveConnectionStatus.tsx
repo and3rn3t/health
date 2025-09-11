@@ -164,11 +164,11 @@ export function LiveConnectionStatus() {
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          size="sm"
-          className="flex h-8 items-center gap-2"
+          size="default"
+          className="flex h-10 items-center gap-2 px-3"
         >
           {getStatusIcon()}
-          <span className="text-xs font-medium">{getStatusText()}</span>
+          <span className="text-sm font-medium">{getStatusText()}</span>
           <div className={`h-2 w-2 rounded-full ${getStatusColor()}`} />
         </Button>
       </PopoverTrigger>

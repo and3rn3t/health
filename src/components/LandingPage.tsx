@@ -222,10 +222,10 @@ export default function LandingPage({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-vitalsense-text-primary">
+            <h1 className="text-vitalsense-text-primary text-3xl font-bold">
               {getTimeOfDayGreeting()}! 👋
             </h1>
-            <p className="mt-1 text-vitalsense-text-muted">
+            <p className="text-vitalsense-text-muted mt-1">
               {currentTime.toLocaleDateString('en-US', {
                 weekday: 'long',
                 year: 'numeric',
@@ -234,19 +234,19 @@ export default function LandingPage({
               })}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="gap-3 flex items-center">
             <Badge
               variant="outline"
               className="border-vitalsense-teal text-vitalsense-teal"
             >
-              <Smartphone className="mr-1 h-3 w-3" />
+              <Smartphone className="h-3 w-3 mr-1" />
               iOS Ready
             </Badge>
             <Badge
               variant="outline"
               className="border-vitalsense-purple text-vitalsense-purple"
             >
-              <Sparkles className="mr-1 h-3 w-3" />
+              <Sparkles className="h-3 w-3 mr-1" />
               AI Powered
             </Badge>
           </div>
@@ -254,7 +254,7 @@ export default function LandingPage({
 
         {/* Health Status Overview */}
         {healthData && (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="md:grid-cols-2 grid grid-cols-1 gap-4 lg:grid-cols-4">
             {quickStats.slice(0, 2).map((stat) => {
               // Use Enhanced Status Cards for first two critical stats
               const getTrendDirection = (
@@ -309,7 +309,7 @@ export default function LandingPage({
                         </p>
                         <p className="text-2xl font-bold">{stat.value}</p>
                         {stat.trend && (
-                          <Badge variant="secondary" className="mt-1 text-xs">
+                          <Badge variant="secondary" className="text-xs mt-1">
                             {stat.trend}
                           </Badge>
                         )}
@@ -326,7 +326,7 @@ export default function LandingPage({
 
       {/* Quick Actions - No Data State */}
       {!healthData && (
-        <Alert className="bg-vitalsense-primary/5 border-l-4 border-l-vitalsense-primary">
+        <Alert className="border-l-4 border-l-vitalsense-primary bg-vitalsense-primary/5">
           <Heart className="h-4 w-4 text-vitalsense-primary" />
           <AlertDescription>
             <div className="space-y-3">
@@ -339,7 +339,7 @@ export default function LandingPage({
                 size="md"
                 icon={Smartphone}
                 onClick={() => onNavigateToFeature('import')}
-                className="bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light"
+                className="text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light bg-vitalsense-primary"
               >
                 Import Health Data
               </iOS26Button>
@@ -393,15 +393,15 @@ export default function LandingPage({
       {/* Featured Health Tools */}
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-semibold text-vitalsense-text-primary">
+          <h2 className="text-vitalsense-text-primary text-2xl font-semibold">
             Featured Health Tools
           </h2>
-          <p className="mt-1 text-vitalsense-text-muted">
+          <p className="text-vitalsense-text-muted mt-1">
             Core features to monitor and improve your health
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="md:grid-cols-2 grid grid-cols-1 gap-6 lg:grid-cols-3">
           {highPriorityFeatures.map((feature) => {
             const IconComponent = feature.icon;
             return (
@@ -413,7 +413,7 @@ export default function LandingPage({
                 <div className={`h-2 ${feature.color}`} />
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
-                    <div className={`rounded-lg p-3 ${feature.color}`}>
+                    <div className={`p-3 rounded-lg ${feature.color}`}>
                       <IconComponent className="h-6 w-6 text-white" />
                     </div>
                     <Badge
@@ -435,7 +435,7 @@ export default function LandingPage({
                 <CardContent>
                   <Button
                     variant="ghost"
-                    className="w-full transition-colors group-hover:bg-vitalsense-primary group-hover:text-vitalsense-primary-contrast"
+                    className="group-hover:text-vitalsense-primary-contrast w-full transition-colors group-hover:bg-vitalsense-primary"
                   >
                     {feature.status === 'setup' ? 'Set Up' : 'Open'} →
                   </Button>
@@ -449,15 +449,15 @@ export default function LandingPage({
       {/* Additional Features */}
       <div className="space-y-6">
         <div>
-          <h2 className="text-xl font-semibold text-vitalsense-text-primary">
+          <h2 className="text-vitalsense-text-primary text-xl font-semibold">
             Additional Features
           </h2>
-          <p className="mt-1 text-vitalsense-text-muted">
+          <p className="text-vitalsense-text-muted mt-1">
             Expand your health monitoring capabilities
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="md:grid-cols-2 grid grid-cols-1 gap-4 lg:grid-cols-3">
           {otherFeatures.map((feature) => {
             const IconComponent = feature.icon;
             return (
@@ -509,7 +509,7 @@ export default function LandingPage({
               size="md"
               icon={Clock}
               onClick={() => onNavigateToFeature('system-status')}
-              className="bg-vitalsense-primary text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light"
+              className="text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light bg-vitalsense-primary"
             >
               System Status
             </iOS26Button>

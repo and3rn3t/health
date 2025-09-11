@@ -299,13 +299,13 @@ function App() {
 
   // Toggle sidebar function with debug logging
   const toggleSidebar = useCallback(() => {
-    console.log('🍔 Hamburger menu clicked! Current sidebarOpen:', sidebarOpen);
+    console.log('🍔 App: Hamburger menu clicked - toggleSidebar function called!');
     setSidebarOpen((prev) => {
-      const newValue = !prev;
-      console.log('🔄 Sidebar state changing to:', newValue);
-      return newValue;
+      const newState = !prev;
+      console.log('🔄 App: Sidebar state changing from', prev, 'to', newState);
+      return newState;
     });
-  }, [sidebarOpen]);
+  }, []);
 
   // Handle tab changes
   const handleTabChange = useCallback((tabId: string) => {
@@ -320,6 +320,10 @@ function App() {
     activeTab
   );
 
+  // Debug the sidebar classes
+  const sidebarClasses = `bg-white w-64 fixed inset-y-0 left-0 z-50 flex flex-col shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`;
+  console.log('🎨 Sidebar classes:', sidebarClasses);
+
   return (
     <div className="bg-gray-50 flex h-screen">
       <ErrorBoundary
@@ -328,7 +332,7 @@ function App() {
       >
         {/* Sidebar */}
         <div
-          className={`sidebar-bg-white w-64 fixed inset-y-0 left-0 z-50 flex flex-col shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          className={`bg-white w-64 fixed inset-y-0 left-0 z-50 flex flex-col shadow-xl transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         >
           {/* Sidebar Header */}
           <div className="border-gray-200 flex items-center justify-between border-b p-4">
@@ -339,7 +343,7 @@ function App() {
               variant="ghost"
               size="icon"
               onClick={toggleSidebar}
-              className="hover:bg-gray-100 lg:hidden"
+              className="hover:bg-gray-100"
             >
               <X className="h-5 w-5" />
             </Button>
@@ -373,7 +377,7 @@ function App() {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex flex-1 flex-col lg:ml-0">
+        <div className="flex flex-1 flex-col">
           {/* Header */}
           <NavigationHeader
             onSidebarToggle={toggleSidebar}
