@@ -2,7 +2,7 @@
  * Health Records Component
  * Manage and view health records and medical history
  */
-import { CloudUpload, FileText, Download, Calendar } from 'lucide-react';
+import { Calendar, CloudUpload, Download, FileText } from 'lucide-react';
 
 export default function HealthRecords() {
   const records = [
@@ -34,10 +34,10 @@ export default function HealthRecords() {
 
   return (
     <div className="p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <CloudUpload className="mx-auto h-12 w-12 text-teal-600 mb-4" />
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-8 text-center">
+          <CloudUpload className="h-12 w-12 text-teal-600 mx-auto mb-4" />
+          <h1 className="mb-2 text-3xl font-bold text-gray-900">
             Health Records
           </h1>
           <p className="text-gray-600">
@@ -46,25 +46,25 @@ export default function HealthRecords() {
         </div>
 
         <div className="mb-8">
-          <button className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors">
+          <button className="bg-teal-600 py-3 hover:bg-teal-700 rounded-lg px-6 text-white transition-colors">
             Upload New Record
           </button>
         </div>
 
         <div className="space-y-4">
           {records.map((record) => (
-            <div key={record.id} className="bg-white rounded-lg shadow-md p-6">
+            <div key={record.id} className="rounded-lg bg-white p-6 shadow-md">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <FileText className="h-8 w-8 text-blue-500" />
+                  <FileText className="text-blue-500 h-8 w-8" />
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">
                       {record.name}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-gray-600 text-sm">
                       {record.type} • {record.provider}
                     </p>
-                    <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                    <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
                       <span className="flex items-center space-x-1">
                         <Calendar className="h-4 w-4" />
                         <span>{record.date}</span>
@@ -73,7 +73,7 @@ export default function HealthRecords() {
                     </div>
                   </div>
                 </div>
-                <button className="flex items-center space-x-2 text-teal-600 hover:text-teal-700">
+                <button className="text-teal-600 hover:text-teal-700 flex items-center space-x-2">
                   <Download className="h-5 w-5" />
                   <span>Download</span>
                 </button>
@@ -82,13 +82,13 @@ export default function HealthRecords() {
           ))}
         </div>
 
-        <div className="mt-8 bg-blue-50 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+        <div className="bg-blue-50 mt-8 rounded-lg p-6">
+          <h2 className="mb-2 text-lg font-semibold text-gray-900">
             Secure Storage
           </h2>
           <p className="text-gray-600">
-            All your health records are encrypted and stored securely. Only you and 
-            authorized healthcare providers can access this information.
+            All your health records are encrypted and stored securely. Only you
+            and authorized healthcare providers can access this information.
           </p>
         </div>
       </div>

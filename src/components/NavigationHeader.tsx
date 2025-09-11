@@ -74,7 +74,8 @@ export default function NavigationHeader({
   console.log('🧭 NavigationHeader rendering...'); // Debug log
 
   const handleSidebarToggle = () => {
-    console.log('🍔 Hamburger menu clicked!'); // Debug log
+    console.log('🍔 NavigationHeader: Hamburger menu clicked!'); // Debug log
+    console.log('🔍 NavigationHeader: onSidebarToggle function:', onSidebarToggle); // Debug log
     onSidebarToggle();
   };
 
@@ -129,7 +130,7 @@ export default function NavigationHeader({
   };
 
   return (
-    <header className="border-gray-200 sticky top-0 z-30 mb-4 w-full border-b bg-white">
+    <header className="border-gray-200 sticky top-0 z-60 mb-4 w-full border-b bg-white">
       <div className="h-16 flex items-center justify-between px-4 lg:px-8">
         {/* Left Section - Sidebar Toggle & Page Info */}
         <div className="flex min-w-0 flex-1 items-center gap-4">
@@ -197,14 +198,14 @@ export default function NavigationHeader({
         </div>
 
         {/* Center Section - Search */}
-        <div className="xl:mx-20 mx-8 hidden max-w-md flex-1 lg:flex">
+        <div className="xl:mx-20 mx-8 hidden max-w-lg flex-1 lg:flex">
           <form onSubmit={handleSearch} className="relative w-full">
-            <Search className="text-muted-foreground absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2" />
+            <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
             <Input
-              placeholder="Search health data, insights..."
+              placeholder="Search health data..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-10 pr-6"
+              className="pl-10 h-10 pr-4"
             />
           </form>
         </div>
