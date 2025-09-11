@@ -87,19 +87,19 @@ export default function Footer({
   ];
 
   return (
-    <footer className="bg-card/50 mt-auto border-t">
-      <div className="px-4 py-4 lg:px-6">
+    <footer className="bg-card/50 mt-auto border-t border-gray-100">
+      <div className="px-4 py-6 lg:px-8">
         {/* Main Footer Content */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           {/* Left Section - Brand & Status */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             {/* Brand */}
-            <div className="flex items-center gap-3">
-              <div className="flex h-6 w-6 items-center justify-center rounded bg-vitalsense-primary">
-                <Heart className="h-3 w-3 text-vitalsense-primary-contrast" />
+            <div className="flex items-center gap-4">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-vitalsense-primary">
+                <Heart className="h-4 w-4 text-white" />
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-vitalsense-text-primary">
+              <div className="flex flex-col">
+                <span className="text-vitalsense-text-primary text-base font-semibold">
                   VitalSense
                 </span>
                 <span className="text-xs text-vitalsense-text-muted">
@@ -111,12 +111,12 @@ export default function Footer({
             {/* Health Score */}
             {healthScore !== undefined && (
               <>
-                <div className="h-4 w-px bg-border" />
+                <div className="w-px bg-border h-6" />
                 <Badge
                   variant="outline"
-                  className="border-vitalsense-primary px-3 py-1 text-vitalsense-primary"
+                  className="border-vitalsense-primary px-4 py-2 font-medium text-vitalsense-primary"
                 >
-                  <Shield className="mr-1 h-3 w-3" />
+                  <Shield className="mr-2 h-4 w-4" />
                   {healthScore}/100
                 </Badge>
               </>
@@ -124,11 +124,11 @@ export default function Footer({
           </div>
 
           {/* Right Section - Status & Time */}
-          <div className="flex items-center gap-3 text-sm">
+          <div className="gap-3 flex items-center text-sm">
             {/* Connection Status */}
             <div className="flex items-center gap-2">
               {getConnectionIcon()}
-              <span className="hidden text-xs text-vitalsense-text-muted sm:inline">
+              <span className="text-xs text-vitalsense-text-muted hidden sm:inline">
                 {getConnectionText()}
               </span>
             </div>
@@ -166,9 +166,9 @@ export default function Footer({
                 variant="ghost"
                 size="sm"
                 onClick={() => onNavigate(link.tab)}
-                className="footer-button h-9 min-w-[90px] px-4 text-xs font-medium"
+                className="footer-button h-9 text-xs min-w-[90px] px-4 font-medium"
               >
-                <IconComponent className="mr-2 h-3 w-3" />
+                <IconComponent className="h-3 w-3 mr-2" />
                 {link.label}
               </Button>
             );

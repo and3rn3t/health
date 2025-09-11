@@ -34,7 +34,10 @@ export function recordTelemetry(
       }
     }
   }
-  if (import.meta.env.DEV) {
+  if (
+    typeof window !== 'undefined' &&
+    window.location.hostname === 'localhost'
+  ) {
     // Dev-only console emission to avoid noise in production logs
     // Redact any suspicious keys defensively
     const blocked = /value|payload|health|steps|heart|sleep|raw|record/i;

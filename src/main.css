@@ -28,6 +28,12 @@
     border-radius: 4px !important;
   }
 
+  /* Sidebar background fix for production */
+  .sidebar-bg-white {
+    background-color: #ffffff !important;
+    opacity: 1 !important;
+  }
+
   .thin-scrollbar::-webkit-scrollbar-thumb {
     background-color: rgba(148, 163, 184, 0.4) !important;
     border-radius: 4px !important;

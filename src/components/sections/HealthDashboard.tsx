@@ -12,13 +12,13 @@ import { Activity, Brain, Heart, Target } from 'lucide-react';
 
 export default function HealthDashboard() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="text-center">
-        <h1 className="mb-2 text-3xl font-bold text-vitalsense-primary">
+      <div className="py-4 text-center">
+        <h1 className="mb-4 text-3xl font-bold text-vitalsense-primary">
           Health Dashboard
         </h1>
-        <p className="text-vitalsense-gray">
+        <p className="text-vitalsense-gray mx-auto max-w-2xl text-lg leading-relaxed">
           Your comprehensive health overview powered by VitalSense
         </p>
       </div>
@@ -26,25 +26,27 @@ export default function HealthDashboard() {
       {/* Health Metrics Grid */}
       <div className="md:grid-cols-2 grid gap-6 lg:grid-cols-4">
         {/* Health Score Card */}
-        <Card className="bg-gradient-to-br from-vitalsense-primary/5 to-vitalsense-primary/10">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="border-vitalsense-primary/20 bg-gradient-to-br from-vitalsense-primary/5 to-vitalsense-primary/10">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-medium">Health Score</CardTitle>
-            <Heart className="h-4 w-4 text-vitalsense-primary" />
+            <Heart className="h-5 w-5 text-vitalsense-primary" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-vitalsense-primary">85</div>
+          <CardContent className="pt-0">
+            <div className="mb-2 text-3xl font-bold text-vitalsense-primary">
+              85
+            </div>
             <p className="text-xs text-vitalsense-gray">+5 from last week</p>
           </CardContent>
         </Card>
 
         {/* Activity Card */}
-        <Card className="bg-gradient-to-br from-vitalsense-secondary/5 to-vitalsense-secondary/10">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="border-vitalsense-secondary/20 bg-gradient-to-br from-vitalsense-secondary/5 to-vitalsense-secondary/10">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-medium">Activity</CardTitle>
-            <Activity className="h-4 w-4 text-vitalsense-secondary" />
+            <Activity className="h-5 w-5 text-vitalsense-secondary" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-vitalsense-secondary">
+          <CardContent className="pt-0">
+            <div className="mb-2 text-3xl font-bold text-vitalsense-secondary">
               7,842
             </div>
             <p className="text-xs text-vitalsense-gray">steps today</p>
@@ -52,13 +54,13 @@ export default function HealthDashboard() {
         </Card>
 
         {/* Brain Health Card */}
-        <Card className="from-vitalsense-accent/5 to-vitalsense-accent/10 bg-gradient-to-br">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="from-vitalsense-accent/5 to-vitalsense-accent/10 border-vitalsense-accent/20 bg-gradient-to-br">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-medium">Brain Health</CardTitle>
-            <Brain className="text-vitalsense-accent h-4 w-4" />
+            <Brain className="text-vitalsense-accent h-5 w-5" />
           </CardHeader>
-          <CardContent>
-            <div className="text-vitalsense-accent text-2xl font-bold">
+          <CardContent className="pt-0">
+            <div className="text-vitalsense-accent mb-2 text-3xl font-bold">
               Good
             </div>
             <p className="text-xs text-vitalsense-gray">cognitive assessment</p>
@@ -66,13 +68,13 @@ export default function HealthDashboard() {
         </Card>
 
         {/* Goals Card */}
-        <Card className="bg-gradient-to-br from-vitalsense-success/5 to-vitalsense-success/10">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="border-vitalsense-success/20 bg-gradient-to-br from-vitalsense-success/5 to-vitalsense-success/10">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-medium">Goals</CardTitle>
-            <Target className="h-4 w-4 text-vitalsense-success" />
+            <Target className="h-5 w-5 text-vitalsense-success" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-vitalsense-success">
+          <CardContent className="pt-0">
+            <div className="mb-2 text-3xl font-bold text-vitalsense-success">
               3/5
             </div>
             <p className="text-xs text-vitalsense-gray">completed today</p>
@@ -81,23 +83,25 @@ export default function HealthDashboard() {
       </div>
 
       {/* Main Dashboard Content */}
-      <div className="md:grid-cols-2 grid gap-6">
+      <div className="md:grid-cols-2 grid gap-8">
         {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Your health data updates</CardDescription>
+        <Card className="border-gray-200">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Recent Activity</CardTitle>
+            <CardDescription className="text-base">
+              Your health data updates
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between border-b pb-2">
-                <span className="text-sm">Morning walk</span>
+          <CardContent className="pt-0">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                <span className="text-sm font-medium">Morning walk</span>
                 <span className="text-xs text-vitalsense-gray">
                   2 hours ago
                 </span>
               </div>
-              <div className="flex items-center justify-between border-b pb-2">
-                <span className="text-sm">Heart rate updated</span>
+              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                <span className="text-sm font-medium">Heart rate updated</span>
                 <span className="text-xs text-vitalsense-gray">
                   4 hours ago
                 </span>

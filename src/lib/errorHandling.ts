@@ -224,7 +224,10 @@ export class SafeLogger {
 
   static error(message: string, meta?: Record<string, unknown>): void {
     // Suppress error logging in development mode to reduce console noise
-    if (import.meta.env.DEV) {
+    if (
+      typeof window !== 'undefined' &&
+      window.location.hostname === 'localhost'
+    ) {
       console.debug('Suppressed error log in development:', message);
       return;
     }
@@ -232,7 +235,10 @@ export class SafeLogger {
   }
 
   static debug(message: string, meta?: Record<string, unknown>): void {
-    if (import.meta.env.DEV) {
+    if (
+      typeof window !== 'undefined' &&
+      window.location.hostname === 'localhost'
+    ) {
       this.formatMessage('debug', message, meta);
     }
   }
@@ -412,7 +418,10 @@ export function setupGlobalErrorHandling(): void {
   // Handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
     // In development mode, prevent all unhandled promise rejection logging
-    if (import.meta.env.DEV) {
+    if (
+      typeof window !== 'undefined' &&
+      window.location.hostname === 'localhost'
+    ) {
       // Always prevent the default console error in development
       event.preventDefault();
 
@@ -428,7 +437,10 @@ export function setupGlobalErrorHandling(): void {
     error.log();
 
     // Prevent console error in development
-    if (import.meta.env.DEV) {
+    if (
+      typeof window !== 'undefined' &&
+      window.location.hostname === 'localhost'
+    ) {
       event.preventDefault();
     }
   });

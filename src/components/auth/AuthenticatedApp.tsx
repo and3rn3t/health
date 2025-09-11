@@ -19,7 +19,8 @@ export default function AuthenticatedApp() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
 
   // Development mode bypass - always bypass auth in development
-  const isDevelopment = import.meta.env.DEV;
+  const isDevelopment =
+    typeof window !== 'undefined' && window.location.hostname === 'localhost';
 
   // Check for demo mode - can be set by worker injection
   const isDemoMode = useMemo(() => {
