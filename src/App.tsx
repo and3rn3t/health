@@ -1,5 +1,5 @@
 // 🚀 VitalSense App - Unified Navigation System
-import React, { Suspense, lazy, useCallback, useMemo, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useMemo, useState, useEffect } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
 // Core components
@@ -279,7 +279,23 @@ function App() {
   console.log('🏠 App component rendering...');
 
   const [activeTab, setActiveTab] = useState('dashboard');
+  // Sidebar state - responsive default
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Set desktop sidebar open by default
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const isDesktop = window.innerWidth >= 1024; // lg breakpoint
+      setSidebarOpen(isDesktop);
+    };
+
+    // Set initial state
+    checkScreenSize();
+
+    // Listen for resize
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   // Navigation item organization
   const primaryTabs = useMemo(
@@ -299,7 +315,9 @@ function App() {
 
   // Toggle sidebar function with debug logging
   const toggleSidebar = useCallback(() => {
-    console.log('🍔 App: Hamburger menu clicked - toggleSidebar function called!');
+    console.log(
+      '🍔 App: Hamburger menu clicked - toggleSidebar function called!'
+    );
     setSidebarOpen((prev) => {
       const newState = !prev;
       console.log('🔄 App: Sidebar state changing from', prev, 'to', newState);
@@ -330,9 +348,9 @@ function App() {
         FallbackComponent={ErrorFallback}
         onReset={() => window.location.reload()}
       >
-        {/* Sidebar */}
+        {/* Sidebar - Mobile: overlay, Desktop: static */}
         <div
-          className={`bg-white w-64 fixed inset-y-0 left-0 z-50 flex flex-col shadow-xl transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          className={`bg-white w-64 fixed inset-y-0 left-0 z-50 flex flex-col shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         >
           {/* Sidebar Header */}
           <div className="border-gray-200 flex items-center justify-between border-b p-4">
@@ -375,6 +393,16 @@ function App() {
             </nav>
           </div>
         </div>
+
+        {/* Mobile Overlay - only visible on mobile when sidebar is open */}
+        {sidebarOpen && (
+          <button 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={toggleSidebar}
+            onKeyDown={(e) => e.key === 'Escape' && toggleSidebar()}
+            aria-label="Close sidebar"
+          />
+        )}
 
         {/* Main Content Area */}
         <div className="flex flex-1 flex-col">
