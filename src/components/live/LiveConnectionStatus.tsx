@@ -165,7 +165,7 @@ export function LiveConnectionStatus() {
         <Button
           variant="outline"
           size="default"
-          className="flex h-10 items-center gap-2 px-3"
+          className="h-10 px-3 flex items-center gap-2"
         >
           {getStatusIcon()}
           <span className="text-sm font-medium">{getStatusText()}</span>

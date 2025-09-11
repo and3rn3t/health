@@ -75,7 +75,10 @@ export default function NavigationHeader({
 
   const handleSidebarToggle = () => {
     console.log('🍔 NavigationHeader: Hamburger menu clicked!'); // Debug log
-    console.log('🔍 NavigationHeader: onSidebarToggle function:', onSidebarToggle); // Debug log
+    console.log(
+      '🔍 NavigationHeader: onSidebarToggle function:',
+      onSidebarToggle
+    ); // Debug log
     onSidebarToggle();
   };
 
@@ -130,7 +133,7 @@ export default function NavigationHeader({
   };
 
   return (
-    <header className="border-gray-200 sticky top-0 z-60 mb-4 w-full border-b bg-white">
+    <header className="border-gray-200 z-60 sticky top-0 mb-4 w-full border-b bg-white">
       <div className="h-16 flex items-center justify-between px-4 lg:px-8">
         {/* Left Section - Sidebar Toggle & Page Info */}
         <div className="flex min-w-0 flex-1 items-center gap-4">
@@ -200,7 +203,7 @@ export default function NavigationHeader({
         {/* Center Section - Search */}
         <div className="xl:mx-20 mx-8 hidden max-w-lg flex-1 lg:flex">
           <form onSubmit={handleSearch} className="relative w-full">
-            <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+            <Search className="text-muted-foreground left-3 absolute top-1/2 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder="Search health data..."
               value={searchQuery}
