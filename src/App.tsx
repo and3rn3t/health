@@ -1,5 +1,12 @@
 // 🚀 VitalSense App - Unified Navigation System
-import React, { Suspense, lazy, useCallback, useMemo, useState, useEffect } from 'react';
+import React, {
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
 // Core components
@@ -350,7 +357,7 @@ function App() {
       >
         {/* Sidebar - Mobile: overlay, Desktop: static */}
         <div
-          className={`bg-white w-64 fixed inset-y-0 left-0 z-50 flex flex-col shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          className={`w-64 fixed inset-y-0 left-0 z-50 flex flex-col bg-white shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         >
           {/* Sidebar Header */}
           <div className="border-gray-200 flex items-center justify-between border-b p-4">
@@ -396,8 +403,8 @@ function App() {
 
         {/* Mobile Overlay - only visible on mobile when sidebar is open */}
         {sidebarOpen && (
-          <button 
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          <button
+            className="bg-opacity-50 fixed inset-0 z-40 bg-black lg:hidden"
             onClick={toggleSidebar}
             onKeyDown={(e) => e.key === 'Escape' && toggleSidebar()}
             aria-label="Close sidebar"
