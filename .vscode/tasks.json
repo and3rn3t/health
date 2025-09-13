@@ -14,11 +14,6 @@
         "panel": "shared",
         "showReuseMessage": false,
         "clear": true
-      },
-      "options": {
-        "shell": {
-          "executable": "node"
-        }
       }
     },
     {
@@ -267,12 +262,31 @@
         }
       },
       "dependsOrder": "sequence",
-      "dependsOn": ["config-validate-nodejs", "lint-quick-nodejs"],
+      "dependsOn": [
+        "pwsh-env-check",
+        "config-validate-nodejs",
+        "lint-quick-nodejs"
+      ],
       "icon": {
         "id": "rocket",
         "color": "terminal.ansiBlue"
       },
       "detail": "Start development server with pre-checks (config validation + quick lint)"
+    },
+    {
+      "label": "pwsh-env-check",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/dev/pwsh-env-check.js"],
+      "group": "build",
+      "presentation": {
+        "echo": false,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": false
+      }
     },
     {
       "label": "⚡ Quick Health Check",
@@ -572,7 +586,7 @@
     {
       "label": "probe-health-8788",
       "type": "shell",
-      "command": "powershell",
+      "command": "pwsh",
       "args": [
         "-NoProfile",
         "-ExecutionPolicy",
@@ -613,7 +627,7 @@
     {
       "label": "Get Copilot Context",
       "type": "shell",
-      "command": "powershell",
+      "command": "pwsh",
       "args": [
         "-NoProfile",
         "-ExecutionPolicy",
@@ -628,16 +642,6 @@
         "focus": false,
         "panel": "shared"
       }
-    },
-    {
-      "label": "probe-health-8788",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-Command",
-        "$u='http://127.0.0.1:8788/health'; try { (Invoke-RestMethod -Uri $u -TimeoutSec 5) | ConvertTo-Json -Depth 5 } catch { $_.Exception.Message }"
-      ]
     },
     {
       "label": "probe-health-8788-curl",
@@ -670,38 +674,6 @@
     },
     {
       "label": "probe-worker-default",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/probe.ps1",
-        "-HostUrl",
-        "http://127.0.0.1",
-        "-Port",
-        "8789",
-        "-UserId",
-        "demo-user"
-      ]
-    },
-    {
-      "label": "probe-worker-default",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/probe.ps1",
-        "-HostUrl",
-        "http://127.0.0.1",
-        "-Port",
-        "8789",
-        "-UserId",
-        "demo-user"
-      ]
-    },
-    {
-      "label": "probe-worker-8789",
       "type": "shell",
       "command": "pwsh",
       "args": [
@@ -1224,7 +1196,7 @@
     {
       "label": "Check VitalSense App Status",
       "type": "shell",
-      "command": "powershell",
+      "command": "pwsh",
       "args": [
         "-Command",
         "try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $response.StatusCode; Write-Host 'Content Length:' $response.Content.Length; Write-Host 'Title:' ($response.Content | Select-String '<title>(.*?)</title>').Matches[0].Groups[1].Value } catch { Write-Host 'Error:' $_.Exception.Message }"
@@ -1233,7 +1205,7 @@
     {
       "label": "Simple Health Check",
       "type": "shell",
-      "command": "powershell",
+      "command": "pwsh",
       "args": [
         "-Command",
         "try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $response.StatusCode; Write-Host 'Content Length:' $response.Content.Length; } catch { Write-Host 'Error:' $_.Exception.Message }"
@@ -1242,7 +1214,7 @@
     {
       "label": "VitalSense App Health Check",
       "type": "shell",
-      "command": "powershell",
+      "command": "pwsh",
       "args": [
         "-Command",
         "Write-Host '🔍 Checking VitalSense App Status...'; try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 10; Write-Host '✅ Status:' $response.StatusCode; Write-Host '📄 Content Length:' $response.Content.Length 'bytes'; if ($response.Content -like '*VitalSense*') { Write-Host '🎯 VitalSense branding detected' } else { Write-Host '⚠️  VitalSense branding not found' }; if ($response.Content -like '*Health Score*') { Write-Host '💓 Health Score detected' } else { Write-Host '⚠️  Health Score not found' } } catch { Write-Host '❌ Error:' $_.Exception.Message }"
@@ -1251,7 +1223,7 @@
     {
       "label": "Quick App Check",
       "type": "shell",
-      "command": "powershell",
+      "command": "pwsh",
       "args": [
         "-Command",
         "try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode; Write-Host 'Size:' $r.Content.Length 'bytes' } catch { Write-Host 'Error:' $_.Exception.Message }"
@@ -1260,7 +1232,7 @@
     {
       "label": "Final VitalSense Check",
       "type": "shell",
-      "command": "powershell",
+      "command": "pwsh",
       "args": [
         "-Command",
         "Write-Host 'VitalSense App Status Check'; Write-Host '========================'; try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status: ✅' $r.StatusCode; Write-Host 'Content: 📄' $r.Content.Length 'bytes'; Write-Host 'App is responding correctly' } catch { Write-Host 'Status: ❌ Error -' $_.Exception.Message }"
@@ -1269,7 +1241,7 @@
     {
       "label": "Debug VitalSense Status",
       "type": "shell",
-      "command": "powershell",
+      "command": "pwsh",
       "args": [
         "-Command",
         "Write-Host '🔍 VitalSense Development Check'; Write-Host '================================'; try { $response = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host '✅ Status:' $response.StatusCode; Write-Host '📄 Size:' $response.Content.Length 'bytes'; $title = [regex]::Match($response.Content, '<title>(.*?)</title>').Groups[1].Value; if ($title) { Write-Host '📋 Title:' $title } else { Write-Host '⚠️  No title found' }; Write-Host '🎯 App responding correctly' } catch { Write-Host '❌ Connection failed:' $_.Exception.Message }"
@@ -1278,7 +1250,7 @@
     {
       "label": "Simple Content Check",
       "type": "shell",
-      "command": "powershell",
+      "command": "pwsh",
       "args": [
         "-Command",
         "try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode; Write-Host 'Size:' $r.Content.Length; Write-Host 'First 200 chars:'; Write-Host $r.Content.Substring(0, [Math]::Min(200, $r.Content.Length)) } catch { Write-Host 'Error:' $_.Exception.Message }"

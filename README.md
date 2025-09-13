@@ -127,7 +127,7 @@ npm run ws:dev       # WebSocket server on ws://localhost:3001
 - **Real-time Updates**: WebSocket connections with automatic reconnection
 - **Incremental Loading**: Component-level code splitting for faster initial loads
 
-_Latest optimization: December 2024 - See `docs/OPTIMIZATION_DEPLOYMENT_COMPLETE.md`_
+_Latest optimization: December 2024 - See `docs/_archive/optimizations/OPTIMIZATION_DEPLOYMENT_COMPLETE.md`_
 
 - **JWT authentication** with secure token management
 

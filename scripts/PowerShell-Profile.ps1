@@ -1,3 +1,41 @@
+# Repo PowerShell profile - loaded by tasks and integrated console when possible
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+# VS Code Terminal Shell Integration (manual install per docs)
+# Ensures rich command detection, decorations, navigation, etc.
+try {
+  if ($env:TERM_PROGRAM -eq 'vscode') {
+    . "$(code --locate-shell-integration-path pwsh)"
+    # Improve ANSI rendering & error display inside VS Code
+    $env:PSStyle_OutputRendering = 'Ansi'
+    $PSStyle.OutputRendering = 'Ansi'
+  }
+} catch {
+  # If `code` is not on PATH or locate fails, continue without blocking
+}
+
+try {
+  Import-Module PSReadLine -ErrorAction SilentlyContinue
+  Set-PSReadLineOption -HistorySearchCursorMovesToEnd:$true -PredictionSource History -PredictionViewStyle ListView
+  Set-PSReadLineOption -EditMode Windows -BellStyle None
+  Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+  Set-PSReadLineKeyHandler -Key 'Ctrl+f' -Function ForwardWord
+  Set-PSReadLineKeyHandler -Key 'Ctrl+b' -Function BackwardWord
+} catch { }
+
+function dev { param([switch]$Interactive)
+  node scripts/node/dev/start-dev.js @('--interactive')[$Interactive.IsPresent]
+}
+function probe { param([int]$Port = 8789)
+  & pwsh -NoProfile -File scripts/probe.ps1 -HostUrl http://127.0.0.1 -Port $Port -UserId demo-user
+}
+function wrdev { param([int]$Port = 8789)
+  wrangler dev --env development --port $Port
+}
+function nixpath([string]$p) { $p -replace '\\','/' }
+
+Write-Host "💙 VitalSense developer shell loaded" -ForegroundColor Cyan
 # Enhanced PowerShell Profile for VS Code and Copilot Integration
 # This profile optimizes the PowerShell experience for development work
 
@@ -58,6 +96,10 @@ function .. { Set-Location .. }
 function ... { Set-Location ..\.. }
 function .... { Set-Location ..\..\.. }
 
+function cls! { Clear-Host }
+function ws { Set-Location (git rev-parse --show-toplevel 2>$null) }
+function open-ws { code (git rev-parse --show-toplevel 2>$null) }
+
 # Development helper functions
 function dev {
   if (Test-Path 'scripts\run-task.ps1') {
@@ -83,6 +125,7 @@ function build-app {
   }
 }
 
+Remove-Item Function:global:probe -ErrorAction SilentlyContinue | Out-Null
 function probe {
   if (Test-Path 'scripts\probe.ps1') {
     & 'scripts\probe.ps1' @args
@@ -169,9 +212,9 @@ function Show-DevEnv {
 
 # Welcome message for VS Code
 if ($env:TERM_PROGRAM -eq 'vscode') {
-  Write-Host 'PowerShell enhanced for VS Code and Copilot' -ForegroundColor Cyan
-  Write-Host "Type 'Show-DevEnv' for environment info" -ForegroundColor DarkCyan
-  Write-Host 'Available commands: dev, test-app, build-app, probe, Get-Context' -ForegroundColor DarkCyan
+  Write-Host '💙 VitalSense dev environment ready' -ForegroundColor Cyan
+  Write-Host "Tip: Run 'Show-DevEnv' for environment info" -ForegroundColor DarkCyan
+  Write-Host 'Quick commands: dev, test-app, build-app, probe, Get-Context' -ForegroundColor DarkCyan
 }
 
 # PSReadLine configuration for better experience
@@ -184,4 +227,15 @@ if (Get-Module -ListAvailable PSReadLine) {
   Set-PSReadLineKeyHandler -Key Tab -Function Complete
   Set-PSReadLineKeyHandler -Key 'Ctrl+d' -Function DeleteChar
   Set-PSReadLineKeyHandler -Key 'Ctrl+w' -Function BackwardDeleteWord
+}
+
+# Friendly error display for common web tasks
+function Show-LastError {
+  if ($Error -and $Error[0]) {
+    $e = $Error[0]
+    Write-Host "Error: $($e.Exception.Message)" -ForegroundColor Red
+    if ($e.ScriptStackTrace) { Write-Host $e.ScriptStackTrace -ForegroundColor DarkGray }
+  } else {
+    Write-Host 'No errors in $Error.' -ForegroundColor Yellow
+  }
 }

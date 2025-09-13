@@ -71,17 +71,20 @@ export default function NavigationHeader({
   const [searchQuery, setSearchQuery] = useState('');
   const { user, isAuthenticated, isLoading, login, logout } = useAuth();
 
-  console.log('🧭 NavigationHeader rendering...'); // Debug log
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🧭 NavigationHeader rendering...'); // Debug log
+  }
 
   const handleSidebarToggle = () => {
-    console.log('🍔 NavigationHeader: Hamburger menu clicked!'); // Debug log
-    console.log(
-      '🔍 NavigationHeader: onSidebarToggle function:',
-      onSidebarToggle
-    ); // Debug log
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🍔 NavigationHeader: Hamburger menu clicked!'); // Debug log
+      console.log(
+        '🔍 NavigationHeader: onSidebarToggle function:',
+        onSidebarToggle
+      ); // Debug log
+    }
     onSidebarToggle();
   };
-
   const initials = (name?: string) => {
     if (!name) return 'U';
     const parts = name.split(' ').filter(Boolean);

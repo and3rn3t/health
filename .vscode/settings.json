@@ -86,8 +86,23 @@
   ],
   "git.autofetch": true,
   "git.confirmSync": false,
-  "terminal.integrated.defaultProfile.windows": "PowerShell 7",
+  "terminal.integrated.defaultProfile.windows": "VitalSense pwsh",
+  "terminal.integrated.automationProfile.windows": {
+    "path": "pwsh.exe",
+    "args": ["-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass"]
+  },
   "terminal.integrated.profiles.windows": {
+    "VitalSense pwsh": {
+      "path": "pwsh.exe",
+      "icon": "heart",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-NoExit",
+        "-Command",
+        ". '${workspaceFolder}\\scripts\\vitalsense-banner.ps1'"
+      ]
+    },
     "PowerShell 7": {
       "path": "pwsh.exe",
       "icon": "terminal-powershell",
@@ -110,6 +125,39 @@
   "terminal.integrated.enableVisualBell": false,
   "terminal.integrated.showExitAlert": false,
   "terminal.integrated.scrollback": 10000,
+  "terminal.integrated.shellIntegration.enabled": true,
+  "terminal.integrated.shellIntegration.decorationsEnabled": "all",
+  "terminal.integrated.shellIntegration.showCommandGuide": true,
+  "terminal.integrated.stickyScroll.enabled": true,
+  "terminal.integrated.suggest.enabled": true,
+  "terminal.integrated.suggest.inlineSuggestion": true,
+  "terminal.integrated.suggest.showStatusBar": true,
+  "terminal.integrated.shellIntegration.history": 1000,
+  "terminal.integrated.smoothScrolling": true,
+  "terminal.integrated.allowChords": true,
+  "terminal.integrated.tabs.title": "💙 VitalSense (pwsh) • ${cwdBasename}",
+  "terminal.integrated.tabs.description": "${workspaceFolderBasename}",
+  "terminal.integrated.copyOnSelection": true,
+  "terminal.integrated.rightClickBehavior": "copyPaste",
+  "terminal.integrated.confirmOnKill": "never",
+  "terminal.integrated.enableMultiLinePasteWarning": false,
+  "terminal.integrated.gpuAcceleration": "auto",
+  "terminal.integrated.tabs.enabled": true,
+  "terminal.integrated.env.windows": {
+    "POWERSHELL_TELEMETRY_OPTOUT": "1"
+  },
+  "terminal.integrated.defaultLocation": "editor",
+  "terminal.integrated.drawBoldTextInBrightColors": false,
+  "terminal.integrated.minimumContrastRatio": 4.5,
+  "terminal.integrated.unicodeVersion": "15",
+  "workbench.colorCustomizations": {
+    "terminalCommandDecoration.defaultBackground": "#2563eb",
+    "terminalCommandDecoration.defaultForeground": "#ffffff",
+    "terminalCommandDecoration.successBackground": "#10b981",
+    "terminalCommandDecoration.successForeground": "#0b2a1f",
+    "terminalCommandDecoration.errorBackground": "#ef4444",
+    "terminalCommandDecoration.errorForeground": "#ffffff"
+  },
   "powershell.codeFormatting.preset": "OTBS",
   "powershell.codeFormatting.useConstantStrings": true,
   "powershell.codeFormatting.useCorrectCasing": true,
@@ -117,6 +165,11 @@
   "powershell.debugging.createTemporaryIntegratedConsole": true,
   "powershell.scriptAnalysis.enable": true,
   "powershell.scriptAnalysis.settingsPath": ".vscode/PSScriptAnalyzerSettings.psd1",
+  "powershell.powerShellAdditionalExePaths": {
+    "PowerShell-7": "C:/Program Files/PowerShell/7/pwsh.exe"
+  },
+  "powershell.powerShellDefaultVersion": "PowerShell-7",
+  "powershell.codeFormatting.alignPropertyValuePairs": true,
   "task.verboseLogging": true,
   "task.allowAutomaticTasks": "on",
   "task.reconnection": true,

@@ -29,11 +29,13 @@ export const auth0Config = {
   domain:
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.auth0?.domain) ||
-    'vitalsense-health.auth0.com',
+    import.meta.env.VITE_AUTH0_DOMAIN ||
+    (() => { throw new Error('Auth0 domain is not set in environment variables'); })(),
   clientId:
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.auth0?.clientId) ||
-    'your-client-id',
+    import.meta.env.VITE_AUTH0_CLIENT_ID ||
+    (() => { throw new Error('Auth0 client ID is not set in environment variables'); })(),
 
   // Security Configuration
   redirectUri:
