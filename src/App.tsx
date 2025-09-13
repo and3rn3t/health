@@ -286,14 +286,16 @@ function App() {
   console.log('🏠 App component rendering...');
 
   const [activeTab, setActiveTab] = useState('dashboard');
-  // Sidebar state - responsive default
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Sidebar state - open by default for better UX
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Set desktop sidebar open by default
+  // Adjust sidebar for mobile screens
   useEffect(() => {
     const checkScreenSize = () => {
-      const isDesktop = window.innerWidth >= 1024; // lg breakpoint
-      setSidebarOpen(isDesktop);
+      const isMobile = window.innerWidth < 1024; // below lg breakpoint
+      if (isMobile) {
+        setSidebarOpen(false);
+      }
     };
 
     // Set initial state
