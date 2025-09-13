@@ -15,11 +15,21 @@ class HealthAPITester {
     this.retries = options.retries || 2;
     this.outputFormat = options.format || 'console'; // console, json, junit
 
-    // Production worker URLs
-    this.workerUrls = [
-      'https://health-app-prod.workers.dev',
+    // Production worker URLs (override with options.urls or env.WORKER_URLS)
+    const defaultUrls = [
+      'https://health-app-prod.andernet.workers.dev',
       'https://health.andernet.dev',
     ];
+
+    const envUrls = process.env.WORKER_URLS
+      ? process.env.WORKER_URLS.split(',').map((s) => s.trim()).filter(Boolean)
+      : null;
+
+    this.workerUrls = Array.isArray(options.urls) && options.urls.length > 0
+      ? options.urls
+      : envUrls && envUrls.length > 0
+        ? envUrls
+        : defaultUrls;
 
     // All API endpoints from worker and documentation
     this.endpoints = [
@@ -369,6 +379,13 @@ async function main() {
     format:
       args.find((arg) => arg.startsWith('--format='))?.split('=')[1] ||
       'console',
+    urls:
+      args
+        .find((arg) => arg.startsWith('--urls='))
+        ?.split('=')[1]
+        ?.split(',')
+        .map((s) => s.trim())
+        .filter(Boolean) || undefined,
   };
 
   const saveFile = args.find((arg) => arg.startsWith('--save='))?.split('=')[1];
@@ -384,6 +401,7 @@ Options:
   --timeout=<ms>         Request timeout (default: 10000ms)
   --retries=<n>          Number of retries (default: 2)
   --format=<type>        Output format: console, json (default: console)
+  --urls=<u1,u2>         Comma-separated list of base URLs to test
   --save=<filename>      Save results to JSON file
   --help, -h             Show this help
 
