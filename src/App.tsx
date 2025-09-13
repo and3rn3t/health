@@ -1,12 +1,5 @@
 // 🚀 VitalSense App - Unified Navigation System
-import React, {
-  Suspense,
-  lazy,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { Suspense, lazy, useCallback, useMemo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
 // Core components
@@ -286,25 +279,7 @@ function App() {
   console.log('🏠 App component rendering...');
 
   const [activeTab, setActiveTab] = useState('dashboard');
-  // Sidebar state - open by default for better UX
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  // Adjust sidebar for mobile screens
-  useEffect(() => {
-    const checkScreenSize = () => {
-      const isMobile = window.innerWidth < 1024; // below lg breakpoint
-      if (isMobile) {
-        setSidebarOpen(false);
-      }
-    };
-
-    // Set initial state
-    checkScreenSize();
-
-    // Listen for resize
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Navigation item organization
   const primaryTabs = useMemo(
@@ -340,26 +315,15 @@ function App() {
     setSidebarOpen(false); // Close sidebar on tab change
   }, []);
 
-  console.log(
-    '🔍 Current sidebar state:',
-    sidebarOpen,
-    'Active tab:',
-    activeTab
-  );
-
-  // Debug the sidebar classes
-  const sidebarClasses = `bg-white w-64 fixed inset-y-0 left-0 z-50 flex flex-col shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`;
-  console.log('🎨 Sidebar classes:', sidebarClasses);
-
   return (
     <div className="bg-gray-50 flex h-screen">
       <ErrorBoundary
         FallbackComponent={ErrorFallback}
         onReset={() => window.location.reload()}
       >
-        {/* Sidebar - Mobile: overlay, Desktop: static */}
+        {/* Sidebar */}
         <div
-          className={`w-64 fixed inset-y-0 left-0 z-50 flex flex-col bg-white shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          className={`sidebar-bg-white w-64 fixed inset-y-0 left-0 z-50 flex flex-col shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         >
           {/* Sidebar Header */}
           <div className="border-gray-200 flex items-center justify-between border-b p-4">
