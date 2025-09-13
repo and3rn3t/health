@@ -52,6 +52,7 @@ This document provides a comprehensive index of all documentation in the project
   - [`CLOUDFLARE_DNS_SETUP.md`](./deploy/CLOUDFLARE_DNS_SETUP.md) - DNS configuration
   - [`INFRA_HARDENING.md`](./deploy/INFRA_HARDENING.md) - Infrastructure security hardening
   - [`API_SUBDOMAIN_STRATEGY.md`](./deploy/API_SUBDOMAIN_STRATEGY.md) - API subdomain strategy
+  - Release Notes: [`RELEASE_NOTES__prod-rollback-2025-09-12.md`](./deploy/RELEASE_NOTES__prod-rollback-2025-09-12.md)
 
 ### 🛡️ Security
 
