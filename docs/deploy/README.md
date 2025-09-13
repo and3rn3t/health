@@ -12,6 +12,10 @@ Production deployment guides and infrastructure management.
 
 **🔒 Infrastructure security** - Production-ready infrastructure hardening and security measures.
 
+### [RELEASE_NOTES__prod-rollback-2025-09-12.md](RELEASE_NOTES__prod-rollback-2025-09-12.md)
+
+**📝 Release Notes** - Production rollback to stable build with verification details and references.
+
 ## 🔗 Related Documentation
 
 - **Security**: [`../security/`](../security/) for security policies and baselines
