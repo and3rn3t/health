@@ -183,8 +183,8 @@ importers:
         specifier: ^7.54.2
         version: 7.62.0(react@19.1.1)
       react-resizable-panels:
-        specifier: ^2.1.7
-        version: 2.1.9(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^3.0.6
+        version: 3.0.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       recharts:
         specifier: ^2.15.1
         version: 2.15.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -215,6 +215,28 @@ importers:
       zod:
         specifier: ^3.25.76
         version: 3.25.76
+    optionalDependencies:
+      '@parcel/watcher-win32-x64':
+        specifier: ^2.5.1
+        version: 2.5.1
+      '@rollup/rollup-linux-x64-gnu':
+        specifier: 4.50.0
+        version: 4.50.0
+      '@rollup/rollup-win32-x64-msvc':
+        specifier: 4.50.0
+        version: 4.50.0
+      '@tailwindcss/oxide-linux-x64-gnu':
+        specifier: 4.1.13
+        version: 4.1.13
+      '@tailwindcss/oxide-win32-x64-msvc':
+        specifier: 4.1.13
+        version: 4.1.13
+      lightningcss-linux-x64-gnu:
+        specifier: 1.30.1
+        version: 1.30.1
+      lightningcss-win32-x64-msvc:
+        specifier: 1.30.1
+        version: 1.30.1
     devDependencies:
       '@cloudflare/workers-types':
         specifier: 4.20250906.0
@@ -363,28 +385,6 @@ importers:
       yaml:
         specifier: ^2.4.0
         version: 2.8.1
-    optionalDependencies:
-      '@parcel/watcher-win32-x64':
-        specifier: ^2.5.1
-        version: 2.5.1
-      '@rollup/rollup-linux-x64-gnu':
-        specifier: 4.50.0
-        version: 4.50.0
-      '@rollup/rollup-win32-x64-msvc':
-        specifier: 4.50.0
-        version: 4.50.0
-      '@tailwindcss/oxide-linux-x64-gnu':
-        specifier: 4.1.13
-        version: 4.1.13
-      '@tailwindcss/oxide-win32-x64-msvc':
-        specifier: 4.1.13
-        version: 4.1.13
-      lightningcss-linux-x64-gnu:
-        specifier: 1.30.1
-        version: 1.30.1
-      lightningcss-win32-x64-msvc:
-        specifier: 1.30.1
-        version: 1.30.1
 
 packages:
 
@@ -4900,8 +4900,8 @@ packages:
       '@types/react':
         optional: true
 
-  react-resizable-panels@2.1.9:
-    resolution: {integrity: sha512-z77+X08YDIrgAes4jl8xhnUu1LNIRp4+E7cv4xHmLOxxUPO/ML7PSrE813b90vj7xvQ1lcf7g2uA9GeMZonjhQ==}
+  react-resizable-panels@3.0.6:
+    resolution: {integrity: sha512-b3qKHQ3MLqOgSS+FRYKapNkJZf5EQzuf6+RLiq1/IlTHw99YrZ2NJZLk4hQIzTnnIkRg2LUqyVinu6YWWpUYew==}
     peerDependencies:
       react: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
       react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
@@ -10118,7 +10118,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.1.12
 
-  react-resizable-panels@2.1.9(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  react-resizable-panels@3.0.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
