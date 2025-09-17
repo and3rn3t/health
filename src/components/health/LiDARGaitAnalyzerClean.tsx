@@ -24,6 +24,13 @@ import {
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { fuseRisks, type FusedRisk } from '@/lib/ai/fusion/riskFusion';
+import {
+  assessEnvironmentRisk,
+  summarizeSurface,
+  type EnvironmentRisk,
+} from '@/lib/lidar/processing';
+import type { Point3D, PointCloud } from '@/lib/lidar/types';
 import { useKV } from '@github/spark/hooks';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { z } from 'zod';
@@ -92,6 +99,9 @@ interface LiDARSession {
   protocol?: Exclude<ProtocolType, 'none'>;
   qualityScore?: number; // 0-100
   qualityGrade?: QualityGrade;
+  // New optional risk fields
+  environmentRisk?: EnvironmentRisk;
+  fusedRisk?: FusedRisk;
 }
 
 interface LiDARGaitAnalyzerProps {
@@ -159,6 +169,49 @@ const lidarSessionSchema = z.object({
       z.literal('Poor'),
     ])
     .optional(),
+  environmentRisk: z
+    .object({
+      surface: z.object({
+        plane: z
+          .object({
+            normal: z.object({ x: z.number(), y: z.number(), z: z.number() }),
+            d: z.number(),
+          })
+          .nullable(),
+        roughness: z.number(),
+        slopeDeg: z.number(),
+        obstacleDensity: z.number(),
+      }),
+      riskLevel: z.union([
+        z.literal('low'),
+        z.literal('moderate'),
+        z.literal('high'),
+      ]),
+      probability: z.number(),
+      factors: z.array(
+        z.object({
+          name: z.string(),
+          value: z.number(),
+          contribution: z.number(),
+        })
+      ),
+    })
+    .optional(),
+  fusedRisk: z
+    .object({
+      probability: z.number(),
+      riskLevel: z.union([
+        z.literal('low'),
+        z.literal('moderate'),
+        z.literal('high'),
+      ]),
+      components: z.object({
+        physiological: z.number(),
+        environment: z.number(),
+      }),
+      explanation: z.string(),
+    })
+    .optional(),
 });
 
 // --- Helpers (extracted to reduce component complexity) ---
@@ -225,11 +278,18 @@ function computeQuality(
 }
 
 type BadgeVariant = 'default' | 'secondary' | 'outline' | 'destructive';
+type RiskLevel = EnvironmentRisk['riskLevel'];
 function getQualityBadgeVariant(q?: QualityGrade): BadgeVariant {
   if (!q || q === 'Excellent') return 'default';
   if (q === 'Good') return 'secondary';
   if (q === 'Fair') return 'outline';
   return 'destructive';
+}
+
+function getRiskBadgeVariant(level: RiskLevel): BadgeVariant {
+  if (level === 'high') return 'destructive';
+  if (level === 'moderate') return 'secondary';
+  return 'default';
 }
 
 // --- Child Components ---
@@ -578,6 +638,17 @@ function LiDAROverview(props: Readonly<OverviewProps>) {
                   variant={getQualityBadgeVariant(currentSession.qualityGrade)}
                 >
                   Quality: {currentSession.qualityGrade}
+                </Badge>
+              )}
+              {currentSession.fusedRisk && (
+                <Badge
+                  variant={getRiskBadgeVariant(
+                    currentSession.fusedRisk.riskLevel
+                  )}
+                  title={currentSession.fusedRisk.explanation}
+                >
+                  Fused Risk:{' '}
+                  {Math.round(currentSession.fusedRisk.probability * 100)}%
                 </Badge>
               )}
             </div>
@@ -1322,6 +1393,90 @@ export function LiDARGaitAnalyzer({
     recordingIntervalRef.current = interval as unknown as number;
   };
 
+  // --- Synthetic environment and gait risk helpers ---
+  function gaussianNoise(mean: number, std: number): number {
+    // Box-Muller transform
+    const u1 = Math.random();
+    const u2 = Math.random();
+    const r = Math.sqrt(-2.0 * Math.log(Math.max(1e-12, u1)));
+    const theta = 2.0 * Math.PI * u2;
+    return mean + std * r * Math.cos(theta);
+  }
+
+  const generateSyntheticPointCloud = useCallback(
+    (env: 'indoor' | 'outdoor'): PointCloud => {
+      // Generate a small grid of points representing the walking surface ahead
+      const points: Point3D[] = [];
+      const nx = 24;
+      const ny = 24;
+      const cell = 0.1; // meters
+      let slopeX: number;
+      let slopeY: number;
+      let rough: number; // meters std
+      let obstacleRate: number; // fraction of cells with a bump
+      if (env === 'outdoor') {
+        slopeX = ((Math.random() * 6) / 180) * Math.PI; // up to ~6°
+        slopeY = ((Math.random() * 4) / 180) * Math.PI; // up to ~4°
+        rough = 0.008 + Math.random() * 0.007; // 8-15mm
+        obstacleRate = 0.06 + Math.random() * 0.09; // 0.06-0.15
+      } else {
+        slopeX = ((Math.random() * 2) / 180) * Math.PI; // up to ~2°
+        slopeY = ((Math.random() * 1) / 180) * Math.PI; // up to ~1°
+        rough = 0.001 + Math.random() * 0.003; // 1-4mm
+        obstacleRate = 0.01 + Math.random() * 0.03; // 0.01-0.04
+      }
+      // Random bumps for obstacles
+      const bumps = new Set<number>();
+      const totalCells = nx * ny;
+      const numBumps = Math.floor(totalCells * obstacleRate);
+      while (bumps.size < numBumps)
+        bumps.add(Math.floor(Math.random() * totalCells));
+      for (let iy = 0; iy < ny; iy++) {
+        for (let ix = 0; ix < nx; ix++) {
+          const idx = iy * nx + ix;
+          const x = (ix - nx / 2) * cell;
+          const y = (iy - ny / 2) * cell;
+          // Base plane with slight slope
+          let z = Math.tan(slopeX) * x + Math.tan(slopeY) * y;
+          // Roughness noise
+          z += gaussianNoise(0, rough);
+          // Occasional obstacle bump (~2-6cm)
+          if (bumps.has(idx)) z += 0.02 + Math.random() * 0.04;
+          points.push({ x, y, z });
+        }
+      }
+      return points;
+    },
+    []
+  );
+
+  const estimateGaitRisk = useCallback(
+    (m: LiDARGaitMetrics): { probability: number; riskLevel: RiskLevel } => {
+      // Simple, explainable heuristic mapped through a sigmoid
+      const balance = m.stabilityMetrics.balanceScore; // 0-100 (higher is better)
+      const lv = m.stabilityMetrics.lateralVariability; // cm (lower is better)
+      const cadence = m.temporalMetrics.cadence; // steps/min (90-120 desired)
+      const footClearance = m.spatialMetrics.footClearance; // cm (>=3 preferred)
+      const wBalance = -0.04; // per point
+      const wLv = 0.25; // per cm
+      const wCad = 0.03; // per 10 spm deviation
+      const wFc = -0.15; // per cm (negative reduces risk)
+      const bias = -0.5;
+      const score =
+        bias +
+        wBalance * (100 - balance) +
+        wLv * lv +
+        wCad * (Math.abs(cadence - 105) / 10) +
+        wFc * Math.max(0, footClearance - 3);
+      const p = 1 / (1 + Math.exp(-score));
+      let level: RiskLevel = 'low';
+      if (p >= 0.7) level = 'high';
+      else if (p >= 0.4) level = 'moderate';
+      return { probability: p, riskLevel: level };
+    },
+    []
+  );
+
   const completeSession = useCallback(
     (sessionId: string) => {
       if (recordingIntervalRef.current) {
@@ -1329,6 +1484,13 @@ export function LiDARGaitAnalyzer({
         recordingIntervalRef.current = null;
       }
       const metrics = generateMockMetrics(sessionId);
+      // Synthesize environment risk from a generated point cloud (placeholder until real LiDAR frames available)
+      const env = preferences?.environment ?? 'indoor';
+      const pc = generateSyntheticPointCloud(env);
+      const surface = summarizeSurface(pc);
+      const environmentRisk = assessEnvironmentRisk(surface);
+      const gaitRisk = estimateGaitRisk(metrics);
+      const fused = fuseRisks(gaitRisk, environmentRisk);
       const completedSession: LiDARSession = {
         ...currentSession!,
         endTime: new Date(),
@@ -1336,6 +1498,8 @@ export function LiDARGaitAnalyzer({
         metrics,
         recommendations: metrics.recommendations,
         status: 'completed',
+        environmentRisk,
+        fusedRisk: fused,
         ...((): Partial<LiDARSession> => {
           const q = computeQuality(metrics, calibrated);
           return { qualityScore: q.score, qualityGrade: q.grade };
@@ -1359,6 +1523,9 @@ export function LiDARGaitAnalyzer({
       onSessionComplete,
       calibrated,
       preferences?.autoSave,
+      preferences?.environment,
+      generateSyntheticPointCloud,
+      estimateGaitRisk,
       setSessionHistory,
     ]
   );
@@ -1544,7 +1711,7 @@ export function LiDARGaitAnalyzer({
             </TabsContent>
 
             <TabsContent value="metrics" className="space-y-4">
-              <div className="md:grid-cols-3 grid gap-4">
+              <div className="md:grid-cols-4 grid gap-4">
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">
@@ -1651,6 +1818,66 @@ export function LiDARGaitAnalyzer({
                         {currentSession.metrics.stabilityMetrics.balanceScore}%
                       </span>
                     </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">
+                      🌎 Environment Risk
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {currentSession.environmentRisk ? (
+                      <>
+                        <div className="flex justify-between">
+                          <span>Risk Level:</span>
+                          <span className="font-mono">
+                            {currentSession.environmentRisk.riskLevel}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Probability:</span>
+                          <span className="font-mono">
+                            {Math.round(
+                              currentSession.environmentRisk.probability * 100
+                            )}
+                            %
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Slope:</span>
+                          <span className="font-mono">
+                            {currentSession.environmentRisk.surface.slopeDeg.toFixed(
+                              1
+                            )}
+                            °
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Roughness:</span>
+                          <span className="font-mono">
+                            {currentSession.environmentRisk.surface.roughness.toFixed(
+                              3
+                            )}{' '}
+                            m
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Obstacles:</span>
+                          <span className="font-mono">
+                            {currentSession.environmentRisk.surface.obstacleDensity.toFixed(
+                              2
+                            )}{' '}
+                            /m²
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-muted-foreground text-sm">
+                        No environment risk computed.
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               </div>

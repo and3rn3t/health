@@ -230,7 +230,8 @@ async function testProductionEndpoints() {
   writeInfo('Testing production endpoints...');
 
   const prodUrls = [
-    'https://health-app-prod.workers.dev',
+    // Use the route URL reported by Wrangler deploy output
+    'https://health-app-prod.andernet.workers.dev',
     'https://health.andernet.dev',
   ];
 
@@ -240,16 +241,44 @@ async function testProductionEndpoints() {
     writeInfo(`Testing ${baseUrl}...`);
 
     try {
-      const response = await axios.get(`${baseUrl}/health`, {
+      // 1) Health endpoint check
+      const health = await axios.get(`${baseUrl}/health`, {
         timeout: parseInt(options.timeout),
       });
 
-      writeSuccess(`✅ ${baseUrl}: ${response.status}`);
+      writeSuccess(`✅ ${baseUrl} /health: ${health.status}`);
       addTestResult(
         `Production Health ${baseUrl}`,
         'PASS',
-        `Status: ${response.status}`
+        `Status: ${health.status}`
       );
+
+      // 2) Homepage branding smoke check
+      const home = await axios.get(baseUrl, {
+        timeout: parseInt(options.timeout),
+      });
+      const content = String(home.data || '');
+      const hasBrand = /VitalSense/i.test(content);
+      const hasTitle = /<title>.*?<\/title>/i.test(content);
+      if (hasBrand && hasTitle) {
+        writeSuccess(`✅ ${baseUrl} branding: VitalSense + <title> detected`);
+        addTestResult(
+          `Production Branding ${baseUrl}`,
+          'PASS',
+          'Branding detected'
+        );
+      } else {
+        writeTaskError(
+          `Production Branding ${baseUrl}`,
+          'Branding/title not detected'
+        );
+        addTestResult(
+          `Production Branding ${baseUrl}`,
+          'FAIL',
+          'Branding/title not detected'
+        );
+        allPassed = false;
+      }
     } catch (error) {
       writeTaskError(
         `Production ${baseUrl}`,

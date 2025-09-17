@@ -46,6 +46,21 @@ docker compose down
 
 See also: docs/DOCKER.md for full usage and environment details.
 
+#### Docker Dev Workflow (VS Code Tasks)
+
+- Bring up everything and run health checks:
+  - Tasks → "🐳 Docker: Dev Workflow (no logs)"
+- Tail logs:
+  - "🐳 Docker: Logs (worker)" and "🐳 Docker: Logs (websocket)"
+- Quick probes:
+  - Worker: "probe-health-8789-curl" → <http://127.0.0.1:8789/health>
+  - WebSocket: "🐳 Docker: Health (websocket)" → <http://127.0.0.1:3001/api/health>
+
+Endpoints:
+
+- API + static: <http://127.0.0.1:8789>
+- WebSocket REST health: <http://127.0.0.1:3001/api/health>
+
 ### iOS Application (15 minutes on Mac)
 
 1. **Open Xcode** and create new iOS project

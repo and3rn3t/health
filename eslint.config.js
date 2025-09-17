@@ -22,6 +22,8 @@ export default [
       'server/**',
       'ios/**',
       'docs/**',
+      'src/components/_archive/**',
+      'src/_archive/**',
       'scripts/**/*.ps1',
       'scripts/**/*.sh',
       '**/*.md',

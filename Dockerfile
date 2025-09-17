@@ -17,32 +17,38 @@ RUN apk add --no-cache \
 COPY package.json pnpm-lock.yaml* package-lock.json* yarn.lock* ./
 COPY eslint.config.js postcss.config.* tailwind.config.* ./
 COPY vite*.ts ./
+COPY tsconfig*.json ./
 
 # Prefer pnpm if lock exists, else npm ci
 RUN if [ -f pnpm-lock.yaml ]; then \
-      npm -g i pnpm@9 && pnpm i --frozen-lockfile; \
-    elif [ -f package-lock.json ]; then \
-      npm ci; \
-    else \
-      npm i; \
-    fi
+  npm -g i pnpm@9 && pnpm i --no-frozen-lockfile; \
+  elif [ -f package-lock.json ]; then \
+  npm ci; \
+  else \
+  npm i; \
+  fi
 
-# Copy source needed for build
+# Copy source (mounted in dev via volumes, but include for completeness)
 COPY src ./src
-# Static assets (optional)
 COPY public ./public
 COPY app-config.js ./
 COPY wrangler.toml ./
 COPY scripts ./scripts
 
-# Build app (dist) and worker (dist-worker)
-RUN npm run build
+# Optionally build app + worker; default skip in dev images to speed up compose
+ARG SKIP_BUILD=true
+RUN if [ "$SKIP_BUILD" != "true" ]; then npm run build; else echo "Skipping build (SKIP_BUILD=$SKIP_BUILD)"; fi
 
 # --- Runtime stage -----------------------------------------------------------
-FROM node:22-alpine AS runner
+FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=development \
-    PORT=8789
+  PORT=8789
+
+# Install runtime deps for workerd used by wrangler dev
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends libc++1 ca-certificates && \
+  rm -rf /var/lib/apt/lists/*
 
 # Install wrangler for local dev
 RUN npm i -g wrangler@4.33.1
@@ -50,8 +56,7 @@ RUN npm i -g wrangler@4.33.1
 # Copy built worker and minimal files
 COPY --from=base /app/package.json ./package.json
 COPY --from=base /app/node_modules ./node_modules
-COPY --from=base /app/dist-worker ./dist-worker
-COPY --from=base /app/dist ./dist
+# Dev image runs wrangler directly; built outputs not required here
 COPY --from=base /app/wrangler.toml ./wrangler.toml
 COPY --from=base /app/app-config.js ./app-config.js
 COPY --from=base /app/scripts ./scripts

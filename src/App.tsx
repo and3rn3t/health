@@ -24,10 +24,10 @@ import { useThemeMode } from '@/hooks/useThemeMode';
 import {
   Activity,
   AlertTriangle,
+  BarChart3,
   Bell,
   Brain,
   CloudUpload,
-  FlaskConical,
   Monitor,
   Scan,
   Settings as SettingsIcon,
@@ -37,6 +37,7 @@ import {
   Target,
   TrendingUp,
   Users,
+  Wrench,
   X,
 } from 'lucide-react';
 
@@ -62,9 +63,6 @@ const LiveHealthMonitoring = lazy(() =>
 );
 
 const FallDetection = lazy(() => import('@/components/health/FallDetection'));
-// const HeartHealthMonitoring = lazy(
-//   () => import('@/components/health/HeartHealthMonitoring')
-// );
 const HealthAnalytics = lazy(
   () => import('@/components/health/HealthAnalytics')
 );
@@ -138,7 +136,12 @@ const HealthRecords = lazy(() =>
 );
 
 const SettingsPanel = lazy(() => import('@/components/sections/SettingsPanel'));
-const ShowcaseLabs = lazy(() => import('@/components/sections/ShowcaseLabs'));
+const DeveloperTools = lazy(
+  () => import('@/components/sections/DeveloperTools')
+);
+const AdvancedAnalytics = lazy(
+  () => import('@/components/sections/AdvancedAnalytics')
+);
 
 const PrivacyControls = lazy(() =>
   import('@/components/sections/PrivacyControls').catch(() => ({
@@ -184,6 +187,13 @@ const navigationItems = [
     icon: TrendingUp,
     component: HealthAnalytics,
     priority: 1,
+  },
+  {
+    id: 'advanced-analytics',
+    label: 'Advanced Analytics',
+    icon: BarChart3,
+    component: AdvancedAnalytics,
+    priority: 2,
   },
 
   // SECONDARY - Extended tabs on larger screens (next 5)
@@ -267,10 +277,10 @@ const navigationItems = [
     priority: 3,
   },
   {
-    id: 'labs',
-    label: 'Labs / Showcase',
-    icon: FlaskConical,
-    component: ShowcaseLabs,
+    id: 'developer-tools',
+    label: 'Developer Tools',
+    icon: Wrench,
+    component: DeveloperTools,
     priority: 3,
   },
 ];
