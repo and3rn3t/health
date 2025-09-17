@@ -3,6 +3,7 @@ main = "dist-worker/index.js"
 compatibility_date = "2024-08-30"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
+preview_urls = false
 
 [build]
 command = "npm run build:worker"
@@ -34,6 +35,11 @@ SESSION_TIMEOUT = "24h"
  AUTH0_DOMAIN = "dev-qjdpc81dzr7xrnlu.us.auth0.com"
  AUTH0_CLIENT_ID = "YyCHkHZ11713YG7QsB518lHrCFE3bW1s"
  DEVICE_JWT_SECRET = "dev-local"
+
+# Development Durable Objects (mirror top-level bindings)
+[[env.development.durable_objects.bindings]]
+name = "HEALTH_WEBSOCKET"
+class_name = "HealthWebSocket"
 
 # Production environment
 [env.production]
