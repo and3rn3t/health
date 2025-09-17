@@ -3,8 +3,28 @@ name: Security and Quality
 on:
   push:
     branches: [main, develop]
+    paths:
+      - '**/*.ts'
+      - '**/*.tsx'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
+      - 'ios/**'
+      - 'docs/**'
+      - 'scripts/**'
+      - '.github/workflows/security-quality.yml'
   pull_request:
     branches: [main, develop]
+    paths:
+      - '**/*.ts'
+      - '**/*.tsx'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
+      - 'ios/**'
+      - 'docs/**'
+      - 'scripts/**'
+      - '.github/workflows/security-quality.yml'
   schedule:
     # Run security scans weekly on Sundays at 2 AM UTC
     - cron: '0 2 * * 0'
@@ -13,14 +33,48 @@ permissions:
   contents: read
   security-events: write
   actions: read
+concurrency:
+  group: security-quality-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      webapp: ${{ steps.filter.outputs.webapp }}
+      ios: ${{ steps.filter.outputs.ios }}
+      docs: ${{ steps.filter.outputs.docs }}
+      scripts: ${{ steps.filter.outputs.scripts }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            webapp:
+              - 'src/**'
+              - 'public/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'vite.config*.ts'
+              - 'tsconfig*.json'
+            ios:
+              - 'ios/**'
+            docs:
+              - 'docs/**'
+            scripts:
+              - 'scripts/**'
+
   security-scan:
     name: Security Vulnerability Scan
     runs-on: ubuntu-latest
+    needs: changes
     permissions:
       contents: read
       security-events: write
+    # Run if webapp or scripts changed, or on schedule
+    if: ${{ github.event_name == 'schedule' || needs.changes.outputs.webapp == 'true' || needs.changes.outputs.scripts == 'true' }}
 
     steps:
       - name: Checkout
@@ -56,7 +110,8 @@ jobs:
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    needs: changes
+    if: github.event_name == 'pull_request' && (needs.changes.outputs.webapp == 'true' || needs.changes.outputs.scripts == 'true' || needs.changes.outputs.ios == 'true')
     permissions:
       contents: read
       pull-requests: write
@@ -75,8 +130,10 @@ jobs:
   code-quality:
     name: Code Quality Analysis
     runs-on: ubuntu-latest
+    needs: changes
     permissions:
       contents: read
+    if: ${{ needs.changes.outputs.webapp == 'true' || needs.changes.outputs.scripts == 'true' || needs.changes.outputs.docs == 'true' }}
 
     steps:
       - name: Checkout
@@ -127,8 +184,10 @@ jobs:
   license-check:
     name: License Compliance
     runs-on: ubuntu-latest
+    needs: changes
     permissions:
       contents: read
+    if: ${{ needs.changes.outputs.webapp == 'true' || needs.changes.outputs.scripts == 'true' || needs.changes.outputs.ios == 'true' }}
 
     steps:
       - name: Checkout

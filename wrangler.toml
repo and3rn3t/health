@@ -33,6 +33,7 @@ SESSION_TIMEOUT = "24h"
  # Auth0 (development)
  AUTH0_DOMAIN = "dev-qjdpc81dzr7xrnlu.us.auth0.com"
  AUTH0_CLIENT_ID = "YyCHkHZ11713YG7QsB518lHrCFE3bW1s"
+ DEVICE_JWT_SECRET = "dev-local"
 
 # Production environment
 [env.production]

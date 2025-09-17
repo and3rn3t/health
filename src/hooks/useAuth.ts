@@ -12,9 +12,13 @@ export function useAuth(): AuthContextType {
   // If auth is disabled, return mock values
   if (context === undefined || context === null) {
     // Check if auth is disabled in global config
+    type VSConfig = { features?: { enableAuth?: boolean } };
     const isAuthDisabled =
       typeof window !== 'undefined' &&
-      window.__VITALSENSE_CONFIG__?.features?.enableAuth === false;
+      Boolean(
+        (window as unknown as { __VITALSENSE_CONFIG__?: VSConfig })
+          .__VITALSENSE_CONFIG__?.features?.enableAuth === false
+      );
 
     if (isAuthDisabled) {
       return {

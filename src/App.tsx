@@ -1,12 +1,5 @@
 // 🚀 VitalSense App - Unified Navigation System
-import React, {
-  Suspense,
-  lazy,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { Suspense, lazy, useCallback, useMemo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
 // Core components
@@ -15,15 +8,28 @@ import NavigationHeader from '@/components/NavigationHeader';
 import { ErrorFallback } from '@/ErrorFallback';
 
 // Icons for navigation
+import {
+  AppleSidebarHeader,
+  AppleSidebarItem,
+  AppleSidebarList,
+  AppleSidebarMain,
+  AppleSidebarPanel,
+  AppleSidebarProvider,
+  AppleSidebarSection,
+  useAppleSidebar,
+} from '@/components/nav/AppleSidebar';
 import { Button } from '@/components/ui/button';
+import { useNavUsage } from '@/hooks/useNavUsage';
+import { useThemeMode } from '@/hooks/useThemeMode';
 import {
   Activity,
   AlertTriangle,
   Bell,
   Brain,
   CloudUpload,
-  Heart,
+  FlaskConical,
   Monitor,
+  Scan,
   Settings as SettingsIcon,
   Share,
   Shield,
@@ -43,11 +49,11 @@ const LiveHealthMonitoring = lazy(() =>
   import('@/components/health/LiveHealthMonitoring').catch(() => ({
     default: () => (
       <div className="p-8 text-center">
-        <Activity className="h-12 w-12 text-teal-600 mx-auto mb-4" />
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">
+        <Activity className="h-12 w-12 text-vitalsense-teal mx-auto mb-4" />
+        <h2 className="text-foreground mb-2 text-2xl font-bold">
           Live Health Monitoring
         </h2>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Real-time health monitoring dashboard coming soon.
         </p>
       </div>
@@ -56,22 +62,46 @@ const LiveHealthMonitoring = lazy(() =>
 );
 
 const FallDetection = lazy(() => import('@/components/health/FallDetection'));
-const HeartHealthMonitoring = lazy(
-  () => import('@/components/health/HeartHealthMonitoring')
-);
+// const HeartHealthMonitoring = lazy(
+//   () => import('@/components/health/HeartHealthMonitoring')
+// );
 const HealthAnalytics = lazy(
   () => import('@/components/health/HealthAnalytics')
+);
+
+// Newly wired feature pages
+const ConnectedDevices = lazy(
+  () => import('@/components/health/ConnectedDevices')
+);
+const ExportData = lazy(() => import('@/components/health/ExportData'));
+const EmergencyContactsPage = lazy(
+  () => import('@/components/health/EmergencyContactsPage')
+);
+const FamilyGameification = lazy(
+  () => import('@/components/gamification/FamilyGameification')
+);
+const CognitiveHealth = lazy(
+  () => import('@/components/health/CognitiveHealth')
+);
+
+// LiDAR AR / Gait Dashboard (named export -> default wrapper)
+const GaitDashboard = lazy(() =>
+  import('@/components/health/GaitDashboardClean').then((m) => ({
+    default: m.GaitDashboard,
+  }))
 );
 
 const NotificationCenter = lazy(() =>
   import('@/components/sections/NotificationCenter').catch(() => ({
     default: () => (
       <div className="p-8 text-center">
-        <Bell className="h-12 w-12 text-teal-600 mx-auto mb-4" />
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">
+        <Bell className="h-12 w-12 text-vitalsense-teal mx-auto mb-4" />
+        <h2 className="text-foreground mb-2 text-2xl font-bold">
           Notification Center
         </h2>
-        <p className="text-gray-600">Notification management coming soon.</p>
+        <p className="text-muted-foreground">
+          Notification management coming soon.
+        </p>
       </div>
     ),
   }))
@@ -81,11 +111,11 @@ const CaregiverDashboard = lazy(() =>
   import('@/components/sections/CaregiverDashboard').catch(() => ({
     default: () => (
       <div className="p-8 text-center">
-        <Users className="h-12 w-12 text-teal-600 mx-auto mb-4" />
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">
+        <Users className="h-12 w-12 text-vitalsense-teal mx-auto mb-4" />
+        <h2 className="text-foreground mb-2 text-2xl font-bold">
           Caregiver Dashboard
         </h2>
-        <p className="text-gray-600">Caregiver portal coming soon.</p>
+        <p className="text-muted-foreground">Caregiver portal coming soon.</p>
       </div>
     ),
   }))
@@ -95,27 +125,30 @@ const HealthRecords = lazy(() =>
   import('@/components/sections/HealthRecords').catch(() => ({
     default: () => (
       <div className="p-8 text-center">
-        <CloudUpload className="h-12 w-12 text-teal-600 mx-auto mb-4" />
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">
+        <CloudUpload className="h-12 w-12 text-vitalsense-teal mx-auto mb-4" />
+        <h2 className="text-foreground mb-2 text-2xl font-bold">
           Health Records
         </h2>
-        <p className="text-gray-600">Health records management coming soon.</p>
+        <p className="text-muted-foreground">
+          Health records management coming soon.
+        </p>
       </div>
     ),
   }))
 );
 
 const SettingsPanel = lazy(() => import('@/components/sections/SettingsPanel'));
+const ShowcaseLabs = lazy(() => import('@/components/sections/ShowcaseLabs'));
 
 const PrivacyControls = lazy(() =>
   import('@/components/sections/PrivacyControls').catch(() => ({
     default: () => (
       <div className="p-8 text-center">
-        <Shield className="h-12 w-12 text-teal-600 mx-auto mb-4" />
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">
+        <Shield className="h-12 w-12 text-vitalsense-teal mx-auto mb-4" />
+        <h2 className="text-foreground mb-2 text-2xl font-bold">
           Privacy Controls
         </h2>
-        <p className="text-gray-600">Privacy settings coming soon.</p>
+        <p className="text-muted-foreground">Privacy settings coming soon.</p>
       </div>
     ),
   }))
@@ -143,13 +176,6 @@ const navigationItems = [
     label: 'Fall Detection',
     icon: Shield,
     component: FallDetection,
-    priority: 1,
-  },
-  {
-    id: 'heart-health',
-    label: 'Heart Health',
-    icon: Heart,
-    component: HeartHealthMonitoring,
     priority: 1,
   },
   {
@@ -186,35 +212,21 @@ const navigationItems = [
     id: 'brain-health',
     label: 'Cognitive Health',
     icon: Brain,
-    component: () => (
-      <div className="p-8 text-center">
-        <Brain className="h-12 w-12 text-teal-600 mx-auto mb-4" />
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">
-          Cognitive Health Coming Soon
-        </h2>
-        <p className="text-gray-600">
-          Advanced brain health monitoring features will be available in a
-          future update.
-        </p>
-      </div>
-    ),
+    component: CognitiveHealth,
+    priority: 2,
+  },
+  {
+    id: 'lidar-ar',
+    label: 'LiDAR AR',
+    icon: Scan,
+    component: GaitDashboard,
     priority: 2,
   },
   {
     id: 'emergency-contacts',
     label: 'Emergency Contacts',
     icon: AlertTriangle,
-    component: () => (
-      <div className="p-8 text-center">
-        <AlertTriangle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">
-          Emergency Contacts
-        </h2>
-        <p className="text-gray-600">
-          Manage your emergency contacts and alert preferences.
-        </p>
-      </div>
-    ),
+    component: EmergencyContactsPage,
     priority: 2,
   },
 
@@ -237,74 +249,53 @@ const navigationItems = [
     id: 'device-sync',
     label: 'Device Sync',
     icon: Smartphone,
-    component: () => (
-      <div className="p-8 text-center">
-        <Smartphone className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">Device Sync</h2>
-        <p className="text-gray-600">
-          Connect and sync your health devices and wearables.
-        </p>
-      </div>
-    ),
+    component: ConnectedDevices,
     priority: 3,
   },
   {
     id: 'export-data',
     label: 'Export Data',
     icon: Share,
-    component: () => (
-      <div className="p-8 text-center">
-        <Share className="h-12 w-12 text-green-600 mx-auto mb-4" />
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">Export Data</h2>
-        <p className="text-gray-600">
-          Export your health data for personal records or sharing with
-          healthcare providers.
-        </p>
-      </div>
-    ),
+    component: ExportData,
     priority: 3,
   },
   {
     id: 'health-goals',
     label: 'Health Goals',
     icon: Target,
-    component: () => (
-      <div className="p-8 text-center">
-        <Target className="h-12 w-12 text-purple-600 mx-auto mb-4" />
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">Health Goals</h2>
-        <p className="text-gray-600">
-          Set and track your personal health and wellness goals.
-        </p>
-      </div>
-    ),
+    component: FamilyGameification,
+    priority: 3,
+  },
+  {
+    id: 'labs',
+    label: 'Labs / Showcase',
+    icon: FlaskConical,
+    component: ShowcaseLabs,
     priority: 3,
   },
 ];
 
-// Main VitalSense App Component
-function App() {
-  console.log('🏠 App component rendering...');
-
+// Main VitalSense App Component (Inner content inside SidebarProvider)
+function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  // Sidebar state - open by default for better UX
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { themeMode, toggleThemeMode } = useThemeMode();
+  const {
+    toggle: toggleSidebar,
+    isMobile: _isMobile,
+    setOpen: _setOpen,
+    setOpenMobile: _setOpenMobile,
+  } = useAppleSidebar();
+  // Respect default sidebar behavior; do not force-open on mount.
+  const { recordUse, sortByUsage, hasAnyUsage } = useNavUsage();
 
-  // Adjust sidebar for mobile screens
-  useEffect(() => {
-    const checkScreenSize = () => {
-      const isMobile = window.innerWidth < 1024; // below lg breakpoint
-      if (isMobile) {
-        setSidebarOpen(false);
-      }
-    };
-
-    // Set initial state
-    checkScreenSize();
-
-    // Listen for resize
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
+  const quickAccessIds = React.useMemo(() => {
+    if (!hasAnyUsage) return new Set<string>();
+    return new Set(
+      sortByUsage(navigationItems)
+        .slice(0, 4)
+        .map((i) => i.id)
+    );
+  }, [hasAnyUsage, sortByUsage]);
 
   // Navigation item organization
   const primaryTabs = useMemo(
@@ -322,186 +313,198 @@ function App() {
     [activeTab]
   );
 
-  // Toggle sidebar function with debug logging
-  const toggleSidebar = useCallback(() => {
-    console.log(
-      '🍔 App: Hamburger menu clicked - toggleSidebar function called!'
-    );
-    setSidebarOpen((prev) => {
-      const newState = !prev;
-      console.log('🔄 App: Sidebar state changing from', prev, 'to', newState);
-      return newState;
-    });
-  }, []);
-
   // Handle tab changes
-  const handleTabChange = useCallback((tabId: string) => {
-    setActiveTab(tabId);
-    setSidebarOpen(false); // Close sidebar on tab change
-  }, []);
-
-  console.log(
-    '🔍 Current sidebar state:',
-    sidebarOpen,
-    'Active tab:',
-    activeTab
+  const handleTabChange = useCallback(
+    (tabId: string) => {
+      setActiveTab(tabId);
+      // Sidebar component handles its own sheet/overlay state; no manual close needed
+      recordUse(tabId);
+    },
+    [recordUse]
   );
 
-  // Debug the sidebar classes
-  const sidebarClasses = `bg-white w-64 fixed inset-y-0 left-0 z-50 flex flex-col shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`;
-  console.log('🎨 Sidebar classes:', sidebarClasses);
-
   return (
-    <div className="bg-gray-50 flex h-screen">
-      <ErrorBoundary
-        FallbackComponent={ErrorFallback}
-        onReset={() => window.location.reload()}
+    <div className="bg-background text-foreground flex h-screen">
+      {/* Unified Sidebar (Apple HIG style) */}
+      <AppleSidebarPanel
+        id="app-sidebar"
+        side="left"
+        collapsible="offcanvas"
+        variant="inset"
+        withSpacer={true}
       >
-        {/* Sidebar - Mobile: overlay, Desktop: static */}
-        <div
-          className={`w-64 fixed inset-y-0 left-0 z-50 flex flex-col bg-white shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
-        >
-          {/* Sidebar Header */}
-          <div className="border-gray-200 flex items-center justify-between border-b p-4">
-            <h2 className="text-lg font-semibold text-gray-900">
-              VitalSense Menu
+        <AppleSidebarHeader>
+          <div className="h-12 px-3 flex items-center justify-between py-2">
+            <h2 className="text-foreground text-sm font-semibold">
+              VitalSense
             </h2>
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleSidebar}
-              className="hover:bg-gray-100"
+              className="md:hidden hover:bg-muted"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </Button>
           </div>
-
-          {/* Sidebar Content - Scrollable */}
-          <div className="flex-1 overflow-y-auto">
-            <nav className="space-y-2 p-4">
-              {/* All Navigation Items in Sidebar */}
-              {navigationItems.map((item) => {
+        </AppleSidebarHeader>
+        {/* Quick Access */}
+        {hasAnyUsage && (
+          <AppleSidebarSection>
+            <div className="text-xs text-muted-foreground px-2 pb-2 font-medium">
+              Quick Access
+            </div>
+            <AppleSidebarList>
+              {sortByUsage(navigationItems)
+                .slice(0, 4)
+                .map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <AppleSidebarItem
+                      key={`qa-${item.id}`}
+                      active={isActive}
+                      onClick={() => handleTabChange(item.id)}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                    </AppleSidebarItem>
+                  );
+                })}
+            </AppleSidebarList>
+          </AppleSidebarSection>
+        )}
+        {/* Primary */}
+        <AppleSidebarSection>
+          <div className="text-xs text-muted-foreground px-2 pb-2 font-medium">
+            Primary
+          </div>
+          <AppleSidebarList>
+            {primaryTabs
+              .filter((i) => !quickAccessIds.has(i.id))
+              .map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
-
                 return (
-                  <button
+                  <AppleSidebarItem
                     key={item.id}
+                    active={isActive}
                     onClick={() => handleTabChange(item.id)}
-                    className={`space-x-3 px-3 flex w-full items-center rounded-lg py-2 text-left transition-colors ${
-                      isActive
-                        ? 'bg-teal-50 text-teal-700 border-teal-500 border-l-4'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span className="text-sm font-medium">{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
-
-        {/* Mobile Overlay - only visible on mobile when sidebar is open */}
-        {sidebarOpen && (
-          <button
-            className="bg-opacity-50 fixed inset-0 z-40 bg-black lg:hidden"
-            onClick={toggleSidebar}
-            onKeyDown={(e) => e.key === 'Escape' && toggleSidebar()}
-            aria-label="Close sidebar"
-          />
-        )}
-
-        {/* Main Content Area */}
-        <div className="flex flex-1 flex-col">
-          {/* Header */}
-          <NavigationHeader
-            onSidebarToggle={toggleSidebar}
-            sidebarOpen={sidebarOpen}
-          />
-
-          {/* Tab Navigation */}
-          <div className="border-gray-200 border-b bg-white">
-            {/* Primary Tabs - Always visible */}
-            <div className="flex overflow-x-auto">
-              {primaryTabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleTabChange(tab.id)}
-                    className={`py-3 flex flex-shrink-0 items-center space-x-2 border-b-2 px-4 text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'border-teal-500 text-teal-600'
-                        : 'hover:text-gray-700 hover:border-gray-300 border-transparent text-gray-500'
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span className="hidden sm:inline">{tab.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Secondary Tabs - Hidden on mobile, shown on tablet+ */}
-            <div className="md:flex hidden border-t border-gray-100">
-              {secondaryTabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleTabChange(tab.id)}
-                    className={`px-3 text-xs flex items-center space-x-2 py-2 font-medium transition-colors ${
-                      isActive
-                        ? 'bg-gray-100 text-gray-900'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
                   >
                     <Icon className="h-4 w-4" />
-                    <span>{tab.label}</span>
-                  </button>
+                    {item.label}
+                  </AppleSidebarItem>
                 );
               })}
-            </div>
+          </AppleSidebarList>
+        </AppleSidebarSection>
+        {/* Secondary */}
+        <AppleSidebarSection>
+          <div className="text-xs text-muted-foreground px-2 pb-2 font-medium">
+            More
           </div>
-
-          {/* Main Content */}
-          <main className="flex-1 overflow-y-auto p-6">
-            <ErrorBoundary FallbackComponent={ErrorFallback}>
-              <Suspense
-                fallback={
-                  <div className="h-64 flex items-center justify-center">
-                    <div className="animate-spin border-teal-600 h-8 w-8 rounded-full border-b-2"></div>
-                    <span className="ml-3 text-gray-600">
-                      Loading VitalSense...
-                    </span>
-                  </div>
-                }
-              >
-                {activeComponent && React.createElement(activeComponent)}
-              </Suspense>
-            </ErrorBoundary>
-          </main>
-
-          <Footer onNavigate={handleTabChange} />
+          <AppleSidebarList>
+            {secondaryTabs
+              .filter((i) => !quickAccessIds.has(i.id))
+              .map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <AppleSidebarItem
+                    key={item.id}
+                    active={isActive}
+                    onClick={() => handleTabChange(item.id)}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </AppleSidebarItem>
+                );
+              })}
+          </AppleSidebarList>
+        </AppleSidebarSection>
+        {/* Tertiary */}
+        <AppleSidebarSection>
+          <div className="text-xs text-muted-foreground px-2 pb-2 font-medium">
+            Settings
+          </div>
+          <AppleSidebarList>
+            {navigationItems
+              .filter((i) => i.priority === 3 && !quickAccessIds.has(i.id))
+              .map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <AppleSidebarItem
+                    key={item.id}
+                    active={isActive}
+                    onClick={() => handleTabChange(item.id)}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </AppleSidebarItem>
+                );
+              })}
+          </AppleSidebarList>
+        </AppleSidebarSection>
+        <div className="py-1.5 text-xs text-muted-foreground mt-auto px-2">
+          © {new Date().getFullYear()} VitalSense
         </div>
-      </ErrorBoundary>
+      </AppleSidebarPanel>
 
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <button
-          className="bg-opacity-50 fixed inset-0 z-40 h-full w-full border-0 bg-black p-0 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-          aria-label="Close sidebar"
+      {/* Main Content Area within SidebarInset (must be immediate sibling of the peer sidebar) */}
+      <AppleSidebarMain bumper="none" className="flex flex-1 flex-col">
+        <NavigationHeader
+          onSidebarToggle={toggleSidebar}
+          themeMode={themeMode}
+          onThemeToggle={toggleThemeMode}
+          onNavigate={handleTabChange}
         />
-      )}
+        <div className="border-border bg-card border-b" />
+        {/* Remove inner overflow to avoid double scroll; AppleSidebarMain is the scroll container */}
+        <ErrorBoundary
+          FallbackComponent={ErrorFallback}
+          onReset={() => window.location.reload()}
+        >
+          <main className="md:p-8 bg-background flex-1 p-6">
+            <Suspense
+              fallback={
+                <div className="h-64 flex items-center justify-center">
+                  <div className="animate-spin border-teal-600 h-8 w-8 rounded-full border-b-2"></div>
+                  <span className="ml-3 text-muted-foreground">
+                    Loading VitalSense...
+                  </span>
+                </div>
+              }
+            >
+              <div className="mx-auto max-w-7xl space-y-6">
+                {(() => {
+                  type WithOptionalHealthData = {
+                    healthData?: unknown;
+                  };
+                  const ActiveComponent = activeComponent as unknown as
+                    | React.ComponentType<WithOptionalHealthData>
+                    | undefined;
+                  return ActiveComponent ? (
+                    // Provide a neutral prop for components that expect healthData; others will ignore it.
+                    <ActiveComponent healthData={null} />
+                  ) : null;
+                })()}
+              </div>
+            </Suspense>
+          </main>
+        </ErrorBoundary>
+        <Footer onNavigate={handleTabChange} />
+      </AppleSidebarMain>
+
+      {/* AppleSidebar handles mobile overlay internally */}
     </div>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AppleSidebarProvider defaultOpen={false}>
+      <AppContent />
+    </AppleSidebarProvider>
+  );
+}

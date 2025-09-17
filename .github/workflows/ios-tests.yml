@@ -14,6 +14,10 @@ on:
 env:
   XCODE_VERSION: '16.1'
 
+concurrency:
+  group: ios-tests-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint-and-format:
     name: Swift Lint and Format Check

@@ -3,8 +3,34 @@ name: Smoke Test
 on:
   push:
     branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'server/**'
+      - 'scripts/node/**'
+      - 'wrangler.toml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vite.config*.ts'
+      - 'tsconfig*.json'
+      - '.github/workflows/smoke.yml'
   pull_request:
     branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'server/**'
+      - 'scripts/node/**'
+      - 'wrangler.toml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vite.config*.ts'
+      - 'tsconfig*.json'
+      - '.github/workflows/smoke.yml'
+
+concurrency:
+  group: smoke-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   smoke:

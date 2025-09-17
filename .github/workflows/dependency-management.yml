@@ -1,6 +1,24 @@
 name: Dependency Management
 
 on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
+      - 'ios/Package.swift'
+      - 'ios/Podfile'
+      - '.github/workflows/dependency-management.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
+      - 'ios/Package.swift'
+      - 'ios/Podfile'
+      - '.github/workflows/dependency-management.yml'
   schedule:
     # Check for dependency updates every Monday at 9 AM UTC
     - cron: '0 9 * * 1'
@@ -21,11 +39,16 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: deps-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   dependency-updates:
     name: Check Dependency Updates
     runs-on: ubuntu-latest
-    if: github.repository == 'and3rn3t/health'
+    # Only create PRs on scheduled runs or manual dispatch to avoid noisy PRs on push/PR triggers
+    if: github.repository == 'and3rn3t/health' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
 
     steps:
       - name: Checkout
@@ -38,6 +61,112 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
+  dependency-drift:
+    name: Dependency Drift Summary (PR)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies (for accurate resolution)
+        run: |
+          npm ci --prefer-offline
+
+      - name: Collect npm outdated (JSON)
+        run: |
+          npm outdated --json > outdated.json || echo "{}" > outdated.json
+
+      - name: Generate Markdown summary
+        run: |
+          node -e "
+          const fs = require('fs');
+          const path = 'outdated.json';
+          const data = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, 'utf8') || '{}') : {};
+          const deps = Object.entries(data);
+          const parse = (v) => {
+            if (!v || typeof v !== 'string') return [0,0,0];
+            const core = v.trim().replace(/^v/, '').split('-')[0];
+            const parts = core.split('.').map(x => parseInt(x, 10));
+            return [parts[0]||0, parts[1]||0, parts[2]||0];
+          };
+          const diff = (cur, lat) => {
+            const [cM, cm, cp] = parse(cur);
+            const [lM, lm, lp] = parse(lat);
+            if (lM > cM) return 'major';
+            if (lM === cM && lm > cm) return 'minor';
+            if (lM === cM && lm === cm && lp > cp) return 'patch';
+            return 'unknown';
+          };
+
+          const buckets = { patch: [], minor: [], major: [], unknown: [] };
+          for (const [name, info] of deps) {
+            const { current, latest } = info || {};
+            if (!current || !latest) { buckets.unknown.push({ name, current, latest }); continue; }
+            const d = diff(current, latest);
+            if (d === 'patch') buckets.patch.push({ name, current, latest });
+            else if (d === 'minor') buckets.minor.push({ name, current, latest });
+            else if (d === 'major') buckets.major.push({ name, current, latest });
+            else buckets.unknown.push({ name, current, latest });
+          }
+
+          const lines = [];
+          lines.push('# Dependency Drift Summary');
+          const total = deps.length;
+          lines.push(`Total outdated: ${total}`);
+          lines.push(`- Major: ${buckets.major.length}`);
+          lines.push(`- Minor: ${buckets.minor.length}`);
+          lines.push(`- Patch: ${buckets.patch.length}`);
+          if (total === 0) {
+            lines.push('\n✅ All dependencies are up to date.');
+          } else {
+            const format = (arr, title) => {
+              if (arr.length === 0) return;
+              lines.push(`\n## ${title} (${arr.length})`);
+              lines.push('| Package | Current | Latest |');
+              lines.push('|---|---:|---:|');
+              for (const { name, current, latest } of arr.slice(0, 30)) {
+                lines.push(`| ${name} | ${current} | ${latest} |`);
+              }
+              if (arr.length > 30) lines.push(`...and ${arr.length - 30} more.`);
+            };
+            format(buckets.major, 'Major updates');
+            format(buckets.minor, 'Minor updates');
+            format(buckets.patch, 'Patch updates');
+          }
+
+          fs.writeFileSync('dependency-drift.md', lines.join('\n'));
+          console.log('Summary written to dependency-drift.md');
+          "
+        shell: bash
+        env:
+          npm_config_loglevel: silent
+        continue-on-error: true
+
+      - name: Post sticky PR comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: dependency-drift.md
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-drift-reports
+          path: |
+            outdated.json
+            dependency-drift.md
+          retention-days: 7
 
       - name: Install npm-check-updates
         run: npm install -g npm-check-updates

@@ -1,0 +1,48 @@
+/* Sidebar-specific overrides for reliable list reset and button width */
+
+ul[data-slot='sidebar-menu'],
+[data-sidebar='menu'] {
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin: 0 !important;
+}
+
+ul[data-slot='sidebar-menu'] > li,
+[data-sidebar='menu'] > li {
+  list-style: none !important;
+}
+
+ul[data-slot='sidebar-menu'] > li::marker,
+[data-sidebar='menu'] > li::marker {
+  content: none !important;
+}
+
+[data-slot='sidebar'] [data-slot='sidebar-menu-button'],
+[data-sidebar='menu-button'] {
+  width: 100% !important;
+}
+
+/* Force opaque sidebar background and proper stacking */
+[data-slot='sidebar-container'] [data-slot='sidebar-inner'] {
+  background-color: #ffffff !important;
+  color: #111827; /* gray-900 */
+}
+
+/* Ensure the sidebar scrolls independently (scroll on inner wrapper) */
+[data-slot='sidebar-inner'] {
+  overflow-y: auto !important;
+  min-height: 0;
+}
+
+/* Content area inside can grow without forcing its own scroll */
+[data-slot='sidebar-content'] {
+  overflow: visible !important;
+}
+
+/* Keep the header above its content within the sidebar */
+[data-slot='sidebar-header'] {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #ffffff;
+}

@@ -93,7 +93,7 @@ export interface iOS26ButtonProps
   showFocusRing?: boolean;
 }
 
-export const iOS26Button = React.forwardRef<
+export const IOS26Button = React.forwardRef<
   HTMLButtonElement,
   iOS26ButtonProps
 >(
@@ -155,7 +155,7 @@ export const iOS26Button = React.forwardRef<
       <>
         {/* Loading State */}
         {loading && (
-          <div className="ios-26-spinner h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          <div className="ios-26-spinner animate-spin h-4 w-4 rounded-full border-2 border-current border-t-transparent" />
         )}
 
         {/* Left Icon */}
@@ -182,7 +182,7 @@ export const iOS26Button = React.forwardRef<
         {/* Badge */}
         {badge && badge > 0 && (
           <span
-            className="bg-ios-system-red ios-26-badge ml-2 rounded-full px-2 py-0.5 text-xs font-medium text-white"
+            className="bg-ios-system-red ios-26-badge py-0.5 text-xs ml-2 rounded-full px-2 font-medium text-white"
             aria-label={`${badge} notifications`}
           >
             {badge > 99 ? '99+' : badge}
@@ -212,7 +212,7 @@ export const iOS26Button = React.forwardRef<
   }
 );
 
-iOS26Button.displayName = 'iOS26Button';
+IOS26Button.displayName = 'IOS26Button';
 
 /**
  * iOS 26 Button Group Component
@@ -225,7 +225,7 @@ export interface iOS26ButtonGroupProps {
   accessibilityLevel?: 'standard' | 'enhanced';
 }
 
-export function iOS26ButtonGroup({
+export function IOS26ButtonGroup({
   children,
   orientation = 'horizontal',
   spacing = 'normal',
@@ -233,7 +233,7 @@ export function iOS26ButtonGroup({
   accessibilityLevel = 'enhanced',
 }: iOS26ButtonGroupProps) {
   const accessibilityProps = useAccessibilityEnhanced(accessibilityLevel, {
-    role: 'navigation',
+    role: 'group',
     keyboardNav: 'roving-tabindex',
   });
 
@@ -259,7 +259,7 @@ export function iOS26ButtonGroup({
   };
 
   return (
-    <div className={getGroupClasses()} role="group" {...accessibilityProps}>
+    <div className={getGroupClasses()} {...accessibilityProps}>
       {children}
     </div>
   );
@@ -278,7 +278,7 @@ export interface iOS26FABProps {
   accessibilityLevel?: 'enhanced' | 'maximum';
 }
 
-export function iOS26FAB({
+export function IOS26FAB({
   icon,
   label,
   onClick,
@@ -341,3 +341,5 @@ export function iOS26FAB({
     </button>
   );
 }
+
+// Backwards-compatible aliases removed to satisfy fast-refresh constraints

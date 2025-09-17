@@ -149,7 +149,7 @@ These instructions guide GitHub Copilot Chat/Edits to produce code and docs that
 - Use React DevTools Profiler for performance analysis
 - Monitor Core Web Vitals in production
 - Check bundle analyzer reports for optimization opportunities
-- Reference: `docs/OPTIMIZATION_DEPLOYMENT_COMPLETE.md`
+ - Reference: `docs/_archive/optimizations/OPTIMIZATION_DEPLOYMENT_COMPLETE.md`
 
 ## Authentication & Security Integration
 

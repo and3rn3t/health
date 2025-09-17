@@ -114,7 +114,7 @@ const textVariants = cva(
 export interface TextProps
   extends Omit<ComponentProps<'span'>, 'color'>,
     VariantProps<typeof textVariants> {
-  children: React.ReactNode;
+  readonly children: React.ReactNode;
 }
 
 /**
@@ -127,15 +127,13 @@ export function Text({
   accessibility,
   className,
   children,
-  ...props
-}: TextProps) {
+}: Readonly<TextProps>) {
   return (
     <span
       className={cn(
         textVariants({ variant, color, responsive, accessibility }),
         className
       )}
-      {...props}
     >
       {children}
     </span>
@@ -150,13 +148,12 @@ export function Text({
 export function Title1({
   children,
   className,
-  ...props
-}: Omit<TextProps, 'variant'>) {
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <h1
-      className={cn(textVariants({ variant: 'title-1' }), className)}
-      {...props}
-    >
+    <h1 className={cn(textVariants({ variant: 'title-1' }), className)}>
       {children}
     </h1>
   );
@@ -165,13 +162,12 @@ export function Title1({
 export function Title2({
   children,
   className,
-  ...props
-}: Omit<TextProps, 'variant'>) {
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <h2
-      className={cn(textVariants({ variant: 'title-2' }), className)}
-      {...props}
-    >
+    <h2 className={cn(textVariants({ variant: 'title-2' }), className)}>
       {children}
     </h2>
   );
@@ -180,13 +176,12 @@ export function Title2({
 export function Title3({
   children,
   className,
-  ...props
-}: Omit<TextProps, 'variant'>) {
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <h3
-      className={cn(textVariants({ variant: 'title-3' }), className)}
-      {...props}
-    >
+    <h3 className={cn(textVariants({ variant: 'title-3' }), className)}>
       {children}
     </h3>
   );
@@ -195,13 +190,12 @@ export function Title3({
 export function Headline({
   children,
   className,
-  ...props
-}: Omit<TextProps, 'variant'>) {
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <h4
-      className={cn(textVariants({ variant: 'headline' }), className)}
-      {...props}
-    >
+    <h4 className={cn(textVariants({ variant: 'headline' }), className)}>
       {children}
     </h4>
   );
@@ -210,10 +204,12 @@ export function Headline({
 export function BodyText({
   children,
   className,
-  ...props
-}: Omit<TextProps, 'variant'>) {
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <p className={cn(textVariants({ variant: 'body' }), className)} {...props}>
+    <p className={cn(textVariants({ variant: 'body' }), className)}>
       {children}
     </p>
   );
@@ -222,13 +218,12 @@ export function BodyText({
 export function BodyEmphasized({
   children,
   className,
-  ...props
-}: Omit<TextProps, 'variant'>) {
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <p
-      className={cn(textVariants({ variant: 'body-emphasized' }), className)}
-      {...props}
-    >
+    <p className={cn(textVariants({ variant: 'body-emphasized' }), className)}>
       {children}
     </p>
   );
@@ -237,15 +232,16 @@ export function BodyEmphasized({
 export function Caption({
   children,
   className,
-  ...props
-}: Omit<TextProps, 'variant'>) {
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <span
       className={cn(
         textVariants({ variant: 'caption', color: 'secondary' }),
         className
       )}
-      {...props}
     >
       {children}
     </span>
@@ -256,7 +252,6 @@ export function NumericDisplay({
   children,
   size = 'medium',
   className,
-  ...props
 }: Omit<TextProps, 'variant'> & {
   size?: 'small' | 'medium' | 'large';
 }) {
@@ -276,7 +271,6 @@ export function NumericDisplay({
       className={className}
       aria-live="polite"
       aria-atomic="true"
-      {...props}
     >
       {children}
     </Text>
@@ -316,7 +310,6 @@ export function MetricValue({
   unit,
   label,
   className,
-  ...props
 }: {
   value: string | number;
   unit?: string;
@@ -328,7 +321,6 @@ export function MetricValue({
         size="medium"
         className={className}
         aria-label={label ? `${label}: ${value}${unit || ''}` : undefined}
-        {...props}
       >
         {value}
       </NumericDisplay>

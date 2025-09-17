@@ -3,20 +3,70 @@ name: Deploy to Cloudflare Workers
 on:
   push:
     branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'server/**'
+      - 'scripts/node/**'
+      - 'wrangler.toml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vite.config*.ts'
+      - 'tsconfig*.json'
+      - '.github/workflows/deploy.yml'
   pull_request:
     branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'server/**'
+      - 'scripts/node/**'
+      - 'wrangler.toml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vite.config*.ts'
+      - 'tsconfig*.json'
+      - '.github/workflows/deploy.yml'
 
 env:
   NODE_OPTIONS: --max-old-space-size=4096
 
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      webapp: ${{ steps.filter.outputs.webapp }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            webapp:
+              - 'src/**'
+              - 'public/**'
+              - 'server/**'
+              - 'scripts/node/**'
+              - 'wrangler.toml'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'vite.config*.ts'
+              - 'tsconfig*.json'
+
   test:
     runs-on: ubuntu-latest
+    needs: changes
     permissions:
       contents: read
     outputs:
       should-deploy-dev: ${{ steps.check-deploy.outputs.should-deploy-dev }}
       should-deploy-prod: ${{ steps.check-deploy.outputs.should-deploy-prod }}
+    if: needs.changes.outputs.webapp == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -78,7 +128,7 @@ jobs:
 
   deploy-dev:
     if: needs.test.outputs.should-deploy-dev == 'true'
-    needs: test
+    needs: [changes, test]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -123,7 +173,7 @@ jobs:
 
   deploy-prod:
     if: needs.test.outputs.should-deploy-prod == 'true'
-    needs: test
+    needs: [changes, test]
     runs-on: ubuntu-latest
     permissions:
       contents: read

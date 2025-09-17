@@ -1,6 +1,6 @@
-# WebSocket Server Production Deployment
+## WebSocket Server Deployment (Dev/Prod)
 
-FROM node:18-alpine
+FROM node:22-alpine
 
 # Set working directory
 WORKDIR /app
@@ -16,8 +16,7 @@ COPY websocket-server.js ./
 COPY test-websocket-server.js ./
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S websocket -u 1001
+RUN addgroup -g 1001 -S nodejs && adduser -S websocket -u 1001
 
 # Change to non-root user
 USER websocket
@@ -25,9 +24,9 @@ USER websocket
 # Expose port
 EXPOSE 3001
 
-# Health check
+# Health check (uses REST probe route)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "const http = require('http'); http.get('http://localhost:3001/api', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => { process.exit(1); });"
+  CMD node -e "const http = require('http'); http.get('http://localhost:3001/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => { process.exit(1); });"
 
 # Start the server
 CMD ["npm", "start"]

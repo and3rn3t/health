@@ -24,15 +24,34 @@ declare global {
   }
 }
 
+// Safely read a Vite env var without assuming import.meta.env exists at runtime
+const safeGetViteEnv = (key: string): string | undefined => {
+  try {
+    const meta: unknown = import.meta;
+    if (meta && typeof meta === 'object' && 'env' in meta) {
+      const env = (meta as { env?: Record<string, unknown> }).env;
+      const val = env?.[key];
+      return typeof val === 'string' && val.length > 0 ? val : undefined;
+    }
+  } catch {
+    // ignore – return undefined and let callers fall back
+  }
+  return undefined;
+};
+
 export const auth0Config = {
   // Auth0 Application Configuration
   domain:
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.auth0?.domain) ||
+    safeGetViteEnv('VITE_AUTH0_DOMAIN') ||
+    // Safe placeholder; isValidAuth0Config will reject defaults
     'vitalsense-health.auth0.com',
   clientId:
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.auth0?.clientId) ||
+    safeGetViteEnv('VITE_AUTH0_CLIENT_ID') ||
+    // Safe placeholder; isValidAuth0Config will reject defaults
     'your-client-id',
 
   // Security Configuration
@@ -133,11 +152,18 @@ export const isValidAuth0Config = (): boolean => {
 
 // Environment-specific configuration
 export const getAuth0ConfigForEnvironment = () => {
-  const environment =
+  // Resolve environment robustly without assuming import.meta.env exists at runtime
+  let environment =
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.environment) ||
-    import.meta.env.VITE_ENVIRONMENT ||
-    'development';
+    undefined;
+
+  if (!environment) {
+    const envVar = safeGetViteEnv('VITE_ENVIRONMENT');
+    if (envVar) environment = envVar;
+  }
+
+  if (!environment) environment = 'development';
 
   const baseConfig = { ...auth0Config };
 

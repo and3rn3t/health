@@ -329,6 +329,29 @@ app.use('/*', async (c, next) => {
 
   const res = await c.env.ASSETS?.fetch(c.req.raw);
   if (!res || res.status === 404) return next();
+
+  // In non-production, aggressively disable caching for HTML/CSS/JS to avoid stale bundles
+  try {
+    const env = c.env.ENVIRONMENT || 'development';
+    if (env !== 'production') {
+      const url = new URL(c.req.url);
+      const pathname = url.pathname;
+      const isHtml = pathname.endsWith('.html') || pathname === '/';
+      const isJs = pathname.endsWith('.js') || pathname.endsWith('.mjs');
+      const isCss = pathname.endsWith('.css');
+      if (isHtml || isJs || isCss) {
+        const h = new Headers(res.headers);
+        h.set('Cache-Control', 'no-store, must-revalidate');
+        h.delete('ETag');
+        // Some browsers honor Last-Modified for 304; remove to force re-fetch
+        h.delete('Last-Modified');
+        return new Response(res.body, { status: res.status, headers: h });
+      }
+    }
+  } catch {
+    // if header rewrite fails, fall through with original response
+  }
+
   return res;
 });
 
@@ -372,9 +395,14 @@ var BASE_KV_SERVICE_URL = ${JSON.stringify(kvMode === 'network' ? '/api' : '')};
 // also expose on window for code that reads from window
 window.BASE_KV_SERVICE_URL = BASE_KV_SERVICE_URL;
 `;
-  return new Response(js, {
-    headers: { 'content-type': 'application/javascript; charset=utf-8' },
+  const dev = (c.env.ENVIRONMENT || 'development') !== 'production';
+  const headers = new Headers({
+    'content-type': 'application/javascript; charset=utf-8',
   });
+  if (dev) {
+    headers.set('Cache-Control', 'no-store, must-revalidate');
+  }
+  return new Response(js, { headers });
 });
 
 // Auth callback: serve SPA index at /callback so Auth0 SDK can complete the flow

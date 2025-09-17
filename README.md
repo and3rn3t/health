@@ -10,6 +10,7 @@
 [![iOS](https://img.shields.io/badge/iOS-16+-black.svg)](https://developer.apple.com/ios/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Production](https://img.shields.io/badge/Status-Live-brightgreen.svg)](https://health.andernet.dev)
+[![iOS Tests](https://github.com/and3rn3t/health/actions/workflows/ios-tests.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/ios-tests.yml)
 
 ## 🚀 Quick Start
 
@@ -24,6 +25,26 @@ npm run dev          # React app on http://localhost:5173
 npm run cf:dev       # Cloudflare Worker on http://localhost:8787
 npm run ws:dev       # WebSocket server on ws://localhost:3001
 ```
+
+### 🐳 Docker (Worker + WebSocket)
+
+```bash
+# Build and start both services
+docker compose up --build -d
+
+# Access
+# - Worker (API + static): http://localhost:8789
+# - WebSocket server: ws://localhost:3001
+
+# View logs
+docker compose logs -f worker
+docker compose logs -f websocket
+
+# Stop
+docker compose down
+```
+
+See also: docs/DOCKER.md for full usage and environment details.
 
 ### iOS Application (15 minutes on Mac)
 
@@ -127,7 +148,7 @@ npm run ws:dev       # WebSocket server on ws://localhost:3001
 - **Real-time Updates**: WebSocket connections with automatic reconnection
 - **Incremental Loading**: Component-level code splitting for faster initial loads
 
-_Latest optimization: December 2024 - See `docs/OPTIMIZATION_DEPLOYMENT_COMPLETE.md`_
+_Latest optimization: December 2024 - See `docs/_archive/optimizations/OPTIMIZATION_DEPLOYMENT_COMPLETE.md`_
 
 - **JWT authentication** with secure token management
 

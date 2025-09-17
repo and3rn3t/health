@@ -367,6 +367,7 @@ struct GaitDataPayload: Codable {
     let gaitMetrics: CodableGaitMetrics
     let assessment: CodableGaitAssessment?
     let rawSensorData: [SensorReading]?
+    let meta: [String: String]?
 
     init(
         deviceId: String,
@@ -374,7 +375,8 @@ struct GaitDataPayload: Codable {
         sessionId: String,
         gaitMetrics: GaitMetrics,
         assessment: GaitAssessment? = nil,
-        rawSensorData: [SensorReading]? = nil
+        rawSensorData: [SensorReading]? = nil,
+        meta: [String: String]? = nil
     ) {
         self.deviceId = deviceId
         self.userId = userId
@@ -383,6 +385,7 @@ struct GaitDataPayload: Codable {
         self.gaitMetrics = CodableGaitMetrics(from: gaitMetrics)
         self.assessment = assessment.map(CodableGaitAssessment.init)
         self.rawSensorData = rawSensorData
+        self.meta = meta
     }
 }
 
