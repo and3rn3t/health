@@ -27,6 +27,10 @@ API_BASE_URL = "http://localhost:8789/api"
 WEBSOCKET_URL = "ws://localhost:3001"
 FILES_BASE_URL = "http://localhost:8789/files"
 LOG_LEVEL = "debug"
+LOG_SAMPLE_RATE = "1.0"
+# Category-specific logging sample rates (development)
+LOG_WS_SAMPLE_RATE = "1.0"                 # sample all WS telemetry in dev
+LOG_CLIENT_ERROR_SAMPLE_RATE = "1.0"       # sample all client errors in dev
 FALL_DETECTION_THRESHOLD = "0.75"
 EMERGENCY_RESPONSE_DELAY = "30"
 MAX_FILE_SIZE = "100MB"
@@ -53,6 +57,11 @@ API_BASE_URL = "https://health.andernet.dev/api"
 WEBSOCKET_URL = "wss://health.andernet.dev/ws"
 FILES_BASE_URL = "https://health.andernet.dev/files"
 LOG_LEVEL = "info"
+LOG_SAMPLE_RATE = "0.1"
+# Category-specific logging sample rates (production)
+# Tune as needed per traffic; these override the general LOG_SAMPLE_RATE for their categories
+LOG_WS_SAMPLE_RATE = "0.2"                  # 20% of WS telemetry
+LOG_CLIENT_ERROR_SAMPLE_RATE = "0.5"        # 50% of client errors
 FALL_DETECTION_THRESHOLD = "0.85"
 EMERGENCY_RESPONSE_DELAY = "30"
 MAX_FILE_SIZE = "500MB"

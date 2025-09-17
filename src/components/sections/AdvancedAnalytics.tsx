@@ -79,7 +79,7 @@ export default function AdvancedAnalytics() {
     return 'text-green-500';
   })();
   return (
-    <div className="space-y-6">
+    <div className="md:space-y-10 text-foreground space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -105,7 +105,7 @@ export default function AdvancedAnalytics() {
             patterns.
           </CardDescription>
         </CardHeader>
-        <CardContent className="md:grid-cols-2 grid gap-6">
+        <CardContent className="md:grid-cols-2 grid gap-8">
           <div>
             <AIInsights healthData={analyticsNow} />
           </div>
@@ -128,7 +128,7 @@ export default function AdvancedAnalytics() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="md:grid-cols-4 grid grid-cols-1 gap-4">
+          <div className="md:grid-cols-4 gap-5 md:gap-6 grid grid-cols-1">
             <div className="rounded-lg border p-4">
               <div className="text-muted-foreground text-sm">Probability</div>
               <div className="text-2xl font-bold">
@@ -153,11 +153,11 @@ export default function AdvancedAnalytics() {
             </div>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-7 md:mt-8">
             <div className="mb-2 text-sm font-medium">
               Top contributing factors
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="gap-2.5 md:gap-3 flex flex-wrap">
               {fallRisk.contributions.slice(0, 6).map((c) => (
                 <span
                   key={c.feature}
@@ -172,7 +172,7 @@ export default function AdvancedAnalytics() {
             </div>
           </div>
 
-          <div className="gap-3 md:grid-cols-5 mt-6 grid grid-cols-1">
+          <div className="gap-3.5 md:gap-4 md:grid-cols-5 mt-7 md:mt-8 grid grid-cols-1">
             {Object.entries(fallRisk.inputs).map(([k, v]) => (
               <div key={k} className="p-3 text-xs rounded-md border">
                 <div className="text-muted-foreground">
@@ -199,7 +199,7 @@ export default function AdvancedAnalytics() {
             detection.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="md:space-y-6 space-y-4">
           <MLAnalytics
             userId="demo-user"
             healthData={[analyticsYesterday, analyticsNow]}
@@ -208,7 +208,7 @@ export default function AdvancedAnalytics() {
       </Card>
 
       {/* Gait & Walking Visualizers */}
-      <div className="md:grid-cols-2 grid gap-6">
+      <div className="md:grid-cols-2 gap-7 md:gap-8 grid">
         <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

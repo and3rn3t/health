@@ -196,9 +196,9 @@ _Latest optimization: December 2024 - See `docs/_archive/optimizations/OPTIMIZAT
 
 ### 🚀 Getting Started
 
-- **[Quick Start Guide](docs/README_QUICK_START.md)** - Get running in 15 minutes
-- **[Complete Setup Guide](docs/SETUP_GUIDE.md)** - Detailed development setup
-- **[Development Guide](docs/DEVELOPMENT.md)** - Development workflow and best practices
+### CSS Strategy
+
+We follow a consolidation‑first CSS approach: one primary hashed CSS bundle from Tailwind (`src/main.css`), with optional code‑split CSS only for large, lazy‑loaded features. Rationale, guardrails, and workflow live in `docs/development/CSS_STRATEGY.md`.
 
 ### 📱 iOS Development
 

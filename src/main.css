@@ -3102,3 +3102,144 @@ body {
 .focus-visible\:outline-ring:focus-visible {
   outline-color: hsl(var(--ring));
 }
+
+/* === COMPONENT CSS (inlined to consolidate) === */
+/* Sidebar-specific overrides for reliable list reset and button width */
+ul[data-slot='sidebar-menu'],
+[data-sidebar='menu'] {
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin: 0 !important;
+}
+
+ul[data-slot='sidebar-menu'] > li,
+[data-sidebar='menu'] > li {
+  list-style: none !important;
+}
+
+ul[data-slot='sidebar-menu'] > li::marker,
+[data-sidebar='menu'] > li::marker {
+  content: none !important;
+}
+
+[data-slot='sidebar'] [data-slot='sidebar-menu-button'],
+[data-sidebar='menu-button'] {
+  width: 100% !important;
+}
+
+/* Force opaque sidebar background and proper stacking */
+[data-slot='sidebar-container'] [data-slot='sidebar-inner'] {
+  background-color: #ffffff !important;
+  color: #111827; /* gray-900 */
+}
+
+/* Ensure the sidebar scrolls independently (scroll on inner wrapper) */
+[data-slot='sidebar-inner'] {
+  overflow-y: auto !important;
+  min-height: 0;
+}
+
+/* Content area inside can grow without forcing its own scroll */
+[data-slot='sidebar-content'] {
+  overflow: visible !important;
+}
+
+/* Keep the header above its content within the sidebar */
+[data-slot='sidebar-header'] {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #ffffff;
+}
+
+/* VitalSense Apple-style Sidebar */
+/* Reset list styles */
+[data-vs='apple-sidebar'] ul,
+[data-vs='apple-sidebar'] li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Opaque panel with subtle border/shadow like iPad sidebar */
+[data-vs='apple-sidebar-panel'] {
+  background: var(--card);
+  color: var(--card-foreground);
+}
+
+/* Map data attributes into CSS custom properties for widths */
+[data-vs='apple-sidebar'] {
+  --vs-sidebar-width: 272px;
+  --vs-sidebar-icon-width: 56px;
+}
+
+/* Sticky header pattern */
+[data-vs='apple-sidebar-header'] {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--card);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  backdrop-filter: saturate(180%) blur(12px);
+}
+
+/* Independent scroll */
+[data-vs='apple-sidebar-inner'] {
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Thin scrollbars for main and sidebar */
+[data-vs='apple-sidebar-inner'],
+[data-vs='apple-sidebar-main'] {
+  scrollbar-width: thin; /* Firefox */
+  /* Use muted for thumb color to respect theme */
+  scrollbar-color: var(--muted) transparent;
+}
+
+[data-vs='apple-sidebar-inner']::-webkit-scrollbar,
+[data-vs='apple-sidebar-main']::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-vs='apple-sidebar-inner']::-webkit-scrollbar-thumb,
+[data-vs='apple-sidebar-main']::-webkit-scrollbar-thumb {
+  background-color: var(--muted);
+  border-radius: 8px;
+}
+
+[data-vs='apple-sidebar-inner']::-webkit-scrollbar-track,
+[data-vs='apple-sidebar-main']::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Reduce motion-friendly transitions */
+@media (prefers-reduced-motion: reduce) {
+  [data-vs='apple-sidebar-panel'] {
+    transition: none !important;
+  }
+}
+
+/* Item polish for normal look */
+[data-vs='apple-sidebar-item'] {
+  color: var(--muted-foreground);
+}
+[data-vs='apple-sidebar-item']:hover {
+  background-color: color-mix(in oklab, var(--muted) 90%, transparent);
+}
+[data-vs='apple-sidebar-item'][data-active='true'],
+[data-vs='apple-sidebar-item'].active {
+  background-color: color-mix(in oklab, var(--primary) 12%, transparent);
+  color: var(--primary);
+}
+
+/* Dark mode refinements */
+[data-appearance='dark'] [data-vs='apple-sidebar-item']:hover {
+  background-color: color-mix(in oklab, var(--muted) 85%, transparent);
+}
+[data-appearance='dark'] [data-vs='apple-sidebar-item'][data-active='true'],
+[data-appearance='dark'] [data-vs='apple-sidebar-item'].active {
+  background-color: color-mix(in oklab, var(--primary) 24%, transparent);
+  color: var(--primary);
+}

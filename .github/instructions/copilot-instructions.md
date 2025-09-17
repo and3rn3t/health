@@ -70,6 +70,15 @@ These instructions guide GitHub Copilot Chat/Edits to produce code and docs that
 - Icons: prefer `@phosphor-icons/react` or `lucide-react` already used in the codebase.
 - Dark mode: Tailwind is configured with `darkMode: ["selector", '[data-appearance="dark"]']`. If you add theme toggles or components checking theme, prefer toggling `[data-appearance="dark"]` on `document.documentElement`. Avoid adding a separate theme mechanism.
 
+### CSS strategy (consolidation-first)
+
+- Production CSS should be consolidated into as few files as practical: one primary hashed bundle from Tailwind (via `src/main.css`).
+- Authoring can be modular with Tailwind layers, but avoid introducing new standalone component CSS files unless they are tied to a lazy‑loaded feature.
+- Split CSS only when it is coupled to a dynamically imported feature module that is large and infrequently used (e.g., LiDAR analyzer). In such cases, collocate CSS so it code‑splits with the JS chunk.
+- Rationale: fewer CSS files reduce blocking requests and maximize Cloudflare edge caching efficiency; Tailwind utilities already minimize custom styles.
+- Measurement guardrails: keep CSS bundle under ~60KB minified (current good). Use tasks "📦 Quick Bundle Check" and "🔍 Full Bundle Analysis" before/after changes.
+- Do not add separate theme systems or global CSS frameworks; use Tailwind tokens and existing primitives.
+
 ## State, data fetching, and realtime
 
 - Local persisted UI state: use `useKV` from `@github/spark/hooks` for lightweight, user-specific values.
@@ -149,7 +158,7 @@ These instructions guide GitHub Copilot Chat/Edits to produce code and docs that
 - Use React DevTools Profiler for performance analysis
 - Monitor Core Web Vitals in production
 - Check bundle analyzer reports for optimization opportunities
- - Reference: `docs/_archive/optimizations/OPTIMIZATION_DEPLOYMENT_COMPLETE.md`
+- Reference: `docs/_archive/optimizations/OPTIMIZATION_DEPLOYMENT_COMPLETE.md`
 
 ## Authentication & Security Integration
 

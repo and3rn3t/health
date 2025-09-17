@@ -15,7 +15,10 @@
         "showReuseMessage": false,
         "clear": true
       },
-      "icon": { "id": "server", "color": "terminal.ansiBlue" },
+      "icon": {
+        "id": "server",
+        "color": "terminal.ansiBlue"
+      },
       "detail": "Build and start worker + websocket via docker-compose"
     },
     {
@@ -30,7 +33,10 @@
         "panel": "shared",
         "clear": true
       },
-      "icon": { "id": "trash", "color": "terminal.ansiRed" },
+      "icon": {
+        "id": "trash",
+        "color": "terminal.ansiRed"
+      },
       "detail": "Stop and remove containers"
     },
     {
@@ -92,6 +98,50 @@
         "panel": "shared",
         "clear": true
       }
+    },
+    {
+      "label": "VitalSense App: Status (8789 Worker)",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/health/app-status-check.js",
+        "--url",
+        "http://127.0.0.1:8789"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "icon": {
+        "id": "pulse",
+        "color": "terminal.ansiGreen"
+      },
+      "detail": "Check VitalSense branding and content via Worker on port 8789"
+    },
+    {
+      "label": "VitalSense App: Status (5000 Local)",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/health/app-status-check.js",
+        "--url",
+        "http://localhost:5000"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "icon": {
+        "id": "pulse",
+        "color": "terminal.ansiBlue"
+      },
+      "detail": "Check VitalSense branding and content on local app port 5000"
     },
     {
       "label": "probe-health-nodejs",
@@ -220,7 +270,10 @@
         "🐳 Docker: Health (websocket)",
         "🐳 Docker: Logs (worker)"
       ],
-      "icon": { "id": "rocket", "color": "terminal.ansiGreen" },
+      "icon": {
+        "id": "rocket",
+        "color": "terminal.ansiGreen"
+      },
       "detail": "Compose up → status → health checks → tail worker logs"
     },
     {
@@ -244,7 +297,10 @@
         "🐳 Docker: Health (websocket)",
         "🐳 Docker: Logs (websocket)"
       ],
-      "icon": { "id": "rocket", "color": "terminal.ansiBlue" },
+      "icon": {
+        "id": "rocket",
+        "color": "terminal.ansiBlue"
+      },
       "detail": "Compose up → status → health checks → tail websocket logs"
     },
     {
@@ -267,7 +323,10 @@
         "🐳 Docker: Health (worker)",
         "🐳 Docker: Health (websocket)"
       ],
-      "icon": { "id": "server-process", "color": "terminal.ansiGreen" },
+      "icon": {
+        "id": "server-process",
+        "color": "terminal.ansiGreen"
+      },
       "detail": "Compose up → status → run both health checks"
     },
     {
@@ -284,7 +343,10 @@
         "showReuseMessage": false,
         "clear": true
       },
-      "icon": { "id": "cloud-upload", "color": "terminal.ansiBlue" },
+      "icon": {
+        "id": "cloud-upload",
+        "color": "terminal.ansiBlue"
+      },
       "detail": "Publish Cloudflare Worker to development environment"
     },
     {
@@ -301,7 +363,10 @@
         "showReuseMessage": false,
         "clear": true
       },
-      "icon": { "id": "link", "color": "terminal.ansiGreen" },
+      "icon": {
+        "id": "link",
+        "color": "terminal.ansiGreen"
+      },
       "detail": "Install git post-push hook to auto-deploy to development"
     },
     {
@@ -318,7 +383,10 @@
         "showReuseMessage": false,
         "clear": true
       },
-      "icon": { "id": "remove", "color": "terminal.ansiRed" },
+      "icon": {
+        "id": "remove",
+        "color": "terminal.ansiRed"
+      },
       "detail": "Remove git post-push hook"
     },
     {
@@ -454,7 +522,10 @@
         "panel": "shared",
         "clear": true
       },
-      "icon": { "id": "refresh", "color": "terminal.ansiBlue" },
+      "icon": {
+        "id": "refresh",
+        "color": "terminal.ansiBlue"
+      },
       "detail": "Restart only the worker service"
     },
     {
@@ -469,7 +540,10 @@
         "panel": "shared",
         "clear": true
       },
-      "icon": { "id": "refresh", "color": "terminal.ansiBlue" },
+      "icon": {
+        "id": "refresh",
+        "color": "terminal.ansiBlue"
+      },
       "detail": "Restart only the websocket service"
     },
     {
@@ -488,7 +562,10 @@
         "panel": "shared",
         "clear": true
       },
-      "icon": { "id": "wrench", "color": "terminal.ansiYellow" },
+      "icon": {
+        "id": "wrench",
+        "color": "terminal.ansiYellow"
+      },
       "detail": "Rebuild worker image without cache and restart it"
     },
     {
@@ -507,7 +584,10 @@
         "panel": "shared",
         "clear": true
       },
-      "icon": { "id": "wrench", "color": "terminal.ansiYellow" },
+      "icon": {
+        "id": "wrench",
+        "color": "terminal.ansiYellow"
+      },
       "detail": "Rebuild websocket image without cache and restart it"
     },
     {
@@ -522,7 +602,10 @@
         "panel": "shared",
         "clear": true
       },
-      "icon": { "id": "list-tree", "color": "terminal.ansiGreen" },
+      "icon": {
+        "id": "list-tree",
+        "color": "terminal.ansiGreen"
+      },
       "detail": "Show compose service status"
     },
     {
@@ -541,7 +624,10 @@
         "panel": "shared",
         "clear": true
       },
-      "icon": { "id": "trash", "color": "terminal.ansiRed" },
+      "icon": {
+        "id": "trash",
+        "color": "terminal.ansiRed"
+      },
       "detail": "Remove dangling images and unused volumes (force)"
     },
     {
@@ -1603,6 +1689,78 @@
       "command": "pwsh",
       "args": ["-NoProfile", "-File", "ios/scripts/ios-test-runner.ps1"],
       "problemMatcher": [],
+      "group": "test"
+    },
+    {
+      "label": "lint-quick-nodejs",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/dev/lint-runner.js", "--typescript", "--quick"],
+      "isBackground": false,
+      "problemMatcher": ["$eslint-stylish"],
+      "group": "build"
+    },
+    {
+      "label": "analytics-sample-fetch",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/analytics/fetch-analytics-sample.js",
+        "HEALTH_ANALYTICS"
+      ],
+      "isBackground": false,
+      "group": "test"
+    },
+    {
+      "label": "probe-error-endpoint-8789",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "try { $r = Invoke-WebRequest 'http://127.0.0.1:8789/api/_error' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode } catch { Write-Host 'Caught:' $_.Exception.Message }"
+      ],
+      "isBackground": false,
+      "group": "test"
+    },
+    {
+      "label": "wrangler-tail-dev",
+      "type": "shell",
+      "command": "wrangler",
+      "args": ["tail", "--env", "development", "--format", "pretty"],
+      "isBackground": true,
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "panel": "shared",
+        "clear": false
+      }
+    },
+    {
+      "label": "wrangler-tail-prod",
+      "type": "shell",
+      "command": "wrangler",
+      "args": ["tail", "--env", "production", "--format", "pretty"],
+      "isBackground": true,
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "panel": "shared",
+        "clear": false
+      }
+    },
+    {
+      "label": "probe-analytics-ping-8789",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "try { $r = Invoke-WebRequest 'http://127.0.0.1:8789/api/_analytics_ping' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode; Write-Host 'Body:' $r.Content } catch { Write-Host 'Caught:' $_.Exception.Message }"
+      ],
+      "isBackground": false,
       "group": "test"
     }
   ],

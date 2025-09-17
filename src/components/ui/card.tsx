@@ -7,7 +7,8 @@ function Card({ className, ...props }: ComponentProps<'div'>) {
     <div
       data-slot="card"
       className={cn(
-        'text-card-foreground bg-card border-gray-200 flex flex-col gap-6 rounded-xl border py-6 shadow-sm transition-shadow hover:shadow-md',
+        // Base card styling + consistent outer spacing so stacked cards don't touch
+        'text-card-foreground bg-card border-gray-200 md:my-10 my-6 flex flex-col gap-6 rounded-xl border py-6 shadow-sm transition-shadow hover:shadow-md',
         className
       )}
       {...props}
@@ -32,7 +33,10 @@ function CardTitle({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-title"
-      className={cn('font-semibold leading-none', className)}
+      className={cn(
+        'text-foreground md:text-lg text-base font-semibold leading-none',
+        className
+      )}
       {...props}
     />
   );
@@ -75,7 +79,7 @@ function CardFooter({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-footer"
-      className={cn('[.border-t]:pt-6 flex items-center px-6', className)}
+      className={cn('pt-3 flex items-center px-6', className)}
       {...props}
     />
   );

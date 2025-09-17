@@ -1,7 +1,5 @@
 'use client';
 
-import './apple-sidebar.css';
-
 import { Slot } from '@radix-ui/react-slot';
 import { PanelLeft } from 'lucide-react';
 import {

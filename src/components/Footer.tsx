@@ -15,7 +15,7 @@ import {
   Wifi,
   WifiOff,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 interface FooterProps {
   readonly healthScore?: number;
@@ -24,7 +24,7 @@ interface FooterProps {
   readonly onNavigate: (tab: string) => void;
 }
 
-export default function Footer({
+function Footer({
   healthScore,
   lastSync,
   connectionStatus = 'connected',
@@ -90,97 +90,80 @@ export default function Footer({
 
   return (
     <footer className="bg-card/50 border-border mt-auto border-t">
-      <div className="px-4 py-6 lg:px-8">
-        {/* Main Footer Content */}
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          {/* Left Section - Brand & Status */}
-          <div className="flex items-center gap-6">
-            {/* Brand */}
-            <div className="flex items-center gap-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-vitalsense-primary">
-                <Heart className="h-4 w-4 text-white" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-foreground text-base font-semibold">
-                  VitalSense
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Health Monitor
-                </span>
-              </div>
+      <div className="md:py-5 px-4 py-4 lg:px-8">
+        {/* Grid-based Footer Layout */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:items-center">
+          {/* Brand & Score */}
+          <div className="flex items-center gap-4">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-vitalsense-primary">
+              <Heart className="h-4 w-4 text-white" />
             </div>
-
-            {/* Health Score */}
+            <div className="flex flex-col">
+              <span className="text-foreground text-base font-semibold">
+                VitalSense
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Health Monitor
+              </span>
+            </div>
             {healthScore !== undefined && (
-              <>
-                <div className="w-px bg-border h-6" />
-                <Badge
-                  variant="outline"
-                  className="border-vitalsense-primary px-4 py-2 font-medium text-vitalsense-primary"
-                >
-                  <Shield className="mr-2 h-4 w-4" />
-                  {healthScore}/100
-                </Badge>
-              </>
+              <Badge
+                variant="outline"
+                className="ml-3 px-3 py-1.5 border-vitalsense-primary font-medium text-vitalsense-primary"
+              >
+                <Shield className="mr-2 h-4 w-4" />
+                {healthScore}/100
+              </Badge>
             )}
           </div>
 
-          {/* Right Section - Status & Time */}
-          <div className="gap-3 flex items-center text-sm">
-            {/* Connection Status */}
+          {/* Quick Links */}
+          <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-center">
+            {quickLinks.map((link) => {
+              const IconComponent = link.icon;
+              return (
+                <Button
+                  key={link.tab}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onNavigate(link.tab)}
+                  className="h-9 text-xs px-3 min-w-[90px] font-medium"
+                >
+                  <IconComponent className="h-3 w-3 mr-2" />
+                  {link.label}
+                </Button>
+              );
+            })}
+          </div>
+
+          {/* Status & Time & Settings */}
+          <div className="gap-3 flex items-center justify-start text-sm lg:justify-end">
             <div className="flex items-center gap-2">
               {getConnectionIcon()}
               <span className="text-xs text-muted-foreground hidden sm:inline">
                 {getConnectionText()}
               </span>
             </div>
-
-            {/* Last Sync */}
             <div className="flex items-center gap-2">
               <Clock className="h-3 w-3 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">
                 {formatLastSync()}
               </span>
             </div>
-
-            {/* Current Time */}
             <div className="text-xs text-muted-foreground">
               {currentTime.toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
               })}
             </div>
-
-            {/* WS Token Settings Button */}
-            <div className="hidden sm:block">
+            <div>
               <WSTokenSettings />
             </div>
-          </div>
-        </div>
-
-        {/* Mobile Quick Links */}
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-4 sm:hidden">
-          {quickLinks.map((link) => {
-            const IconComponent = link.icon;
-            return (
-              <Button
-                key={link.tab}
-                variant="ghost"
-                size="sm"
-                onClick={() => onNavigate(link.tab)}
-                className="footer-button h-9 text-xs min-w-[90px] px-4 font-medium"
-              >
-                <IconComponent className="h-3 w-3 mr-2" />
-                {link.label}
-              </Button>
-            );
-          })}
-          {/* Mobile WS Token Settings */}
-          <div className="ml-2">
-            <WSTokenSettings />
           </div>
         </div>
       </div>
     </footer>
   );
 }
+
+export default memo(Footer);

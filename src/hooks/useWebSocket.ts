@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
-
 // WebSocket message schema validation
 const wsMessageSchema = z.object({
   type: z.string(),
@@ -49,7 +48,9 @@ export function useWebSocket(
   };
   // Check if we're in development mode and if WebSocket should be enabled
   const isDevelopment =
-    typeof window !== 'undefined' && window.location.hostname === 'localhost';
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1');
   // Demo mode flag injected by Worker for /demo route
   type WindowWithDemo = Window & { VITALSENSE_DISABLE_WEBSOCKET?: boolean };
   const isDemoMode =
@@ -62,8 +63,9 @@ export function useWebSocket(
     (window as WindowWithLive).VITALSENSE_LIVE_DISABLED === true;
   const enableInDev = config.enableInDevelopment ?? false;
 
-  // TEMPORARY FIX - Disable WebSocket entirely to stop message flood
-  const shouldConnect = false; // !isDemoMode && !isLiveDisabled && (!isDevelopment || enableInDev);
+  // Respect demo/live-disabled flags; allow in production by default, and in dev only when explicitly enabled
+  const shouldConnect =
+    !isDemoMode && !isLiveDisabled && (!isDevelopment || enableInDev);
 
   // Production-ready WebSocket hook with proper connection limits
   const [connectionState, setConnectionState] = useState<ConnectionState>({
@@ -76,9 +78,11 @@ export function useWebSocket(
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const connectionTimeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const connectionAttemptRef = useRef<number>(0);
   const lastConnectionAttempt = useRef<number>(0);
+  const connectRef = useRef<() => void>(() => {});
 
   // Production connection limits - prevent connection storms
   const maxReconnectAttempts = config.reconnectAttempts ?? 5;
@@ -97,9 +101,41 @@ export function useWebSocket(
       clearInterval(pingIntervalRef.current);
       pingIntervalRef.current = null;
     }
+    if (connectionTimeoutIdRef.current) {
+      clearTimeout(connectionTimeoutIdRef.current);
+      connectionTimeoutIdRef.current = null;
+    }
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
+    }
+  }, []);
+
+  const startPing = useCallback(() => {
+    if (pingIntervalRef.current) {
+      clearInterval(pingIntervalRef.current);
+    }
+    pingIntervalRef.current = setInterval(() => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        try {
+          wsRef.current.send(
+            JSON.stringify({
+              type: 'ping',
+              data: {},
+              timestamp: new Date().toISOString(),
+            })
+          );
+        } catch {
+          // noop
+        }
+      }
+    }, pingInterval);
+  }, [pingInterval]);
+
+  const stopPing = useCallback(() => {
+    if (pingIntervalRef.current) {
+      clearInterval(pingIntervalRef.current);
+      pingIntervalRef.current = null;
     }
   }, []);
 
@@ -174,6 +210,116 @@ export function useWebSocket(
     [handlers, config]
   );
 
+  const applyClosedState = useCallback((event: CloseEvent) => {
+    setConnectionState((prev) => ({
+      ...prev,
+      isConnected: false,
+      isConnecting: false,
+      error:
+        event.code === 1000
+          ? null
+          : `Connection closed: ${event.code} ${event.reason}`,
+    }));
+  }, []);
+
+  const scheduleReconnect = useCallback((delay: number) => {
+    reconnectTimeoutRef.current = setTimeout(() => {
+      reconnectAttemptsRef.current++;
+      setConnectionState((prev) => ({
+        ...prev,
+        reconnectAttempts: reconnectAttemptsRef.current,
+      }));
+      connectRef.current();
+    }, delay);
+  }, []);
+
+  const handleWsOpen = useCallback(() => {
+    if (connectionTimeoutIdRef.current) {
+      clearTimeout(connectionTimeoutIdRef.current);
+      connectionTimeoutIdRef.current = null;
+    }
+    connectionAttemptRef.current = Math.max(
+      0,
+      connectionAttemptRef.current - 1
+    );
+    setConnectionState((prev) => ({
+      ...prev,
+      isConnected: true,
+      isConnecting: false,
+      error: null,
+      reconnectAttempts: 0,
+    }));
+    reconnectAttemptsRef.current = 0;
+    config.onConnect?.();
+    startPing();
+  }, [config, startPing]);
+
+  const handleWsClose = useCallback(
+    (event: CloseEvent) => {
+      if (connectionTimeoutIdRef.current) {
+        clearTimeout(connectionTimeoutIdRef.current);
+        connectionTimeoutIdRef.current = null;
+      }
+      connectionAttemptRef.current = Math.max(
+        0,
+        connectionAttemptRef.current - 1
+      );
+
+      applyClosedState(event);
+      stopPing();
+      config.onDisconnect?.();
+
+      if (
+        event.code !== 1000 &&
+        reconnectAttemptsRef.current < maxReconnectAttempts
+      ) {
+        const delay = Math.min(
+          reconnectDelay * Math.pow(2, reconnectAttemptsRef.current),
+          30000
+        );
+        console.log(
+          `Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/${maxReconnectAttempts})`
+        );
+        scheduleReconnect(delay);
+      } else if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
+        console.error('Max reconnection attempts reached');
+        setConnectionState((prev) => ({
+          ...prev,
+          error: 'Max reconnection attempts reached',
+        }));
+      }
+    },
+    [
+      applyClosedState,
+      config,
+      maxReconnectAttempts,
+      reconnectDelay,
+      scheduleReconnect,
+      stopPing,
+    ]
+  );
+
+  const handleWsError = useCallback(
+    (error: Event) => {
+      if (connectionTimeoutIdRef.current) {
+        clearTimeout(connectionTimeoutIdRef.current);
+        connectionTimeoutIdRef.current = null;
+      }
+      connectionAttemptRef.current = Math.max(
+        0,
+        connectionAttemptRef.current - 1
+      );
+      console.error('WebSocket error:', error);
+      setConnectionState((prev) => ({
+        ...prev,
+        isConnecting: false,
+        error: 'WebSocket connection error',
+      }));
+      config.onError?.('WebSocket connection error');
+    },
+    [config]
+  );
+
   const connect = useCallback(() => {
     // Skip connection in development mode unless explicitly enabled
     if (!shouldConnect) {
@@ -239,7 +385,7 @@ export function useWebSocket(
       wsRef.current = ws;
 
       // Connection timeout
-      const timeoutId = setTimeout(() => {
+      connectionTimeoutIdRef.current = setTimeout(() => {
         if (ws.readyState === WebSocket.CONNECTING) {
           ws.close();
           setConnectionState((prev) => ({
@@ -254,112 +400,10 @@ export function useWebSocket(
         }
       }, connectionTimeout);
 
-      ws.onopen = () => {
-        clearTimeout(timeoutId);
-        connectionAttemptRef.current = Math.max(
-          0,
-          connectionAttemptRef.current - 1
-        );
-        setConnectionState((prev) => ({
-          ...prev,
-          isConnected: true,
-          isConnecting: false,
-          error: null,
-          reconnectAttempts: 0,
-        }));
-        reconnectAttemptsRef.current = 0;
-        config.onConnect?.();
-
-        // Setup ping interval
-        if (pingIntervalRef.current) {
-          clearInterval(pingIntervalRef.current);
-        }
-        pingIntervalRef.current = setInterval(() => {
-          sendMessage({
-            type: 'ping',
-            data: {},
-            timestamp: new Date().toISOString(),
-          });
-        }, pingInterval);
-      };
-
+      ws.onopen = handleWsOpen;
       ws.onmessage = handleMessage;
-
-      const applyClosedState = (event: CloseEvent) => {
-        setConnectionState((prev) => ({
-          ...prev,
-          isConnected: false,
-          isConnecting: false,
-          error:
-            event.code === 1000
-              ? null
-              : `Connection closed: ${event.code} ${event.reason}`,
-        }));
-      };
-
-      const scheduleReconnect = (delay: number, doConnect: () => void) => {
-        reconnectTimeoutRef.current = setTimeout(() => {
-          reconnectAttemptsRef.current++;
-          setConnectionState((prev) => ({
-            ...prev,
-            reconnectAttempts: reconnectAttemptsRef.current,
-          }));
-          doConnect();
-        }, delay);
-      };
-
-      ws.onclose = (event) => {
-        clearTimeout(timeoutId);
-        connectionAttemptRef.current = Math.max(
-          0,
-          connectionAttemptRef.current - 1
-        );
-
-        applyClosedState(event);
-
-        if (pingIntervalRef.current) {
-          clearInterval(pingIntervalRef.current);
-          pingIntervalRef.current = null;
-        }
-
-        config.onDisconnect?.();
-
-        // Auto-reconnect with exponential backoff (if not manually closed)
-        if (
-          event.code !== 1000 &&
-          reconnectAttemptsRef.current < maxReconnectAttempts
-        ) {
-          const delay = Math.min(
-            reconnectDelay * Math.pow(2, reconnectAttemptsRef.current),
-            30000
-          );
-          console.log(
-            `Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/${maxReconnectAttempts})`
-          );
-          scheduleReconnect(delay, connect);
-        } else if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
-          console.error('Max reconnection attempts reached');
-          setConnectionState((prev) => ({
-            ...prev,
-            error: 'Max reconnection attempts reached',
-          }));
-        }
-      };
-
-      ws.onerror = (error) => {
-        clearTimeout(timeoutId);
-        connectionAttemptRef.current = Math.max(
-          0,
-          connectionAttemptRef.current - 1
-        );
-        console.error('WebSocket error:', error);
-        setConnectionState((prev) => ({
-          ...prev,
-          isConnecting: false,
-          error: 'WebSocket connection error',
-        }));
-        config.onError?.('WebSocket connection error');
-      };
+      ws.onclose = handleWsClose;
+      ws.onerror = handleWsError;
     } catch (error) {
       connectionAttemptRef.current = Math.max(
         0,
@@ -376,15 +420,19 @@ export function useWebSocket(
   }, [
     config,
     shouldConnect,
-    sendMessage,
     handleMessage,
-    maxReconnectAttempts,
-    reconnectDelay,
-    pingInterval,
+    handleWsClose,
+    handleWsError,
+    handleWsOpen,
     connectionThrottle,
     maxConnectionAttempts,
     connectionTimeout,
   ]);
+
+  // keep a stable ref to connect to use in scheduleReconnect without circular deps
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   const disconnect = useCallback(() => {
     reconnectAttemptsRef.current = maxReconnectAttempts; // Prevent auto-reconnect

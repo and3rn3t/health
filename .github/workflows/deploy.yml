@@ -215,3 +215,12 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --env production
           packageManager: npm
+
+      - name: Purge Cloudflare Cache (Production)
+        run: |
+          node scripts/node/deploy/cloudflare-purge-cache.js \
+            --everything \
+            --zone-name andernet.dev \
+            --api-token "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+        env:
+          NODE_ENV: production

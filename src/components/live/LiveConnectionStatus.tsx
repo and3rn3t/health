@@ -13,6 +13,7 @@ interface ConnectionStats {
   totalMessages: number;
   uptime: number;
   lastHeartbeat: string | null;
+  lastRttMs?: number | null;
 }
 
 export function LiveConnectionStatus() {
@@ -20,7 +21,9 @@ export function LiveConnectionStatus() {
     totalMessages: 0,
     uptime: 0,
     lastHeartbeat: null,
+    lastRttMs: null,
   });
+  const [lastPingAt, setLastPingAt] = useState<number | null>(null);
 
   // Get WebSocket URL from window globals or use default
   const getWebSocketUrl = useCallback(() => {
@@ -53,10 +56,14 @@ export function LiveConnectionStatus() {
         setStats((prev) => ({
           ...prev,
           lastHeartbeat: new Date().toISOString(),
+          lastRttMs: lastPingAt
+            ? Date.now() - lastPingAt
+            : (prev.lastRttMs ?? null),
         }));
+        setLastPingAt(null);
       },
     }),
-    []
+    [lastPingAt]
   ); // Empty deps since handlers don't depend on external values
 
   // WebSocket config - memoized to prevent infinite loops
@@ -146,8 +153,19 @@ export function LiveConnectionStatus() {
 
   const getStatusText = () => {
     if (connectionState.isConnecting) return 'Connecting...';
-    if (connectionState.isConnected) return 'Live';
-    return 'Offline';
+    if (connectionState.isConnected) {
+      const rtt =
+        typeof stats.lastRttMs === 'number' ? `${stats.lastRttMs}ms` : null;
+      return rtt ? `Live · ${rtt}` : 'Live';
+    }
+    // When offline, surface latest close code if present
+    let suffix: string | null = null;
+    if (connectionState.error) {
+      const m = /Connection closed:\s*(\d+)/.exec(connectionState.error);
+      const code = m?.[1];
+      if (code && code !== '1000') suffix = code;
+    }
+    return suffix ? `Offline · ${suffix}` : 'Offline';
   };
 
   // Format uptime
@@ -166,6 +184,11 @@ export function LiveConnectionStatus() {
           variant="outline"
           size="default"
           className="h-10 px-3 flex items-center gap-2"
+          title={
+            !connectionState.isConnected && connectionState.error
+              ? connectionState.error
+              : undefined
+          }
         >
           {getStatusIcon()}
           <span className="text-sm font-medium">{getStatusText()}</span>
@@ -212,6 +235,13 @@ export function LiveConnectionStatus() {
                       : 'Never'}
                   </span>
                 </div>
+
+                {typeof stats.lastRttMs === 'number' && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Last RTT</span>
+                    <span className="font-mono">{stats.lastRttMs} ms</span>
+                  </div>
+                )}
               </>
             )}
 
@@ -233,6 +263,7 @@ export function LiveConnectionStatus() {
               size="sm"
               variant="outline"
               onClick={() => {
+                setLastPingAt(Date.now());
                 sendMessage({
                   type: 'ping',
                   data: { timestamp: Date.now() },

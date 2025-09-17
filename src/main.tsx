@@ -87,6 +87,64 @@ if (!rootElement) throw new Error('Failed to find the root element');
 
 // Create and render the React app with error handling
 const root = createRoot(rootElement);
+// Lightweight client error reporter
+function initClientErrorReporter() {
+  try {
+    const send = (payload: Record<string, unknown>) => {
+      try {
+        fetch('/api/client-error', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            ...payload,
+            route: window.location.pathname,
+            ua: navigator.userAgent,
+          }),
+          keepalive: true,
+        }).catch(() => void 0);
+      } catch {
+        /* noop */
+      }
+    };
+    window.addEventListener('error', (ev) => {
+      try {
+        const message = ev.message || 'window_error';
+        const stack = ev.error?.stack ? String(ev.error?.stack) : undefined;
+        send({ source: 'window.onerror', message, stack });
+      } catch {
+        /* noop */
+      }
+    });
+    window.addEventListener(
+      'unhandledrejection',
+      (ev: PromiseRejectionEvent) => {
+        try {
+          const reason = ev.reason as unknown;
+          let message = 'unhandledrejection';
+          let stack: string | undefined;
+          if (typeof reason === 'string') {
+            message = reason;
+          } else if (reason instanceof Error) {
+            message = reason.message || message;
+            stack = reason.stack ? String(reason.stack) : undefined;
+          } else if (typeof reason === 'object' && reason) {
+            try {
+              message = JSON.stringify(reason);
+            } catch {
+              /* noop */
+            }
+          }
+          send({ source: 'unhandledrejection', message, stack });
+        } catch {
+          /* noop */
+        }
+      }
+    );
+  } catch {
+    /* noop */
+  }
+}
+initClientErrorReporter();
 root.render(
   <StrictMode>
     <ErrorBoundary FallbackComponent={ErrorFallback}>

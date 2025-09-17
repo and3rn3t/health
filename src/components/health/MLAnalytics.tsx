@@ -29,7 +29,7 @@ import {
   TrendingUp,
   XCircle,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { TooltipProps } from 'recharts';
 import {
   Area,
@@ -209,88 +209,83 @@ export default function MLAnalytics({
   const [showAnomalies, setShowAnomalies] = useState(true);
 
   // Derive lightweight insights for callouts
-  const insights = (() => {
+  const insights = useMemo(() => {
     if (predictions.length === 0)
       return [] as {
         type: 'risk' | 'trend' | 'anomaly';
         title: string;
         detail: string;
       }[];
-    const next3 = predictions.slice(0, 3);
-    const avgRisk =
-      next3.reduce((s, p) => s + p.predicted_fall_risk, 0) / next3.length;
-    const maxRisk = Math.max(...next3.map((p) => p.predicted_fall_risk));
-    const trend =
-      predictions.length >= 2
-        ? predictions[0].predicted_health_score -
-          predictions[1].predicted_health_score
-        : 0;
-    const hasCriticalAnomaly = anomalies.some((a) => a.severity === 'critical');
-    const out: {
+
+    const latest = predictions[0];
+    const items: {
       type: 'risk' | 'trend' | 'anomaly';
       title: string;
       detail: string;
     }[] = [];
-    if (avgRisk >= 40 || maxRisk >= 50) {
-      out.push({
-        type: 'risk',
-        title: 'Elevated fall risk in the next 3 days',
-        detail: `Avg ${Math.round(avgRisk)}% (peak ${maxRisk}%). Consider reducing activity intensity and reviewing environment risks.`,
-      });
-    }
-    if (Math.abs(trend) >= 5) {
-      out.push({
-        type: 'trend',
-        title:
-          trend > 0
-            ? 'Health score trending upward'
-            : 'Health score trending downward',
-        detail: `${trend > 0 ? '+' : ''}${trend} points vs previous day forecast.`,
-      });
-    }
-    if (hasCriticalAnomaly) {
-      out.push({
-        type: 'anomaly',
-        title: 'Critical anomaly detected',
-        detail:
-          'Unusual walking steadiness change—verify conditions and recent events.',
-      });
-    }
-    return out;
-  })();
 
-  const exportSvg = () => {
-    const svg = chartContainerRef.current?.querySelector('svg');
-    if (!svg) return;
-    const serializer = new XMLSerializer();
-    let source = serializer.serializeToString(svg);
-    if (!/^<svg[^>]+xmlns=/.test(source)) {
-      source = source.replace(
-        '<svg',
-        '<svg xmlns="http://www.w3.org/2000/svg"'
-      );
+    if (latest.predicted_fall_risk >= 60) {
+      items.push({
+        type: 'risk',
+        title: 'Elevated fall risk',
+        detail: `Predicted fall risk ${latest.predicted_fall_risk}% in the next period`,
+      });
+    } else if (latest.predicted_fall_risk <= 25) {
+      items.push({
+        type: 'risk',
+        title: 'Low fall risk',
+        detail: 'Forecast suggests lower fall risk based on current trends',
+      });
     }
-    const url =
-      'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source);
+
+    if (predictions.length >= 2) {
+      const delta =
+        latest.predicted_health_score - predictions[1].predicted_health_score;
+      if (Math.abs(delta) >= 3) {
+        items.push({
+          type: 'trend',
+          title:
+            delta >= 0 ? 'Health score improving' : 'Health score declining',
+          detail: `${delta >= 0 ? 'Up' : 'Down'} ${Math.abs(delta)} points vs previous`,
+        });
+      }
+    }
+
+    if (anomalies.length > 0) {
+      items.push({
+        type: 'anomaly',
+        title: 'Recent anomalies detected',
+        detail: `${anomalies.length} walking steadiness anomalies in recent data`,
+      });
+    }
+
+    return items;
+  }, [predictions, anomalies]);
+
+  // Chart export helpers
+  const exportSvg = () => {
+    const container = chartContainerRef.current;
+    if (!container) return;
+    const svgElem = container.querySelector('svg');
+    if (!svgElem) return;
+    const serializer = new XMLSerializer();
+    const source = serializer.serializeToString(svgElem);
+    const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `vitalsense-ml-analytics-${predictionHorizon}.svg`;
     a.click();
+    URL.revokeObjectURL(url);
   };
 
   const exportPng = async () => {
-    const svgElem = chartContainerRef.current?.querySelector(
-      'svg'
-    ) as SVGSVGElement | null;
+    const container = chartContainerRef.current;
+    if (!container) return;
+    const svgElem = container.querySelector('svg');
     if (!svgElem) return;
     const serializer = new XMLSerializer();
-    let source = serializer.serializeToString(svgElem);
-    if (!/^<svg[^>]+xmlns=/.test(source)) {
-      source = source.replace(
-        '<svg',
-        '<svg xmlns="http://www.w3.org/2000/svg"'
-      );
-    }
+    const source = serializer.serializeToString(svgElem);
     const svgUrl =
       'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source);
     const img = new Image();
@@ -302,8 +297,8 @@ export default function MLAnalytics({
     canvas.height = height;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    await new Promise((resolve) => {
-      img.onload = resolve as () => void;
+    await new Promise<void>((resolve) => {
+      img.onload = () => resolve();
       img.src = svgUrl;
     });
     // Fill background to avoid transparent PNGs
@@ -712,7 +707,7 @@ export default function MLAnalytics({
   };
 
   const renderModelStatus = () => (
-    <div className="md:grid-cols-3 grid grid-cols-1 gap-4">
+    <div className="md:grid-cols-3 md:gap-5 grid grid-cols-1 gap-4">
       {models.map((model) => (
         <Card key={model.id}>
           <CardHeader className="pb-3">
@@ -743,7 +738,7 @@ export default function MLAnalytics({
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 md:space-y-4">
             <div>
               <div className="mb-1 flex justify-between text-sm">
                 <span>Accuracy</span>
@@ -777,7 +772,7 @@ export default function MLAnalytics({
   );
 
   const renderAnomalies = () => (
-    <div className="space-y-3">
+    <div className="space-y-3 md:space-y-4">
       {anomalies.map((anomaly) => (
         <Alert
           key={`${anomaly.metric}-${anomaly.timestamp}`}
@@ -848,9 +843,9 @@ export default function MLAnalytics({
       predictions.length;
 
     return (
-      <div className="md:grid-cols-4 mb-6 grid grid-cols-1 gap-4">
+      <div className="md:grid-cols-4 md:gap-5 mb-6 grid grid-cols-1 gap-4">
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="md:p-5 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-muted-foreground text-sm">
@@ -866,7 +861,7 @@ export default function MLAnalytics({
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="md:p-5 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-muted-foreground text-sm">Fall Risk Level</p>
@@ -880,7 +875,7 @@ export default function MLAnalytics({
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="md:p-5 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-muted-foreground text-sm">Predicted Steps</p>
@@ -894,7 +889,7 @@ export default function MLAnalytics({
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="md:p-5 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-muted-foreground text-sm">Avg Confidence</p>
@@ -909,67 +904,53 @@ export default function MLAnalytics({
       </div>
     );
   };
-
   return (
     <div className="space-y-6">
-      {/* Header Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <h2 className="text-2xl font-bold">ML Analytics</h2>
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <Brain className="h-3 w-3" />
-            AI-Powered Insights
-          </Badge>
-        </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Select value={selectedModel} onValueChange={setSelectedModel}>
+          <SelectTrigger className="w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ensemble">Ensemble Model</SelectItem>
+            <SelectItem value="health_score">Health Score Model</SelectItem>
+            <SelectItem value="anomaly_detector">Anomaly Detector</SelectItem>
+          </SelectContent>
+        </Select>
 
-        <div className="flex items-center gap-2">
-          <Select value={selectedModel} onValueChange={setSelectedModel}>
-            <SelectTrigger className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ensemble">Ensemble Model</SelectItem>
-              <SelectItem value="health_score">Health Score Model</SelectItem>
-              <SelectItem value="anomaly_detector">Anomaly Detector</SelectItem>
-            </SelectContent>
-          </Select>
+        <Select
+          value={predictionHorizon}
+          onValueChange={(v: '1d' | '7d' | '30d') => setPredictionHorizon(v)}
+        >
+          <SelectTrigger className="w-36">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1d">1 Day</SelectItem>
+            <SelectItem value="7d">7 Days</SelectItem>
+            <SelectItem value="30d">30 Days</SelectItem>
+          </SelectContent>
+        </Select>
 
-          <Select
-            value={predictionHorizon}
-            onValueChange={(value: '1d' | '7d' | '30d') =>
-              setPredictionHorizon(value)
-            }
-          >
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1d">1 Day</SelectItem>
-              <SelectItem value="7d">7 Days</SelectItem>
-              <SelectItem value="30d">30 Days</SelectItem>
-            </SelectContent>
-          </Select>
+        <Button
+          onClick={() => setIsRealTimeEnabled(!isRealTimeEnabled)}
+          variant={isRealTimeEnabled ? 'default' : 'outline'}
+          size="sm"
+        >
+          {isRealTimeEnabled ? (
+            <Pause className="mr-2 h-4 w-4" />
+          ) : (
+            <Play className="mr-2 h-4 w-4" />
+          )}
+          Real-time
+        </Button>
 
-          <Button
-            onClick={() => setIsRealTimeEnabled(!isRealTimeEnabled)}
-            variant={isRealTimeEnabled ? 'default' : 'outline'}
-            size="sm"
-          >
-            {isRealTimeEnabled ? (
-              <Pause className="mr-2 h-4 w-4" />
-            ) : (
-              <Play className="mr-2 h-4 w-4" />
-            )}
-            Real-time
-          </Button>
-
-          <Button onClick={generateNewPredictions} disabled={isLoading}>
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
-            />
-            Generate
-          </Button>
-        </div>
+        <Button onClick={generateNewPredictions} disabled={isLoading}>
+          <RefreshCw
+            className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
+          />
+          Generate
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -992,13 +973,13 @@ export default function MLAnalytics({
             </CardHeader>
             <CardContent>
               {insights.length > 0 && (
-                <div className="md:grid-cols-3 mb-4 grid grid-cols-1 gap-2">
+                <div className="mb-5 md:grid-cols-3 md:gap-5 grid grid-cols-1 gap-4">
                   {insights.map((ins) => (
                     <div
                       key={`ins-${ins.title}`}
-                      className="p-3 rounded-md border"
+                      className="p-3 md:p-4 rounded-md border"
                     >
-                      <div className="mb-1 flex items-center gap-2 text-sm font-medium">
+                      <div className="mb-1.5 md:mb-2 flex items-center gap-2 text-sm font-medium">
                         {ins.type === 'risk' && (
                           <Shield className="text-rose-500 h-4 w-4" />
                         )}
@@ -1010,14 +991,15 @@ export default function MLAnalytics({
                         )}
                         <span>{ins.title}</span>
                       </div>
-                      <div className="text-muted-foreground text-xs">
+                      <div className="text-xs text-muted-foreground">
                         {ins.detail}
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-              <div className="mb-3 flex flex-wrap items-center gap-2">
+
+              <div className="mb-4 flex flex-wrap items-center gap-2">
                 <Button
                   size="sm"
                   variant={showBands ? 'default' : 'outline'}
@@ -1041,6 +1023,7 @@ export default function MLAnalytics({
                   </Button>
                 </div>
               </div>
+
               {isLoading ? (
                 <div className="h-96 flex items-center justify-center">
                   <RefreshCw className="animate-spin h-8 w-8" />
@@ -1048,7 +1031,8 @@ export default function MLAnalytics({
               ) : (
                 renderPredictionChart()
               )}
-              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+
+              <div className="mt-3 md:mt-4 flex flex-wrap items-center justify-between gap-2">
                 <div className="text-xs flex items-center gap-4">
                   <span className="text-muted-foreground">Legend</span>
                   <span className="inline-flex items-center gap-2">
@@ -1070,7 +1054,7 @@ export default function MLAnalytics({
                     </span>
                   </span>
                 </div>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs text-muted-foreground">
                   Bands indicate forecast uncertainty; anomaly lines flag
                   unusual changes in walking steadiness.
                 </p>
@@ -1078,7 +1062,6 @@ export default function MLAnalytics({
             </CardContent>
           </Card>
 
-          {/* Key Factors */}
           {predictions.length > 0 && (
             <Card>
               <CardHeader>

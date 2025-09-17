@@ -1,5 +1,13 @@
 // 🚀 VitalSense App - Unified Navigation System
-import React, { Suspense, lazy, useCallback, useMemo, useState } from 'react';
+import React, {
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
 // Core components
@@ -27,6 +35,7 @@ import {
   BarChart3,
   Bell,
   Brain,
+  Bug,
   CloudUpload,
   Monitor,
   Scan,
@@ -141,6 +150,9 @@ const DeveloperTools = lazy(
 );
 const AdvancedAnalytics = lazy(
   () => import('@/components/sections/AdvancedAnalytics')
+);
+const DevDiagnostics = lazy(
+  () => import('@/components/sections/DevDiagnostics')
 );
 
 const PrivacyControls = lazy(() =>
@@ -283,11 +295,19 @@ const navigationItems = [
     component: DeveloperTools,
     priority: 3,
   },
+  {
+    id: 'dev-diagnostics',
+    label: 'Dev Diagnostics',
+    icon: Bug,
+    component: DevDiagnostics,
+    priority: 3,
+  },
 ];
 
 // Main VitalSense App Component (Inner content inside SidebarProvider)
 function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [_isPending, startTransition] = useTransition();
   const { themeMode, toggleThemeMode } = useThemeMode();
   const {
     toggle: toggleSidebar,
@@ -323,14 +343,85 @@ function AppContent() {
     [activeTab]
   );
 
+  // Update document title to reflect the current section for better usability
+  const activeLabel = useMemo(
+    () =>
+      navigationItems.find((item) => item.id === activeTab)?.label ??
+      'VitalSense',
+    [activeTab]
+  );
+  useEffect(() => {
+    document.title = `${activeLabel} • VitalSense`;
+  }, [activeLabel]);
+
   // Handle tab changes
   const handleTabChange = useCallback(
     (tabId: string) => {
-      setActiveTab(tabId);
+      startTransition(() => setActiveTab(tabId));
       // Sidebar component handles its own sheet/overlay state; no manual close needed
       recordUse(tabId);
     },
-    [recordUse]
+    [recordUse, startTransition]
+  );
+
+  // Prefetch lazy-loaded modules on hover for snappier navigation
+  const preloadById = useCallback((id: string) => {
+    switch (id) {
+      case 'dashboard':
+        return import('@/components/sections/HealthDashboard');
+      case 'live-monitoring':
+        return import('@/components/health/LiveHealthMonitoring');
+      case 'fall-detection':
+        return import('@/components/health/FallDetection');
+      case 'analytics':
+        return import('@/components/health/HealthAnalytics');
+      case 'advanced-analytics':
+        return import('@/components/sections/AdvancedAnalytics');
+      case 'notifications':
+        return import('@/components/sections/NotificationCenter');
+      case 'caregiver':
+        return import('@/components/sections/CaregiverDashboard');
+      case 'records':
+        return import('@/components/sections/HealthRecords');
+      case 'brain-health':
+        return import('@/components/health/CognitiveHealth');
+      case 'lidar-ar':
+        return import('@/components/health/GaitDashboardClean');
+      case 'emergency-contacts':
+        return import('@/components/health/EmergencyContactsPage');
+      case 'settings':
+        return import('@/components/sections/SettingsPanel');
+      case 'privacy':
+        return import('@/components/sections/PrivacyControls');
+      case 'device-sync':
+        return import('@/components/health/ConnectedDevices');
+      case 'export-data':
+        return import('@/components/health/ExportData');
+      case 'health-goals':
+        return import('@/components/gamification/FamilyGameification');
+      case 'developer-tools':
+        return import('@/components/sections/DeveloperTools');
+      case 'dev-diagnostics':
+        return import('@/components/sections/DevDiagnostics');
+      default:
+        return Promise.resolve();
+    }
+  }, []);
+
+  const onNavItemClick = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      const id = (e.currentTarget as HTMLElement).dataset.id;
+      if (id) handleTabChange(id);
+    },
+    [handleTabChange]
+  );
+
+  const onNavItemHover = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      const id = (e.currentTarget as HTMLElement).dataset.id;
+      if (id) preloadById(id);
+    },
+    [preloadById]
   );
 
   return (
@@ -374,7 +465,10 @@ function AppContent() {
                     <AppleSidebarItem
                       key={`qa-${item.id}`}
                       active={isActive}
-                      onClick={() => handleTabChange(item.id)}
+                      aria-current={isActive ? 'page' : undefined}
+                      data-id={item.id}
+                      onClick={onNavItemClick}
+                      onMouseEnter={onNavItemHover}
                     >
                       <Icon className="h-4 w-4" />
                       {item.label}
@@ -399,7 +493,10 @@ function AppContent() {
                   <AppleSidebarItem
                     key={item.id}
                     active={isActive}
-                    onClick={() => handleTabChange(item.id)}
+                    aria-current={isActive ? 'page' : undefined}
+                    data-id={item.id}
+                    onClick={onNavItemClick}
+                    onMouseEnter={onNavItemHover}
                   >
                     <Icon className="h-4 w-4" />
                     {item.label}
@@ -423,7 +520,10 @@ function AppContent() {
                   <AppleSidebarItem
                     key={item.id}
                     active={isActive}
-                    onClick={() => handleTabChange(item.id)}
+                    aria-current={isActive ? 'page' : undefined}
+                    data-id={item.id}
+                    onClick={onNavItemClick}
+                    onMouseEnter={onNavItemHover}
                   >
                     <Icon className="h-4 w-4" />
                     {item.label}
@@ -447,7 +547,10 @@ function AppContent() {
                   <AppleSidebarItem
                     key={item.id}
                     active={isActive}
-                    onClick={() => handleTabChange(item.id)}
+                    aria-current={isActive ? 'page' : undefined}
+                    data-id={item.id}
+                    onClick={onNavItemClick}
+                    onMouseEnter={onNavItemHover}
                   >
                     <Icon className="h-4 w-4" />
                     {item.label}
@@ -469,13 +572,12 @@ function AppContent() {
           onThemeToggle={toggleThemeMode}
           onNavigate={handleTabChange}
         />
-        <div className="border-border bg-card border-b" />
         {/* Remove inner overflow to avoid double scroll; AppleSidebarMain is the scroll container */}
         <ErrorBoundary
           FallbackComponent={ErrorFallback}
-          onReset={() => window.location.reload()}
+          resetKeys={[activeTab]}
         >
-          <main className="md:p-8 bg-background flex-1 p-6">
+          <main className="bg-background md:px-6 md:pt-3 pb-3 md:pb-4 flex-1 px-4 pt-2">
             <Suspense
               fallback={
                 <div className="h-64 flex items-center justify-center">
@@ -486,7 +588,7 @@ function AppContent() {
                 </div>
               }
             >
-              <div className="mx-auto max-w-7xl space-y-6">
+              <div className="mx-auto max-w-7xl">
                 {(() => {
                   type WithOptionalHealthData = {
                     healthData?: unknown;

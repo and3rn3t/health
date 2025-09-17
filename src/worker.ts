@@ -28,6 +28,24 @@ interface CloudflareWebSocket extends WebSocket {
   accept(): void;
 }
 
+// Workers Analytics Engine dataset interface (optional binding)
+interface AnalyticsEngineDataset {
+  writeDataPoint: (point: {
+    blobs?: Array<string | null>;
+    doubles?: Array<number | null>;
+    indexes?: Array<number | bigint | null>;
+    time?: number;
+  }) => void | Promise<void>;
+  writeDataPoints?: (
+    points: Array<{
+      blobs?: Array<string | null>;
+      doubles?: Array<number | null>;
+      indexes?: Array<number | bigint | null>;
+      time?: number;
+    }>
+  ) => void | Promise<void>;
+}
+
 import { HealthDataProcessor } from '@/lib/enhancedHealthProcessor';
 import {
   getTtlSecondsForType,
@@ -58,6 +76,7 @@ import { z } from 'zod';
 type Env = {
   ENVIRONMENT?: string;
   ALLOWED_ORIGINS?: string; // comma-separated
+  LOG_SAMPLE_RATE?: string; // e.g. "0.1" for 10% sampling in production
   ENC_KEY?: string; // base64 32 bytes
   API_ISS?: string;
   API_AUD?: string;
@@ -109,6 +128,10 @@ type Env = {
   BASE_URL?: string;
   WEBSOCKET_URL?: string;
   HEALTH_WEBSOCKET?: DurableObjectNamespace; // Durable Object namespace
+  ANALYTICS?: AnalyticsEngineDataset; // Generic Workers Analytics Engine binding
+  HEALTH_ANALYTICS?: AnalyticsEngineDataset; // Existing bindings in production config
+  SECURITY_ANALYTICS?: AnalyticsEngineDataset;
+  PERFORMANCE_ANALYTICS?: AnalyticsEngineDataset;
 };
 
 const app = new Hono<{ Bindings: Env }>();
@@ -167,6 +190,190 @@ function deriveRateLimitKey(c: Context<{ Bindings: Env }>): string {
   return sub || c.req.header('CF-Connecting-IP') || 'anon';
 }
 
+function getAuthSub(c: Context<{ Bindings: Env }>): string | null {
+  try {
+    const auth = c.req.header('Authorization') || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+    const sub = token
+      ? (decodeJwtPayload(token)?.sub as string | undefined)
+      : undefined;
+    return sub ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function shouldSample(c: Context<{ Bindings: Env }>): boolean {
+  const env = c.env.ENVIRONMENT || 'development';
+  const rateStr = c.env.LOG_SAMPLE_RATE;
+  let rate = 1.0;
+  if (rateStr) {
+    const parsed = Number(rateStr);
+    if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 1) rate = parsed;
+  } else if (env === 'production') {
+    rate = 0.1;
+  }
+  return Math.random() < rate;
+}
+
+// Category-specific sampling using env var (e.g., LOG_WS_SAMPLE_RATE)
+function shouldSampleWithKey(
+  c: Context<{ Bindings: Env }>,
+  key: keyof Env | 'LOG_WS_SAMPLE_RATE' | 'LOG_CLIENT_ERROR_SAMPLE_RATE',
+  fallbackDev = 1.0,
+  fallbackProd = 0.1
+): boolean {
+  const env = c.env.ENVIRONMENT || 'development';
+  const raw = (c.env as Record<string, string | undefined>)[key as string];
+  let rate: number | null = null;
+  if (raw) {
+    const parsed = Number(raw);
+    if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 1) rate = parsed;
+  }
+  rate ??= env === 'production' ? fallbackProd : fallbackDev;
+  return Math.random() < rate;
+}
+
+async function pushAnalytics(
+  c: Context<{ Bindings: Env }>,
+  data: {
+    path: string;
+    method: string;
+    status: number;
+    durMs: number;
+    correlationId: string;
+    sub: string | null;
+  }
+): Promise<void> {
+  try {
+    const ds =
+      c.env.ANALYTICS ||
+      c.env.HEALTH_ANALYTICS ||
+      c.env.PERFORMANCE_ANALYTICS ||
+      c.env.SECURITY_ANALYTICS;
+    if (!ds) return;
+    await ds.writeDataPoint({
+      blobs: [
+        c.env.ENVIRONMENT || 'development',
+        data.path,
+        data.method,
+        String(data.status),
+        data.sub ? '1' : '0',
+        data.correlationId,
+      ],
+      doubles: [data.durMs],
+      time: Date.now() * 1_000_000,
+    });
+  } catch {
+    // best-effort only
+  }
+}
+
+// Generic analytics write (dev-only helpers can use this)
+async function writeAnalyticsPoint(
+  c: Context<{ Bindings: Env }>,
+  blobs: string[],
+  doubles?: number[]
+): Promise<boolean> {
+  try {
+    const ds =
+      c.env.ANALYTICS ||
+      c.env.HEALTH_ANALYTICS ||
+      c.env.PERFORMANCE_ANALYTICS ||
+      c.env.SECURITY_ANALYTICS;
+    if (!ds) return false;
+    await ds.writeDataPoint({
+      blobs,
+      doubles,
+      time: Date.now() * 1_000_000,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Central error serialization for unexpected exceptions
+app.onError(async (err, c) => {
+  // CorrelationId here may differ from header set later by middleware, acceptable for now
+  const correlationId = crypto.randomUUID();
+  let msg: string;
+  if (err instanceof Error) {
+    msg = err.message;
+  } else if (typeof err === 'string') {
+    msg = err;
+  } else {
+    try {
+      msg = JSON.stringify(err);
+    } catch {
+      msg = 'unknown_error';
+    }
+  }
+  log.error('unhandled_error', {
+    path: new URL(c.req.url).pathname,
+    error: msg,
+    correlationId,
+  });
+  await writeAudit(c.env, {
+    type: 'worker_error',
+    resource: new URL(c.req.url).pathname,
+    actor: getAuthSub(c) ?? undefined,
+    meta: { correlationId },
+  });
+  // Unconditional analytics write for error events (avoid duplicate post-response logging)
+  try {
+    const sub = getAuthSub(c);
+    await pushAnalytics(c, {
+      path: new URL(c.req.url).pathname,
+      method: c.req.method,
+      status: 500,
+      durMs: 0,
+      correlationId,
+      sub,
+    });
+  } catch {
+    /* best-effort */
+  }
+  const headers = new Headers({
+    'content-type': 'application/json',
+    'X-Error-Logged': '1',
+  });
+  return new Response(
+    JSON.stringify({ error: 'server_error', correlationId }),
+    { status: 500, headers }
+  );
+});
+
+// 404 JSON for API, text for others
+app.notFound((c) => {
+  const path = new URL(c.req.url).pathname;
+  // Unconditional analytics for API 404s
+  if (path.startsWith('/api/')) {
+    try {
+      const sub = getAuthSub(c);
+      pushAnalytics(c, {
+        path,
+        method: c.req.method,
+        status: 404,
+        durMs: 0,
+        correlationId: crypto.randomUUID(),
+        sub,
+      });
+    } catch {
+      /* noop */
+    }
+    const headers = new Headers({
+      'content-type': 'application/json',
+      'X-Error-Logged': '1',
+    });
+    return new Response(JSON.stringify({ error: 'not_found' }), {
+      status: 404,
+      headers,
+    });
+  }
+  return c.text('Not Found', 404);
+});
+
 async function requireAuth(c: Context<{ Bindings: Env }>): Promise<boolean> {
   // Allow requests from demo page without auth
   const referer = c.req.header('Referer') || '';
@@ -204,6 +411,7 @@ async function requireAuth(c: Context<{ Bindings: Env }>): Promise<boolean> {
 
 // Preflight and security headers
 app.use('*', async (c, next) => {
+  const start = Date.now();
   const origin = c.req.header('Origin') || null;
   const allowed = (c.env.ALLOWED_ORIGINS || '')
     .split(',')
@@ -219,7 +427,7 @@ app.use('*', async (c, next) => {
 
   // Run downstream handler; Hono sets c.res
   await next();
-  const baseResp = c.res ?? new Response(null);
+  let resp = c.res ?? new Response(null);
 
   // Use relaxed CSP for login page to allow Auth0 scripts, and for demo page to allow Google Fonts
   const path = new URL(c.req.url).pathname;
@@ -268,24 +476,62 @@ app.use('*', async (c, next) => {
     ].join('; ');
   }
 
-  try {
-    const h = baseResp.headers;
-    h.set(
+  {
+    // Always clone headers to ensure mutability and avoid runtime header immutability issues
+    const newHeaders = new Headers(resp.headers);
+    newHeaders.set(
       'Strict-Transport-Security',
       'max-age=31536000; includeSubDomains; preload'
     );
-    h.set('X-Content-Type-Options', 'nosniff');
-    h.set('X-Frame-Options', 'DENY');
-    h.set('Referrer-Policy', 'no-referrer');
-    h.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
-    h.set('Content-Security-Policy', csp);
-    h.set('X-Correlation-Id', correlationId);
+    newHeaders.set('X-Content-Type-Options', 'nosniff');
+    newHeaders.set('X-Frame-Options', 'DENY');
+    newHeaders.set('Referrer-Policy', 'no-referrer');
+    newHeaders.set(
+      'Permissions-Policy',
+      'geolocation=(), microphone=(), camera=()'
+    );
+    newHeaders.set('Content-Security-Policy', csp);
+    if (!newHeaders.has('X-Correlation-Id')) {
+      newHeaders.set('X-Correlation-Id', correlationId);
+    }
     const cors = corsHeaders(origin, allowed);
-    cors.forEach((v, k) => h.set(k, v));
-  } catch (e) {
-    log.warn('header_injection_failed', { error: (e as Error).message });
+    cors.forEach((v, k) => newHeaders.set(k, v));
+    resp = new Response(resp.body, {
+      status: resp.status,
+      headers: newHeaders,
+    });
   }
-  return baseResp;
+  // Access log sampling for API or 5xx (skip if error already logged earlier)
+  try {
+    if (resp.headers.get('X-Error-Logged') === '1') return resp;
+    const urlObj = new URL(c.req.url);
+    const path = urlObj.pathname;
+    const method = c.req.method;
+    const status = resp.status;
+    const durMs = Date.now() - start;
+    if ((path.startsWith('/api/') && shouldSample(c)) || status >= 500) {
+      const sub = getAuthSub(c);
+      log.info('http_request', {
+        path,
+        method,
+        status,
+        durMs,
+        correlationId,
+        hasSub: Boolean(sub),
+      });
+      await pushAnalytics(c, {
+        path,
+        method,
+        status,
+        durMs,
+        correlationId,
+        sub,
+      });
+    }
+  } catch {
+    // ignore
+  }
+  return resp;
 });
 
 // API-wide middleware: rate limiting and auth (auth is a no-op in non-production)
@@ -330,26 +576,44 @@ app.use('/*', async (c, next) => {
   const res = await c.env.ASSETS?.fetch(c.req.raw);
   if (!res || res.status === 404) return next();
 
-  // In non-production, aggressively disable caching for HTML/CSS/JS to avoid stale bundles
+  // In non-production, aggressively disable caching for HTML/CSS/JS to avoid stale bundles.
+  // In production, set long-lived caching for hashed static assets and short caching for HTML.
   try {
     const env = c.env.ENVIRONMENT || 'development';
+    const url = new URL(c.req.url);
+    const pathname = url.pathname;
+    const isHtml = pathname.endsWith('.html') || pathname === '/';
+    const isJs = /\.(m?js)(?:\?.*)?$/.test(pathname);
+    const isCss = /\.(css)(?:\?.*)?$/.test(pathname);
+    const isFont = /\.(woff2?|ttf|otf)(?:\?.*)?$/.test(pathname);
+    const isImg = /\.(png|svg|jpg|jpeg|gif|webp|ico)(?:\?.*)?$/.test(pathname);
+    const cloneWith = (mutate: (h: Headers) => void) => {
+      const h = new Headers(res.headers);
+      mutate(h);
+      return new Response(res.body, { status: res.status, headers: h });
+    };
     if (env !== 'production') {
-      const url = new URL(c.req.url);
-      const pathname = url.pathname;
-      const isHtml = pathname.endsWith('.html') || pathname === '/';
-      const isJs = pathname.endsWith('.js') || pathname.endsWith('.mjs');
-      const isCss = pathname.endsWith('.css');
       if (isHtml || isJs || isCss) {
-        const h = new Headers(res.headers);
-        h.set('Cache-Control', 'no-store, must-revalidate');
-        h.delete('ETag');
-        // Some browsers honor Last-Modified for 304; remove to force re-fetch
-        h.delete('Last-Modified');
-        return new Response(res.body, { status: res.status, headers: h });
+        return cloneWith((h) => {
+          h.set('Cache-Control', 'no-store, must-revalidate');
+          h.delete('ETag');
+          h.delete('Last-Modified');
+        });
+      }
+    } else {
+      if (isHtml) {
+        return cloneWith((h) => {
+          h.set('Cache-Control', 'no-cache, must-revalidate');
+        });
+      }
+      if (isJs || isCss || isFont || isImg) {
+        return cloneWith((h) => {
+          h.set('Cache-Control', 'public, max-age=31536000, immutable');
+        });
       }
     }
   } catch {
-    // if header rewrite fails, fall through with original response
+    // fall through with original response
   }
 
   return res;
@@ -640,6 +904,89 @@ app.get('/api/_selftest', async (c) => {
   return c.json({ ok: true, results });
 });
 
+// Dev-only: intentional error endpoint to test error handling and analytics sampling
+app.get('/api/_error', (c) => {
+  if (c.env.ENVIRONMENT === 'production') {
+    return c.json({ error: 'not_available' }, 404);
+  }
+  throw new Error('intentional_test_error');
+});
+
+// Dev-only: analytics ping endpoint to verify Analytics Engine writes
+app.get('/api/_analytics_ping', async (c) => {
+  if (c.env.ENVIRONMENT === 'production') {
+    return c.json({ error: 'not_available' }, 404);
+  }
+  const env = c.env.ENVIRONMENT || 'development';
+  const correlationId = crypto.randomUUID();
+  let dataset: string | null = null;
+  if (c.env.ANALYTICS) dataset = 'ANALYTICS';
+  else if (c.env.HEALTH_ANALYTICS) dataset = 'HEALTH_ANALYTICS';
+  else if (c.env.PERFORMANCE_ANALYTICS) dataset = 'PERFORMANCE_ANALYTICS';
+  else if (c.env.SECURITY_ANALYTICS) dataset = 'SECURITY_ANALYTICS';
+  try {
+    const ok = await writeAnalyticsPoint(
+      c,
+      [env, '/api/_analytics_ping', 'GET', '200', '0', correlationId],
+      [0]
+    );
+    return c.json({ ok, dataset, correlationId, env });
+  } catch (e) {
+    return c.json({ ok: false, error: (e as Error).message }, 500);
+  }
+});
+
+// Dev-only: diagnostics snapshot for UI (bindings, env, sampling)
+app.get('/api/_diagnostics', (c) => {
+  if (c.env.ENVIRONMENT === 'production') {
+    return c.json({ error: 'not_available' }, 404);
+  }
+  const env = c.env.ENVIRONMENT || 'development';
+  const datasets = {
+    ANALYTICS: Boolean(c.env.ANALYTICS),
+    HEALTH_ANALYTICS: Boolean(c.env.HEALTH_ANALYTICS),
+    PERFORMANCE_ANALYTICS: Boolean(c.env.PERFORMANCE_ANALYTICS),
+    SECURITY_ANALYTICS: Boolean(c.env.SECURITY_ANALYTICS),
+  };
+  const body = {
+    ok: true,
+    env,
+    logSampleRate: c.env.LOG_SAMPLE_RATE ?? null,
+    logSampleRates: {
+      ws:
+        (c.env as Record<string, string | undefined>).LOG_WS_SAMPLE_RATE ??
+        null,
+      clientError:
+        (c.env as Record<string, string | undefined>)
+          .LOG_CLIENT_ERROR_SAMPLE_RATE ?? null,
+    },
+    datasets,
+    hasKV: Boolean(c.env.HEALTH_KV),
+    hasR2: Boolean(c.env.HEALTH_STORAGE),
+    hasRateLimiter: Boolean(c.env.RATE_LIMITER),
+    now: new Date().toISOString(),
+    endpoints: [
+      '/health',
+      '/api/_diagnostics',
+      '/api/_analytics_ping',
+      '/api/_error',
+      '/api/_ratelimit',
+      '/api/_audit?limit=10&withBodies=1',
+      '/api/client-error',
+      '/api/ws-telemetry',
+      // WebSocket config helpers
+      '/api/ws-url',
+      '/api/ws-live-enabled',
+      '/api/ws-user-id',
+      '/api/ws-device-token',
+      // Auth0 health checks (dev only)
+      '/api/auth0/health',
+      '/auth0/health',
+    ],
+  } as const;
+  return c.json(body, 200);
+});
+
 // Dev-only: rate limit remaining probe (does not consume)
 app.get('/api/_ratelimit', async (c) => {
   if (c.env.ENVIRONMENT === 'production')
@@ -706,6 +1053,165 @@ app.get('/api/_audit', async (c) => {
     return c.json({ ok: true, count: events.length, events });
   } catch (e) {
     return c.json({ ok: false, error: (e as Error).message }, 500);
+  }
+});
+
+// Client-side error telemetry endpoint
+app.post('/api/client-error', async (c) => {
+  try {
+    const schema = z.object({
+      message: z.string().min(1).max(2000),
+      source: z
+        .enum(['window.onerror', 'unhandledrejection', 'console.error'])
+        .default('window.onerror'),
+      route: z.string().max(512).optional(),
+      sessionId: z.string().max(128).optional(),
+      ua: z.string().max(512).optional(),
+      stack: z.string().max(4000).optional(),
+      meta: z.record(z.any()).optional(),
+    });
+    const body = await c.req.json().catch(() => null as unknown);
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
+      return c.json(
+        { error: 'validation_error', details: parsed.error.flatten() },
+        400
+      );
+    }
+    const data = parsed.data;
+    const path = new URL(c.req.url).pathname;
+    const correlationId = crypto.randomUUID();
+    const durMs = 0;
+    const sub = getAuthSub(c);
+
+    // Write to Analytics Engine (categorize as 0xx synthetic status), sampled per env var
+    if (shouldSampleWithKey(c, 'LOG_CLIENT_ERROR_SAMPLE_RATE')) {
+      await writeAnalyticsPoint(
+        c,
+        [
+          c.env.ENVIRONMENT || 'development',
+          path,
+          'POST',
+          '0',
+          sub ? '1' : '0',
+          correlationId,
+          'client_error',
+          data.source,
+        ],
+        [durMs]
+      );
+    }
+
+    // Optionally write an audit entry (best-effort)
+    await writeAudit(c.env, {
+      type: 'client_error',
+      resource: data.route || 'app',
+      actor: sub ?? undefined,
+      meta: {
+        correlationId,
+        message: data.message.slice(0, 256),
+        source: data.source,
+      },
+    }).catch(() => void 0);
+
+    return c.json({ ok: true, correlationId });
+  } catch (err) {
+    try {
+      log.error('client_error_endpoint_failure', {
+        error: (err as Error).message,
+      });
+    } catch {
+      /* noop */
+    }
+    return c.json({ error: 'server_error' }, 500);
+  }
+});
+
+// WebSocket telemetry ingestion (client-reported)
+app.post('/api/ws-telemetry', async (c) => {
+  try {
+    const schema = z.object({
+      event: z.enum([
+        'connect_start',
+        'connect_success',
+        'connect_error',
+        'close',
+        'retry',
+        'ping_timeout',
+        'pong_received',
+        'message_error',
+      ]),
+      url: z.string().max(2048).optional(),
+      attempt: z.number().int().min(0).max(100).optional(),
+      code: z.number().int().min(0).max(6000).optional(),
+      reason: z.string().max(500).optional(),
+      backoffMs: z.number().int().min(0).max(600000).optional(),
+      sinceMs: z.number().int().min(0).max(600000).optional(),
+      rttMs: z.number().int().min(0).max(120000).optional(),
+      readyState: z.number().int().min(0).max(3).optional(),
+    });
+    const body = await c.req.json().catch(() => null as unknown);
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
+      return c.json(
+        { error: 'validation_error', details: parsed.error.flatten() },
+        400
+      );
+    }
+    const data = parsed.data;
+    const env = c.env.ENVIRONMENT || 'development';
+    const sub = getAuthSub(c);
+    const correlationId = crypto.randomUUID();
+
+    // Analytics Engine write with ws category; sampled per LOG_WS_SAMPLE_RATE
+    if (shouldSampleWithKey(c, 'LOG_WS_SAMPLE_RATE')) {
+      const blobs = [
+        env,
+        '/api/ws-telemetry',
+        'POST',
+        '0',
+        sub ? '1' : '0',
+        correlationId,
+        'ws_telemetry',
+        data.event,
+        String(data.code ?? ''),
+      ];
+      const doubles = [
+        data.backoffMs ?? 0,
+        data.rttMs ?? 0,
+        data.sinceMs ?? 0,
+        data.attempt ?? 0,
+      ];
+      await writeAnalyticsPoint(c, blobs, doubles);
+    }
+
+    // Escalate certain events to audit log
+    if (
+      data.event === 'connect_error' ||
+      data.event === 'ping_timeout' ||
+      (data.event === 'close' && (data.code ?? 1000) !== 1000)
+    ) {
+      await writeAudit(c.env, {
+        type: 'ws_event',
+        resource: 'client_ws',
+        actor: sub ?? undefined,
+        meta: {
+          event: data.event,
+          code: data.code,
+          reason: data.reason,
+          attempt: data.attempt,
+        },
+      }).catch(() => void 0);
+    }
+
+    return c.json({ ok: true, correlationId });
+  } catch (err) {
+    try {
+      log.error('ws_telemetry_failure', { error: (err as Error).message });
+    } catch {
+      /* noop */
+    }
+    return c.json({ error: 'server_error' }, 500);
   }
 });
 
@@ -2289,20 +2795,26 @@ app.get('/api/auth0/health', async (c) => {
     ok: false,
     domain,
     clientIdSet: Boolean(clientId),
-    issuer: null as string | null,
-    jwks_uri: null as string | null,
-    authorization_endpoint: null as string | null,
+    issuer: null,
+    jwks_uri: null,
+    authorization_endpoint: null,
     error: null as string | null,
   };
   try {
     if (!openIdCfgUrl) throw new Error('AUTH0_DOMAIN not set');
     const res = await fetch(openIdCfgUrl);
     if (!res.ok) throw new Error(`openid-configuration ${res.status}`);
-    const cfg = (await res.json()) as Record<string, unknown>;
+    const openIdSchema = z.object({
+      issuer: z.string().optional(),
+      jwks_uri: z.string().optional(),
+      authorization_endpoint: z.string().optional(),
+    });
+    const parsed = openIdSchema.safeParse(await res.json());
     out.ok = true;
-    out.issuer = (cfg.issuer as string) || issuerUrl;
-    out.jwks_uri = cfg.jwks_uri as string;
-    out.authorization_endpoint = cfg.authorization_endpoint as string;
+    out.issuer = (parsed.success ? parsed.data.issuer : undefined) || issuerUrl;
+    out.jwks_uri = (parsed.success ? parsed.data.jwks_uri : undefined) || null;
+    out.authorization_endpoint =
+      (parsed.success ? parsed.data.authorization_endpoint : undefined) || null;
     return c.json(out, 200);
   } catch (e) {
     out.ok = false;
@@ -2323,20 +2835,26 @@ app.get('/auth0/health', async (c) => {
     ok: false,
     domain,
     clientIdSet: Boolean(clientId),
-    issuer: null as string | null,
-    jwks_uri: null as string | null,
-    authorization_endpoint: null as string | null,
+    issuer: null,
+    jwks_uri: null,
+    authorization_endpoint: null,
     error: null as string | null,
   };
   try {
     if (!openIdCfgUrl) throw new Error('AUTH0_DOMAIN not set');
     const res = await fetch(openIdCfgUrl);
     if (!res.ok) throw new Error(`openid-configuration ${res.status}`);
-    const cfg = (await res.json()) as Record<string, unknown>;
+    const openIdSchema = z.object({
+      issuer: z.string().optional(),
+      jwks_uri: z.string().optional(),
+      authorization_endpoint: z.string().optional(),
+    });
+    const parsed = openIdSchema.safeParse(await res.json());
     out.ok = true;
-    out.issuer = (cfg.issuer as string) || issuerUrl;
-    out.jwks_uri = cfg.jwks_uri as string;
-    out.authorization_endpoint = cfg.authorization_endpoint as string;
+    out.issuer = (parsed.success ? parsed.data.issuer : undefined) || issuerUrl;
+    out.jwks_uri = (parsed.success ? parsed.data.jwks_uri : undefined) || null;
+    out.authorization_endpoint =
+      (parsed.success ? parsed.data.authorization_endpoint : undefined) || null;
     return c.json(out, 200);
   } catch (e) {
     out.ok = false;
