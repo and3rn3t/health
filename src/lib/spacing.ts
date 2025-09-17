@@ -130,17 +130,17 @@ export const getButtonSpacing = (size: SpacingSize = 'md') =>
 // VitalSense design system spacing presets
 export const designSystem = {
   // Component spacing presets
-  healthCard: `${layout.card.padding.md} ${layout.card.gap.md} rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow`,
+  healthCard: `${layout.card.padding.md} ${layout.card.gap.md} rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow`,
 
   dashboardSection: `${layout.section.gap} ${layout.section.marginBottom}`,
 
-  navigationHeader: `${layout.header.padding} ${layout.header.height} ${layout.header.gap} border-b border-gray-100`,
+  navigationHeader: `${layout.header.padding} ${layout.header.height} ${layout.header.gap} border-b border-border bg-card`,
 
-  pageFooter: `${layout.footer.padding} ${layout.footer.gap} border-t border-gray-100`,
+  pageFooter: `${layout.footer.padding} ${layout.footer.gap} border-t border-border bg-card/50`,
 
   primaryButton: `${layout.button.padding.md} ${layout.button.gap} rounded-lg font-medium transition-all hover:shadow-sm`,
 
-  formInput: `${layout.input.padding} ${layout.input.height} rounded-md border border-gray-300 focus:border-vitalsense-primary focus:ring-2 focus:ring-vitalsense-primary/20`,
+  formInput: `${layout.input.padding} ${layout.input.height} rounded-md border border-border bg-background focus:border-vitalsense-primary focus:ring-2 focus:ring-vitalsense-primary/20`,
 
   statusBadge: `${layout.badge.padding} ${layout.badge.gap} rounded-md text-xs font-medium`,
 

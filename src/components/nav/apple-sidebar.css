@@ -10,8 +10,8 @@
 
 /* Opaque panel with subtle border/shadow like iPad sidebar */
 [data-vs='apple-sidebar-panel'] {
-  background: #ffffff;
-  color: #111827; /* gray-900 */
+  background: var(--card);
+  color: var(--card-foreground);
 }
 
 /* Map data attributes into CSS custom properties for widths */
@@ -27,7 +27,7 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: #ffffffcc; /* slight translucency */
+  background: var(--card);
   -webkit-backdrop-filter: saturate(180%) blur(12px);
   backdrop-filter: saturate(180%) blur(12px);
 }
@@ -42,7 +42,8 @@
 [data-vs='apple-sidebar-inner'],
 [data-vs='apple-sidebar-main'] {
   scrollbar-width: thin; /* Firefox */
-  scrollbar-color: #cbd5e1 transparent; /* slate-300 */
+  /* Use muted for thumb color to respect theme */
+  scrollbar-color: var(--muted) transparent;
 }
 
 [data-vs='apple-sidebar-inner']::-webkit-scrollbar,
@@ -53,7 +54,7 @@
 
 [data-vs='apple-sidebar-inner']::-webkit-scrollbar-thumb,
 [data-vs='apple-sidebar-main']::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1; /* slate-300 */
+  background-color: var(--muted);
   border-radius: 8px;
 }
 
@@ -74,13 +75,23 @@
 
 /* Item polish for normal look */
 [data-vs='apple-sidebar-item'] {
-  color: #374151; /* gray-700 */
+  color: var(--muted-foreground);
 }
 [data-vs='apple-sidebar-item']:hover {
-  background-color: #f3f4f6; /* gray-100 */
+  background-color: color-mix(in oklab, var(--muted) 90%, transparent);
 }
 [data-vs='apple-sidebar-item'][data-active='true'],
 [data-vs='apple-sidebar-item'].active {
-  background-color: rgba(37, 99, 235, 0.1); /* vs primary/10 */
-  color: #2563eb; /* vs primary */
+  background-color: color-mix(in oklab, var(--primary) 12%, transparent);
+  color: var(--primary);
+}
+
+/* Dark mode refinements */
+[data-appearance='dark'] [data-vs='apple-sidebar-item']:hover {
+  background-color: color-mix(in oklab, var(--muted) 85%, transparent);
+}
+[data-appearance='dark'] [data-vs='apple-sidebar-item'][data-active='true'],
+[data-appearance='dark'] [data-vs='apple-sidebar-item'].active {
+  background-color: color-mix(in oklab, var(--primary) 24%, transparent);
+  color: var(--primary);
 }

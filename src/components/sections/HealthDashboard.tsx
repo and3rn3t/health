@@ -26,7 +26,7 @@ export default function HealthDashboard() {
       {/* Health Metrics Grid */}
       <div className="md:grid-cols-2 gap-5 grid lg:grid-cols-4">
         {/* Health Score Card */}
-        <Card className="border-gray-200 rounded-md border border-vitalsense-primary/20 bg-gradient-to-br from-vitalsense-primary/5 to-vitalsense-primary/10">
+        <Card className="border-border rounded-md border border-vitalsense-primary/20 bg-gradient-to-br from-vitalsense-primary/5 to-vitalsense-primary/10">
           <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0 px-4">
             <CardTitle className="text-sm font-medium">Health Score</CardTitle>
             <Heart className="h-5 w-5 text-vitalsense-primary" />
@@ -40,7 +40,7 @@ export default function HealthDashboard() {
         </Card>
 
         {/* Activity Card */}
-        <Card className="border-gray-200 rounded-md border border-vitalsense-secondary/20 bg-gradient-to-br from-vitalsense-secondary/5 to-vitalsense-secondary/10">
+        <Card className="border-border rounded-md border border-vitalsense-secondary/20 bg-gradient-to-br from-vitalsense-secondary/5 to-vitalsense-secondary/10">
           <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0 px-4">
             <CardTitle className="text-sm font-medium">Activity</CardTitle>
             <Activity className="h-5 w-5 text-vitalsense-secondary" />
@@ -54,7 +54,7 @@ export default function HealthDashboard() {
         </Card>
 
         {/* Brain Health Card */}
-        <Card className="border-gray-200 from-vitalsense-accent/5 to-vitalsense-accent/10 border-vitalsense-accent/20 rounded-md border bg-gradient-to-br">
+        <Card className="from-vitalsense-accent/5 to-vitalsense-accent/10 border-vitalsense-accent/20 border-border rounded-md border bg-gradient-to-br">
           <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0 px-4">
             <CardTitle className="text-sm font-medium">Brain Health</CardTitle>
             <Brain className="text-vitalsense-accent h-5 w-5" />
@@ -68,7 +68,7 @@ export default function HealthDashboard() {
         </Card>
 
         {/* Goals Card */}
-        <Card className="border-gray-200 rounded-md border border-vitalsense-success/20 bg-gradient-to-br from-vitalsense-success/5 to-vitalsense-success/10">
+        <Card className="border-border rounded-md border border-vitalsense-success/20 bg-gradient-to-br from-vitalsense-success/5 to-vitalsense-success/10">
           <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0 px-4">
             <CardTitle className="text-sm font-medium">Goals</CardTitle>
             <Target className="h-5 w-5 text-vitalsense-success" />
@@ -85,7 +85,7 @@ export default function HealthDashboard() {
       {/* Main Dashboard Content */}
       <div className="md:grid-cols-2 gap-7 grid">
         {/* Recent Activity */}
-        <Card className="border-gray-200 rounded-md border">
+        <Card className="border-border rounded-md border">
           <CardHeader className="py-3 pb-3 px-4">
             <CardTitle className="text-lg">Recent Activity</CardTitle>
             <CardDescription className="text-base">
@@ -94,13 +94,13 @@ export default function HealthDashboard() {
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-0">
             <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+              <div className="border-border flex items-center justify-between border-b pb-4">
                 <span className="text-sm font-medium">Morning walk</span>
                 <span className="text-xs text-vitalsense-gray">
                   2 hours ago
                 </span>
               </div>
-              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+              <div className="border-border flex items-center justify-between border-b pb-4">
                 <span className="text-sm font-medium">Heart rate updated</span>
                 <span className="text-xs text-vitalsense-gray">
                   4 hours ago
@@ -117,7 +117,7 @@ export default function HealthDashboard() {
         </Card>
 
         {/* Quick Actions */}
-        <Card className="border-gray-200 rounded-md border">
+        <Card className="border-border rounded-md border">
           <CardHeader className="py-3 pb-3 px-4">
             <CardTitle>Quick Actions</CardTitle>
             <CardDescription>Manage your health data</CardDescription>

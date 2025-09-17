@@ -159,7 +159,7 @@ export function AppleSidebarPanel({
         data-side={side}
         className={cn(
           // Responsive comfort widths on large displays
-          'md:w-[360px] xl:w-[420px] 2xl:w-[520px] h-full w-[320px] shrink-0 border-r bg-white',
+          'md:w-[360px] xl:w-[420px] 2xl:w-[520px] bg-card text-foreground border-border h-full w-[320px] shrink-0 border-r',
           className
         )}
         {...props}
@@ -179,7 +179,7 @@ export function AppleSidebarPanel({
       <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
         <SheetContent
           side={side}
-          className="w-[90vw] max-w-[420px] bg-white p-0 shadow-xl" // cap width on large phones/tablets
+          className="bg-card text-foreground w-[90vw] max-w-[420px] p-0 shadow-xl" // cap width on large phones/tablets
           id="vs-apple-sidebar-mobile"
         >
           <SheetHeader className="sr-only">
@@ -209,7 +209,7 @@ export function AppleSidebarPanel({
       data-variant={variant}
       data-collapsible={collapsible}
       className={cn(
-        'h-full shrink-0 overflow-hidden border-r bg-white transition-[width] duration-200 ease-linear',
+        'bg-card text-foreground border-border h-full shrink-0 overflow-hidden border-r transition-[width] duration-200 ease-linear',
         widthClass,
         className
       )}
@@ -263,7 +263,7 @@ export function AppleSidebarMain({
       data-vs="apple-sidebar-main"
       className={cn(
         // Make this the scrolling container so sticky headers work correctly
-        'relative flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto bg-white',
+        'bg-background text-foreground flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto',
         className
       )}
       data-state={state}
@@ -283,7 +283,7 @@ export function AppleSidebarHeader({
       data-vs="apple-sidebar-header"
       className={cn(
         // z-20 to sit above sidebar items, below main NavigationHeader (z-40)
-        'h-12 px-3 sticky top-0 z-20 flex items-center gap-2 border-b',
+        'h-12 px-3 border-border sticky top-0 z-20 flex items-center gap-2 border-b',
         className
       )}
       {...props}
@@ -332,8 +332,8 @@ export function AppleSidebarItem({
         className={cn(
           'h-10 gap-3 px-3 outline-hidden relative flex w-full items-center rounded-md text-left text-sm transition-colors',
           active
-            ? 'bg-vitalsense-primary/10 text-vitalsense-primary'
-            : 'text-gray-700 hover:bg-gray-100',
+            ? 'bg-vitalsense-primary/10 font-semibold text-vitalsense-primary dark:bg-vitalsense-primary/20'
+            : 'text-muted-foreground hover:bg-muted dark:hover:bg-muted/70 font-medium',
           'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-vitalsense-primary/30',
           className
         )}
@@ -351,7 +351,7 @@ export function AppleSidebarBadge({
     <div
       data-vs="apple-sidebar-badge"
       className={cn(
-        'h-5 min-w-5 text-xs pointer-events-none ml-auto inline-flex items-center justify-center rounded-md bg-gray-100 px-1 tabular-nums',
+        'h-5 min-w-5 text-xs bg-muted text-muted-foreground pointer-events-none ml-auto inline-flex items-center justify-center rounded-md px-1 tabular-nums',
         className
       )}
       {...props}

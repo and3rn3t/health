@@ -40,13 +40,15 @@ export default function Footer({
   const getConnectionIcon = () => {
     switch (connectionStatus) {
       case 'connected':
-        return <Wifi className="h-3 w-3 text-green-500" />;
+        return <Wifi className="h-3 w-3 text-vitalsense-success" />;
       case 'syncing':
-        return <Activity className="h-3 w-3 animate-pulse text-blue-500" />;
+        return (
+          <Activity className="h-3 w-3 animate-pulse text-vitalsense-primary" />
+        );
       case 'disconnected':
-        return <WifiOff className="h-3 w-3 text-red-500" />;
+        return <WifiOff className="h-3 w-3 text-vitalsense-error" />;
       default:
-        return <Wifi className="h-3 w-3 text-gray-500" />;
+        return <Wifi className="h-3 w-3 text-muted-foreground" />;
     }
   };
 
@@ -87,7 +89,7 @@ export default function Footer({
   ];
 
   return (
-    <footer className="bg-card/50 mt-auto border-t border-gray-100">
+    <footer className="bg-card/50 border-border mt-auto border-t">
       <div className="px-4 py-6 lg:px-8">
         {/* Main Footer Content */}
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -99,10 +101,10 @@ export default function Footer({
                 <Heart className="h-4 w-4 text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="text-vitalsense-text-primary text-base font-semibold">
+                <span className="text-foreground text-base font-semibold">
                   VitalSense
                 </span>
-                <span className="text-xs text-vitalsense-text-muted">
+                <span className="text-xs text-muted-foreground">
                   Health Monitor
                 </span>
               </div>
@@ -128,21 +130,21 @@ export default function Footer({
             {/* Connection Status */}
             <div className="flex items-center gap-2">
               {getConnectionIcon()}
-              <span className="text-xs text-vitalsense-text-muted hidden sm:inline">
+              <span className="text-xs text-muted-foreground hidden sm:inline">
                 {getConnectionText()}
               </span>
             </div>
 
             {/* Last Sync */}
             <div className="flex items-center gap-2">
-              <Clock className="h-3 w-3 text-vitalsense-text-muted" />
-              <span className="text-xs text-vitalsense-text-muted">
+              <Clock className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
                 {formatLastSync()}
               </span>
             </div>
 
             {/* Current Time */}
-            <div className="text-xs text-vitalsense-text-muted">
+            <div className="text-xs text-muted-foreground">
               {currentTime.toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',

@@ -1,4 +1,45 @@
 import Foundation
+import Network
+
+// Lightweight JSON enum for parsing the envelope's data field
+private enum CodableJSON: Codable {
+    case object([String: CodableJSON])
+    case array([CodableJSON])
+    case string(String)
+    case number(Double)
+    case bool(Bool)
+    case null
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if container.decodeNil() { self = .null; return }
+        if let v = try? container.decode(Bool.self) { self = .bool(v); return }
+        if let v = try? container.decode(Double.self) { self = .number(v); return }
+        if let v = try? container.decode(String.self) { self = .string(v); return }
+        if let v = try? container.decode([String: CodableJSON].self) { self = .object(v); return }
+        if let v = try? container.decode([CodableJSON].self) { self = .array(v); return }
+        throw DecodingError.dataCorruptedError(in: container, debugDescription: "Unsupported JSON")
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .null: try container.encodeNil()
+        case .bool(let b): try container.encode(b)
+        case .number(let n): try container.encode(n)
+        case .string(let s): try container.encode(s)
+        case .object(let o): try container.encode(o)
+        case .array(let a): try container.encode(a)
+        }
+    }
+}
+
+private struct RawEnvelope: Codable {
+    let type: String
+    let timestamp: String?
+    let source: String?
+    let data: CodableJSON?
+}
 
 class WebSocketManager: NSObject, ObservableObject {
     static let shared = WebSocketManager()
@@ -16,6 +57,34 @@ class WebSocketManager: NSObject, ObservableObject {
     private var currentToken: String?
     private var isMockMode = false
     private var connectionTimeoutTimer: Timer?
+    private var heartbeatTimer: Timer?
+    private let heartbeatInterval: TimeInterval = 15
+    private var missedHeartbeats = 0
+    private let maxMissedHeartbeats = 2
+    private let backoffBase: Double = 1.5
+    private let backoffInitial: TimeInterval = 1.0
+    private let backoffCap: TimeInterval = 20.0
+    private var pathMonitor: NWPathMonitor?
+    private var pathMonitorQueue = DispatchQueue(label: "ws.path.monitor")
+    private var isNetworkReachable: Bool = true
+    private var sendBuffer: [Data] = []
+
+    // Subscriptions per message type
+    private var subscriptionHandlers: [String: [UUID: (Data) -> Void]] = [:]
+
+    // Convenience: register common typed handlers
+    @discardableResult func onConnectionEstablished(_ f: @escaping (ConnectionEstablished) -> Void) -> UUID {
+        subscribe(type: "connection_established", as: ConnectionEstablished.self, f)
+    }
+    @discardableResult func onLiveHealthUpdate(_ f: @escaping (LiveHealthUpdate) -> Void) -> UUID {
+        subscribe(type: "live_health_update", as: LiveHealthUpdate.self, f)
+    }
+    @discardableResult func onHistoricalDataUpdate(_ f: @escaping (HistoricalDataUpdate) -> Void) -> UUID {
+        subscribe(type: "historical_data_update", as: HistoricalDataUpdate.self, f)
+    }
+    @discardableResult func onEmergencyAlert(_ f: @escaping (EmergencyAlert) -> Void) -> UUID {
+        subscribe(type: "emergency_alert", as: EmergencyAlert.self, f)
+    }
 
     var wsURL: URL {
         let config = AppConfig.shared
@@ -34,6 +103,31 @@ class WebSocketManager: NSObject, ObservableObject {
             }
         }
         return url
+    }
+
+    // MARK: - Public typed senders
+    @discardableResult
+    func sendGaitDataPayload(_ payload: GaitDataPayload) async -> Bool {
+        // Encode payload as dictionary so server receives object in `data`
+        if let dict = Self.encodeToDictionary(payload) {
+            let envelope: [String: Any] = [
+                "type": "gait_analysis",
+                "timestamp": ISO8601DateFormatter().string(from: Date()),
+                "source": "ios-native",
+                "data": dict
+            ]
+
+            do {
+                try await sendJSON(envelope)
+                return true
+            } catch {
+                print("❌ Failed to send gait payload: \(error)")
+                return false
+            }
+        } else {
+            print("❌ Failed to encode GaitDataPayload to dictionary")
+            return false
+        }
     }
 
     private override init() {
@@ -66,6 +160,27 @@ class WebSocketManager: NSObject, ObservableObject {
         )
 
         updateConnectionStatus("Ready to connect")
+
+        // Start network path monitoring
+        let monitor = NWPathMonitor()
+        pathMonitor = monitor
+        monitor.pathUpdateHandler = { [weak self] path in
+            guard let self else { return }
+            let reachable = path.status == .satisfied
+            self.isNetworkReachable = reachable
+            if !reachable {
+                DispatchQueue.main.async {
+                    self.updateConnectionStatus("No network connectivity")
+                }
+                self.stopHeartbeat()
+            } else {
+                // If network returns and we have a token but not connected, attempt reconnect
+                if self.currentToken != nil && !self.isConnected && !self.isMockMode {
+                    Task { await self.scheduleReconnectNow(reason: "Network restored") }
+                }
+            }
+        }
+        monitor.start(queue: pathMonitorQueue)
     }
 
     func connect(with token: String) async {
@@ -79,6 +194,7 @@ class WebSocketManager: NSObject, ObservableObject {
         // Try real connection first
         if await tryRealConnection(token: token) {
             print("✅ Real WebSocket connection successful")
+            startHeartbeat()
             return
         }
 
@@ -145,6 +261,7 @@ class WebSocketManager: NSObject, ObservableObject {
                             self?.lastError = nil
                             self?.receive()
                         }
+                        self?.startHeartbeat()
                         continuation.resume(returning: true)
                     }
                 }
@@ -168,6 +285,11 @@ class WebSocketManager: NSObject, ObservableObject {
         print("✅ Mock WebSocket connection established")
     }
 
+    // Backward compatibility for older call sites
+    func connect() {
+        Task { await connect(with: "dev-local-token") }
+    }
+
     func disconnect() {
         print("🔌 Disconnecting WebSocket...")
 
@@ -177,6 +299,7 @@ class WebSocketManager: NSObject, ObservableObject {
 
         task?.cancel(with: .goingAway, reason: nil)
         task = nil
+    stopHeartbeat()
 
         DispatchQueue.main.async {
             self.isConnected = false
@@ -185,6 +308,41 @@ class WebSocketManager: NSObject, ObservableObject {
         }
 
         stopReconnectTimer()
+    }
+
+    // MARK: - Subscriptions
+    @discardableResult
+    func subscribe<T: Decodable>(type: String, as: T.Type = T.self, _ handler: @escaping (T) -> Void) -> UUID {
+        let id = UUID()
+        var bucket = subscriptionHandlers[type] ?? [:]
+        bucket[id] = { [weak self] data in
+            guard let self else { return }
+            do {
+                let decoded = try JSONDecoder().decode(T.self, from: data)
+                handler(decoded)
+            } catch {
+                self.debugLog("Decode failure for type=\(type): \(error)")
+            }
+        }
+        subscriptionHandlers[type] = bucket
+        return id
+    }
+
+    func unsubscribe(_ id: UUID, from type: String) {
+        subscriptionHandlers[type]?[id] = nil
+        if subscriptionHandlers[type]?.isEmpty == true { subscriptionHandlers[type] = nil }
+    }
+
+    // MARK: - Typed send
+    func send<T: Encodable>(type: String, data: T, source: String = "ios-native") {
+        struct Envelope<D: Encodable>: Encodable { let type: String; let data: D; let timestamp: String; let source: String }
+        let env = Envelope(type: type, data: data, timestamp: ISO8601DateFormatter().string(from: Date()), source: source)
+        do {
+            let bytes = try JSONEncoder().encode(env)
+            enqueueSend(bytes)
+        } catch {
+            debugLog("Send encode error: \(error)")
+        }
     }
 
     func sendHealthData(_ healthData: HealthData) async throws {
@@ -390,11 +548,7 @@ class WebSocketManager: NSObject, ObservableObject {
     private func sendJSON(_ object: [String: Any]) async throws {
         do {
             let data = try JSONSerialization.data(withJSONObject: object)
-            if let jsonString = String(data: data, encoding: .utf8) {
-                try await send(message: jsonString)
-            } else {
-                throw WebSocketError.messageSerializationFailed
-            }
+            enqueueSend(data)
         } catch {
             print("❌ Failed to serialize JSON: \(error)")
             throw WebSocketError.messageSerializationFailed
@@ -423,16 +577,46 @@ class WebSocketManager: NSObject, ObservableObject {
         }
     }
 
+    private func enqueueSend(_ data: Data) {
+        // Buffer if not connected or during reconnects
+        guard let task, isConnected, !isMockMode else { sendBuffer.append(data); return }
+        task.send(.data(data)) { [weak self] error in
+            if let error { Task { await self?.handleSendError(error) } }
+        }
+    }
+
+    private func flushSendBuffer() {
+        guard let task, isConnected, !isMockMode, !sendBuffer.isEmpty else { return }
+        let items = sendBuffer
+        sendBuffer.removeAll()
+        for data in items {
+            task.send(.data(data)) { [weak self] error in
+                if let error { Task { await self?.handleSendError(error) } }
+            }
+        }
+    }
+
+    private func handleSendError(_ error: Error) async {
+        print("❌ Send error: \(error.localizedDescription)")
+        await handleConnectionLoss()
+    }
+
     private func receive() {
         guard let task = task, !isMockMode else {
             return
         }
 
-        task.receive { [weak self] result in
+    task.receive { [weak self] result in
             switch result {
             case .success(let message):
                 print("📥 WebSocket message received")
-                self?.receive() // Continue receiving
+        // Route typed envelopes to subscribers
+        switch message {
+        case .data(let data): self?.routeMessage(data)
+        case .string(let str): self?.routeMessage(Data(str.utf8))
+        @unknown default: break
+        }
+        self?.receive() // Continue receiving
 
             case .failure(let error):
                 print("❌ WebSocket receive error: \(error)")
@@ -443,6 +627,19 @@ class WebSocketManager: NSObject, ObservableObject {
         }
     }
 
+    private func routeMessage(_ data: Data) {
+        guard let env = try? JSONDecoder().decode(RawEnvelope.self, from: data) else { return }
+        guard let handlers = subscriptionHandlers[env.type], !handlers.isEmpty else { return }
+        // Extract data payload if present
+        let payload: Data
+        if let d = env.data, let reenc = try? JSONEncoder().encode(d) {
+            payload = reenc
+        } else {
+            payload = Data("{}".utf8)
+        }
+        for (_, f) in handlers { f(payload) }
+    }
+
     private func handleConnectionLoss() async {
         print("🔄 Handling connection loss...")
 
@@ -451,12 +648,22 @@ class WebSocketManager: NSObject, ObservableObject {
             self.updateConnectionStatus("Connection lost")
         }
 
-        // Try to reconnect if we have a token
+        // Pause if network is unavailable
+        guard isNetworkReachable else {
+            await MainActor.run { self.updateConnectionStatus("Waiting for network...") }
+            return
+        }
+
+        // Try to reconnect if we have a token with backoff + jitter
         if let token = currentToken {
             reconnectAttempts += 1
             if reconnectAttempts <= maxReconnectAttempts {
-                print("🔄 Attempting reconnect (\(reconnectAttempts)/\(maxReconnectAttempts))...")
-                try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+                let exp = min(backoffInitial * pow(backoffBase, Double(reconnectAttempts - 1)), backoffCap)
+                let jitter = Double.random(in: 0...1)
+                let delay = exp + jitter
+                print("🔄 Reconnect attempt #\(reconnectAttempts) in \(String(format: "%.1f", delay))s")
+                let nanos = UInt64(delay * 1_000_000_000)
+                try? await Task.sleep(nanoseconds: nanos)
                 await connect(with: token)
             } else {
                 print("❌ Max reconnect attempts reached, switching to mock mode")
@@ -471,11 +678,110 @@ class WebSocketManager: NSObject, ObservableObject {
         }
     }
 
+    // MARK: - Heartbeat
+    private func startHeartbeat() {
+        stopHeartbeat()
+        missedHeartbeats = 0
+        heartbeatTimer = Timer.scheduledTimer(withTimeInterval: heartbeatInterval, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            guard let task = self.task, !self.isMockMode else { return }
+            task.sendPing { [weak self] error in
+                guard let self else { return }
+                if let error = error {
+                    print("⚠️ Heartbeat ping error: \(error.localizedDescription)")
+                    self.missedHeartbeats += 1
+                } else {
+                    self.missedHeartbeats = 0
+                }
+                if self.missedHeartbeats > self.maxMissedHeartbeats {
+                    print("❌ Missed heartbeats threshold reached, reconnecting...")
+                    self.heartbeatTimer?.invalidate()
+                    self.heartbeatTimer = nil
+                    Task { await self.handleConnectionLoss() }
+                }
+            }
+        }
+        RunLoop.main.add(heartbeatTimer!, forMode: .common)
+    }
+
+    private func stopHeartbeat() {
+        heartbeatTimer?.invalidate()
+        heartbeatTimer = nil
+        missedHeartbeats = 0
+    }
+
+    // MARK: - Reconnect scheduling helper
+    private func scheduleReconnectNow(reason: String) async {
+        print("🔄 Scheduling reconnect: \(reason)")
+        reconnectAttempts = 0
+        if let token = currentToken {
+            await connect(with: token)
+        }
+    }
+
+    // MARK: - Helpers
+    private static func encodeToDictionary<T: Encodable>(_ value: T) -> [String: Any]? {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        do {
+            let data = try encoder.encode(value)
+            let json = try JSONSerialization.jsonObject(with: data, options: [])
+            return json as? [String: Any]
+        } catch {
+            print("❌ JSON encode/decode error: \(error)")
+            return nil
+        }
+    }
+
+#if DEBUG
+    // Exposed only for unit testing: builds the same envelope shape as sendGaitDataPayload
+    func buildGaitEnvelopeForTest(_ payload: GaitDataPayload) -> [String: Any]? {
+        guard let dict = Self.encodeToDictionary(payload) else { return nil }
+        return [
+            "type": "gait_analysis",
+            "timestamp": ISO8601DateFormatter().string(from: Date()),
+            "source": "ios-native",
+            "data": dict
+        ]
+    }
+
+    /// Deterministic backoff delay calculator for unit tests (jitter injected by caller)
+    static func computeBackoffDelayForTest(
+        attempt: Int,
+        base: Double = 1.5,
+        initial: TimeInterval = 1.0,
+        cap: TimeInterval = 20.0,
+        jitter: Double = 0.0
+    ) -> TimeInterval {
+        guard attempt > 0 else { return 0 }
+        let exp = min(initial * pow(base, Double(max(1, attempt) - 1)), cap)
+        return min(exp + max(0, jitter), cap + max(0, jitter))
+    }
+#endif
+
     private func stopReconnectTimer() {
         reconnectTimer?.invalidate()
         reconnectTimer = nil
         reconnectAttempts = 0
     }
+
+#if DEBUG
+    /// Build a generic envelope for unit tests without sending over the network
+    static func buildEnvelopeForTest<T: Encodable>(type: String, data: T, source: String = "ios-native") -> [String: Any]? {
+        struct Envelope<D: Encodable>: Encodable { let type: String; let data: D; let timestamp: String; let source: String }
+        let env = Envelope(type: type, data: data, timestamp: ISO8601DateFormatter().string(from: Date()), source: source)
+        do {
+            let bytes = try JSONEncoder().encode(env)
+            let obj = try JSONSerialization.jsonObject(with: bytes, options: [])
+            return obj as? [String: Any]
+        } catch { return nil }
+    }
+
+    /// Unit-test helper to route a raw JSON message through the internal dispatcher
+    func test_routeRawMessage(_ data: Data) {
+        routeMessage(data)
+    }
+#endif
 
     deinit {
         print("🗑️ WebSocketManager deinitializing - cleaning up resources")
@@ -497,6 +803,7 @@ extension WebSocketManager: URLSessionWebSocketDelegate {
             self.isConnected = true
             self.updateConnectionStatus("Connected")
             self.reconnectAttempts = 0
+            self.flushSendBuffer()
         }
     }
 

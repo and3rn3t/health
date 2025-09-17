@@ -1409,6 +1409,18 @@
 			],
 			"isBackground": true,
 			"group": "build"
+		},
+		{
+			"label": "iOS: Run Unit Tests",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-File",
+				"ios/scripts/ios-test-runner.ps1"
+			],
+			"problemMatcher": [],
+			"group": "test"
 		}
 	],
 	"inputs": [

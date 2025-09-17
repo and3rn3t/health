@@ -10,6 +10,7 @@
 [![iOS](https://img.shields.io/badge/iOS-16+-black.svg)](https://developer.apple.com/ios/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Production](https://img.shields.io/badge/Status-Live-brightgreen.svg)](https://health.andernet.dev)
+[![iOS Tests](https://github.com/and3rn3t/health/actions/workflows/ios-tests.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/ios-tests.yml)
 
 ## 🚀 Quick Start
 

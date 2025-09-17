@@ -130,14 +130,14 @@ export default function NavigationHeader({
   };
 
   return (
-    <header className="border-gray-200 sticky top-0 z-40 mb-2 w-full border-b bg-white">
+    <header className="border-border bg-card sticky top-0 z-40 mb-2 w-full border-b">
       <div className="h-14 md:h-16 px-3 md:px-6 flex items-center justify-between">
         {/* Left Section - Sidebar Toggle & Page Info */}
         <div className="md:gap-4 flex min-w-0 flex-1 items-center gap-2">
           {/* Sidebar Toggle - Always visible */}
           <AppleSidebarTrigger
             aria-controls="app-sidebar"
-            className="shrink-0 hover:bg-gray-100"
+            className="hover:bg-muted shrink-0"
           />
 
           {/* Page Info Container */}

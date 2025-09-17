@@ -177,7 +177,7 @@ function Sidebar({
       <div
         data-slot="sidebar"
         className={cn(
-          'w-64 flex h-full shrink-0 flex-col border-r bg-white text-gray-900',
+          'w-64 bg-card text-foreground flex h-full shrink-0 flex-col border-r',
           className
         )}
         {...props}
@@ -194,7 +194,7 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="w-(--sidebar-width) w-72 bg-white p-0 text-gray-900 [--sidebar-width:18rem] [&>button]:hidden"
+          className="w-(--sidebar-width) w-72 bg-card text-foreground p-0 [--sidebar-width:18rem] [&>button]:hidden"
           side={side}
           id="app-sidebar"
         >
@@ -238,7 +238,7 @@ function Sidebar({
             : 'right-0 group-data-[collapsible=offcanvas]:group-data-[state=collapsed]:translate-x-full',
           // Adjust the padding for floating and inset variants.
           variant === 'floating' || variant === 'inset'
-            ? 'bg-white p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]'
+            ? 'bg-card p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]'
             : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l',
           className
         )}
@@ -247,7 +247,7 @@ function Sidebar({
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
-          className="bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full min-h-0 w-full flex-col overflow-y-auto !bg-white text-gray-900 group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
+          className="bg-sidebar group-data-[variant=floating]:border-sidebar-border !bg-card text-foreground flex h-full min-h-0 w-full flex-col overflow-y-auto group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
         >
           {children}
         </div>
@@ -320,7 +320,7 @@ function SidebarInset({ className, ...props }: ComponentProps<'main'>) {
     <main
       data-slot="sidebar-inset"
       className={cn(
-        'relative flex w-full flex-1 flex-col bg-white',
+        'bg-background text-foreground relative flex w-full flex-1 flex-col',
         // Shift main content when sidebar is expanded (desktop)
         'md:ml-[var(--sidebar-width)] peer-data-[state=collapsed]:md:ml-0',
         // Support icon-collapsed width
@@ -339,7 +339,10 @@ function SidebarInput({ className, ...props }: ComponentProps<typeof Input>) {
     <div
       data-slot="sidebar-input"
       data-sidebar="input"
-      className={cn('h-8 w-full bg-white shadow-none', className)}
+      className={cn(
+        'bg-card text-foreground h-8 w-full shadow-none',
+        className
+      )}
       {...props}
     />
   );
@@ -351,7 +354,7 @@ function SidebarHeader({ className, ...props }: ComponentProps<'div'>) {
       data-slot="sidebar-header"
       data-sidebar="header"
       className={cn(
-        'sticky top-0 z-10 flex flex-col gap-2 bg-white p-2',
+        'bg-card text-foreground sticky top-0 z-10 flex flex-col gap-2 p-2',
         className
       )}
       {...props}
@@ -496,11 +499,11 @@ const sidebarMenuButtonVariants = cva(
       variant: {
         default: 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
         outline:
-          'bg-white shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]',
+          'bg-card text-foreground shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]',
         nav: [
           // Larger tap target feel and subtle hover, with strong active state
           'relative rounded-md px-3 py-2',
-          'hover:bg-gray-100',
+          'hover:bg-muted',
           // Active: brand tint + stronger color
           'data-[active=true]:bg-vitalsense-primary/10 data-[active=true]:text-vitalsense-primary',
           // Left active indicator bar
