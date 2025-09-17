@@ -26,6 +26,26 @@ npm run cf:dev       # Cloudflare Worker on http://localhost:8787
 npm run ws:dev       # WebSocket server on ws://localhost:3001
 ```
 
+### 🐳 Docker (Worker + WebSocket)
+
+```bash
+# Build and start both services
+docker compose up --build -d
+
+# Access
+# - Worker (API + static): http://localhost:8789
+# - WebSocket server: ws://localhost:3001
+
+# View logs
+docker compose logs -f worker
+docker compose logs -f websocket
+
+# Stop
+docker compose down
+```
+
+See also: docs/DOCKER.md for full usage and environment details.
+
 ### iOS Application (15 minutes on Mac)
 
 1. **Open Xcode** and create new iOS project

@@ -27,7 +27,7 @@ import {
   Bell,
   Brain,
   CloudUpload,
-  Heart,
+  FlaskConical,
   Monitor,
   Scan,
   Settings as SettingsIcon,
@@ -62,9 +62,9 @@ const LiveHealthMonitoring = lazy(() =>
 );
 
 const FallDetection = lazy(() => import('@/components/health/FallDetection'));
-const HeartHealthMonitoring = lazy(
-  () => import('@/components/health/HeartHealthMonitoring')
-);
+// const HeartHealthMonitoring = lazy(
+//   () => import('@/components/health/HeartHealthMonitoring')
+// );
 const HealthAnalytics = lazy(
   () => import('@/components/health/HealthAnalytics')
 );
@@ -138,6 +138,7 @@ const HealthRecords = lazy(() =>
 );
 
 const SettingsPanel = lazy(() => import('@/components/sections/SettingsPanel'));
+const ShowcaseLabs = lazy(() => import('@/components/sections/ShowcaseLabs'));
 
 const PrivacyControls = lazy(() =>
   import('@/components/sections/PrivacyControls').catch(() => ({
@@ -175,13 +176,6 @@ const navigationItems = [
     label: 'Fall Detection',
     icon: Shield,
     component: FallDetection,
-    priority: 1,
-  },
-  {
-    id: 'heart-health',
-    label: 'Heart Health',
-    icon: Heart,
-    component: HeartHealthMonitoring,
     priority: 1,
   },
   {
@@ -270,6 +264,13 @@ const navigationItems = [
     label: 'Health Goals',
     icon: Target,
     component: FamilyGameification,
+    priority: 3,
+  },
+  {
+    id: 'labs',
+    label: 'Labs / Showcase',
+    icon: FlaskConical,
+    component: ShowcaseLabs,
     priority: 3,
   },
 ];

@@ -7,17 +7,26 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { HIGIcon, IOSHIGIcons } from '@/components/ui/ios-hig-icons';
+import {
+  IOS26Button,
+  IOS26ButtonGroup,
+  IOS26FAB,
+} from '@/components/ui/ios26-button-system';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { iOS26MotionAccessibility } from '@/lib/ios26-accessibility-enhanced';
+import { getiOS26TypographyClass } from '@/lib/ios26-dynamic-type';
 import { useKV } from '@github/spark/hooks';
-import {
-  Brain,
-  Clock,
-  Eye,
-  MousePointerClick,
-  Sparkles,
-  Target,
-} from 'lucide-react';
+import { Clock, Eye, MousePointerClick, Sparkles, Target } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { z } from 'zod';
 
@@ -251,8 +260,143 @@ function MemorySequenceTest({
   );
 }
 
+// Attention Control (Go/No-Go) mini assessment
+function AttentionGoNoGoTest({
+  onComplete,
+}: {
+  onComplete: (attentionScore: number) => void;
+}) {
+  const [running, setRunning] = useState(false);
+  const [trialIndex, setTrialIndex] = useState(0);
+  const [stimulus, setStimulus] = useState<'go' | 'nogo' | 'idle'>('idle');
+  const [acceptedInput, setAcceptedInput] = useState(false);
+  const [correct, setCorrect] = useState(0);
+  const [falsePositives, setFalsePositives] = useState(0);
+  const totalTrials = 20;
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+    },
+    []
+  );
+
+  const scheduleNext = (nextIndex: number) => {
+    if (nextIndex >= totalTrials) {
+      setRunning(false);
+      setStimulus('idle');
+      // Simple accuracy-based attention score
+      const accuracy = Math.max(0, correct - falsePositives);
+      const score = Math.round((accuracy / totalTrials) * 100);
+      onComplete(score);
+      return;
+    }
+
+    const delay = 600 + Math.floor(Math.random() * 900); // 0.6s - 1.5s
+    timerRef.current = window.setTimeout(() => {
+      // 70% GO, 30% NOGO
+      const isGo = Math.random() < 0.7;
+      setStimulus(isGo ? 'go' : 'nogo');
+      setAcceptedInput(false);
+
+      // Stimulus visible for 1200ms, then evaluate miss
+      timerRef.current = window.setTimeout(() => {
+        if (isGo && !acceptedInput) {
+          // Missed a GO
+        }
+        setStimulus('idle');
+        setTrialIndex(nextIndex + 1);
+        scheduleNext(nextIndex + 1);
+      }, 1200);
+    }, delay);
+  };
+
+  const start = () => {
+    setRunning(true);
+    setTrialIndex(0);
+    setCorrect(0);
+    setFalsePositives(0);
+    setStimulus('idle');
+    scheduleNext(0);
+  };
+
+  const handleTap = () => {
+    if (!running) return;
+    if (stimulus === 'go' && !acceptedInput) {
+      setCorrect((c) => c + 1);
+      setAcceptedInput(true);
+    } else if (stimulus === 'nogo' && !acceptedInput) {
+      setFalsePositives((f) => f + 1);
+      setAcceptedInput(true);
+    }
+  };
+
+  // Liquid glass styles for stimulus panel
+  const motionClasses = iOS26MotionAccessibility.getAnimationClasses(
+    'transform hover:scale-[1.01] active:scale-95',
+    ''
+  );
+  const panelClass = `ios-26-surface-elevated border border-white/10 backdrop-blur-md h-28 w-full rounded-xl flex items-center justify-center transition-colors ${motionClasses} ${
+    stimulus === 'go'
+      ? 'bg-green-500/15'
+      : stimulus === 'nogo'
+        ? 'bg-red-500/15'
+        : 'bg-white/5'
+  }`;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-muted-foreground">
+          Trial {Math.min(trialIndex + 1, totalTrials)} / {totalTrials}
+        </div>
+        <IOS26Button
+          variant="tinted"
+          onClick={running ? undefined : start}
+          disabled={running}
+        >
+          {running ? 'Running…' : 'Start'}
+        </IOS26Button>
+      </div>
+
+      <button
+        aria-label="Attention tap area"
+        onClick={handleTap}
+        className={panelClass}
+      >
+        <div className="text-center">
+          {stimulus === 'go' && (
+            <span className="text-foreground font-semibold">Tap!</span>
+          )}
+          {stimulus === 'nogo' && (
+            <span className="text-muted-foreground">Do not tap</span>
+          )}
+          {stimulus === 'idle' && (
+            <span className="text-muted-foreground">Get ready…</span>
+          )}
+        </div>
+      </button>
+
+      <div className="ios-26-surface p-3 text-xs text-muted-foreground backdrop-blur-sm rounded-lg border border-white/10">
+        <div>Correct taps: {correct}</div>
+        <div>False positives: {falsePositives}</div>
+      </div>
+    </div>
+  );
+}
+
 export default function CognitiveHealth() {
   // Persisted settings and results
+  const [practiceMode, setPracticeMode] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+  const [guidedOpen, setGuidedOpen] = useState(false);
+  const [summary, setSummary] = useState<{
+    reactionAvgMs?: number;
+    memoryMaxLevel?: number;
+    attentionScore?: number;
+    compositeScore?: number;
+  } | null>(null);
   const [settings, setSettings] = useKV<CognitiveSettings>(
     'cognitive-settings',
     {
@@ -320,281 +464,518 @@ export default function CognitiveHealth() {
     const parsed = cognitiveResultSchema.safeParse(record);
     if (!parsed.success) return; // fail-closed silently; no logs of PII/metrics
     setResults([...(results ?? []), parsed.data]);
+    // Update session summary view
+    setSummary({
+      reactionAvgMs: record.reactionAvgMs,
+      memoryMaxLevel: record.memoryMaxLevel,
+      attentionScore: record.attentionScore,
+      compositeScore: record.compositeScore,
+    });
+    setShowSummary(true);
+  };
+
+  // Wrapper to handle practice mode routing
+  const onAssessmentComplete = (partial: Partial<CognitiveResult>) => {
+    if (practiceMode) {
+      // Compute preview summary but do not persist
+      const reaction = partial.reactionAvgMs ?? last?.reactionAvgMs ?? 0;
+      const memory = partial.memoryMaxLevel ?? last?.memoryMaxLevel ?? 0;
+      const attention = partial.attentionScore ?? last?.attentionScore ?? 0;
+      const reactionScore = Math.max(
+        0,
+        Math.min(100, 100 - (reaction - 200) / 3)
+      );
+      const memoryScore = Math.min(100, (memory ?? 0) * 20);
+      const attentionScore = Math.max(0, Math.min(100, attention ?? 0));
+      const composite = Math.round(
+        reactionScore * 0.45 + memoryScore * 0.35 + attentionScore * 0.2
+      );
+      setSummary({
+        reactionAvgMs: partial.reactionAvgMs ?? undefined,
+        memoryMaxLevel: partial.memoryMaxLevel ?? undefined,
+        attentionScore: partial.attentionScore ?? undefined,
+        compositeScore: composite,
+      });
+      setShowSummary(true);
+      return;
+    }
+    saveResult(partial);
+  };
+
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Cognitive Health</h1>
-          <p className="text-muted-foreground mt-2">
-            Measure memory, attention, and reaction time to monitor cognitive
-            wellness.
-          </p>
+    <>
+      <div className="space-y-6">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1
+              className={`text-3xl font-bold ${getiOS26TypographyClass('large-title')}`}
+            >
+              Cognitive Health
+            </h1>
+            <p
+              className={`text-muted-foreground mt-2 ${getiOS26TypographyClass('body')}`}
+            >
+              Measure memory, attention, and reaction time to monitor cognitive
+              wellness.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <IOS26Button
+              variant={practiceMode ? 'tinted' : 'secondary'}
+              size="small"
+              onClick={() => setPracticeMode((v) => !v)}
+            >
+              {practiceMode ? 'Practice: On' : 'Practice: Off'}
+            </IOS26Button>
+            <Badge className={`${riskLevel.className}`}>
+              {riskLevel.label}
+            </Badge>
+          </div>
         </div>
-        <Badge className={`${riskLevel.className}`}>{riskLevel.label}</Badge>
-      </div>
 
-      {/* Overview cards */}
-      <div className="md:grid-cols-3 grid gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5 text-vitalsense-primary" /> Composite
-              Score
-            </CardTitle>
-            <CardDescription>Latest assessment</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-end justify-between">
-              <div>
-                <div className="text-3xl font-bold">
-                  {last?.compositeScore ?? '—'}
+        {/* Overview cards */}
+        <div className="md:grid-cols-3 grid gap-4">
+          <Card className="ios-26-surface-elevated backdrop-blur-md border border-white/10">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <HIGIcon
+                  icon={IOSHIGIcons.health.brain}
+                  className="h-5 w-5 text-vitalsense-primary"
+                />{' '}
+                Composite Score
+              </CardTitle>
+              <CardDescription>Latest assessment</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-end justify-between">
+                <div>
+                  <div className="text-3xl font-bold">
+                    {last?.compositeScore ?? '—'}
+                  </div>
+                  <div className="text-muted-foreground text-xs mt-1">
+                    {last
+                      ? new Date(last.date).toLocaleDateString()
+                      : 'No data yet'}
+                  </div>
                 </div>
-                <div className="text-muted-foreground text-xs mt-1">
-                  {last
-                    ? new Date(last.date).toLocaleDateString()
-                    : 'No data yet'}
+                <div className="text-right">
+                  <Sparkline
+                    values={trendValues.length > 1 ? trendValues : [0, 0, 0]}
+                  />
                 </div>
               </div>
-              <div className="text-right">
-                <Sparkline
-                  values={trendValues.length > 1 ? trendValues : [0, 0, 0]}
-                />
-              </div>
-            </div>
-            <Progress className="mt-3" value={last?.compositeScore ?? 0} />
-          </CardContent>
-        </Card>
+              <Progress className="mt-3" value={last?.compositeScore ?? 0} />
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MousePointerClick className="h-5 w-5 text-vitalsense-primary" />{' '}
-              Reaction Time
-            </CardTitle>
-            <CardDescription>Avg across latest session</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {last?.reactionAvgMs ?? '—'}
-              <span className="text-muted-foreground ml-1 text-lg font-normal">
-                ms
-              </span>
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">
-              Lower is better
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Eye className="h-5 w-5 text-vitalsense-primary" /> Memory
-              Sequence
-            </CardTitle>
-            <CardDescription>Max level achieved</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {last?.memoryMaxLevel ?? '—'}
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">
-              Higher is better
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs */}
-      <Tabs defaultValue="assessments" className="w-full">
-        <TabsList>
-          <TabsTrigger value="assessments">Assessments</TabsTrigger>
-          <TabsTrigger value="trends">Trends</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="assessments" className="space-y-4">
-          <Card>
+          <Card className="ios-26-surface-elevated backdrop-blur-md border border-white/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MousePointerClick className="h-5 w-5 text-vitalsense-primary" />{' '}
-                Reaction Time Test
+                Reaction Time
               </CardTitle>
-              <CardDescription>
-                Measure response speed to visual cues
-              </CardDescription>
+              <CardDescription>Avg across latest session</CardDescription>
             </CardHeader>
             <CardContent>
-              <ReactionTest
-                onComplete={(avg) => saveResult({ reactionAvgMs: avg })}
-              />
+              <div className="text-3xl font-bold">
+                {last?.reactionAvgMs ?? '—'}
+                <span className="text-muted-foreground ml-1 text-lg font-normal">
+                  ms
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Lower is better
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="ios-26-surface-elevated backdrop-blur-md border border-white/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-vitalsense-primary" /> Memory
-                Sequence Test
+                <Eye className="h-5 w-5 text-vitalsense-primary" /> Memory
+                Sequence
               </CardTitle>
-              <CardDescription>
-                Repeat the flashing sequence to progress levels
-              </CardDescription>
+              <CardDescription>Max level achieved</CardDescription>
             </CardHeader>
             <CardContent>
-              <MemorySequenceTest
-                onComplete={(level) => saveResult({ memoryMaxLevel: level })}
-              />
+              <div className="text-3xl font-bold">
+                {last?.memoryMaxLevel ?? '—'}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Higher is better
+              </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="trends">
-          <Card>
-            <CardHeader>
-              <CardTitle>Performance Trends</CardTitle>
-              <CardDescription>Recent cognitive scores</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {trendValues.length > 0 ? (
+        {/* Tabs */}
+        <Tabs defaultValue="assessments" className="w-full">
+          <TabsList>
+            <TabsTrigger value="assessments">Assessments</TabsTrigger>
+            <TabsTrigger value="trends">Trends</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="assessments" className="space-y-4">
+            <Card
+              id="reaction-test"
+              className="ios-26-surface-elevated backdrop-blur-md border border-white/10"
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MousePointerClick className="h-5 w-5 text-vitalsense-primary" />{' '}
+                  Reaction Time Test
+                </CardTitle>
+                <CardDescription>
+                  Measure response speed to visual cues
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ReactionTest
+                  onComplete={(avg) =>
+                    onAssessmentComplete({ reactionAvgMs: avg })
+                  }
+                />
+              </CardContent>
+            </Card>
+
+            <Card
+              id="memory-test"
+              className="ios-26-surface-elevated backdrop-blur-md border border-white/10"
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-vitalsense-primary" /> Memory
+                  Sequence Test
+                </CardTitle>
+                <CardDescription>
+                  Repeat the flashing sequence to progress levels
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <MemorySequenceTest
+                  onComplete={(level) =>
+                    onAssessmentComplete({ memoryMaxLevel: level })
+                  }
+                />
+              </CardContent>
+            </Card>
+
+            <Card
+              id="attention-test"
+              className="ios-26-surface-elevated backdrop-blur-md border border-white/10"
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <HIGIcon
+                    icon={IOSHIGIcons.health.activity}
+                    className="h-5 w-5 text-vitalsense-primary"
+                  />{' '}
+                  Attention Control Test
+                </CardTitle>
+                <CardDescription>
+                  Tap on GO stimuli, avoid tapping on NO-GO
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AttentionGoNoGoTest
+                  onComplete={(score) =>
+                    onAssessmentComplete({ attentionScore: score })
+                  }
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="trends">
+            <Card className="ios-26-surface-elevated backdrop-blur-md border border-white/10">
+              <CardHeader>
+                <CardTitle>Performance Trends</CardTitle>
+                <CardDescription>Recent cognitive scores</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {trendValues.length > 0 ? (
+                  <div className="flex items-center justify-between">
+                    <Sparkline values={trendValues} />
+                    <div className="text-sm">
+                      <div className="text-muted-foreground">
+                        Last {trendValues.length} assessments
+                      </div>
+                      <div>
+                        Avg:{' '}
+                        <span className="font-medium">
+                          {Math.round(
+                            trendValues.reduce((a, b) => a + b, 0) /
+                              trendValues.length
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-muted-foreground text-center">
+                    No trend data yet
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card className="ios-26-surface-elevated backdrop-blur-md border border-white/10">
+              <CardHeader>
+                <CardTitle>Assessment Settings</CardTitle>
+                <CardDescription>
+                  Configure reminders and sharing
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Sparkline values={trendValues} />
-                  <div className="text-sm">
-                    <div className="text-muted-foreground">
-                      Last {trendValues.length} assessments
-                    </div>
-                    <div>
-                      Avg:{' '}
-                      <span className="font-medium">
-                        {Math.round(
-                          trendValues.reduce((a, b) => a + b, 0) /
-                            trendValues.length
-                        )}
-                      </span>
+                  <div>
+                    <div className="font-medium">Weekly Frequency</div>
+                    <div className="text-muted-foreground text-sm">
+                      Assessments per week
                     </div>
                   </div>
+                  <IOS26ButtonGroup>
+                    <IOS26Button
+                      variant="secondary"
+                      size="small"
+                      onClick={() =>
+                        setSettings({
+                          ...(settings ?? {
+                            reminders: false,
+                            assessmentsPerWeek: 3,
+                            shareWithCaregivers: false,
+                          }),
+                          assessmentsPerWeek: Math.max(
+                            1,
+                            Math.min(7, (settings?.assessmentsPerWeek ?? 3) - 1)
+                          ),
+                        })
+                      }
+                    >
+                      −
+                    </IOS26Button>
+                    <div className="w-10 text-center">
+                      {settings?.assessmentsPerWeek ?? 3}
+                    </div>
+                    <IOS26Button
+                      variant="secondary"
+                      size="small"
+                      onClick={() =>
+                        setSettings({
+                          ...(settings ?? {
+                            reminders: false,
+                            assessmentsPerWeek: 3,
+                            shareWithCaregivers: false,
+                          }),
+                          assessmentsPerWeek: Math.max(
+                            1,
+                            Math.min(7, (settings?.assessmentsPerWeek ?? 3) + 1)
+                          ),
+                        })
+                      }
+                    >
+                      +
+                    </IOS26Button>
+                  </IOS26ButtonGroup>
                 </div>
-              ) : (
-                <div className="text-muted-foreground text-center">
-                  No trend data yet
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        <TabsContent value="settings">
-          <Card>
-            <CardHeader>
-              <CardTitle>Assessment Settings</CardTitle>
-              <CardDescription>Configure reminders and sharing</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">Weekly Frequency</div>
-                  <div className="text-muted-foreground text-sm">
-                    Assessments per week
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">Reminders</div>
+                    <div className="text-muted-foreground text-sm">
+                      Enable in-app reminders
+                    </div>
                   </div>
+                  <IOS26Button
+                    variant="tinted"
+                    onClick={() =>
+                      setSettings({
+                        ...(settings ?? {
+                          reminders: false,
+                          assessmentsPerWeek: 3,
+                          shareWithCaregivers: false,
+                        }),
+                        reminders: !settings?.reminders,
+                      })
+                    }
+                  >
+                    {settings?.reminders ? 'On' : 'Off'}
+                  </IOS26Button>
                 </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">Share with Caregivers</div>
+                    <div className="text-muted-foreground text-sm">
+                      Allow caregivers to view results
+                    </div>
+                  </div>
+                  <IOS26Button
+                    variant="tinted"
+                    onClick={() =>
+                      setSettings({
+                        ...(settings ?? {
+                          reminders: false,
+                          assessmentsPerWeek: 3,
+                          shareWithCaregivers: false,
+                        }),
+                        shareWithCaregivers: !settings?.shareWithCaregivers,
+                      })
+                    }
+                  >
+                    {settings?.shareWithCaregivers ? 'Enabled' : 'Disabled'}
+                  </IOS26Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+      {/* Floating FAB: Guided Session */}
+      <IOS26FAB
+        icon="zap"
+        label="Start Guided Session"
+        onClick={() => setGuidedOpen(true)}
+        position="bottom-right"
+      />
+
+      {/* Guided Session Dialog */}
+      <Dialog open={guidedOpen} onOpenChange={setGuidedOpen}>
+        <DialogContent className="ios-26-surface-elevated backdrop-blur-md border border-white/10">
+          <DialogHeader>
+            <DialogTitle className={getiOS26TypographyClass('title-2')}>
+              Start Guided Cognitive Session
+            </DialogTitle>
+            <DialogDescription className={getiOS26TypographyClass('callout')}>
+              Complete all three assessments in sequence. You can enable
+              Practice Mode to try without saving.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="ios-26-surface p-3 rounded-lg border border-white/10">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      setSettings({
-                        ...(settings ?? {
-                          reminders: false,
-                          assessmentsPerWeek: 3,
-                          shareWithCaregivers: false,
-                        }),
-                        assessmentsPerWeek: Math.max(
-                          1,
-                          Math.min(7, (settings?.assessmentsPerWeek ?? 3) - 1)
-                        ),
-                      })
-                    }
-                  >
-                    -
-                  </Button>
-                  <div className="w-10 text-center">
-                    {settings?.assessmentsPerWeek ?? 3}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      setSettings({
-                        ...(settings ?? {
-                          reminders: false,
-                          assessmentsPerWeek: 3,
-                          shareWithCaregivers: false,
-                        }),
-                        assessmentsPerWeek: Math.max(
-                          1,
-                          Math.min(7, (settings?.assessmentsPerWeek ?? 3) + 1)
-                        ),
-                      })
-                    }
-                  >
-                    +
-                  </Button>
+                  <HIGIcon icon={IOSHIGIcons.system.clock} />
+                  <span>1. Reaction Time</span>
                 </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">Reminders</div>
-                  <div className="text-muted-foreground text-sm">
-                    Enable in-app reminders
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    setSettings({
-                      ...(settings ?? {
-                        reminders: false,
-                        assessmentsPerWeek: 3,
-                        shareWithCaregivers: false,
-                      }),
-                      reminders: !settings?.reminders,
-                    })
-                  }
+                <IOS26Button
+                  onClick={() => scrollTo('reaction-test')}
+                  size="small"
                 >
-                  {settings?.reminders ? 'On' : 'Off'}
-                </Button>
+                  Go
+                </IOS26Button>
               </div>
-
+            </div>
+            <div className="ios-26-surface p-3 rounded-lg border border-white/10">
               <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">Share with Caregivers</div>
-                  <div className="text-muted-foreground text-sm">
-                    Allow caregivers to view results
-                  </div>
+                <div className="flex items-center gap-2">
+                  <HIGIcon icon={IOSHIGIcons.health.brain} />
+                  <span>2. Memory Sequence</span>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    setSettings({
-                      ...(settings ?? {
-                        reminders: false,
-                        assessmentsPerWeek: 3,
-                        shareWithCaregivers: false,
-                      }),
-                      shareWithCaregivers: !settings?.shareWithCaregivers,
-                    })
-                  }
+                <IOS26Button
+                  onClick={() => scrollTo('memory-test')}
+                  size="small"
                 >
-                  {settings?.shareWithCaregivers ? 'Enabled' : 'Disabled'}
-                </Button>
+                  Go
+                </IOS26Button>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+            </div>
+            <div className="ios-26-surface p-3 rounded-lg border border-white/10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <HIGIcon icon={IOSHIGIcons.health.activity} />
+                  <span>3. Attention Control</span>
+                </div>
+                <IOS26Button
+                  onClick={() => scrollTo('attention-test')}
+                  size="small"
+                >
+                  Go
+                </IOS26Button>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <IOS26Button
+              variant={practiceMode ? 'tinted' : 'secondary'}
+              onClick={() => setPracticeMode((v) => !v)}
+            >
+              {practiceMode ? 'Practice Mode: On' : 'Practice Mode: Off'}
+            </IOS26Button>
+            <IOS26Button onClick={() => setGuidedOpen(false)}>
+              Close
+            </IOS26Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Session Summary Dialog */}
+      <Dialog open={showSummary} onOpenChange={setShowSummary}>
+        <DialogContent className="ios-26-surface-elevated backdrop-blur-md border border-white/10">
+          <DialogHeader>
+            <DialogTitle className={getiOS26TypographyClass('title-2')}>
+              Session Summary
+            </DialogTitle>
+            <DialogDescription className={getiOS26TypographyClass('callout')}>
+              Review your latest results.{' '}
+              {practiceMode ? 'Practice results are not saved.' : ''}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="gap-3 md:grid-cols-3 grid grid-cols-1">
+            <div className="ios-26-surface p-3 rounded-lg border border-white/10">
+              <div className="text-xs text-muted-foreground">Reaction</div>
+              <div className="text-2xl font-semibold">
+                {summary?.reactionAvgMs != null ? (
+                  <>
+                    {summary.reactionAvgMs}
+                    <span className="text-muted-foreground ml-1 text-sm">
+                      ms
+                    </span>
+                  </>
+                ) : (
+                  '—'
+                )}
+              </div>
+            </div>
+            <div className="ios-26-surface p-3 rounded-lg border border-white/10">
+              <div className="text-xs text-muted-foreground">Memory</div>
+              <div className="text-2xl font-semibold">
+                {summary?.memoryMaxLevel ?? '—'}
+              </div>
+            </div>
+            <div className="ios-26-surface p-3 rounded-lg border border-white/10">
+              <div className="text-xs text-muted-foreground">Attention</div>
+              <div className="text-2xl font-semibold">
+                {summary?.attentionScore ?? '—'}
+              </div>
+            </div>
+          </div>
+
+          <div className="ios-26-surface p-3 rounded-lg border border-white/10">
+            <div className="text-xs text-muted-foreground">Composite</div>
+            <div className="text-2xl font-semibold">
+              {summary?.compositeScore ?? last?.compositeScore ?? '—'}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <IOS26Button onClick={() => setShowSummary(false)}>
+              Close
+            </IOS26Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

@@ -15,6 +15,10 @@ on:
 env:
   XCODE_VERSION: '16.4'
 
+concurrency:
+  group: ios-tests-simple-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: macos-15

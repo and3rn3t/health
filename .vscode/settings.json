@@ -217,5 +217,8 @@
     "**/dist/**": true,
     "**/dist-worker/**": true,
     "**/.wrangler/**": true
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers"
   }
 }
