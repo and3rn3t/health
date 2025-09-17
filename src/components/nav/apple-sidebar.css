@@ -1,0 +1,86 @@
+/* VitalSense Apple-style Sidebar (independent of legacy sidebar) */
+
+/* Reset list styles */
+[data-vs='apple-sidebar'] ul,
+[data-vs='apple-sidebar'] li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Opaque panel with subtle border/shadow like iPad sidebar */
+[data-vs='apple-sidebar-panel'] {
+  background: #ffffff;
+  color: #111827; /* gray-900 */
+}
+
+/* Map data attributes into CSS custom properties for widths */
+[data-vs='apple-sidebar'] {
+  --vs-sidebar-width: 272px;
+  --vs-sidebar-icon-width: 56px;
+}
+
+/* Note: Avoid attr() for now due to limited browser support; TSX uses classes to control widths. */
+
+/* Sticky header pattern */
+[data-vs='apple-sidebar-header'] {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #ffffffcc; /* slight translucency */
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  backdrop-filter: saturate(180%) blur(12px);
+}
+
+/* Independent scroll */
+[data-vs='apple-sidebar-inner'] {
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Thin scrollbars for main and sidebar */
+[data-vs='apple-sidebar-inner'],
+[data-vs='apple-sidebar-main'] {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #cbd5e1 transparent; /* slate-300 */
+}
+
+[data-vs='apple-sidebar-inner']::-webkit-scrollbar,
+[data-vs='apple-sidebar-main']::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-vs='apple-sidebar-inner']::-webkit-scrollbar-thumb,
+[data-vs='apple-sidebar-main']::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1; /* slate-300 */
+  border-radius: 8px;
+}
+
+[data-vs='apple-sidebar-inner']::-webkit-scrollbar-track,
+[data-vs='apple-sidebar-main']::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Main content area respects sticky header by being the scroll container */
+/* main scroll behavior is set by component classes in TSX */
+
+/* Reduce motion-friendly transitions */
+@media (prefers-reduced-motion: reduce) {
+  [data-vs='apple-sidebar-panel'] {
+    transition: none !important;
+  }
+}
+
+/* Item polish for normal look */
+[data-vs='apple-sidebar-item'] {
+  color: #374151; /* gray-700 */
+}
+[data-vs='apple-sidebar-item']:hover {
+  background-color: #f3f4f6; /* gray-100 */
+}
+[data-vs='apple-sidebar-item'][data-active='true'],
+[data-vs='apple-sidebar-item'].active {
+  background-color: rgba(37, 99, 235, 0.1); /* vs primary/10 */
+  color: #2563eb; /* vs primary */
+}

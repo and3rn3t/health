@@ -1,4 +1,5 @@
 import { AuthProvider } from '@/contexts/AuthProvider';
+import '@/polyfills/importMetaEnv';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -18,7 +19,7 @@ const queryClient = new QueryClient({
 });
 
 // Error boundary fallback component
-function ErrorFallback({ error }: { error?: Error | null }) {
+export function ErrorFallback({ error }: Readonly<{ error?: Error | null }>) {
   const isDev =
     typeof window !== 'undefined' && window.location.hostname === 'localhost';
 
@@ -58,7 +59,7 @@ function ErrorFallback({ error }: { error?: Error | null }) {
 }
 
 // Loading component
-function LoadingFallback() {
+export function LoadingFallback() {
   return (
     <div className="bg-gray-50 flex min-h-screen items-center justify-center">
       <div className="text-center">
@@ -70,7 +71,7 @@ function LoadingFallback() {
 }
 
 // App wrapper component that always includes AuthProvider for compatibility
-function AppWrapper() {
+export function AppWrapper() {
   // Always provide AuthProvider to prevent "useAuth must be used within an AuthProvider" errors
   // The useAuth hook itself handles the auth enabled/disabled logic
   return (

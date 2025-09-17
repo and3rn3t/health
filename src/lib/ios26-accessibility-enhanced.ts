@@ -16,7 +16,8 @@ export type AccessibilityRole =
   | 'progressbar'
   | 'tabpanel'
   | 'dialog'
-  | 'navigation';
+  | 'navigation'
+  | 'group';
 export type KeyboardNavigation =
   | 'none'
   | 'basic'

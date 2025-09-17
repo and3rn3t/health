@@ -6,7 +6,7 @@
  */
 
 import { cn } from '@/lib/utils';
-import { ChevronRight, Filter, Home, Search, X } from '@phosphor-icons/react';
+import { ChevronRight, Filter, Home, Search, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 // ===== TYPES =====
@@ -43,7 +43,7 @@ interface EnhancedBreadcrumbProps {
 
 // ===== FLOATING TAB BAR =====
 
-const iOS26FloatingTabBar: React.FC<FloatingTabBarProps> = ({
+const IOS26FloatingTabBar: React.FC<FloatingTabBarProps> = ({
   items,
   activeTab,
   onTabChange,
@@ -85,7 +85,7 @@ const iOS26FloatingTabBar: React.FC<FloatingTabBarProps> = ({
     <nav
       className={cn(
         'fixed z-50 mx-auto max-w-md',
-        'ios-26-surface-elevated rounded-2xl border border-white/10 p-2 shadow-2xl backdrop-blur-xl',
+        'ios-26-surface-elevated backdrop-blur-xl rounded-2xl border border-white/10 p-2 shadow-2xl',
         'transition-all duration-300 ease-out',
         transformClass,
         positionClasses[position],
@@ -104,7 +104,7 @@ const iOS26FloatingTabBar: React.FC<FloatingTabBarProps> = ({
               disabled={item.disabled}
               onClick={() => onTabChange(item.id)}
               className={cn(
-                'relative flex flex-1 flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs font-medium',
+                'px-3 text-xs relative flex flex-1 flex-col items-center gap-1 rounded-xl py-2 font-medium',
                 'transition-all duration-200 ease-out',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vitalsense-primary focus-visible:ring-offset-2',
                 'disabled:pointer-events-none disabled:opacity-50',
@@ -123,7 +123,7 @@ const iOS26FloatingTabBar: React.FC<FloatingTabBarProps> = ({
               <span className="truncate leading-none">{item.label}</span>
 
               {item.badge && (
-                <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-vitalsense-error text-[10px] font-bold text-white">
+                <div className="h-5 w-5 absolute -right-1 -top-1 flex items-center justify-center rounded-full bg-vitalsense-error text-[10px] font-bold text-white">
                   {item.badge > 99 ? '99+' : item.badge}
                 </div>
               )}
@@ -141,7 +141,7 @@ const iOS26FloatingTabBar: React.FC<FloatingTabBarProps> = ({
 
 // ===== ENHANCED BREADCRUMB =====
 
-const iOS26EnhancedBreadcrumb: React.FC<EnhancedBreadcrumbProps> = ({
+const IOS26EnhancedBreadcrumb: React.FC<EnhancedBreadcrumbProps> = ({
   items,
   onNavigate,
   showHome = true,
@@ -180,8 +180,8 @@ const iOS26EnhancedBreadcrumb: React.FC<EnhancedBreadcrumbProps> = ({
   return (
     <nav
       className={cn(
-        'ios-26-surface ios-label-secondary flex items-center space-x-1 rounded-lg px-3 py-2 text-sm',
-        'border border-white/5 backdrop-blur-sm',
+        'ios-26-surface ios-label-secondary px-3 flex items-center space-x-1 rounded-lg py-2 text-sm',
+        'backdrop-blur-sm border border-white/5',
         className
       )}
       onTouchStart={handleTouchStart}
@@ -238,7 +238,7 @@ const iOS26EnhancedBreadcrumb: React.FC<EnhancedBreadcrumbProps> = ({
       })}
 
       {showOverflow && (
-        <div className="ios-26-surface-elevated absolute right-0 top-full z-50 mt-1 min-w-48 rounded-lg border border-white/10 p-1 shadow-xl backdrop-blur-xl">
+        <div className="ios-26-surface-elevated min-w-48 backdrop-blur-xl absolute right-0 top-full z-50 mt-1 rounded-lg border border-white/10 p-1 shadow-xl">
           {items.slice(1, -2).map((item, index) => (
             <button
               key={`overflow-${item.id}-${index}`}
@@ -246,7 +246,7 @@ const iOS26EnhancedBreadcrumb: React.FC<EnhancedBreadcrumbProps> = ({
                 onNavigate(item);
                 setShowOverflow(false);
               }}
-              className="ios-label-secondary hover:ios-label-primary block w-full rounded px-3 py-2 text-left text-sm transition-colors hover:bg-white/5"
+              className="ios-label-secondary hover:ios-label-primary px-3 block w-full rounded py-2 text-left text-sm transition-colors hover:bg-white/5"
             >
               {item.label}
             </button>
@@ -262,7 +262,7 @@ const iOS26EnhancedBreadcrumb: React.FC<EnhancedBreadcrumbProps> = ({
 /**
  * iOS26AdvancedNavigation - Demo component showcasing Priority 3 features
  */
-const iOS26AdvancedNavigation: React.FC = () => {
+const IOS26AdvancedNavigation: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
 
   // Demo tab items
@@ -301,7 +301,7 @@ const iOS26AdvancedNavigation: React.FC = () => {
         <h3 className="ios-label-primary text-lg font-semibold">
           Enhanced Breadcrumb Navigation
         </h3>
-        <iOS26EnhancedBreadcrumb
+        <IOS26EnhancedBreadcrumb
           items={breadcrumbItems}
           onNavigate={handleBreadcrumbNavigate}
           showHome={true}
@@ -314,13 +314,13 @@ const iOS26AdvancedNavigation: React.FC = () => {
         <h3 className="ios-label-primary text-lg font-semibold">
           Floating Tab Bar (Preview)
         </h3>
-        <div className="ios-26-surface relative h-32 rounded-lg border border-white/10">
-          <iOS26FloatingTabBar
+        <div className="ios-26-surface h-32 relative rounded-lg border border-white/10">
+          <IOS26FloatingTabBar
             items={tabItems}
             activeTab={activeTab}
             onTabChange={setActiveTab}
             position="bottom"
-            className="relative mx-auto w-80"
+            className="w-80 relative mx-auto"
           />
         </div>
         <p className="ios-label-secondary text-xs">Active tab: {activeTab}</p>
@@ -344,9 +344,9 @@ const iOS26AdvancedNavigation: React.FC = () => {
 // ===== EXPORTS =====
 
 export {
-  iOS26AdvancedNavigation,
-  iOS26EnhancedBreadcrumb,
-  iOS26FloatingTabBar,
+  IOS26AdvancedNavigation,
+  IOS26EnhancedBreadcrumb,
+  IOS26FloatingTabBar,
 };
 
 export type {

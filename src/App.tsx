@@ -8,7 +8,19 @@ import NavigationHeader from '@/components/NavigationHeader';
 import { ErrorFallback } from '@/ErrorFallback';
 
 // Icons for navigation
+import {
+  AppleSidebarHeader,
+  AppleSidebarItem,
+  AppleSidebarList,
+  AppleSidebarMain,
+  AppleSidebarPanel,
+  AppleSidebarProvider,
+  AppleSidebarSection,
+  useAppleSidebar,
+} from '@/components/nav/AppleSidebar';
 import { Button } from '@/components/ui/button';
+import { useNavUsage } from '@/hooks/useNavUsage';
+import { useThemeMode } from '@/hooks/useThemeMode';
 import {
   Activity,
   AlertTriangle,
@@ -274,12 +286,27 @@ const navigationItems = [
   },
 ];
 
-// Main VitalSense App Component
-function App() {
-  console.log('🏠 App component rendering...');
-
+// Main VitalSense App Component (Inner content inside SidebarProvider)
+function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { themeMode, toggleThemeMode } = useThemeMode();
+  const {
+    toggle: toggleSidebar,
+    isMobile: _isMobile,
+    setOpen: _setOpen,
+    setOpenMobile: _setOpenMobile,
+  } = useAppleSidebar();
+  // Respect default sidebar behavior; do not force-open on mount.
+  const { recordUse, sortByUsage, hasAnyUsage } = useNavUsage();
+
+  const quickAccessIds = React.useMemo(() => {
+    if (!hasAnyUsage) return new Set<string>();
+    return new Set(
+      sortByUsage(navigationItems)
+        .slice(0, 4)
+        .map((i) => i.id)
+    );
+  }, [hasAnyUsage, sortByUsage]);
 
   // Navigation item organization
   const primaryTabs = useMemo(
@@ -297,175 +324,185 @@ function App() {
     [activeTab]
   );
 
-  // Toggle sidebar function with debug logging
-  const toggleSidebar = useCallback(() => {
-    console.log(
-      '🍔 App: Hamburger menu clicked - toggleSidebar function called!'
-    );
-    setSidebarOpen((prev) => {
-      const newState = !prev;
-      console.log('🔄 App: Sidebar state changing from', prev, 'to', newState);
-      return newState;
-    });
-  }, []);
-
   // Handle tab changes
-  const handleTabChange = useCallback((tabId: string) => {
-    setActiveTab(tabId);
-    setSidebarOpen(false); // Close sidebar on tab change
-  }, []);
+  const handleTabChange = useCallback(
+    (tabId: string) => {
+      setActiveTab(tabId);
+      // Sidebar component handles its own sheet/overlay state; no manual close needed
+      recordUse(tabId);
+    },
+    [recordUse]
+  );
 
   return (
     <div className="bg-gray-50 flex h-screen">
-      <ErrorBoundary
-        FallbackComponent={ErrorFallback}
-        onReset={() => window.location.reload()}
+      {/* Unified Sidebar (Apple HIG style) */}
+      <AppleSidebarPanel
+        id="app-sidebar"
+        side="left"
+        collapsible="offcanvas"
+        variant="inset"
+        withSpacer={true}
       >
-        {/* Sidebar */}
-        <div
-          className={`sidebar-bg-white w-64 fixed inset-y-0 left-0 z-50 flex flex-col shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
-        >
-          {/* Sidebar Header */}
-          <div className="border-gray-200 flex items-center justify-between border-b p-4">
-            <h2 className="text-lg font-semibold text-gray-900">
-              VitalSense Menu
-            </h2>
+        <AppleSidebarHeader>
+          <div className="h-12 px-3 flex items-center justify-between py-2">
+            <h2 className="text-sm font-semibold text-gray-900">VitalSense</h2>
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleSidebar}
-              className="hover:bg-gray-100"
+              className="md:hidden hover:bg-gray-100"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </Button>
           </div>
-
-          {/* Sidebar Content - Scrollable */}
-          <div className="flex-1 overflow-y-auto">
-            <nav className="space-y-2 p-4">
-              {/* All Navigation Items in Sidebar */}
-              {navigationItems.map((item) => {
+        </AppleSidebarHeader>
+        {/* Quick Access */}
+        {hasAnyUsage && (
+          <AppleSidebarSection>
+            <div className="text-xs px-2 pb-2 font-medium text-gray-500">
+              Quick Access
+            </div>
+            <AppleSidebarList>
+              {sortByUsage(navigationItems)
+                .slice(0, 4)
+                .map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <AppleSidebarItem
+                      key={`qa-${item.id}`}
+                      active={isActive}
+                      onClick={() => handleTabChange(item.id)}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                    </AppleSidebarItem>
+                  );
+                })}
+            </AppleSidebarList>
+          </AppleSidebarSection>
+        )}
+        {/* Primary */}
+        <AppleSidebarSection>
+          <div className="text-xs px-2 pb-2 font-medium text-gray-500">
+            Primary
+          </div>
+          <AppleSidebarList>
+            {primaryTabs
+              .filter((i) => !quickAccessIds.has(i.id))
+              .map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
-
                 return (
-                  <button
+                  <AppleSidebarItem
                     key={item.id}
+                    active={isActive}
                     onClick={() => handleTabChange(item.id)}
-                    className={`space-x-3 px-3 flex w-full items-center rounded-lg py-2 text-left transition-colors ${
-                      isActive
-                        ? 'bg-teal-50 text-teal-700 border-teal-500 border-l-4'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span className="text-sm font-medium">{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
-
-        {/* Mobile Overlay - only visible on mobile when sidebar is open */}
-        {sidebarOpen && (
-          <button
-            className="bg-opacity-50 fixed inset-0 z-40 bg-black lg:hidden"
-            onClick={toggleSidebar}
-            onKeyDown={(e) => e.key === 'Escape' && toggleSidebar()}
-            aria-label="Close sidebar"
-          />
-        )}
-
-        {/* Main Content Area */}
-        <div className="flex flex-1 flex-col">
-          {/* Header */}
-          <NavigationHeader
-            onSidebarToggle={toggleSidebar}
-            sidebarOpen={sidebarOpen}
-          />
-
-          {/* Tab Navigation */}
-          <div className="border-gray-200 border-b bg-white">
-            {/* Primary Tabs - Always visible */}
-            <div className="flex overflow-x-auto">
-              {primaryTabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleTabChange(tab.id)}
-                    className={`py-3 flex flex-shrink-0 items-center space-x-2 border-b-2 px-4 text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'border-teal-500 text-teal-600'
-                        : 'hover:text-gray-700 hover:border-gray-300 border-transparent text-gray-500'
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span className="hidden sm:inline">{tab.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Secondary Tabs - Hidden on mobile, shown on tablet+ */}
-            <div className="md:flex hidden border-t border-gray-100">
-              {secondaryTabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleTabChange(tab.id)}
-                    className={`px-3 text-xs flex items-center space-x-2 py-2 font-medium transition-colors ${
-                      isActive
-                        ? 'bg-gray-100 text-gray-900'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
                   >
                     <Icon className="h-4 w-4" />
-                    <span>{tab.label}</span>
-                  </button>
+                    {item.label}
+                  </AppleSidebarItem>
                 );
               })}
-            </div>
+          </AppleSidebarList>
+        </AppleSidebarSection>
+        {/* Secondary */}
+        <AppleSidebarSection>
+          <div className="text-xs px-2 pb-2 font-medium text-gray-500">
+            More
           </div>
-
-          {/* Main Content */}
-          <main className="flex-1 overflow-y-auto p-6">
-            <ErrorBoundary FallbackComponent={ErrorFallback}>
-              <Suspense
-                fallback={
-                  <div className="h-64 flex items-center justify-center">
-                    <div className="animate-spin border-teal-600 h-8 w-8 rounded-full border-b-2"></div>
-                    <span className="ml-3 text-gray-600">
-                      Loading VitalSense...
-                    </span>
-                  </div>
-                }
-              >
-                {activeComponent && React.createElement(activeComponent)}
-              </Suspense>
-            </ErrorBoundary>
-          </main>
-
-          <Footer onNavigate={handleTabChange} />
+          <AppleSidebarList>
+            {secondaryTabs
+              .filter((i) => !quickAccessIds.has(i.id))
+              .map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <AppleSidebarItem
+                    key={item.id}
+                    active={isActive}
+                    onClick={() => handleTabChange(item.id)}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </AppleSidebarItem>
+                );
+              })}
+          </AppleSidebarList>
+        </AppleSidebarSection>
+        {/* Tertiary */}
+        <AppleSidebarSection>
+          <div className="text-xs px-2 pb-2 font-medium text-gray-500">
+            Settings
+          </div>
+          <AppleSidebarList>
+            {navigationItems
+              .filter((i) => i.priority === 3 && !quickAccessIds.has(i.id))
+              .map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <AppleSidebarItem
+                    key={item.id}
+                    active={isActive}
+                    onClick={() => handleTabChange(item.id)}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </AppleSidebarItem>
+                );
+              })}
+          </AppleSidebarList>
+        </AppleSidebarSection>
+        <div className="py-1.5 text-xs mt-auto px-2 text-gray-500">
+          © {new Date().getFullYear()} VitalSense
         </div>
-      </ErrorBoundary>
+      </AppleSidebarPanel>
 
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <button
-          className="bg-opacity-50 fixed inset-0 z-40 h-full w-full border-0 bg-black p-0 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-          aria-label="Close sidebar"
+      {/* Main Content Area within SidebarInset (must be immediate sibling of the peer sidebar) */}
+      <AppleSidebarMain bumper="none" className="flex flex-1 flex-col">
+        <NavigationHeader
+          onSidebarToggle={toggleSidebar}
+          themeMode={themeMode}
+          onThemeToggle={toggleThemeMode}
+          onNavigate={handleTabChange}
         />
-      )}
+        <div className="border-gray-200 border-b bg-white" />
+        {/* Remove inner overflow to avoid double scroll; AppleSidebarMain is the scroll container */}
+        <ErrorBoundary
+          FallbackComponent={ErrorFallback}
+          onReset={() => window.location.reload()}
+        >
+          <main className="md:p-8 bg-gray-50 flex-1 p-6">
+            <Suspense
+              fallback={
+                <div className="h-64 flex items-center justify-center">
+                  <div className="animate-spin border-teal-600 h-8 w-8 rounded-full border-b-2"></div>
+                  <span className="ml-3 text-gray-600">
+                    Loading VitalSense...
+                  </span>
+                </div>
+              }
+            >
+              <div className="mx-auto max-w-7xl space-y-6">
+                {activeComponent && React.createElement(activeComponent)}
+              </div>
+            </Suspense>
+          </main>
+        </ErrorBoundary>
+        <Footer onNavigate={handleTabChange} />
+      </AppleSidebarMain>
+
+      {/* AppleSidebar handles mobile overlay internally */}
     </div>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AppleSidebarProvider defaultOpen={false}>
+      <AppContent />
+    </AppleSidebarProvider>
+  );
+}

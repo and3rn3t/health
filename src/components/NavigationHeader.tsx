@@ -5,6 +5,7 @@
 
 import EmergencyButton from '@/components/health/EmergencyButton';
 import { LiveConnectionStatus } from '@/components/live/LiveConnectionStatus';
+import { AppleSidebarTrigger } from '@/components/nav/AppleSidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -26,12 +27,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
+import { isDev } from '@/lib/env';
 import {
   Bell,
   Home,
   LogIn,
   LogOut,
-  Menu,
   Monitor,
   Moon,
   Search,
@@ -43,8 +44,8 @@ import {
 import { useState } from 'react';
 
 interface NavigationHeaderProps {
-  onSidebarToggle: () => void;
-  sidebarOpen: boolean;
+  // Optional for backwards compatibility with older tests using onToggleSidebar
+  onSidebarToggle?: () => void;
   currentPageInfo?: {
     label: string;
     category: string;
@@ -58,33 +59,27 @@ interface NavigationHeaderProps {
 }
 
 export default function NavigationHeader({
-  onSidebarToggle,
-  sidebarOpen,
+  onSidebarToggle: _onSidebarToggle,
   currentPageInfo = { label: 'Dashboard', category: 'Health' },
   themeMode = 'light',
   onThemeToggle = () => {},
   onNavigate = () => {},
-  sidebarCollapsed = false,
+  sidebarCollapsed: _sidebarCollapsed = false,
   healthScore = 85,
   hasAlerts = false,
-}: Readonly<NavigationHeaderProps>) {
+  ...rest
+}: Readonly<NavigationHeaderProps> & { onToggleSidebar?: () => void }) {
+  // Back-compat: support older prop name onToggleSidebar
+  const _unusedOnSidebarToggle =
+    _onSidebarToggle ??
+    (rest as { onToggleSidebar?: () => void })?.onToggleSidebar;
   const [searchQuery, setSearchQuery] = useState('');
   const { user, isAuthenticated, isLoading, login, logout } = useAuth();
 
-  if (process.env.NODE_ENV === 'development') {
+  if (isDev()) {
     console.log('🧭 NavigationHeader rendering...'); // Debug log
   }
 
-  const handleSidebarToggle = () => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🍔 NavigationHeader: Hamburger menu clicked!'); // Debug log
-      console.log(
-        '🔍 NavigationHeader: onSidebarToggle function:',
-        onSidebarToggle
-      ); // Debug log
-    }
-    onSidebarToggle();
-  };
   const initials = (name?: string) => {
     if (!name) return 'U';
     const parts = name.split(' ').filter(Boolean);
@@ -105,7 +100,7 @@ export default function NavigationHeader({
           return 'AI-powered fall prevention and gait analysis';
         case 'Insights':
           return 'Comprehensive health trends and analytics';
-        case 'AI Recommendations':
+        case 'Recommendations':
           return 'Personalized suggestions powered by machine learning';
         default:
           return 'Advanced health monitoring and analysis';
@@ -119,7 +114,6 @@ export default function NavigationHeader({
       Advanced: 'Advanced monitoring and integration capabilities',
       Gamification: 'Health challenges and motivational features',
       Community: 'Share progress with your care network',
-      Management: 'Data and contact management tools',
       Setup: 'Configuration and integration guides',
       Profile: 'Account settings and preferences',
     };
@@ -136,25 +130,20 @@ export default function NavigationHeader({
   };
 
   return (
-    <header className="border-gray-200 z-60 sticky top-0 mb-4 w-full border-b bg-white">
-      <div className="h-16 flex items-center justify-between px-4 lg:px-8">
+    <header className="border-gray-200 sticky top-0 z-40 mb-2 w-full border-b bg-white">
+      <div className="h-14 md:h-16 px-3 md:px-6 flex items-center justify-between">
         {/* Left Section - Sidebar Toggle & Page Info */}
-        <div className="flex min-w-0 flex-1 items-center gap-4">
+        <div className="md:gap-4 flex min-w-0 flex-1 items-center gap-2">
           {/* Sidebar Toggle - Always visible */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSidebarToggle}
+          <AppleSidebarTrigger
+            aria-controls="app-sidebar"
             className="shrink-0 hover:bg-gray-100"
-            aria-label="Toggle navigation sidebar"
-          >
-            <Menu className="h-4 w-4" />
-          </Button>
+          />
 
           {/* Page Info Container */}
           <div className="min-w-0 flex-1">
             {/* Breadcrumb Navigation - Desktop */}
-            <div className="md:flex md:flex-col md:gap-2 hidden">
+            <div className="md:flex md:flex-col md:gap-1 hidden">
               <Breadcrumb>
                 <BreadcrumbList className="text-sm">
                   <BreadcrumbItem>
@@ -278,20 +267,31 @@ export default function NavigationHeader({
           {/* Live Connection Status */}
           <LiveConnectionStatus />
 
+          {/* Theme Toggle - Visible on all breakpoints */}
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label="Toggle theme"
+            title={`Theme: ${themeMode}`}
+            onClick={onThemeToggle}
+          >
+            {themeMode === 'dark' && <Moon className="h-4 w-4" />}
+            {themeMode === 'light' && <Sun className="h-4 w-4" />}
+            {themeMode === 'system' && <Monitor className="h-4 w-4" />}
+          </Button>
+
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="relative">
                 {isAuthenticated && user ? (
                   <Avatar className="h-6 w-6">
-                    {user.picture && (
-                      <AvatarImage
-                        src={user.picture}
-                        alt={user.name || 'User'}
-                      />
-                    )}
+                    <AvatarImage
+                      src={user?.picture ?? undefined}
+                      alt={user?.name || 'User'}
+                    />
                     <AvatarFallback className="text-xs">
-                      {initials(user.name)}
+                      {initials(user?.name)}
                     </AvatarFallback>
                   </Avatar>
                 ) : (
@@ -305,11 +305,11 @@ export default function NavigationHeader({
                   {isAuthenticated && user ? (
                     <>
                       <p className="text-sm font-medium">
-                        {user.name || 'Signed in'}
+                        {user?.name || 'Signed in'}
                       </p>
-                      {user.email && (
+                      {user?.email && (
                         <p className="text-muted-foreground text-xs">
-                          {user.email}
+                          {user?.email}
                         </p>
                       )}
                     </>

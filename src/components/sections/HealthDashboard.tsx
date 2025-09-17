@@ -24,14 +24,14 @@ export default function HealthDashboard() {
       </div>
 
       {/* Health Metrics Grid */}
-      <div className="md:grid-cols-2 grid gap-6 lg:grid-cols-4">
+      <div className="md:grid-cols-2 gap-5 grid lg:grid-cols-4">
         {/* Health Score Card */}
-        <Card className="border-vitalsense-primary/20 bg-gradient-to-br from-vitalsense-primary/5 to-vitalsense-primary/10">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+        <Card className="border-gray-200 rounded-md border border-vitalsense-primary/20 bg-gradient-to-br from-vitalsense-primary/5 to-vitalsense-primary/10">
+          <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0 px-4">
             <CardTitle className="text-sm font-medium">Health Score</CardTitle>
             <Heart className="h-5 w-5 text-vitalsense-primary" />
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="px-4 pb-4 pt-0">
             <div className="mb-2 text-3xl font-bold text-vitalsense-primary">
               85
             </div>
@@ -40,12 +40,12 @@ export default function HealthDashboard() {
         </Card>
 
         {/* Activity Card */}
-        <Card className="border-vitalsense-secondary/20 bg-gradient-to-br from-vitalsense-secondary/5 to-vitalsense-secondary/10">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+        <Card className="border-gray-200 rounded-md border border-vitalsense-secondary/20 bg-gradient-to-br from-vitalsense-secondary/5 to-vitalsense-secondary/10">
+          <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0 px-4">
             <CardTitle className="text-sm font-medium">Activity</CardTitle>
             <Activity className="h-5 w-5 text-vitalsense-secondary" />
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="px-4 pb-4 pt-0">
             <div className="mb-2 text-3xl font-bold text-vitalsense-secondary">
               7,842
             </div>
@@ -54,12 +54,12 @@ export default function HealthDashboard() {
         </Card>
 
         {/* Brain Health Card */}
-        <Card className="from-vitalsense-accent/5 to-vitalsense-accent/10 border-vitalsense-accent/20 bg-gradient-to-br">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+        <Card className="border-gray-200 from-vitalsense-accent/5 to-vitalsense-accent/10 border-vitalsense-accent/20 rounded-md border bg-gradient-to-br">
+          <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0 px-4">
             <CardTitle className="text-sm font-medium">Brain Health</CardTitle>
             <Brain className="text-vitalsense-accent h-5 w-5" />
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="px-4 pb-4 pt-0">
             <div className="text-vitalsense-accent mb-2 text-3xl font-bold">
               Good
             </div>
@@ -68,12 +68,12 @@ export default function HealthDashboard() {
         </Card>
 
         {/* Goals Card */}
-        <Card className="border-vitalsense-success/20 bg-gradient-to-br from-vitalsense-success/5 to-vitalsense-success/10">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+        <Card className="border-gray-200 rounded-md border border-vitalsense-success/20 bg-gradient-to-br from-vitalsense-success/5 to-vitalsense-success/10">
+          <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0 px-4">
             <CardTitle className="text-sm font-medium">Goals</CardTitle>
             <Target className="h-5 w-5 text-vitalsense-success" />
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="px-4 pb-4 pt-0">
             <div className="mb-2 text-3xl font-bold text-vitalsense-success">
               3/5
             </div>
@@ -83,16 +83,16 @@ export default function HealthDashboard() {
       </div>
 
       {/* Main Dashboard Content */}
-      <div className="md:grid-cols-2 grid gap-8">
+      <div className="md:grid-cols-2 gap-7 grid">
         {/* Recent Activity */}
-        <Card className="border-gray-200">
-          <CardHeader className="pb-4">
+        <Card className="border-gray-200 rounded-md border">
+          <CardHeader className="py-3 pb-3 px-4">
             <CardTitle className="text-lg">Recent Activity</CardTitle>
             <CardDescription className="text-base">
               Your health data updates
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="px-4 pb-4 pt-0">
             <div className="space-y-6">
               <div className="flex items-center justify-between border-b border-gray-100 pb-4">
                 <span className="text-sm font-medium">Morning walk</span>
@@ -117,20 +117,20 @@ export default function HealthDashboard() {
         </Card>
 
         {/* Quick Actions */}
-        <Card>
-          <CardHeader>
+        <Card className="border-gray-200 rounded-md border">
+          <CardHeader className="py-3 pb-3 px-4">
             <CardTitle>Quick Actions</CardTitle>
             <CardDescription>Manage your health data</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 pb-4">
             <div className="space-y-3">
-              <button className="w-full rounded-lg bg-vitalsense-primary px-4 py-2 text-white hover:bg-vitalsense-primary/90">
+              <button className="px-3 w-full rounded-md bg-vitalsense-primary py-2 text-white hover:bg-vitalsense-primary/90">
                 Sync Health Data
               </button>
-              <button className="w-full rounded-lg bg-vitalsense-secondary px-4 py-2 text-white hover:bg-vitalsense-secondary/90">
+              <button className="px-3 w-full rounded-md bg-vitalsense-secondary py-2 text-white hover:bg-vitalsense-secondary/90">
                 View Trends
               </button>
-              <button className="border-vitalsense-border hover:bg-vitalsense-muted w-full rounded-lg border px-4 py-2">
+              <button className="border-vitalsense-border hover:bg-vitalsense-muted px-3 w-full rounded-md border py-2">
                 Export Data
               </button>
             </div>

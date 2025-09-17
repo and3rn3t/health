@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { IOS26Button } from '@/components/ui/ios26-button-system';
 import { EnhancedVitalSenseStatusCard } from '@/components/ui/ios26-enhanced-components';
 import { Progress } from '@/components/ui/progress';
 import { ProcessedHealthData } from '@/types';
@@ -21,7 +22,6 @@ import {
   AlertTriangle,
   BarChart3,
   Brain,
-  Clock,
   Heart,
   Shield,
   Smartphone,
@@ -334,15 +334,15 @@ export default function LandingPage({
                 Welcome to VitalSense! Get started by importing your Apple
                 Health data.
               </p>
-              <iOS26Button
+              <IOS26Button
                 variant="primary"
-                size="md"
-                icon={Smartphone}
+                size="medium"
+                icon="smartphone"
                 onClick={() => onNavigateToFeature('import')}
                 className="text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light bg-vitalsense-primary"
               >
                 Import Health Data
-              </iOS26Button>
+              </IOS26Button>
             </div>
           </AlertDescription>
         </Alert>
@@ -496,23 +496,23 @@ export default function LandingPage({
             </p>
           </div>
           <div className="flex gap-2">
-            <iOS26Button
-              variant="outline"
-              size="md"
-              icon={Smartphone}
+            <IOS26Button
+              variant="tinted"
+              size="medium"
+              icon="smartphone"
               onClick={() => onNavigateToFeature('healthkit-guide')}
             >
               Setup Guide
-            </iOS26Button>
-            <iOS26Button
+            </IOS26Button>
+            <IOS26Button
               variant="primary"
-              size="md"
-              icon={Clock}
+              size="medium"
+              icon="clock"
               onClick={() => onNavigateToFeature('system-status')}
               className="text-vitalsense-primary-contrast hover:bg-vitalsense-primary-light bg-vitalsense-primary"
             >
               System Status
-            </iOS26Button>
+            </IOS26Button>
           </div>
         </div>
       </div>

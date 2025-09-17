@@ -1,8 +1,5 @@
 /**
- * iOS 26 Navigation Header Component (Priority 2)
- *
- * Modern navigation patterns following iOS 26 HIG with enhanced accessibility,
- * Dynamic Type support, and adaptive layouts
+ * iOS 26 Navigation Header and Tab Navigation (clean rebuild)
  */
 
 import { HIGIcon, IOSHIGIcons } from '@/components/ui/ios-hig-icons';
@@ -19,14 +16,10 @@ export interface NavigationHeaderProps {
   subtitle?: string;
   backAction?: () => void;
   backLabel?: string;
-
-  // iOS 26 Navigation Features
   navigationStyle?: 'standard' | 'large' | 'compact';
   searchEnabled?: boolean;
   searchPlaceholder?: string;
   onSearchChange?: (query: string) => void;
-
-  // Actions
   primaryAction?: {
     icon: keyof typeof IOSHIGIcons.navigation;
     label: string;
@@ -37,17 +30,13 @@ export interface NavigationHeaderProps {
     label: string;
     onClick: () => void;
   }>;
-
-  // Accessibility
   accessibilityLevel?: 'standard' | 'enhanced' | 'maximum';
   announceNavigation?: boolean;
-
-  // Visual
   variant?: 'default' | 'prominent' | 'minimal';
   showDivider?: boolean;
 }
 
-export function iOS26NavigationHeader({
+export function IOS26NavigationHeader({
   title,
   subtitle,
   backAction,
@@ -64,28 +53,23 @@ export function iOS26NavigationHeader({
   showDivider = true,
 }: Readonly<NavigationHeaderProps>) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchFocused, setSearchFocused] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const headerRef = useRef<HTMLElement>(null);
 
-  // Accessibility enhancements
   const accessibilityProps = useAccessibilityEnhanced(accessibilityLevel, {
     role: 'navigation',
     keyboardNav: 'enhanced',
     announceChanges: announceNavigation,
   });
 
-  // Enhanced contrast support
   const contrastClasses = iOS26ContrastSupport.getContrastClasses(
     'ios-26-navigation-header'
   );
 
-  // Handle search changes
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
     onSearchChange?.(query);
-
     if (announceNavigation && query) {
       iOS26FocusManager.announceToScreenReader(
         `Searching for ${query}`,
@@ -94,21 +78,18 @@ export function iOS26NavigationHeader({
     }
   };
 
-  // Navigation style classes
   const getNavigationClasses = () => {
-    const baseClasses = `${contrastClasses} ios-26-nav-${navigationStyle}`;
-
+    const base = `${contrastClasses} ios-26-nav-${navigationStyle}`;
     switch (variant) {
       case 'prominent':
-        return `${baseClasses} ios-26-nav-prominent bg-vitalsense-primary text-white`;
+        return `${base} ios-26-nav-prominent bg-vitalsense-primary text-white`;
       case 'minimal':
-        return `${baseClasses} ios-26-nav-minimal bg-transparent`;
+        return `${base} ios-26-nav-minimal bg-transparent`;
       default:
-        return `${baseClasses} ios-26-nav-default bg-ios-system-background`;
+        return `${base} ios-26-nav-default bg-ios-system-background`;
     }
   };
 
-  // Typography classes based on navigation style
   const getTitleClasses = () => {
     switch (navigationStyle) {
       case 'large':
@@ -120,16 +101,12 @@ export function iOS26NavigationHeader({
     }
   };
 
-  const getSubtitleClasses = () => {
-    return getiOS26TypographyClass('subheadline');
-  };
+  const getSubtitleClasses = () => getiOS26TypographyClass('subheadline');
 
-  // Focus management
   useEffect(() => {
-    if (searchEnabled && searchRef.current) {
-      const cleanup = iOS26FocusManager.trapFocus(headerRef.current!);
-      return cleanup;
-    }
+    if (!searchEnabled || !searchRef.current) return;
+    const cleanup = iOS26FocusManager.trapFocus(headerRef.current!);
+    return cleanup;
   }, [searchEnabled]);
 
   return (
@@ -139,9 +116,7 @@ export function iOS26NavigationHeader({
       {...accessibilityProps}
       aria-label={`${title} navigation`}
     >
-      {/* Main Navigation Bar */}
-      <div className="flex items-center justify-between px-4 py-3">
-        {/* Leading Section - Back Button */}
+      <div className="py-3 flex items-center justify-between px-4">
         {backAction && (
           <button
             onClick={backAction}
@@ -160,7 +135,6 @@ export function iOS26NavigationHeader({
           </button>
         )}
 
-        {/* Center Section - Title */}
         <div className="mx-4 flex-1 text-center">
           <h1
             className={`${getTitleClasses()} text-ios-label-primary font-semibold`}
@@ -176,9 +150,7 @@ export function iOS26NavigationHeader({
           )}
         </div>
 
-        {/* Trailing Section - Actions */}
         <div className="flex items-center space-x-2">
-          {/* Primary Action */}
           {primaryAction && (
             <button
               onClick={primaryAction.onClick}
@@ -186,62 +158,55 @@ export function iOS26NavigationHeader({
               aria-label={primaryAction.label}
             >
               <HIGIcon
-                icon={primaryAction.icon}
+                icon={IOSHIGIcons.navigation[primaryAction.icon]}
                 className="ios-26-icon-adaptive"
               />
             </button>
           )}
 
-          {/* Secondary Actions */}
-          {secondaryActions.map((action, index) => (
+          {secondaryActions.map((action) => (
             <button
-              key={index}
+              key={`${action.icon}-${action.label}`}
               onClick={action.onClick}
               className="ios-26-button-secondary text-ios-label-primary hover:bg-ios-secondary-system-background focus:ring-ios-system-blue rounded-lg p-2 focus:outline-none focus:ring-2"
               aria-label={action.label}
             >
-              <HIGIcon icon={action.icon} className="ios-26-icon-adaptive" />
+              <HIGIcon
+                icon={IOSHIGIcons.system[action.icon]}
+                className="ios-26-icon-adaptive"
+              />
             </button>
           ))}
         </div>
       </div>
 
-      {/* Search Bar (if enabled) */}
       {searchEnabled && (
-        <div className="px-4 pb-3">
+        <div className="pb-3 px-4">
           <div className="relative">
             <input
               ref={searchRef}
               type="search"
               value={searchQuery}
               onChange={handleSearchChange}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
               placeholder={searchPlaceholder}
               className={`
-                w-full px-10 py-2
+                px-10 w-full py-2
                 ${getiOS26TypographyClass('body')}
                 bg-ios-tertiary-system-background
                 text-ios-label-primary
                 placeholder-ios-label-tertiary
                 border-ios-separator focus:ring-ios-system-blue
                 ios-26-search-field
-                rounded-lg
-                border
-                focus:border-transparent
-                focus:outline-none
-                focus:ring-2
+                rounded-lg border focus:border-transparent focus:outline-none focus:ring-2
               `}
               aria-label={`Search ${title.toLowerCase()}`}
             />
 
-            {/* Search Icon */}
             <HIGIcon
-              icon={IOSHIGIcons.navigation.search}
-              className="text-ios-label-secondary ios-26-icon-adaptive absolute left-3 top-1/2 -translate-y-1/2 transform"
+              icon={IOSHIGIcons.navigation.home}
+              className="text-ios-label-secondary ios-26-icon-adaptive left-3 absolute top-1/2 -translate-y-1/2 transform"
             />
 
-            {/* Clear Button */}
             {searchQuery && (
               <button
                 onClick={() => {
@@ -249,11 +214,11 @@ export function iOS26NavigationHeader({
                   onSearchChange?.('');
                   searchRef.current?.focus();
                 }}
-                className="hover:bg-ios-quaternary-system-background focus:ring-ios-system-blue absolute right-3 top-1/2 -translate-y-1/2 transform rounded-full p-1 focus:outline-none focus:ring-1"
+                className="hover:bg-ios-quaternary-system-background focus:ring-ios-system-blue right-3 absolute top-1/2 -translate-y-1/2 transform rounded-full p-1 focus:outline-none focus:ring-1"
                 aria-label="Clear search"
               >
                 <HIGIcon
-                  icon={IOSHIGIcons.system.close}
+                  icon={IOSHIGIcons.status.warning}
                   className="text-ios-label-secondary ios-26-icon-adaptive h-4 w-4"
                 />
               </button>
@@ -262,16 +227,12 @@ export function iOS26NavigationHeader({
         </div>
       )}
 
-      {/* Divider */}
       {showDivider && <div className="border-ios-separator border-b" />}
     </header>
   );
 }
 
-/**
- * iOS 26 Tab Navigation Component
- */
-export interface iOS26TabNavigationProps {
+export interface IOSTabNavigationProps {
   tabs: Array<{
     id: string;
     label: string;
@@ -285,13 +246,13 @@ export interface iOS26TabNavigationProps {
   variant?: 'pills' | 'underline' | 'segmented';
 }
 
-export function iOS26TabNavigation({
+export function IOSTabNavigation({
   tabs,
   activeTab,
   onTabChange,
   accessibilityLevel = 'enhanced',
   variant = 'underline',
-}: Readonly<iOS26TabNavigationProps>) {
+}: Readonly<IOSTabNavigationProps>) {
   const accessibilityProps = useAccessibilityEnhanced(accessibilityLevel, {
     role: 'navigation',
     keyboardNav: 'roving-tabindex',
@@ -308,63 +269,95 @@ export function iOS26TabNavigation({
     }
   };
 
+  const getVariantActiveClass = () => {
+    switch (variant) {
+      case 'pills':
+        return 'bg-ios-system-blue rounded-lg text-white';
+      case 'segmented':
+        return 'bg-ios-system-background text-ios-label-primary rounded-md shadow-sm';
+      default:
+        return 'text-ios-system-blue border-ios-system-blue border-b-2';
+    }
+  };
+
+  const getVariantInactiveClass = () => {
+    return 'text-ios-label-secondary hover:text-ios-label-primary';
+  };
+
   return (
     <nav
       className={`${getVariantClasses()} ios-26-tab-navigation`}
       {...accessibilityProps}
       aria-label="Content navigation"
     >
-      <div className="flex">
-        {tabs.map((tab, index) => {
+      <div
+        className="flex flex-nowrap gap-2 overflow-x-auto overflow-y-hidden"
+        role="tablist"
+        aria-orientation="horizontal"
+      >
+        {tabs.map((tab) => {
           const isActive = tab.id === activeTab;
           const isDisabled = tab.disabled;
+
+          const baseClasses = `py-3 inline-flex !w-fit basis-auto min-w-fit max-w-none shrink-0 items-center justify-center space-x-2 whitespace-nowrap px-4 overflow-visible h-auto ${getiOS26TypographyClass('callout')} transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-inset ${isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`;
+          const stateClasses = isActive
+            ? getVariantActiveClass()
+            : getVariantInactiveClass();
+
+          if (isActive) {
+            return (
+              <button
+                key={tab.id}
+                onClick={() => !isDisabled && onTabChange(tab.id)}
+                disabled={isDisabled}
+                className={`${baseClasses} ${stateClasses}`}
+                role="tab"
+                aria-selected="true"
+                aria-controls={`tabpanel-${tab.id}`}
+                id={`tab-${tab.id}`}
+                tabIndex={0}
+              >
+                {tab.icon && (
+                  <HIGIcon
+                    icon={IOSHIGIcons.navigation[tab.icon]}
+                    className="ios-26-icon-adaptive h-5 w-5"
+                  />
+                )}
+                <span className="inline-block">{tab.label}</span>
+                {tab.badge && tab.badge > 0 && (
+                  <span
+                    className="bg-ios-system-red py-0.5 text-xs ml-1 rounded-full px-2 font-medium text-white"
+                    aria-label={`${tab.badge} notifications`}
+                  >
+                    {tab.badge > 99 ? '99+' : tab.badge}
+                  </span>
+                )}
+              </button>
+            );
+          }
 
           return (
             <button
               key={tab.id}
               onClick={() => !isDisabled && onTabChange(tab.id)}
               disabled={isDisabled}
-              className={`
-                flex flex-1 items-center justify-center space-x-2 px-4 py-3
-                ${getiOS26TypographyClass('callout')}
-                focus:ring-ios-system-blue transition-all duration-200
-                ease-out focus:outline-none focus:ring-2 focus:ring-inset
-                ${
-                  isActive
-                    ? 'text-ios-system-blue border-ios-system-blue border-b-2'
-                    : 'text-ios-label-secondary hover:text-ios-label-primary'
-                }
-                ${
-                  isDisabled
-                    ? 'cursor-not-allowed opacity-50'
-                    : 'cursor-pointer'
-                }
-                ${
-                  variant === 'pills' && isActive
-                    ? 'bg-ios-system-blue rounded-lg text-white'
-                    : ''
-                }
-                ${
-                  variant === 'segmented' && isActive
-                    ? 'bg-ios-system-background text-ios-label-primary rounded-md shadow-sm'
-                    : ''
-                }
-              `}
+              className={`${baseClasses} ${stateClasses}`}
               role="tab"
-              aria-selected={isActive}
+              aria-selected="false"
               aria-controls={`tabpanel-${tab.id}`}
-              tabIndex={isActive ? 0 : -1}
+              id={`tab-${tab.id}`}
+              tabIndex={-1}
             >
               {tab.icon && (
                 <HIGIcon
-                  icon={tab.icon}
+                  icon={IOSHIGIcons.navigation[tab.icon]}
                   className="ios-26-icon-adaptive h-5 w-5"
                 />
               )}
-              <span>{tab.label}</span>
+              <span className="inline-block">{tab.label}</span>
               {tab.badge && tab.badge > 0 && (
                 <span
-                  className="bg-ios-system-red ml-1 rounded-full px-2 py-0.5 text-xs font-medium text-white"
+                  className="bg-ios-system-red py-0.5 text-xs ml-1 rounded-full px-2 font-medium text-white"
                   aria-label={`${tab.badge} notifications`}
                 >
                   {tab.badge > 99 ? '99+' : tab.badge}
