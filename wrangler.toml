@@ -82,6 +82,6 @@ tag = "v1"
 new_sqlite_classes = ["HealthWebSocket"]
 
 # Production routes - using zone_name
-# [[env.production.routes]]
-# pattern = "health.andernet.dev/*"
-# zone_name = "andernet.dev"
+[[env.production.routes]]
+pattern = "health.andernet.dev/*"
+zone_name = "andernet.dev"
