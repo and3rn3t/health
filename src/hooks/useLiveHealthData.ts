@@ -8,6 +8,14 @@ export interface LiveHealthMetric {
     | 'heart_rate'
     | 'walking_steadiness'
     | 'step_count'
+    | 'gait_speed'
+    | 'cadence'
+    | 'stride_length'
+    | 'step_asymmetry'
+    | 'double_support_time'
+    | 'posture_angle'
+    | 'stability_index'
+    | 'sway_balance'
     | 'fall_detected';
   value: number;
   unit: string;

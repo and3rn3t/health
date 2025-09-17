@@ -20,6 +20,15 @@ export const healthMetricTypeSchema = z.enum([
   'heart_rate',
   'walking_steadiness',
   'steps',
+  // Gait, posture, and stability-focused metrics
+  'gait_speed', // meters/second
+  'cadence', // steps/min
+  'stride_length', // meters
+  'step_asymmetry', // percent 0-100
+  'double_support_time', // percent 0-100
+  'posture_angle', // degrees forward lean (+ forward)
+  'stability_index', // 0-100 composite stability score
+  'sway_balance', // sway index or cm
   'oxygen_saturation',
   'sleep_hours',
   'body_weight',

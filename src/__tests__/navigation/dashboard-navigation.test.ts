@@ -89,9 +89,9 @@ describe('VitalSense Navigation System', () => {
 
         // Icons should be meaningful for health app
         const healthAppropriateIcons = [
+          // Common health app icons
           'heart',
           'activity',
-          'shield',
           'users',
           'trending-up',
           'bell',
@@ -101,8 +101,13 @@ describe('VitalSense Navigation System', () => {
           'bar-chart',
           'pie-chart',
           'line-chart',
-          'alertTriangle',
           'smartphone',
+          // Variants used in this project
+          'shield-check',
+          'alert-triangle',
+          // Legacy/synonyms still acceptable
+          'shield',
+          'alertTriangle',
         ];
 
         expect(healthAppropriateIcons.includes(page.icon)).toBe(true);

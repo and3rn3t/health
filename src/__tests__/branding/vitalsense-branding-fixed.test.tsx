@@ -4,8 +4,30 @@ import { describe, expect, it } from 'vitest';
 
 // Import VitalSense components and utilities
 import Footer from '../../components/Footer';
+import { AppleSidebarProvider } from '../../components/nav/AppleSidebar';
 import NavigationHeader from '../../components/NavigationHeader';
+import { AuthContext } from '../../contexts/AuthProvider';
+import type { AuthContextType } from '../../lib/authTypes';
 import { VitalSenseColors } from '../../lib/vitalsense-colors';
+
+function withAuth(ui: React.ReactElement) {
+  const mockAuth: AuthContextType = {
+    user: { id: 'test-user', email: 'test@vitalsense.com', name: 'Test' },
+    isAuthenticated: true,
+    isLoading: false,
+    login: async () => {},
+    logout: async () => {},
+    hasRole: () => true,
+    hasPermission: () => true,
+    hasAnyPermission: () => true,
+    refreshSession: async () => {},
+    validateSession: async () => true,
+    getAccessToken: async () => 'token',
+    getIdToken: async () => 'id-token',
+    logHealthDataAccess: () => {},
+  };
+  return <AuthContext.Provider value={mockAuth}>{ui}</AuthContext.Provider>;
+}
 
 // Mock props for components
 const mockNavigationProps = {
@@ -49,7 +71,13 @@ describe('VitalSense Branding Compliance', () => {
 
   describe('Brand Text Consistency', () => {
     it('should display VitalSense in navigation header', () => {
-      render(<NavigationHeader {...mockNavigationProps} />);
+      render(
+        withAuth(
+          <AppleSidebarProvider>
+            <NavigationHeader {...mockNavigationProps} />
+          </AppleSidebarProvider>
+        )
+      );
 
       // Check for VitalSense branding in header
       const brandElements = screen.getAllByText(/VitalSense/i);
@@ -101,7 +129,13 @@ describe('VitalSense Branding Compliance', () => {
 
 describe('VitalSense Brand Assets', () => {
   it('should maintain VitalSense branding in navigation', () => {
-    render(<NavigationHeader {...mockNavigationProps} />);
+    render(
+      withAuth(
+        <AppleSidebarProvider>
+          <NavigationHeader {...mockNavigationProps} />
+        </AppleSidebarProvider>
+      )
+    );
 
     const brandText = screen.getByText(/VitalSense/i);
     expect(brandText).toBeVisible();

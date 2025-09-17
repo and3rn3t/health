@@ -33,12 +33,62 @@ const generateHealthData = () => {
       unit: 'percent',
       timestamp: new Date().toISOString(),
     },
+    // Gait metrics
+    {
+      type: 'gait_speed',
+      value: +(0.6 + Math.random() * 0.8).toFixed(2), // 0.6-1.4 m/s
+      unit: 'm/s',
+      timestamp: new Date().toISOString(),
+    },
+    {
+      type: 'cadence',
+      value: Math.round(80 + Math.random() * 70), // 80-150 spm
+      unit: 'steps/min',
+      timestamp: new Date().toISOString(),
+    },
+    {
+      type: 'stride_length',
+      value: +(0.5 + Math.random() * 0.7).toFixed(2), // 0.5-1.2 m
+      unit: 'm',
+      timestamp: new Date().toISOString(),
+    },
+    {
+      type: 'step_asymmetry',
+      value: +(Math.random() * 10).toFixed(1), // 0-10%
+      unit: 'percent',
+      timestamp: new Date().toISOString(),
+    },
+    {
+      type: 'double_support_time',
+      value: +(20 + Math.random() * 20).toFixed(1), // 20-40%
+      unit: 'percent',
+      timestamp: new Date().toISOString(),
+    },
+    // Posture/Stability
+    {
+      type: 'posture_angle',
+      value: +(-5 + Math.random() * 15).toFixed(1), // -5 to +10 degrees
+      unit: 'deg',
+      timestamp: new Date().toISOString(),
+    },
+    {
+      type: 'stability_index',
+      value: Math.round(50 + Math.random() * 50), // 50-100
+      unit: 'score',
+      timestamp: new Date().toISOString(),
+    },
+    {
+      type: 'sway_balance',
+      value: +(0.5 + Math.random() * 2).toFixed(2), // 0.5-2.5 sway index/cm
+      unit: 'cm',
+      timestamp: new Date().toISOString(),
+    },
   ];
 
   return {
     type: 'live_health_update',
     data: {
-      metrics: metrics.slice(0, Math.ceil(Math.random() * 3)), // Send 1-3 metrics
+      metrics: metrics.slice(0, Math.ceil(Math.random() * 5)), // Send 1-5 metrics to include gait/posture samples
       deviceId: `device-${Math.floor(Math.random() * 3) + 1}`,
       userId: 'demo-user',
     },

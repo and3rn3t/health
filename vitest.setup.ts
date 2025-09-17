@@ -1,22 +1,31 @@
 // Vitest setup for ESBuild + React testing
 import '@testing-library/jest-dom';
+import { webcrypto as cryptoWeb } from 'crypto';
 import { vi } from 'vitest';
 
 // Mock WebSocket for testing
-global.WebSocket = class MockWebSocket {
+class MockWebSocket {
   url: string;
-  readyState: number;
+  readyState: number = 1; // OPEN
+  onopen: ((ev: Event) => void) | null = null;
+  onmessage: ((ev: MessageEvent) => void) | null = null;
+  onclose: ((ev: Event) => void) | null = null;
+  onerror: ((ev: Event) => void) | null = null;
+
+  // No-op stubs for tests
+  send: (data?: unknown) => void = vi.fn();
+  close: (code?: number, reason?: string) => void = vi.fn();
+  addEventListener: (..._args: unknown[]) => void = vi.fn();
+  removeEventListener: (..._args: unknown[]) => void = vi.fn();
 
   constructor(url: string) {
     this.url = url;
-    this.readyState = 1; // OPEN
   }
+}
 
-  send() {}
-  close() {}
-  addEventListener() {}
-  removeEventListener() {}
-} as any;
+// Mock global WebSocket
+(globalThis as unknown as Record<string, unknown>).WebSocket =
+  MockWebSocket as unknown;
 
 // Mock window.location for tests that need it
 Object.defineProperty(window, 'location', {
@@ -27,6 +36,23 @@ Object.defineProperty(window, 'location', {
   },
   writable: true,
 });
+
+// Mock matchMedia for components that use responsive hooks
+// Some jsdom versions expose matchMedia as undefined; normalize to a stub function
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+if (typeof (window as any).matchMedia !== 'function') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).matchMedia = (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {}, // deprecated
+    removeListener: () => {}, // deprecated
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  });
+}
 
 // Mock useAuth hook globally
 vi.mock('../src/hooks/useAuth', () => ({
@@ -43,7 +69,7 @@ vi.mock('../src/hooks/useAuth', () => ({
     getAccessToken: vi.fn().mockResolvedValue('mock-token'),
   }),
 }));
-if (!global.crypto) {
-  const { webcrypto } = require('crypto');
-  global.crypto = webcrypto as any;
+if (!('crypto' in globalThis)) {
+  (globalThis as unknown as Record<string, unknown>).crypto =
+    cryptoWeb as unknown;
 }

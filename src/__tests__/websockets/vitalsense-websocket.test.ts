@@ -111,13 +111,12 @@ describe('VitalSense WebSocket System', () => {
       expect(result.success).toBe(false);
     });
 
-    it('should reject messages without required fields', () => {
-      const incompleteMessage = {
-        type: 'live_health_update',
-        // Missing data and timestamp
-      };
+    it('should reject messages with invalid type enum', () => {
+      const badMessage = {
+        type: 'not_allowed',
+      } as any;
 
-      const result = messageEnvelopeSchema.safeParse(incompleteMessage);
+      const result = messageEnvelopeSchema.safeParse(badMessage);
       expect(result.success).toBe(false);
     });
   });

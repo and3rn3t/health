@@ -1,5 +1,7 @@
+import { MobilityScoreCard } from '@/components/health/MobilityScoreCard';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -10,6 +12,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useLiveInsights } from '@/hooks/useLiveInsights';
 import {
   ConnectionStatus,
   getLiveHealthDataSync,
@@ -32,7 +35,7 @@ import {
   WifiOff,
   Zap,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface LiveDataStats {
   totalMetricsReceived: number;
@@ -145,6 +148,14 @@ export default function LiveHealthDataIntegration() {
       dataQualityScore: Math.min(100, prev.dataQualityScore + 0.1),
     }));
   }, []);
+  // Compute insights from live metrics (with persisted config inside)
+  const { insights, composite } = useLiveInsights(liveMetrics);
+
+  const insightTone = (level: 'info' | 'warning' | 'critical') => {
+    if (level === 'critical') return 'border-red-300 bg-red-50';
+    if (level === 'warning') return 'border-amber-300 bg-amber-50';
+    return 'border-blue-200 bg-blue-50';
+  };
 
   // Poll connection status periodically
   useEffect(() => {
@@ -191,6 +202,14 @@ export default function LiveHealthDataIntegration() {
             'heart_rate',
             'steps',
             'walking_steadiness',
+            'gait_speed',
+            'cadence',
+            'stride_length',
+            'step_asymmetry',
+            'double_support_time',
+            'posture_angle',
+            'stability_index',
+            'sway_balance',
             'activity',
             'sleep',
           ],
@@ -239,15 +258,31 @@ export default function LiveHealthDataIntegration() {
   const getMetricIcon = (type: string) => {
     switch (type) {
       case 'heart_rate':
-        return <Heart className="h-4 w-4 text-red-500" />;
+        return <Heart className="text-red-500 h-4 w-4" />;
       case 'steps':
-        return <Activity className="h-4 w-4 text-blue-500" />;
+        return <Activity className="text-blue-500 h-4 w-4" />;
       case 'walking_steadiness':
-        return <Radio className="h-4 w-4 text-green-500" />;
+        return <Radio className="text-green-500 h-4 w-4" />;
+      case 'gait_speed':
+        return <Activity className="text-emerald-500 h-4 w-4" />;
+      case 'cadence':
+        return <Activity className="text-cyan-500 h-4 w-4" />;
+      case 'stride_length':
+        return <Activity className="text-teal-500 h-4 w-4" />;
+      case 'step_asymmetry':
+        return <AlertTriangle className="text-amber-500 h-4 w-4" />;
+      case 'double_support_time':
+        return <Clock className="text-indigo-500 h-4 w-4" />;
+      case 'posture_angle':
+        return <Monitor className="text-fuchsia-500 h-4 w-4" />;
+      case 'stability_index':
+        return <CheckCircle className="text-lime-600 h-4 w-4" />;
+      case 'sway_balance':
+        return <Radio className="text-rose-500 h-4 w-4" />;
       case 'activity':
-        return <Zap className="h-4 w-4 text-yellow-500" />;
+        return <Zap className="text-yellow-500 h-4 w-4" />;
       case 'sleep':
-        return <Clock className="h-4 w-4 text-purple-500" />;
+        return <Clock className="text-purple-500 h-4 w-4" />;
       default:
         return <Monitor className="h-4 w-4 text-gray-500" />;
     }
@@ -266,12 +301,26 @@ export default function LiveHealthDataIntegration() {
     }
   };
 
+  // Helpers to extract latest metric by type
+  const getLatestByType = useCallback(
+    (type: string) => liveMetrics.find((m) => m.metricType === type),
+    [liveMetrics]
+  );
+
+  const formatValue = (m?: LiveHealthMetric) => {
+    if (!m) return '—';
+    const v = typeof m.value === 'number' ? m.value : Number(m.value);
+    const rounded = Number.isFinite(v) ? v.toFixed(2) : String(m.value);
+    const unitSuffix = m.unit ? ' ' + m.unit : '';
+    return rounded + unitSuffix;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
+          <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
             <CloudUpload className="h-6 w-6" />
             Live Apple Health Integration
           </h2>
@@ -279,7 +328,7 @@ export default function LiveHealthDataIntegration() {
             Real-time health data streaming with WebSocket connections
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="gap-3 flex items-center">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Live Data</span>
             <Switch
@@ -303,7 +352,7 @@ export default function LiveHealthDataIntegration() {
       )}
 
       {/* Main Stats */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="md:grid-cols-4 grid grid-cols-1 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -387,6 +436,152 @@ export default function LiveHealthDataIntegration() {
         </TabsList>
 
         <TabsContent value="live-data" className="space-y-6">
+          {/* Composite Mobility / Fall Risk */}
+          <MobilityScoreCard
+            mobilityScore={composite.mobilityScore}
+            riskPercent={composite.risk * 100}
+            topFactors={Object.entries(composite.components)
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 3)
+              .map(([k, v]) => ({
+                label: k.replace(/_/g, ' '),
+                percent: v * 100,
+              }))}
+          />
+          {/* AI/ML Insights */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Live Insights</CardTitle>
+              <CardDescription>
+                Quick, on-device assessments from gait, posture, and stability
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {insights.length === 0 ? (
+                <div className="text-muted-foreground text-sm">
+                  No insights yet. Start moving to generate insights from your
+                  gait and balance.
+                </div>
+              ) : (
+                <div className="gap-3 md:grid-cols-2 grid grid-cols-1">
+                  {insights.map((ins) => (
+                    <div
+                      key={ins.id}
+                      className={`p-3 rounded-lg border ${insightTone(ins.level)}`}
+                    >
+                      <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">
+                        {ins.metricType.replace(/_/g, ' ')} • {ins.level}
+                      </div>
+                      <div className="font-semibold">{ins.title}</div>
+                      <div className="text-muted-foreground text-sm">
+                        {ins.message}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          {/* Gait, Posture & Stability Overview */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Gait, Posture & Stability</CardTitle>
+              <CardDescription>
+                Real-time indicators that influence fall risk and mobility
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="md:grid-cols-3 grid grid-cols-1 gap-4 lg:grid-cols-4">
+                <div className="bg-muted p-3 rounded-lg">
+                  <div className="mb-2 flex items-center gap-2">
+                    {getMetricIcon('gait_speed')}
+                    <span className="text-sm font-medium">Gait Speed</span>
+                  </div>
+                  <div className="text-xl font-bold">
+                    {formatValue(getLatestByType('gait_speed'))}
+                  </div>
+                  <div className="text-muted-foreground text-xs">m/s</div>
+                </div>
+
+                <div className="bg-muted p-3 rounded-lg">
+                  <div className="mb-2 flex items-center gap-2">
+                    {getMetricIcon('cadence')}
+                    <span className="text-sm font-medium">Cadence</span>
+                  </div>
+                  <div className="text-xl font-bold">
+                    {formatValue(getLatestByType('cadence'))}
+                  </div>
+                  <div className="text-muted-foreground text-xs">steps/min</div>
+                </div>
+
+                <div className="bg-muted p-3 rounded-lg">
+                  <div className="mb-2 flex items-center gap-2">
+                    {getMetricIcon('stride_length')}
+                    <span className="text-sm font-medium">Stride Length</span>
+                  </div>
+                  <div className="text-xl font-bold">
+                    {formatValue(getLatestByType('stride_length'))}
+                  </div>
+                  <div className="text-muted-foreground text-xs">meters</div>
+                </div>
+
+                <div className="bg-muted p-3 rounded-lg">
+                  <div className="mb-2 flex items-center gap-2">
+                    {getMetricIcon('step_asymmetry')}
+                    <span className="text-sm font-medium">Step Asymmetry</span>
+                  </div>
+                  <div className="text-xl font-bold">
+                    {formatValue(getLatestByType('step_asymmetry'))}
+                  </div>
+                  <div className="text-muted-foreground text-xs">percent</div>
+                </div>
+
+                <div className="bg-muted p-3 rounded-lg">
+                  <div className="mb-2 flex items-center gap-2">
+                    {getMetricIcon('double_support_time')}
+                    <span className="text-sm font-medium">Double Support</span>
+                  </div>
+                  <div className="text-xl font-bold">
+                    {formatValue(getLatestByType('double_support_time'))}
+                  </div>
+                  <div className="text-muted-foreground text-xs">percent</div>
+                </div>
+
+                <div className="bg-muted p-3 rounded-lg">
+                  <div className="mb-2 flex items-center gap-2">
+                    {getMetricIcon('posture_angle')}
+                    <span className="text-sm font-medium">Posture Angle</span>
+                  </div>
+                  <div className="text-xl font-bold">
+                    {formatValue(getLatestByType('posture_angle'))}
+                  </div>
+                  <div className="text-muted-foreground text-xs">degrees</div>
+                </div>
+
+                <div className="bg-muted p-3 rounded-lg">
+                  <div className="mb-2 flex items-center gap-2">
+                    {getMetricIcon('stability_index')}
+                    <span className="text-sm font-medium">Stability Index</span>
+                  </div>
+                  <div className="text-xl font-bold">
+                    {formatValue(getLatestByType('stability_index'))}
+                  </div>
+                  <div className="text-muted-foreground text-xs">0–100</div>
+                </div>
+
+                <div className="bg-muted p-3 rounded-lg">
+                  <div className="mb-2 flex items-center gap-2">
+                    {getMetricIcon('sway_balance')}
+                    <span className="text-sm font-medium">Sway / Balance</span>
+                  </div>
+                  <div className="text-xl font-bold">
+                    {formatValue(getLatestByType('sway_balance'))}
+                  </div>
+                  <div className="text-muted-foreground text-xs">cm</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Real-time Metrics Stream */}
             <Card>
@@ -403,7 +598,7 @@ export default function LiveHealthDataIntegration() {
                 <div className="max-h-80 space-y-3 overflow-y-auto">
                   {liveMetrics.length === 0 ? (
                     <div className="py-8 text-center">
-                      <Activity className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                      <Activity className="text-muted-foreground h-12 w-12 mx-auto mb-4" />
                       <p className="text-muted-foreground text-sm">
                         {liveDataEnabled === 'true'
                           ? 'Waiting for live data...'
@@ -414,9 +609,9 @@ export default function LiveHealthDataIntegration() {
                     liveMetrics.slice(0, 10).map((metric) => (
                       <div
                         key={`${metric.deviceId ?? ''}-${metric.timestamp}`}
-                        className="bg-muted flex items-center justify-between rounded-lg p-3"
+                        className="bg-muted p-3 flex items-center justify-between rounded-lg"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="gap-3 flex items-center">
                           {getMetricIcon(metric.metricType)}
                           <div>
                             <div className="text-sm font-medium">
@@ -433,7 +628,7 @@ export default function LiveHealthDataIntegration() {
                               ? metric.value.toFixed(1)
                               : metric.value.toString()}
                             {metric.unit && (
-                              <span className="ml-1 text-xs">
+                              <span className="text-xs ml-1">
                                 {metric.unit}
                               </span>
                             )}
@@ -467,7 +662,7 @@ export default function LiveHealthDataIntegration() {
                       <span className="text-sm font-medium">
                         Overall Quality
                       </span>
-                      <span className="text-sm font-semibold text-green-600">
+                      <span className="text-green-600 text-sm font-semibold">
                         {Math.round(dataStats.dataQualityScore)}%
                       </span>
                     </div>
@@ -482,7 +677,7 @@ export default function LiveHealthDataIntegration() {
                       <span className="text-sm font-medium">
                         Connection Stability
                       </span>
-                      <span className="text-sm font-semibold text-blue-600">
+                      <span className="text-blue-600 text-sm font-semibold">
                         {isConnected === 'true' ? '99.9%' : '0%'}
                       </span>
                     </div>
@@ -497,7 +692,7 @@ export default function LiveHealthDataIntegration() {
                       <span className="text-sm font-medium">
                         Data Freshness
                       </span>
-                      <span className="text-sm font-semibold text-green-600">
+                      <span className="text-green-600 text-sm font-semibold">
                         {dataStats.lastUpdateTime ? 'Live' : 'Stale'}
                       </span>
                     </div>
@@ -538,12 +733,12 @@ export default function LiveHealthDataIntegration() {
         </TabsContent>
 
         <TabsContent value="devices" className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="md:grid-cols-2 grid grid-cols-1 gap-4 lg:grid-cols-3">
             {devices.map((device) => (
               <Card key={device.id}>
                 <CardContent className="pt-4">
                   <div className="mb-3 flex items-start justify-between">
-                    <div className="flex items-center gap-3">
+                    <div className="gap-3 flex items-center">
                       {getDeviceIcon(device.type)}
                       <div>
                         <h4 className="text-sm font-semibold">{device.name}</h4>
@@ -584,7 +779,7 @@ export default function LiveHealthDataIntegration() {
                       <div className="flex items-center gap-2">
                         <Progress
                           value={device.signalStrength}
-                          className="h-1 w-16"
+                          className="w-16 h-1"
                         />
                         <span className="font-medium">
                           {device.signalStrength}%
@@ -622,7 +817,7 @@ export default function LiveHealthDataIntegration() {
             </AlertDescription>
           </Alert>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="md:grid-cols-2 grid grid-cols-1 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Data Synchronization</CardTitle>
@@ -692,6 +887,8 @@ export default function LiveHealthDataIntegration() {
                 </div>
               </CardContent>
             </Card>
+
+            <ThresholdsConfigCard />
           </div>
         </TabsContent>
 
@@ -706,7 +903,7 @@ export default function LiveHealthDataIntegration() {
             </AlertDescription>
           </Alert>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="md:grid-cols-2 grid grid-cols-1 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>WebSocket Connection</CardTitle>
@@ -722,7 +919,7 @@ export default function LiveHealthDataIntegration() {
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span>Endpoint</span>
-                    <code className="bg-muted rounded px-2 py-1 text-xs">
+                    <code className="bg-muted text-xs rounded px-2 py-1">
                       wss://vitalsense-live.example.com/stream
                     </code>
                   </div>
@@ -786,7 +983,7 @@ export default function LiveHealthDataIntegration() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="md:grid-cols-2 grid grid-cols-1 gap-6">
                 <div>
                   <h4 className="mb-3 font-semibold">Apple Integration</h4>
                   <ul className="space-y-2 text-sm">
@@ -813,5 +1010,120 @@ export default function LiveHealthDataIntegration() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function ThresholdsConfigCard() {
+  const [thresholdsKV, setThresholdsKV] = useKV<string>(
+    'insights-thresholds',
+    ''
+  );
+  const [weightsKV, setWeightsKV] = useKV<string>('insights-weights', '');
+  const [thresholdsText, setThresholdsText] = useState<string>(
+    thresholdsKV ?? ''
+  );
+  const [weightsText, setWeightsText] = useState<string>(weightsKV ?? '');
+  const [status, setStatus] = useState<string>('');
+
+  useEffect(() => setThresholdsText(thresholdsKV ?? ''), [thresholdsKV]);
+  useEffect(() => setWeightsText(weightsKV ?? ''), [weightsKV]);
+
+  const pretty = useCallback((txt: string) => {
+    try {
+      if (!txt) return '';
+      return JSON.stringify(JSON.parse(txt), null, 2);
+    } catch {
+      return txt; // keep as-is if not valid JSON yet
+    }
+  }, []);
+
+  const isValidJson = useCallback((txt: string) => {
+    if (!txt) return true;
+    try {
+      JSON.parse(txt);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const onSave = useCallback(() => {
+    const valid = isValidJson(thresholdsText) && isValidJson(weightsText);
+    if (!valid) {
+      setStatus('Invalid JSON');
+      setTimeout(() => setStatus(''), 2000);
+      return;
+    }
+    setThresholdsKV(pretty(thresholdsText));
+    setWeightsKV(pretty(weightsText));
+    setStatus('Saved');
+    setTimeout(() => setStatus(''), 1500);
+  }, [
+    thresholdsText,
+    weightsText,
+    setThresholdsKV,
+    setWeightsKV,
+    pretty,
+    isValidJson,
+  ]);
+
+  const examples = useMemo(
+    () => `{
+  "gait_speed": { "warn": 1.0, "critical": 0.8, "direction": "low-is-bad" },
+  "stability_index": { "warn": 60, "critical": 40, "direction": "low-is-bad" },
+  "double_support_time": { "warn": 30, "critical": 40, "direction": "high-is-bad" },
+  "step_asymmetry": { "warn": 4, "critical": 10, "direction": "high-is-bad" },
+  "sway_balance": { "warn": 1.5, "critical": 2.5, "direction": "high-is-bad" }
+}`,
+    []
+  );
+
+  const weightsExample = useMemo(
+    () => `{
+  "gait_speed": 0.4,
+  "stability_index": 0.3,
+  "double_support_time": 0.2,
+  "step_asymmetry": 0.1
+}`,
+    []
+  );
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Insights Configuration</CardTitle>
+        <CardDescription>
+          Customize thresholds and weights for insights and composite score
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="md:grid-cols-2 grid grid-cols-1 gap-4">
+          <div>
+            <div className="mb-2 text-sm font-medium">Thresholds (JSON)</div>
+            <textarea
+              className="h-44 text-xs w-full rounded-md border p-2 font-mono"
+              value={thresholdsText}
+              onChange={(e) => setThresholdsText(e.target.value)}
+              placeholder={examples}
+            />
+          </div>
+          <div>
+            <div className="mb-2 text-sm font-medium">Weights (JSON)</div>
+            <textarea
+              className="h-44 text-xs w-full rounded-md border p-2 font-mono"
+              value={weightsText}
+              onChange={(e) => setWeightsText(e.target.value)}
+              placeholder={weightsExample}
+            />
+          </div>
+        </div>
+        <div className="gap-3 mt-4 flex items-center">
+          <Button onClick={onSave}>Save</Button>
+          {status && (
+            <span className="text-xs text-muted-foreground">{status}</span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -12,6 +12,14 @@ export interface LiveHealthMetric {
     | 'heart_rate'
     | 'steps'
     | 'walking_steadiness'
+    | 'gait_speed'
+    | 'cadence'
+    | 'stride_length'
+    | 'step_asymmetry'
+    | 'double_support_time'
+    | 'posture_angle'
+    | 'stability_index'
+    | 'sway_balance'
     | 'sleep'
     | 'activity'
     | 'fall_event';
@@ -242,68 +250,98 @@ export class LiveHealthDataSync {
   private handleServerMessage(message: MessageEnvelope) {
     switch (message.type) {
       case 'connection_established':
-        // Narrow unknown payload
-        {
-          const d = (message as unknown as { data?: { clientId?: string } })
-            .data;
-          if (d && typeof d.clientId === 'string')
-            this.connectionStatus.clientId = d.clientId;
-        }
+        this.onConnectionEstablished(message);
         break;
-      // 'pong' is an app-level message our server may send; not part of zod union yet
-      case 'pong': {
-        const now = Date.now();
-        if (this.lastPingAt) {
-          this.connectionStatus.latency = Math.max(0, now - this.lastPingAt);
-          this.connectionStatus.lastHeartbeat = new Date(now).toISOString();
-        }
+      case 'pong':
+        this.onPong();
         break;
-      }
-
       case 'live_health_update':
-        {
-          const d = message.data;
-          if (
-            d &&
-            typeof d === 'object' &&
-            'metricType' in (d as Record<string, unknown>)
-          ) {
-            this.processLiveHealthUpdate(d as LiveHealthMetric);
-          }
-        }
+        this.onLiveHealthUpdateEnvelope(message.data);
         break;
-
       case 'historical_data_update':
         this.processHistoricalData(message.data);
         break;
-
       case 'client_presence':
-        {
-          const d = message.data as
-            | { userId?: string; clientType?: string; status?: string }
-            | undefined;
-          if (d && d.clientType === 'ios_app') {
-            this.iosOnline = d.status === 'online';
-          }
-        }
+        this.onClientPresence(message.data);
         break;
-
       case 'emergency_alert':
-        {
-          const d = message.data;
-          if (d && typeof d === 'object') {
-            this.handleEmergencyAlert(d as { alert?: { message?: string } });
-          }
-        }
+        this.onEmergencyAlert(message.data);
         break;
-
       case 'error':
-        try {
-          toast.error('Realtime error');
-        } catch {
-          /* noop */
-        }
+        this.onRealtimeError();
         break;
+    }
+  }
+
+  private onConnectionEstablished(message: MessageEnvelope) {
+    const d = (message as unknown as { data?: { clientId?: string } }).data;
+    if (d && typeof d.clientId === 'string')
+      this.connectionStatus.clientId = d.clientId;
+  }
+
+  private onPong() {
+    const now = Date.now();
+    if (this.lastPingAt) {
+      this.connectionStatus.latency = Math.max(0, now - this.lastPingAt);
+      this.connectionStatus.lastHeartbeat = new Date(now).toISOString();
+    }
+  }
+
+  // Accept both a single metric { metricType, ... } and a batch { metrics: [...], deviceId?, userId? }
+  private onLiveHealthUpdateEnvelope(payload: unknown) {
+    if (!payload || typeof payload !== 'object') return;
+    const obj = payload as Record<string, unknown>;
+    if ('metricType' in obj) {
+      this.processLiveHealthUpdate(obj as unknown as LiveHealthMetric);
+      return;
+    }
+    if (Array.isArray((obj as { metrics?: unknown[] }).metrics)) {
+      const batch = (obj as { metrics: Array<Record<string, unknown>> })
+        .metrics;
+      type ServerMetric = {
+        type?: unknown;
+        value?: unknown;
+        unit?: unknown;
+        timestamp?: unknown;
+      };
+      batch.forEach((m: ServerMetric) => {
+        // Map server metric { type, value, unit, timestamp } to LiveHealthMetric
+        const valRaw = m?.value;
+        const numValue = typeof valRaw === 'number' ? valRaw : Number(valRaw);
+        const mapped: LiveHealthMetric = {
+          metricType: m.type as string as LiveHealthMetric['metricType'],
+          value: numValue,
+          unit: (m.unit as string) || undefined,
+          timestamp: (m.timestamp as string) || new Date().toISOString(),
+          deviceId: (obj.deviceId as string) || 'device-unknown',
+          confidence: 0.9,
+          source: 'apple_watch',
+        };
+        this.processLiveHealthUpdate(mapped);
+      });
+    }
+  }
+
+  private onClientPresence(data: unknown) {
+    const d = data as
+      | { userId?: string; clientType?: string; status?: string }
+      | undefined;
+    if (d && d.clientType === 'ios_app') {
+      this.iosOnline = d.status === 'online';
+    }
+  }
+
+  private onEmergencyAlert(data: unknown) {
+    if (data && typeof data === 'object') {
+      this.handleEmergencyAlert(data as { alert?: { message?: string } });
+    }
+  }
+
+  private onRealtimeError() {
+    try {
+      toast.error('Realtime error');
+    } catch {
+      /* noop */
     }
   }
 

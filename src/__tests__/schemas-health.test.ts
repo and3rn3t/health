@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { processedHealthDataSchema } from '../schemas/health';
 
 describe('processedHealthDataSchema', () => {
@@ -6,9 +6,14 @@ describe('processedHealthDataSchema', () => {
     const sample = {
       type: 'heart_rate',
       value: 64,
+      timestamp: new Date().toISOString(),
       processedAt: new Date().toISOString(),
       validated: true,
       alert: null,
+      source: {
+        userId: 'user-123',
+        collectedAt: new Date().toISOString(),
+      },
     };
     const res = processedHealthDataSchema.safeParse(sample);
     expect(res.success).toBe(true);

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import app from '../worker';
 
 function makeEnv(overrides: Partial<Record<string, unknown>> = {}) {
@@ -75,8 +75,13 @@ describe('Worker E2E via Hono fetch', () => {
     const payload = {
       type: 'heart_rate',
       value: 65,
+      timestamp: new Date().toISOString(),
       processedAt: new Date().toISOString(),
       validated: true,
+      source: {
+        userId: 'test-user',
+        collectedAt: new Date().toISOString(),
+      },
     };
     const req = new Request('http://localhost/api/health-data', {
       method: 'POST',
@@ -101,6 +106,49 @@ describe('Worker E2E via Hono fetch', () => {
     // KV wrote an encrypted or plain payload with TTL
     expect(puts.length).toBe(1);
     expect(puts[0].key).toMatch(/^health:heart_rate:/);
+    expect(puts[0].opts).toHaveProperty('expirationTtl');
+    // Audit wrote a line to R2
+    expect(r2Puts.length).toBe(1);
+    expect(r2Puts[0].key).toMatch(/^audit\/events\//);
+  });
+
+  it('POST /api/health-data: accepts gait_speed metric and persists/audits', async () => {
+    const { env, puts, r2Puts } = makeEnv();
+    const payload = {
+      type: 'gait_speed',
+      value: 1.25,
+      unit: 'm/s',
+      timestamp: new Date().toISOString(),
+      processedAt: new Date().toISOString(),
+      validated: true,
+      source: {
+        userId: 'test-user',
+        collectedAt: new Date().toISOString(),
+        deviceId: 'watch-123',
+      },
+    };
+    const req = new Request('http://localhost/api/health-data', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        Origin: 'https://allowed.test',
+      },
+      body: JSON.stringify(payload),
+    });
+    const res = (await app.fetch(
+      req,
+      env as unknown as { [key: string]: unknown }
+    )) as Response;
+    expect([200, 201]).toContain(res.status);
+    try {
+      const body = (await res.clone().json()) as { ok?: boolean };
+      if (typeof body?.ok !== 'undefined') expect(body.ok).toBe(true);
+    } catch {
+      // ignore parse errors in harness
+    }
+    // KV wrote an entry for gait_speed
+    expect(puts.length).toBe(1);
+    expect(puts[0].key).toMatch(/^health:gait_speed:/);
     expect(puts[0].opts).toHaveProperty('expirationTtl');
     // Audit wrote a line to R2
     expect(r2Puts.length).toBe(1);

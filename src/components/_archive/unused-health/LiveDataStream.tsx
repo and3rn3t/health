@@ -146,6 +146,14 @@ export default function LiveDataStream({
               'heart_rate',
               'steps',
               'walking_steadiness',
+              'gait_speed',
+              'cadence',
+              'stride_length',
+              'step_asymmetry',
+              'double_support_time',
+              'posture_angle',
+              'stability_index',
+              'sway_balance',
               'blood_oxygen',
             ],
           })
@@ -251,12 +259,12 @@ export default function LiveDataStream({
   };
 
   const getConnectionIcon = () => {
-    if (!isConnected) return <WifiOff className="h-4 w-4 text-red-500" />;
+    if (!isConnected) return <WifiOff className="text-red-500 h-4 w-4" />;
     if (connectionQuality === 'excellent')
-      return <Wifi className="h-4 w-4 text-green-500" />;
+      return <Wifi className="text-green-500 h-4 w-4" />;
     if (connectionQuality === 'good')
-      return <Wifi className="h-4 w-4 text-yellow-500" />;
-    return <Wifi className="h-4 w-4 text-red-500" />;
+      return <Wifi className="text-yellow-500 h-4 w-4" />;
+    return <Wifi className="text-red-500 h-4 w-4" />;
   };
 
   return (
@@ -299,7 +307,7 @@ export default function LiveDataStream({
         </div>
 
         {/* Connection Stats */}
-        <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
+        <div className="md:grid-cols-4 grid grid-cols-2 gap-4 text-sm">
           <div>
             <div className="text-muted-foreground">Uptime</div>
             <div className="font-mono">{formatUptime(streamStats.uptime)}</div>
@@ -312,7 +320,7 @@ export default function LiveDataStream({
           </div>
           <div>
             <div className="text-muted-foreground">Packet Loss</div>
-            <div className="font-mono text-red-500">
+            <div className="text-red-500 font-mono">
               {streamStats.packetsLost}
             </div>
           </div>
@@ -332,11 +340,11 @@ export default function LiveDataStream({
         {isStreaming && currentMetrics && (
           <div className="space-y-4">
             <h4 className="text-sm font-medium">Real-time Metrics</h4>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="md:grid-cols-4 grid grid-cols-2 gap-4">
               {currentMetrics.heartRate && (
                 <Card className="p-3">
                   <div className="flex items-center gap-2">
-                    <Heart className="h-4 w-4 text-red-500" />
+                    <Heart className="text-red-500 h-4 w-4" />
                     <div>
                       <div className="text-muted-foreground text-sm">
                         Heart Rate
@@ -352,7 +360,7 @@ export default function LiveDataStream({
               {currentMetrics.steps && (
                 <Card className="p-3">
                   <div className="flex items-center gap-2">
-                    <Activity className="h-4 w-4 text-blue-500" />
+                    <Activity className="text-blue-500 h-4 w-4" />
                     <div>
                       <div className="text-muted-foreground text-sm">Steps</div>
                       <div className="text-lg font-semibold">
@@ -366,7 +374,7 @@ export default function LiveDataStream({
               {currentMetrics.walkingSteadiness && (
                 <Card className="p-3">
                   <div className="flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-yellow-500" />
+                    <Zap className="text-yellow-500 h-4 w-4" />
                     <div>
                       <div className="text-muted-foreground text-sm">
                         Walking Steadiness
@@ -382,7 +390,7 @@ export default function LiveDataStream({
               {currentMetrics.bloodOxygen && (
                 <Card className="p-3">
                   <div className="flex items-center gap-2">
-                    <Heart className="h-4 w-4 text-purple-500" />
+                    <Heart className="text-purple-500 h-4 w-4" />
                     <div>
                       <div className="text-muted-foreground text-sm">
                         Blood Oxygen
