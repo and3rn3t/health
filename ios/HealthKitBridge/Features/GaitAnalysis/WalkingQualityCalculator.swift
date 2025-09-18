@@ -4,7 +4,7 @@ import HealthKit
 // MARK: - Enhanced Walking Quality Calculator
 class WalkingQualityCalculator: ObservableObject {
     @Published var walkingQualityScore: Double = 0.0
-    @Published var qualityTrend: TrendDirection = .stable
+    @Published var qualityTrend: WalkingQualityTrendDirection = .stable
     @Published var improvements: [WalkingImprovement] = []
 
     func calculateComprehensiveScore(from gaitMetrics: GaitMetrics) -> WalkingQualityScore {
@@ -291,7 +291,7 @@ enum WalkingQualityLevel: String, CaseIterable {
     }
 }
 
-enum TrendDirection: String, Codable, CaseIterable {
+enum WalkingQualityTrendDirection: String, Codable, CaseIterable {
     case improving = "improving"
     case stable = "stable"
     case declining = "declining"

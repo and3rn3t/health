@@ -25,8 +25,7 @@ struct VitalSenseSessionOverviewTab: View {
 
                 // Mini Map
                 VitalSenseMiniMapCard(
-                    route: sessionTracker.route,
-                    mapRegion: $mapRegion
+                    route: sessionTracker.route, mapRegion: $mapRegion
                 )
                 .scaleEffect(animateCards ? 1.0 : 0.9)
                 .opacity(animateCards ? 1.0 : 0.0)
@@ -59,9 +58,7 @@ struct VitalSenseRealTimeTab: View {
             LazyVStack(spacing: VitalSenseBrand.Layout.large) {
                 // Real-time Metrics
                 VitalSenseRealTimeMetricsCard(
-                    heartRate: sessionTracker.currentHeartRate,
-                    cadence: sessionTracker.currentCadence,
-                    speed: sessionTracker.sessionMetrics?.currentSpeed ?? 0
+                    heartRate: sessionTracker.currentHeartRate, cadence: sessionTracker.currentCadence, speed: sessionTracker.sessionMetrics?.currentSpeed ?? 0
                 )
 
                 // Live Charts
@@ -96,8 +93,7 @@ struct VitalSenseMapTab: View {
         VStack(spacing: 0) {
             // Map Controls
             VitalSenseMapControls(
-                mapStyle: $mapStyle,
-                showElevation: $showElevation
+                mapStyle: $mapStyle, showElevation: $showElevation
             )
 
             ZStack {
@@ -117,8 +113,7 @@ struct VitalSenseMapTab: View {
                         Spacer()
 
                         VitalSenseMapStatsOverlay(
-                            distance: calculateRouteDistance(),
-                            elevation: calculateElevationGain()
+                            distance: calculateRouteDistance(), elevation: calculateElevationGain()
                         )
                     }
                     .padding(VitalSenseBrand.Layout.medium)
@@ -174,8 +169,7 @@ struct VitalSenseSessionControlCard: View {
                         .animation(
                             sessionTracker.isTracking ?
                             VitalSenseBrand.Animations.pulse.repeatForever(autoreverses: true) :
-                            .default,
-                            value: animateButton
+                            .default, value: animateButton
                         )
 
                     Image(systemName: sessionTracker.isTracking ? "stop.fill" : "play.fill")
@@ -210,8 +204,7 @@ struct VitalSenseSessionMetricsGrid: View {
     let metrics: SessionMetrics?
 
     private let columns = [
-        GridItem(.flexible(), spacing: VitalSenseBrand.Layout.medium),
-        GridItem(.flexible(), spacing: VitalSenseBrand.Layout.medium)
+        GridItem(.flexible(), spacing: VitalSenseBrand.Layout.medium), GridItem(.flexible(), spacing: VitalSenseBrand.Layout.medium)
     ]
 
     var body: some View {
@@ -222,40 +215,20 @@ struct VitalSenseSessionMetricsGrid: View {
 
             LazyVGrid(columns: columns, spacing: VitalSenseBrand.Layout.medium) {
                 VitalSenseMetricCard(
-                    title: "Distance",
-                    value: formatDistance(metrics?.distance ?? 0),
-                    unit: "",
-                    trend: .neutral,
-                    isSelected: false,
-                    gradient: VitalSenseBrand.Colors.primaryGradient
-                ) { }
+                    title: "Distance", value: formatDistance(metrics?.distance ?? 0), unit: "", trend: .neutral, isSelected: false, gradient: VitalSenseBrand.Colors.primaryGradient
+                ) { } 
 
                 VitalSenseMetricCard(
-                    title: "Avg Speed",
-                    value: formatSpeed(metrics?.averageSpeed ?? 0),
-                    unit: "",
-                    trend: .neutral,
-                    isSelected: false,
-                    gradient: VitalSenseBrand.Colors.accentGradient
-                ) { }
+                    title: "Avg Speed", value: formatSpeed(metrics?.averageSpeed ?? 0), unit: "", trend: .neutral, isSelected: false, gradient: VitalSenseBrand.Colors.accentGradient
+                ) { } 
 
                 VitalSenseMetricCard(
-                    title: "Calories",
-                    value: "\(Int(metrics?.caloriesBurned ?? 0))",
-                    unit: "kcal",
-                    trend: .neutral,
-                    isSelected: false,
-                    gradient: VitalSenseBrand.Colors.successGradient
-                ) { }
+                    title: "Calories", value: "\(Int(metrics?.caloriesBurned ?? 0))", unit: "kcal", trend: .neutral, isSelected: false, gradient: VitalSenseBrand.Colors.successGradient
+                ) { } 
 
                 VitalSenseMetricCard(
-                    title: "Heart Rate",
-                    value: "\(Int(metrics?.averageHeartRate ?? 0))",
-                    unit: "bpm",
-                    trend: .neutral,
-                    isSelected: false,
-                    gradient: VitalSenseBrand.Colors.warningGradient
-                ) { }
+                    title: "Heart Rate", value: "\(Int(metrics?.averageHeartRate ?? 0))", unit: "bpm", trend: .neutral, isSelected: false, gradient: VitalSenseBrand.Colors.warningGradient
+                ) { } 
             }
         }
     }

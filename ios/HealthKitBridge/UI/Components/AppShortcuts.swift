@@ -7,87 +7,45 @@ import HealthKit
 struct VitalSenseShortcutsProvider: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
-            intent: CheckHealthScoreIntent(),
-            phrases: [
-                "Check my health score with \(.applicationName)",
-                "Show my VitalSense health score",
-                "What's my current health status",
-                "Check my wellness score"
-            ],
-            shortTitle: "Health Score",
-            systemImageName: "heart.fill"
+            intent: CheckHealthScoreIntent(), phrases: [
+                "Check my health score with \(.applicationName)", "Show my VitalSense health score", "What's my current health status", "Check my wellness score"
+            ], shortTitle: "Health Score", systemImageName: "heart.fill"
         )
         
         AppShortcut(
-            intent: CheckFallRiskIntent(),
-            phrases: [
-                "Check my fall risk with \(.applicationName)",
-                "Show my fall risk assessment",
-                "What's my mobility status",
-                "Check my balance score"
-            ],
-            shortTitle: "Fall Risk",
-            systemImageName: "figure.walk.motion"
+            intent: CheckFallRiskIntent(), phrases: [
+                "Check my fall risk with \(.applicationName)", "Show my fall risk assessment", "What's my mobility status", "Check my balance score"
+            ], shortTitle: "Fall Risk", systemImageName: "figure.walk.motion"
         )
         
         AppShortcut(
-            intent: GetTodayStepsIntent(),
-            phrases: [
-                "How many steps today with \(.applicationName)",
-                "Show my step count",
-                "Check my daily steps",
-                "What's my walking progress"
-            ],
-            shortTitle: "Today's Steps",
-            systemImageName: "figure.walk"
+            intent: GetTodayStepsIntent(), phrases: [
+                "How many steps today with \(.applicationName)", "Show my step count", "Check my daily steps", "What's my walking progress"
+            ], shortTitle: "Today's Steps", systemImageName: "figure.walk"
         )
         
         AppShortcut(
-            intent: CheckHeartRateIntent(),
-            phrases: [
-                "Check my heart rate with \(.applicationName)",
-                "What's my current heart rate",
-                "Show my pulse",
-                "Check my cardiac status"
-            ],
-            shortTitle: "Heart Rate",
-            systemImageName: "heart.pulse"
+            intent: CheckHeartRateIntent(), phrases: [
+                "Check my heart rate with \(.applicationName)", "What's my current heart rate", "Show my pulse", "Check my cardiac status"
+            ], shortTitle: "Heart Rate", systemImageName: "heart.pulse"
         )
         
         AppShortcut(
-            intent: GetSleepSummaryIntent(),
-            phrases: [
-                "How did I sleep with \(.applicationName)",
-                "Show my sleep summary",
-                "Check last night's sleep",
-                "What's my sleep quality"
-            ],
-            shortTitle: "Sleep Summary",
-            systemImageName: "bed.double"
+            intent: GetSleepSummaryIntent(), phrases: [
+                "How did I sleep with \(.applicationName)", "Show my sleep summary", "Check last night's sleep", "What's my sleep quality"
+            ], shortTitle: "Sleep Summary", systemImageName: "bed.double"
         )
         
         AppShortcut(
-            intent: StartGaitAssessmentIntent(),
-            phrases: [
-                "Start gait assessment with \(.applicationName)",
-                "Check my walking pattern",
-                "Analyze my mobility",
-                "Test my balance"
-            ],
-            shortTitle: "Gait Assessment",
-            systemImageName: "figure.walk.motion.trianglebadge.exclamationmark"
+            intent: StartGaitAssessmentIntent(), phrases: [
+                "Start gait assessment with \(.applicationName)", "Check my walking pattern", "Analyze my mobility", "Test my balance"
+            ], shortTitle: "Gait Assessment", systemImageName: "figure.walk.motion.trianglebadge.exclamationmark"
         )
         
         AppShortcut(
-            intent: EmergencyContactIntent(),
-            phrases: [
-                "Call emergency contact with \(.applicationName)",
-                "Alert my caregiver",
-                "Send emergency alert",
-                "Contact help"
-            ],
-            shortTitle: "Emergency Alert",
-            systemImageName: "exclamationmark.triangle.fill"
+            intent: EmergencyContactIntent(), phrases: [
+                "Call emergency contact with \(.applicationName)", "Alert my caregiver", "Send emergency alert", "Contact help"
+            ], shortTitle: "Emergency Alert", systemImageName: "exclamationmark.triangle.fill"
         )
     }
 }
@@ -121,22 +79,21 @@ struct CheckHealthScoreIntent: AppIntent {
                         "Your trend is \(trend.displayName.lowercased())."
         
         return .result(
-            dialog: IntentDialog(stringLiteral: dialogText),
-            view: HealthScoreSnippetView(score: healthScore, status: status, trend: trend)
+            dialog: IntentDialog(stringLiteral: dialogText), view: HealthScoreSnippetView(score: healthScore, status: status, trend: trend)
         )
     }
     
     private func healthStatusDescription(for score: Int) -> String {
         switch score {
-        case 90...100:
+        case 90...100: 
             return "excellent"
-        case 80..<90:
+        case 80..<90: 
             return "good"
-        case 70..<80:
+        case 70..<80: 
             return "fair"
-        case 60..<70:
+        case 60..<70: 
             return "needs attention"
-        default:
+        default: 
             return "concerning"
         }
     }
@@ -162,8 +119,7 @@ struct CheckFallRiskIntent: AppIntent {
                         "This is based on your recent mobility patterns."
         
         return .result(
-            dialog: IntentDialog(stringLiteral: dialogText),
-            view: FallRiskSnippetView(riskLevel: riskLevel, confidence: confidence)
+            dialog: IntentDialog(stringLiteral: dialogText), view: FallRiskSnippetView(riskLevel: riskLevel, confidence: confidence)
         )
     }
 }
@@ -200,8 +156,7 @@ struct GetTodayStepsIntent: AppIntent {
         }
         
         return .result(
-            dialog: IntentDialog(stringLiteral: dialogText),
-            view: StepsSnippetView(steps: steps, goal: goal, progress: progress)
+            dialog: IntentDialog(stringLiteral: dialogText), view: StepsSnippetView(steps: steps, goal: goal, progress: progress)
         )
     }
 }
@@ -240,21 +195,20 @@ struct CheckHeartRateIntent: AppIntent {
         }
         
         return .result(
-            dialog: IntentDialog(stringLiteral: dialogText),
-            view: HeartRateSnippetView(currentHR: heartRate, restingHR: restingHR)
+            dialog: IntentDialog(stringLiteral: dialogText), view: HeartRateSnippetView(currentHR: heartRate, restingHR: restingHR)
         )
     }
     
     private func heartRateStatus(current: Int, resting: Int) -> String {
         let difference = current - resting
         switch difference {
-        case ..<10:
+        case ..<10: 
             return "at rest"
-        case 10..<30:
+        case 10..<30: 
             return "slightly elevated"
-        case 30..<50:
+        case 30..<50: 
             return "moderately elevated"
-        default:
+        default: 
             return "significantly elevated"
         }
     }
@@ -294,20 +248,19 @@ struct GetSleepSummaryIntent: AppIntent {
         }
         
         return .result(
-            dialog: IntentDialog(stringLiteral: dialogText),
-            view: SleepSnippetView(sleepData: sleepData)
+            dialog: IntentDialog(stringLiteral: dialogText), view: SleepSnippetView(sleepData: sleepData)
         )
     }
     
     private func sleepQualityDescription(_ quality: Double) -> String {
         switch quality {
-        case 0.8...1.0:
+        case 0.8...1.0: 
             return "excellent"
-        case 0.6..<0.8:
+        case 0.6..<0.8: 
             return "good"
-        case 0.4..<0.6:
+        case 0.4..<0.6: 
             return "fair"
-        default:
+        default: 
             return "poor"
         }
     }
@@ -399,13 +352,13 @@ struct HealthScoreSnippetView: View {
     
     private var scoreColor: Color {
         switch score {
-        case 90...100:
+        case 90...100: 
             return .green
-        case 80..<90:
+        case 80..<90: 
             return .blue
-        case 70..<80:
+        case 70..<80: 
             return .orange
-        default:
+        default: 
             return .red
         }
     }

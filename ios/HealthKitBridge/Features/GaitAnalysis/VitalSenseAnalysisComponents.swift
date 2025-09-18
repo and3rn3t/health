@@ -125,8 +125,7 @@ struct VitalSenseProgressIndicator: View {
                 Circle()
                     .trim(from: 0, to: animateProgress ? progressPercentage : 0)
                     .stroke(
-                        metric.vitalSenseGradient,
-                        style: StrokeStyle(lineWidth: 8, lineCap: .round)
+                        metric.vitalSenseGradient, style: StrokeStyle(lineWidth: 8, lineCap: .round)
                     )
                     .frame(width: 80, height: 80)
                     .rotationEffect(.degrees(-90))

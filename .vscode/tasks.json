@@ -1135,7 +1135,7 @@
       "args": [
         "-NoProfile",
         "-File",
-        "ios/scripts/setup-ios-dev-windows.ps1",
+        "scripts/setup-ios-dev-windows.ps1",
         "-All"
       ],
       "group": "build",
@@ -1151,8 +1151,11 @@
       "label": "iOS: Swift Lint",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "ios/scripts/swift-lint-windows.ps1"],
+      "args": ["-NoProfile", "-File", "scripts/swift-lint-windows.ps1"],
       "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1165,8 +1168,11 @@
       "label": "iOS: Swift Format",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "ios/scripts/swift-format-windows.ps1"],
+      "args": ["-NoProfile", "-File", "scripts/swift-format-windows.ps1"],
       "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1179,12 +1185,11 @@
       "label": "iOS: Check Swift Errors",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/HealthKitBridge/scripts/Check-SwiftErrors.ps1"
-      ],
+      "args": ["-NoProfile", "-File", "scripts/Check-SwiftErrors.ps1"],
       "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios/HealthKitBridge"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1200,10 +1205,13 @@
       "args": [
         "-NoProfile",
         "-File",
-        "ios/scripts/swift-format-windows.ps1",
+        "scripts/swift-format-windows.ps1",
         "-DryRun"
       ],
       "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1216,8 +1224,11 @@
       "label": "iOS: Build Simulator",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "ios/scripts/ios-build-simulator.ps1"],
+      "args": ["-NoProfile", "-File", "scripts/ios-build-simulator.ps1"],
       "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1233,10 +1244,141 @@
       "args": [
         "-NoProfile",
         "-File",
-        "ios/scripts/swift-dependency-analyzer.ps1",
+        "scripts/swift-dependency-analyzer.ps1",
         "-ShowGraph"
       ],
       "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "iOS: Duplicate Types Scan",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "ios/scripts/swift-duplicate-types-scan.ps1",
+        "-Root",
+        "ios/HealthKitBridge",
+        "-VerboseOutput"
+      ],
+      "group": "test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "iOS: Availability Guard Check",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "ios/scripts/swift-availability-guard-check.ps1",
+        "-Root",
+        "ios/HealthKitBridge"
+      ],
+      "group": "test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "iOS: Swift Fast Typecheck",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "ios/scripts/swift-fast-typecheck.ps1",
+        "-Root",
+        "ios/HealthKitBridge"
+      ],
+      "group": "test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "iOS: Public API Surface (list)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "ios/scripts/swift-public-api-surface.ps1",
+        "-Root",
+        "ios/HealthKitBridge"
+      ],
+      "group": "test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "iOS: Import Graph (show)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "ios/scripts/swift-import-graph.ps1",
+        "-Root",
+        "ios/HealthKitBridge",
+        "-ShowGraph"
+      ],
+      "group": "test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "iOS: SwiftLint Precheck",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "ios/scripts/swiftlint-precheck.ps1",
+        "-Root",
+        "ios/HealthKitBridge"
+      ],
+      "group": "test",
+      "options": { "cwd": "${workspaceFolder}" },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1252,10 +1394,13 @@
       "args": [
         "-NoProfile",
         "-File",
-        "ios/scripts/swift-performance-analyzer.ps1",
+        "scripts/swift-performance-analyzer.ps1",
         "-Detailed"
       ],
       "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1271,12 +1416,15 @@
       "args": [
         "-NoProfile",
         "-File",
-        "ios/scripts/main-app-deploy.ps1",
+        "scripts/main-app-deploy.ps1",
         "-Environment",
         "development",
         "-Deploy"
       ],
       "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1292,12 +1440,15 @@
       "args": [
         "-NoProfile",
         "-File",
-        "ios/scripts/main-app-deploy.ps1",
+        "scripts/main-app-deploy.ps1",
         "-Environment",
         "production",
         "-Deploy"
       ],
       "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1310,13 +1461,11 @@
       "label": "App: Status Check",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/main-app-deploy.ps1",
-        "-Status"
-      ],
+      "args": ["-NoProfile", "-File", "scripts/main-app-deploy.ps1", "-Status"],
       "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1329,13 +1478,11 @@
       "label": "App: Quick Check",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/main-app-deploy.ps1",
-        "-Quick"
-      ],
+      "args": ["-NoProfile", "-File", "scripts/main-app-deploy.ps1", "-Quick"],
       "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1709,9 +1856,12 @@
       "label": "iOS: Run Unit Tests",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "ios/scripts/ios-test-runner.ps1"],
+      "args": ["-NoProfile", "-File", "scripts/ios-test-runner.ps1"],
       "problemMatcher": [],
-      "group": "test"
+      "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      }
     },
     {
       "label": "lint-quick-nodejs",

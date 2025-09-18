@@ -119,23 +119,18 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
         guard let startTime = startTime else { return }
 
         let sessionData = LiDARSessionData(
-            sessionId: "lidar_\(Int(Date().timeIntervalSince1970))",
-            startTime: startTime,
-            duration: Date().timeIntervalSince(startTime),
-            analysisType: analysisType,
-            pointCloudData: pointCloudData,
-            deviceInfo: getLiDARDeviceInfo()
+            sessionId: "lidar_\(Int(Date().timeIntervalSince1970))", startTime: startTime, duration: Date().timeIntervalSince(startTime), analysisType: analysisType, pointCloudData: pointCloudData, deviceInfo: getLiDARDeviceInfo()
         )
 
         // Perform analysis based on type
         switch analysisType {
-        case .posture:
+        case .posture: 
             sessionData.postureAnalysis = analyzePosture()
-        case .gait:
+        case .gait: 
             sessionData.gaitAnalysis = analyzeGait()
-        case .balance:
+        case .balance: 
             sessionData.balanceAnalysis = analyzeBalance()
-        case .environment:
+        case .environment: 
             sessionData.environmentAnalysis = analyzeEnvironment()
         }
 
@@ -162,18 +157,11 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
 
         // Identify risk factors
         let riskFactors = identifyPostureRiskFactors(
-            sway: posturalSway,
-            alignment: spinalAlignment,
-            balance: balanceMetrics
+            sway: posturalSway, alignment: spinalAlignment, balance: balanceMetrics
         )
 
         return PostureAnalysisResult(
-            posturalSway: posturalSway,
-            spinalAlignment: spinalAlignment,
-            balanceMetrics: balanceMetrics,
-            riskFactors: riskFactors,
-            confidence: calculateAnalysisConfidence(),
-            timestamp: Date()
+            posturalSway: posturalSway, spinalAlignment: spinalAlignment, balanceMetrics: balanceMetrics, riskFactors: riskFactors, confidence: calculateAnalysisConfidence(), timestamp: Date()
         )
     }
 
@@ -198,41 +186,25 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
 
         // Calculate fall risk score
         let fallRiskScore = calculateLiDARFallRiskScore(
-            spatial: spatialMetrics,
-            temporal: temporalMetrics,
-            asymmetry: asymmetryMetrics
+            spatial: spatialMetrics, temporal: temporalMetrics, asymmetry: asymmetryMetrics
         )
 
         return GaitAnalysisResult(
-            spatialMetrics: spatialMetrics,
-            temporalMetrics: temporalMetrics,
-            kinematicChain: kinematicChain,
-            asymmetryMetrics: asymmetryMetrics,
-            environmentalContext: environmentalContext,
-            fallRiskScore: fallRiskScore,
-            timestamp: Date()
+            spatialMetrics: spatialMetrics, temporalMetrics: temporalMetrics, kinematicChain: kinematicChain, asymmetryMetrics: asymmetryMetrics, environmentalContext: environmentalContext, fallRiskScore: fallRiskScore, timestamp: Date()
         )
     }
 
     private func analyzeBalance() -> BalanceAnalysisResult {
         // Implement balance-specific analysis
         BalanceAnalysisResult(
-            stabilityIndex: 85.0,
-            swayVelocity: 12.5,
-            confidenceEllipse: CGSize(width: 15, height: 12),
-            reactionTime: 180.0,
-            timestamp: Date()
+            stabilityIndex: 85.0, swayVelocity: 12.5, confidenceEllipse: CGSize(width: 15, height: 12), reactionTime: 180.0, timestamp: Date()
         )
     }
 
     private func analyzeEnvironment() -> EnvironmentAnalysisResult {
         // Analyze environmental hazards using LiDAR mesh data
         EnvironmentAnalysisResult(
-            obstacles: detectObstacles(),
-            surfaceAnalysis: analyzeSurfaceConditions(),
-            lighting: assessLightingConditions(),
-            hazardScore: calculateEnvironmentalHazardScore(),
-            timestamp: Date()
+            obstacles: detectObstacles(), surfaceAnalysis: analyzeSurfaceConditions(), lighting: assessLightingConditions(), hazardScore: calculateEnvironmentalHazardScore(), timestamp: Date()
         )
     }
 
@@ -242,17 +214,12 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
         let skeleton = anchor.skeleton
 
         // Get critical joints for posture analysis
-        guard let headTransform = skeleton.joint(.head)?.anchorFromJointTransform,
-              let spineTopTransform = skeleton.joint(.spineUpper)?.anchorFromJointTransform,
-              let spineBottomTransform = skeleton.joint(.spineLower)?.anchorFromJointTransform else {
+        guard let headTransform = skeleton.joint(.head)?.anchorFromJointTransform, let spineTopTransform = skeleton.joint(.spineUpper)?.anchorFromJointTransform, let spineBottomTransform = skeleton.joint(.spineLower)?.anchorFromJointTransform else {
             return nil
         }
 
         return BodyPose(
-            head: extractPosition(from: headTransform),
-            spineTop: extractPosition(from: spineTopTransform),
-            spineBottom: extractPosition(from: spineBottomTransform),
-            timestamp: Date()
+            head: extractPosition(from: headTransform), spineTop: extractPosition(from: spineTopTransform), spineBottom: extractPosition(from: spineBottomTransform), timestamp: Date()
         )
     }
 
@@ -266,7 +233,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
         }
 
         // Calculate center of mass movement
-        let headPositions = poses.map { $0.head }
+        let headPositions = poses.map { $0.head } 
 
         // Calculate sway in different directions
         let anteriorPosterior = calculateSwayRange(positions: headPositions, axis: 2) * 1000 // Convert to mm
@@ -274,14 +241,12 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
         let totalSway = sqrt(pow(anteriorPosterior, 2) + pow(mediolateral, 2))
 
         return PosturalSwayMetrics(
-            anteriorPosterior: anteriorPosterior,
-            mediolateral: mediolateral,
-            totalSway: totalSway
+            anteriorPosterior: anteriorPosterior, mediolateral: mediolateral, totalSway: totalSway
         )
     }
 
     private func calculateSwayRange(positions: [SIMD3<Float>], axis: Int) -> Float {
-        let values = positions.map { $0[axis] }
+        let values = positions.map { $0[axis] } 
         guard let min = values.min(), let max = values.max() else { return 0 }
         return max - min
     }
@@ -289,21 +254,17 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
     private func analyzeSpinalAlignment(from poses: [BodyPose]) -> SpinalAlignmentMetrics {
         guard !poses.isEmpty else {
             return SpinalAlignmentMetrics(
-                thoracicKyphosis: 30.0,
-                lumbarLordosis: 35.0,
-                headForwardPosture: 5.0
+                thoracicKyphosis: 30.0, lumbarLordosis: 35.0, headForwardPosture: 5.0
             )
         }
 
         // Calculate average spinal curvatures
-        let thoracicAngles = poses.map { calculateThoracicKyphosis(pose: $0) }
-        let lumbarAngles = poses.map { calculateLumbarLordosis(pose: $0) }
-        let headAngles = poses.map { calculateHeadForwardPosture(pose: $0) }
+        let thoracicAngles = poses.map { calculateThoracicKyphosis(pose: $0) } 
+        let lumbarAngles = poses.map { calculateLumbarLordosis(pose: $0) } 
+        let headAngles = poses.map { calculateHeadForwardPosture(pose: $0) } 
 
         return SpinalAlignmentMetrics(
-            thoracicKyphosis: thoracicAngles.reduce(0, +) / Float(thoracicAngles.count),
-            lumbarLordosis: lumbarAngles.reduce(0, +) / Float(lumbarAngles.count),
-            headForwardPosture: headAngles.reduce(0, +) / Float(headAngles.count)
+            thoracicKyphosis: thoracicAngles.reduce(0, +) / Float(thoracicAngles.count), lumbarLordosis: lumbarAngles.reduce(0, +) / Float(lumbarAngles.count), headForwardPosture: headAngles.reduce(0, +) / Float(headAngles.count)
         )
     }
 
@@ -335,9 +296,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
         let reactionTime = calculateReactionTime(from: poses)
 
         return BalanceMetrics(
-            stabilityIndex: stability,
-            weightDistribution: weightDistribution,
-            reactionTime: reactionTime
+            stabilityIndex: stability, weightDistribution: weightDistribution, reactionTime: reactionTime
         )
     }
 
@@ -358,8 +317,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
     private func calculateWeightDistribution(from poses: [BodyPose]) -> WeightDistribution {
         // Simplified - would need foot tracking for accuracy
         WeightDistribution(
-            left: 48.0 + Float.random(in: -3...3),
-            right: 52.0 + Float.random(in: -3...3)
+            left: 48.0 + Float.random(in: -3...3), right: 52.0 + Float.random(in: -3...3)
         )
     }
 
@@ -369,9 +327,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
     }
 
     private func identifyPostureRiskFactors(
-        sway: PosturalSwayMetrics,
-        alignment: SpinalAlignmentMetrics,
-        balance: BalanceMetrics
+        sway: PosturalSwayMetrics, alignment: SpinalAlignmentMetrics, balance: BalanceMetrics
     ) -> [String] {
         var riskFactors: [String] = []
 
@@ -404,9 +360,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
 
     private func getLiDARDeviceInfo() -> DeviceInfo {
         DeviceInfo(
-            model: UIDevice.current.model,
-            lidarVersion: "ARKit 6.0",
-            accuracy: 0.98
+            model: UIDevice.current.model, lidarVersion: "ARKit 6.0", accuracy: 0.98
         )
     }
 
@@ -418,50 +372,36 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
 
     private func calculateSpatialGaitMetrics(from sequences: [WalkingSequence]) -> SpatialGaitMetrics {
         SpatialGaitMetrics(
-            stepWidth: 10.5,
-            stepLength: 65.2,
-            strideLength: 130.4,
-            footClearance: 3.2
+            stepWidth: 10.5, stepLength: 65.2, strideLength: 130.4, footClearance: 3.2
         )
     }
 
     private func calculateTemporalGaitMetrics(from sequences: [WalkingSequence]) -> TemporalGaitMetrics {
         TemporalGaitMetrics(
-            cadence: 112.0,
-            velocityVariability: 4.2,
-            rhythmIndex: 88.5
+            cadence: 112.0, velocityVariability: 4.2, rhythmIndex: 88.5
         )
     }
 
     private func analyzeKinematicChain(from sequences: [WalkingSequence]) -> KinematicChainMetrics {
         KinematicChainMetrics(
-            ankleFlexion: Array(repeating: 15.0, count: 10),
-            kneeFlexion: Array(repeating: 45.0, count: 10),
-            hipFlexion: Array(repeating: 25.0, count: 10),
-            trunkSway: Array(repeating: 3.5, count: 10)
+            ankleFlexion: Array(repeating: 15.0, count: 10), kneeFlexion: Array(repeating: 45.0, count: 10), hipFlexion: Array(repeating: 25.0, count: 10), trunkSway: Array(repeating: 3.5, count: 10)
         )
     }
 
     private func calculateGaitAsymmetry(from sequences: [WalkingSequence]) -> AsymmetryMetrics {
         AsymmetryMetrics(
-            spatialAsymmetry: 3.2,
-            temporalAsymmetry: 2.8,
-            kinematicAsymmetry: 4.1
+            spatialAsymmetry: 3.2, temporalAsymmetry: 2.8, kinematicAsymmetry: 4.1
         )
     }
 
     private func analyzeWalkingEnvironment() -> EnvironmentalContext {
         EnvironmentalContext(
-            surfaceType: "Level",
-            obstacles: 0,
-            lighting: "Optimal"
+            surfaceType: "Level", obstacles: 0, lighting: "Optimal"
         )
     }
 
     private func calculateLiDARFallRiskScore(
-        spatial: SpatialGaitMetrics,
-        temporal: TemporalGaitMetrics,
-        asymmetry: AsymmetryMetrics
+        spatial: SpatialGaitMetrics, temporal: TemporalGaitMetrics, asymmetry: AsymmetryMetrics
     ) -> Float {
         var riskScore: Float = 0
 
@@ -556,18 +496,11 @@ extension LiDARPostureAnalyzer: ARSessionDelegate {
 
                 // Convert pixel to 3D coordinates
                 let point = frame.camera.unprojectPoint(
-                    CGPoint(x: x, y: y),
-                    ontoPlaneWithTransform: matrix_identity_float4x4,
-                    orientation: .portrait,
-                    viewportSize: CGSize(width: width, height: height)
+                    CGPoint(x: x, y: y), ontoPlaneWithTransform: matrix_identity_float4x4, orientation: .portrait, viewportSize: CGSize(width: width, height: height)
                 )
 
                 let lidarPoint = LiDARPoint(
-                    x: point.x,
-                    y: point.y,
-                    zCoordinate: depth,
-                    intensity: Float.random(in: 0...255),
-                    timestamp: Date().timeIntervalSince1970
+                    x: point.x, y: point.y, zCoordinate: depth, intensity: Float.random(in: 0...255), timestamp: Date().timeIntervalSince1970
                 )
 
                 pointCloudData.append(lidarPoint)
@@ -732,12 +665,7 @@ class LiDARSessionData: ObservableObject {
     var environmentAnalysis: EnvironmentAnalysisResult?
 
     init(
-        sessionId: String,
-        startTime: Date,
-        duration: TimeInterval,
-        analysisType: AnalysisType,
-        pointCloudData: [LiDARPoint],
-        deviceInfo: DeviceInfo
+        sessionId: String, startTime: Date, duration: TimeInterval, analysisType: AnalysisType, pointCloudData: [LiDARPoint], deviceInfo: DeviceInfo
     ) {
         self.sessionId = sessionId
         self.startTime = startTime

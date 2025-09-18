@@ -334,9 +334,9 @@ class WebSocketManager: NSObject, ObservableObject {
     }
 
     // MARK: - Typed send
+    private struct OutgoingEnvelope<D: Encodable>: Encodable { let type: String; let data: D; let timestamp: String; let source: String }
     func send<T: Encodable>(type: String, data: T, source: String = "ios-native") {
-        struct Envelope<D: Encodable>: Encodable { let type: String; let data: D; let timestamp: String; let source: String }
-        let env = Envelope(type: type, data: data, timestamp: ISO8601DateFormatter().string(from: Date()), source: source)
+        let env = OutgoingEnvelope(type: type, data: data, timestamp: ISO8601DateFormatter().string(from: Date()), source: source)
         do {
             let bytes = try JSONEncoder().encode(env)
             enqueueSend(bytes)
@@ -768,8 +768,7 @@ class WebSocketManager: NSObject, ObservableObject {
 #if DEBUG
     /// Build a generic envelope for unit tests without sending over the network
     static func buildEnvelopeForTest<T: Encodable>(type: String, data: T, source: String = "ios-native") -> [String: Any]? {
-        struct Envelope<D: Encodable>: Encodable { let type: String; let data: D; let timestamp: String; let source: String }
-        let env = Envelope(type: type, data: data, timestamp: ISO8601DateFormatter().string(from: Date()), source: source)
+        let env = OutgoingEnvelope(type: type, data: data, timestamp: ISO8601DateFormatter().string(from: Date()), source: source)
         do {
             let bytes = try JSONEncoder().encode(env)
             let obj = try JSONSerialization.jsonObject(with: bytes, options: [])

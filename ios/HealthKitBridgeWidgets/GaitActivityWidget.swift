@@ -28,8 +28,7 @@ struct GaitActivityWidget: Widget {
                             Label(timeString(context.state.elapsed), systemImage: "timer")
                             Label("\(Int(context.state.remaining))s", systemImage: "hourglass")
                             Label(
-                                context.state.isConnected ? "Online" : "Offline",
-                                systemImage: context.state.isConnected ? "bolt.horizontal" : "bolt.slash"
+                                context.state.isConnected ? "Online" : "Offline", systemImage: context.state.isConnected ? "bolt.horizontal" : "bolt.slash"
                             )
                         }
                         .font(.caption)

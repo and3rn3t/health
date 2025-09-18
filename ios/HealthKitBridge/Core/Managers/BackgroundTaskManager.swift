@@ -22,8 +22,7 @@ class BackgroundTaskManager: ObservableObject {
     private func registerBackgroundTasks() {
         // Register background app refresh task
         BGTaskScheduler.shared.register(
-            forTaskWithIdentifier: healthDataSyncIdentifier,
-            using: nil
+            forTaskWithIdentifier: healthDataSyncIdentifier, using: nil
         ) { task in
             if let appRefreshTask = task as? BGAppRefreshTask {
                 self.handleHealthDataSync(task: appRefreshTask)
@@ -32,8 +31,7 @@ class BackgroundTaskManager: ObservableObject {
 
         // Register background processing task
         BGTaskScheduler.shared.register(
-            forTaskWithIdentifier: analyticsProcessingIdentifier,
-            using: nil
+            forTaskWithIdentifier: analyticsProcessingIdentifier, using: nil
         ) { task in
             if let processingTask = task as? BGProcessingTask {
                 self.handleAnalyticsProcessing(task: processingTask)
@@ -42,8 +40,7 @@ class BackgroundTaskManager: ObservableObject {
 
         // Register gait monitoring background task
         BGTaskScheduler.shared.register(
-            forTaskWithIdentifier: gaitMonitoringIdentifier,
-            using: nil
+            forTaskWithIdentifier: gaitMonitoringIdentifier, using: nil
         ) { task in
             if let appRefreshTask = task as? BGAppRefreshTask {
                 self.handleGaitMonitoring(task: appRefreshTask)
@@ -55,9 +52,7 @@ class BackgroundTaskManager: ObservableObject {
         backgroundRefreshStatus = UIApplication.shared.backgroundRefreshStatus
 
         NotificationCenter.default.addObserver(
-            forName: UIApplication.backgroundRefreshStatusDidChangeNotification,
-            object: nil,
-            queue: .main
+            forName: UIApplication.backgroundRefreshStatusDidChangeNotification, object: nil, queue: .main
         ) { _ in
             self.backgroundRefreshStatus = UIApplication.shared.backgroundRefreshStatus
         }
@@ -291,10 +286,7 @@ class SmartSchedulingManager: ObservableObject {
             if let futureDate = calendar.date(byAdding: .day, value: day, to: Date()) {
                 for hour in optimalHours {
                     if let syncTime = calendar.date(
-                        bySettingHour: hour,
-                        minute: 0,
-                        second: 0,
-                        of: futureDate
+                        bySettingHour: hour, minute: 0, second: 0, of: futureDate
                     ) {
                         times.append(syncTime)
                     }
@@ -306,15 +298,13 @@ class SmartSchedulingManager: ObservableObject {
     }
 
     private func saveActivityPattern() {
-        if let pattern = userActivityPattern,
-           let data = try? JSONEncoder().encode(pattern) {
+        if let pattern = userActivityPattern, let data = try? JSONEncoder().encode(pattern) {
             userDefaults.set(data, forKey: activityKey)
         }
     }
 
     private func loadActivityPattern() {
-        if let data = userDefaults.data(forKey: activityKey),
-           let pattern = try? JSONDecoder().decode(ActivityPattern.self, from: data) {
+        if let data = userDefaults.data(forKey: activityKey), let pattern = try? JSONDecoder().decode(ActivityPattern.self, from: data) {
             userActivityPattern = pattern
         }
     }

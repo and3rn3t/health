@@ -30,69 +30,13 @@ class AdvancedHealthMetrics: ObservableObject {
 
     // MARK: - Advanced Health Data Types
     private let advancedReadTypes: Set<HKObjectType> = [
-        HKQuantityType.quantityType(forIdentifier: .vo2Max)!,
-        HKQuantityType.quantityType(forIdentifier: .restingHeartRate)!,
-        HKQuantityType.quantityType(forIdentifier: .heartRateVariabilitySDNN)!,
-        HKCategoryType.categoryType(forIdentifier: .sleepAnalysis)!,
-        HKQuantityType.quantityType(forIdentifier: .oxygenSaturation)!,
-        HKQuantityType.quantityType(forIdentifier: .bodyTemperature)!,
-        HKQuantityType.quantityType(forIdentifier: .environmentalAudioExposure)!,
-        HKQuantityType.quantityType(forIdentifier: .headphoneAudioExposure)!,
-        HKQuantityType.quantityType(forIdentifier: .respiratoryRate)!,
-        HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic)!,
-        HKQuantityType.quantityType(forIdentifier: .bloodPressureDiastolic)!,
-        HKQuantityType.quantityType(forIdentifier: .peakExpiratoryFlowRate)!,
-        HKQuantityType.quantityType(forIdentifier: .forcedVitalCapacity)!,
-        HKQuantityType.quantityType(forIdentifier: .forcedExpiratoryVolume1)!,
-        // Nutrition
-        HKQuantityType.quantityType(forIdentifier: .dietaryEnergyConsumed)!,
-        HKQuantityType.quantityType(forIdentifier: .dietaryProtein)!,
-        HKQuantityType.quantityType(forIdentifier: .dietaryCarbohydrates)!,
-        HKQuantityType.quantityType(forIdentifier: .dietaryFatTotal)!,
-        HKQuantityType.quantityType(forIdentifier: .dietarySugar)!,
-        HKQuantityType.quantityType(forIdentifier: .dietarySodium)!,
-        HKQuantityType.quantityType(forIdentifier: .dietaryFiber)!,
-        HKQuantityType.quantityType(forIdentifier: .dietaryVitaminC)!,
-        HKQuantityType.quantityType(forIdentifier: .dietaryVitaminD)!,
-        HKQuantityType.quantityType(forIdentifier: .dietaryCalcium)!,
-        HKQuantityType.quantityType(forIdentifier: .dietaryIron)!,
-        HKQuantityType.quantityType(forIdentifier: .dietaryWater)!,
-        // Mental Health & Mindfulness
-        HKCategoryType.categoryType(forIdentifier: .mindfulSession)!,
-        HKCategoryType.categoryType(forIdentifier: .highHeartRateEvent)!,
-        HKCategoryType.categoryType(forIdentifier: .lowHeartRateEvent)!,
-        HKCategoryType.categoryType(forIdentifier: .irregularHeartRhythmEvent)!,
-        // Reproductive Health
-        HKCategoryType.categoryType(forIdentifier: .menstrualFlow)!,
-        HKCategoryType.categoryType(forIdentifier: .ovulationTestResult)!,
-        HKCategoryType.categoryType(forIdentifier: .cervicalMucusQuality)!,
-        HKCategoryType.categoryType(forIdentifier: .basalBodyTemperature)!,
-        // Body Measurements
-        HKQuantityType.quantityType(forIdentifier: .bodyMass)!,
-        HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage)!,
-        HKQuantityType.quantityType(forIdentifier: .leanBodyMass)!,
-        HKQuantityType.quantityType(forIdentifier: .waistCircumference)!,
-        // Lab Results
-        HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!,
-        HKQuantityType.quantityType(forIdentifier: .insulinDelivery)!,
-        // Audio & Environmental
-        HKQuantityType.quantityType(forIdentifier: .sixMinuteWalkTestDistance)!,
-        HKQuantityType.quantityType(forIdentifier: .walkingSpeed)!,
-        HKQuantityType.quantityType(forIdentifier: .walkingStepLength)!,
-        HKQuantityType.quantityType(forIdentifier: .walkingAsymmetryPercentage)!,
-        HKQuantityType.quantityType(forIdentifier: .walkingDoubleSupportPercentage)!,
-        HKQuantityType.quantityType(forIdentifier: .stairAscentSpeed)!,
-        HKQuantityType.quantityType(forIdentifier: .stairDescentSpeed)!,
-        // Apple Watch specific
-        HKQuantityType.quantityType(forIdentifier: .appleStandTime)!,
-        HKQuantityType.quantityType(forIdentifier: .appleExerciseTime)!
+        HKQuantityType.quantityType(forIdentifier: .vo2Max)!, HKQuantityType.quantityType(forIdentifier: .restingHeartRate)!, HKQuantityType.quantityType(forIdentifier: .heartRateVariabilitySDNN)!, HKCategoryType.categoryType(forIdentifier: .sleepAnalysis)!, HKQuantityType.quantityType(forIdentifier: .oxygenSaturation)!, HKQuantityType.quantityType(forIdentifier: .bodyTemperature)!, HKQuantityType.quantityType(forIdentifier: .environmentalAudioExposure)!, HKQuantityType.quantityType(forIdentifier: .headphoneAudioExposure)!, HKQuantityType.quantityType(forIdentifier: .respiratoryRate)!, HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic)!, HKQuantityType.quantityType(forIdentifier: .bloodPressureDiastolic)!, HKQuantityType.quantityType(forIdentifier: .peakExpiratoryFlowRate)!, HKQuantityType.quantityType(forIdentifier: .forcedVitalCapacity)!, HKQuantityType.quantityType(forIdentifier: .forcedExpiratoryVolume1)!, HKQuantityType.quantityType(forIdentifier: .dietaryEnergyConsumed)!, HKQuantityType.quantityType(forIdentifier: .dietaryProtein)!, HKQuantityType.quantityType(forIdentifier: .dietaryCarbohydrates)!, HKQuantityType.quantityType(forIdentifier: .dietaryFatTotal)!, HKQuantityType.quantityType(forIdentifier: .dietarySugar)!, HKQuantityType.quantityType(forIdentifier: .dietarySodium)!, HKQuantityType.quantityType(forIdentifier: .dietaryFiber)!, HKQuantityType.quantityType(forIdentifier: .dietaryVitaminC)!, HKQuantityType.quantityType(forIdentifier: .dietaryVitaminD)!, HKQuantityType.quantityType(forIdentifier: .dietaryCalcium)!, HKQuantityType.quantityType(forIdentifier: .dietaryIron)!, HKQuantityType.quantityType(forIdentifier: .dietaryWater)!, HKCategoryType.categoryType(forIdentifier: .mindfulSession)!, HKCategoryType.categoryType(forIdentifier: .highHeartRateEvent)!, HKCategoryType.categoryType(forIdentifier: .lowHeartRateEvent)!, HKCategoryType.categoryType(forIdentifier: .irregularHeartRhythmEvent)!, HKCategoryType.categoryType(forIdentifier: .menstrualFlow)!, HKCategoryType.categoryType(forIdentifier: .ovulationTestResult)!, HKCategoryType.categoryType(forIdentifier: .cervicalMucusQuality)!, HKCategoryType.categoryType(forIdentifier: .basalBodyTemperature)!, HKQuantityType.quantityType(forIdentifier: .bodyMass)!, HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage)!, HKQuantityType.quantityType(forIdentifier: .leanBodyMass)!, HKQuantityType.quantityType(forIdentifier: .waistCircumference)!, HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!, HKQuantityType.quantityType(forIdentifier: .insulinDelivery)!, HKQuantityType.quantityType(forIdentifier: .sixMinuteWalkTestDistance)!, HKQuantityType.quantityType(forIdentifier: .walkingSpeed)!, HKQuantityType.quantityType(forIdentifier: .walkingStepLength)!, HKQuantityType.quantityType(forIdentifier: .walkingAsymmetryPercentage)!, HKQuantityType.quantityType(forIdentifier: .walkingDoubleSupportPercentage)!, HKQuantityType.quantityType(forIdentifier: .stairAscentSpeed)!, HKQuantityType.quantityType(forIdentifier: .stairDescentSpeed)!, HKQuantityType.quantityType(forIdentifier: .appleStandTime)!, HKQuantityType.quantityType(forIdentifier: .appleExerciseTime)!
     ]
 
     func requestAdvancedAuthorization() async {
         do {
             try await healthStore.requestAuthorization(
-                toShare: [],
-                read: advancedReadTypes
+                toShare: [], read: advancedReadTypes
             )
             await fetchAdvancedMetrics()
         } catch {
@@ -102,20 +46,20 @@ class AdvancedHealthMetrics: ObservableObject {
 
     func fetchAdvancedMetrics() async {
         await withTaskGroup(of: Void.self) { group in
-            group.addTask { await self.fetchVO2Max() }
-            group.addTask { await self.fetchRestingHeartRate() }
-            group.addTask { await self.fetchHeartRateVariability() }
-            group.addTask { await self.fetchSleepData() }
-            group.addTask { await self.fetchRecentWorkouts() }
-            group.addTask { await self.fetchNutritionData() }
-            group.addTask { await self.fetchRespiratoryRate() }
-            group.addTask { await self.fetchBodyTemperature() }
-            group.addTask { await self.fetchBloodPressure() }
-            group.addTask { await self.fetchOxygenSaturation() }
-            group.addTask { await self.fetchEnvironmentalAudio() }
-            group.addTask { await self.fetchMenstrualHealth() }
-            group.addTask { await self.fetchMindfulnessData() }
-            group.addTask { await self.calculateHealthScore() }
+            group.addTask { await self.fetchVO2Max() } 
+            group.addTask { await self.fetchRestingHeartRate() } 
+            group.addTask { await self.fetchHeartRateVariability() } 
+            group.addTask { await self.fetchSleepData() } 
+            group.addTask { await self.fetchRecentWorkouts() } 
+            group.addTask { await self.fetchNutritionData() } 
+            group.addTask { await self.fetchRespiratoryRate() } 
+            group.addTask { await self.fetchBodyTemperature() } 
+            group.addTask { await self.fetchBloodPressure() } 
+            group.addTask { await self.fetchOxygenSaturation() } 
+            group.addTask { await self.fetchEnvironmentalAudio() } 
+            group.addTask { await self.fetchMenstrualHealth() } 
+            group.addTask { await self.fetchMindfulnessData() } 
+            group.addTask { await self.calculateHealthScore() } 
         }
     }
 
@@ -123,13 +67,9 @@ class AdvancedHealthMetrics: ObservableObject {
         guard let vo2MaxType = HKQuantityType.quantityType(forIdentifier: .vo2Max) else { return }
 
         let query = HKSampleQuery(
-            sampleType: vo2MaxType,
-            predicate: nil,
-            limit: 1,
-            sortDescriptors: [
+            sampleType: vo2MaxType, predicate: nil, limit: 1, sortDescriptors: [
                 NSSortDescriptor(
-                    key: HKSampleSortIdentifierEndDate,
-                    ascending: false
+                    key: HKSampleSortIdentifierEndDate, ascending: false
                 )
             ]
         ) { [weak self] _, samples, _ in
@@ -152,13 +92,9 @@ class AdvancedHealthMetrics: ObservableObject {
         ) else { return }
 
         let query = HKSampleQuery(
-            sampleType: restingHRType,
-            predicate: nil,
-            limit: 1,
-            sortDescriptors: [
+            sampleType: restingHRType, predicate: nil, limit: 1, sortDescriptors: [
                 NSSortDescriptor(
-                    key: HKSampleSortIdentifierEndDate,
-                    ascending: false
+                    key: HKSampleSortIdentifierEndDate, ascending: false
                 )
             ]
         ) { [weak self] _, samples, _ in
@@ -180,13 +116,9 @@ class AdvancedHealthMetrics: ObservableObject {
         ) else { return }
 
         let query = HKSampleQuery(
-            sampleType: hrvType,
-            predicate: nil,
-            limit: 1,
-            sortDescriptors: [
+            sampleType: hrvType, predicate: nil, limit: 1, sortDescriptors: [
                 NSSortDescriptor(
-                    key: HKSampleSortIdentifierEndDate,
-                    ascending: false
+                    key: HKSampleSortIdentifierEndDate, ascending: false
                 )
             ]
         ) { [weak self] _, samples, _ in
@@ -209,19 +141,13 @@ class AdvancedHealthMetrics: ObservableObject {
 
         let startDate = Calendar.current.date(byAdding: .day, value: -7, to: Date())!
         let predicate = HKQuery.predicateForSamples(
-            withStart: startDate,
-            end: Date(),
-            options: .strictStartDate
+            withStart: startDate, end: Date(), options: .strictStartDate
         )
 
         let query = HKSampleQuery(
-            sampleType: sleepType,
-            predicate: predicate,
-            limit: HKObjectQueryNoLimit,
-            sortDescriptors: [
+            sampleType: sleepType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [
                 NSSortDescriptor(
-                    key: HKSampleSortIdentifierEndDate,
-                    ascending: false
+                    key: HKSampleSortIdentifierEndDate, ascending: false
                 )
             ]
         ) { [weak self] _, samples, _ in
@@ -239,19 +165,13 @@ class AdvancedHealthMetrics: ObservableObject {
         let workoutType = HKWorkoutType.workoutType()
         let startDate = Calendar.current.date(byAdding: .day, value: -7, to: Date())!
         let predicate = HKQuery.predicateForSamples(
-            withStart: startDate,
-            end: Date(),
-            options: .strictStartDate
+            withStart: startDate, end: Date(), options: .strictStartDate
         )
 
         let query = HKSampleQuery(
-            sampleType: workoutType,
-            predicate: predicate,
-            limit: HKObjectQueryNoLimit,
-            sortDescriptors: [
+            sampleType: workoutType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [
                 NSSortDescriptor(
-                    key: HKSampleSortIdentifierEndDate,
-                    ascending: false
+                    key: HKSampleSortIdentifierEndDate, ascending: false
                 )
             ]
         ) { [weak self] _, samples, _ in
@@ -274,13 +194,9 @@ class AdvancedHealthMetrics: ObservableObject {
         ) else { return }
 
         let query = HKSampleQuery(
-            sampleType: respiratoryType,
-            predicate: nil,
-            limit: 1,
-            sortDescriptors: [
+            sampleType: respiratoryType, predicate: nil, limit: 1, sortDescriptors: [
                 NSSortDescriptor(
-                    key: HKSampleSortIdentifierEndDate,
-                    ascending: false
+                    key: HKSampleSortIdentifierEndDate, ascending: false
                 )
             ]
         ) { [weak self] _, samples, _ in
@@ -302,13 +218,9 @@ class AdvancedHealthMetrics: ObservableObject {
         ) else { return }
 
         let query = HKSampleQuery(
-            sampleType: tempType,
-            predicate: nil,
-            limit: 1,
-            sortDescriptors: [
+            sampleType: tempType, predicate: nil, limit: 1, sortDescriptors: [
                 NSSortDescriptor(
-                    key: HKSampleSortIdentifierEndDate,
-                    ascending: false
+                    key: HKSampleSortIdentifierEndDate, ascending: false
                 )
             ]
         ) { [weak self] _, samples, _ in
@@ -327,8 +239,7 @@ class AdvancedHealthMetrics: ObservableObject {
     private func fetchBloodPressure() async {
         guard let systolicType = HKQuantityType.quantityType(
             forIdentifier: .bloodPressureSystolic
-        ),
-        let diastolicType = HKQuantityType.quantityType(
+        ), let diastolicType = HKQuantityType.quantityType(
             forIdentifier: .bloodPressureDiastolic
         ) else { return }
 
@@ -336,13 +247,9 @@ class AdvancedHealthMetrics: ObservableObject {
         await withTaskGroup(of: Void.self) { group in
             group.addTask {
                 let query = HKSampleQuery(
-                    sampleType: systolicType,
-                    predicate: nil,
-                    limit: 1,
-                    sortDescriptors: [
+                    sampleType: systolicType, predicate: nil, limit: 1, sortDescriptors: [
                         NSSortDescriptor(
-                            key: HKSampleSortIdentifierEndDate,
-                            ascending: false
+                            key: HKSampleSortIdentifierEndDate, ascending: false
                         )
                     ]
                 ) { [weak self] _, samples, _ in
@@ -355,9 +262,7 @@ class AdvancedHealthMetrics: ObservableObject {
                     DispatchQueue.main.async {
                         if self?.bloodPressure == nil {
                             self?.bloodPressure = BloodPressureReading(
-                                systolic: systolic,
-                                diastolic: 0,
-                                date: sample.endDate
+                                systolic: systolic, diastolic: 0, date: sample.endDate
                             )
                         } else {
                             self?.bloodPressure?.systolic = systolic
@@ -369,13 +274,9 @@ class AdvancedHealthMetrics: ObservableObject {
 
             group.addTask {
                 let query = HKSampleQuery(
-                    sampleType: diastolicType,
-                    predicate: nil,
-                    limit: 1,
-                    sortDescriptors: [
+                    sampleType: diastolicType, predicate: nil, limit: 1, sortDescriptors: [
                         NSSortDescriptor(
-                            key: HKSampleSortIdentifierEndDate,
-                            ascending: false
+                            key: HKSampleSortIdentifierEndDate, ascending: false
                         )
                     ]
                 ) { [weak self] _, samples, _ in
@@ -388,9 +289,7 @@ class AdvancedHealthMetrics: ObservableObject {
                     DispatchQueue.main.async {
                         if self?.bloodPressure == nil {
                             self?.bloodPressure = BloodPressureReading(
-                                systolic: 0,
-                                diastolic: diastolic,
-                                date: sample.endDate
+                                systolic: 0, diastolic: diastolic, date: sample.endDate
                             )
                         } else {
                             self?.bloodPressure?.diastolic = diastolic
@@ -408,13 +307,9 @@ class AdvancedHealthMetrics: ObservableObject {
         ) else { return }
 
         let query = HKSampleQuery(
-            sampleType: oxygenType,
-            predicate: nil,
-            limit: 1,
-            sortDescriptors: [
+            sampleType: oxygenType, predicate: nil, limit: 1, sortDescriptors: [
                 NSSortDescriptor(
-                    key: HKSampleSortIdentifierEndDate,
-                    ascending: false
+                    key: HKSampleSortIdentifierEndDate, ascending: false
                 )
             ]
         ) { [weak self] _, samples, _ in
@@ -439,12 +334,9 @@ class AdvancedHealthMetrics: ObservableObject {
         let predicate = HKQuery.predicateForSamples(withStart: sevenDaysAgo, end: Date())
 
         let query = HKStatisticsQuery(
-            quantityType: audioType,
-            quantitySamplePredicate: predicate,
-            options: .discreteAverage
+            quantityType: audioType, quantitySamplePredicate: predicate, options: .discreteAverage
         ) { [weak self] _, statistics, _ in
-            guard let statistics = statistics,
-                  let average = statistics.averageQuantity() else { return }
+            guard let statistics = statistics, let average = statistics.averageQuantity() else { return }
 
             DispatchQueue.main.async {
                 self?.environmentalAudioExposure = average.doubleValue(
@@ -466,13 +358,9 @@ class AdvancedHealthMetrics: ObservableObject {
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: Date())
 
         let query = HKSampleQuery(
-            sampleType: menstrualType,
-            predicate: predicate,
-            limit: HKObjectQueryNoLimit,
-            sortDescriptors: [
+            sampleType: menstrualType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [
                 NSSortDescriptor(
-                    key: HKSampleSortIdentifierEndDate,
-                    ascending: false
+                    key: HKSampleSortIdentifierEndDate, ascending: false
                 )
             ]
         ) { [weak self] _, samples, _ in
@@ -498,13 +386,9 @@ class AdvancedHealthMetrics: ObservableObject {
         let predicate = HKQuery.predicateForSamples(withStart: sevenDaysAgo, end: Date())
 
         let query = HKSampleQuery(
-            sampleType: mindfulType,
-            predicate: predicate,
-            limit: HKObjectQueryNoLimit,
-            sortDescriptors: [
+            sampleType: mindfulType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [
                 NSSortDescriptor(
-                    key: HKSampleSortIdentifierEndDate,
-                    ascending: false
+                    key: HKSampleSortIdentifierEndDate, ascending: false
                 )
             ]
         ) { [weak self] _, samples, _ in
@@ -566,8 +450,7 @@ class AdvancedHealthMetrics: ObservableObject {
             return 25.0
         } else {
             let deviation = min(
-                abs(restingHR - optimalRange.lowerBound),
-                abs(restingHR - optimalRange.upperBound)
+                abs(restingHR - optimalRange.lowerBound), abs(restingHR - optimalRange.upperBound)
             )
             return max(0, 25.0 - (deviation * 0.5))
         }
@@ -592,11 +475,8 @@ class AdvancedHealthMetrics: ObservableObject {
         let recentSleep = sleepSamples.filter { sample in
             Calendar.current.isDate(sample.startDate, inSameDayAs: Date()) ||
             Calendar.current.isDate(
-                sample.startDate,
-                inSameDayAs: Calendar.current.date(
-                    byAdding: .day,
-                    value: -1,
-                    to: Date()
+                sample.startDate, inSameDayAs: Calendar.current.date(
+                    byAdding: .day, value: -1, to: Date()
                 )!
             )
         }
@@ -653,15 +533,12 @@ class AdvancedHealthMetrics: ObservableObject {
     private func setupBackgroundObservers() {
         // Set up observers for real-time health data updates
         let criticalTypes = [
-            HKQuantityType.quantityType(forIdentifier: .heartRate)!,
-            HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic)!,
-            HKQuantityType.quantityType(forIdentifier: .oxygenSaturation)!
+            HKQuantityType.quantityType(forIdentifier: .heartRate)!, HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic)!, HKQuantityType.quantityType(forIdentifier: .oxygenSaturation)!
         ]
 
         for type in criticalTypes {
             let observer = HKObserverQuery(
-                sampleType: type,
-                predicate: nil
+                sampleType: type, predicate: nil
             ) { [weak self] _, completionHandler, _ in
                 // Fetch latest data when new samples are available
                 Task {
@@ -684,55 +561,43 @@ class AdvancedHealthMetrics: ObservableObject {
 
     private func fetchNutritionData() async {
         let nutritionTypes = [
-            HKQuantityType.quantityType(forIdentifier: .dietaryEnergyConsumed)!,
-            HKQuantityType.quantityType(forIdentifier: .dietaryProtein)!,
-            HKQuantityType.quantityType(forIdentifier: .dietaryCarbohydrates)!,
-            HKQuantityType.quantityType(forIdentifier: .dietaryFatTotal)!,
-            HKQuantityType.quantityType(forIdentifier: .dietaryFiber)!,
-            HKQuantityType.quantityType(forIdentifier: .dietarySugar)!,
-            HKQuantityType.quantityType(forIdentifier: .dietarySodium)!,
-            HKQuantityType.quantityType(forIdentifier: .dietaryWater)!
+            HKQuantityType.quantityType(forIdentifier: .dietaryEnergyConsumed)!, HKQuantityType.quantityType(forIdentifier: .dietaryProtein)!, HKQuantityType.quantityType(forIdentifier: .dietaryCarbohydrates)!, HKQuantityType.quantityType(forIdentifier: .dietaryFatTotal)!, HKQuantityType.quantityType(forIdentifier: .dietaryFiber)!, HKQuantityType.quantityType(forIdentifier: .dietarySugar)!, HKQuantityType.quantityType(forIdentifier: .dietarySodium)!, HKQuantityType.quantityType(forIdentifier: .dietaryWater)!
         ]
 
         let startDate = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
         let predicate = HKQuery.predicateForSamples(
-            withStart: startDate,
-            end: Date(),
-            options: .strictStartDate
+            withStart: startDate, end: Date(), options: .strictStartDate
         )
 
         var nutritionData = NutritionData()
 
         for type in nutritionTypes {
             let query = HKStatisticsQuery(
-                quantityType: type,
-                quantitySamplePredicate: predicate,
-                options: .cumulativeSum
+                quantityType: type, quantitySamplePredicate: predicate, options: .cumulativeSum
             ) { _, statistics, _ in
-                guard let statistics = statistics,
-                      let sum = statistics.sumQuantity() else { return }
+                guard let statistics = statistics, let sum = statistics.sumQuantity() else { return }
 
                 DispatchQueue.main.async {
                     switch type.identifier {
-                    case HKQuantityTypeIdentifier.dietaryEnergyConsumed.rawValue:
+                    case HKQuantityTypeIdentifier.dietaryEnergyConsumed.rawValue: 
                         nutritionData.calories = sum.doubleValue(for: .kilocalorie())
-                    case HKQuantityTypeIdentifier.dietaryProtein.rawValue:
+                    case HKQuantityTypeIdentifier.dietaryProtein.rawValue: 
                         nutritionData.protein = sum.doubleValue(for: .gram())
-                    case HKQuantityTypeIdentifier.dietaryCarbohydrates.rawValue:
+                    case HKQuantityTypeIdentifier.dietaryCarbohydrates.rawValue: 
                         nutritionData.carbs = sum.doubleValue(for: .gram())
-                    case HKQuantityTypeIdentifier.dietaryFatTotal.rawValue:
+                    case HKQuantityTypeIdentifier.dietaryFatTotal.rawValue: 
                         nutritionData.fat = sum.doubleValue(for: .gram())
-                    case HKQuantityTypeIdentifier.dietaryFiber.rawValue:
+                    case HKQuantityTypeIdentifier.dietaryFiber.rawValue: 
                         nutritionData.fiber = sum.doubleValue(for: .gram())
-                    case HKQuantityTypeIdentifier.dietarySugar.rawValue:
+                    case HKQuantityTypeIdentifier.dietarySugar.rawValue: 
                         nutritionData.sugar = sum.doubleValue(for: .gram())
-                    case HKQuantityTypeIdentifier.dietarySodium.rawValue:
+                    case HKQuantityTypeIdentifier.dietarySodium.rawValue: 
                         nutritionData.sodium = sum.doubleValue(for: .gram())
-                    case HKQuantityTypeIdentifier.dietaryWater.rawValue:
+                    case HKQuantityTypeIdentifier.dietaryWater.rawValue: 
                         nutritionData.water = sum.doubleValue(
                             for: .literUnit(with: .milli)
                         )
-                    default:
+                    default: 
                         break
                     }
 
@@ -755,7 +620,7 @@ struct WorkoutSummary {
 
     init(workouts: [HKWorkout]) {
         totalWorkouts = workouts.count
-        totalDuration = workouts.reduce(0) { $0 + $1.duration }
+        totalDuration = workouts.reduce(0) { $0 + $1.duration } 
         totalEnergyBurned = workouts.compactMap {
             $0.totalEnergyBurned?.doubleValue(for: .kilocalorie())
         }.reduce(0, +)
@@ -789,9 +654,7 @@ struct NutritionData {
         let fatPercent = (fat * 9) / calories * 100
 
         return MacronutrientBalance(
-            proteinPercent: proteinPercent,
-            carbPercent: carbPercent,
-            fatPercent: fatPercent
+            proteinPercent: proteinPercent, carbPercent: carbPercent, fatPercent: fatPercent
         )
     }
 }
@@ -871,7 +734,7 @@ struct MenstrualHealthData {
 
         // Calculate average cycle length (simplified)
         if flowSamples.count > 1 {
-            let periods = flowSamples.compactMap { $0.startDate }
+            let periods = flowSamples.compactMap { $0.startDate } 
             let intervals = zip(periods, periods.dropFirst()).map {
                 $1.timeIntervalSince($0)
             }
@@ -905,30 +768,30 @@ struct HealthScore {
         overallScore = heartRateScore + activityScore + sleepScore + nutritionScore
 
         switch overallScore {
-        case 90...100:
+        case 90...100: 
             grade = "A+"
-        case 80..<90:
+        case 80..<90: 
             grade = "A"
-        case 70..<80:
+        case 70..<80: 
             grade = "B"
-        case 60..<70:
+        case 60..<70: 
             grade = "C"
-        case 50..<60:
+        case 50..<60: 
             grade = "D"
-        default:
+        default: 
             grade = "F"
         }
     }
 
     var scoreColor: Color {
         switch overallScore {
-        case 80...100:
+        case 80...100: 
             return .green
-        case 60..<80:
+        case 60..<80: 
             return .yellow
-        case 40..<60:
+        case 40..<60: 
             return .orange
-        default:
+        default: 
             return .red
         }
     }

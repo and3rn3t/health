@@ -681,7 +681,7 @@ struct VitalSenseNavigationHeader: View {
 }
 
 // MARK: - Press Events View Modifier
-struct PressEvents: ViewModifier {
+struct VitalSensePressEvents: ViewModifier {
     let onPress: () -> Void
     let onRelease: () -> Void
 
@@ -697,7 +697,7 @@ struct PressEvents: ViewModifier {
 
 extension View {
     func pressEvents(onPress: @escaping () -> Void, onRelease: @escaping () -> Void) -> some View {
-        modifier(PressEvents(onPress: onPress, onRelease: onRelease))
+        modifier(VitalSensePressEvents(onPress: onPress, onRelease: onRelease))
     }
 }
 
@@ -842,7 +842,7 @@ struct VitalSenseFloatingActionButton: View {
 }
 
 /// Interactive Progress Ring with VitalSense styling and advanced animations
-struct VitalSenseProgressRing: View {
+struct VitalSenseProgressRingAdvanced: View {
     let progress: Double
     let lineWidth: CGFloat
     let size: CGFloat

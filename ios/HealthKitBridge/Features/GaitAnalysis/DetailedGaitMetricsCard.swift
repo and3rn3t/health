@@ -79,17 +79,15 @@ struct DetailedGaitMetricsCard: View {
                     }
             )
 
-            // Enhanced Metric Selector with Animations
-            VitalSenseEnhancedMetricSelectorView(
-                selectedMetric: $selectedMetric,
-                lastSwipeDirection: lastSwipeDirection
+            // Metric Selector with Animations
+            VitalSenseMetricSelectorView(
+                selectedMetric: $selectedMetric
             )
 
             // Interactive Analysis Section
-            VitalSenseInteractiveAnalysisView(
+            VitalSenseDetailedMetricAnalysisView(
                 gaitMetrics: gaitMetrics,
-                selectedMetric: selectedMetric,
-                showDetailView: $showDetailView
+                selectedMetric: selectedMetric
             )
         }
         .padding(VitalSenseBrand.Layout.large)
@@ -166,106 +164,6 @@ struct VitalSenseGaitMetricsGridView: View {
         // For now, return neutral or implement based on recent trends
         return .neutral
     }
-                status: getAsymmetryStatus(),
-                isSelected: selectedMetric == .asymmetry
-            ) {
-                selectedMetric = .asymmetry
-            }
-        }
-    }
-
-    // MARK: - Status Helpers
-
-    private func getSpeedStatus() -> MetricStatus {
-        guard let speed = gaitMetrics.averageWalkingSpeed else { return .unknown }
-
-        if speed >= 1.2 { return .excellent }
-        else if speed >= 1.0 { return .good }
-        else if speed >= 0.8 { return .fair }
-        else { return .poor }
-    }
-
-    private func getStepLengthStatus() -> MetricStatus {
-        guard let stepLength = gaitMetrics.averageStepLength else { return .unknown }
-
-        let lengthCm = stepLength * 100
-        if lengthCm >= 65 && lengthCm <= 75 { return .excellent }
-        else if lengthCm >= 55 && lengthCm <= 85 { return .good }
-        else if lengthCm >= 45 && lengthCm <= 95 { return .fair }
-        else { return .poor }
-    }
-
-    private func getCadenceStatus() -> MetricStatus {
-        guard let cadence = gaitMetrics.cadence else { return .unknown }
-
-        if cadence >= 110 && cadence <= 130 { return .excellent }
-        else if cadence >= 100 && cadence <= 140 { return .good }
-        else if cadence >= 90 && cadence <= 150 { return .fair }
-        else { return .poor }
-    }
-
-    private func getAsymmetryStatus() -> MetricStatus {
-        guard let asymmetry = gaitMetrics.walkingAsymmetry else { return .unknown }
-
-        let asymmetryPercent = asymmetry * 100
-        if asymmetryPercent <= 3.0 { return .excellent }
-        else if asymmetryPercent <= 5.0 { return .good }
-        else if asymmetryPercent <= 8.0 { return .fair }
-        else { return .poor }
-    }
-}
-
-// MARK: - Metric Tile View
-struct MetricTileView: View {
-    let icon: String
-    let title: String
-    let value: String
-    let unit: String
-    let status: MetricStatus
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 8) {
-                HStack {
-                    Image(systemName: icon)
-                        .foregroundColor(status.color)
-                        .font(.title3)
-                    Spacer()
-                    Circle()
-                        .fill(status.color)
-                        .frame(width: 8, height: 8)
-                }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(alignment: .bottom, spacing: 2) {
-                        Text(value)
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(status.color)
-                        Text(unit)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-
-                    Text(title)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.leading)
-                }
-
-                Spacer()
-            }
-        }
-        .padding(12)
-        .background(isSelected ? status.color.opacity(0.1) : Color(.secondarySystemBackground))
-        .cornerRadius(8)
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(isSelected ? status.color : Color.clear, lineWidth: 2)
-        )
-    }
 }
 
 // MARK: - VitalSense Gait Trends Chart View
@@ -274,70 +172,7 @@ struct VitalSenseGaitTrendsChartView: View {
     @StateObject private var trendsData = GaitTrendsData()
     @State private var animateChart = false
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: VitalSenseBrand.Layout.medium) {
-            HStack {
-                VStack(alignment: .leading, spacing: VitalSenseBrand.Layout.small) {
-                    Text("7-Day Trend")
-                        .font(VitalSenseBrand.Typography.heading3)
-                        .foregroundStyle(VitalSenseBrand.Colors.textPrimary)
-
-                    Text("Track your \(selectedMetric.displayName.lowercased()) progress")
-                        .font(VitalSenseBrand.Typography.caption)
-                        .foregroundStyle(VitalSenseBrand.Colors.textSecondary)
-                }
-
-                Spacer()
-
-                // Metric indicator
-                HStack(spacing: VitalSenseBrand.Layout.small) {
-                    Image(systemName: selectedMetric.vitalSenseIcon)
-                        .foregroundStyle(selectedMetric.vitalSenseGradient)
-                    Text(selectedMetric.displayName)
-                        .font(VitalSenseBrand.Typography.body)
-                        .foregroundStyle(selectedMetric.vitalSenseColor)
-                }
-                .padding(.horizontal, VitalSenseBrand.Layout.medium)
-                .padding(.vertical, VitalSenseBrand.Layout.small)
-                .background(selectedMetric.vitalSenseColor.opacity(0.1))
-                .cornerRadius(VitalSenseBrand.Layout.cornerRadius)
-            }
-
-            Chart(trendsData.getTrendData(for: selectedMetric)) { dataPoint in
-                LineMark(
-                    x: .value("Date", dataPoint.date),
-                    y: .value("Value", dataPoint.value)
-                )
-                .foregroundStyle(selectedMetric.vitalSenseGradient)
-                .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
-
-                AreaMark(
-                    x: .value("Date", dataPoint.date),
-                    yStart: .value("Min", trendsData.getMinValue(for: selectedMetric)),
-                    yEnd: .value("Value", dataPoint.value)
-                )
-                .foregroundStyle(selectedMetric.vitalSenseGradient.opacity(0.3))
-
-                PointMark(
-                    x: .value("Date", dataPoint.date),
-                    y: .value("Value", dataPoint.value)
-                )
-                .foregroundStyle(selectedMetric.vitalSenseColor)
-                .symbolSize(60)
-            }
-            .frame(height: 200)
-            .chartXAxis {
-                AxisMarks(values: .stride(by: .day)) { _ in
-                    AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                        .foregroundStyle(VitalSenseBrand.Colors.textMuted.opacity(0.3))
-                    AxisTick(stroke: StrokeStyle(lineWidth: 0.5))
-                        .foregroundStyle(VitalSenseBrand.Colors.textMuted)
-                    AxisValueLabel()
-                        .font(VitalSenseBrand.Typography.caption)
-                        .foregroundStyle(VitalSenseBrand.Colors.textSecondary)
-                }
-            }
-            .chartYAxis {
+    }
                 AxisMarks { _ in
                     AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
                         .foregroundStyle(VitalSenseBrand.Colors.textMuted.opacity(0.3))
@@ -390,30 +225,42 @@ struct TrendSummaryView: View {
     let metric: GaitMetricType
     let data: [GaitTrendDataPoint]
 
-    private var trendDirection: TrendDirection {
-        guard data.count >= 2 else { return .stable }
-
+    private var changeRatio: Double {
+        guard data.count >= 2 else { return 0 }
         let recent = Array(data.suffix(3))
         let earlier = Array(data.prefix(3))
+        let recentAvg = recent.map { $0.value }.reduce(0, +) / Double(max(recent.count, 1))
+        let earlierAvg = earlier.map { $0.value }.reduce(0, +) / Double(max(earlier.count, 1))
+        guard earlierAvg != 0 else { return 0 }
+        return (recentAvg - earlierAvg) / earlierAvg
+    }
 
-        let recentAvg = recent.map { $0.value }.reduce(0, +) / Double(recent.count)
-        let earlierAvg = earlier.map { $0.value }.reduce(0, +) / Double(earlier.count)
+    private var iconName: String {
+        if changeRatio > 0.05 { return "arrow.up.right" }
+        if changeRatio < -0.05 { return "arrow.down.right" }
+        return "arrow.right"
+    }
 
-        let change = (recentAvg - earlierAvg) / earlierAvg
+    private var color: Color {
+        if changeRatio > 0.05 { return .green }
+        if changeRatio < -0.05 { return .red }
+        return .blue
+    }
 
-        if change > 0.05 { return .improving }
-        else if change < -0.05 { return .declining }
-        else { return .stable }
+    private var descriptionText: String {
+        if changeRatio > 0.05 { return "Improving" }
+        if changeRatio < -0.05 { return "Declining" }
+        return "Stable"
     }
 
     var body: some View {
         HStack {
-            Image(systemName: trendDirection.icon)
-                .foregroundColor(trendDirection.color)
+            Image(systemName: iconName)
+                .foregroundColor(color)
 
-            Text(trendDirection.description)
+            Text(descriptionText)
                 .font(.caption)
-                .foregroundColor(trendDirection.color)
+                .foregroundColor(color)
 
             Spacer()
 
@@ -426,7 +273,7 @@ struct TrendSummaryView: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(trendDirection.color.opacity(0.1))
+        .background(color.opacity(0.1))
         .cornerRadius(6)
     }
 }
@@ -748,82 +595,6 @@ struct VitalSenseDetailedMetricAnalysisView: View {
 }
 
 // MARK: - Supporting Types
-
-enum GaitMetricType: String, CaseIterable {
-    case walkingSpeed = "walking_speed"
-    case stepLength = "step_length"
-    case cadence = "cadence"
-    case asymmetry = "asymmetry"
-
-    var displayName: String {
-        switch self {
-        case .walkingSpeed: return "Speed"
-        case .stepLength: return "Step Length"
-        case .cadence: return "Cadence"
-        case .asymmetry: return "Symmetry"
-        }
-    }
-
-    var color: Color {
-        switch self {
-        case .walkingSpeed: return .blue
-        case .stepLength: return .green
-        case .cadence: return .orange
-        case .asymmetry: return .purple
-        }
-    }
-
-    func formatValue(_ value: Double) -> String {
-        switch self {
-        case .walkingSpeed: return String(format: "%.2f m/s", value)
-        case .stepLength: return String(format: "%.0f cm", value * 100)
-        case .cadence: return String(format: "%.0f spm", value)
-        case .asymmetry: return String(format: "%.1f%%", (1.0 - value) * 100)
-        }
-    }
-}
-
-enum MetricStatus {
-    case excellent, good, fair, poor, unknown
-
-    var color: Color {
-        switch self {
-        case .excellent: return .green
-        case .good: return .blue
-        case .fair: return .yellow
-        case .poor: return .red
-        case .unknown: return .gray
-        }
-    }
-}
-
-enum TrendDirection {
-    case improving, stable, declining
-
-    var icon: String {
-        switch self {
-        case .improving: return "arrow.up.right"
-        case .stable: return "arrow.right"
-        case .declining: return "arrow.down.right"
-        }
-    }
-
-    var color: Color {
-        switch self {
-        case .improving: return .green
-        case .stable: return .blue
-        case .declining: return .red
-        }
-    }
-
-    var description: String {
-        switch self {
-        case .improving: return "Improving"
-        case .stable: return "Stable"
-        case .declining: return "Declining"
-        }
-    }
-}
 
 // MARK: - Sample Data Provider
 class GaitTrendsData: ObservableObject {

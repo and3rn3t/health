@@ -58,19 +58,19 @@ jobs:
           echo "Available existing devices:"
           xcrun simctl list devices available | grep iPhone || true
 
-          # Determine latest available iOS runtime dynamically
-          RUNTIME=$(xcrun simctl list runtimes | grep -E "iOS .*\(.*available\)" | tail -1 | awk -F '[()]' '{print $2}' | tr -d ' ')
-          if [ -z "$RUNTIME" ]; then
-            echo "❌ No iOS runtime found"; xcrun simctl list runtimes; exit 1
+          # Determine latest available iOS runtime identifier (e.g., com.apple.CoreSimulator.SimRuntime.iOS-18-0)
+          RUNTIME_ID=$(xcrun simctl list runtimes | awk '/com\.apple\.CoreSimulator\.SimRuntime\.iOS/ {print $NF}' | tail -1)
+          if [ -z "$RUNTIME_ID" ]; then
+            echo "❌ No iOS runtime identifier found"; xcrun simctl list runtimes; exit 1
           fi
-          echo "Using runtime: $RUNTIME"
+          echo "Using runtime: $RUNTIME_ID"
 
-          echo "Creating iPhone 16 Pro simulator..."
+          echo "Creating simulator (iPhone 14 preferred, fallback iPhone SE (3rd generation))..."
           set +e
-          DEVICE_ID=$(xcrun simctl create "iPhone 16 Pro CI" "iPhone 16 Pro" "$RUNTIME" 2>/dev/null)
+          DEVICE_ID=$(xcrun simctl create "iPhone 14 CI" "iPhone 14" "$RUNTIME_ID" 2>/dev/null)
           if [ -z "$DEVICE_ID" ]; then
-            echo "Primary create failed, trying generic iPhone..."
-            DEVICE_ID=$(xcrun simctl create "iPhone CI" "iPhone 16" "$RUNTIME" 2>/dev/null)
+            echo "Primary create failed, trying fallback device type..."
+            DEVICE_ID=$(xcrun simctl create "iPhone CI" "iPhone SE (3rd generation)" "$RUNTIME_ID" 2>/dev/null)
           fi
           set -e
           if [ -z "$DEVICE_ID" ]; then
@@ -97,7 +97,7 @@ jobs:
           echo "Running tests..."
 
           # Find the device we created
-          DEVICE_ID=$(xcrun simctl list devices | grep -E "iPhone (16 Pro CI|CI)" | head -1 | grep -o '[A-F0-9-]\{36\}')
+          DEVICE_ID=$(xcrun simctl list devices | grep -E "(iPhone 14 CI|iPhone CI)" | head -1 | grep -o '[A-F0-9-]\{36\}')
           echo "Using device ID: $DEVICE_ID"
 
           xcodebuild test-without-building \
@@ -128,7 +128,7 @@ jobs:
         if: always()
         run: |
           set +e
-          UDID=$(xcrun simctl list devices | grep -E "iPhone (16 Pro CI|CI)" | head -1 | grep -o '[A-F0-9-]\{36\}')
+          UDID=$(xcrun simctl list devices | grep -E "(iPhone 14 CI|iPhone CI)" | head -1 | grep -o '[A-F0-9-]\{36\}')
           if [ -n "$UDID" ]; then
             xcrun simctl shutdown "$UDID" 2>/dev/null || true
             xcrun simctl delete "$UDID" 2>/dev/null || true

@@ -1,6 +1,7 @@
 import SwiftUI
 import CoreLocation
 import HealthKit
+import CoreMotion
 
 // MARK: - Walking Coach View
 struct WalkingCoachView: View {
@@ -134,7 +135,9 @@ class WalkingCoachManager: NSObject, ObservableObject {
     private let motionManager = CMMotionManager()
 
     private var workoutSession: HKWorkoutSession?
+    #if os(watchOS)
     private var workoutBuilder: HKLiveWorkoutBuilder?
+    #endif
     private var startTime: Date?
     private var lastLocation: CLLocation?
     private var coachingTimer: Timer?
@@ -221,10 +224,9 @@ class WalkingCoachManager: NSObject, ObservableObject {
 
         do {
             workoutSession = try HKWorkoutSession(healthStore: healthStore, configuration: configuration)
+            #if os(watchOS)
             workoutBuilder = workoutSession?.associatedWorkoutBuilder()
-
             workoutBuilder?.dataSource = HKLiveWorkoutDataSource(healthStore: healthStore, workoutConfiguration: configuration)
-
             workoutSession?.startActivity(with: Date())
             workoutBuilder?.beginCollection(withStart: Date()) { [weak self] success, error in
                 if success {
@@ -233,6 +235,7 @@ class WalkingCoachManager: NSObject, ObservableObject {
                     print("❌ Failed to start workout collection: \(error?.localizedDescription ?? "Unknown error")")
                 }
             }
+            #endif
         } catch {
             print("❌ Failed to start workout session: \(error)")
         }
@@ -240,14 +243,17 @@ class WalkingCoachManager: NSObject, ObservableObject {
 
     private func stopWorkoutSession() {
         workoutSession?.stopActivity(with: Date())
+        #if os(watchOS)
         workoutBuilder?.endCollection(withEnd: Date()) { [weak self] success, _ in
             if success {
                 self?.finishWorkout()
             }
         }
+        #endif
     }
 
     private func finishWorkout() {
+        #if os(watchOS)
         workoutBuilder?.finishWorkout { [weak self] workout, error in
             if let workout = workout {
                 print("✅ Workout saved: \(workout)")
@@ -255,6 +261,7 @@ class WalkingCoachManager: NSObject, ObservableObject {
                 print("❌ Failed to save workout: \(error?.localizedDescription ?? "Unknown error")")
             }
         }
+        #endif
     }
 
     // MARK: - Real-time Tracking

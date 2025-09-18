@@ -6,9 +6,9 @@ import RealityKit
 
 @MainActor
 struct GaitAROverlayView: UIViewRepresentable {
-    var protocolName: String? = nil
-    var goalDistanceMeters: Float? = nil
-    var onStabilityUpdate: ((Float) -> Void)? = nil
+    var protocolName: String?
+    var goalDistanceMeters: Float?
+    var onStabilityUpdate: ((Float) -> Void)?
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeUIView(context: Context) -> ARView {
@@ -21,125 +21,7 @@ struct GaitAROverlayView: UIViewRepresentable {
         config.environmentTexturing = .automatic
         view.session.run(config)
 
-    // Coordinator: session delegate + anchors
-    view.session.delegate = context.coordinator
-    context.coordinator.attach(to: view)
-    context.coordinator.goalDistanceMeters = goalDistanceMeters
-    context.coordinator.onStabilityUpdate = onStabilityUpdate
-
-        // AR Coaching overlay for better plane finding UX
-        let coaching = ARCoachingOverlayView()
-        coaching.goal = .horizontalPlane
-        coaching.activatesAutomatically = true
-        coaching.session = view.session
-        coaching.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(coaching)
-        NSLayoutConstraint.activate([
-            coaching.topAnchor.constraint(equalTo: view.topAnchor),
-            coaching.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            coaching.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            coaching.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-
-        return view
-    }
-
-    func updateUIView(_ uiView: ARView, context: Context) {}
-
-    // MARK: - Coordinator
-    final class Coordinator: NSObject, ARSessionDelegate {
-        private weak var arView: ARView?
-        private var stepsAnchor = AnchorEntity(world: [0, 0, 0])
-        private var planeEntities: [UUID: ModelEntity] = [:]
-        private var stepTimer: Timer?
-        private var isLeft: Bool = true
-        private var floorY: Float?
-    private var lastStepWorldPos: SIMD3<Float>?
-    private var lastHeading: SIMD3<Float>? // forward vector
-        // Simple pools to reduce allocations
-        private var stepPool: [ModelEntity] = []
-        private var connectorPool: [ModelEntity] = []
-    private var toePool: [ModelEntity] = []
-    private var deviations: [Float] = []
-    var goalDistanceMeters: Float?
-    private var distanceMarkers: [ModelEntity] = []
-    var onStabilityUpdate: ((Float) -> Void)?
-
-        func attach(to view: ARView) {
-            arView = view
-            view.scene.addAnchor(stepsAnchor)
-            startFootstepTimer()
-            addDistanceMarkersIfNeeded()
-        }
-
-        func session(_ session: ARSession, didAdd anchors: [ARAnchor]) {
-            for anchor in anchors {
-                guard let plane = anchor as? ARPlaneAnchor, plane.alignment == .horizontal else { continue }
-                addOrUpdatePlaneEntity(for: plane)
-            }
-        }
-
-        func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
-            for anchor in anchors {
-                guard let plane = anchor as? ARPlaneAnchor, plane.alignment == .horizontal else { continue }
-                addOrUpdatePlaneEntity(for: plane)
-            }
-        }
-
-        private func addOrUpdatePlaneEntity(for plane: ARPlaneAnchor) {
-            guard let view = arView else { return }
-            let extent = plane.extent
-            let center = plane.center
-
-            let size = MeshResource.generatePlane(width: .init(extent.x), height: .init(extent.z))
-            let material = SimpleMaterial(color: .init(white: 1, alpha: 0.08), isMetallic: false)
-
-            let entity: ModelEntity
-            if let existing = planeEntities[plane.identifier] {
-                existing.model?.mesh = size
-                existing.model?.materials = [material]
-                entity = existing
-            } else {
-                entity = ModelEntity(mesh: size, materials: [material])
-                entity.generateCollisionShapes(recursive: false)
-                stepsAnchor.addChild(entity)
-                planeEntities[plane.identifier] = entity
-            }
-
-            // Position the plane entity using anchor transform
-            let transform = plane.transform
-            entity.position = SIMD3<Float>(center.x, transform.columns.3.y, center.z)
-            entity.orientation = simd_quatf(transform)
-
-            // Track floor height for footstep placement
-            floorY = transform.columns.3.y
-
-            // Light outline to make plane visible
-            entity.components.set(OpacityComponent(opacity: 0.85))
-        }
-
-        private func startFootstepTimer() {
-            stepTimer?.invalidate()
-            stepTimer = Timer.scheduledTimer(withTimeInterval: 0.6, repeats: true) { [weak self] _ in
-                self?.spawnFootstep()
-            }
-            if let stepTimer { RunLoop.main.add(stepTimer, forMode: .common) }
-        }
-
-        private func spawnFootstep() {
-            guard let view = arView else { return }
-            guard let cameraTransform = view.session.currentFrame?.camera.transform else { return }
-
-            // Compute a point in front of the camera on the horizontal plane
-            let camPos = cameraTransform.translation
-            let forward = -SIMD3<Float>(cameraTransform.columns.2.x, cameraTransform.columns.2.y, cameraTransform.columns.2.z)
-            let newForward = simd_normalize(forward)
-            let baseDist: Float = 0.5
-            let lateral: Float = isLeft ? -0.12 : 0.12
-            let up = SIMD3<Float>(0, 1, 0)
-            let right = simd_normalize(simd_cross(forward, up))
-
-            var target = camPos + forward * baseDist + right * lateral
+        // Coordinator: session delegate + anchors
             if let floorY { target.y = floorY }
 
             // Get a footprint entity (pooled) and configure
@@ -154,124 +36,6 @@ struct GaitAROverlayView: UIViewRepresentable {
 
             // Toe clearance marker (animated upward pulse)
             addToeMarker(at: target, baseColor: color)
-
-            // Draw a connector strip from last step
-            if let prev = lastStepWorldPos {
-                let lateralDeviation = computeLateralDeviation(from: prev, to: target, heading: newForward)
-                deviations.append(lateralDeviation)
-                if deviations.count > 20 { deviations.removeFirst() }
-                // Notify stability (0..1 where 1 is stable)
-                if let onStabilityUpdate {
-                    let stability = computeStabilityIndex()
-                    onStabilityUpdate(stability)
-                }
-                let connector = addConnector(from: prev, to: target, deviation: lateralDeviation)
-                scheduleFadeAndRecycle(connector, pool: &connectorPool, after: 6.0)
-                // Sway band under the connector
-                addSwayBand(centerA: prev, centerB: target)
-            }
-            isLeft.toggle()
-
-            // Turn indicator: compare heading change
-            if let lh = lastHeading {
-                let dot = simd_dot(lh, newForward)
-                if dot < 0.94 { // ~20 degrees
-                    addTurnArc(at: target, normal: newForward)
-                }
-            }
-            lastHeading = newForward
-            lastStepWorldPos = target
-        }
-
-        private func animateAppear(_ entity: ModelEntity) {
-            entity.setScale([0.2, 0.2, 0.2], relativeTo: nil)
-            let target: SIMD3<Float> = [1, 1, 1]
-            entity.move(to: .init(scale: target, rotation: entity.orientation, translation: entity.position),
-                        relativeTo: nil,
-                        duration: 0.25,
-                        timingFunction: .easeOut)
-        }
-
-        @discardableResult
-        private func addConnector(from a: SIMD3<Float>, to b: SIMD3<Float>, deviation: Float = 0) -> ModelEntity {
-            // Thin box between points a and b
-            let delta = b - a
-            let length = simd_length(delta)
-            guard length > 0.001 else { return }
-            let center = (a + b) / 2
-            let dir = simd_normalize(delta)
-
-            let connector = popConnectorEntity(length: length)
-            // Color shifts toward red as deviation increases (> 0.2m)
-            let clamped = min(max(deviation / 0.2, 0), 1)
-            let base = UIColor(white: 1, alpha: 0.15)
-            let alert = UIColor(red: 1.0, green: 0.3, blue: 0.2, alpha: 0.35)
-            let mixed = blend(base: base, overlay: alert, t: CGFloat(clamped))
-            connector.model?.materials = [SimpleMaterial(color: mixed, isMetallic: false)]
-            connector.position = center
-            connector.orientation = simd_quatf(from: [0, 0, 1], to: dir)
-            stepsAnchor.addChild(connector)
-            return connector
-        }
-
-        private func scheduleFadeAndRecycle(_ entity: ModelEntity, pool: inout [ModelEntity], after seconds: TimeInterval) {
-            DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak entity] in
-                guard let e = entity else { return }
-                e.components.set(OpacityComponent(opacity: 1.0))
-                e.fade(to: 0.0, duration: 0.5)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
-                    e.removeFromParent()
-                    pool.append(e)
-                }
-            }
-        }
-
-        private func scheduleFadeAndRemove(_ entity: ModelEntity, after seconds: TimeInterval) {
-            DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak entity] in
-                guard let e = entity else { return }
-                e.components.set(OpacityComponent(opacity: 1.0))
-                e.fade(to: 0.0, duration: 0.4)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-                    e.removeFromParent()
-                }
-            }
-        }
-
-        private func addTurnArc(at position: SIMD3<Float>, normal: SIMD3<Float>) {
-            // Short curved indicator aligned with forward direction
-            let radius: Float = 0.15
-            let thickness: Float = 0.006
-            let segments = 10
-            var lastPoint = position
-            for i in 1...segments {
-                let angle = Float(i) / Float(segments) * .pi / 6 // 30 degrees arc
-                // Build a local frame from normal forward vector
-                let up = SIMD3<Float>(0, 1, 0)
-                let right = simd_normalize(simd_cross(normal, up))
-                let forward = simd_normalize(normal)
-                let dir = simd_normalize(cos(angle) * forward + sin(angle) * right)
-                let point = position + dir * radius
-                let connector = addConnector(from: lastPoint, to: point)
-                connector.model?.materials = [SimpleMaterial(color: .init(red: 0.2, green: 0.8, blue: 1.0, alpha: 0.25), isMetallic: false)]
-                scheduleFadeAndRemove(connector, after: 3.0)
-                lastPoint = point
-            }
-        }
-
-        // MARK: - Helpers (pooling, deviation, toe marker)
-        private func popStepEntity(color: UIColor) -> ModelEntity {
-            if let e = stepPool.popLast() {
-                // Update material/color and scale
-                var material = SimpleMaterial(color: color, isMetallic: false)
-                material.tintColor = color.withAlphaComponent(0.85)
-                e.model = ModelComponent(mesh: MeshResource.generateBox(size: [0.06, 0.002, 0.12]), materials: [material])
-                return e
-            }
-            let mesh = MeshResource.generateBox(size: [0.06, 0.002, 0.12])
-            var material = SimpleMaterial(color: color, isMetallic: false)
-            material.tintColor = color.withAlphaComponent(0.85)
-            return ModelEntity(mesh: mesh, materials: [material])
-        }
 
         private func popConnectorEntity(length: Float) -> ModelEntity {
             if let e = connectorPool.popLast() {
@@ -380,7 +144,8 @@ struct GaitAROverlayView: UIViewRepresentable {
     }
 }
 #else
-struct GaitAROverlayView: View {
+// Fallback SwiftUI-only preview when ARKit/RealityKit are unavailable (e.g., simulators/watchOS)
+struct GaitAROverlayPlaceholder: View {
     var protocolName: String?
     var goalDistanceMeters: Float?
     var onStabilityUpdate: ((Float) -> Void)?
@@ -496,4 +261,7 @@ struct GaitAROverlayView: View {
         timer?.invalidate(); timer = nil
     }
 }
+
+// Maintain API surface: alias the fallback to the primary type name
+typealias GaitAROverlayView = GaitAROverlayPlaceholder
 #endif
