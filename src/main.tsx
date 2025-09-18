@@ -1,3 +1,4 @@
+import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthProvider';
 import '@/polyfills/importMetaEnv';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -152,6 +153,7 @@ root.render(
         <Suspense fallback={<LoadingFallback />}>
           <AppWrapper />
         </Suspense>
+        <Toaster position="top-right" richColors />
       </QueryClientProvider>
     </ErrorBoundary>
   </StrictMode>

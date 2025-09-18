@@ -845,6 +845,162 @@ app.put('/api/user/emergency-contacts', async (c) => {
   }
 });
 
+// Two-Factor Authentication (2FA) status helpers
+async function readTwoFactor(c: Context<{ Bindings: Env }>, sub: string) {
+  const kv = c.env.HEALTH_KV;
+  if (!kv || typeof kv.get !== 'function')
+    return { enabled: false, updatedAt: null as string | null };
+  const key = `user:2fa:${encodeURIComponent(sub)}`;
+  const raw = await kv.get(key);
+  if (!raw) return { enabled: false, updatedAt: null as string | null };
+  try {
+    const encKeyB64 = c.env.ENC_KEY;
+    let obj: { enabled?: boolean; updatedAt?: string } | null = null;
+    if (encKeyB64) {
+      const k = await getAesKey(encKeyB64);
+      obj = await decryptJSON(k, raw);
+    } else {
+      obj = JSON.parse(raw);
+    }
+    let updatedAt: string | null = null;
+    if (obj && typeof obj.updatedAt === 'string') updatedAt = obj.updatedAt;
+    return {
+      enabled: Boolean(obj?.enabled),
+      updatedAt,
+    };
+  } catch {
+    return { enabled: false, updatedAt: null as string | null };
+  }
+}
+
+async function writeTwoFactor(
+  c: Context<{ Bindings: Env }>,
+  sub: string,
+  enabled: boolean
+) {
+  const kv = c.env.HEALTH_KV;
+  if (!kv || typeof kv.put !== 'function') return false;
+  const key = `user:2fa:${encodeURIComponent(sub)}`;
+  const value = { version: 1, enabled, updatedAt: new Date().toISOString() };
+  const encKeyB64 = c.env.ENC_KEY;
+  let toStore: string;
+  if (encKeyB64) {
+    const k = await getAesKey(encKeyB64);
+    toStore = await encryptJSON(k, value);
+  } else {
+    toStore = JSON.stringify(value);
+  }
+  await kv.put(key, toStore);
+  await writeAudit(c.env, {
+    type: enabled ? '2fa_enabled' : '2fa_disabled',
+    resource: 'kv:user:2fa',
+    actor: sub,
+  }).catch(() => void 0);
+  return true;
+}
+
+// 2FA: status
+app.get('/api/user/2fa/status', async (c) => {
+  const sub = getAuthSub(c);
+  if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  const s = await readTwoFactor(c, sub);
+  return c.json({ enabled: s.enabled, updatedAt: s.updatedAt });
+});
+
+// 2FA: enable
+app.post('/api/user/2fa/enable', async (c) => {
+  const sub = getAuthSub(c);
+  if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  const ok = await writeTwoFactor(c, sub, true);
+  return c.json({ ok, enabled: true });
+});
+
+// 2FA: disable
+app.post('/api/user/2fa/disable', async (c) => {
+  const sub = getAuthSub(c);
+  if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  const ok = await writeTwoFactor(c, sub, false);
+  return c.json({ ok, enabled: false });
+});
+
+async function loadContacts(
+  c: Context<{ Bindings: Env }>,
+  key: string
+): Promise<{ contacts: string[]; updatedAt: string | null }> {
+  const kv = c.env.HEALTH_KV;
+  if (!kv || typeof kv.get !== 'function')
+    return { contacts: [], updatedAt: null };
+  const raw = (await kv.get?.(key)) || null;
+  if (!raw) return { contacts: [], updatedAt: null };
+  try {
+    const enc = c.env.ENC_KEY;
+    let obj: { contacts?: unknown; updatedAt?: string } | null = null;
+    if (enc) obj = await decryptJSON(await getAesKey(enc), raw);
+    else obj = JSON.parse(raw);
+    const contacts = Array.isArray(obj?.contacts)
+      ? (obj.contacts as unknown[]).filter(
+          (v): v is string => typeof v === 'string'
+        )
+      : [];
+    const updatedAt = obj?.updatedAt || null;
+    return { contacts, updatedAt };
+  } catch {
+    return { contacts: [], updatedAt: null };
+  }
+}
+
+async function buildUserExport(
+  c: Context<{ Bindings: Env }>,
+  sub: string
+): Promise<{
+  exportVersion: number;
+  exportedAt: string;
+  userId: string;
+  twoFactor: { enabled: boolean; updatedAt: string | null };
+  emergencyContacts: { contacts: string[]; updatedAt: string | null };
+  notes: string;
+}> {
+  const contactsKey = `user:contacts:${encodeURIComponent(sub)}`;
+  const { contacts, updatedAt: contactsUpdatedAt } = await loadContacts(
+    c,
+    contactsKey
+  );
+  const twoFactor = await readTwoFactor(c, sub);
+
+  return {
+    exportVersion: 1,
+    exportedAt: new Date().toISOString(),
+    userId: sub,
+    twoFactor,
+    emergencyContacts: { contacts, updatedAt: contactsUpdatedAt },
+    notes:
+      'This export includes server-held data only. App settings and health analytics are stored client-side and can be exported from the app UI.',
+  } as const;
+}
+
+// User data export (server-side holdings)
+app.get('/api/user/export', async (c) => {
+  const sub = getAuthSub(c);
+  if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  try {
+    const bundle = await buildUserExport(c, sub);
+    const headers = new Headers({ 'content-type': 'application/json' });
+    const fileName = `vitalsense-export-${new Date()
+      .toISOString()
+      .replace(/:/g, '-')}.json`;
+    headers.set('Content-Disposition', `attachment; filename="${fileName}"`);
+    return new Response(JSON.stringify(bundle, null, 2), {
+      status: 200,
+      headers,
+    });
+  } catch (e) {
+    return c.json(
+      { error: 'export_failed', message: (e as Error).message },
+      500
+    );
+  }
+});
+
 // WebSocket endpoint for real-time health data
 app.get('/ws', async (c) => {
   const upgradeHeader = c.req.header('upgrade');

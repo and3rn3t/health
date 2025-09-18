@@ -12,6 +12,7 @@ This document provides a comprehensive index of all documentation in the project
 - [`getting-started/`](./getting-started/) - **Start here!** Quick setup and onboarding
   - [`README.md`](./getting-started/README.md) - 15-minute quick start guide
   - [`SETUP_GUIDE.md`](./getting-started/SETUP_GUIDE.md) - Complete development environment setup
+- [`NEW_USER_TUTORIAL.md`](./getting-started/NEW_USER_TUTORIAL.md) - New User Onboarding Wizard + setup path
 
 ### 🏗️ Architecture & Design
 

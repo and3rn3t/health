@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "onboarding": "node scripts/node/dev/onboarding-wizard.js",
     "dev": "node scripts/dev-esbuild.js",
     "kill": "fuser -k 5000/tcp",
     "build": "node scripts/build.js",

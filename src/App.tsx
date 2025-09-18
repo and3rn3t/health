@@ -29,6 +29,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { useNavUsage } from '@/hooks/useNavUsage';
 import { useThemeMode } from '@/hooks/useThemeMode';
+import { HealthDataProcessor } from '@/lib/healthDataProcessor';
+import type { ProcessedHealthData } from '@/types';
+import { useKV } from '@github/spark/hooks';
 import {
   Activity,
   AlertTriangle,
@@ -36,14 +39,12 @@ import {
   Bell,
   Brain,
   Bug,
-  CloudUpload,
   Monitor,
   Scan,
   Settings as SettingsIcon,
   Share,
   Shield,
   Smartphone,
-  Target,
   TrendingUp,
   Users,
   Wrench,
@@ -53,6 +54,10 @@ import {
 // Lazy loaded components with fallbacks
 const HealthDashboard = lazy(
   () => import('@/components/sections/HealthDashboard')
+);
+const LandingPage = lazy(() => import('@/components/LandingPage'));
+const OnboardingFlow = lazy(
+  () => import('@/components/onboarding/OnboardingFlow')
 );
 
 const LiveHealthMonitoring = lazy(() =>
@@ -83,9 +88,6 @@ const ConnectedDevices = lazy(
 const ExportData = lazy(() => import('@/components/health/ExportData'));
 const EmergencyContactsPage = lazy(
   () => import('@/components/health/EmergencyContactsPage')
-);
-const FamilyGameification = lazy(
-  () => import('@/components/gamification/FamilyGameification')
 );
 const CognitiveHealth = lazy(
   () => import('@/components/health/CognitiveHealth')
@@ -123,22 +125,6 @@ const CaregiverDashboard = lazy(() =>
           Caregiver Dashboard
         </h2>
         <p className="text-muted-foreground">Caregiver portal coming soon.</p>
-      </div>
-    ),
-  }))
-);
-
-const HealthRecords = lazy(() =>
-  import('@/components/sections/HealthRecords').catch(() => ({
-    default: () => (
-      <div className="p-8 text-center">
-        <CloudUpload className="h-12 w-12 text-vitalsense-teal mx-auto mb-4" />
-        <h2 className="text-foreground mb-2 text-2xl font-bold">
-          Health Records
-        </h2>
-        <p className="text-muted-foreground">
-          Health records management coming soon.
-        </p>
       </div>
     ),
   }))
@@ -224,13 +210,6 @@ const navigationItems = [
     priority: 2,
   },
   {
-    id: 'records',
-    label: 'Health Records',
-    icon: CloudUpload,
-    component: HealthRecords,
-    priority: 2,
-  },
-  {
     id: 'brain-health',
     label: 'Cognitive Health',
     icon: Brain,
@@ -282,13 +261,6 @@ const navigationItems = [
     priority: 3,
   },
   {
-    id: 'health-goals',
-    label: 'Health Goals',
-    icon: Target,
-    component: FamilyGameification,
-    priority: 3,
-  },
-  {
     id: 'developer-tools',
     label: 'Developer Tools',
     icon: Wrench,
@@ -307,6 +279,11 @@ const navigationItems = [
 // Main VitalSense App Component (Inner content inside SidebarProvider)
 function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  // Persisted health data shared across pages and onboarding
+  const [healthData, setHealthData] = useKV<ProcessedHealthData | null>(
+    'health-data',
+    null
+  );
   const [_isPending, startTransition] = useTransition();
   const { themeMode, toggleThemeMode } = useThemeMode();
   const {
@@ -338,10 +315,21 @@ function AppContent() {
   );
 
   // Find the active component
-  const activeComponent = useMemo(
-    () => navigationItems.find((item) => item.id === activeTab)?.component,
-    [activeTab]
-  );
+  const activeComponent = useMemo(() => {
+    const item = navigationItems.find((it) => it.id === activeTab);
+    // For the dashboard, prefer LandingPage if available to guide users
+    if (item?.id === 'dashboard')
+      return LandingPage as unknown as typeof item.component;
+    return item?.component;
+  }, [activeTab]);
+
+  // Derive a lightweight fall risk score (0..4) from walking steadiness as a simple proxy
+  const derivedFallRiskScore = useMemo(() => {
+    const ws = healthData?.metrics.walkingSteadiness?.average;
+    if (ws == null) return 0;
+    const score = (100 - ws) / 25; // 100% steadiness -> 0 risk, 0% -> 4
+    return Math.max(0, Math.min(4, Math.round(score * 10) / 10));
+  }, [healthData?.metrics.walkingSteadiness?.average]);
 
   // Update document title to reflect the current section for better usability
   const activeLabel = useMemo(
@@ -381,8 +369,6 @@ function AppContent() {
         return import('@/components/sections/NotificationCenter');
       case 'caregiver':
         return import('@/components/sections/CaregiverDashboard');
-      case 'records':
-        return import('@/components/sections/HealthRecords');
       case 'brain-health':
         return import('@/components/health/CognitiveHealth');
       case 'lidar-ar':
@@ -397,8 +383,6 @@ function AppContent() {
         return import('@/components/health/ConnectedDevices');
       case 'export-data':
         return import('@/components/health/ExportData');
-      case 'health-goals':
-        return import('@/components/gamification/FamilyGameification');
       case 'developer-tools':
         return import('@/components/sections/DeveloperTools');
       case 'dev-diagnostics':
@@ -578,6 +562,15 @@ function AppContent() {
           resetKeys={[activeTab]}
         >
           <main className="bg-background md:px-6 md:pt-3 pb-3 md:pb-4 flex-1 px-4 pt-2">
+            {/* Lightweight onboarding banner on dashboard only */}
+            {activeTab === 'dashboard' && (
+              <Suspense fallback={null}>
+                <OnboardingFlow
+                  onNavigate={handleTabChange}
+                  onHealthDataImported={(d) => setHealthData(d)}
+                />
+              </Suspense>
+            )}
             <Suspense
               fallback={
                 <div className="h-64 flex items-center justify-center">
@@ -589,18 +582,46 @@ function AppContent() {
               }
             >
               <div className="mx-auto max-w-7xl">
-                {(() => {
-                  type WithOptionalHealthData = {
-                    healthData?: unknown;
-                  };
-                  const ActiveComponent = activeComponent as unknown as
-                    | React.ComponentType<WithOptionalHealthData>
-                    | undefined;
-                  return ActiveComponent ? (
-                    // Provide a neutral prop for components that expect healthData; others will ignore it.
-                    <ActiveComponent healthData={null} />
-                  ) : null;
-                })()}
+                {activeTab === 'dashboard' ? (
+                  <LandingPage
+                    healthData={healthData ?? null}
+                    fallRiskScore={derivedFallRiskScore}
+                    onRefreshData={async () => {
+                      const data =
+                        await HealthDataProcessor.processHealthData();
+                      setHealthData(data);
+                    }}
+                    onNavigateToFeature={(featureId) => {
+                      const map: Record<string, string> = {
+                        insights: 'analytics',
+                        analytics: 'analytics',
+                        'fall-risk': 'fall-detection',
+                        'ai-recommendations': 'advanced-analytics',
+                        'realtime-scoring': 'live-monitoring',
+                        family: 'caregiver',
+                        emergency: 'emergency-contacts',
+                        import: 'dashboard',
+                        'healthkit-guide': 'device-sync',
+                        'system-status': 'dev-diagnostics',
+                      };
+                      const target = map[featureId] ?? 'dashboard';
+                      handleTabChange(target);
+                    }}
+                  />
+                ) : (
+                  (() => {
+                    type WithOptionalHealthData = {
+                      healthData?: unknown;
+                    };
+                    const ActiveComponent = activeComponent as unknown as
+                      | React.ComponentType<WithOptionalHealthData>
+                      | undefined;
+                    return ActiveComponent ? (
+                      // Provide shared healthData to components that can consume it.
+                      <ActiveComponent healthData={healthData} />
+                    ) : null;
+                  })()
+                )}
               </div>
             </Suspense>
           </main>

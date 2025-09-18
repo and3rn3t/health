@@ -23,6 +23,7 @@ import {
   BarChart3,
   Brain,
   Heart,
+  RefreshCcw,
   Shield,
   Smartphone,
   Sparkles,
@@ -31,12 +32,59 @@ import {
   Users,
   Zap,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
+// Simple inline sparkline component (SVG path) moved out for lint clarity
+const Sparkline = ({
+  values,
+  className,
+  strokeClass = 'stroke-vitalsense-teal',
+  width = 120,
+  height = 28,
+  title,
+}: Readonly<{
+  values: number[];
+  className?: string;
+  strokeClass?: string;
+  width?: number;
+  height?: number;
+  title?: string;
+}>) => {
+  if (!values.length) return null;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1; // avoid div by zero
+  const stepX = width / (values.length - 1 || 1);
+  const points = values.map((v, i) => {
+    const x = i * stepX;
+    const y = height - ((v - min) / range) * height;
+    return `${x},${y}`;
+  });
+  return (
+    <svg
+      className={className}
+      viewBox={`0 0 ${width} ${height}`}
+      width={width}
+      height={height}
+      aria-hidden
+    >
+      {title ? <title>{title}</title> : null}
+      <polyline
+        fill="none"
+        vectorEffect="non-scaling-stroke"
+        strokeWidth={2}
+        className={strokeClass}
+        points={points.join(' ')}
+      />
+    </svg>
+  );
+};
 
 interface LandingPageProps {
-  healthData: ProcessedHealthData | null;
-  onNavigateToFeature: (featureId: string) => void;
-  fallRiskScore: number;
+  readonly healthData: ProcessedHealthData | null;
+  readonly onNavigateToFeature: (featureId: string) => void;
+  readonly fallRiskScore: number;
+  readonly onRefreshData?: () => Promise<void> | void;
 }
 
 interface QuickStat {
@@ -46,6 +94,7 @@ interface QuickStat {
   color: string;
   trend?: string;
   action?: string;
+  delta?: number;
 }
 
 interface FeatureCard {
@@ -62,9 +111,14 @@ export default function LandingPage({
   healthData,
   onNavigateToFeature,
   fallRiskScore,
+  onRefreshData,
 }: LandingPageProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [healthScore, setHealthScore] = useState(0);
+  const [timeframe, setTimeframe] = useState<'today' | '7d' | '30d' | '90d'>(
+    '7d'
+  );
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -76,6 +130,52 @@ export default function LandingPage({
       setHealthScore(healthData.healthScore || 0);
     }
   }, [healthData]);
+
+  const lastUpdatedLabel = useMemo(() => {
+    if (!healthData?.lastUpdated) return '';
+    const d = new Date(healthData.lastUpdated);
+    return d.toLocaleString();
+  }, [healthData?.lastUpdated]);
+
+  // Compute a fallback fall risk score when a value isn't provided
+  const computedFallRisk = useMemo(() => {
+    if (fallRiskScore && fallRiskScore > 0) return fallRiskScore;
+    if (!healthData) return 0;
+    const ws = healthData.metrics.walkingSteadiness?.average ?? 100;
+    // Map walking steadiness (100% -> 0 risk, 0% -> 4.0 risk)
+    const score = ((100 - ws) / 25) * 1.0; // 0..4
+    return Math.max(0, Math.min(4, Math.round(score * 10) / 10));
+  }, [fallRiskScore, healthData]);
+
+  // Helpers for timeframe-sliced stats
+  const getSliceValues = (values: number[], n: number) =>
+    values.slice(Math.max(0, values.length - n));
+
+  const getTimeframeCount = (tf: typeof timeframe) => {
+    switch (tf) {
+      case 'today':
+        return 1;
+      case '7d':
+        return 7;
+      case '30d':
+        return 30;
+      case '90d':
+      default:
+        return 90;
+    }
+  };
+
+  const avg = (arr: number[]) =>
+    arr.length
+      ? Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 100) / 100
+      : 0;
+
+  const pct = (curr: number, prev: number | undefined) => {
+    if (prev == null || prev === 0) return undefined;
+    return Math.round(((curr - prev) / prev) * 100);
+  };
+
+  // Sparkline component defined above (moved out of component scope)
 
   const getTimeOfDayGreeting = () => {
     const hour = currentTime.getHours();
@@ -105,6 +205,37 @@ export default function LandingPage({
       return 'Low Risk';
     };
 
+    const tfCount = getTimeframeCount(timeframe);
+    const stepsVals = healthData.metrics.steps.daily.map((d) => d.value);
+    const wsVals = healthData.metrics.walkingSteadiness.daily.map(
+      (d) => d.value
+    );
+    const stepsSlice = getSliceValues(stepsVals, tfCount);
+    const wsSlice = getSliceValues(wsVals, tfCount);
+    const stepsPrevAvg =
+      stepsVals.length >= tfCount * 2
+        ? avg(
+            stepsVals.slice(
+              stepsVals.length - tfCount * 2,
+              stepsVals.length - tfCount
+            )
+          )
+        : undefined;
+    const wsPrevAvg =
+      wsVals.length >= tfCount * 2
+        ? avg(
+            wsVals.slice(wsVals.length - tfCount * 2, wsVals.length - tfCount)
+          )
+        : undefined;
+    const stepsValue =
+      timeframe === 'today'
+        ? stepsVals[stepsVals.length - 1] || 0
+        : avg(stepsSlice);
+    const wsValue =
+      timeframe === 'today' ? wsVals[wsVals.length - 1] || 0 : avg(wsSlice);
+    const stepsDelta = pct(stepsValue, stepsPrevAvg);
+    const wsDelta = pct(wsValue, wsPrevAvg);
+
     return [
       {
         label: 'Health Score',
@@ -116,36 +247,34 @@ export default function LandingPage({
       },
       {
         label: 'Fall Risk',
-        value: fallRiskScore > 0 ? `${fallRiskScore.toFixed(1)}/4.0` : 'Low',
+        value:
+          (computedFallRisk > 0 ? `${computedFallRisk.toFixed(1)}` : 'Low') +
+          '/4.0',
         icon: Shield,
-        color: getFallRiskColor(fallRiskScore),
-        trend: getFallRiskTrend(fallRiskScore),
+        color: getFallRiskColor(computedFallRisk),
+        trend: getFallRiskTrend(computedFallRisk),
         action: 'fall-risk',
       },
       {
-        label: 'Steps Today',
-        value: healthData.metrics.steps?.average?.toLocaleString() || '0',
+        label: timeframe === 'today' ? 'Steps Today' : `Steps (${timeframe})`,
+        value: stepsValue.toLocaleString(),
         icon: Activity,
         color: 'text-blue-500',
-        trend:
-          (healthData.metrics.steps?.average || 0) > 8000
-            ? 'Great!'
-            : 'Keep going',
+        trend: stepsValue > 8000 ? 'Great!' : 'Keep going',
         action: 'analytics',
+        delta: stepsDelta,
       },
       {
-        label: 'Walking Steadiness',
-        value: `${healthData.metrics.walkingSteadiness?.average || 0}%`,
+        label:
+          timeframe === 'today'
+            ? 'Walking Steadiness'
+            : `Walking Steadiness (${timeframe})`,
+        value: `${Math.round(wsValue)}%`,
         icon: Target,
-        color:
-          (healthData.metrics.walkingSteadiness?.average || 0) > 70
-            ? 'text-green-500'
-            : 'text-yellow-500',
-        trend:
-          (healthData.metrics.walkingSteadiness?.average || 0) > 70
-            ? 'Stable'
-            : 'Monitor',
+        color: (wsValue || 0) > 70 ? 'text-green-500' : 'text-yellow-500',
+        trend: (wsValue || 0) > 70 ? 'Stable' : 'Monitor',
         action: 'fall-risk',
+        delta: wsDelta,
       },
     ];
   };
@@ -233,6 +362,11 @@ export default function LandingPage({
                 day: 'numeric',
               })}
             </p>
+            {lastUpdatedLabel && (
+              <p className="text-muted-foreground text-xs mt-1">
+                Last updated: {lastUpdatedLabel}
+              </p>
+            )}
           </div>
           <div className="gap-3 flex items-center">
             <Badge
@@ -252,6 +386,46 @@ export default function LandingPage({
           </div>
         </div>
 
+        {/* Timeframe Toggle + Refresh */}
+        {healthData && (
+          <div className="flex items-center justify-end gap-2">
+            {(['today', '7d', '30d', '90d'] as const).map((tf) => (
+              <Button
+                key={tf}
+                size="sm"
+                variant={timeframe === tf ? 'default' : 'outline'}
+                onClick={() => setTimeframe(tf)}
+                aria-pressed={timeframe === tf}
+              >
+                {tf.toUpperCase()}
+              </Button>
+            ))}
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isRefreshing}
+              onClick={async () => {
+                if (isRefreshing) return;
+                setIsRefreshing(true);
+                try {
+                  if (onRefreshData) {
+                    await onRefreshData();
+                  } else {
+                    onNavigateToFeature('healthkit-guide');
+                  }
+                } finally {
+                  setIsRefreshing(false);
+                }
+              }}
+            >
+              <RefreshCcw
+                className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+              />
+              {isRefreshing ? 'Updating…' : 'Update Now'}
+            </Button>
+          </div>
+        )}
+
         {/* Health Status Overview */}
         {healthData && (
           <div className="md:grid-cols-2 grid grid-cols-1 gap-4 lg:grid-cols-4">
@@ -265,17 +439,19 @@ export default function LandingPage({
                 return 'stable';
               };
 
+              const getStatusFromTrend = (
+                trend: string
+              ): 'excellent' | 'good' | 'fair' => {
+                if (trend === 'Excellent') return 'excellent';
+                if (trend === 'Good') return 'good';
+                return 'fair';
+              };
+
               return (
                 <EnhancedVitalSenseStatusCard
                   key={stat.label}
                   type={stat.label.includes('Risk') ? 'fallRisk' : 'health'}
-                  status={
-                    stat.trend === 'Excellent'
-                      ? 'excellent'
-                      : stat.trend === 'Good'
-                        ? 'good'
-                        : 'fair'
-                  }
+                  status={getStatusFromTrend(stat.trend || '')}
                   title={stat.label}
                   value={stat.value}
                   subtitle={`Current ${stat.label.toLowerCase()} status`}
@@ -293,6 +469,23 @@ export default function LandingPage({
             {quickStats.slice(2).map((stat) => {
               // Use standard cards for remaining stats
               const IconComponent = stat.icon;
+              const tfCount = getTimeframeCount(timeframe);
+              const isSteps = stat.label.startsWith('Steps');
+              const isWS = stat.label.startsWith('Walking Steadiness');
+              const stepsData = isSteps
+                ? getSliceValues(
+                    healthData.metrics.steps.daily.map((d) => d.value),
+                    tfCount
+                  )
+                : [];
+              const wsData = isWS
+                ? getSliceValues(
+                    healthData.metrics.walkingSteadiness.daily.map(
+                      (d) => d.value
+                    ),
+                    tfCount
+                  )
+                : [];
               return (
                 <Card
                   key={stat.label}
@@ -313,9 +506,35 @@ export default function LandingPage({
                             {stat.trend}
                           </Badge>
                         )}
+                        {typeof stat.delta === 'number' && (
+                          <div className="mt-1">
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${stat.delta >= 0 ? 'border-green-500 text-green-600 dark:text-green-400' : 'border-red-500 text-red-600 dark:text-red-400'}`}
+                              aria-label={`${Math.abs(stat.delta)} percent ${stat.delta >= 0 ? 'increase' : 'decrease'} vs previous period`}
+                            >
+                              {stat.delta >= 0 ? '▲' : '▼'}{' '}
+                              {Math.abs(stat.delta)}% vs prev
+                            </Badge>
+                          </div>
+                        )}
                       </div>
                       <IconComponent className={`h-8 w-8 ${stat.color}`} />
                     </div>
+                    {(isSteps || isWS) && (
+                      <div className="mt-3">
+                        <Sparkline
+                          values={isSteps ? stepsData : wsData}
+                          strokeClass={
+                            isSteps ? 'stroke-blue-500' : 'stroke-emerald-500'
+                          }
+                          width={220}
+                          height={40}
+                          className="opacity-80"
+                          title={`${stat.label} trend (${timeframe})`}
+                        />
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               );
