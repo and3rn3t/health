@@ -234,7 +234,7 @@ jobs:
 
   ios-ci:
     name: iOS CI
-    runs-on: macos-latest
+    runs-on: macos-15
     needs: changes
     if: needs.changes.outputs.ios == 'true'
     timeout-minutes: 30
@@ -248,7 +248,7 @@ jobs:
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.1'
+          xcode-version: '16.4'
 
       - name: Cache Homebrew
         uses: actions/cache@v4
@@ -280,16 +280,28 @@ jobs:
         run: |
           cd ios
 
-          echo "Building iOS app with improved SDK approach..."
+          echo "Building iOS app with pinned SDK and explicit destination..."
 
-          # List available simulators for debugging
-          echo "Available iOS Simulators:"
-          xcrun simctl list devices iOS | grep -E "(iPhone|iPad)" | head -3
+          # Create and boot a simulator to ensure a valid destination exists
+          RUNTIME=$(xcrun simctl list runtimes | awk -F'[()]' '/iOS/ {print $2}' | sort -V | tail -1)
+          DEVICE_NAME="iPhone 16"
+          DEVICE_ID=$(xcrun simctl create "$DEVICE_NAME" com.apple.CoreSimulator.SimDeviceType.iPhone-16 "$RUNTIME" || true)
+          if [ -z "$DEVICE_ID" ]; then
+            # Fallback to a generic device type if specific one isn't available
+            DEVICE_ID=$(xcrun simctl create "$DEVICE_NAME" "iPhone 14" "$RUNTIME")
+          fi
+          echo "Created simulator: $DEVICE_ID with runtime: $RUNTIME"
+          xcrun simctl boot "$DEVICE_ID" || true
+          xcrun simctl bootstatus "$DEVICE_ID" -b
 
-          # Try multiple build approaches with detailed error output
+          DESTINATION="platform=iOS Simulator,id=$DEVICE_ID"
+
+          # Attempt build with explicit destination and no codesign
+          set -o pipefail
           xcodebuild clean build \
             -project HealthKitBridge.xcodeproj \
             -scheme HealthKitBridge \
+            -destination "$DESTINATION" \
             -sdk iphonesimulator \
             -derivedDataPath build \
             -configuration Debug \
@@ -298,17 +310,22 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             ENABLE_BITCODE=NO \
             ONLY_ACTIVE_ARCH=YES \
-            OTHER_SWIFT_FLAGS="-D DEBUG" || {
+            OTHER_SWIFT_FLAGS="-D DEBUG" | xcpretty || {
               echo "Build failed, trying simplified approach..."
               xcodebuild clean build \
                 -project HealthKitBridge.xcodeproj \
                 -scheme HealthKitBridge \
+                -destination "$DESTINATION" \
                 -sdk iphonesimulator \
                 -configuration Debug \
                 CODE_SIGN_IDENTITY="" \
                 CODE_SIGNING_REQUIRED=NO \
-                ENABLE_BITCODE=NO
+                ENABLE_BITCODE=NO | xcpretty
             }
+
+          # Shutdown and delete the simulator to cleanup
+          xcrun simctl shutdown "$DEVICE_ID" || true
+          xcrun simctl delete "$DEVICE_ID" || true
 
   deploy-staging:
     name: Deploy to Staging
