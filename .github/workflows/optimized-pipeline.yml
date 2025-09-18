@@ -285,14 +285,24 @@ jobs:
           echo "Building iOS app with pinned SDK and explicit destination..."
 
           # Create and boot a simulator to ensure a valid destination exists
-          RUNTIME=$(xcrun simctl list runtimes | awk -F'[()]' '/iOS/ {print $2}' | sort -V | tail -1)
-          DEVICE_NAME="iPhone 16"
-          DEVICE_ID=$(xcrun simctl create "$DEVICE_NAME" com.apple.CoreSimulator.SimDeviceType.iPhone-16 "$RUNTIME" || true)
-          if [ -z "$DEVICE_ID" ]; then
-            # Fallback to a generic device type if specific one isn't available
-            DEVICE_ID=$(xcrun simctl create "$DEVICE_NAME" "iPhone 14" "$RUNTIME")
+          # Get latest available iOS runtime IDENTIFIER (e.g., com.apple.CoreSimulator.SimRuntime.iOS-18-0)
+          RUNTIME_ID=$(xcrun simctl list runtimes | awk '/com\.apple\.CoreSimulator\.SimRuntime\.iOS/ {print $NF}' | tail -1)
+          if [ -z "$RUNTIME_ID" ]; then
+            # Fallback parsing strategy
+            RUNTIME_ID=$(xcrun simctl list runtimes | awk -F'- ' '/SimRuntime\.iOS/ {print $2}' | tail -1)
           fi
-          echo "Created simulator: $DEVICE_ID with runtime: $RUNTIME"
+          echo "Using runtime: $RUNTIME_ID"
+
+          # Use a stable device type name widely available on runners
+          DEVICE_NAME="CI iPhone"
+          DEVICE_TYPE="iPhone 14"
+          DEVICE_ID=$(xcrun simctl create "$DEVICE_NAME" "$DEVICE_TYPE" "$RUNTIME_ID" || true)
+          if [ -z "$DEVICE_ID" ]; then
+            # Fallback to a more common device type
+            DEVICE_TYPE="iPhone SE (3rd generation)"
+            DEVICE_ID=$(xcrun simctl create "$DEVICE_NAME" "$DEVICE_TYPE" "$RUNTIME_ID")
+          fi
+          echo "Created simulator: $DEVICE_ID | device type: $DEVICE_TYPE | runtime: $RUNTIME_ID"
           xcrun simctl boot "$DEVICE_ID" || true
           xcrun simctl bootstatus "$DEVICE_ID" -b
 
