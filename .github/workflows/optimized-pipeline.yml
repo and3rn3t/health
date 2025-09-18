@@ -215,7 +215,7 @@ jobs:
       - name: Health Check
         run: |
           echo "Starting health check..."
-          npx wrangler dev --local --port 8787 --var DEVICE_JWT_SECRET:ci &
+          npx -y wrangler@4.38.0 dev --local --port 8787 --var DEVICE_JWT_SECRET:ci &
           WRANGLER_PID=$!
 
           # Wait for health endpoint
@@ -269,6 +269,8 @@ jobs:
       - name: Install Tools
         run: |
           brew list swiftlint &>/dev/null || brew install swiftlint
+          gem install --user-install xcpretty
+          echo "$(ruby -e 'print Gem.user_dir')/bin" >> "$GITHUB_PATH"
 
       - name: Swift Lint
         working-directory: ios
