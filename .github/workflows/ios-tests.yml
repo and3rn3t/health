@@ -41,7 +41,6 @@ jobs:
 
       - name: Install Tools
         run: |
-          # Check if tools are already installed to speed up CI
           if ! command -v swiftlint &> /dev/null; then
             echo "Installing SwiftLint..."
             brew install swiftlint
@@ -79,11 +78,10 @@ jobs:
       fail-fast: false
       matrix:
         test-type: ['unit', 'ui']
-        device: ['iPhone 16', 'iPad Air 11-inch (M2)']
+        device: ['iPhone 14', 'iPad (10th generation)']
         exclude:
-          # Only run UI tests on iPhone to reduce CI time
           - test-type: 'ui'
-            device: 'iPad Air 11-inch (M2)'
+            device: 'iPad (10th generation)'
 
     steps:
       - name: Checkout
@@ -201,8 +199,6 @@ jobs:
             DEVICE_UDID=$(echo "$AVAILABLE_DEVICE" | grep -oE '[A-F0-9-]{36}')
             if [ ! -z "$DEVICE_UDID" ]; then
               # Get the iOS version by checking which iOS section the device is under
-              # Format: -- iOS 18.4 --
-              #          iPhone 16 Pro (UDID) (Status)
               IOS_VERSION=$(xcrun simctl list devices | awk '/-- iOS/ {version=$3} /'"$DEVICE_UDID"'/ {print version; exit}')
               if [ ! -z "$IOS_VERSION" ]; then
                 DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID,OS=$IOS_VERSION"
@@ -255,8 +251,6 @@ jobs:
             DEVICE_UDID=$(echo "$AVAILABLE_DEVICE" | grep -oE '[A-F0-9-]{36}')
             if [ ! -z "$DEVICE_UDID" ]; then
               # Get the iOS version by checking which iOS section the device is under
-              # Format: -- iOS 18.4 --
-              #          iPhone 16 Pro (UDID) (Status)
               IOS_VERSION=$(xcrun simctl list devices | awk '/-- iOS/ {version=$3} /'"$DEVICE_UDID"'/ {print version; exit}')
               if [ ! -z "$IOS_VERSION" ]; then
                 DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID,OS=$IOS_VERSION"
@@ -307,8 +301,6 @@ jobs:
             DEVICE_UDID=$(echo "$AVAILABLE_DEVICE" | grep -oE '[A-F0-9-]{36}')
             if [ ! -z "$DEVICE_UDID" ]; then
               # Get the iOS version by checking which iOS section the device is under
-              # Format: -- iOS 18.4 --
-              #          iPhone 16 Pro (UDID) (Status)
               IOS_VERSION=$(xcrun simctl list devices | awk '/-- iOS/ {version=$3} /'"$DEVICE_UDID"'/ {print version; exit}')
               if [ ! -z "$IOS_VERSION" ]; then
                 DESTINATION="platform=iOS Simulator,id=$DEVICE_UDID,OS=$IOS_VERSION"
@@ -394,7 +386,7 @@ jobs:
 
       - name: Run Performance Tests
         run: |
-          UDID=$(xcrun simctl create "Perf-iPhone" "iPhone 16")
+          UDID=$(xcrun simctl create "Perf-iPhone" "iPhone 14")
           xcrun simctl boot "$UDID"
           xcrun simctl bootstatus "$UDID"
 
