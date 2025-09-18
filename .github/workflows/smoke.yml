@@ -80,6 +80,10 @@ jobs:
           # Use Node.js script for better cross-platform compatibility
           node scripts/node/health/simple-probe.js --port 8787 --timeout 30
 
+      - name: Branding audit (combined)
+        run: |
+          node scripts/node/branding/branding-audit.js --url=http://127.0.0.1:8787 || (echo "Branding audit failed" && exit 1)
+
       - name: Teardown and logs
         if: always()
         run: |

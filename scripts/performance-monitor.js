@@ -10,7 +10,8 @@
 import { promises as fs } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import BundleAnalyzer from './bundle-analyzer.js';
+// Updated path after relocation of bundle-analyzer to scripts/node/analysis
+import BundleAnalyzer from './node/analysis/bundle-analyzer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -35,7 +36,7 @@ class PerformanceMonitor {
     try {
       const data = await fs.readFile(this.options.historyFile, 'utf-8');
       this.history = JSON.parse(data);
-    } catch (error) {
+    } catch {
       // File doesn't exist yet, start with empty history
       this.history = [];
     }

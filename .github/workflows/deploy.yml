@@ -106,6 +106,25 @@ jobs:
         env:
           NODE_ENV: production
 
+      - name: Branding audit (combined)
+        run: |
+          npx -y wrangler@4.38.0 dev --env development --local --port 8787 --var DEVICE_JWT_SECRET:ci &
+          WRANGLER_PID=$!
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8787/health >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          node scripts/node/branding/branding-audit.js --url=http://127.0.0.1:8787 || (echo "Branding audit failed" && kill $WRANGLER_PID || true && exit 1)
+          kill $WRANGLER_PID || true
+
+      - name: Upload branding audit summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: branding-audit-summary
+          path: reports/branding-audit-summary.md
+          retention-days: 7
+
       - name: Verify build outputs
         run: |
           ls -la dist/ || echo "No dist directory"

@@ -1,4 +1,19 @@
 #!/usr/bin/env node
+// Legacy shim: executes relocated analyzer (scripts/node/analysis/bundle-analyzer.js)
+import('./node/analysis/bundle-analyzer.js')
+  .then(module => {
+    // If user ran: node scripts/bundle-analyzer.js
+    // The real script has its own main guard; we just exit after successful import.
+    if (!module) {
+      console.error('Loaded module is undefined.');
+      process.exit(1);
+    }
+  })
+  .catch(err => {
+    console.error('Failed to execute relocated bundle analyzer:', err);
+    process.exit(1);
+  });
+#!/usr/bin/env node
 
 /**
  * VitalSense Bundle Size and Performance Analyzer
@@ -83,68 +98,16 @@ class BundleAnalyzer {
     const inputs = metafile.inputs;
     const outputs = metafile.outputs;
 
-    // Analyze inputs by type
-    const inputAnalysis = {
-      typescript: 0,
-      javascript: 0,
-      css: 0,
-      nodeModules: 0,
-      total: 0
-    };
-
-    Object.entries(inputs).forEach(([path, info]) => {
-      const size = info.bytes;
-      inputAnalysis.total += size;
-
-      if (path.includes('node_modules')) {
-        inputAnalysis.nodeModules += size;
-      } else if (path.endsWith('.ts') || path.endsWith('.tsx')) {
-        inputAnalysis.typescript += size;
-      } else if (path.endsWith('.js') || path.endsWith('.jsx')) {
-        inputAnalysis.javascript += size;
-      } else if (path.endsWith('.css')) {
-        inputAnalysis.css += size;
-      }
-    });
-
-    // Find largest dependencies
-    const largestDeps = Object.entries(inputs)
-      .filter(([path]) => path.includes('node_modules'))
-      .map(([path, info]) => ({
-        name: path.split('node_modules/')[1]?.split('/')[0] || path,
-        size: info.bytes
-      }))
-      .sort((a, b) => b.size - a.size)
-      .slice(0, 10);
-
-    return {
-      inputAnalysis: Object.fromEntries(
-        Object.entries(inputAnalysis).map(([key, bytes]) => [key, {
-          bytes,
-          formatted: this.formatBytes(bytes),
-          percentage: ((bytes / inputAnalysis.total) * 100).toFixed(1) + '%'
-        }])
-      ),
-      largestDependencies: largestDeps.map(dep => ({
-        name: dep.name,
-        size: this.formatBytes(dep.size),
-        bytes: dep.size
-      }))
-    };
-  }
-
-  async buildAndAnalyze() {
-    console.log('🔍 Starting VitalSense Bundle Analysis...');
-    const buildStartTime = Date.now();
-
-    // Clean dist directory
-    try {
-      await fs.rm(resolve(projectRoot, 'dist'), { recursive: true, force: true });
-      await fs.mkdir(resolve(projectRoot, 'dist'), { recursive: true });
-    } catch (error) {
-      // Directory might not exist
+    #!/usr/bin/env node
+    // Legacy shim for backward compatibility.
+    // Actual implementation moved to scripts/node/analysis/bundle-analyzer.js
+    // Update external references to the new path when convenient.
+    import('./node/analysis/bundle-analyzer.js')
+      .catch(err => {
+        console.error('Failed to load relocated bundle analyzer:', err);
+        process.exit(1);
     }
-
+      );
     // Build production bundles
     try {
       console.log('🏗️ Building production bundles...');
