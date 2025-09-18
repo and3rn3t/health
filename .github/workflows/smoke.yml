@@ -53,15 +53,18 @@ jobs:
           npm ci --prefer-offline
           cd scripts/node && npm ci --prefer-offline
           npm install lightningcss-linux-x64-gnu @rollup/rollup-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu --save-optional
+          cd ..
+          # Ensure wrangler is available as a local binary
+          npm i -D wrangler@^4
 
       - name: Build application
         run: npm run build
 
       - name: Start Worker (wrangler dev --local)
         run: |
-          npx wrangler --version
+          npx wrangler --version || (echo "Installing wrangler CLI" && npm i -D wrangler@^4)
           # Start local Worker in background on 8787 with a CI-only secret
-          timeout 90s bash -c 'until npx wrangler dev --env development --local \
+          timeout 120s bash -c 'until npx wrangler dev --env development --local \
             --port 8787 \
             --var DEVICE_JWT_SECRET:ci \
             > wrangler.log 2>&1 & echo $! > wrangler.pid && \

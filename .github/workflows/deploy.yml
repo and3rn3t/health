@@ -93,9 +93,9 @@ jobs:
             dist/
             dist-worker/
             node_modules/.cache/
-          key: build-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**/*', 'scripts/**/*') }}
+          key: build-cache-${{ runner.os }}-${{ hashFiles('package-lock.json', 'pnpm-lock.yaml') }}-${{ hashFiles('src/**/*', 'scripts/**/*') }}
           restore-keys: |
-            build-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+            build-cache-${{ runner.os }}-${{ hashFiles('package-lock.json', 'pnpm-lock.yaml') }}-
             build-cache-${{ runner.os }}-
 
       - name: Run linting
