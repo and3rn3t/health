@@ -93,6 +93,47 @@ jobs:
           if-no-files-found: warn
           retention-days: 3
 
+  lockfile_guard:
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Enable Corepack
+        run: corepack enable || true
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
+      - name: Strict Lockfile Check
+        id: lockfile
+        run: |
+          set +e
+          pnpm install --frozen-lockfile > lockfile_check.log 2>&1
+          EXIT=$?
+          mkdir -p reports
+          if [ $EXIT -ne 0 ]; then
+            echo "Lockfile drift detected" | tee reports/lockfile-drift-status.txt
+            echo "drift=true" >> $GITHUB_OUTPUT
+          else
+            echo "Lockfile clean" | tee reports/lockfile-drift-status.txt
+            echo "drift=false" >> $GITHUB_OUTPUT
+          fi
+          # Always succeed so this job does not block
+          exit 0
+      - name: Upload Lockfile Drift Status
+        uses: actions/upload-artifact@v4
+        with:
+          name: lockfile-drift-status
+          path: reports/lockfile-drift-status.txt
+          if-no-files-found: warn
+
   bundle_threshold:
     runs-on: ubuntu-latest
     needs: build
@@ -249,6 +290,7 @@ jobs:
           path: reports/branding-audit-summary.md
           if-no-files-found: warn
       - name: WebSocket Resilience Test
+          - lockfile_guard
         run: node scripts/node/test/test-websocket-reconnect.js --backendUrl=wss://health.andernet.dev/ws --maxReconnectMs=6000 || true
 
   security_scan:
@@ -272,6 +314,12 @@ jobs:
       - name: Install Dependencies
         run: |
           if ! pnpm install --frozen-lockfile; then
+          - name: Download Lockfile Drift Status
+            uses: actions/download-artifact@v4
+            with:
+              name: lockfile-drift-status
+              path: reports
+            continue-on-error: true
             echo "Lockfile outdated – running non-frozen install (security_scan).";
             pnpm install --no-frozen-lockfile;
           fi
@@ -597,12 +645,15 @@ jobs:
           if [ -f "$COVER_JSON" ]; then
             COVER=$(node -e "const f=require(process.argv[1]); const t=f.total||f; process.stdout.write(String(t.lines.pct||0));" "$COVER_JSON")
           fi
+          DRIFT_STATUS="Unknown"
+          if [ -f reports/lockfile-drift-status.txt ]; then DRIFT_STATUS=$(cat reports/lockfile-drift-status.txt); fi
           {
             echo "# Code Quality Summary";
             echo "| Metric | Value |"; echo "|--------|------:|";
             echo "| ESLint Errors | ${ERRORS} |";
             echo "| ESLint Warnings | ${WARNINGS} |";
             echo "| Line Coverage (%) | ${COVER} |";
+            echo "| Lockfile Drift | ${DRIFT_STATUS} |";
           } > reports/code-quality-summary.md
           cat reports/code-quality-summary.md >> $GITHUB_STEP_SUMMARY
       - name: Upload Enriched Summary
