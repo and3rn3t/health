@@ -1,5 +1,36 @@
 name: Core CI Pipeline
 
+# -----------------------------------------------------------------------------
+# Core CI Pipeline (Consolidated)
+#
+# This workflow replaces the previously fragmented set of CI workflows:
+#   - ci-governance.yml
+#   - optimized-pipeline.yml
+#   - smoke.yml
+#   - branding-audit.yml
+#   - ios-tests.yml / ios-tests-simple.yml
+#   - deploy.yml
+#   - security-quality.yml
+#
+# Unified Responsibilities:
+#   * Build (web + optional worker) with pnpm + .nvmrc version pinning
+#   * Lint, unit tests, type checking, bundle size thresholds & drift
+#   * Privacy logging guard, secrets rotation drift, WebSocket schema drift
+#   * Performance SLO probe, branding audits, WebSocket resilience check
+#   * Security (pnpm audit, license check) + code quality artifacts (eslint, coverage)
+#   * Optional: Semgrep (SARIF), SonarCloud scan, dependency review (PR only)
+#   * Gated summary job enforces success for critical quality signals
+#   * Conditional deploy (develop/main) only after successful gating
+#
+# Soft / Informational (not gating): semgrep_scan, sonar_scan (if token), dependency_review.
+# To promote any of these to gating: add the job name to `needs` in `summary` and
+# append its result to the gating loop.
+#
+# NOTE: code_quality is the single source of lint / test artifacts & gating.
+# Hard enforcement enabled (no more `|| true`). Adjust thresholds or soften if
+# legacy branches encounter issues.
+# -----------------------------------------------------------------------------
+
 permissions:
   contents: read
 
@@ -25,13 +56,16 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node (no pnpm cache)
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          node-version-file: .nvmrc
       - name: Enable Corepack
         run: corepack enable
+      - name: Install pnpm (fallback explicit)
+        run: npm install -g pnpm@latest
+      - name: pnpm Version
+        run: pnpm -v
       - name: Install Dependencies (pnpm)
         run: pnpm install --frozen-lockfile
       - name: Type Check
@@ -50,40 +84,21 @@ jobs:
           if-no-files-found: warn
           retention-days: 3
 
-  lint_test:
-    runs-on: ubuntu-latest
-    needs: build
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
-      - name: Enable Corepack
-        run: corepack enable
-      - name: Install Dependencies (pnpm)
-        run: pnpm install --frozen-lockfile
-      - name: Lint
-        run: pnpm run lint || true
-      - name: Unit Tests
-        run: pnpm test -- --reporter=verbose || true
-
   bundle_threshold:
     runs-on: ubuntu-latest
     needs: build
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          node-version-file: .nvmrc
       - name: Enable Corepack
-        run: corepack enable
-      - name: Install Dependencies (pnpm)
+        run: corepack enable || true
+      - name: Install pnpm
+        run: npm install -g pnpm@latest
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
@@ -104,20 +119,19 @@ jobs:
 
   bundle_drift:
     runs-on: ubuntu-latest
-    needs: bundle_threshold
+    needs: build
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          node-version-file: .nvmrc
       - name: Enable Corepack
-        run: corepack enable
-      - name: Install Dependencies (pnpm)
+        run: corepack enable || true
+      - name: Install pnpm
+        run: npm install -g pnpm@latest
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
@@ -142,14 +156,15 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          node-version-file: .nvmrc
       - name: Enable Corepack
-        run: corepack enable
-      - name: Install Dependencies (pnpm)
+        run: corepack enable || true
+      - name: Install pnpm
+        run: npm install -g pnpm@latest
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Privacy Guard
         run: pnpm run ci:privacy
@@ -160,14 +175,15 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          node-version-file: .nvmrc
       - name: Enable Corepack
-        run: corepack enable
-      - name: Install Dependencies (pnpm)
+        run: corepack enable || true
+      - name: Install pnpm
+        run: npm install -g pnpm@latest
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
@@ -200,14 +216,15 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          node-version-file: .nvmrc
       - name: Enable Corepack
-        run: corepack enable
-      - name: Install Dependencies (pnpm)
+        run: corepack enable || true
+      - name: Install pnpm
+        run: npm install -g pnpm@latest
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Security Audit (soft fail)
         run: pnpm audit --prod --audit-level=moderate || true
@@ -234,22 +251,31 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          node-version-file: .nvmrc
       - name: Enable Corepack
-        run: corepack enable
-      - name: Install Dependencies (pnpm)
+        run: corepack enable || true
+      - name: Install pnpm
+        run: npm install -g pnpm@latest
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Lint (JSON + text)
         run: |
           mkdir -p reports
-          pnpm run lint || true
-          pnpm run lint -- --format json --output-file reports/eslint-report.json || true
-      - name: Unit Tests w/ Coverage (soft)
-        run: pnpm run test:coverage || true
+          pnpm run lint
+          pnpm run lint -- --format json --output-file reports/eslint-report.json || echo "{}" > reports/eslint-report.json
+      - name: Unit Tests w/ Coverage (enforced)
+        run: pnpm run test:coverage
+      - name: Coverage Gate (minimum 60%)
+        run: |
+          set -e
+          FILE="coverage/coverage-summary.json"
+          if [ ! -f "$FILE" ]; then echo "Coverage summary not found ($FILE)"; exit 1; fi
+          PCT=$(node -e "const f=require(process.argv[1]); const total=f.total||f; console.log(total.lines.pct||0);" "$FILE")
+          echo "Line coverage: ${PCT}%"
+          awk -v c=$PCT -v m=60 'BEGIN { if (c+0 < m) { printf("Coverage %.2f%% below minimum %d%%\n", c, m); exit 1 } }'
       - name: Upload Code Quality Artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -286,13 +312,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-      - name: Enable Corepack
-        run: corepack enable
-      - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/pnpm-setup
       - name: SonarCloud Scan (soft)
         if: ${{ env.SONAR_TOKEN != '' }}
         uses: SonarSource/sonarcloud-github-action@master
@@ -318,14 +338,15 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          node-version-file: .nvmrc
       - name: Enable Corepack
-        run: corepack enable
-      - name: Install Dependencies (pnpm)
+        run: corepack enable || true
+      - name: Install pnpm
+        run: npm install -g pnpm@latest
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Secret Rotation Check
         run: pnpm run ci:secrets
@@ -336,14 +357,15 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          node-version-file: .nvmrc
       - name: Enable Corepack
-        run: corepack enable
-      - name: Install Dependencies (pnpm)
+        run: corepack enable || true
+      - name: Install pnpm
+        run: npm install -g pnpm@latest
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: WebSocket Schema Drift
         run: pnpm run ci:ws-schema
@@ -360,14 +382,15 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          node-version-file: .nvmrc
       - name: Enable Corepack
-        run: corepack enable
-      - name: Install Dependencies (pnpm)
+        run: corepack enable || true
+      - name: Install pnpm
+        run: npm install -g pnpm@latest
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Performance SLO Probe
         run: pnpm run ci:perf-slo
@@ -381,7 +404,6 @@ jobs:
   summary:
     runs-on: ubuntu-latest
     needs:
-      - lint_test
       - bundle_threshold
       - bundle_drift
       - privacy_guard
@@ -391,17 +413,19 @@ jobs:
       - performance_slo
       - security_scan
       - code_quality
+      - coverage_delta
     if: always()
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          node-version-file: .nvmrc
       - name: Enable Corepack
-        run: corepack enable
-      - name: Install Dependencies (pnpm)
+        run: corepack enable || true
+      - name: Install pnpm
+        run: npm install -g pnpm@latest
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Prepare Reports Dir
         run: mkdir -p reports
@@ -435,10 +459,16 @@ jobs:
           name: branding-audit-summary
           path: reports
         continue-on-error: true
+      - name: Download Code Quality Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: code-quality
+          path: reports/code-quality
+        continue-on-error: true
       - name: Generate CI Scorecard
         run: |
           node scripts/ci/ci-scorecard.mjs \
-            --lint='${{ needs.lint_test.result }}' \
+            --lint='${{ needs.code_quality.result }}' \
             --bundle='${{ needs.bundle_threshold.result }}' \
             --drift='${{ needs.bundle_drift.result }}' \
             --privacy='${{ needs.privacy_guard.result }}' \
@@ -446,6 +476,41 @@ jobs:
             --secrets='${{ needs.secrets_rotation.result }}' \
             --ws='${{ needs.ws_schema_drift.result }}' \
             --perf='${{ needs.performance_slo.result }}'
+      - name: Enrich Scorecard (eslint + coverage)
+        run: |
+          set -e
+          mkdir -p reports
+          ESLINT_JSON="reports/code-quality/reports/eslint-report.json"
+          [ -f "$ESLINT_JSON" ] || ESLINT_JSON="reports/code-quality/eslint-report.json"
+          COVER_JSON="reports/code-quality/coverage/coverage-summary.json"
+          ERRORS=0; WARNINGS=0; COVER=0
+          if [ -f "$ESLINT_JSON" ]; then
+            node -e "try{const d=require(process.argv[1]);let e=0,w=0;for(const f of d){e+=f.errorCount||0;w+=f.warningCount||0;}console.log(e+' '+w);}catch(e){console.log('0 0')}" "$ESLINT_JSON" > counts.txt
+            read ERRORS WARNINGS < counts.txt || true
+          fi
+          if [ -f "$COVER_JSON" ]; then
+            COVER=$(node -e "const f=require(process.argv[1]); const t=f.total||f; process.stdout.write(String(t.lines.pct||0));" "$COVER_JSON")
+          fi
+          {
+            echo "# Code Quality Summary";
+            echo "| Metric | Value |"; echo "|--------|------:|";
+            echo "| ESLint Errors | ${ERRORS} |";
+            echo "| ESLint Warnings | ${WARNINGS} |";
+            echo "| Line Coverage (%) | ${COVER} |";
+          } > reports/code-quality-summary.md
+          cat reports/code-quality-summary.md >> $GITHUB_STEP_SUMMARY
+      - name: Upload Enriched Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-quality-summary
+          path: reports/code-quality-summary.md
+          if-no-files-found: warn
+      - name: PR Sticky Comment (Scorecard)
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: reports/ci-scorecard.md
       - name: Upload Scorecard Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -454,7 +519,6 @@ jobs:
           if-no-files-found: warn
       - name: Enforce Gating
         run: |
-          echo "Lint/Test: ${{ needs.lint_test.result }}"
           echo "Bundle: ${{ needs.bundle_threshold.result }}"
           echo "Drift: ${{ needs.bundle_drift.result }}"
           echo "Privacy: ${{ needs.privacy_guard.result }}"
@@ -464,8 +528,9 @@ jobs:
           echo "Perf SLO: ${{ needs.performance_slo.result }}"
           echo "Security: ${{ needs.security_scan.result }}"
           echo "Code Quality: ${{ needs.code_quality.result }}"
+          echo "Coverage Delta: ${{ needs.coverage_delta.result }}"
           failures=0
-          for r in "${{ needs.bundle_threshold.result }}" "${{ needs.bundle_drift.result }}" "${{ needs.privacy_guard.result }}" "${{ needs.smoke.result }}" "${{ needs.secrets_rotation.result }}" "${{ needs.ws_schema_drift.result }}" "${{ needs.performance_slo.result }}" "${{ needs.security_scan.result }}" "${{ needs.code_quality.result }}" "${{ needs.lint_test.result }}"; do
+          for r in "${{ needs.bundle_threshold.result }}" "${{ needs.bundle_drift.result }}" "${{ needs.privacy_guard.result }}" "${{ needs.smoke.result }}" "${{ needs.secrets_rotation.result }}" "${{ needs.ws_schema_drift.result }}" "${{ needs.performance_slo.result }}" "${{ needs.security_scan.result }}" "${{ needs.code_quality.result }}" "${{ needs.coverage_delta.result }}"; do
             if [ "$r" != 'success' ]; then failures=$((failures+1)); fi
           done
           if [ $failures -gt 0 ]; then echo "Gating failures: $failures"; exit 1; fi
@@ -474,23 +539,182 @@ jobs:
     runs-on: ubuntu-latest
     needs: summary
     if: >-
-      github.event_name == 'push' && 
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') && 
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') &&
       needs.summary.result == 'success'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          node-version-file: .nvmrc
       - name: Enable Corepack
-        run: corepack enable
-      - name: Install Dependencies (pnpm)
+        run: corepack enable || true
+      - name: Install pnpm
+        run: npm install -g pnpm@latest
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
+      - name: Install Dependencies (lockfile)
+        run: pnpm install --frozen-lockfile
+
+  coverage_delta:
+    runs-on: ubuntu-latest
+    needs: code_quality
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/pnpm-setup
+      - name: Download Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: code-quality
+          path: coverage-artifacts
+      - name: Compute Coverage Delta
+        id: delta
+        run: |
+          set -e
+          BASE_FILE=coverage-baseline.json
+          CUR_SUM=coverage-artifacts/coverage/coverage-summary.json
+          if [ ! -f "$CUR_SUM" ]; then echo "No coverage summary"; exit 1; fi
+          if [ ! -f "$BASE_FILE" ]; then echo "No baseline found, using 0"; echo '{"linesPct":0}' > $BASE_FILE; fi
+          BASE=$(node -e "const f=require('./'+process.argv[1]);process.stdout.write(String(f.linesPct||0));" $BASE_FILE)
+          CUR=$(node -e "const f=require('./'+process.argv[1]);const t=f.total||f;process.stdout.write(String(t.lines.pct||0));" $CUR_SUM)
+          DELTA=$(node -e "const b=Number(process.argv[1]);const c=Number(process.argv[2]);process.stdout.write((c-b).toFixed(2));" $BASE $CUR)
+          echo "Base: $BASE% Current: $CUR% Delta: $DELTA%"
+          echo "base=$BASE" >> $GITHUB_OUTPUT
+          echo "current=$CUR" >> $GITHUB_OUTPUT
+          echo "delta=$DELTA" >> $GITHUB_OUTPUT
+          awk -v d=$DELTA 'BEGIN { if (d+0 < -2) { printf("Coverage regression %.2f%% > allowed -2%% window\n", d); exit 1 } }'
+      - name: Update Baseline (main branch only)
+        if: github.ref == 'refs/heads/main' && success()
+        run: |
+          NEW=$(echo "{\"generatedAt\":\"$(date -u +%FT%TZ)\",\"linesPct\":${{ steps.delta.outputs.current }},\"notes\":\"Auto-updated on successful main run\"}" )
+          echo "$NEW" > coverage-baseline.json
+      - name: Upload New Baseline Artifact
+        if: github.ref == 'refs/heads/main' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-baseline
+          path: coverage-baseline.json
+
       - name: Deploy (develop)
         if: github.ref == 'refs/heads/develop'
         run: pnpm run deploy:dev
       - name: Deploy (main)
         if: github.ref == 'refs/heads/main'
         run: pnpm run deploy:prod
+      - name: Post-Deploy Canary
+        if: success()
+        run: |
+          set -e
+          BASE_URL="https://health.andernet.dev"
+          echo "Canary: GET $BASE_URL/health" && curl -fsS "$BASE_URL/health" -o /dev/null
+          echo "Canary: GET $BASE_URL" && curl -fsS "$BASE_URL" -o /dev/null
+          echo "Canary checks passed"
+      - name: Canary Failure Issue
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `Post-deploy canary failed (${context.ref})`;
+            const body = `Automatic canary check failed on ${context.ref}.\nWorkflow: ${context.workflow}\nRun: ${context.runNumber}`;
+            await github.rest.issues.create({owner: context.repo.owner, repo: context.repo.repo, title, body, labels:['deployment','canary','investigate']});
+
+  baseline_metrics:
+    runs-on: ubuntu-latest
+    needs: [summary, coverage_delta]
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.summary.result == 'success' &&
+      needs.coverage_delta.result == 'success'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/pnpm-setup
+      - name: Download Bundle Threshold Report
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-threshold-report
+          path: bundle-threshold-report
+        continue-on-error: true
+      - name: Download Perf SLO Report
+        uses: actions/download-artifact@v4
+        with:
+          name: perf-slo-report
+          path: perf-slo-report
+        continue-on-error: true
+      - name: Download WS Schema Drift Report
+        uses: actions/download-artifact@v4
+        with:
+          name: ws-schema-drift-report
+          path: ws-schema-drift-report
+        continue-on-error: true
+      - name: Download Code Quality Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: code-quality
+          path: code-quality
+        continue-on-error: true
+      - name: Download Coverage Baseline Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-baseline
+          path: .
+        continue-on-error: true
+      - name: Aggregate Baselines
+        run: |
+          set -e
+          echo "Aggregating baseline metrics..."
+          node - <<'NODE'
+          const fs=require('fs');
+          const path=require('path');
+          function readJSON(p){ if (fs.existsSync(p)) { try { return JSON.parse(fs.readFileSync(p,'utf8')); } catch {} } return null; }
+          const coverage = readJSON('coverage-baseline.json');
+          const bundle = readJSON('bundle-threshold-report/reports/bundle-threshold.json') || readJSON('reports/bundle-threshold.json') || readJSON('bundle-threshold.json');
+          const perf = readJSON('perf-slo-report/perf-slo.json') || readJSON('reports/perf-slo.json');
+          const ws = readJSON('ws-schema-drift-report/reports/ws-schema-drift.json') || readJSON('reports/ws-schema-drift.json');
+          const eslint = readJSON('code-quality/reports/eslint-report.json') || readJSON('reports/code-quality/eslint-report.json');
+          let eslintSummary = null;
+          if (Array.isArray(eslint)) {
+            eslintSummary = {
+              files: eslint.length,
+              errors: eslint.reduce((a,f)=>a+(f.errorCount||0),0),
+              warnings: eslint.reduce((a,f)=>a+(f.warningCount||0),0)
+            };
+          }
+          const baseline = {
+            generatedAt: new Date().toISOString(),
+            coverage,
+            bundleSummary: bundle,
+            performance: perf,
+            wsSchema: ws && ws.expectedSchema ? ws.expectedSchema : ws,
+            eslintSummary
+          };
+          fs.mkdirSync('ci-baselines',{recursive:true});
+          fs.writeFileSync('ci-baselines/baselines.json', JSON.stringify(baseline,null,2));
+          if (!fs.existsSync('ci-baselines/README.md')) {
+            fs.writeFileSync('ci-baselines/README.md', '# CI Baselines\n\nAggregated baseline metrics auto-updated on successful main branch runs.');
+          }
+          // history (rolling 30)
+          const historyDir='ci-baselines/history';
+          fs.mkdirSync(historyDir,{recursive:true});
+          const stamp = baseline.generatedAt.replace(/[:.]/g,'-');
+          fs.writeFileSync(path.join(historyDir, stamp + '.json'), JSON.stringify(baseline,null,2));
+          const files = fs.readdirSync(historyDir).filter(f=>f.endsWith('.json')).sort();
+          const index = files.slice(-30).map(f=>({ file:f, ts:f.replace('.json','') }));
+          fs.writeFileSync('ci-baselines/history-index.json', JSON.stringify(index,null,2));
+          console.log('Baseline metrics + history written');
+          NODE
+      - name: Generate Badges
+        run: node scripts/ci/generate-badges.mjs
+      - name: Commit Baselines (skip CI)
+        run: |
+          set -e
+          if git diff --quiet ci-baselines coverage-baseline.json; then echo "No baseline changes detected."; exit 0; fi
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
+          git add ci-baselines/baselines.json ci-baselines/history-index.json ci-baselines/history/*.json ci-baselines/badges/*.svg coverage-baseline.json || true
+          git commit -m 'chore(ci): update baselines & badges [skip ci]' || echo 'Nothing to commit'
+          git push origin HEAD:main || echo 'Push skipped'
