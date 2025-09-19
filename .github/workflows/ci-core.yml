@@ -290,7 +290,6 @@ jobs:
           path: reports/branding-audit-summary.md
           if-no-files-found: warn
       - name: WebSocket Resilience Test
-          - lockfile_guard
         run: node scripts/node/test/test-websocket-reconnect.js --backendUrl=wss://health.andernet.dev/ws --maxReconnectMs=6000 || true
 
   security_scan:
@@ -314,15 +313,15 @@ jobs:
       - name: Install Dependencies
         run: |
           if ! pnpm install --frozen-lockfile; then
-          - name: Download Lockfile Drift Status
-            uses: actions/download-artifact@v4
-            with:
-              name: lockfile-drift-status
-              path: reports
-            continue-on-error: true
             echo "Lockfile outdated – running non-frozen install (security_scan).";
             pnpm install --no-frozen-lockfile;
           fi
+      - name: Download Lockfile Drift Status
+        uses: actions/download-artifact@v4
+        with:
+          name: lockfile-drift-status
+          path: reports
+        continue-on-error: true
       - name: Security Audit (soft fail)
         run: pnpm audit --prod --audit-level=moderate || true
       - name: Install license-checker

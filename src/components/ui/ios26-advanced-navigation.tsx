@@ -77,7 +77,8 @@ export interface iOS26SidebarProps {
 /**
  * iOS 26 Floating Tab Bar - Premium mobile-first navigation
  */
-export function iOS26FloatingTabBar({
+// NOTE: Renamed from iOS26FloatingTabBar -> IOS26FloatingTabBar to satisfy React Hook component naming (uppercase start)
+export function IOS26FloatingTabBar({
   items,
   activeTab,
   onTabChange,
@@ -110,7 +111,7 @@ export function iOS26FloatingTabBar({
     <nav
       className={cn(
         'fixed z-50 mx-auto max-w-md',
-        'ios-26-surface-elevated rounded-2xl border border-white/10 p-2 shadow-2xl backdrop-blur-xl',
+        'ios-26-surface-elevated backdrop-blur-xl rounded-2xl border border-white/10 p-2 shadow-2xl',
         'transition-all duration-300 ease-out',
         isVisible
           ? 'translate-y-0 opacity-100'
@@ -137,7 +138,7 @@ export function iOS26FloatingTabBar({
               disabled={item.disabled}
               onClick={() => onTabChange(item.id)}
               className={cn(
-                'relative flex flex-1 flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs font-medium',
+                'px-3 text-xs relative flex flex-1 flex-col items-center gap-1 rounded-xl py-2 font-medium',
                 'transition-all duration-200 ease-out',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vitalsense-primary focus-visible:ring-offset-2',
                 'disabled:pointer-events-none disabled:opacity-50',
@@ -158,7 +159,7 @@ export function iOS26FloatingTabBar({
 
               {/* Badge for notifications */}
               {item.badge && (
-                <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-vitalsense-error text-[10px] font-bold text-white">
+                <div className="h-5 w-5 absolute -right-1 -top-1 flex items-center justify-center rounded-full bg-vitalsense-error text-[10px] font-bold text-white">
                   {item.badge > 99 ? '99+' : item.badge}
                 </div>
               )}
@@ -181,7 +182,8 @@ export function iOS26FloatingTabBar({
 /**
  * iOS 26 Enhanced Breadcrumb - Smart navigation with gesture support
  */
-export function iOS26EnhancedBreadcrumb({
+// NOTE: Renamed from iOS26EnhancedBreadcrumb -> IOS26EnhancedBreadcrumb (capital I) for React component detection
+export function IOS26EnhancedBreadcrumb({
   items,
   onNavigate,
   showHome = true,
@@ -221,8 +223,8 @@ export function iOS26EnhancedBreadcrumb({
   return (
     <nav
       className={cn(
-        'ios-26-surface ios-label-secondary flex items-center space-x-1 rounded-lg px-3 py-2 text-sm',
-        'border border-white/5 backdrop-blur-sm',
+        'ios-26-surface ios-label-secondary px-3 flex items-center space-x-1 rounded-lg py-2 text-sm',
+        'backdrop-blur-sm border border-white/5',
         className
       )}
       onTouchStart={handleTouchStart}
@@ -281,7 +283,7 @@ export function iOS26EnhancedBreadcrumb({
 
       {/* Overflow menu */}
       {showOverflow && (
-        <div className="ios-26-surface-elevated absolute right-0 top-full z-50 mt-1 min-w-48 rounded-lg border border-white/10 p-1 shadow-xl backdrop-blur-xl">
+        <div className="ios-26-surface-elevated min-w-48 backdrop-blur-xl absolute right-0 top-full z-50 mt-1 rounded-lg border border-white/10 p-1 shadow-xl">
           {items.slice(1, -2).map((item) => (
             <button
               key={item.id}
@@ -289,7 +291,7 @@ export function iOS26EnhancedBreadcrumb({
                 onNavigate(item);
                 setShowOverflow(false);
               }}
-              className="ios-label-secondary hover:ios-label-primary block w-full rounded px-3 py-2 text-left text-sm transition-colors hover:bg-white/5"
+              className="ios-label-secondary hover:ios-label-primary px-3 block w-full rounded py-2 text-left text-sm transition-colors hover:bg-white/5"
             >
               {item.label}
             </button>
@@ -303,7 +305,8 @@ export function iOS26EnhancedBreadcrumb({
 /**
  * iOS 26 Sidebar Navigation - Modern desktop navigation
  */
-export function iOS26Sidebar({
+// NOTE: Renamed from iOS26Sidebar -> IOS26Sidebar for React component detection
+export function IOS26Sidebar({
   items,
   activeTab,
   onTabChange,
@@ -363,11 +366,11 @@ export function iOS26Sidebar({
         side="left"
         className={cn(
           'w-80 p-0',
-          'ios-system-background border-r border-gray-200',
+          'ios-system-background border-gray-200 border-r',
           className
         )}
       >
-        <SheetHeader className="border-b border-gray-200 p-4">
+        <SheetHeader className="border-gray-200 border-b p-4">
           <div className="flex items-center justify-between">
             <SheetTitle className="text-lg font-semibold">
               VitalSense Navigation
@@ -389,7 +392,7 @@ export function iOS26Sidebar({
         {/* Search */}
         <div className="p-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="left-3 text-gray-400 absolute top-1/2 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder="Search features..."
               value={searchQuery}
@@ -403,7 +406,7 @@ export function iOS26Sidebar({
         <nav className="flex-1 space-y-6 overflow-y-auto px-4 pb-4">
           {Object.entries(categorizedItems).map(([category, categoryItems]) => (
             <div key={category} className="space-y-2">
-              <h3 className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <h3 className="text-xs px-2 font-semibold uppercase tracking-wider text-gray-500">
                 {categoryLabels[category as keyof typeof categoryLabels] ||
                   category}
               </h3>
@@ -422,7 +425,7 @@ export function iOS26Sidebar({
                       }}
                       disabled={item.disabled}
                       className={cn(
-                        'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors',
+                        'gap-3 px-3 flex w-full items-center rounded-lg py-2 text-left text-sm transition-colors',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vitalsense-primary focus-visible:ring-offset-2',
                         'disabled:pointer-events-none disabled:opacity-50',
                         isActive
@@ -459,7 +462,8 @@ export function iOS26Sidebar({
 /**
  * iOS 26 Advanced Search with scopes and suggestions
  */
-export function iOS26AdvancedSearch({
+// NOTE: Renamed from iOS26AdvancedSearch -> IOS26AdvancedSearch for React component detection
+export function IOS26AdvancedSearch({
   onSearch,
   placeholder = 'Search VitalSense...',
   scopes = [],
@@ -492,7 +496,7 @@ export function iOS26AdvancedSearch({
     <div className={cn('relative w-full max-w-md', className)}>
       {/* Search Input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Search className="left-3 text-gray-400 absolute top-1/2 h-4 w-4 -translate-y-1/2" />
         <Input
           value={query}
           onChange={(e) => {
@@ -520,10 +524,10 @@ export function iOS26AdvancedSearch({
               key={scope.id}
               onClick={() => setActiveScope(scope.id)}
               className={cn(
-                'rounded-full px-3 py-1 text-xs font-medium transition-colors',
+                'px-3 text-xs rounded-full py-1 font-medium transition-colors',
                 activeScope === scope.id
                   ? 'bg-vitalsense-primary text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'text-gray-600 hover:bg-gray-200 bg-gray-100'
               )}
             >
               {scope.label}
@@ -542,7 +546,7 @@ export function iOS26AdvancedSearch({
                 setQuery(suggestion);
                 handleSearch(suggestion);
               }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors first:rounded-t-lg last:rounded-b-lg hover:bg-gray-100"
+              className="px-3 flex w-full items-center gap-2 py-2 text-left text-sm transition-colors first:rounded-t-lg last:rounded-b-lg hover:bg-gray-100"
             >
               <Search className="h-3 w-3 text-gray-400" />
               {suggestion}

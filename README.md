@@ -17,6 +17,17 @@
 [![Optimized Pipeline](https://github.com/and3rn3t/health/actions/workflows/optimized-pipeline.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/optimized-pipeline.yml)
 [![Smoke Tests](https://github.com/and3rn3t/health/actions/workflows/smoke.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/smoke.yml)
 
+<!-- Dynamic CI Badges (generated on main by baseline_metrics job) -->
+<p>
+  <img alt="Coverage" src="./ci-baselines/badges/coverage.svg" />
+  <img alt="ESLint Errors" src="./ci-baselines/badges/eslint-errors.svg" />
+  <img alt="ESLint Warnings" src="./ci-baselines/badges/eslint-warnings.svg" />
+  <img alt="Latency" src="./ci-baselines/badges/perf-latency.svg" />
+  <img alt="Main Bundle Size" src="./ci-baselines/badges/bundle-main.svg" />
+</p>
+
+> Badges above are lightweight SVGs committed by CI (no external shield calls) keeping repo self-contained & offline-view friendly.
+
 ## 🚀 Quick Start
 
 ### Web Application (5 minutes)

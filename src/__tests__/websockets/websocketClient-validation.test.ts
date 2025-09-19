@@ -18,15 +18,17 @@ describe('WebSocketClient (schema enforcement)', () => {
       readyState: 1,
       send: vi.fn(),
       close: vi.fn(),
-      addEventListener: vi.fn((event: string, handler: (ev: unknown) => void) => {
-        if (event === 'message') msgHandler = handler;
-        if (event === 'open') setTimeout(() => handler({}), 0);
-      }),
+      addEventListener: vi.fn(
+        (event: string, handler: (ev: unknown) => void) => {
+          if (event === 'message') msgHandler = handler;
+          if (event === 'open') setTimeout(() => handler({}), 0);
+        }
+      ),
       removeEventListener: vi.fn(),
     };
-  // Override global WebSocket with a mock constructor
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (global as any).WebSocket = vi.fn(() => mockWs);
+    // Override global WebSocket with a mock constructor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (global as any).WebSocket = vi.fn(() => mockWs);
     // @ts-expect-error override fetch for test
     global.fetch = vi.fn(async () => ({
       json: async () => ({ url: 'ws://localhost:9999' }),
@@ -34,8 +36,8 @@ describe('WebSocketClient (schema enforcement)', () => {
   });
 
   afterEach(() => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (global as any).WebSocket = original as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (global as any).WebSocket = original as any;
   });
 
   it('drops invalid envelope when enforceSchema true', async () => {

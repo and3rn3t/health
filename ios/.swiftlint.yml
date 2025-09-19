@@ -81,9 +81,18 @@ nesting:
   type_level: 3
   function_level: 5
 
-# Force unwrapping severity
+# Force unwrapping severity (elevated to error for CI gating)
 force_unwrapping:
-  severity: warning
+  severity: error
+
+# Additional strictness for CI – large tuples & function param counts can hide complexity
+large_tuple:
+  warning: 4
+  error: 6
+function_parameter_count:
+  warning: 8
+  error: 10
+
 
 # Custom rules for HealthKit specific patterns
 custom_rules:
