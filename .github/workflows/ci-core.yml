@@ -389,6 +389,17 @@ jobs:
             coverage/
             reports/eslint-report.json
           if-no-files-found: warn
+      - name: CSS Guard
+        run: pnpm run ci:css-guard
+      - name: Upload Contrast Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contrast-report
+          path: reports/contrast-report.json
+          if-no-files-found: warn
+      - name: Contrast Drift (baseline compare)
+        run: pnpm run ci:css-contrast-drift || echo "(soft) contrast drift check failed"
 
   semgrep_scan:
     runs-on: ubuntu-latest

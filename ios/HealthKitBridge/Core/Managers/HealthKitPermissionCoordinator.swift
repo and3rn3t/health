@@ -1,6 +1,8 @@
 import Foundation
 import HealthKit
 import SwiftUI
+// Haptics lives in UI layer; lightweight import is acceptable for feedback coupling.
+import UIKit
 
 /// Staged permission request coordinator to improve user comprehension and acceptance rate.
 /// Strategy:
@@ -23,7 +25,7 @@ final class HealthKitPermissionCoordinator: ObservableObject {
 
     private struct Persisted: Codable { let completedStages: [Stage] }
 
-    enum Stage: String, CaseIterable, Codable { case initial, movementCore, fallRisk, cardioRecovery, finished }
+    enum Stage: String, CaseIterable, Codable { case rationale, initial, movementCore, fallRisk, cardioRecovery, finished }
 
     // MARK: - Initializers
     private init() {
@@ -44,8 +46,8 @@ final class HealthKitPermissionCoordinator: ObservableObject {
     }
 
     private func loadProgress() {
-        let completedStages = progressStore.loadCompletedStages()
-        guard !completedStages.isEmpty else { return }
+    let completedStages = progressStore.loadCompletedStages()
+    guard !completedStages.isEmpty else { stage = .rationale; return }
         if completedStages.contains(.finished) {
             stage = .finished; completed = true
             Log.info("Loaded persisted progress: finished", category: .permissions)
@@ -64,6 +66,9 @@ final class HealthKitPermissionCoordinator: ObservableObject {
     /// Returns the requested set for the current stage (idempotent grouping logic).
     private func typesForStage(_ stage: Stage) -> Set<HKObjectType> {
         switch stage {
+        case .rationale:
+            // Rationale screen does not request authorization; returns empty set.
+            return []
         case .initial:
             return Set([HKQuantityType.quantityType(forIdentifier: .stepCount)].compactMap { $0 })
         case .movementCore:
@@ -95,6 +100,15 @@ final class HealthKitPermissionCoordinator: ObservableObject {
     /// Progresses to the next stage if authorization for the current group succeeds.
     func advance() async {
         guard stage != .finished else { completed = true; return }
+        // If we are on rationale stage just move forward – no HK dialog.
+        if stage == .rationale {
+            if let idx = Stage.allCases.firstIndex(of: stage), idx + 1 < Stage.allCases.count {
+                stage = Stage.allCases[idx + 1]
+                persist(stage: stage)
+                NotificationCenter.default.post(name: .permissionsStageAdvanced, object: stage)
+            }
+            return
+        }
         let targetTypes = typesForStage(stage)
         do {
             try await healthStore.requestAuthorization(toShare: [], read: targetTypes)
@@ -107,16 +121,19 @@ final class HealthKitPermissionCoordinator: ObservableObject {
                 if stage == .finished { completed = true }
                 persist(stage: stage)
                 Log.info("Advanced to stage: \(stage)", category: .permissions)
+                Haptics.shared.trigger(.success)
             } else {
                 stage = .finished
                 completed = true
                 persist(stage: .finished)
                 Log.info("Advanced to finished stage", category: .permissions)
+                Haptics.shared.trigger(.success)
             }
             NotificationCenter.default.post(name: .permissionsStageAdvanced, object: stage)
         } catch {
             lastError = error.localizedDescription
             Log.error("Authorization error: \(error.localizedDescription)", category: .permissions)
+            Haptics.shared.trigger(.error)
         }
     }
 

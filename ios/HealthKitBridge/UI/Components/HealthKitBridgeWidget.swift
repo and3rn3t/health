@@ -13,8 +13,8 @@ struct HealthKitBridgeWidget: Widget {
         ) { entry in
             VitalSenseWidgetView(entry: entry)
         }
-        .configurationDisplayName("VitalSense Health")
-        .description("Monitor your health metrics and fall risk at a glance.")
+    .configurationDisplayName(Text(loc("widget_display_name")))
+    .description(Text(loc("widget_display_description")))
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
         .contentMarginsDisabled()
     }
@@ -307,7 +307,7 @@ struct MediumWidgetView: View {
                         .font(ModernDesignSystem.Typography.numericMedium)
                         .foregroundColor(ModernDesignSystem.Colors.textPrimary)
 
-                    Text("Steps")
+                    Text(loc("walk_metric_steps"))
                         .font(ModernDesignSystem.Typography.caption)
                         .foregroundColor(ModernDesignSystem.Colors.textSecondary)
                 }
@@ -320,7 +320,7 @@ struct MediumWidgetView: View {
                         .fill(entry.fallRisk.color)
                         .frame(width: 8, height: 8)
 
-                    Text("Fall Risk: \(entry.fallRisk.displayName)")
+                    Text(String(format: "%@ %@", loc("fall_risk_title"), entry.fallRisk.displayName))
                         .font(ModernDesignSystem.Typography.caption)
                         .foregroundColor(ModernDesignSystem.Colors.textSecondary)
                 }
@@ -443,9 +443,9 @@ struct LargeWidgetView: View {
                 )
 
                 WidgetMetricCard(
-                    title: "Sleep",
+                    title: loc("sleep_title"),
                     value: String(format: "%.1f", entry.sleepHours),
-                    unit: "hours",
+                    unit: loc("hours_count_other").replacingOccurrences(of: "%d ", with: ""),
                     icon: "bed.double",
                     color: ModernDesignSystem.Colors.secondary
                 )
@@ -458,7 +458,7 @@ struct LargeWidgetView: View {
                         .fill(entry.fallRisk.color)
                         .frame(width: 10, height: 10)
 
-                    Text("Fall Risk Assessment:")
+                    Text(loc("fall_risk_title") + ":")
                         .font(ModernDesignSystem.Typography.caption)
                         .foregroundColor(ModernDesignSystem.Colors.textSecondary)
 

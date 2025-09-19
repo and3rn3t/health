@@ -13,9 +13,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { InteractiveCard } from '@/components/ui/interactive-card';
 import { IOS26Button } from '@/components/ui/ios26-button-system';
 import { EnhancedVitalSenseStatusCard } from '@/components/ui/ios26-enhanced-components';
 import { Progress } from '@/components/ui/progress';
+import { useLiveRegion } from '@/hooks/useLiveRegion';
 import { ProcessedHealthData } from '@/types';
 import {
   Activity,
@@ -119,6 +121,7 @@ export default function LandingPage({
     '7d'
   );
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const announce = useLiveRegion();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -130,6 +133,13 @@ export default function LandingPage({
       setHealthScore(healthData.healthScore || 0);
     }
   }, [healthData]);
+
+  useEffect(() => {
+    if (isRefreshing) announce('Refreshing health data');
+  }, [isRefreshing, announce]);
+  useEffect(() => {
+    if (!isRefreshing && healthData) announce('Health data updated');
+  }, [isRefreshing, healthData, announce]);
 
   const lastUpdatedLabel = useMemo(() => {
     if (!healthData?.lastUpdated) return '';
@@ -467,7 +477,6 @@ export default function LandingPage({
               );
             })}
             {quickStats.slice(2).map((stat) => {
-              // Use standard cards for remaining stats
               const IconComponent = stat.icon;
               const tfCount = getTimeframeCount(timeframe);
               const isSteps = stat.label.startsWith('Steps');
@@ -486,15 +495,20 @@ export default function LandingPage({
                     tfCount
                   )
                 : [];
+              const descId = `stat-desc-${stat.label
+                .replace(/\s+/g, '-')
+                .toLowerCase()}`;
               return (
-                <Card
+                <InteractiveCard
                   key={stat.label}
-                  className="cursor-pointer transition-all hover:shadow-lg"
+                  aria-label={stat.label}
+                  describedBy={descId}
                   onClick={() =>
                     stat.action && onNavigateToFeature(stat.action)
                   }
+                  className="transition-all hover:shadow-md"
                 >
-                  <CardContent className="p-4">
+                  <div className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-muted-foreground text-sm font-medium">
@@ -522,7 +536,7 @@ export default function LandingPage({
                       <IconComponent className={`h-8 w-8 ${stat.color}`} />
                     </div>
                     {(isSteps || isWS) && (
-                      <div className="mt-3">
+                      <div className="mt-3" id={descId}>
                         <Sparkline
                           values={isSteps ? stepsData : wsData}
                           strokeClass={
@@ -533,10 +547,14 @@ export default function LandingPage({
                           className="opacity-80"
                           title={`${stat.label} trend (${timeframe})`}
                         />
+                        <p className="sr-only">
+                          {stat.label} trend for {timeframe} period displayed as
+                          sparkline.
+                        </p>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </InteractiveCard>
               );
             })}
           </div>
@@ -624,12 +642,14 @@ export default function LandingPage({
           {highPriorityFeatures.map((feature) => {
             const IconComponent = feature.icon;
             return (
-              <Card
+              <InteractiveCard
                 key={feature.id}
-                className="group cursor-pointer overflow-hidden transition-all hover:shadow-xl"
+                aria-label={feature.title}
+                describedBy={`feature-${feature.id}-desc`}
                 onClick={() => onNavigateToFeature(feature.id)}
+                className="group overflow-hidden"
               >
-                <div className={`h-2 ${feature.color}`} />
+                <div className={`h-2 ${feature.color}`} data-allow-motion />
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
                     <div className={`p-3 rounded-lg ${feature.color}`}>
@@ -649,7 +669,9 @@ export default function LandingPage({
                   <CardTitle className="transition-colors group-hover:text-vitalsense-primary">
                     {feature.title}
                   </CardTitle>
-                  <CardDescription>{feature.description}</CardDescription>
+                  <CardDescription id={`feature-${feature.id}-desc`}>
+                    {feature.description}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button
@@ -659,7 +681,7 @@ export default function LandingPage({
                     {feature.status === 'setup' ? 'Set Up' : 'Open'} →
                   </Button>
                 </CardContent>
-              </Card>
+              </InteractiveCard>
             );
           })}
         </div>
@@ -680,26 +702,30 @@ export default function LandingPage({
           {otherFeatures.map((feature) => {
             const IconComponent = feature.icon;
             return (
-              <Card
+              <InteractiveCard
                 key={feature.id}
-                className="cursor-pointer transition-all hover:shadow-md"
+                aria-label={feature.title}
+                describedBy={`feature-${feature.id}-desc`}
                 onClick={() => onNavigateToFeature(feature.id)}
               >
-                <CardContent className="flex items-center gap-4 p-4">
+                <div className="flex items-center gap-4 p-4">
                   <div className={`rounded-lg p-2 ${feature.color}`}>
                     <IconComponent className="h-4 w-4 text-white" />
                   </div>
                   <div className="flex-1">
                     <p className="font-medium">{feature.title}</p>
-                    <p className="text-muted-foreground text-sm">
+                    <p
+                      className="text-muted-foreground text-sm"
+                      id={`feature-${feature.id}-desc`}
+                    >
                       {feature.description}
                     </p>
                   </div>
                   <Badge variant="outline" className="text-xs">
                     {feature.status}
                   </Badge>
-                </CardContent>
-              </Card>
+                </div>
+              </InteractiveCard>
             );
           })}
         </div>

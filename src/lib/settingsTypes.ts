@@ -34,6 +34,11 @@ export interface AppPreferences {
   language: string;
   units: 'metric' | 'imperial';
   defaultView: 'dashboard' | 'health-trends' | 'goals';
+  /**
+   * User-selected dynamic type scale multiplier (root font-size scaling)
+   * 1 = default (16px). Values roughly map to iOS content size categories.
+   */
+  dynamicTypeScale?: number;
 }
 
 export interface AllSettings {
@@ -71,5 +76,6 @@ export const DEFAULT_SETTINGS: AllSettings = {
     language: 'en',
     units: 'metric',
     defaultView: 'dashboard',
+    dynamicTypeScale: 1,
   },
 };

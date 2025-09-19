@@ -27,9 +27,11 @@ import {
   useAppleSidebar,
 } from '@/components/nav/AppleSidebar';
 import { Button } from '@/components/ui/button';
+import { useLiveRegion } from '@/hooks/useLiveRegion';
 import { useNavUsage } from '@/hooks/useNavUsage';
 import { useThemeMode } from '@/hooks/useThemeMode';
 import { HealthDataProcessor } from '@/lib/healthDataProcessor';
+import type { AllSettings } from '@/lib/settingsTypes';
 import type { ProcessedHealthData } from '@/types';
 import { useKV } from '@github/spark/hooks';
 import {
@@ -279,6 +281,21 @@ const navigationItems = [
 // Main VitalSense App Component (Inner content inside SidebarProvider)
 function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  // User preference: lock navigation order (disables Quick Access reordering)
+  const [lockNavOrder, setLockNavOrder] = useKV<boolean>(
+    'pref-lock-nav-order',
+    false
+  );
+  // User settings for dynamic type scale (read-only here)
+  const [userSettings] = useKV<AllSettings | null>('user-settings', null);
+  // Apply dynamic type scale to root element when settings change
+  useEffect(() => {
+    const scale = userSettings?.preferences?.dynamicTypeScale || 1;
+    document.documentElement.style.setProperty(
+      '--vs-dynamic-scale',
+      String(scale)
+    );
+  }, [userSettings?.preferences?.dynamicTypeScale]);
   // Persisted health data shared across pages and onboarding
   const [healthData, setHealthData] = useKV<ProcessedHealthData | null>(
     'health-data',
@@ -294,15 +311,16 @@ function AppContent() {
   } = useAppleSidebar();
   // Respect default sidebar behavior; do not force-open on mount.
   const { recordUse, sortByUsage, hasAnyUsage } = useNavUsage();
+  const announce = useLiveRegion();
 
   const quickAccessIds = React.useMemo(() => {
-    if (!hasAnyUsage) return new Set<string>();
+    if (lockNavOrder || !hasAnyUsage) return new Set<string>();
     return new Set(
       sortByUsage(navigationItems)
         .slice(0, 4)
         .map((i) => i.id)
     );
-  }, [hasAnyUsage, sortByUsage]);
+  }, [hasAnyUsage, sortByUsage, lockNavOrder]);
 
   // Navigation item organization
   const primaryTabs = useMemo(
@@ -340,7 +358,8 @@ function AppContent() {
   );
   useEffect(() => {
     document.title = `${activeLabel} • VitalSense`;
-  }, [activeLabel]);
+    if (activeLabel) announce(`Viewing ${activeLabel}`);
+  }, [activeLabel, announce]);
 
   // Handle tab changes
   const handleTabChange = useCallback(
@@ -409,7 +428,7 @@ function AppContent() {
   );
 
   return (
-    <div className="bg-background text-foreground flex h-screen">
+    <div className="bg-background text-foreground pt-safe-top pb-safe-bottom flex h-screen">
       {/* Unified Sidebar (Apple HIG style) */}
       <AppleSidebarPanel
         id="app-sidebar"
@@ -434,7 +453,7 @@ function AppContent() {
           </div>
         </AppleSidebarHeader>
         {/* Quick Access */}
-        {hasAnyUsage && (
+        {hasAnyUsage && !lockNavOrder && (
           <AppleSidebarSection>
             <div className="text-xs text-muted-foreground px-2 pb-2 font-medium">
               Quick Access
@@ -541,6 +560,17 @@ function AppContent() {
                   </AppleSidebarItem>
                 );
               })}
+            <AppleSidebarItem
+              data-id="__lock-nav-order"
+              active={false}
+              onClick={() => setLockNavOrder((v) => !v)}
+              aria-pressed={lockNavOrder}
+              className="text-xs h-auto min-h-[36px] justify-start py-1"
+            >
+              {lockNavOrder
+                ? 'Unlock Navigation Order'
+                : 'Lock Navigation Order'}
+            </AppleSidebarItem>
           </AppleSidebarList>
         </AppleSidebarSection>
         <div className="py-1.5 text-xs text-muted-foreground mt-auto px-2">
@@ -561,7 +591,12 @@ function AppContent() {
           FallbackComponent={ErrorFallback}
           resetKeys={[activeTab]}
         >
-          <main className="bg-background md:px-6 md:pt-3 pb-3 md:pb-4 flex-1 px-4 pt-2">
+          <main
+            id="main-content"
+            role="main"
+            aria-label={activeLabel || 'Main content'}
+            className="bg-background md:px-6 md:pt-3 pb-3 md:pb-4 flex-1 px-4 pt-2"
+          >
             {/* Lightweight onboarding banner on dashboard only */}
             {activeTab === 'dashboard' && (
               <Suspense fallback={null}>
@@ -581,7 +616,10 @@ function AppContent() {
                 </div>
               }
             >
-              <div className="mx-auto max-w-7xl">
+              <div className="mx-auto max-w-7xl space-y-6">
+                <h1 className="sr-only" aria-live="polite">
+                  {activeLabel}
+                </h1>
                 {activeTab === 'dashboard' ? (
                   <LandingPage
                     healthData={healthData ?? null}

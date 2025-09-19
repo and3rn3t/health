@@ -23,14 +23,9 @@ struct VitalSenseWalkingHeader: View {
                     .fill(isTracking ? VitalSenseBrand.Colors.success : VitalSenseBrand.Colors.textMuted)
                     .frame(width: 8, height: 8)
                     .scaleEffect(animateHeader ? 1.2 : 1.0)
-                    .animation(
-                        isTracking ?
-                        VitalSenseBrand.Animations.pulse.repeatForever(autoreverses: true) :
-                        .default,
-                        value: animateHeader
-                    )
+                    .modifier(ReducedMotionPulse(active: isTracking && animateHeader))
 
-                Text(isTracking ? "Recording" : "Ready")
+                Text(isTracking ? loc("walk_status_recording") : loc("walk_status_ready"))
                     .font(VitalSenseBrand.Typography.caption)
                     .foregroundStyle(Color.white)
                     .fontWeight(.medium)
@@ -56,15 +51,16 @@ struct VitalSenseWalkingHeader: View {
             }
         }
         .padding(VitalSenseBrand.Layout.large)
-        .onAppear {
-            animateHeader = true
-        }
+        .onAppear { animateHeader = true }
     }
 }
 
 struct VitalSenseSessionStatusBar: View {
     let isTracking: Bool
     let metrics: SessionMetrics?
+    // Simple loading & error simulation placeholders (could be replaced with real state bindings later)
+    var isLoading: Bool = false
+    var error: Error? = nil
     @State private var animateMetrics = false
     @State private var selectedMetricIndex = 0
     @State private var showMetricDetail = false
@@ -72,13 +68,25 @@ struct VitalSenseSessionStatusBar: View {
 
     var body: some View {
         VStack(spacing: VitalSenseBrand.Layout.medium) {
+            if let error {
+                ErrorStateView(onRetry: { /* TODO: inject retry */ })
+                    .frame(height: 140)
+            } else if isLoading {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .frame(height: 120)
+                    .accessibilityLabel(Text(loc("walk_tab_overview")))
+            } else if metrics == nil {
+                EmptyStateView(titleKey: "empty_no_data", messageKey: "empty_tap_retry", icon: "figure.walk")
+                    .frame(height: 140)
+            }
             // Main metrics row with tap interactions
             HStack(spacing: VitalSenseBrand.Layout.large) {
                 // Duration - Interactive
                 VitalSenseInteractiveQuickMetric(
                     icon: "stopwatch",
                     value: formatDuration(metrics?.duration ?? 0),
-                    label: "Duration",
+                    label: loc("walk_metric_duration"),
                     color: VitalSenseBrand.Colors.primary,
                     isSelected: selectedMetricIndex == 0,
                     isTracking: isTracking
@@ -90,7 +98,7 @@ struct VitalSenseSessionStatusBar: View {
                 VitalSenseInteractiveQuickMetric(
                     icon: "location",
                     value: formatDistance(metrics?.distance ?? 0),
-                    label: "Distance",
+                    label: loc("walk_metric_distance"),
                     color: VitalSenseBrand.Colors.accent,
                     isSelected: selectedMetricIndex == 1,
                     isTracking: isTracking
@@ -102,7 +110,7 @@ struct VitalSenseSessionStatusBar: View {
                 VitalSenseInteractiveQuickMetric(
                     icon: "speedometer",
                     value: formatSpeed(metrics?.currentSpeed ?? 0),
-                    label: "Speed",
+                    label: loc("walk_metric_speed"),
                     color: VitalSenseBrand.Colors.success,
                     isSelected: selectedMetricIndex == 2,
                     isTracking: isTracking
@@ -111,10 +119,11 @@ struct VitalSenseSessionStatusBar: View {
                 }
 
                 // Steps - Interactive
+                let stepValue = metrics?.stepCount ?? 0
                 VitalSenseInteractiveQuickMetric(
                     icon: "figure.walk",
-                    value: "\(metrics?.stepCount ?? 0)",
-                    label: "Steps",
+                    value: locPlural(baseKey: "steps_count", count: stepValue),
+                    label: loc("walk_metric_steps"),
                     color: VitalSenseBrand.Colors.warning,
                     isSelected: selectedMetricIndex == 3,
                     isTracking: isTracking
@@ -161,26 +170,20 @@ struct VitalSenseSessionStatusBar: View {
     }
 
     private func selectMetric(_ index: Int) {
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+        MotionPreferences.perform(animation: .spring(response: 0.4, dampingFraction: 0.7)) {
             selectedMetricIndex = index
             showMetricDetail = true
-
-            // Haptic feedback
-            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-            impactFeedback.impactOccurred()
-        }
-    }
-            )
-        }
-        .padding(VitalSenseBrand.Layout.medium)
-        .background(VitalSenseBrand.Colors.cardBackground)
-        .scaleEffect(animateMetrics ? 1.0 : 0.9)
-        .opacity(animateMetrics ? 1.0 : 0.0)
-        .animation(VitalSenseBrand.Animations.spring, value: animateMetrics)
-        .onAppear {
-            withAnimation(VitalSenseBrand.Animations.spring.delay(0.2)) {
-                animateMetrics = true
+            Haptics.shared.trigger(.selection)
+            // Telemetry instrumentation for metric selection
+            let name: String
+            switch index {
+            case 0: name = "duration"
+            case 1: name = "distance"
+            case 2: name = "speed"
+            case 3: name = "steps"
+            default: name = "unknown"
             }
+            Telemetry.shared.record(.metricSelect(name: name))
         }
     }
 
@@ -273,10 +276,10 @@ enum SessionTab: String, CaseIterable {
 
     var title: String {
         switch self {
-        case .overview: return "Overview"
-        case .realTime: return "Live Data"
-        case .map: return "Route"
-        case .analysis: return "Analysis"
+        case .overview: return loc("walk_tab_overview")
+        case .realTime: return loc("walk_tab_live")
+        case .map: return loc("walk_tab_route")
+        case .analysis: return loc("walk_tab_analysis")
         }
     }
 
@@ -313,12 +316,7 @@ struct VitalSenseInteractiveQuickMetric: View {
                         .fill(isSelected ? color.opacity(0.2) : Color.clear)
                         .frame(width: 40, height: 40)
                         .scaleEffect(showPulse ? 1.2 : 1.0)
-                        .animation(
-                            isTracking ?
-                            .easeInOut(duration: 1.5).repeatForever(autoreverses: true) :
-                            .default,
-                            value: showPulse
-                        )
+                        .modifier(ReducedMotionPulse(active: isTracking && showPulse))
 
                     Image(systemName: icon)
                         .foregroundStyle(isSelected ? color : color.opacity(0.8))
@@ -373,11 +371,26 @@ struct VitalSenseInteractiveQuickMetric: View {
         .onChange(of: isTracking) { tracking in
             showPulse = tracking
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text("\(label): \(value)"))
         .onChange(of: value) { _ in
             // Animate when value changes
             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                 animateValue.toggle()
             }
+        }
+    }
+}
+
+// MARK: - Reduced Motion Pulse Modifier
+private struct ReducedMotionPulse: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let active: Bool
+    func body(content: Content) -> some View {
+        if reduceMotion || !active {
+            content
+        } else {
+            content.animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: active)
         }
     }
 }

@@ -1,0 +1,123 @@
+/* Base English localization for VitalSense iOS components */
+"health_score_title" = "VitalSense Health Score";
+"fall_risk_title" = "Fall Risk Assessment";
+"steps_title" = "Today's Steps";
+"heart_rate_title" = "Heart Rate";
+"sleep_title" = "Last Night's Sleep";
+"empty_no_data" = "No data available";
+"empty_tap_retry" = "Pull to refresh or try again later.";
+"error_generic_title" = "Something Went Wrong";
+"error_retry_button" = "Retry";
+"sleep_no_data" = "No sleep data";
+"heart_no_reading" = "No recent reading";
+"perm_health_score_needed" = "I need access to your health data to check your score. Please open VitalSense to grant permission.";
+"perm_generic_needed" = "I need access to your health data. Please open VitalSense to grant permission.";
+"gait_opening_message" = "Opening VitalSense to start your gait assessment. Please follow the on-screen instructions for the walking test.";
+"emergency_opening_message" = "Opening VitalSense emergency contacts. You can quickly reach your caregivers or emergency services from here.";
+
+"perm_rationale_title" = "Why VitalSense Needs This";
+"perm_rationale_intro" = "We use the following data to calculate scores, provide insights, and detect potential risks early. Your data stays on-device or is processed securely per our privacy policy.";
+"perm_continue_button" = "Continue";
+"close_button" = "Close";
+
+/* Permission flow stage titles */
+"perm_stage_initial_title" = "Welcome to VitalSense";
+"perm_stage_movement_title" = "Enable Core Movement";
+"perm_stage_fall_title" = "Advanced Fall Risk Metrics";
+"perm_stage_cardio_title" = "Cardio & Recovery";
+"perm_stage_finished_title" = "All Set";
+
+/* Permission flow stage descriptions */
+"perm_stage_initial_desc" = "We start with steps to personalize your daily activity baseline.";
+"perm_stage_movement_desc" = "Distance, energy and heart rate help us contextualize gait quality and exertion.";
+"perm_stage_fall_desc" = "Granular gait metrics sharpen fall risk detection and early intervention.";
+"perm_stage_cardio_desc" = "Recovery metrics refine long-term mobility resilience insights.";
+
+/* Permission flow buttons */
+"perm_finish_button" = "Finish";
+
+/* Rationale type list */
+"perm_type_steps_title" = "Steps";
+"perm_type_steps_desc" = "Establishes your daily movement baseline.";
+"perm_type_heart_title" = "Heart Rate";
+"perm_type_heart_desc" = "Supports exertion, recovery and cardiovascular insights.";
+"perm_type_mobility_title" = "Mobility";
+"perm_type_mobility_desc" = "Improves gait quality and fall risk analytics.";
+
+/* Rationale navigation title */
+"perm_rationale_nav_title" = "Health Data Access";
+
+/* Diagnostics */
+"perm_diag_missing_section" = "Missing Types";
+"perm_diag_all_granted" = "All requested types granted";
+"perm_diag_nav_title" = "Permissions";
+"done_button" = "Done";
+
+/* Walking Session */
+"walk_status_recording" = "Recording";
+"walk_status_ready" = "Ready";
+"walk_metric_duration" = "Duration";
+"walk_metric_distance" = "Distance";
+"walk_metric_speed" = "Speed";
+"walk_metric_steps" = "Steps";
+"walk_tab_overview" = "Overview";
+"walk_tab_live" = "Live Data";
+"walk_tab_route" = "Route";
+"walk_tab_analysis" = "Analysis";
+
+/* Widget */
+"widget_display_name" = "VitalSense Health";
+"widget_display_description" = "Monitor your health metrics and fall risk at a glance.";
+
+/* Gait Analysis */
+"gait_recommendations_title" = "Recommendations";
+"gait_progress_title" = "Progress to Target";
+"gait_progress_optimal_format" = "%d%% of optimal range";
+
+/* Fall Risk Levels */
+"fall_level_title_low" = "Excellent Safety";
+"fall_level_title_medium" = "Moderate Risk";
+"fall_level_title_high" = "High Risk Alert";
+"fall_level_title_unknown" = "Assessment Needed";
+"fall_level_subtitle_low" = "Your mobility and balance indicators look great";
+"fall_level_subtitle_medium" = "Some areas for improvement identified";
+"fall_level_subtitle_high" = "Immediate attention recommended";
+"fall_level_subtitle_unknown" = "Complete an assessment to get insights";
+"fall_level_desc_low" = "Low Risk";
+"fall_level_desc_medium" = "Moderate Risk";
+"fall_level_desc_high" = "High Risk";
+"fall_level_desc_unknown" = "Unknown";
+
+/* Fall Risk Recommendation Types */
+"fall_reco_exercise" = "Exercise Program";
+"fall_reco_balance" = "Balance Training";
+"fall_reco_home" = "Home Safety";
+"fall_reco_medication" = "Medication Review";
+"fall_reco_medical" = "Medical Consultation";
+"fall_reco_vision" = "Vision Check";
+
+/* Pluralization examples (app may migrate to .stringsdict later) */
+"steps_count_one" = "%d step";
+"steps_count_other" = "%d steps";
+"hours_count_one" = "%d hour";
+"hours_count_other" = "%d hours";
+
+/* Settings */
+"settings_section_general" = "General";
+"settings_toggle_enable_haptics" = "Enable Haptics";
+"settings_toggle_default_simulation" = "Default to Simulation";
+"settings_version_label" = "Version";
+"settings_nav_title" = "Settings";
+"settings_version_a11y" = "Application Version";
+"home_tab_title" = "Home";
+"settings_tab_title" = "Settings";
+"settings_footer_copyright" = "VitalSense © %d";
+
+/* Generic Loading / Actions */
+"loading_generic" = "Loading";
+"retry_button" = "Retry";
+"view_all_button" = "View All";
+"recommendations_title" = "Recommendations"; // fall risk container reuse
+"more_recommendations_format" = "+ %d more recommendations";
+"last_updated_format" = "Last updated: %@";
+"last_updated_a11y" = "Last updated timestamp";

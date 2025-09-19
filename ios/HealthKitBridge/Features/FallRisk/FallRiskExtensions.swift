@@ -23,28 +23,28 @@ extension FallRiskLevel {
 
     var vitalSenseTitle: String {
         switch self {
-        case .low: return "Excellent Safety"
-        case .medium: return "Moderate Risk"
-        case .high: return "High Risk Alert"
-        case .unknown: return "Assessment Needed"
+        case .low: return loc("fall_level_title_low")
+        case .medium: return loc("fall_level_title_medium")
+        case .high: return loc("fall_level_title_high")
+        case .unknown: return loc("fall_level_title_unknown")
         }
     }
 
     var vitalSenseSubtitle: String {
         switch self {
-        case .low: return "Your mobility and balance indicators look great"
-        case .medium: return "Some areas for improvement identified"
-        case .high: return "Immediate attention recommended"
-        case .unknown: return "Complete an assessment to get insights"
+        case .low: return loc("fall_level_subtitle_low")
+        case .medium: return loc("fall_level_subtitle_medium")
+        case .high: return loc("fall_level_subtitle_high")
+        case .unknown: return loc("fall_level_subtitle_unknown")
         }
     }
 
     var vitalSenseDescription: String {
         switch self {
-        case .low: return "Low Risk"
-        case .medium: return "Moderate Risk"
-        case .high: return "High Risk"
-        case .unknown: return "Unknown"
+        case .low: return loc("fall_level_desc_low")
+        case .medium: return loc("fall_level_desc_medium")
+        case .high: return loc("fall_level_desc_high")
+        case .unknown: return loc("fall_level_desc_unknown")
         }
     }
 
@@ -103,12 +103,12 @@ extension FallRiskRecommendationType {
 
     var displayName: String {
         switch self {
-        case .exerciseProgram: return "Exercise Program"
-        case .balanceTraining: return "Balance Training"
-        case .homeModification: return "Home Safety"
-        case .medicationReview: return "Medication Review"
-        case .medicalConsultation: return "Medical Consultation"
-        case .visionCheck: return "Vision Check"
+        case .exerciseProgram: return loc("fall_reco_exercise")
+        case .balanceTraining: return loc("fall_reco_balance")
+        case .homeModification: return loc("fall_reco_home")
+        case .medicationReview: return loc("fall_reco_medication")
+        case .medicalConsultation: return loc("fall_reco_medical")
+        case .visionCheck: return loc("fall_reco_vision")
         }
     }
 }

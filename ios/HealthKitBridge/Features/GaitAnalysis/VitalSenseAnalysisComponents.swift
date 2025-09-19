@@ -41,6 +41,8 @@ struct VitalSenseAnalysisCard: View {
 struct VitalSenseRecommendationsCard: View {
     let recommendations: [String]
     let metricType: GaitMetricType
+    var isLoading: Bool = false
+    var error: Error? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: VitalSenseBrand.Layout.medium) {
@@ -49,23 +51,32 @@ struct VitalSenseRecommendationsCard: View {
                     .foregroundStyle(VitalSenseBrand.Colors.warning)
                     .font(.title3)
 
-                Text("Recommendations")
+                Text(loc("gait_recommendations_title"))
                     .font(VitalSenseBrand.Typography.heading3)
                     .foregroundStyle(VitalSenseBrand.Colors.textPrimary)
             }
 
-            VStack(alignment: .leading, spacing: VitalSenseBrand.Layout.small) {
-                ForEach(recommendations.indices, id: \.self) { index in
-                    HStack(alignment: .top, spacing: VitalSenseBrand.Layout.small) {
-                        Circle()
-                            .fill(metricType.vitalSenseColor)
-                            .frame(width: 6, height: 6)
-                            .padding(.top, 6)
+            if let error {
+                ErrorStateView(onRetry: { /* TODO: inject retry callback */ })
+            } else if isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+            } else if recommendations.isEmpty {
+                EmptyStateView(titleKey: "empty_no_data", messageKey: "empty_tap_retry", icon: "lightbulb")
+            } else {
+                VStack(alignment: .leading, spacing: VitalSenseBrand.Layout.small) {
+                    ForEach(recommendations.indices, id: \.self) { index in
+                        HStack(alignment: .top, spacing: VitalSenseBrand.Layout.small) {
+                            Circle()
+                                .fill(metricType.vitalSenseColor)
+                                .frame(width: 6, height: 6)
+                                .padding(.top, 6)
 
-                        Text(recommendations[index])
-                            .font(VitalSenseBrand.Typography.body)
-                            .foregroundStyle(VitalSenseBrand.Colors.textSecondary)
-                            .lineLimit(nil)
+                            Text(recommendations[index])
+                                .font(VitalSenseBrand.Typography.body)
+                                .foregroundStyle(VitalSenseBrand.Colors.textSecondary)
+                                .lineLimit(nil)
+                        }
                     }
                 }
             }
@@ -85,6 +96,7 @@ struct VitalSenseProgressIndicator: View {
     let target: Double
     let metric: GaitMetricType
     @State private var animateProgress = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var progressPercentage: Double {
         value / target
@@ -98,12 +110,12 @@ struct VitalSenseProgressIndicator: View {
                     .font(.title3)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Progress to Target")
+                    Text(loc("gait_progress_title"))
                         .font(VitalSenseBrand.Typography.body)
                         .fontWeight(.semibold)
                         .foregroundStyle(VitalSenseBrand.Colors.textPrimary)
 
-                    Text("\(Int(progressPercentage * 100))% of optimal range")
+                    Text(String(format: loc("gait_progress_optimal_format"), Int(progressPercentage * 100)))
                         .font(VitalSenseBrand.Typography.caption)
                         .foregroundStyle(VitalSenseBrand.Colors.textSecondary)
                 }
@@ -123,13 +135,11 @@ struct VitalSenseProgressIndicator: View {
                     .frame(width: 80, height: 80)
 
                 Circle()
-                    .trim(from: 0, to: animateProgress ? progressPercentage : 0)
-                    .stroke(
-                        metric.vitalSenseGradient, style: StrokeStyle(lineWidth: 8, lineCap: .round)
-                    )
+                    .trim(from: 0, to: (reduceMotion ? progressPercentage : (animateProgress ? progressPercentage : 0)))
+                    .stroke(metric.vitalSenseGradient, style: StrokeStyle(lineWidth: 8, lineCap: .round))
                     .frame(width: 80, height: 80)
                     .rotationEffect(.degrees(-90))
-                    .animation(VitalSenseBrand.Animations.spring.delay(0.5), value: animateProgress)
+                    .animation(reduceMotion ? nil : VitalSenseBrand.Animations.spring.delay(0.5), value: animateProgress)
 
                 Image(systemName: metric.vitalSenseIcon)
                     .foregroundStyle(metric.vitalSenseColor)
@@ -140,8 +150,33 @@ struct VitalSenseProgressIndicator: View {
         .padding(VitalSenseBrand.Layout.medium)
         .background(VitalSenseBrand.Colors.cardBackground)
         .cornerRadius(VitalSenseBrand.Layout.cornerRadius)
-        .onAppear {
-            animateProgress = true
-        }
+        .onAppear { animateProgress = true }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text("\(metric.displayName) \(Int(progressPercentage * 100))%"))
     }
 }
+
+// MARK: - Gait Analysis Container
+struct VitalSenseAnalysisContainer: View {
+    @ObservedObject var viewModel: GaitAnalysisViewModel
+    var retry: (() -> Void)? = nil
+
+    var body: some View {
+        VStack(spacing: VitalSenseBrand.Layout.large) {
+            switch viewModel.state {
+            case .idle, .loading:
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+            case .error:
+                ErrorStateView(onRetry: { retry?() ?? viewModel.retry() })
+            case .empty:
+                EmptyStateView(titleKey: "empty_no_data", messageKey: "empty_tap_retry", icon: "chart.line.uptrend.xyaxis")
+            case .ready:
+                VitalSenseProgressIndicator(value: viewModel.value, target: viewModel.target, metric: viewModel.metric)
+                VitalSenseRecommendationsCard(recommendations: viewModel.recommendations, metricType: viewModel.metric)
+            }
+        }
+        .padding(VitalSenseBrand.Layout.medium)
+    }
+}
+

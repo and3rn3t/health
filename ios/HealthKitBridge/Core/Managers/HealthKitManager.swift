@@ -331,6 +331,7 @@ class HealthKitManager: NSObject, ObservableObject {
 
     // Request HealthKit permissions with enhanced feedback
     func requestAuthorization() async {
+        Telemetry.shared.record(.permissionFunnel(stage: "request_start"))
         performanceMonitor?.startTiming("authorization")
 
         if config.shouldLogDebugInfo() {
@@ -384,6 +385,7 @@ class HealthKitManager: NSObject, ObservableObject {
                 await MainActor.run {
                     self.checkAuthorizationStatus()
                     self.lastError = nil
+                    Telemetry.shared.record(.permissionFunnel(stage: "authorized"))
                     if self.config.shouldLogDebugInfo() {
                         print("✅ Full HealthKit authorization process completed")
                     }
@@ -402,6 +404,7 @@ class HealthKitManager: NSObject, ObservableObject {
                 self.authorizationStatus = .sharingDenied
                 self.lastError = "Authorization failed: \(error.localizedDescription)"
             }
+            Telemetry.shared.record(.permissionFunnel(stage: "denied"))
         }
 
         performanceMonitor?.endTiming("authorization")
@@ -545,6 +548,8 @@ class HealthKitManager: NSObject, ObservableObject {
     func startLiveDataStreaming(webSocketManager: WebSocketManager) async {
     Log.info("Starting enhanced live health data streaming", category: "stream")
         self.webSocketManager = webSocketManager
+
+        Telemetry.shared.record(.streamStatus(started: true))
 
         await MainActor.run {
             self.isMonitoringActive = true
@@ -1285,6 +1290,7 @@ class HealthKitManager: NSObject, ObservableObject {
     // Stop monitoring and clean up
     func stopMonitoring() {
         print("🛑 Stopping health monitoring...")
+        Telemetry.shared.record(.streamStatus(started: false))
 
         // Stop all queries
         for query in activeQueries {

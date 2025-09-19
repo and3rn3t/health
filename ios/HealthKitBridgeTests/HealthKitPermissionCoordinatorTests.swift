@@ -86,4 +86,15 @@ final class HealthKitPermissionCoordinatorTests: XCTestCase {
         XCTAssertTrue(d2 > d1)
         XCTAssertTrue(d3 > d2)
     }
+
+    func testRationaleStageSkipsAuthorization() async {
+        let mock = MockHealthStore()
+        let coordinator = HealthKitPermissionCoordinator(healthStore: mock, initialStage: .rationale)
+        XCTAssertEqual(coordinator.stage, .rationale)
+        // Advance should not trigger HK authorization (mock.requested stays empty)
+        await coordinator.advance()
+        XCTAssertTrue(mock.requested.isEmpty, "Rationale stage should not request HealthKit types")
+        // Now at initial stage
+        XCTAssertEqual(coordinator.stage, .initial)
+    }
 }

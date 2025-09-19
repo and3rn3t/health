@@ -25,7 +25,7 @@ import {
   type ThemeMode,
 } from '@/lib/settingsTypes';
 import { useKV } from '@github/spark/hooks';
-import { Settings, Shield, Users, Wifi } from 'lucide-react';
+import { Lock, Settings, Shield, Users, Wifi } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -199,6 +199,36 @@ export default function UserSettingsPanel() {
       setBusyAction((a) => (a === 'export' ? null : a));
     }
   };
+
+  // Provide enumerated dynamic type scale options (approx mapping to iOS categories)
+  const typeScaleOptions: {
+    value: string;
+    label: string;
+    multiplier: number;
+  }[] = [
+    { value: '0.875', label: 'XS', multiplier: 0.875 },
+    { value: '1', label: 'Default', multiplier: 1 },
+    { value: '1.125', label: 'L', multiplier: 1.125 },
+    { value: '1.25', label: 'XL', multiplier: 1.25 },
+    { value: '1.375', label: 'XXL', multiplier: 1.375 },
+  ];
+
+  // Backward compatibility: ensure dynamicTypeScale has default
+  if (!s.preferences.dynamicTypeScale) {
+    updateSettings((prev) => ({
+      ...prev,
+      preferences: {
+        ...prev.preferences,
+        dynamicTypeScale: 1,
+      },
+    }));
+  }
+
+  // Local nav lock preference currently stored outside of settings (KV key). Mirror logic if passed later.
+  const [lockNavOrder, setLockNavOrder] = useKV<boolean>(
+    'pref-lock-nav-order',
+    false
+  );
 
   return (
     <div className="space-y-6">
@@ -582,6 +612,57 @@ export default function UserSettingsPanel() {
                 <SelectItem value="goals">Goals</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="dynamicTypeScale">Dynamic type</Label>
+            <Select
+              value={String(s.preferences.dynamicTypeScale ?? 1)}
+              onValueChange={(v) =>
+                updateSettings((prev) => ({
+                  ...prev,
+                  preferences: {
+                    ...prev.preferences,
+                    dynamicTypeScale: parseFloat(v) || 1,
+                  },
+                }))
+              }
+            >
+              <SelectTrigger id="dynamicTypeScale">
+                <SelectValue placeholder="Font size" />
+              </SelectTrigger>
+              <SelectContent>
+                {typeScaleOptions.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Adjust interface text size (applies immediately)
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <Label
+              htmlFor="lockNavOrderToggle"
+              className="flex items-center gap-1"
+            >
+              <Lock className="h-4 w-4" /> Navigation order lock
+            </Label>
+            <div className="px-3 flex items-center justify-between rounded-md border py-2">
+              <div className="pr-4 text-sm leading-tight">
+                <div className="font-medium">Lock sidebar order</div>
+                <div className="text-muted-foreground text-xs">
+                  Prevent adaptive quick access reordering
+                </div>
+              </div>
+              <Switch
+                id="lockNavOrderToggle"
+                checked={lockNavOrder}
+                onCheckedChange={(v) => setLockNavOrder(v)}
+                aria-label="Toggle navigation order lock"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

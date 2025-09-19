@@ -38,7 +38,7 @@ private struct RootLaunchRouter: View {
     var body: some View {
         Group {
             switch permission.stage {
-            case .initial, .movementCore, .fallRisk, .cardioRecovery:
+            case .rationale, .initial, .movementCore, .fallRisk, .cardioRecovery:
                 PermissionStageView()
             case .finished:
                 ContentView()
@@ -63,6 +63,7 @@ private struct RootLaunchRouter: View {
 private struct PermissionStageView: View {
     @EnvironmentObject private var permission: HealthKitPermissionCoordinator
     @State private var isRequesting = false
+    @State private var showRationale = false
 
     var body: some View {
         VStack(spacing: 24) {
@@ -82,34 +83,59 @@ private struct PermissionStageView: View {
             .disabled(isRequesting)
         }
         .padding()
+        .onAppear { if permission.stage == .rationale { showRationale = true } }
+        .sheet(isPresented: $showRationale) {
+            PermissionRationaleView(
+                types: rationaleTypes,
+                onContinue: {
+                    Haptics.shared.trigger(.selection)
+                    showRationale = false
+                    Task { await permission.advance() }
+                },
+                onDismiss: {
+                    showRationale = false
+                }
+            )
+        }
     }
 
     private func request() async {
         guard !isRequesting else { return }
         isRequesting = true
         await permission.advance()
+        Haptics.shared.trigger(.selection)
         isRequesting = false
     }
 
     private var stageTitle: String {
         switch permission.stage {
-        case .initial: return "Welcome to VitalSense"
-        case .movementCore: return "Enable Core Movement"
-        case .fallRisk: return "Advanced Fall Risk Metrics"
-        case .cardioRecovery: return "Cardio & Recovery"
-        case .finished: return "All Set" // not shown
+        case .rationale: return loc("perm_rationale_title")
+        case .initial: return loc("perm_stage_initial_title")
+        case .movementCore: return loc("perm_stage_movement_title")
+        case .fallRisk: return loc("perm_stage_fall_title")
+        case .cardioRecovery: return loc("perm_stage_cardio_title")
+        case .finished: return loc("perm_stage_finished_title")
         }
     }
     private var stageDescription: String {
         switch permission.stage {
-        case .initial: return "We start with steps to personalize your daily activity baseline."
-        case .movementCore: return "Distance, energy and heart rate help us contextualize gait quality and exertion."
-        case .fallRisk: return "Granular gait metrics sharpen fall risk detection and early intervention."
-        case .cardioRecovery: return "Recovery metrics refine long‑term mobility resilience insights."
+        case .rationale: return loc("perm_rationale_intro")
+        case .initial: return loc("perm_stage_initial_desc")
+        case .movementCore: return loc("perm_stage_movement_desc")
+        case .fallRisk: return loc("perm_stage_fall_desc")
+        case .cardioRecovery: return loc("perm_stage_cardio_desc")
         case .finished: return ""
         }
     }
-    private var buttonLabel: String { permission.stage == .cardioRecovery ? "Finish" : "Continue" }
+    private var buttonLabel: String { permission.stage == .cardioRecovery ? loc("perm_finish_button") : loc("perm_continue_button") }
+
+    private var rationaleTypes: [PermissionRationaleView.RequiredType] {
+        [
+            .init(title: loc("perm_type_steps_title"), description: loc("perm_type_steps_desc"), systemImage: "figure.walk"),
+            .init(title: loc("perm_type_heart_title"), description: loc("perm_type_heart_desc"), systemImage: "heart.fill"),
+            .init(title: loc("perm_type_mobility_title"), description: loc("perm_type_mobility_desc"), systemImage: "figure.run")
+        ]
+    }
 }
 
 // MARK: - Diagnostics View
@@ -119,16 +145,16 @@ private struct PermissionDiagnosticsView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Missing Types") {
+                Section(loc("perm_diag_missing_section")) {
                     ForEach(permission.missingTypesSummary(), id: \.self) { id in
                         Text(id)
                             .font(.caption.monospaced())
                     }
-                    if permission.missingTypesSummary().isEmpty { Text("All requested types granted") }
+                    if permission.missingTypesSummary().isEmpty { Text(loc("perm_diag_all_granted")) }
                 }
             }
-            .navigationTitle("Permissions")
-            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } } }
+            .navigationTitle(loc("perm_diag_nav_title"))
+            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button(loc("done_button")) { dismiss() } } }
         }
     }
 }
