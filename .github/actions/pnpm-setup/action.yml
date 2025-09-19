@@ -26,8 +26,8 @@ runs:
       shell: bash
       run: |
         if ! command -v pnpm >/dev/null 2>&1; then
-          echo "pnpm still not found after corepack prepare";
-          exit 1;
+          echo "pnpm still not found after corepack prepare - installing via npm as fallback";
+          npm install -g pnpm@latest || { echo 'global npm install pnpm failed'; exit 1; }
         fi
         echo "pnpm version: $(pnpm -v)"
     - name: Install Dependencies
