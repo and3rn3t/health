@@ -28,15 +28,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: npm
-      - name: Install
-        run: npm ci --prefer-offline --no-audit --no-fund
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install Dependencies (pnpm)
+        run: pnpm install --frozen-lockfile
       - name: Type Check
-        run: npx tsc --noEmit
+        run: pnpm exec tsc --noEmit
       - name: Build App
-        run: npm run build
+        run: pnpm run build
       - name: Build Worker (optional)
-        run: npm run build:worker || echo "Skipping worker build"
+        run: pnpm run build:worker || echo "Skipping worker build"
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -56,12 +59,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: npm
-      - run: npm ci --prefer-offline --no-audit --no-fund
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install Dependencies (pnpm)
+        run: pnpm install --frozen-lockfile
       - name: Lint
-        run: npm run lint || true
+        run: pnpm run lint || true
       - name: Unit Tests
-        run: npm test -- --reporter=verbose || true
+        run: pnpm test -- --reporter=verbose || true
 
   bundle_threshold:
     runs-on: ubuntu-latest
@@ -72,8 +79,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: npm
-      - run: npm ci --prefer-offline --no-audit --no-fund
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install Dependencies (pnpm)
+        run: pnpm install --frozen-lockfile
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -82,9 +93,9 @@ jobs:
         continue-on-error: true
       - name: Fallback Build (if artifacts missing)
         run: |
-          if [ ! -d dist ]; then echo "dist not found – fallback build"; npm run build; fi
+          if [ ! -d dist ]; then echo "dist not found – fallback build"; pnpm run build; fi
       - name: Verify Bundle Thresholds
-        run: npm run ci:bundle-threshold
+        run: pnpm run ci:bundle-threshold
       - uses: actions/upload-artifact@v4
         with:
           name: bundle-threshold-report
@@ -102,8 +113,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: npm
-      - run: npm ci --prefer-offline --no-audit --no-fund
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install Dependencies (pnpm)
+        run: pnpm install --frozen-lockfile
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -112,9 +127,9 @@ jobs:
         continue-on-error: true
       - name: Fallback Build (if artifacts missing)
         run: |
-          if [ ! -d dist ]; then echo "dist not found – fallback build"; npm run build; fi
+          if [ ! -d dist ]; then echo "dist not found – fallback build"; pnpm run build; fi
       - name: Bundle Drift
-        run: npm run ci:bundle-drift
+        run: pnpm run ci:bundle-drift
       - uses: actions/upload-artifact@v4
         with:
           name: bundle-drift-report
@@ -130,10 +145,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: npm
-      - run: npm ci --prefer-offline --no-audit --no-fund
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install Dependencies (pnpm)
+        run: pnpm install --frozen-lockfile
       - name: Privacy Guard
-        run: npm run ci:privacy
+        run: pnpm run ci:privacy
 
   smoke:
     runs-on: ubuntu-latest
@@ -144,8 +163,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: npm
-      - run: npm ci --prefer-offline --no-audit --no-fund
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install Dependencies (pnpm)
+        run: pnpm install --frozen-lockfile
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -154,10 +177,10 @@ jobs:
         continue-on-error: true
       - name: Ensure Build Assets (fallback)
         run: |
-          if [ ! -d dist ]; then echo "dist missing – rebuilding"; npm run build; fi
-          if [ ! -d dist-worker ]; then echo "dist-worker missing – attempting worker build"; npm run build:worker || echo "Worker build optional"; fi
+          if [ ! -d dist ]; then echo "dist missing – rebuilding"; pnpm run build; fi
+          if [ ! -d dist-worker ]; then echo "dist-worker missing – attempting worker build"; pnpm run build:worker || echo "Worker build optional"; fi
       - name: Smoke
-        run: npm run ci:smoke
+        run: pnpm run ci:smoke
       - name: Branding Audit (local)
         run: node scripts/node/branding/branding-audit.js --local --url=http://127.0.0.1:8787 || true
       - name: Upload Branding Audit Summary
@@ -178,9 +201,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: npm
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install Dependencies (pnpm)
+        run: pnpm install --frozen-lockfile
       - name: Secret Rotation Check
-        run: npm run ci:secrets
+        run: pnpm run ci:secrets
 
   ws_schema_drift:
     runs-on: ubuntu-latest
@@ -191,10 +219,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: npm
-      - run: npm ci --prefer-offline --no-audit --no-fund
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install Dependencies (pnpm)
+        run: pnpm install --frozen-lockfile
       - name: WebSocket Schema Drift
-        run: npm run ci:ws-schema
+        run: pnpm run ci:ws-schema
       - name: Upload WS Schema Drift Report
         uses: actions/upload-artifact@v4
         with:
@@ -211,10 +243,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: npm
-      - run: npm ci --prefer-offline --no-audit --no-fund
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install Dependencies (pnpm)
+        run: pnpm install --frozen-lockfile
       - name: Performance SLO Probe
-        run: npm run ci:perf-slo
+        run: pnpm run ci:perf-slo
       - name: Upload Performance SLO Report
         uses: actions/upload-artifact@v4
         with:
@@ -239,8 +275,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: npm
-      - run: npm ci --prefer-offline --no-audit --no-fund
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install Dependencies (pnpm)
+        run: pnpm install --frozen-lockfile
       - name: Prepare Reports Dir
         run: mkdir -p reports
       - name: Download Bundle Threshold Report
