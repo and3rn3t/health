@@ -12,7 +12,16 @@ import { VitalSenseColors } from '../../lib/vitalsense-colors';
 
 function withAuth(ui: React.ReactElement) {
   const mockAuth: AuthContextType = {
-    user: { id: 'test-user', email: 'test@vitalsense.com', name: 'Test' },
+    user: {
+      id: 'test-user',
+      email: 'test@vitalsense.com',
+      name: 'Test',
+      roles: [],
+      permissions: [],
+      lastLogin: new Date().toISOString(),
+      mfaEnabled: false,
+      hipaaConsent: true,
+    },
     isAuthenticated: true,
     isLoading: false,
     login: async () => {},

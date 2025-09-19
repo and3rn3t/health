@@ -148,6 +148,14 @@ export class HealthDataProcessor {
       heart_rate: { min: 30, max: 220 },
       walking_steadiness: { min: 0, max: 100 },
       steps: { min: 0, max: 100000 },
+      gait_speed: { min: 0, max: 4 }, // m/s human typical range
+      cadence: { min: 0, max: 300 }, // steps/min
+      stride_length: { min: 0, max: 3 }, // meters
+      step_asymmetry: { min: 0, max: 100 }, // percent
+      double_support_time: { min: 0, max: 100 }, // percent
+      posture_angle: { min: -90, max: 90 }, // degrees forward/backward
+      stability_index: { min: 0, max: 100 },
+      sway_balance: { min: 0, max: 200 }, // arbitrary sway units
       oxygen_saturation: { min: 70, max: 100 },
       sleep_hours: { min: 0, max: 24 },
       body_weight: { min: 20, max: 500 },
