@@ -29,6 +29,7 @@ This document provides a comprehensive index of all documentation in the project
   - [`endpoint-test-plan.md`](./develop/endpoint-test-plan.md) - API endpoint testing plan
   - [`enhanced-health-data-features.md`](./develop/enhanced-health-data-features.md) - Advanced health features
   - [`performance-optimizations.md`](./develop/performance-optimizations.md) - Performance improvements
+  - [`PERFORMANCE_SLO.md`](./develop/PERFORMANCE_SLO.md) - Performance SLOs & governance
 
 ### 📱 iOS Development
 
@@ -84,7 +85,7 @@ This document provides a comprehensive index of all documentation in the project
   - Completed migration documentation
   - Historical project phases
 
-## 🔍 Finding Documentation
+## 🔍 Additional Navigation Aids
 
 ### By Purpose
 
@@ -95,14 +96,14 @@ This document provides a comprehensive index of all documentation in the project
 - **Deployment**: Look in [`deploy/`](./deploy/) folder
 - **Troubleshooting**: Visit [`troubleshooting/`](./troubleshooting/) folder
 
-### By Platform
+### By Platform (Extended)
 
 - **Web/React**: [`architecture/`](./architecture/), [`develop/`](./develop/)
 - **iOS**: [`ios/`](./ios/) - comprehensive iOS documentation
 - **Infrastructure**: [`deploy/`](./deploy/), [`security/`](./security/)
 - **Authentication**: [`auth/`](./auth/) - Auth0 and security
 
-### By Development Phase
+### By Development Phase (Extended)
 
 - **Planning**: [`project-management/`](./project-management/), [`architecture/PRD.md`](./architecture/PRD.md)
 - **Development**: [`getting-started/`](./getting-started/), [`develop/`](./develop/), [`ios/`](./ios/)
@@ -124,6 +125,7 @@ This document provides a comprehensive index of all documentation in the project
 - **VitalSense Branding Documentation** - Complete implementation and troubleshooting guides
 - **Getting Started Guides** - Quick setup and detailed environment configuration
 - **Consolidated Auth Documentation** - Streamlined Auth0 setup process
+- **Performance SLO & Governance** - Budgets, drift rules, WS schema & latency tracking
 
 ### 🎯 Improved Organization
 

@@ -25,6 +25,7 @@ function parseSize(val, fallback) {
   return n;
 }
 
+// Default budgets (gzip): JS < 400KB, CSS < 60KB — align with performance goals.
 const distDir = args.dir || 'dist';
 const jsMax = parseSize(args['js-max'], 400 * 1024);
 const cssMax = parseSize(args['css-max'], 60 * 1024);
@@ -75,7 +76,7 @@ fs.mkdirSync('reports', { recursive: true });
 fs.writeFileSync('reports/bundle-threshold.json', JSON.stringify(report, null, 2));
 
 if (jsGzip > jsMax || cssGzip > cssMax) {
-  const msg = `Threshold exceeded (${jsGzip > jsMax ? 'JS ' : ''}${cssGzip > cssMax ? 'CSS' : ''})`; // eslint-disable-line
+  const msg = `Threshold exceeded (${jsGzip > jsMax ? 'JS ' : ''}${cssGzip > cssMax ? 'CSS' : ''})`;
   if (failSoft) {
     console.warn('⚠️  ' + msg);
   } else {

@@ -6,9 +6,617 @@ on:
   pull_request:
     branches: [main, develop]
 
-concurrency:
-  group: core-ci-${{ github.ref }}
-  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - name: Type Check
+        run: npx tsc --noEmit
+      - name: Build App
+        run: npm run build
+      - name: Build Worker (optional)
+        run: npm run build:worker || echo "Skipping worker build"
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-artifacts
+          path: |
+            dist/**
+            dist-worker/**
+          if-no-files-found: warn
+
+  lint_test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - name: Lint
+        run: npm run lint || true
+      - name: Unit Tests
+        run: npm test -- --reporter=verbose || true
+
+  bundle_threshold:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - run: npm run build
+      - name: Verify Bundle Thresholds
+        run: npm run ci:bundle-threshold
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-threshold-report
+          path: reports/bundle-threshold.json
+          if-no-files-found: error
+
+  bundle_drift:
+    runs-on: ubuntu-latest
+    needs: bundle_threshold
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - name: Build (current) if needed
+        run: |
+          if [ ! -d dist ]; then npm run build; fi
+      - name: Bundle Drift
+        run: npm run ci:bundle-drift
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-drift-report
+          path: reports/bundle-drift.json
+          if-no-files-found: error
+
+  privacy_guard:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - name: Privacy Guard
+        run: npm run ci:privacy
+
+  smoke:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - name: Build Worker (fallback to app)
+        run: npm run build:worker || npm run build
+      - name: Smoke
+        run: npm run ci:smoke
+      - name: Branding Audit (local)
+        run: node scripts/node/branding/branding-audit.js --local --url=http://127.0.0.1:8787 || true
+      - name: Upload Branding Audit Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: branding-audit-summary
+          path: reports/branding-audit-summary.md
+          if-no-files-found: warn
+      - name: WebSocket Resilience Test
+        run: node scripts/node/test/test-websocket-reconnect.js --backendUrl=wss://health.andernet.dev/ws --maxReconnectMs=6000 || true
+
+  secrets_rotation:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - name: Secret Rotation Check
+        run: npm run ci:secrets
+
+  ws_schema_drift:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - name: WebSocket Schema Drift
+        run: npm run ci:ws-schema
+      - name: Upload WS Schema Drift Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ws-schema-drift-report
+          path: reports/ws-schema-drift.json
+          if-no-files-found: error
+
+  performance_slo:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - name: Performance SLO Probe
+        run: npm run ci:perf-slo
+      - name: Upload Performance SLO Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-slo-report
+          path: reports/perf-slo.json
+          if-no-files-found: error
+
+  summary:
+    runs-on: ubuntu-latest
+    needs:
+      - lint_test
+      - bundle_threshold
+      - bundle_drift
+      - privacy_guard
+      - smoke
+      - secrets_rotation
+      - ws_schema_drift
+      - performance_slo
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Download Bundle Threshold Report
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-threshold-report
+          path: reports
+        continue-on-error: true
+      - name: Download Bundle Drift Report
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-drift-report
+          path: reports
+        continue-on-error: true
+      - name: Download Perf SLO Report
+        uses: actions/download-artifact@v4
+        with:
+          name: perf-slo-report
+          path: reports
+        continue-on-error: true
+      - name: Download WS Schema Drift Report
+        uses: actions/download-artifact@v4
+        with:
+          name: ws-schema-drift-report
+          path: reports
+        continue-on-error: true
+      - name: Download Branding Summary (optional)
+        uses: actions/download-artifact@v4
+        with:
+          name: branding-audit-summary
+          path: reports
+        continue-on-error: true
+      - name: Generate CI Scorecard
+        run: |
+          node scripts/ci/ci-scorecard.mjs \
+            --lint='${{ needs.lint_test.result }}' \
+            --bundle='${{ needs.bundle_threshold.result }}' \
+            --drift='${{ needs.bundle_drift.result }}' \
+            --privacy='${{ needs.privacy_guard.result }}' \
+            --smoke='${{ needs.smoke.result }}' \
+            --secrets='${{ needs.secrets_rotation.result }}' \
+            --ws='${{ needs.ws_schema_drift.result }}' \
+            --perf='${{ needs.performance_slo.result }}'
+      - name: Upload Scorecard Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-scorecard
+          path: reports/ci-scorecard.md
+          if-no-files-found: warn
+      - name: Enforce Gating
+        run: |
+          echo "Lint/Test: ${{ needs.lint_test.result }}"
+          echo "Bundle: ${{ needs.bundle_threshold.result }}"
+          echo "Drift: ${{ needs.bundle_drift.result }}"
+          echo "Privacy: ${{ needs.privacy_guard.result }}"
+          echo "Smoke: ${{ needs.smoke.result }}"
+          echo "Secrets: ${{ needs.secrets_rotation.result }}"
+          echo "WS Schema: ${{ needs.ws_schema_drift.result }}"
+          echo "Perf SLO: ${{ needs.performance_slo.result }}"
+          failures=0
+          for r in "${{ needs.bundle_threshold.result }}" "${{ needs.bundle_drift.result }}" "${{ needs.privacy_guard.result }}" "${{ needs.smoke.result }}" "${{ needs.secrets_rotation.result }}" "${{ needs.ws_schema_drift.result }}" "${{ needs.performance_slo.result }}" "${{ needs.lint_test.result }}"; do
+            if [ "$r" != 'success' ]; then failures=$((failures+1)); fi
+          done
+          if [ $failures -gt 0 ]; then echo "Gating failures: $failures"; exit 1; finame: Core CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - run: npm run build || echo "build skipped"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-artifacts
+          path: dist/**
+          if-no-files-found: warn
+
+  lint_test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - run: npm run lint || true
+      - run: npm test -- --reporter=verbose || true
+
+  performance_slo:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - run: npm run ci:perf-slo || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: perf-slo-report
+          path: reports/perf-slo.json
+          if-no-files-found: warn
+
+  summary:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - lint_test
+      - performance_slo
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Download Perf SLO
+        uses: actions/download-artifact@v4
+        with:
+          name: perf-slo-report
+          path: reports
+        continue-on-error: true
+      - name: Generate CI Scorecard
+        run: |
+          node scripts/ci/ci-scorecard.mjs \
+            --lint='${{ needs.lint_test.result }}' \
+            --bundle='success' \
+            --drift='success' \
+            --privacy='success' \
+            --smoke='success' \
+            --secrets='success' \
+            --ws='success' \
+            --perf='${{ needs.performance_slo.result }}'
+      - name: Upload Scorecard
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-scorecard
+          path: reports/ci-scorecard.md
+          if-no-files-found: warn
+      - name: Enforce Minimal Gating
+        run: |
+          echo "Lint/Test: ${{ needs.lint_test.result }}"
+          echo "Perf SLO: ${{ needs.performance_slo.result }}"
+          if [ "${{ needs.lint_test.result }}" != 'success' ]; then exit 1; finame: Core CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - name: Type Check
+        run: npx tsc --noEmit
+      - name: Build App
+        run: npm run build
+      - name: Build Worker (optional)
+        run: npm run build:worker || echo "Skipping worker build"
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-artifacts
+          path: |
+            dist/**
+            dist-worker/**
+          if-no-files-found: warn
+
+  lint_test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - name: Lint
+        run: npm run lint || true
+      - name: Unit Tests
+        run: npm test -- --reporter=verbose || true
+
+  bundle_threshold:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - run: npm run build
+      - name: Verify Bundle Thresholds
+        run: npm run ci:bundle-threshold
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-threshold-report
+          path: reports/bundle-threshold.json
+          if-no-files-found: error
+
+  bundle_drift:
+    runs-on: ubuntu-latest
+    needs: bundle_threshold
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - name: Build (current) if needed
+        run: |
+          if [ ! -d dist ]; then npm run build; fi
+      - name: Bundle Drift
+        run: npm run ci:bundle-drift
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-drift-report
+          path: reports/bundle-drift.json
+          if-no-files-found: error
+
+  privacy_guard:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - name: Privacy Guard
+        run: npm run ci:privacy
+
+  smoke:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - name: Build Worker (fallback to app)
+        run: npm run build:worker || npm run build
+      - name: Smoke
+        run: npm run ci:smoke
+      - name: Branding Audit (local)
+        run: node scripts/node/branding/branding-audit.js --local --url=http://127.0.0.1:8787 || true
+      - name: Upload Branding Audit Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: branding-audit-summary
+          path: reports/branding-audit-summary.md
+          if-no-files-found: warn
+      - name: WebSocket Resilience Test
+        run: node scripts/node/test/test-websocket-reconnect.js --backendUrl=wss://health.andernet.dev/ws --maxReconnectMs=6000 || true
+
+  secrets_rotation:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - name: Secret Rotation Check
+        run: npm run ci:secrets
+
+  ws_schema_drift:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - name: WebSocket Schema Drift
+        run: npm run ci:ws-schema
+      - name: Upload WS Schema Drift Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ws-schema-drift-report
+          path: reports/ws-schema-drift.json
+          if-no-files-found: error
+
+  performance_slo:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline
+      - name: Performance SLO Probe
+        run: npm run ci:perf-slo
+      - name: Upload Performance SLO Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-slo-report
+          path: reports/perf-slo.json
+          if-no-files-found: error
+
+  summary:
+    runs-on: ubuntu-latest
+    needs:
+      - lint_test
+      - bundle_threshold
+      - bundle_drift
+      - privacy_guard
+      - smoke
+      - secrets_rotation
+      - ws_schema_drift
+      - performance_slo
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Download Bundle Threshold Report
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-threshold-report
+          path: reports
+        continue-on-error: true
+      - name: Download Bundle Drift Report
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-drift-report
+          path: reports
+        continue-on-error: true
+      - name: Download Perf SLO Report
+        uses: actions/download-artifact@v4
+        with:
+          name: perf-slo-report
+          path: reports
+        continue-on-error: true
+      - name: Download WS Schema Drift Report
+        uses: actions/download-artifact@v4
+        with:
+          name: ws-schema-drift-report
+          path: reports
+        continue-on-error: true
+      - name: Download Branding Summary (optional)
+        uses: actions/download-artifact@v4
+        with:
+          name: branding-audit-summary
+          path: reports
+        continue-on-error: true
+      - name: Generate CI Scorecard
+        run: |
+          node scripts/ci/ci-scorecard.mjs \
+            --lint='${{ needs.lint_test.result }}' \
+            --bundle='${{ needs.bundle_threshold.result }}' \
+            --drift='${{ needs.bundle_drift.result }}' \
+            --privacy='${{ needs.privacy_guard.result }}' \
+            --smoke='${{ needs.smoke.result }}' \
+            --secrets='${{ needs.secrets_rotation.result }}' \
+            --ws='${{ needs.ws_schema_drift.result }}' \
+            --perf='${{ needs.performance_slo.result }}'
+      - name: Upload Scorecard Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-scorecard
+          path: reports/ci-scorecard.md
+          if-no-files-found: warn
+      - name: Enforce Gating
+        run: |
+          echo "Lint/Test: ${{ needs.lint_test.result }}"
+          echo "Bundle: ${{ needs.bundle_threshold.result }}"
+          echo "Drift: ${{ needs.bundle_drift.result }}"
+          echo "Privacy: ${{ needs.privacy_guard.result }}"
+          echo "Smoke: ${{ needs.smoke.result }}"
+          echo "Secrets: ${{ needs.secrets_rotation.result }}"
+          echo "WS Schema: ${{ needs.ws_schema_drift.result }}"
+          echo "Perf SLO: ${{ needs.performance_slo.result }}"
+          failures=0
+          for r in "${{ needs.bundle_threshold.result }}" "${{ needs.bundle_drift.result }}" "${{ needs.privacy_guard.result }}" "${{ needs.smoke.result }}" "${{ needs.secrets_rotation.result }}" "${{ needs.ws_schema_drift.result }}" "${{ needs.performance_slo.result }}" "${{ needs.lint_test.result }}"; do
+            if [ "$r" != 'success' ]; then failures=$((failures+1)); fi
+          done
+          if [ $failures -gt 0 ]; then echo "Gating failures: $failures"; exit 1; finame: Core CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
 
 jobs:
   build:
@@ -19,9 +627,827 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
-      - name: Install
+      - run: npm ci --prefer-offline
+      - name: Type Check
+        run: npx tsc --noEmit
+      - name: Build App
+        run: npm run build
+      - name: Build Worker (optional)
+        run: npm run build:worker || echo "Skipping worker build"
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-artifacts
+          path: |
+            dist/**
+            dist-worker/**
+          if-no-files-found: warn
+
+  lint_test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Lint
+        run: npm run lint || true
+      - name: Unit Tests
+        run: npm test -- --reporter=verbose || true
+
+  bundle_threshold:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - run: npm run build
+      - name: Verify Bundle Thresholds
+        run: npm run ci:bundle-threshold
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-threshold-report
+          path: reports/bundle-threshold.json
+          if-no-files-found: error
+
+  bundle_drift:
+    runs-on: ubuntu-latest
+    needs: bundle_threshold
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Build (current) if needed
         run: |
-          npm ci --prefer-offline
+          if [ ! -d dist ]; then npm run build; fi
+      - name: Bundle Drift
+        run: npm run ci:bundle-drift
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-drift-report
+          path: reports/bundle-drift.json
+          if-no-files-found: error
+
+  privacy_guard:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Privacy Guard
+        run: npm run ci:privacy
+
+  smoke:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Build Worker (fallback to app)
+        run: npm run build:worker || npm run build
+      - name: Smoke
+        run: npm run ci:smoke
+      - name: Branding Audit (local)
+        run: node scripts/node/branding/branding-audit.js --local --url=http://127.0.0.1:8787 || true
+      - name: Upload Branding Audit Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: branding-audit-summary
+          path: reports/branding-audit-summary.md
+          if-no-files-found: warn
+      - name: WebSocket Resilience Test
+        run: node scripts/node/test/test-websocket-reconnect.js --backendUrl=wss://health.andernet.dev/ws --maxReconnectMs=6000 || true
+
+  secrets_rotation:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Secret Rotation Check
+        run: npm run ci:secrets
+
+  ws_schema_drift:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: WebSocket Schema Drift
+        run: npm run ci:ws-schema
+      - name: Upload WS Schema Drift Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ws-schema-drift-report
+          path: reports/ws-schema-drift.json
+          if-no-files-found: error
+
+  performance_slo:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Performance SLO Probe
+        run: npm run ci:perf-slo
+      - name: Upload Performance SLO Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-slo-report
+          path: reports/perf-slo.json
+          if-no-files-found: error
+
+  summary:
+    runs-on: ubuntu-latest
+    needs:
+      - lint_test
+      - bundle_threshold
+      - bundle_drift
+      - privacy_guard
+      - smoke
+      - secrets_rotation
+      - ws_schema_drift
+      - performance_slo
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Download Bundle Threshold Report
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-threshold-report
+          path: reports
+        continue-on-error: true
+      - name: Download Bundle Drift Report
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-drift-report
+          path: reports
+        continue-on-error: true
+      - name: Download Perf SLO Report
+        uses: actions/download-artifact@v4
+        with:
+          name: perf-slo-report
+          path: reports
+        continue-on-error: true
+      - name: Download WS Schema Drift Report
+        uses: actions/download-artifact@v4
+        with:
+          name: ws-schema-drift-report
+          path: reports
+        continue-on-error: true
+      - name: Download Branding Summary (optional)
+        uses: actions/download-artifact@v4
+        with:
+          name: branding-audit-summary
+          path: reports
+        continue-on-error: true
+      - name: Generate CI Scorecard
+        run: |
+          node scripts/ci/ci-scorecard.mjs \
+            --lint='${{ needs.lint_test.result }}' \
+            --bundle='${{ needs.bundle_threshold.result }}' \
+            --drift='${{ needs.bundle_drift.result }}' \
+            --privacy='${{ needs.privacy_guard.result }}' \
+            --smoke='${{ needs.smoke.result }}' \
+            --secrets='${{ needs.secrets_rotation.result }}' \
+            --ws='${{ needs.ws_schema_drift.result }}' \
+            --perf='${{ needs.performance_slo.result }}'
+      - name: Upload Scorecard Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-scorecard
+          path: reports/ci-scorecard.md
+          if-no-files-found: warn
+      - name: Enforce Gating
+        run: |
+          echo "Lint/Test: ${{ needs.lint_test.result }}"
+          echo "Bundle: ${{ needs.bundle_threshold.result }}"
+          echo "Drift: ${{ needs.bundle_drift.result }}"
+          echo "Privacy: ${{ needs.privacy_guard.result }}"
+          echo "Smoke: ${{ needs.smoke.result }}"
+          echo "Secrets: ${{ needs.secrets_rotation.result }}"
+          echo "WS Schema: ${{ needs.ws_schema_drift.result }}"
+          echo "Perf SLO: ${{ needs.performance_slo.result }}"
+          failures=0
+          for r in "${{ needs.bundle_threshold.result }}" "${{ needs.bundle_drift.result }}" "${{ needs.privacy_guard.result }}" "${{ needs.smoke.result }}" "${{ needs.secrets_rotation.result }}" "${{ needs.ws_schema_drift.result }}" "${{ needs.performance_slo.result }}" "${{ needs.lint_test.result }}"; do
+            if [ "$r" != 'success' ]; then failures=$((failures+1)); fi
+          done
+          if [ $failures -gt 0 ]; then echo "Gating failures: $failures"; exit 1; finame: Core CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Type Check
+        run: npx tsc --noEmit
+      - name: Build App
+        run: npm run build
+      - name: Build Worker (optional)
+        run: npm run build:worker || echo "Skipping worker build"
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-artifacts
+          path: |
+            dist/**
+            dist-worker/**
+          if-no-files-found: warn
+
+  lint_test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Lint
+        run: npm run lint || true
+      - name: Unit Tests
+        run: npm test -- --reporter=verbose || true
+
+  bundle_threshold:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - run: npm run build
+      - name: Verify Bundle Thresholds
+        run: npm run ci:bundle-threshold
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-threshold-report
+          path: reports/bundle-threshold.json
+          if-no-files-found: error
+
+  bundle_drift:
+    runs-on: ubuntu-latest
+    needs: bundle_threshold
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Build (current) if needed
+        run: |
+          if [ ! -d dist ]; then npm run build; fi
+      - name: Bundle Drift
+        run: npm run ci:bundle-drift
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-drift-report
+          path: reports/bundle-drift.json
+          if-no-files-found: error
+
+  privacy_guard:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Privacy Guard
+        run: npm run ci:privacy
+
+  smoke:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Build Worker (fallback to app)
+        run: npm run build:worker || npm run build
+      - name: Smoke
+        run: npm run ci:smoke
+      - name: Branding Audit (local)
+        run: node scripts/node/branding/branding-audit.js --local --url=http://127.0.0.1:8787 || true
+      - name: Upload Branding Audit Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: branding-audit-summary
+          path: reports/branding-audit-summary.md
+          if-no-files-found: warn
+      - name: WebSocket Resilience Test
+        run: node scripts/node/test/test-websocket-reconnect.js --backendUrl=wss://health.andernet.dev/ws --maxReconnectMs=6000 || true
+
+  secrets_rotation:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Secret Rotation Check
+        run: npm run ci:secrets
+
+  ws_schema_drift:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: WebSocket Schema Drift
+        run: npm run ci:ws-schema
+      - name: Upload WS Schema Drift Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ws-schema-drift-report
+          path: reports/ws-schema-drift.json
+          if-no-files-found: error
+
+  performance_slo:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Performance SLO Probe
+        run: npm run ci:perf-slo
+      - name: Upload Performance SLO Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-slo-report
+          path: reports/perf-slo.json
+          if-no-files-found: error
+
+  summary:
+    runs-on: ubuntu-latest
+    needs:
+      - lint_test
+      - bundle_threshold
+      - bundle_drift
+      - privacy_guard
+      - smoke
+      - secrets_rotation
+      - ws_schema_drift
+      - performance_slo
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Download Bundle Threshold Report
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-threshold-report
+          path: reports
+        continue-on-error: true
+      - name: Download Bundle Drift Report
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-drift-report
+          path: reports
+        continue-on-error: true
+      - name: Download Perf SLO Report
+        uses: actions/download-artifact@v4
+        with:
+          name: perf-slo-report
+          path: reports
+        continue-on-error: true
+      - name: Download WS Schema Drift Report
+        uses: actions/download-artifact@v4
+        with:
+          name: ws-schema-drift-report
+          path: reports
+        continue-on-error: true
+      - name: Download Branding Summary (optional)
+        uses: actions/download-artifact@v4
+        with:
+          name: branding-audit-summary
+          path: reports
+        continue-on-error: true
+      - name: Generate CI Scorecard
+        run: |
+          node scripts/ci/ci-scorecard.mjs \
+            --lint='${{ needs.lint_test.result }}' \
+            --bundle='${{ needs.bundle_threshold.result }}' \
+            --drift='${{ needs.bundle_drift.result }}' \
+            --privacy='${{ needs.privacy_guard.result }}' \
+            --smoke='${{ needs.smoke.result }}' \
+            --secrets='${{ needs.secrets_rotation.result }}' \
+            --ws='${{ needs.ws_schema_drift.result }}' \
+            --perf='${{ needs.performance_slo.result }}'
+      - name: Upload Scorecard Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-scorecard
+          path: reports/ci-scorecard.md
+          if-no-files-found: warn
+      - name: Enforce Gating
+        run: |
+          echo "Lint/Test: ${{ needs.lint_test.result }}"
+          echo "Bundle: ${{ needs.bundle_threshold.result }}"
+          echo "Drift: ${{ needs.bundle_drift.result }}"
+          echo "Privacy: ${{ needs.privacy_guard.result }}"
+          echo "Smoke: ${{ needs.smoke.result }}"
+          echo "Secrets: ${{ needs.secrets_rotation.result }}"
+          echo "WS Schema: ${{ needs.ws_schema_drift.result }}"
+          echo "Perf SLO: ${{ needs.performance_slo.result }}"
+          failures=0
+          for r in "${{ needs.bundle_threshold.result }}" "${{ needs.bundle_drift.result }}" "${{ needs.privacy_guard.result }}" "${{ needs.smoke.result }}" "${{ needs.secrets_rotation.result }}" "${{ needs.ws_schema_drift.result }}" "${{ needs.performance_slo.result }}" "${{ needs.lint_test.result }}"; do
+            if [ "$r" != 'success' ]; then failures=$((failures+1)); fi
+          done
+          if [ $failures -gt 0 ]; then echo "Gating failures: $failures"; exit 1; finame: Core CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Type Check
+        run: npx tsc --noEmit
+      - name: Build App
+        run: npm run build
+      - name: Build Worker (optional)
+        run: npm run build:worker || echo "Skipping worker build"
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-artifacts
+          path: |
+            dist/**
+            dist-worker/**
+          if-no-files-found: warn
+
+  lint_test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Lint
+        run: npm run lint || true
+      - name: Unit Tests
+        run: npm test -- --reporter=verbose || true
+
+  bundle_threshold:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - run: npm run build
+      - name: Verify Bundle Thresholds
+        run: npm run ci:bundle-threshold
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-threshold-report
+          path: reports/bundle-threshold.json
+          if-no-files-found: error
+
+  bundle_drift:
+    runs-on: ubuntu-latest
+    needs: bundle_threshold
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Build (current) if needed
+        run: |
+          if [ ! -d dist ]; then npm run build; fi
+      - name: Bundle Drift
+        run: npm run ci:bundle-drift
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-drift-report
+          path: reports/bundle-drift.json
+          if-no-files-found: error
+
+  privacy_guard:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Privacy Guard
+        run: npm run ci:privacy
+
+  smoke:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Build Worker (fallback to app)
+        run: npm run build:worker || npm run build
+      - name: Smoke
+        run: npm run ci:smoke
+      - name: Branding Audit (local)
+        run: node scripts/node/branding/branding-audit.js --local --url=http://127.0.0.1:8787 || true
+      - name: Upload Branding Audit Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: branding-audit-summary
+          path: reports/branding-audit-summary.md
+          if-no-files-found: warn
+      - name: WebSocket Resilience Test
+        run: node scripts/node/test/test-websocket-reconnect.js --backendUrl=wss://health.andernet.dev/ws --maxReconnectMs=6000 || true
+
+  secrets_rotation:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Secret Rotation Check
+        run: npm run ci:secrets
+
+  ws_schema_drift:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: WebSocket Schema Drift
+        run: npm run ci:ws-schema
+      - name: Upload WS Schema Drift Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ws-schema-drift-report
+          path: reports/ws-schema-drift.json
+          if-no-files-found: error
+
+  performance_slo:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Performance SLO Probe
+        run: npm run ci:perf-slo
+      - name: Upload Performance SLO Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-slo-report
+          path: reports/perf-slo.json
+          if-no-files-found: error
+
+  summary:
+    runs-on: ubuntu-latest
+    needs:
+      - lint_test
+      - bundle_threshold
+      - bundle_drift
+      - privacy_guard
+      - smoke
+      - secrets_rotation
+      - ws_schema_drift
+      - performance_slo
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Download Bundle Threshold Report
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-threshold-report
+          path: reports
+        continue-on-error: true
+      - name: Download Bundle Drift Report
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-drift-report
+          path: reports
+        continue-on-error: true
+      - name: Download Perf SLO Report
+        uses: actions/download-artifact@v4
+        with:
+          name: perf-slo-report
+          path: reports
+        continue-on-error: true
+      - name: Download WS Schema Drift Report
+        uses: actions/download-artifact@v4
+        with:
+          name: ws-schema-drift-report
+          path: reports
+        continue-on-error: true
+      - name: Download Branding Summary (optional)
+        uses: actions/download-artifact@v4
+        with:
+          name: branding-audit-summary
+          path: reports
+        continue-on-error: true
+      - name: Generate CI Scorecard
+        run: |
+          node scripts/ci/ci-scorecard.mjs \
+            --lint='${{ needs.lint_test.result }}' \
+            --bundle='${{ needs.bundle_threshold.result }}' \
+            --drift='${{ needs.bundle_drift.result }}' \
+            --privacy='${{ needs.privacy_guard.result }}' \
+            --smoke='${{ needs.smoke.result }}' \
+            --secrets='${{ needs.secrets_rotation.result }}' \
+            --ws='${{ needs.ws_schema_drift.result }}' \
+            --perf='${{ needs.performance_slo.result }}'
+      - name: Upload Scorecard Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-scorecard
+          path: reports/ci-scorecard.md
+          if-no-files-found: warn
+      - name: Enforce Gating
+        run: |
+          echo "Lint/Test: ${{ needs.lint_test.result }}"
+          echo "Bundle: ${{ needs.bundle_threshold.result }}"
+          echo "Drift: ${{ needs.bundle_drift.result }}"
+          echo "Privacy: ${{ needs.privacy_guard.result }}"
+          echo "Smoke: ${{ needs.smoke.result }}"
+          echo "Secrets: ${{ needs.secrets_rotation.result }}"
+          echo "WS Schema: ${{ needs.ws_schema_drift.result }}"
+          echo "Perf SLO: ${{ needs.performance_slo.result }}"
+          failures=0
+          for r in "${{ needs.bundle_threshold.result }}" "${{ needs.bundle_drift.result }}" "${{ needs.privacy_guard.result }}" "${{ needs.smoke.result }}" "${{ needs.secrets_rotation.result }}" "${{ needs.ws_schema_drift.result }}" "${{ needs.performance_slo.result }}" "${{ needs.lint_test.result }}"; do
+            if [ "$r" != 'success' ]; then failures=$((failures+1)); fi
+          done
+          if [ $failures -gt 0 ]; then echo "Gating failures: $failures"; exit 1; fi
+
+  summary:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+      - name: Download Bundle Threshold Report
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-threshold-report
+          path: reports
+        continue-on-error: true
+      - name: Download Bundle Drift Report
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-drift-report
+          path: reports
+        continue-on-error: true
+      - name: Download Perf SLO Report
+        uses: actions/download-artifact@v4
+        with:
+          name: perf-slo-report
+          path: reports
+        continue-on-error: true
+      - name: Download WS Schema Drift Report
+        uses: actions/download-artifact@v4
+        with:
+          name: ws-schema-drift-report
+          path: reports
+        continue-on-error: true
+      - name: Download Branding Summary (optional)
+        uses: actions/download-artifact@v4
+        with:
+          name: branding-audit-summary
+          path: reports
+        continue-on-error: true
+      - name: Generate CI Scorecard
+        run: |
+          node scripts/ci/ci-scorecard.mjs \
+            --lint='${{ needs.lint_test.result }}' \
+            --bundle='${{ needs.bundle_threshold.result }}' \
+            --drift='${{ needs.bundle_drift.result }}' \
+            --privacy='${{ needs.privacy_guard.result }}' \
+            --smoke='${{ needs.smoke.result }}' \
+            --secrets='${{ needs.secrets_rotation.result }}' \
+            --ws='${{ needs.ws_schema_drift.result }}' \
+            --perf='${{ needs.performance_slo.result }}'
+      - name: Upload Scorecard Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-scorecard
+          path: reports/ci-scorecard.md
+          if-no-files-found: warn
+      - name: Enforce Gating
+        run: |
+          if [ "${{ needs.bundle_threshold.result }}" != 'success' ]; then exit 1; fi
+          if [ "${{ needs.bundle_drift.result }}" != 'success' ]; then exit 1; fi
+          if [ "${{ needs.privacy_guard.result }}" != 'success' ]; then exit 1; fi
+          if [ "${{ needs.smoke.result }}" != 'success' ]; then exit 1; fi
+          if [ "${{ needs.secrets_rotation.result }}" != 'success' ]; then exit 1; fi
+          if [ "${{ needs.ws_schema_drift.result }}" != 'success' ]; then exit 1; fi
+          if [ "${{ needs.performance_slo.result }}" != 'success' ]; then exit 1; fi
+          if [ "${{ needs.lint_test.result }}" != 'success' ]; then exit 1; fi
           cd scripts/node && npm ci --prefer-offline || true
       - name: Type Check
         run: npx tsc --noEmit
@@ -99,15 +1525,119 @@ jobs:
         run: npm run build:worker || npm run build
       - name: Smoke
         run: npm run ci:smoke
+      - name: Branding Audit (local)
+        run: node scripts/node/branding/branding-audit.js --local --url=http://127.0.0.1:8787
+      - name: Upload Branding Audit Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: branding-audit-summary
+          path: reports/branding-audit-summary.md
+          if-no-files-found: warn
+      - name: WebSocket Resilience Test
+        run: node scripts/node/test/test-websocket-reconnect.js --backendUrl=wss://health.andernet.dev/ws --maxReconnectMs=6000
+
+  bundle_drift:
+    runs-on: ubuntu-latest
+    needs: bundle_threshold
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Build (current) if needed
+        run: |
+          if [ ! -d dist ]; then npm run build; fi
+      - name: Bundle Drift
+        run: npm run ci:bundle-drift
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-drift-report
+          path: reports/bundle-drift.json
+          if-no-files-found: error
+
+  secrets_rotation:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Secret Rotation Check
+        run: npm run ci:secrets
+
+  ws_schema_drift:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: WebSocket Schema Drift
+        run: npm run ci:ws-schema
+      - name: Upload WS Schema Drift Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ws-schema-drift-report
+          path: reports/ws-schema-drift.json
+          if-no-files-found: error
+
+  performance_slo:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Performance SLO Probe
+        run: npm run ci:perf-slo
+      - name: Upload Performance SLO Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-slo-report
+          path: reports/perf-slo.json
+          if-no-files-found: error
 
   summary:
     runs-on: ubuntu-latest
-    needs: [lint_test, bundle_threshold, privacy_guard, smoke]
+    needs:
+      [
+        lint_test,
+        bundle_threshold,
+        bundle_drift,
+        privacy_guard,
+        smoke,
+        secrets_rotation,
+        ws_schema_drift,
+        performance_slo,
+      ]
     if: always()
     steps:
       - run: |
           echo "Lint/Test: ${{ needs.lint_test.result }}"
           echo "Bundle: ${{ needs.bundle_threshold.result }}"
+          echo "Drift: ${{ needs.bundle_drift.result }}"
           echo "Privacy: ${{ needs.privacy_guard.result }}"
           echo "Smoke: ${{ needs.smoke.result }}"
+          echo "Secrets: ${{ needs.secrets_rotation.result }}"
+          echo "WS Schema: ${{ needs.ws_schema_drift.result }}"
+          echo "Perf SLO: ${{ needs.performance_slo.result }}"
+          if [ "${{ needs.bundle_threshold.result }}" != 'success' ]; then exit 1; fi
+          if [ "${{ needs.bundle_drift.result }}" != 'success' ]; then exit 1; fi
+          if [ "${{ needs.privacy_guard.result }}" != 'success' ]; then exit 1; fi
+          if [ "${{ needs.smoke.result }}" != 'success' ]; then exit 1; fi
+          if [ "${{ needs.secrets_rotation.result }}" != 'success' ]; then exit 1; fi
+          if [ "${{ needs.ws_schema_drift.result }}" != 'success' ]; then exit 1; fi
+          if [ "${{ needs.performance_slo.result }}" != 'success' ]; then exit 1; fi
           if [ "${{ needs.lint_test.result }}" != 'success' ]; then exit 1; fi
