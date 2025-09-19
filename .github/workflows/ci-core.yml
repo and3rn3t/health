@@ -62,8 +62,13 @@ jobs:
           node-version-file: .nvmrc
       - name: Enable Corepack
         run: corepack enable
-      - name: Install pnpm (fallback explicit)
-        run: npm install -g pnpm@latest
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          echo "Preparing pnpm@${VERSION} via corepack"
+          corepack prepare pnpm@${VERSION} --activate
+          pnpm -v
       - name: pnpm Version
         run: pnpm -v
       - name: Install Dependencies (pnpm)
@@ -96,8 +101,12 @@ jobs:
           node-version-file: .nvmrc
       - name: Enable Corepack
         run: corepack enable || true
-      - name: Install pnpm
-        run: npm install -g pnpm@latest
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Download Build Artifacts
@@ -129,8 +138,12 @@ jobs:
           node-version-file: .nvmrc
       - name: Enable Corepack
         run: corepack enable || true
-      - name: Install pnpm
-        run: npm install -g pnpm@latest
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Download Build Artifacts
@@ -162,8 +175,12 @@ jobs:
           node-version-file: .nvmrc
       - name: Enable Corepack
         run: corepack enable || true
-      - name: Install pnpm
-        run: npm install -g pnpm@latest
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Privacy Guard
@@ -181,8 +198,12 @@ jobs:
           node-version-file: .nvmrc
       - name: Enable Corepack
         run: corepack enable || true
-      - name: Install pnpm
-        run: npm install -g pnpm@latest
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Download Build Artifacts
@@ -222,8 +243,12 @@ jobs:
           node-version-file: .nvmrc
       - name: Enable Corepack
         run: corepack enable || true
-      - name: Install pnpm
-        run: npm install -g pnpm@latest
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Security Audit (soft fail)
@@ -257,8 +282,12 @@ jobs:
           node-version-file: .nvmrc
       - name: Enable Corepack
         run: corepack enable || true
-      - name: Install pnpm
-        run: npm install -g pnpm@latest
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Lint (JSON + text)
@@ -312,7 +341,20 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: ./.github/actions/pnpm-setup
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Enable Corepack
+        run: corepack enable || true
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
       - name: SonarCloud Scan (soft)
         if: ${{ env.SONAR_TOKEN != '' }}
         uses: SonarSource/sonarcloud-github-action@master
@@ -344,8 +386,12 @@ jobs:
           node-version-file: .nvmrc
       - name: Enable Corepack
         run: corepack enable || true
-      - name: Install pnpm
-        run: npm install -g pnpm@latest
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Secret Rotation Check
@@ -363,8 +409,12 @@ jobs:
           node-version-file: .nvmrc
       - name: Enable Corepack
         run: corepack enable || true
-      - name: Install pnpm
-        run: npm install -g pnpm@latest
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: WebSocket Schema Drift
@@ -388,8 +438,12 @@ jobs:
           node-version-file: .nvmrc
       - name: Enable Corepack
         run: corepack enable || true
-      - name: Install pnpm
-        run: npm install -g pnpm@latest
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Performance SLO Probe
@@ -423,8 +477,12 @@ jobs:
           node-version-file: .nvmrc
       - name: Enable Corepack
         run: corepack enable || true
-      - name: Install pnpm
-        run: npm install -g pnpm@latest
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Prepare Reports Dir
@@ -550,8 +608,12 @@ jobs:
           node-version-file: .nvmrc
       - name: Enable Corepack
         run: corepack enable || true
-      - name: Install pnpm
-        run: npm install -g pnpm@latest
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Install Dependencies (lockfile)
@@ -563,7 +625,20 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/pnpm-setup
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Enable Corepack
+        run: corepack enable || true
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
       - name: Download Coverage
         uses: actions/download-artifact@v4
         with:
@@ -632,7 +707,20 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/pnpm-setup
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Enable Corepack
+        run: corepack enable || true
+      - name: Prepare pnpm (corepack pinned)
+        run: |
+          set -e
+          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
+          corepack prepare pnpm@${VERSION} --activate || true
+          pnpm -v
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
       - name: Download Bundle Threshold Report
         uses: actions/download-artifact@v4
         with:
