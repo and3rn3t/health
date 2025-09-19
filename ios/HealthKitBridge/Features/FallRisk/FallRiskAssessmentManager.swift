@@ -6,6 +6,7 @@ import Combine
 // MARK: - Fall Risk Assessment Manager
 @MainActor
 class FallRiskAssessmentManager: ObservableObject {
+    static let shared = FallRiskAssessmentManager(gaitAnalysisManager: PlaceholderGaitAnalysisManager())
     // MARK: - Published Properties
     @Published var currentRiskLevel: FallRiskLevel = .unknown
     @Published var riskFactors: [FallRiskFactor] = []
@@ -14,6 +15,9 @@ class FallRiskAssessmentManager: ObservableObject {
     @Published var isAssessing = false
     @Published var balanceScore: Double = 0.0
     @Published var stabilityMetrics: StabilityMetrics?
+    // Balance test streaming publishers
+    let balanceTestProgressPublisher = PassthroughSubject<BalanceTestProgress, Never>()
+    let balanceTestResultPublisher = PassthroughSubject<BalanceTestResultEvent, Never>()
 
     // MARK: - Dependencies
     private let gaitAnalysisManager: GaitAnalysisManager
@@ -31,6 +35,17 @@ class FallRiskAssessmentManager: ObservableObject {
         loadAssessmentHistory()
     }
 
+    // Temporary placeholder until real GaitAnalysisManager exists in project.
+    // Provides minimal surface so we can create the singleton and wire watch connectivity.
+    struct PlaceholderGaitAnalysisManager: GaitAnalysisManager {
+        var latestGaitMetrics: GaitMetrics? { nil }
+    }
+
+
+// Protocol abstraction to minimize coupling (real manager can conform later)
+protocol GaitAnalysisManager {
+    var latestGaitMetrics: GaitMetrics? { get }
+}
     // MARK: - Assessment Methods
 
     func performComprehensiveAssessment() async throws {
@@ -71,6 +86,34 @@ class FallRiskAssessmentManager: ObservableObject {
         saveAssessment(assessment)
 
         print("✅ Fall risk assessment completed. Risk level: \(riskLevel.rawValue)")
+    }
+
+    // MARK: - Public Balance Test (standalone) with progress streaming
+    func performBalanceTestStandalone(kind: BalanceTestType) {
+        Task { await runBalanceProgressSimulation(kind: kind) }
+    }
+
+    private func runBalanceProgressSimulation(kind: BalanceTestType) async {
+        // Placeholder simulation: emit progress every 0.5s up to 100%
+        let start = Date()
+        for step in 0...20 {
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            let percent = Double(step) / 20.0 * 100
+            let progress = BalanceTestProgress(
+                percent: percent,
+                instantaneousStability: Double.random(in: 0.0...0.005),
+                elapsed: Date().timeIntervalSince(start),
+                testKind: kind.rawValue
+            )
+            balanceTestProgressPublisher.send(progress)
+        }
+        // Synthesize result
+        let result = BalanceTestResultEvent(
+            overallScore: Double.random(in: 60...95),
+            componentScores: ["stability": Double.random(in: 60...95), "dynamic": Double.random(in: 60...95)],
+            testKind: kind.rawValue
+        )
+        balanceTestResultPublisher.send(result)
     }
 
     // MARK: - Balance Testing
@@ -319,42 +362,42 @@ class FallRiskAssessmentManager: ObservableObject {
 
         for factor in riskFactors {
             switch factor.type {
-            case .slowWalkingSpeed: 
+            case .slowWalkingSpeed:
                 recommendations.append(FallRiskRecommendation(
                     type: .exerciseProgram, priority: .high, title: "Improve Walking Speed", description: "Regular walking exercises and strength training can help improve walking speed and reduce fall risk.", actions: [
                         "Start with 10-minute daily walks", "Gradually increase walking pace", "Add resistance training 2-3 times per week", "Consider physical therapy consultation"
                     ]
                 ))
 
-            case .poorBalance: 
+            case .poorBalance:
                 recommendations.append(FallRiskRecommendation(
                     type: .balanceTraining, priority: .high, title: "Balance Training Program", description: "Specific balance exercises can significantly improve stability and reduce fall risk.", actions: [
                         "Practice single-leg stands daily", "Try tai chi or yoga classes", "Use balance training apps", "Consider professional balance assessment"
                     ]
                 ))
 
-            case .gaitAsymmetry: 
+            case .gaitAsymmetry:
                 recommendations.append(FallRiskRecommendation(
                     type: .medicalConsultation, priority: .medium, title: "Address Gait Asymmetry", description: "Gait asymmetry may indicate underlying issues that should be evaluated.", actions: [
                         "Consult with a physical therapist", "Check for leg length differences", "Assess for muscle imbalances", "Consider gait training exercises"
                     ]
                 ))
 
-            case .environmentalHazards: 
+            case .environmentalHazards:
                 recommendations.append(FallRiskRecommendation(
                     type: .homeModification, priority: .medium, title: "Home Safety Improvements", description: "Making your home safer can prevent many falls from occurring.", actions: [
                         "Remove loose rugs and clutter", "Install handrails on stairs", "Improve lighting in all areas", "Add grab bars in bathroom", "Secure electrical cords"
                     ]
                 ))
 
-            case .medicationEffects: 
+            case .medicationEffects:
                 recommendations.append(FallRiskRecommendation(
                     type: .medicationReview, priority: .high, title: "Medication Review", description: "Some medications can increase fall risk. A review with your healthcare provider is recommended.", actions: [
                         "Schedule medication review with doctor", "Discuss side effects that affect balance", "Consider timing of medication doses", "Ask about alternative medications"
                     ]
                 ))
 
-            default: 
+            default:
                 break
             }
         }
@@ -378,7 +421,7 @@ class FallRiskAssessmentManager: ObservableObject {
             return StabilityMetrics(averageSway: 0, peakSway: 0, swayVariability: 0, stabilityIndex: 0)
         }
 
-        let swayValues = data.map { $0.sway } 
+        let swayValues = data.map { $0.sway }
         let averageSway = swayValues.reduce(0, +) / Double(swayValues.count)
         let peakSway = swayValues.max() ?? 0
 
@@ -401,13 +444,13 @@ class FallRiskAssessmentManager: ObservableObject {
 
         // Different scoring for different test types
         switch testType {
-        case .singleLegStand: 
+        case .singleLegStand:
             return max(0, min(100, 100 - (average * 1000)))
-        case .eyesClosed: 
+        case .eyesClosed:
             return max(0, min(100, 100 - (average * 800)))
-        case .dynamic: 
+        case .dynamic:
             return max(0, min(100, 100 - (average * 600)))
-        case .tandemWalk: 
+        case .tandemWalk:
             return max(0, min(100, 100 - (average * 700)))
         }
     }

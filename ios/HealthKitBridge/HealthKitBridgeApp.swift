@@ -6,6 +6,7 @@ struct HealthKitBridgeApp: App {
     @StateObject private var healthKitManager = HealthKitManager.shared
     @StateObject private var webSocketManager = WebSocketManager.shared
     @StateObject private var permissionCoordinator = HealthKitPermissionCoordinator.shared
+    @StateObject private var fallRiskManager = FallRiskAssessmentManager.shared
 
     var body: some Scene {
         WindowGroup {
@@ -13,6 +14,7 @@ struct HealthKitBridgeApp: App {
                 .environmentObject(healthKitManager)
                 .environmentObject(webSocketManager)
                 .environmentObject(permissionCoordinator)
+                .environmentObject(fallRiskManager)
                 .task { await initialStartup() }
         }
     }
@@ -22,6 +24,12 @@ struct HealthKitBridgeApp: App {
         do {
             let token = try await tokenProvider.fetchToken()
             await webSocketManager.connect(with: token)
+            DeviceAuthTokenCache.shared.currentToken = token
+            // Configure watch connectivity now that fall risk manager exists
+            #if os(iOS)
+            WatchConnectivityManager.shared.configure(fallRiskManager: fallRiskManager)
+            #endif
+            LiveIngestionClient.shared.start(gaitProvider: GaitLiveMetricsProvider.shared, fallRiskManager: fallRiskManager)
         } catch {
             Log.error("Failed to get device token: \(error.localizedDescription)", category: "auth")
         }

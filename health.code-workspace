@@ -48,6 +48,7 @@
       "**/DerivedData/**": true,
     },
     "powershell.cwd": "Health App (Root)",
+    "typescript.tsdk": "Health App (Root)\\node_modules\\typescript\\lib",
   },
 
   "extensions": {
