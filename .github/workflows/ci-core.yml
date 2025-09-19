@@ -228,6 +228,90 @@ jobs:
           path: reports/pnpm-audit.json
           if-no-files-found: warn
 
+  code_quality:
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install Dependencies (pnpm)
+        run: pnpm install --frozen-lockfile
+      - name: Lint (JSON + text)
+        run: |
+          mkdir -p reports
+          pnpm run lint || true
+          pnpm run lint -- --format json --output-file reports/eslint-report.json || true
+      - name: Unit Tests w/ Coverage (soft)
+        run: pnpm run test:coverage || true
+      - name: Upload Code Quality Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-quality
+          path: |
+            coverage/
+            reports/eslint-report.json
+          if-no-files-found: warn
+
+  semgrep_scan:
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Semgrep Scan (soft)
+        uses: semgrep/semgrep-action@v1
+        continue-on-error: true
+      - name: Upload Semgrep SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+        continue-on-error: true
+
+  sonar_scan:
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 15
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+      - name: SonarCloud Scan (soft)
+        if: ${{ env.SONAR_TOKEN != '' }}
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        continue-on-error: true
+
+  dependency_review:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v3
+        continue-on-error: true
+
   secrets_rotation:
     runs-on: ubuntu-latest
     needs: build
@@ -306,6 +390,7 @@ jobs:
       - ws_schema_drift
       - performance_slo
       - security_scan
+      - code_quality
     if: always()
     steps:
       - uses: actions/checkout@v4
@@ -378,8 +463,9 @@ jobs:
           echo "WS Schema: ${{ needs.ws_schema_drift.result }}"
           echo "Perf SLO: ${{ needs.performance_slo.result }}"
           echo "Security: ${{ needs.security_scan.result }}"
+          echo "Code Quality: ${{ needs.code_quality.result }}"
           failures=0
-          for r in "${{ needs.bundle_threshold.result }}" "${{ needs.bundle_drift.result }}" "${{ needs.privacy_guard.result }}" "${{ needs.smoke.result }}" "${{ needs.secrets_rotation.result }}" "${{ needs.ws_schema_drift.result }}" "${{ needs.performance_slo.result }}" "${{ needs.security_scan.result }}" "${{ needs.lint_test.result }}"; do
+          for r in "${{ needs.bundle_threshold.result }}" "${{ needs.bundle_drift.result }}" "${{ needs.privacy_guard.result }}" "${{ needs.smoke.result }}" "${{ needs.secrets_rotation.result }}" "${{ needs.ws_schema_drift.result }}" "${{ needs.performance_slo.result }}" "${{ needs.security_scan.result }}" "${{ needs.code_quality.result }}" "${{ needs.lint_test.result }}"; do
             if [ "$r" != 'success' ]; then failures=$((failures+1)); fi
           done
           if [ $failures -gt 0 ]; then echo "Gating failures: $failures"; exit 1; fi
