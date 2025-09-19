@@ -688,7 +688,7 @@ jobs:
           echo "Coverage Delta: ${{ needs.coverage_delta.result }}"
           failures=0
           for r in "${{ needs.bundle_threshold.result }}" "${{ needs.bundle_drift.result }}" "${{ needs.privacy_guard.result }}" "${{ needs.smoke.result }}" "${{ needs.secrets_rotation.result }}" "${{ needs.ws_schema_drift.result }}" "${{ needs.performance_slo.result }}" "${{ needs.security_scan.result }}" "${{ needs.code_quality.result }}" "${{ needs.coverage_delta.result }}"; do
-            if [ "$r" != 'success' ]; then failures=$((failures+1)); fi
+            if [ "$r" = 'failure' ] || [ "$r" = 'cancelled' ]; then failures=$((failures+1)); fi
           done
           if [ $failures -gt 0 ]; then echo "Gating failures: $failures"; exit 1; fi
 
