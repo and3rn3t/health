@@ -106,6 +106,15 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
+      - name: Bundle Threshold (soft fail on PR)
+        run: |
+          if [ "${{ github.ref }}" = 'refs/heads/main' ]; then
+            node scripts/ci/verify-bundle-threshold.mjs
+          else
+            node scripts/ci/verify-bundle-threshold.mjs --fail-soft || true
+          fi
+      - name: Privacy Log Guard
+        run: node scripts/ci/privacy-log-guard.mjs
       - name: Verify Build Outputs
         run: |
           echo "=== Build verification ==="

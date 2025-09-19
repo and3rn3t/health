@@ -1,0 +1,113 @@
+name: Core CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: core-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install
+        run: |
+          npm ci --prefer-offline
+          cd scripts/node && npm ci --prefer-offline || true
+      - name: Type Check
+        run: npx tsc --noEmit
+      - name: Build
+        run: npm run build
+      - name: Build Worker
+        run: npm run build:worker || echo "skip worker build"
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-artifacts
+          path: |
+            dist/**
+            dist-worker/**
+          if-no-files-found: warn
+
+  lint_test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Lint
+        run: npm run lint || true
+      - name: Unit Tests
+        run: npm test -- --reporter=verbose
+
+  bundle_threshold:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - run: npm run build
+      - name: Verify Bundle Thresholds
+        run: npm run ci:bundle-threshold
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-threshold-report
+          path: reports/bundle-threshold.json
+          if-no-files-found: error
+
+  privacy_guard:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Privacy Guard
+        run: npm run ci:privacy
+
+  smoke:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - name: Build Worker
+        run: npm run build:worker || npm run build
+      - name: Smoke
+        run: npm run ci:smoke
+
+  summary:
+    runs-on: ubuntu-latest
+    needs: [lint_test, bundle_threshold, privacy_guard, smoke]
+    if: always()
+    steps:
+      - run: |
+          echo "Lint/Test: ${{ needs.lint_test.result }}"
+          echo "Bundle: ${{ needs.bundle_threshold.result }}"
+          echo "Privacy: ${{ needs.privacy_guard.result }}"
+          echo "Smoke: ${{ needs.smoke.result }}"
+          if [ "${{ needs.lint_test.result }}" != 'success' ]; then exit 1; fi

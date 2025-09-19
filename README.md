@@ -12,6 +12,10 @@
 [![Production](https://img.shields.io/badge/Status-Live-brightgreen.svg)](https://health.andernet.dev)
 [![Branding Audit](https://github.com/and3rn3t/health/actions/workflows/branding-audit.yml/badge.svg)](.github/workflows/branding-audit.yml)
 [![iOS Tests](https://github.com/and3rn3t/health/actions/workflows/ios-tests.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/ios-tests.yml)
+[![Core CI](https://github.com/and3rn3t/health/actions/workflows/ci-core.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/ci-core.yml)
+[![Security & Quality](https://github.com/and3rn3t/health/actions/workflows/security-quality.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/security-quality.yml)
+[![Optimized Pipeline](https://github.com/and3rn3t/health/actions/workflows/optimized-pipeline.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/optimized-pipeline.yml)
+[![Smoke Tests](https://github.com/and3rn3t/health/actions/workflows/smoke.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/smoke.yml)
 
 ## 🚀 Quick Start
 

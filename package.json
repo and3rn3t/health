@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "preinstall": "node scripts/ci/ensure-node-version.mjs",
     "onboarding": "node scripts/node/dev/onboarding-wizard.js",
     "dev": "node scripts/dev-esbuild.js",
     "kill": "fuser -k 5000/tcp",
@@ -63,15 +64,15 @@
     "app:status:node": "node scripts/node/health/app-status-check.js",
     "app:status:5000": "node scripts/node/health/app-status-check.js --url http://localhost:5000",
     "app:status:8789": "node scripts/node/health/app-status-check.js --url http://127.0.0.1:8789",
-  "analyze:bundle": "node scripts/node/analysis/bundle-analyzer.js",
-  "analyze:bundle:save": "node scripts/node/analysis/bundle-analyzer.js --save",
-  "analyze:bundle:verbose": "node scripts/node/analysis/bundle-analyzer.js --verbose --save",
-  "check:bundle": "node scripts/node/analysis/quick-bundle-check.js",
+    "analyze:bundle": "node scripts/node/analysis/bundle-analyzer.js",
+    "analyze:bundle:save": "node scripts/node/analysis/bundle-analyzer.js --save",
+    "analyze:bundle:verbose": "node scripts/node/analysis/bundle-analyzer.js --verbose --save",
+    "check:bundle": "node scripts/node/analysis/quick-bundle-check.js",
     "check:bundle:ps": "pwsh -NoProfile -File scripts/check-bundle-size.ps1",
     "check:bundle:save": "pwsh -NoProfile -File scripts/check-bundle-size.ps1 -Save",
-  "optimize:css": "node scripts/node/analysis/css/css-optimizer.js",
+    "optimize:css": "node scripts/node/analysis/css/css-optimizer.js",
     "optimize:build": "node scripts/build-optimizer.js",
-  "optimize:test": "node scripts/node/analysis/bundle-optimization-tester.js",
+    "optimize:test": "node scripts/node/analysis/bundle-optimization-tester.js",
     "build:optimized": "node scripts/optimized-build.js",
     "build:fast": "vite build --config vite.config.optimized.ts",
     "monitor:performance": "node scripts/performance-monitor.js",
@@ -80,6 +81,9 @@
     "verify:branding:local": "node scripts/node/test/test-browser-endpoints.js --baseUrl=http://localhost:5000 --verbose",
     "branding:audit": "node scripts/node/branding/branding-audit.js",
     "branding:audit:local": "node scripts/node/branding/branding-audit.js --local --url=http://127.0.0.1:8789",
+    "ci:bundle-threshold": "node scripts/ci/verify-bundle-threshold.mjs",
+    "ci:smoke": "node scripts/ci/smoke-worker.mjs",
+    "ci:privacy": "node scripts/ci/privacy-log-guard.mjs",
     "task:run": "node scripts/node/dev/task-runner.js",
     "start:dev": "node scripts/node/dev/start-dev.js",
     "lint:ts": "node scripts/node/dev/lint-runner.js --typescript",
@@ -237,7 +241,7 @@
     "@types/d3-color": "3.1.3",
     "@types/d3-ease": "3.0.2",
     "@types/d3-interpolate": "3.0.4",
-    "@types/node": "22.18.1",
+    "@types/node": "20.16.11",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@types/wrap-ansi": "8.0.2",
@@ -271,25 +275,27 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.38.0",
     "vitest": "3.2.4",
+    "vite": "7.1.5",
     "yaml": "^2.4.0"
   },
   "optionalDependencies": {
     "@parcel/watcher-linux-x64-gnu": "^2.5.1",
     "@parcel/watcher-win32-x64": "^2.5.1",
-    "@rollup/rollup-linux-x64-gnu": "4.50.0",
-    "@rollup/rollup-win32-x64-msvc": "4.50.0",
+    "@rollup/rollup-linux-x64-gnu": "4.50.1",
+    "@rollup/rollup-win32-x64-msvc": "4.50.1",
     "@tailwindcss/oxide-linux-x64-gnu": "4.1.13",
     "@tailwindcss/oxide-win32-x64-msvc": "4.1.13",
     "lightningcss-linux-x64-gnu": "1.30.1",
     "lightningcss-win32-x64-msvc": "1.30.1"
   },
   "engines": {
-    "node": ">=20.0.0",
+    "node": "^20.19.0",
     "npm": ">=8.0.0"
   },
   "workspaces": {
     "packages": [
       "packages/*"
     ]
-  }
+  },
+  "packageManager": "pnpm@10.16.0+sha512.8066e7b034217b700a9a4dbb3a005061d641ba130a89915213a10b3ca4919c19c037bec8066afdc559b89635fdb806b16ea673f2468fbb28aabfa13c53e3f769"
 }
