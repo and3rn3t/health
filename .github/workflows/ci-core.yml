@@ -274,18 +274,56 @@ jobs:
           FILE="coverage/coverage-summary.json"
           echo "[coverage] cwd=$(pwd)"
           if [ -d coverage ]; then echo "[coverage] listing coverage directory"; ls -1 coverage || true; fi
-          # Primary fallback: synthesize from coverage-final.json
+          # Fallback: synthesize summary by aggregating coverage-final.json (Istanbul format) if summary missing
           if [ ! -f "$FILE" ] && [ -f "coverage/coverage-final.json" ]; then
-            echo "[coverage] Synthesizing summary from coverage-final.json"
-            node -e "const f=require('./coverage/coverage-final.json');const t=f.total||f;const out={total:t};require('fs').writeFileSync(process.argv[1],JSON.stringify(out,null,2));" "$FILE" || true
+            echo "[coverage] Synthesizing summary (aggregate) from coverage-final.json"
+            node - <<'NODE'
+            const fs=require('fs');
+            const path='coverage/coverage-final.json';
+            try {
+              const data=require('./'+path);
+              let totalLines=0, coveredLines=0, totalStmts=0, coveredStmts=0, totalFns=0, coveredFns=0, totalBranches=0, coveredBranches=0;
+              for(const [file,metrics] of Object.entries(data)){
+                if(!metrics || typeof metrics!=='object') continue;
+                const L=metrics.lines; if(L){ totalLines+=L.total||0; coveredLines+=L.covered||0; }
+                const S=metrics.statements; if(S){ totalStmts+=S.total||0; coveredStmts+=S.covered||0; }
+                const F=metrics.functions; if(F){ totalFns+=F.total||0; coveredFns+=F.covered||0; }
+                const B=metrics.branches; if(B){ totalBranches+=B.total||0; coveredBranches+=B.covered||0; }
+              }
+              function pct(c,t){ return t? +( (c/t*100).toFixed(2) ):0 }
+              const summary={
+                total:{
+                  lines:{ total: totalLines, covered: coveredLines, pct: pct(coveredLines,totalLines) },
+                  statements:{ total: totalStmts, covered: coveredStmts, pct: pct(coveredStmts,totalStmts) },
+                  functions:{ total: totalFns, covered: coveredFns, pct: pct(coveredFns,totalFns) },
+                  branches:{ total: totalBranches, covered: coveredBranches, pct: pct(coveredBranches,totalBranches) }
+                }
+              };
+              fs.writeFileSync(process.argv[1], JSON.stringify(summary,null,2));
+              console.log('[coverage] Synthesized summary => lines %', summary.total.lines.pct);
+            } catch(err){
+              console.error('[coverage] Failed to synthesize summary:', err.message);
+            }
+            NODE "$FILE"
           fi
-          # Secondary fallback: attempt first JSON file containing a lines.pct metric
+          # Secondary fallback: attempt to derive from any JSON containing total.lines.pct
           if [ ! -f "$FILE" ]; then
-            FIRST=$(grep -l '"lines"' coverage/*.json 2>/dev/null | head -1 || true)
-            if [ -n "$FIRST" ]; then
-              echo "[coverage] Attempting synthesis from $FIRST"
-              node -e "const f=require(process.argv[2]);const t=f.total||f;const out={total:t};require('fs').writeFileSync(process.argv[1],JSON.stringify(out,null,2));" "$FILE" "$FIRST" || true
-            fi
+            CANDIDATES=$(ls coverage/*.json 2>/dev/null || true)
+            for C in $CANDIDATES; do
+              if grep -q 'lines' "$C"; then
+                echo "[coverage] Inspecting candidate $C for embedded totals"
+                node - <<NODE "$FILE" "$C"
+                  const fs=require('fs');
+                  const out=process.argv[2];
+                  const cand=require('./'+process.argv[3]);
+                  if(cand && cand.total && cand.total.lines && typeof cand.total.lines.pct==='number'){
+                    fs.writeFileSync(out, JSON.stringify({total:cand.total},null,2));
+                    console.log('[coverage] Copied total block from', process.argv[3]);
+                  }
+                NODE
+                if [ -f "$FILE" ]; then break; fi
+              fi
+            done
           fi
           if [ ! -f "$FILE" ]; then echo "Coverage summary not found ($FILE) after fallbacks"; exit 1; fi
           PCT=$(node -e "const f=require(process.argv[1]); const t=f.total||f; process.stdout.write(String((t.lines && t.lines.pct)||0));" "$FILE")
