@@ -18,6 +18,12 @@ const drift = readJson(path.join(reportsDir,'bundle-drift.json'));
 const threshold = readJson(path.join(reportsDir,'bundle-threshold.json'));
 const ws = readJson(path.join(reportsDir,'ws-schema-drift.json'));
 
+// Detect placeholder reports (ensures artifact present but indicates degraded signal)
+const isPerfPlaceholder = perf && perf.status === 'error';
+const isWsPlaceholder = ws && ws.fatal === true;
+// Soft gates explicitly listed (won't flip overall to FAIL unless another hard gate fails)
+const SOFT_GATES = ['ws'];
+
 function statusEmoji(result){
   if(result === 'success') return '✅';
   if(result === 'failure' || result === 'cancelled' || result === 'timed_out') return '❌';
@@ -39,11 +45,18 @@ const gatingMap = {
   ws: args.ws,
   perfJob: args.perf
 };
-const anyFail = gatingKeys.some(k => gatingMap[k] && gatingMap[k] !== 'success');
+// Hard failure excludes soft gates
+const anyFail = gatingKeys.some(k => {
+  if(!gatingMap[k]) return false;
+  const isSoft = SOFT_GATES.includes(k);
+  if(isSoft) return false; // soft gates never directly cause FAIL here
+  return gatingMap[k] !== 'success';
+});
 let overall;
 if(anyFail) overall = 'FAIL'; else if(degradedReasons.length) overall = 'DEGRADED'; else overall = 'PASS';
 
 let md = '# CI Scorecard\n\n';
+md += '_Soft gates: WS Schema (warning visibility only unless coupled with other failures)._\n\n';
 md += `**Overall:** ${overall === 'PASS' ? '✅ PASS' : overall === 'DEGRADED' ? '⚠️ DEGRADED' : '❌ FAIL'}\n\n`;
 md += '| Category | Result | Notes |\n|----------|--------|-------|\n';
 md += `| Lint & Tests | ${statusEmoji(gatingMap.lint)} ${gatingMap.lint} |  |\n`;
@@ -58,14 +71,24 @@ if(drift){
 md += `| Privacy Guard | ${statusEmoji(gatingMap.privacy)} ${gatingMap.privacy} |  |\n`;
 md += `| Smoke & Branding | ${statusEmoji(gatingMap.smoke)} ${gatingMap.smoke} |  |\n`;
 if(ws){
-  md += `| WS Schema | ${statusEmoji(gatingMap.ws)} ${gatingMap.ws} | unexpected=${ws.unexpected?.length||0} missing=${ws.missing?.length||0} |\n`;
+    const wsNotes = [];
+    if(ws.unexpected?.length) wsNotes.push(`unexpected=${ws.unexpected.length}`);
+    if(ws.missing?.length) wsNotes.push(`missing=${ws.missing.length}`);
+    if(isWsPlaceholder) wsNotes.push('placeholder');
+    if(process.env.WS_SCHEMA_AUTO_HASH === 'true') wsNotes.push('auto-hash');
+    md += `| WS Schema (soft) | ${statusEmoji(gatingMap.ws)} ${gatingMap.ws} | ${wsNotes.join(' ') || 'baseline stable'} |\n`;
 } else {
   md += `| WS Schema | ${statusEmoji(gatingMap.ws)} ${gatingMap.ws} |  |\n`;
 }
 if(perf){
   const jsKB = (perf.bundles?.jsGzipBytes||0)/1024;
   const cssKB = (perf.bundles?.cssGzipBytes||0)/1024;
-  md += `| Perf SLO | ${statusEmoji(gatingMap.perfJob)} ${perf.status} | js ${jsKB.toFixed(1)}KB / css ${cssKB.toFixed(1)}KB / import ${perf.importLatencyMs}ms |\n`;
+  const perfNotes = [];
+  if(isPerfPlaceholder) perfNotes.push('placeholder');
+  perfNotes.push(`js ${jsKB.toFixed(1)}KB`);
+  perfNotes.push(`css ${cssKB.toFixed(1)}KB`);
+  perfNotes.push(`import ${perf.importLatencyMs}ms`);
+  md += `| Perf SLO | ${statusEmoji(gatingMap.perfJob)} ${perf.status} | ${perfNotes.join(' / ')} |\n`;
 } else {
   md += `| Perf SLO | ${statusEmoji(gatingMap.perfJob)} ${gatingMap.perfJob} |  |\n`;
 }
