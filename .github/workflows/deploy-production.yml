@@ -68,18 +68,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: ${{ env.NODE_VERSION_FILE }}
-          cache: pnpm
-      - name: Enable Corepack
-        run: corepack enable || true
-      - name: Install deps
+      - name: Setup Node & pnpm
+        uses: ./.github/actions/setup-pnpm
+      - name: Install deps (frozen or fallback)
         run: pnpm install --frozen-lockfile || pnpm install
       - name: Build web app
         run: pnpm run build
       - name: Build worker
         run: pnpm run build:worker || echo 'Worker build optional'
+      - name: Generate integrity manifest
+        run: |
+          set -e
+          mkdir -p integrity
+          if [ -d dist ]; then
+            (find dist -type f -print0 | xargs -0 -r sha256sum) > integrity/dist.sha256 || true
+          fi
+          if [ -d dist-worker ]; then
+            (find dist-worker -type f -print0 | xargs -0 -r sha256sum) > integrity/dist-worker.sha256 || true
+          fi
+          cat integrity/dist.sha256 integrity/dist-worker.sha256 2>/dev/null > integrity/combined.sha256 || true
+          echo "Integrity manifest generated:"; ls -1 integrity || true
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -90,6 +98,7 @@ jobs:
             dist/**
             dist-worker/**
             coverage/coverage-summary.json
+            integrity/**
 
   deploy:
     name: Deploy to Production
@@ -101,11 +110,8 @@ jobs:
       url: https://health.andernet.dev
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: ${{ env.NODE_VERSION_FILE }}
-      - name: Enable Corepack
-        run: corepack enable || true
+      - name: Setup Node & pnpm
+        uses: ./.github/actions/setup-pnpm
       - name: Install deps (minimal)
         run: pnpm install --frozen-lockfile --prod || pnpm install --prod --no-frozen-lockfile
       - name: Download build artifacts
@@ -113,6 +119,24 @@ jobs:
         with:
           name: prod-build-${{ needs.prepare.outputs.version }}
           path: .
+      - name: Verify integrity manifest
+        run: |
+          set -e
+          if [ -f integrity/combined.sha256 ]; then
+            echo "Verifying artifact integrity..."
+            TMP_ALL=$(mktemp)
+            if [ -d dist ]; then (find dist -type f -print0 | xargs -0 -r sha256sum) > dist.hashes || true; fi
+            if [ -d dist-worker ]; then (find dist-worker -type f -print0 | xargs -0 -r sha256sum) > dist-worker.hashes || true; fi
+            cat dist.hashes dist-worker.hashes 2>/dev/null | sort > "$TMP_ALL"
+            sort integrity/combined.sha256 > integrity/combined.sorted
+            if ! diff -u integrity/combined.sorted "$TMP_ALL"; then
+              echo "Integrity mismatch detected" >&2
+              exit 1
+            fi
+            echo "Integrity verified ✅"
+          else
+            echo "No integrity manifest present (skipping check)."
+          fi
       - name: Deploy (wrangler)
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
