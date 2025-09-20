@@ -272,12 +272,23 @@ jobs:
         run: |
           set -e
           FILE="coverage/coverage-summary.json"
-          # Fallback: some reporter combos may only emit coverage-final.json; synthesize summary if needed.
+          echo "[coverage] cwd=$(pwd)"
+          if [ -d coverage ]; then echo "[coverage] listing coverage directory"; ls -1 coverage || true; fi
+          # Primary fallback: synthesize from coverage-final.json
           if [ ! -f "$FILE" ] && [ -f "coverage/coverage-final.json" ]; then
-            node -e "const f=require('./coverage/coverage-final.json');const out={total:f.total||f};require('fs').writeFileSync(process.argv[1],JSON.stringify(out,null,2));console.log('Synthesized coverage-summary.json from coverage-final.json');" "$FILE"
+            echo "[coverage] Synthesizing summary from coverage-final.json"
+            node -e "const f=require('./coverage/coverage-final.json');const t=f.total||f;const out={total:t};require('fs').writeFileSync(process.argv[1],JSON.stringify(out,null,2));" "$FILE" || true
           fi
-          if [ ! -f "$FILE" ]; then echo "Coverage summary not found ($FILE)"; exit 1; fi
-          PCT=$(node -e "const f=require(process.argv[1]); const t=f.total||f; process.stdout.write(String(t.lines.pct||0));" "$FILE")
+          # Secondary fallback: attempt first JSON file containing a lines.pct metric
+          if [ ! -f "$FILE" ]; then
+            FIRST=$(grep -l '"lines"' coverage/*.json 2>/dev/null | head -1 || true)
+            if [ -n "$FIRST" ]; then
+              echo "[coverage] Attempting synthesis from $FIRST"
+              node -e "const f=require(process.argv[2]);const t=f.total||f;const out={total:t};require('fs').writeFileSync(process.argv[1],JSON.stringify(out,null,2));" "$FILE" "$FIRST" || true
+            fi
+          fi
+          if [ ! -f "$FILE" ]; then echo "Coverage summary not found ($FILE) after fallbacks"; exit 1; fi
+          PCT=$(node -e "const f=require(process.argv[1]); const t=f.total||f; process.stdout.write(String((t.lines && t.lines.pct)||0));" "$FILE")
           MIN=${COVERAGE_MIN:-60}
             echo "Line coverage: ${PCT}% (min ${MIN}%)"
           awk -v c=$PCT -v m=$MIN 'BEGIN { if (c+0 < m) { printf("Coverage %.2f%% below minimum %d%%\n", c, m); exit 1 } }'
