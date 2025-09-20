@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2025-09-20T19:28:43.326Z",
+  "coverage": {
+    "generatedAt": "2025-09-20T19:27:35Z",
+    "linesPct": 13.8,
+    "notes": "Auto-updated on successful main run"
+  },
+  "bundleSummary": {
+    "directory": "dist",
+    "totals": {
+      "jsGzip": 388424,
+      "cssGzip": 15520
+    },
+    "limits": {
+      "jsMax": 409600,
+      "cssMax": 61440
+    },
+    "counts": {
+      "js": 1,
+      "css": 1
+    },
+    "timestamp": "2025-09-19T00:04:16.206Z"
+  },
+  "performance": {
+    "timestamp": "2025-09-20T19:26:36.858Z",
+    "bundles": {
+      "jsFiles": 1,
+      "jsGzipBytes": 530,
+      "cssFiles": 0,
+      "cssGzipBytes": 0
+    },
+    "importLatencyMs": 1.75,
+    "slo": {
+      "jsGzipBudget": 409600,
+      "cssGzipBudget": 61440,
+      "importLatencyWarnMs": 1200
+    },
+    "deltas": null,
+    "status": "ok"
+  },
+  "wsSchema": null,
+  "eslintSummary": {
+    "files": 288,
+    "errors": 0,
+    "warnings": 77
+  }
+}
