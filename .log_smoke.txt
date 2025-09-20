@@ -1,0 +1,293 @@
+smoke	Set up job	﻿2025-09-20T02:03:57.4177574Z Current runner version: '2.328.0'
+smoke	Set up job	2025-09-20T02:03:57.4202281Z ##[group]Runner Image Provisioner
+smoke	Set up job	2025-09-20T02:03:57.4203300Z Hosted Compute Agent
+smoke	Set up job	2025-09-20T02:03:57.4203960Z Version: 20250829.383
+smoke	Set up job	2025-09-20T02:03:57.4204535Z Commit: 27cb235aab5b0e52e153a26cd86b4742e89dac5d
+smoke	Set up job	2025-09-20T02:03:57.4205260Z Build Date: 2025-08-29T13:48:48Z
+smoke	Set up job	2025-09-20T02:03:57.4205913Z ##[endgroup]
+smoke	Set up job	2025-09-20T02:03:57.4206419Z ##[group]Operating System
+smoke	Set up job	2025-09-20T02:03:57.4206993Z Ubuntu
+smoke	Set up job	2025-09-20T02:03:57.4207474Z 24.04.3
+smoke	Set up job	2025-09-20T02:03:57.4207958Z LTS
+smoke	Set up job	2025-09-20T02:03:57.4208424Z ##[endgroup]
+smoke	Set up job	2025-09-20T02:03:57.4208952Z ##[group]Runner Image
+smoke	Set up job	2025-09-20T02:03:57.4209482Z Image: ubuntu-24.04
+smoke	Set up job	2025-09-20T02:03:57.4210002Z Version: 20250907.24.1
+smoke	Set up job	2025-09-20T02:03:57.4211051Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250907.24/images/ubuntu/Ubuntu2404-Readme.md
+smoke	Set up job	2025-09-20T02:03:57.4212391Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250907.24
+smoke	Set up job	2025-09-20T02:03:57.4213912Z ##[endgroup]
+smoke	Set up job	2025-09-20T02:03:57.4215018Z ##[group]GITHUB_TOKEN Permissions
+smoke	Set up job	2025-09-20T02:03:57.4216800Z Contents: read
+smoke	Set up job	2025-09-20T02:03:57.4217495Z Metadata: read
+smoke	Set up job	2025-09-20T02:03:57.4218009Z Packages: read
+smoke	Set up job	2025-09-20T02:03:57.4218493Z ##[endgroup]
+smoke	Set up job	2025-09-20T02:03:57.4220589Z Secret source: Actions
+smoke	Set up job	2025-09-20T02:03:57.4221395Z Prepare workflow directory
+smoke	Set up job	2025-09-20T02:03:57.4659699Z Prepare all required actions
+smoke	Set up job	2025-09-20T02:03:57.4714767Z Getting action download info
+smoke	Set up job	2025-09-20T02:03:57.8220251Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+smoke	Set up job	2025-09-20T02:03:58.0016041Z Download action repository 'actions/download-artifact@v4' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+smoke	Set up job	2025-09-20T02:03:58.4062211Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+smoke	Set up job	2025-09-20T02:03:58.6964456Z Complete job name: smoke
+smoke	Run actions/checkout@v4	﻿2025-09-20T02:03:58.7700410Z ##[group]Run actions/checkout@v4
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7701317Z with:
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7701784Z   repository: and3rn3t/health
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7702679Z   token: ***
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7703120Z   ssh-strict: true
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7703544Z   ssh-user: git
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7703980Z   persist-credentials: true
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7704447Z   clean: true
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7704890Z   sparse-checkout-cone-mode: true
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7705414Z   fetch-depth: 1
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7705831Z   fetch-tags: false
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7706273Z   show-progress: true
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7706706Z   lfs: false
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7707086Z   submodules: false
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7707515Z   set-safe-directory: true
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.7708246Z ##[endgroup]
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.8769281Z Syncing repository: and3rn3t/health
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.8771285Z ##[group]Getting Git version info
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.8772058Z Working directory is '/home/runner/work/health/health'
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.8773386Z [command]/usr/bin/git version
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.8872095Z git version 2.51.0
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.8898923Z ##[endgroup]
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.8914462Z Temporarily overriding HOME='/home/runner/work/_temp/38e35a13-0e8e-4a9d-bb84-36dda36b2cdb' before making global git config changes
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.8916047Z Adding repository directory to the temporary git global config as a safe directory
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.8919699Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/health/health
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.8954059Z Deleting the contents of '/home/runner/work/health/health'
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.8957203Z ##[group]Initializing the repository
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.8960993Z [command]/usr/bin/git init /home/runner/work/health/health
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9067693Z hint: Using 'master' as the name for the initial branch. This default branch name
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9068931Z hint: is subject to change. To configure the initial branch name to use in all
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9070001Z hint: of your new repositories, which will suppress this warning, call:
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9070896Z hint:
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9071747Z hint: 	git config --global init.defaultBranch <name>
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9072395Z hint:
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9073303Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9074888Z hint: 'development'. The just-created branch can be renamed via this command:
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9075681Z hint:
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9076091Z hint: 	git branch -m <name>
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9076567Z hint:
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9077186Z hint: Disable this message with "git config set advice.defaultBranchName false"
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9078261Z Initialized empty Git repository in /home/runner/work/health/health/.git/
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9085324Z [command]/usr/bin/git remote add origin https://github.com/and3rn3t/health
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9122821Z ##[endgroup]
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9123671Z ##[group]Disabling automatic garbage collection
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9126399Z [command]/usr/bin/git config --local gc.auto 0
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9155104Z ##[endgroup]
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9155873Z ##[group]Setting up auth
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9161342Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9190917Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9601072Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9630574Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9852060Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9887134Z ##[endgroup]
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9888647Z ##[group]Fetching the repository
+smoke	Run actions/checkout@v4	2025-09-20T02:03:58.9897340Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +9c602a7182ea0100cabffa0b6d603aad790c50c7:refs/remotes/pull/24/merge
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.7679134Z From https://github.com/and3rn3t/health
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.7681755Z  * [new ref]         9c602a7182ea0100cabffa0b6d603aad790c50c7 -> pull/24/merge
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.7712959Z ##[endgroup]
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.7714514Z ##[group]Determining the checkout info
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.7715884Z ##[endgroup]
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.7719257Z [command]/usr/bin/git sparse-checkout disable
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.7759099Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.7786106Z ##[group]Checking out the ref
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.7789179Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/24/merge
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9953077Z Note: switching to 'refs/remotes/pull/24/merge'.
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9955306Z 
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9956695Z You are in 'detached HEAD' state. You can look around, make experimental
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9959813Z changes and commit them, and you can discard any commits you make in this
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9962097Z state without impacting any branches by switching back to a branch.
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9963525Z 
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9964229Z If you want to create a new branch to retain commits you create, you may
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9965949Z do so (now or later) by using -c with the switch command. Example:
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9967187Z 
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9967591Z   git switch -c <new-branch-name>
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9968325Z 
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9968777Z Or undo this operation with:
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9969522Z 
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9969919Z   git switch -
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9970479Z 
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9971618Z Turn off this advice by setting config variable advice.detachedHead to false
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9973376Z 
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9975017Z HEAD is now at 9c602a7 Merge c8cd708b9ad4b3e0a14bd417b7e99cc9e2c359ea into d96eab5028689ddc0cce29577029722b7b79788e
+smoke	Run actions/checkout@v4	2025-09-20T02:03:59.9980001Z ##[endgroup]
+smoke	Run actions/checkout@v4	2025-09-20T02:04:00.0009411Z [command]/usr/bin/git log -1 --format=%H
+smoke	Run actions/checkout@v4	2025-09-20T02:04:00.0033484Z 9c602a7182ea0100cabffa0b6d603aad790c50c7
+smoke	Setup Node & pnpm	﻿2025-09-20T02:04:00.0415523Z Prepare all required actions
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.0416862Z Getting action download info
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.2078404Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.2979238Z Download action repository 'actions/cache@v4' (SHA:0400d5f644dc74513175e3cd8d07132dd4860809)
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5232387Z ##[group]Run ./.github/actions/setup-pnpm
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5233624Z with:
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5234340Z   working-directory: .
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5235171Z ##[endgroup]
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5378657Z ##[group]Run echo "Working directory: ."
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5379816Z [36;1mecho "Working directory: ."[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5455586Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5456816Z ##[endgroup]
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5542246Z Working directory: .
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5675958Z ##[group]Run actions/setup-node@v4
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5676905Z with:
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5677612Z   node-version-file: .nvmrc
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5678508Z   always-auth: false
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5679290Z   check-latest: false
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5680305Z   token: ***
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.5681016Z ##[endgroup]
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.7360501Z Node version file is not JSON file
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.7362355Z Resolved .nvmrc as 20.19.0
+smoke	Setup Node & pnpm	2025-09-20T02:04:00.7383949Z Attempting to download 20.19.0...
+smoke	Setup Node & pnpm	2025-09-20T02:04:01.1899037Z Acquiring 20.19.0 - x64 from https://github.com/actions/node-versions/releases/download/20.19.0-13838090974/node-20.19.0-linux-x64.tar.gz
+smoke	Setup Node & pnpm	2025-09-20T02:04:01.6281027Z Extracting ...
+smoke	Setup Node & pnpm	2025-09-20T02:04:01.6388653Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/95fdf21a-15d0-4bc7-a5d4-00c2ca94e6d4 -f /home/runner/work/_temp/0b728197-d4ac-4b1e-9abf-e170765b5661
+smoke	Setup Node & pnpm	2025-09-20T02:04:02.6610849Z Adding to the cache ...
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.2586611Z ##[group]Environment details
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.4856063Z node: v20.19.0
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.4856615Z npm: 10.8.2
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.4856974Z yarn: 1.22.22
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.4857876Z ##[endgroup]
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.5010176Z ##[group]Run corepack enable || true
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.5010495Z [36;1mcorepack enable || true[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.5043433Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.5043783Z ##[endgroup]
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.5759805Z ##[group]Run set -e
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.5760087Z [36;1mset -e[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.5760502Z [36;1mSTORE_PATH=$(node -e "process.stdout.write(require('path').join(process.env.HOME,'.pnpm-store'))")[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.5761021Z [36;1mecho "Computed store path: $STORE_PATH"[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.5761351Z [36;1mecho "store-path=$STORE_PATH" >> $GITHUB_OUTPUT[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.5792347Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.5792985Z env:
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.5793169Z   PNPM_HOME: ~/.pnpm
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.5793385Z ##[endgroup]
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.6085039Z Computed store path: /home/runner/.pnpm-store
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.6687352Z ##[group]Run actions/cache@v4
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.6687612Z with:
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.6687809Z   path: /home/runner/.pnpm-store
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.6688226Z   key: pnpm-store-Linux-87d29a0c4467941fb65dba4c87d899319c09297c18c8de750dc585e78725e14a
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.6688670Z   restore-keys: pnpm-store-Linux-
+smoke	Setup Node & pnpm	
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.6688934Z   enableCrossOsArchive: false
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.6689170Z   fail-on-cache-miss: false
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.6689438Z   lookup-only: false
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.6689682Z   save-always: false
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.6689877Z ##[endgroup]
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9026154Z Cache not found for input keys: pnpm-store-Linux-87d29a0c4467941fb65dba4c87d899319c09297c18c8de750dc585e78725e14a, pnpm-store-Linux-
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9094849Z ##[group]Run set -e
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9095097Z [36;1mset -e[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9095628Z [36;1mif [ ! -f package.json ]; then echo 'package.json not found in working directory'; exit 0; fi[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9096201Z [36;1mVERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9096831Z [36;1mecho "Preparing pnpm@${VERSION}"[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9097154Z [36;1mif ! corepack prepare pnpm@${VERSION} --activate; then[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9097599Z [36;1m  echo "corepack prepare failed, installing fallback pnpm@${VERSION} via npm"[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9097980Z [36;1m  npm i -g pnpm@${VERSION}[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9098212Z [36;1mfi[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9098421Z [36;1mif ! command -v pnpm >/dev/null 2>&1; then[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9098791Z [36;1m  echo "pnpm still not found after corepack + fallback install" >&2[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9099124Z [36;1m  exit 1[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9099301Z [36;1mfi[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9099504Z [36;1mecho "pnpm version: $(pnpm -v)"[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9099796Z [36;1mecho "version=${VERSION}" >> $GITHUB_OUTPUT[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9130445Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9130799Z ##[endgroup]
+smoke	Setup Node & pnpm	2025-09-20T02:04:04.9449150Z Preparing pnpm@10.16.0
+smoke	Setup Node & pnpm	2025-09-20T02:04:05.0003498Z Preparing pnpm@10.16.0 for immediate activation...
+smoke	Setup Node & pnpm	2025-09-20T02:04:06.1055080Z pnpm version: 10.16.0
+smoke	Setup Node & pnpm	2025-09-20T02:04:06.1079948Z ##[group]Run pnpm store path || true
+smoke	Setup Node & pnpm	2025-09-20T02:04:06.1080245Z [36;1mpnpm store path || true[0m
+smoke	Setup Node & pnpm	2025-09-20T02:04:06.1110460Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+smoke	Setup Node & pnpm	2025-09-20T02:04:06.1110791Z ##[endgroup]
+smoke	Setup Node & pnpm	2025-09-20T02:04:06.4060290Z /home/runner/.local/share/pnpm/store/v10
+smoke	Install Dependencies	﻿2025-09-20T02:04:06.4210137Z ##[group]Run if ! pnpm install --frozen-lockfile; then
+smoke	Install Dependencies	2025-09-20T02:04:06.4210554Z [36;1mif ! pnpm install --frozen-lockfile; then[0m
+smoke	Install Dependencies	2025-09-20T02:04:06.4210935Z [36;1m  echo "Lockfile outdated – running non-frozen install (smoke).";[0m
+smoke	Install Dependencies	2025-09-20T02:04:06.4211322Z [36;1m  pnpm install --no-frozen-lockfile;[0m
+smoke	Install Dependencies	2025-09-20T02:04:06.4211573Z [36;1mfi[0m
+smoke	Install Dependencies	2025-09-20T02:04:06.4241643Z shell: /usr/bin/bash -e {0}
+smoke	Install Dependencies	2025-09-20T02:04:06.4241882Z ##[endgroup]
+smoke	Install Dependencies	2025-09-20T02:04:06.8491447Z  ERR_PNPM_OUTDATED_LOCKFILE  Cannot install with "frozen-lockfile" because pnpm-lock.yaml is not up to date with <ROOT>/package.json
+smoke	Install Dependencies	2025-09-20T02:04:06.8492148Z 
+smoke	Install Dependencies	2025-09-20T02:04:06.8493158Z Note that in CI environments this setting is true by default. If you still need to run install in such cases, use "pnpm install --no-frozen-lockfile"
+smoke	Install Dependencies	2025-09-20T02:04:06.8493765Z 
+smoke	Install Dependencies	2025-09-20T02:04:06.8493882Z   Failure reason:
+smoke	Install Dependencies	2025-09-20T02:04:06.8494387Z   specifiers in the lockfile don't match specifiers in package.json:
+smoke	Install Dependencies	2025-09-20T02:04:06.8495330Z * 2 dependencies were added: @vitest/coverage-v8@3.2.4, @parcel/watcher-linux-x64-gnu@^2.5.1
+smoke	Install Dependencies	2025-09-20T02:04:06.8495803Z 
+smoke	Install Dependencies	2025-09-20T02:04:06.8734922Z Lockfile outdated – running non-frozen install (smoke).
+smoke	Install Dependencies	2025-09-20T02:04:15.7005141Z  WARN  4 deprecated subdependencies found: browserslist@1.7.7, flatten@1.0.3, q@1.5.1, svgo@0.7.2
+smoke	Install Dependencies	2025-09-20T02:04:18.3119566Z 
+smoke	Install Dependencies	2025-09-20T02:04:18.3120304Z > vitalsense-app@0.0.0 preinstall /home/runner/work/health/health
+smoke	Install Dependencies	2025-09-20T02:04:18.3120813Z > node scripts/ci/ensure-node-version.mjs
+smoke	Install Dependencies	2025-09-20T02:04:18.3121018Z 
+smoke	Install Dependencies	2025-09-20T02:04:18.3506699Z ✅ Node version OK (v20.19.0)
+smoke	Install Dependencies	2025-09-20T02:04:18.3578747Z  WARN  Issues with peer dependencies found
+smoke	Install Dependencies	2025-09-20T02:04:18.3579294Z .
+smoke	Install Dependencies	2025-09-20T02:04:18.3579665Z ├─┬ vitest 3.2.4
+smoke	Install Dependencies	2025-09-20T02:04:18.3580065Z │ └─┬ vite 7.1.5
+smoke	Install Dependencies	2025-09-20T02:04:18.3580792Z │   └── ✕ unmet peer @types/node@"^20.19.0 || >=22.12.0": found 20.16.11
+smoke	Install Dependencies	2025-09-20T02:04:18.3581477Z └─┬ @github/spark 0.39.141
+smoke	Install Dependencies	2025-09-20T02:04:18.3582029Z   └── ✕ unmet peer vite@^6.2.0: found 7.1.5
+smoke	Download Build Artifacts	﻿2025-09-20T02:04:18.4421043Z ##[group]Run actions/download-artifact@v4
+smoke	Download Build Artifacts	2025-09-20T02:04:18.4421336Z with:
+smoke	Download Build Artifacts	2025-09-20T02:04:18.4421510Z   name: dist-artifacts
+smoke	Download Build Artifacts	2025-09-20T02:04:18.4421709Z   path: .
+smoke	Download Build Artifacts	2025-09-20T02:04:18.4421879Z   merge-multiple: false
+smoke	Download Build Artifacts	2025-09-20T02:04:18.4422304Z   repository: and3rn3t/health
+smoke	Download Build Artifacts	2025-09-20T02:04:18.4423001Z   run-id: 17873839310
+smoke	Download Build Artifacts	2025-09-20T02:04:18.4423226Z ##[endgroup]
+smoke	Download Build Artifacts	2025-09-20T02:04:18.6389903Z Downloading single artifact
+smoke	Download Build Artifacts	2025-09-20T02:04:18.7807811Z Preparing to download the following artifacts:
+smoke	Download Build Artifacts	2025-09-20T02:04:18.7809262Z - dist-artifacts (ID: 4061449723, Size: 1884862, Expected Digest: sha256:79e5cb8df5c1f9a050592349924eb115053c1d10bda7af36444765b7af520f5b)
+smoke	Download Build Artifacts	2025-09-20T02:04:18.8616973Z Redirecting to blob download url: https://productionresultssa6.blob.core.windows.net/actions-results/be7e9c8e-9d1d-438f-b084-94c1cb4a5d73/workflow-job-run-11212d60-11ff-5485-8367-bd3a68c3a07e/artifacts/6dee5b12a576ed88c451f471bb09240037897f358d163d2ec0a376edb7d904e6.zip
+smoke	Download Build Artifacts	2025-09-20T02:04:18.8619536Z Starting download of artifact to: /home/runner/work/health/health
+smoke	Download Build Artifacts	2025-09-20T02:04:19.0213570Z (node:2228) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+smoke	Download Build Artifacts	2025-09-20T02:04:19.0215297Z (Use `node --trace-deprecation ...` to show where the warning was created)
+smoke	Download Build Artifacts	2025-09-20T02:04:19.2246140Z SHA256 digest of downloaded artifact is 79e5cb8df5c1f9a050592349924eb115053c1d10bda7af36444765b7af520f5b
+smoke	Download Build Artifacts	2025-09-20T02:04:19.2247304Z Artifact download completed successfully.
+smoke	Download Build Artifacts	2025-09-20T02:04:19.2247965Z Total of 1 artifact(s) downloaded
+smoke	Download Build Artifacts	2025-09-20T02:04:19.2252924Z Download artifact has finished successfully
+smoke	Ensure Build Assets (fallback)	﻿2025-09-20T02:04:19.2347700Z ##[group]Run if [ ! -d dist ]; then echo "dist missing – rebuilding"; pnpm run build; fi
+smoke	Ensure Build Assets (fallback)	2025-09-20T02:04:19.2348262Z [36;1mif [ ! -d dist ]; then echo "dist missing – rebuilding"; pnpm run build; fi[0m
+smoke	Ensure Build Assets (fallback)	2025-09-20T02:04:19.2348931Z [36;1mif [ ! -d dist-worker ]; then echo "dist-worker missing – attempting worker build"; pnpm run build:worker || echo "Worker build optional"; fi[0m
+smoke	Ensure Build Assets (fallback)	2025-09-20T02:04:19.2379579Z shell: /usr/bin/bash -e {0}
+smoke	Ensure Build Assets (fallback)	2025-09-20T02:04:19.2379837Z ##[endgroup]
+smoke	Smoke	﻿2025-09-20T02:04:19.2451366Z ##[group]Run pnpm run ci:smoke
+smoke	Smoke	2025-09-20T02:04:19.2451640Z [36;1mpnpm run ci:smoke[0m
+smoke	Smoke	2025-09-20T02:04:19.2478219Z shell: /usr/bin/bash -e {0}
+smoke	Smoke	2025-09-20T02:04:19.2478461Z ##[endgroup]
+smoke	Smoke	2025-09-20T02:04:19.5422277Z 
+smoke	Smoke	2025-09-20T02:04:19.5423427Z > vitalsense-app@0.0.0 ci:smoke /home/runner/work/health/health
+smoke	Smoke	2025-09-20T02:04:19.5424139Z > node scripts/ci/smoke-worker.mjs
+smoke	Smoke	2025-09-20T02:04:19.5424384Z 
+smoke	Smoke	2025-09-20T02:04:19.5744348Z node:internal/modules/esm/resolve:873
+smoke	Smoke	2025-09-20T02:04:19.5745609Z   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+smoke	Smoke	2025-09-20T02:04:19.5746416Z         ^
+smoke	Smoke	2025-09-20T02:04:19.5746946Z 
+smoke	Smoke	2025-09-20T02:04:19.5748035Z Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'node-fetch' imported from /home/runner/work/health/health/scripts/ci/smoke-worker.mjs
+smoke	Smoke	2025-09-20T02:04:19.5748911Z     at packageResolve (node:internal/modules/esm/resolve:873:9)
+smoke	Smoke	2025-09-20T02:04:19.5749446Z     at moduleResolve (node:internal/modules/esm/resolve:946:18)
+smoke	Smoke	2025-09-20T02:04:19.5750043Z     at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+smoke	Smoke	2025-09-20T02:04:19.5750683Z     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:642:12)
+smoke	Smoke	2025-09-20T02:04:19.5751797Z     at #cachedDefaultResolve (node:internal/modules/esm/loader:591:25)
+smoke	Smoke	2025-09-20T02:04:19.5753024Z     at ModuleLoader.resolve (node:internal/modules/esm/loader:574:38)
+smoke	Smoke	2025-09-20T02:04:19.5754209Z     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:236:38)
+smoke	Smoke	2025-09-20T02:04:19.5755365Z     at ModuleJob._link (node:internal/modules/esm/module_job:130:49) {
+smoke	Smoke	2025-09-20T02:04:19.5756144Z   code: 'ERR_MODULE_NOT_FOUND'
+smoke	Smoke	2025-09-20T02:04:19.5756625Z }
+smoke	Smoke	2025-09-20T02:04:19.5756825Z 
+smoke	Smoke	2025-09-20T02:04:19.5756994Z Node.js v20.19.0
+smoke	Smoke	2025-09-20T02:04:19.5936043Z  ELIFECYCLE  Command failed with exit code 1.
+smoke	Smoke	2025-09-20T02:04:19.6144967Z ##[error]Process completed with exit code 1.
+smoke	Post Setup Node & pnpm	﻿2025-09-20T02:04:19.6239019Z Post job cleanup.
+smoke	Post Run actions/checkout@v4	﻿2025-09-20T02:04:19.6290267Z Post job cleanup.
+smoke	Post Run actions/checkout@v4	2025-09-20T02:04:19.7211811Z [command]/usr/bin/git version
+smoke	Post Run actions/checkout@v4	2025-09-20T02:04:19.7247231Z git version 2.51.0
+smoke	Post Run actions/checkout@v4	2025-09-20T02:04:19.7296632Z Temporarily overriding HOME='/home/runner/work/_temp/45d4aa55-035b-431b-b45c-0ec745b771ce' before making global git config changes
+smoke	Post Run actions/checkout@v4	2025-09-20T02:04:19.7298214Z Adding repository directory to the temporary git global config as a safe directory
+smoke	Post Run actions/checkout@v4	2025-09-20T02:04:19.7302738Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/health/health
+smoke	Post Run actions/checkout@v4	2025-09-20T02:04:19.7335757Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+smoke	Post Run actions/checkout@v4	2025-09-20T02:04:19.7367399Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+smoke	Post Run actions/checkout@v4	2025-09-20T02:04:19.7591040Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+smoke	Post Run actions/checkout@v4	2025-09-20T02:04:19.7610793Z http.https://github.com/.extraheader
+smoke	Post Run actions/checkout@v4	2025-09-20T02:04:19.7623665Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+smoke	Post Run actions/checkout@v4	2025-09-20T02:04:19.7653724Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+smoke	Complete job	﻿2025-09-20T02:04:19.7974089Z Cleaning up orphan processes

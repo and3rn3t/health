@@ -4,7 +4,7 @@
  */
 import { Miniflare } from 'miniflare';
 import fs from 'node:fs';
-import fetch from 'node-fetch';
+// Node 18+ provides global fetch. Avoid extra dependency on node-fetch for CI determinism.
 
 const entry = 'dist-worker/index.js';
 if (!fs.existsSync(entry)) {
@@ -18,7 +18,7 @@ async function wait(url, timeout = 20000) {
     try {
       const r = await fetch(url);
       if (r.ok) return true;
-    } catch {}
+  } catch { /* retry */ }
     await new Promise((r) => setTimeout(r, 500));
   }
   return false;

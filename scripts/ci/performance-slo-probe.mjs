@@ -22,7 +22,8 @@ function ensureBuild() {
     return;
   }
   console.log('🏗️  Building app (no existing dist)...');
-  const res = spawnSync(process.execPath, ['node_modules/.bin/vite', 'build'], { stdio: 'inherit' });
+  // Use pnpm exec to ensure the correct shim is used (avoids bash shebang parse issues on some runners)
+  const res = spawnSync('pnpm', ['exec', 'vite', 'build'], { stdio: 'inherit' });
   if (res.status !== 0) {
     console.error('❌ Build failed');
     process.exit(res.status || 1);

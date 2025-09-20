@@ -48,9 +48,10 @@ describe('WebSocketClient (schema enforcement)', () => {
     });
     client.subscribe('live_health_update', (m) => received.push(m));
     await client.open();
+    // Intentionally invalid: type not in enum + missing timestamp and required schema fields if any evolve
     msgHandler?.({
       data: JSON.stringify({
-        type: 'live_health_update',
+        type: 'invalid_type',
         data: { metric: 'heart_rate', value: 1 },
       }),
     });
