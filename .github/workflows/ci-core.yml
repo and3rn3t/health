@@ -258,8 +258,10 @@ jobs:
       - name: Lint (JSON + text)
         run: |
           mkdir -p reports
+          # First run: human-readable output (default formatter)
           pnpm run lint
-          pnpm run lint -- --format json --output-file reports/eslint-report.json || echo "{}" > reports/eslint-report.json
+          # Second run: JSON output for artifacts (use pnpm exec to avoid inserting an extra '--' that breaks argument parsing)
+          pnpm exec eslint src --format json --output-file reports/eslint-report.json || echo "{}" > reports/eslint-report.json
       - name: Unit Tests w/ Coverage (enforced)
         run: pnpm run test:coverage
       - name: Coverage Gate (minimum 60%)
