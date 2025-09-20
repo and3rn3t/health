@@ -298,7 +298,7 @@ jobs:
             done
           fi
           if [ ! -f "$FILE" ]; then echo "Coverage summary not found ($FILE) after fallbacks"; exit 1; fi
-          PCT=$(node -e "const f=require(process.argv[1]); const t=f.total||f; process.stdout.write(String((t.lines && t.lines.pct)||0));" "$FILE")
+          PCT=$(node -e "const fs=require('fs');const p=process.argv[1];const f=JSON.parse(fs.readFileSync(p,'utf8'));const t=f.total||f;process.stdout.write(String((t.lines&&t.lines.pct)||0));" "$FILE")
           MIN=${COVERAGE_MIN:-60}
           echo "Line coverage: ${PCT}% (min ${MIN}%)"
           awk -v c=$PCT -v m=$MIN 'BEGIN { if (c+0 < m) { printf("Coverage %.2f%% below minimum %d%%\n", c, m); exit 1 } }'
@@ -608,11 +608,11 @@ jobs:
           fi
           ERRORS=0; WARNINGS=0; COVER=0
           if [ -f "$ESLINT_JSON" ]; then
-            node -e "try{const d=require(process.argv[1]);let e=0,w=0;for(const f of d){e+=f.errorCount||0;w+=f.warningCount||0;}console.log(e+' '+w);}catch(e){console.log('0 0')}" "$ESLINT_JSON" > counts.txt
+            node -e "const fs=require('fs');try{const d=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));let e=0,w=0;for(const f of d){e+=f.errorCount||0;w+=f.warningCount||0;}console.log(e+' '+w);}catch(e){console.log('0 0')}" "$ESLINT_JSON" > counts.txt
             read ERRORS WARNINGS < counts.txt || true
           fi
           if [ -f "$COVER_JSON" ]; then
-            COVER=$(node -e "const f=require(process.argv[1]); const t=f.total||f; process.stdout.write(String(t.lines.pct||0));" "$COVER_JSON")
+            COVER=$(node -e "const fs=require('fs');const f=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); const t=f.total||f; process.stdout.write(String((t.lines&&t.lines.pct)||0));" "$COVER_JSON")
           else
             echo "[summary] WARNING: coverage summary still not found; coverage% will report as 0"
           fi
