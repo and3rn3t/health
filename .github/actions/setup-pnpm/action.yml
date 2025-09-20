@@ -16,11 +16,30 @@ runs:
       uses: actions/setup-node@v4
       with:
         node-version-file: .nvmrc
-        cache: pnpm
-        cache-dependency-path: pnpm-lock.yaml
+        # NOTE: pnpm cache disabled here because setup-node attempts to invoke pnpm
+        # when cache=pnpm is set, but pnpm is not yet available until after Corepack
+        # is enabled & prepared. We can add a dedicated cache step later if needed.
     - name: Enable Corepack
       shell: bash
       run: corepack enable || true
+    - name: Restore pnpm store (cache)
+      id: pnpm-cache
+      shell: bash
+      run: |
+        set -e
+        STORE_PATH=$(node -e "process.stdout.write(require('path').join(process.env.HOME,'.pnpm-store'))")
+        echo "Computed store path: $STORE_PATH"
+        echo "store-path=$STORE_PATH" >> $GITHUB_OUTPUT
+      env:
+        # Allow future extension
+        PNPM_HOME: ~/.pnpm
+    - name: Cache pnpm store
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.pnpm-cache.outputs.store-path }}
+        key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: |
+          pnpm-store-${{ runner.os }}-
     - name: Prepare pinned pnpm version
       id: prep
       shell: bash
@@ -30,8 +49,15 @@ runs:
         if [ ! -f package.json ]; then echo 'package.json not found in working directory'; exit 0; fi
         VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
         echo "Preparing pnpm@${VERSION}"
-        corepack prepare pnpm@${VERSION} --activate || true
-        pnpm -v
+        if ! corepack prepare pnpm@${VERSION} --activate; then
+          echo "corepack prepare failed, installing fallback pnpm@${VERSION} via npm"
+          npm i -g pnpm@${VERSION}
+        fi
+        if ! command -v pnpm >/dev/null 2>&1; then
+          echo "pnpm still not found after corepack + fallback install" >&2
+          exit 1
+        fi
+        echo "pnpm version: $(pnpm -v)"
         echo "version=${VERSION}" >> $GITHUB_OUTPUT
     - name: Show pnpm store path (debug)
       shell: bash
