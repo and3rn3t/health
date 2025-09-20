@@ -58,27 +58,27 @@ if(anyFail) overall = 'FAIL'; else if(degradedReasons.length) overall = 'DEGRADE
 let md = '# CI Scorecard\n\n';
 md += '_Soft gates: WS Schema (warning visibility only unless coupled with other failures)._\n\n';
 md += `**Overall:** ${overall === 'PASS' ? '✅ PASS' : overall === 'DEGRADED' ? '⚠️ DEGRADED' : '❌ FAIL'}\n\n`;
-md += '| Category | Result | Notes |\n|----------|--------|-------|\n';
-md += `| Lint & Tests | ${statusEmoji(gatingMap.lint)} ${gatingMap.lint} |  |\n`;
-md += `| Bundle Threshold | ${statusEmoji(gatingMap.bundle)} ${gatingMap.bundle} | ${(threshold && threshold.total) ? `${threshold.total.jsGzipKB}KB js / ${threshold.total.cssGzipKB}KB css` : ''} |\n`;
+md += '| Category | Gate | Result | Notes |\n|----------|------|--------|-------|\n';
+md += `| Lint & Tests | HARD | ${statusEmoji(gatingMap.lint)} ${gatingMap.lint} |  |\n`;
+md += `| Bundle Threshold | HARD | ${statusEmoji(gatingMap.bundle)} ${gatingMap.bundle} | ${(threshold && threshold.total) ? `${threshold.total.jsGzipKB}KB js / ${threshold.total.cssGzipKB}KB css` : ''} |\n`;
 if(drift){
   const jsDelta = drift.js?.deltaBytes != null ? `${(drift.js.deltaBytes/1024).toFixed(2)}KB` : '';
   const cssDelta = drift.css?.deltaBytes != null ? `${(drift.css.deltaBytes/1024).toFixed(2)}KB` : '';
-  md += `| Bundle Drift | ${statusEmoji(gatingMap.drift)} ${gatingMap.drift} | Δ JS ${jsDelta} / Δ CSS ${cssDelta} |\n`;
+  md += `| Bundle Drift | HARD | ${statusEmoji(gatingMap.drift)} ${gatingMap.drift} | Δ JS ${jsDelta} / Δ CSS ${cssDelta} |\n`;
 } else {
-  md += `| Bundle Drift | ${statusEmoji(gatingMap.drift)} ${gatingMap.drift} |  |\n`;
+  md += `| Bundle Drift | HARD | ${statusEmoji(gatingMap.drift)} ${gatingMap.drift} |  |\n`;
 }
-md += `| Privacy Guard | ${statusEmoji(gatingMap.privacy)} ${gatingMap.privacy} |  |\n`;
-md += `| Smoke & Branding | ${statusEmoji(gatingMap.smoke)} ${gatingMap.smoke} |  |\n`;
+md += `| Privacy Guard | HARD | ${statusEmoji(gatingMap.privacy)} ${gatingMap.privacy} |  |\n`;
+md += `| Smoke & Branding | HARD | ${statusEmoji(gatingMap.smoke)} ${gatingMap.smoke} |  |\n`;
 if(ws){
     const wsNotes = [];
     if(ws.unexpected?.length) wsNotes.push(`unexpected=${ws.unexpected.length}`);
     if(ws.missing?.length) wsNotes.push(`missing=${ws.missing.length}`);
     if(isWsPlaceholder) wsNotes.push('placeholder');
     if(process.env.WS_SCHEMA_AUTO_HASH === 'true') wsNotes.push('auto-hash');
-    md += `| WS Schema (soft) | ${statusEmoji(gatingMap.ws)} ${gatingMap.ws} | ${wsNotes.join(' ') || 'baseline stable'} |\n`;
+  md += `| WS Schema | SOFT | ${statusEmoji(gatingMap.ws)} ${gatingMap.ws} | ${wsNotes.join(' ') || 'baseline stable'} |\n`;
 } else {
-  md += `| WS Schema | ${statusEmoji(gatingMap.ws)} ${gatingMap.ws} |  |\n`;
+  md += `| WS Schema | SOFT | ${statusEmoji(gatingMap.ws)} ${gatingMap.ws} |  |\n`;
 }
 if(perf){
   const jsKB = (perf.bundles?.jsGzipBytes||0)/1024;
@@ -88,11 +88,11 @@ if(perf){
   perfNotes.push(`js ${jsKB.toFixed(1)}KB`);
   perfNotes.push(`css ${cssKB.toFixed(1)}KB`);
   perfNotes.push(`import ${perf.importLatencyMs}ms`);
-  md += `| Perf SLO | ${statusEmoji(gatingMap.perfJob)} ${perf.status} | ${perfNotes.join(' / ')} |\n`;
+  md += `| Perf SLO | HARD | ${statusEmoji(gatingMap.perfJob)} ${perf.status} | ${perfNotes.join(' / ')} |\n`;
 } else {
-  md += `| Perf SLO | ${statusEmoji(gatingMap.perfJob)} ${gatingMap.perfJob} |  |\n`;
+  md += `| Perf SLO | HARD | ${statusEmoji(gatingMap.perfJob)} ${gatingMap.perfJob} |  |\n`;
 }
-md += `| Secrets Rotation | ${statusEmoji(gatingMap.secrets)} ${gatingMap.secrets} |  |\n`;
+md += `| Secrets Rotation | HARD | ${statusEmoji(gatingMap.secrets)} ${gatingMap.secrets} |  |\n`;
 
 if(degradedReasons.length){
   md += '\n**Degraded Reasons:**\n';

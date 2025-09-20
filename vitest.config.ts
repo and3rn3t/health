@@ -21,6 +21,36 @@ export default defineConfig({
     ],
     setupFiles: ['./vitest.setup.ts'],
     globals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'lcov'],
+      reportsDirectory: 'coverage',
+      // Exclude large, non-runtime or archival areas to raise meaningful signal
+      exclude: [
+        'src/_archive/**',
+        'src/components/_archive/**',
+        'src/components/**/experimental/**',
+        'src/components/**/infrastructure/**',
+        'src/components/**/unused-health/**',
+        'src/components/sections/DevDiagnostics.tsx',
+        'src/components/sections/DeveloperTools.tsx',
+        'src/components/**/WebSocketArchitectureGuide.tsx',
+        'src/components/**/ComprehensiveAppleHealthKitGuide.tsx',
+        'src/components/**/CognitiveHealth.tsx',
+        'src/components/**/ML*',
+        'src/components/**/AI*',
+        'src/components/health/EnhancedGaitAnalyzer.tsx',
+        'src/components/health/EnhancedHealthInsightsDashboard.tsx',
+        'src/components/health/EnhancedHealthDataUpload.tsx',
+        'src/components/health/EnhancedHealthInsightsDashboard.tsx',
+        'src/components/sections/ShowcaseLabs.tsx',
+        'src/components/health/**/Long*',
+        'src/lib/**/test-*',
+        'scripts/**',
+        'public/**',
+        '**/*.d.ts'
+      ]
+    }
   },
   resolve: {
     alias: {

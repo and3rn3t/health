@@ -526,6 +526,17 @@ jobs:
             echo "| Lockfile Drift | ${DRIFT_STATUS} |";
           } > reports/code-quality-summary.md
           cat reports/code-quality-summary.md >> $GITHUB_STEP_SUMMARY
+      - name: Coverage Auto-Raise Suggestion
+        if: success()
+        run: |
+          node scripts/ci/auto-raise-coverage.mjs || echo "(non-blocking) auto-raise suggestion failed"
+      - name: Upload Coverage Suggestion
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-suggestion
+          path: reports/coverage-suggestion.json
+          if-no-files-found: warn
       - name: Upload Enriched Summary
         uses: actions/upload-artifact@v4
         with:
