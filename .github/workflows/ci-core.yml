@@ -271,15 +271,23 @@ jobs:
           pnpm exec eslint src --format json --output-file reports/eslint-report.json || echo "{}" > reports/eslint-report.json
       - name: Unit Tests w/ Coverage (enforced)
         run: pnpm run test:coverage
-      - name: Coverage Gate (minimum 8%)
+      - name: Coverage Gate (minimum 10% — dynamic if coverage-target.json present)
         env:
           # Lowered temporarily to allow pipeline green while incremental coverage improvements land.
           # Raised gradually once real test coverage (excluding untestable infra) increases.
-          COVERAGE_MIN: 8
+          COVERAGE_MIN: 10
         run: |
           set -e
           FILE="coverage/coverage-summary.json"
           echo "[coverage] cwd=$(pwd)"
+          # Optional dynamic override via coverage-target.json { "min": <number> }
+          if [ -f coverage-target.json ]; then
+            TARGET=$(node -e "try{const f=require('./coverage-target.json');process.stdout.write(String(f.min||''))}catch(e){ }")
+            if [ -n "${TARGET}" ]; then
+              echo "[coverage] overriding COVERAGE_MIN via coverage-target.json -> ${TARGET}"
+              export COVERAGE_MIN=${TARGET}
+            fi
+          fi
           if [ -d coverage ]; then echo "[coverage] listing coverage directory"; ls -1 coverage || true; fi
           # Fallback: synthesize summary by aggregating coverage-final.json (Istanbul format) if summary missing
           if [ ! -f "$FILE" ] && [ -f "coverage/coverage-final.json" ]; then
@@ -468,8 +476,6 @@ jobs:
             pnpm install --no-frozen-lockfile;
           fi
       - name: WebSocket Schema Drift (soft)
-        env:
-          WS_SCHEMA_AUTO_HASH: ${{ secrets.WS_SCHEMA_AUTO_HASH || '' }}
         run: |
           set +e
           echo "[ws] Running schema drift check (soft)";
@@ -1204,7 +1210,6 @@ jobs:
       - deploy_readiness
       - deploy_production
       - initial_release
-      - baseline_metrics
     if: always()
     steps:
       - uses: actions/checkout@v4
