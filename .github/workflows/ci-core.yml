@@ -284,34 +284,7 @@ jobs:
           # Fallback: synthesize summary by aggregating coverage-final.json (Istanbul format) if summary missing
           if [ ! -f "$FILE" ] && [ -f "coverage/coverage-final.json" ]; then
             echo "[coverage] Synthesizing summary (aggregate) from coverage-final.json"
-            node - <<'NODE'
-            const fs=require('fs');
-            const path='coverage/coverage-final.json';
-            try {
-              const data=require('./'+path);
-              let totalLines=0, coveredLines=0, totalStmts=0, coveredStmts=0, totalFns=0, coveredFns=0, totalBranches=0, coveredBranches=0;
-              for(const [file,metrics] of Object.entries(data)){
-                if(!metrics || typeof metrics!=='object') continue;
-                const L=metrics.lines; if(L){ totalLines+=L.total||0; coveredLines+=L.covered||0; }
-                const S=metrics.statements; if(S){ totalStmts+=S.total||0; coveredStmts+=S.covered||0; }
-                const F=metrics.functions; if(F){ totalFns+=F.total||0; coveredFns+=F.covered||0; }
-                const B=metrics.branches; if(B){ totalBranches+=B.total||0; coveredBranches+=B.covered||0; }
-              }
-              function pct(c,t){ return t? +( (c/t*100).toFixed(2) ):0 }
-              const summary={
-                total:{
-                  lines:{ total: totalLines, covered: coveredLines, pct: pct(coveredLines,totalLines) },
-                  statements:{ total: totalStmts, covered: coveredStmts, pct: pct(coveredStmts,totalStmts) },
-                  functions:{ total: totalFns, covered: coveredFns, pct: pct(coveredFns,totalFns) },
-                  branches:{ total: totalBranches, covered: coveredBranches, pct: pct(coveredBranches,totalBranches) }
-                }
-              };
-              fs.writeFileSync(process.argv[1], JSON.stringify(summary,null,2));
-              console.log('[coverage] Synthesized summary => lines %', summary.total.lines.pct);
-            } catch(err){
-              console.error('[coverage] Failed to synthesize summary:', err.message);
-            }
-            NODE "$FILE"
+            node -e "const fs=require('fs');try{const data=JSON.parse(fs.readFileSync('coverage/coverage-final.json','utf8'));let L=0,LC=0,S=0,SC=0,F=0,FC=0,B=0,BC=0;for(const m of Object.values(data)){if(!m||typeof m!=='object') continue; if(m.lines){L+=m.lines.total||0;LC+=m.lines.covered||0;} if(m.statements){S+=m.statements.total||0;SC+=m.statements.covered||0;} if(m.functions){F+=m.functions.total||0;FC+=m.functions.covered||0;} if(m.branches){B+=m.branches.total||0;BC+=m.branches.covered||0;}} const pct=(c,t)=>t?+((c/t*100).toFixed(2)):0; const summary={total:{lines:{total:L,covered:LC,pct:pct(LC,L)},statements:{total:S,covered:SC,pct:pct(SC,S)},functions:{total:F,covered:FC,pct:pct(FC,F)},branches:{total:B,covered:BC,pct:pct(BC,B)}}}; fs.writeFileSync(process.env.FILE||'coverage/coverage-summary.json',JSON.stringify(summary,null,2)); console.log('[coverage] Synthesized summary => lines %',summary.total.lines.pct);}catch(e){console.error('[coverage] synthesis failed',e.message);}"
           fi
           # Secondary fallback: attempt to derive from any JSON containing total.lines.pct
           if [ ! -f "$FILE" ]; then
@@ -319,15 +292,7 @@ jobs:
             for C in $CANDIDATES; do
               if grep -q 'lines' "$C"; then
                 echo "[coverage] Inspecting candidate $C for embedded totals"
-                node - <<NODE "$FILE" "$C"
-                  const fs=require('fs');
-                  const out=process.argv[2];
-                  const cand=require('./'+process.argv[3]);
-                  if(cand && cand.total && cand.total.lines && typeof cand.total.lines.pct==='number'){
-                    fs.writeFileSync(out, JSON.stringify({total:cand.total},null,2));
-                    console.log('[coverage] Copied total block from', process.argv[3]);
-                  }
-                NODE
+                node -e "const fs=require('fs');const out=process.env.OUT;const cand=require('./'+process.env.CAND);if(cand&&cand.total&&cand.total.lines&&typeof cand.total.lines.pct==='number'){fs.writeFileSync(out,JSON.stringify({total:cand.total},null,2));console.log('[coverage] Copied total block from',process.env.CAND);}" OUT="$FILE" CAND="$C" || true
                 if [ -f "$FILE" ]; then break; fi
               fi
             done
@@ -335,7 +300,7 @@ jobs:
           if [ ! -f "$FILE" ]; then echo "Coverage summary not found ($FILE) after fallbacks"; exit 1; fi
           PCT=$(node -e "const f=require(process.argv[1]); const t=f.total||f; process.stdout.write(String((t.lines && t.lines.pct)||0));" "$FILE")
           MIN=${COVERAGE_MIN:-60}
-            echo "Line coverage: ${PCT}% (min ${MIN}%)"
+          echo "Line coverage: ${PCT}% (min ${MIN}%)"
           awk -v c=$PCT -v m=$MIN 'BEGIN { if (c+0 < m) { printf("Coverage %.2f%% below minimum %d%%\n", c, m); exit 1 } }'
       - name: Test Count Guard (soft)
         run: |
@@ -386,24 +351,7 @@ jobs:
           # Guard: if summary missing but coverage-final present, try one more synthesis (paranoid repeat)
           if [ ! -f coverage/coverage-summary.json ] && [ -f coverage/coverage-final.json ]; then
             echo "[verify] Late synthesis attempt for coverage-summary.json"
-            node - <<'NODE'
-            const fs=require('fs');
-            try{
-              const data=JSON.parse(fs.readFileSync('coverage/coverage-final.json','utf8'));
-              let L=0,LC=0,S=0,SC=0,F=0,FC=0,B=0,BC=0;
-              for(const k of Object.keys(data)){
-                const m=data[k]; if(!m) continue;
-                if(m.lines){L+=m.lines.total||0;LC+=m.lines.covered||0;}
-                if(m.statements){S+=m.statements.total||0;SC+=m.statements.covered||0;}
-                if(m.functions){F+=m.functions.total||0;FC+=m.functions.covered||0;}
-                if(m.branches){B+=m.branches.total||0;BC+=m.branches.covered||0;}
-              }
-              const pct=(c,t)=>t?+(c/t*100).toFixed(2):0;
-              const summary={total:{lines:{total:L,covered:LC,pct:pct(LC,L)},statements:{total:S,covered:SC,pct:pct(S,S?S:0)},functions:{total:F,covered:FC,pct:pct(FC,F)},branches:{total:B,covered:BC,pct:pct(BC,B)}}};
-              fs.writeFileSync('coverage/coverage-summary.json', JSON.stringify(summary,null,2));
-              console.log('[verify] Synthesized coverage-summary.json (lines %)', summary.total.lines.pct);
-            }catch(e){ console.error('[verify] synthesis failed', e); }
-            NODE
+            node -e "const fs=require('fs');try{const data=JSON.parse(fs.readFileSync('coverage/coverage-final.json','utf8'));let L=0,LC=0,S=0,SC=0,F=0,FC=0,B=0,BC=0;for(const m of Object.values(data)){if(!m) continue; if(m.lines){L+=m.lines.total||0;LC+=m.lines.covered||0;} if(m.statements){S+=m.statements.total||0;SC+=m.statements.covered||0;} if(m.functions){F+=m.functions.total||0;FC+=m.functions.covered||0;} if(m.branches){B+=m.branches.total||0;BC+=m.branches.covered||0;}} const pct=(c,t)=>t?+((c/t*100).toFixed(2)):0; const summary={total:{lines:{total:L,covered:LC,pct:pct(LC,L)},statements:{total:S,covered:SC,pct:pct(SC,S)},functions:{total:F,covered:FC,pct:pct(FC,F)},branches:{total:B,covered:BC,pct:pct(BC,B)}}}; fs.writeFileSync('coverage/coverage-summary.json',JSON.stringify(summary,null,2)); console.log('[verify] Synthesized coverage-summary.json (lines %)',summary.total.lines.pct);}catch(e){console.error('[verify] synthesis failed',e.message);}"
           fi
           if [ -f coverage/coverage-summary.json ]; then
             echo "[verify] Final coverage-summary.json present (post-check)";
