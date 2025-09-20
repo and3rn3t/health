@@ -965,6 +965,8 @@ jobs:
     if: >-
       needs.deploy_readiness.outputs.ready == 'true' &&
       (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'))
+    permissions:
+      contents: write
     environment:
       name: production
     steps:
@@ -1018,6 +1020,15 @@ jobs:
       - name: Deployment Summary
         run: |
           echo "Production deployment completed. Readiness: ${{ needs.deploy_readiness.outputs.ready }} (reason: ${{ needs.deploy_readiness.outputs.reason }})" >> $GITHUB_STEP_SUMMARY
+      - name: Create GitHub Release (tag builds)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body_path: reports/release-notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   initial_release:
     name: Initial Tag & Release
@@ -1071,6 +1082,53 @@ jobs:
           body_path: reports/release-notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Append to CHANGELOG.md (initial)
+        run: |
+          set -e
+          if [ -f CHANGELOG.md ] && grep -q "^## ${{ steps.version.outputs.tag }}" CHANGELOG.md; then echo "Entry already exists"; exit 0; fi
+          if [ ! -f CHANGELOG.md ]; then echo "# Changelog" > CHANGELOG.md; fi
+          TMP=$(mktemp)
+          { echo ""; cat reports/release-notes.md; echo ""; cat CHANGELOG.md; } > $TMP
+          mv $TMP CHANGELOG.md
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
+          git add CHANGELOG.md
+          git commit -m "chore(release): append ${${{ steps.version.outputs.tag }} } to CHANGELOG [skip ci]" || true
+          git push origin HEAD:main || true
       - name: Summary
         run: |
           echo "Initial release created with tag ${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+
+  update_changelog:
+    name: Update CHANGELOG (tag)
+    runs-on: ubuntu-latest
+    needs: deploy_production
+    if: startsWith(github.ref, 'refs/tags/v') && needs.deploy_production.result == 'success'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Generate / Append Release Notes
+        run: |
+          set -e
+          TAG=${GITHUB_REF##*/}
+          mkdir -p reports
+          RELEASE_TAG=$TAG node scripts/ci/generate-changelog.mjs --output reports/release-notes.md || echo "[changelog] generation failed"
+          if [ -f CHANGELOG.md ] && grep -q "^## $TAG" CHANGELOG.md; then echo "Entry already present"; exit 0; fi
+          if [ ! -f CHANGELOG.md ]; then echo "# Changelog" > CHANGELOG.md; fi
+          TMP=$(mktemp)
+          { echo ""; cat reports/release-notes.md; echo ""; cat CHANGELOG.md; } > $TMP
+          mv $TMP CHANGELOG.md
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
+          git add CHANGELOG.md
+          git commit -m "chore(release): append $TAG to CHANGELOG [skip ci]" || true
+          git push origin HEAD:main || true
+      - name: Upload Release Notes (tag)
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes-tag
+          path: reports/release-notes.md
+          if-no-files-found: warn
