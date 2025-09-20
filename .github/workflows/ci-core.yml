@@ -894,6 +894,14 @@ jobs:
           fs.writeFileSync('ci-baselines/history-index.json', JSON.stringify(index,null,2));
           console.log('Baseline metrics + history written');
           NODE
+      - name: Upload Baselines Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-baselines
+          path: |
+            ci-baselines/baselines.json
+            ci-baselines/history-index.json
+          if-no-files-found: warn
       - name: Generate Badges
         run: node scripts/ci/generate-badges.mjs
       - name: Commit Baselines (skip CI)
@@ -948,6 +956,37 @@ jobs:
           name: deploy-readiness
           path: reports/deploy-readiness.json
           if-no-files-found: error
+      - name: Upload Deploy Readiness Summary (markdown)
+        if: always()
+        run: |
+          set -e
+          mkdir -p reports
+          if [ -f reports/deploy-readiness.json ]; then
+            READY=$(jq -r '.ready' reports/deploy-readiness.json 2>/dev/null || echo unknown)
+            REASON=$(jq -r '.reason' reports/deploy-readiness.json 2>/dev/null || echo unknown)
+            COV=$(jq -r '.coverage' reports/deploy-readiness.json 2>/dev/null || echo unknown)
+          else
+            READY=unknown; REASON=missing_artifact; COV=unknown;
+          fi
+          cat > reports/deploy-readiness.md <<EOF
+          # Deploy Readiness
+
+          | Field | Value |
+          |-------|-------|
+          | Ready | ${READY} |
+          | Reason | ${REASON} |
+          | Coverage | ${COV} |
+          | Generated | $(date -u +%FT%TZ) |
+          EOF
+          echo "Deploy readiness markdown written";
+        shell: bash
+      - name: Upload Deploy Readiness Markdown
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-readiness-md
+          path: reports/deploy-readiness.md
+          if-no-files-found: warn
 
   deploy_production:
     name: Production Deploy
@@ -1003,6 +1042,23 @@ jobs:
             echo "[deploy] Deployment command failed (soft skip for initial stabilization)";
             exit 0;
           fi
+          echo "status=success" > deploy-status.env
+        shell: bash
+      - name: Upload Deploy Status Artifact
+        if: always()
+        run: |
+          set -e
+          if [ ! -f deploy-status.env ]; then echo "status=skipped" > deploy-status.env; fi
+          mkdir -p reports
+          cp deploy-status.env reports/deploy-status.env
+        shell: bash
+      - name: Upload Deploy Status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-status
+          path: reports/deploy-status.env
+          if-no-files-found: warn
       - name: Post-Deploy Verification (HTTP health)
         run: |
           node - <<'NODE'
