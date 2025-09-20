@@ -272,11 +272,47 @@ jobs:
         run: |
           set -e
           FILE="coverage/coverage-summary.json"
+          # Fallback: some reporter combos may only emit coverage-final.json; synthesize summary if needed.
+          if [ ! -f "$FILE" ] && [ -f "coverage/coverage-final.json" ]; then
+            node -e "const f=require('./coverage/coverage-final.json');const out={total:f.total||f};require('fs').writeFileSync(process.argv[1],JSON.stringify(out,null,2));console.log('Synthesized coverage-summary.json from coverage-final.json');" "$FILE"
+          fi
           if [ ! -f "$FILE" ]; then echo "Coverage summary not found ($FILE)"; exit 1; fi
           PCT=$(node -e "const f=require(process.argv[1]); const t=f.total||f; process.stdout.write(String(t.lines.pct||0));" "$FILE")
           MIN=${COVERAGE_MIN:-60}
             echo "Line coverage: ${PCT}% (min ${MIN}%)"
           awk -v c=$PCT -v m=$MIN 'BEGIN { if (c+0 < m) { printf("Coverage %.2f%% below minimum %d%%\n", c, m); exit 1 } }'
+      - name: Test Count Guard (soft)
+        run: |
+          set -e
+          node - <<'NODE'
+          const fs=require('fs');
+          const path=require('path');
+          function list(dir){
+            let files=[];
+            if(!fs.existsSync(dir)) return files;
+            for(const e of fs.readdirSync(dir,{withFileTypes:true})){
+              if(e.name==='node_modules' || e.name==='.git' || e.name==='dist' || e.name==='coverage') continue;
+              const p=path.join(dir,e.name);
+              if(e.isDirectory()) files=files.concat(list(p));
+              else if(/\.(test|spec)\.(ts|tsx|js|jsx)$/.test(e.name)) files.push(p);
+            }
+            return files;
+          }
+          const tests=list('src');
+            const data={ timestamp:new Date().toISOString(), count:tests.length, files:tests };
+          fs.mkdirSync('reports',{recursive:true});
+          fs.writeFileSync('reports/test-count.json', JSON.stringify(data,null,2));
+          console.log('Test files discovered:', tests.length);
+          // Soft guard: compare to baseline if present
+          if(fs.existsSync('test-count-baseline.json')){
+            try{
+              const base=JSON.parse(fs.readFileSync('test-count-baseline.json','utf8'));
+              if(base.count && tests.length < base.count * 0.9){
+                console.log(`(soft) WARNING: Test file count dropped >10% (baseline ${base.count} -> current ${tests.length})`);
+              }
+            }catch{}
+          }
+          NODE
       - name: Upload Code Quality Artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -285,6 +321,7 @@ jobs:
           path: |
             coverage/
             reports/eslint-report.json
+            reports/test-count.json
           if-no-files-found: warn
       - name: CSS Guard
         run: pnpm run ci:css-guard
@@ -615,12 +652,22 @@ jobs:
         run: |
           NEW=$(echo "{\"generatedAt\":\"$(date -u +%FT%TZ)\",\"linesPct\":${{ steps.delta.outputs.current }},\"notes\":\"Auto-updated on successful main run\"}" )
           echo "$NEW" > coverage-baseline.json
+          # Update test count baseline if available
+          if [ -f coverage-artifacts/reports/test-count.json ]; then
+            cp coverage-artifacts/reports/test-count.json test-count-baseline.json || true
+          fi
       - name: Upload New Baseline Artifact
         if: github.ref == 'refs/heads/main' && success()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-baseline
           path: coverage-baseline.json
+      - name: Upload Test Count Baseline Artifact
+        if: github.ref == 'refs/heads/main' && success() && hashFiles('test-count-baseline.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-count-baseline
+          path: test-count-baseline.json
 
       - name: Deploy (develop branch only)
         if: github.ref == 'refs/heads/develop'
@@ -638,6 +685,45 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+      - name: Download Coverage Suggestion Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-suggestion
+          path: coverage-suggestion
+        continue-on-error: true
+      - name: Auto Raise Coverage Min (PR-less commit) (soft)
+        run: |
+          set -e
+          SUGG_FILE="coverage-suggestion/coverage-suggestion.json"
+          WF_FILE=".github/workflows/ci-core.yml"
+          if [ ! -f "$SUGG_FILE" ]; then echo "No suggestion artifact"; exit 0; fi
+          CUR_MIN=$(grep -E "COVERAGE_MIN:\s*[0-9]+" "$WF_FILE" | head -1 | sed -E 's/.*COVERAGE_MIN:\s*([0-9]+)/\1/')
+          [ -z "$CUR_MIN" ] && CUR_MIN=10
+          node - <<'NODE'
+          const fs=require('fs');
+          const wf=process.env.WF_FILE;
+          const suggFile=process.env.SUGG_FILE;
+          if(!fs.existsSync(suggFile)) process.exit(0);
+          let raw; try{ raw=JSON.parse(fs.readFileSync(suggFile,'utf8')); }catch{ process.exit(0); }
+          const sugg=raw && raw.suggestion && raw.suggestion.suggestedMin;
+          if(!sugg){ console.log('No suggestedMin present'); process.exit(0); }
+          const curMin=Number(process.env.CUR_MIN||'0');
+          if(!(sugg>curMin)){ console.log('Suggested min not higher'); process.exit(0); }
+          if(sugg > curMin + 10){ console.log('Suggested increase too large; skipping'); process.exit(0); }
+          let content=fs.readFileSync(wf,'utf8');
+          const re=/(COVERAGE_MIN:\s*)([0-9]+)/;
+          if(!re.test(content)){ console.log('COVERAGE_MIN line not found'); process.exit(0); }
+          content=content.replace(re, `$1${sugg}`);
+          fs.writeFileSync(wf, content);
+          fs.writeFileSync('coverage-min-auto-raise.log', JSON.stringify({ previous:curMin, new:sugg, triggeredAt:new Date().toISOString() },null,2));
+          console.log('Auto-updated COVERAGE_MIN ->', sugg);
+          NODE
+          if git diff --quiet .github/workflows/ci-core.yml; then echo "No coverage min change"; exit 0; fi
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
+          git add .github/workflows/ci-core.yml coverage-min-auto-raise.log
+          git commit -m "chore(ci): auto-raise coverage min [skip ci]" || true
+          git push origin HEAD:main || echo 'Push skipped'
       - name: Setup Node & pnpm
         uses: ./.github/actions/setup-pnpm
       - name: Install Dependencies
