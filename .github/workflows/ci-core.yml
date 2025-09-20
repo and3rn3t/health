@@ -1018,3 +1018,59 @@ jobs:
       - name: Deployment Summary
         run: |
           echo "Production deployment completed. Readiness: ${{ needs.deploy_readiness.outputs.ready }} (reason: ${{ needs.deploy_readiness.outputs.reason }})" >> $GITHUB_STEP_SUMMARY
+
+  initial_release:
+    name: Initial Tag & Release
+    runs-on: ubuntu-latest
+    needs: deploy_readiness
+    if: >-
+      needs.deploy_readiness.outputs.ready == 'true' &&
+      (github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true')) &&
+      !startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Determine Existing Tags
+        id: tags
+        run: |
+          set -e
+          COUNT=$(git tag --list 'v*' | wc -l | tr -d ' ')
+          echo "existing_count=$COUNT" >> $GITHUB_OUTPUT
+          echo "Found $COUNT existing version tags"
+      - name: Skip If Tags Exist
+        if: steps.tags.outputs.existing_count != '0'
+        run: echo "Version tags already exist; skipping initial release logic." && exit 0
+      - name: Compute Initial Version
+        id: version
+        run: |
+          set -e
+          # Allow override via workflow input or repo variable (future)
+          BASE=${{ github.event.inputs.initial_version || '' }}
+          if [ -z "$BASE" ]; then BASE="v0.1.0"; fi
+          echo "tag=$BASE" >> $GITHUB_OUTPUT
+          echo "Initial version chosen: $BASE"
+      - name: Generate Release Notes (pre-tag)
+        run: |
+          mkdir -p reports
+          RELEASE_TAG="${{ steps.version.outputs.tag }}" node scripts/ci/generate-changelog.mjs --output reports/release-notes.md || echo "[release] changelog generation failed"
+          echo "Generated notes:"; head -50 reports/release-notes.md || true
+      - name: Create Tag & Push
+        run: |
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
+          git tag ${{ steps.version.outputs.tag }}
+          git push origin ${{ steps.version.outputs.tag }}
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body_path: reports/release-notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Summary
+        run: |
+          echo "Initial release created with tag ${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
