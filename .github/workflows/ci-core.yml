@@ -271,11 +271,11 @@ jobs:
           pnpm exec eslint src --format json --output-file reports/eslint-report.json || echo "{}" > reports/eslint-report.json
       - name: Unit Tests w/ Coverage (enforced)
         run: pnpm run test:coverage
-      - name: Coverage Gate (minimum 5%)
+      - name: Coverage Gate (minimum 8%)
         env:
           # Lowered temporarily to allow pipeline green while incremental coverage improvements land.
           # Raised gradually once real test coverage (excluding untestable infra) increases.
-          COVERAGE_MIN: 5
+          COVERAGE_MIN: 8
         run: |
           set -e
           FILE="coverage/coverage-summary.json"
@@ -1033,31 +1033,29 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          echo "[deploy] Executing production deployment"
-          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "[deploy] CLOUDFLARE_API_TOKEN missing – skipping publish (soft pass)";
-            exit 0;
-          fi
-          if ! pnpm run deploy:prod; then
-            echo "[deploy] Deployment command failed (soft skip for initial stabilization)";
-            exit 0;
-          fi
-          echo "status=success" > deploy-status.env
-        shell: bash
-      - name: Upload Deploy Status Artifact
-        if: always()
-        run: |
           set -e
-          if [ ! -f deploy-status.env ]; then echo "status=skipped" > deploy-status.env; fi
+          echo "[deploy] Executing production deployment"
           mkdir -p reports
-          cp deploy-status.env reports/deploy-status.env
+          TS=$(date -u +%FT%TZ)
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "[deploy] CLOUDFLARE_API_TOKEN missing – skipping publish (status=skipped_missing_token)";
+            printf '{"status":"skipped_missing_token","reason":"no_token","timestamp":"%s","ref":"%s","sha":"%s"}' "$TS" "${GITHUB_REF}" "${GITHUB_SHA}" > reports/deploy-status.json
+            exit 0;
+          fi
+          if pnpm run deploy:prod; then
+            printf '{"status":"success","reason":"ok","timestamp":"%s","ref":"%s","sha":"%s"}' "$TS" "${GITHUB_REF}" "${GITHUB_SHA}" > reports/deploy-status.json
+          else
+            echo "[deploy] Deployment command failed (hard fail now that token present)"
+            printf '{"status":"failed","reason":"deploy_command_failed","timestamp":"%s","ref":"%s","sha":"%s"}' "$TS" "${GITHUB_REF}" "${GITHUB_SHA}" > reports/deploy-status.json
+            exit 1
+          fi
         shell: bash
-      - name: Upload Deploy Status
+      - name: Upload Deploy Status (JSON)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: deploy-status
-          path: reports/deploy-status.env
+          path: reports/deploy-status.json
           if-no-files-found: warn
       - name: Post-Deploy Verification (HTTP health)
         run: |
@@ -1197,3 +1195,77 @@ jobs:
           name: release-notes-tag
           path: reports/release-notes.md
           if-no-files-found: warn
+
+  final_summary:
+    name: Final Summary & Deployment Report
+    runs-on: ubuntu-latest
+    needs:
+      - summary
+      - deploy_readiness
+      - deploy_production
+      - initial_release
+      - baseline_metrics
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Scorecard
+        uses: actions/download-artifact@v4
+        with:
+          name: ci-scorecard
+          path: final
+        continue-on-error: true
+      - name: Download Deploy Readiness
+        uses: actions/download-artifact@v4
+        with:
+          name: deploy-readiness
+          path: final
+        continue-on-error: true
+      - name: Download Deploy Status
+        uses: actions/download-artifact@v4
+        with:
+          name: deploy-status
+          path: final
+        continue-on-error: true
+      - name: Download Baselines (optional)
+        uses: actions/download-artifact@v4
+        with:
+          name: ci-baselines
+          path: final/ci-baselines
+        continue-on-error: true
+      - name: Assemble Final Summary
+        run: |
+          set -e
+          SCORECARD=final/ci-scorecard.md
+            READINESS=final/reports/deploy-readiness.json
+            DEPLOY=final/reports/deploy-status.json
+          echo "# Final CI Summary" > FINAL_SUMMARY.md
+          echo "Generated: $(date -u +%FT%TZ)" >> FINAL_SUMMARY.md
+          echo "\n## Gating Summary" >> FINAL_SUMMARY.md
+          if [ -f "$SCORECARD" ]; then
+            cat "$SCORECARD" >> FINAL_SUMMARY.md
+          else
+            echo "(scorecard artifact missing)" >> FINAL_SUMMARY.md
+          fi
+          echo "\n## Deployment Readiness" >> FINAL_SUMMARY.md
+          if [ -f "$READINESS" ]; then
+            cat "$READINESS" | jq '. | {ready,reason,coverage,generated}' >> FINAL_SUMMARY.md || cat "$READINESS" >> FINAL_SUMMARY.md
+          else
+            echo "(deploy-readiness artifact missing)" >> FINAL_SUMMARY.md
+          fi
+          echo "\n## Deployment Status" >> FINAL_SUMMARY.md
+          if [ -f "$DEPLOY" ]; then
+            cat "$DEPLOY" | jq '.' >> FINAL_SUMMARY.md || cat "$DEPLOY" >> FINAL_SUMMARY.md
+          else
+            echo "(deploy-status artifact missing)" >> FINAL_SUMMARY.md
+          fi
+          if [ -f final/ci-baselines/baselines.json ]; then
+            echo "\n## Baselines Snapshot" >> FINAL_SUMMARY.md
+            cat final/ci-baselines/baselines.json | jq '{generatedAt, coverage: .coverage.linesPct?, eslint: .eslintSummary?, bundle: (.bundleSummary.summary? // .bundleSummary), perf: .performance?.status, ws: (.wsSchema?.pass // .wsSchema?.status)}' >> FINAL_SUMMARY.md || true
+          fi
+          cat FINAL_SUMMARY.md >> $GITHUB_STEP_SUMMARY
+      - name: Upload Final Summary Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-summary
+          path: FINAL_SUMMARY.md
+          if-no-files-found: error
