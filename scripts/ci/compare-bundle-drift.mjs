@@ -60,8 +60,27 @@ function setupMainWorktree(){
 
 function buildIn(dir){
   console.log('🏗️  Building main worktree…');
-  execSync('npm ci --prefer-offline',{cwd:dir, stdio:'inherit'});
-  execSync('npm run build',{cwd:dir, stdio:'inherit'});
+  // Prefer pnpm (project standard). Fallback to npm if pnpm not available.
+  const usePnpm = (() => {
+    try { execSync('pnpm --version', {stdio:'ignore'}); return true; } catch { return false; }
+  })();
+  if(usePnpm){
+    try {
+      execSync('pnpm install --frozen-lockfile', {cwd:dir, stdio:'inherit'});
+    } catch(e){
+      console.warn('[lockfile] Drift detected in baseline worktree → non-frozen install (bundle_drift baseline)');
+      execSync('pnpm install --no-frozen-lockfile', {cwd:dir, stdio:'inherit'});
+    }
+    execSync('pnpm run build', {cwd:dir, stdio:'inherit'});
+  } else {
+    // Legacy fallback (should rarely be used). npm ci will fail if no package-lock, so fallback to npm install.
+    try {
+      execSync('npm ci --prefer-offline', {cwd:dir, stdio:'inherit'});
+    } catch {
+      execSync('npm install', {cwd:dir, stdio:'inherit'});
+    }
+    execSync('npm run build', {cwd:dir, stdio:'inherit'});
+  }
 }
 
 async function main(){

@@ -265,13 +265,16 @@ jobs:
       - name: Unit Tests w/ Coverage (enforced)
         run: pnpm run test:coverage
       - name: Coverage Gate (minimum 60%)
+        env:
+          COVERAGE_MIN: 60
         run: |
           set -e
           FILE="coverage/coverage-summary.json"
           if [ ! -f "$FILE" ]; then echo "Coverage summary not found ($FILE)"; exit 1; fi
-          PCT=$(node -e "const f=require(process.argv[1]); const total=f.total||f; console.log(total.lines.pct||0);" "$FILE")
-          echo "Line coverage: ${PCT}%"
-          awk -v c=$PCT -v m=60 'BEGIN { if (c+0 < m) { printf("Coverage %.2f%% below minimum %d%%\n", c, m); exit 1 } }'
+          PCT=$(node -e "const f=require(process.argv[1]); const t=f.total||f; process.stdout.write(String(t.lines.pct||0));" "$FILE")
+          MIN=${COVERAGE_MIN:-60}
+            echo "Line coverage: ${PCT}% (min ${MIN}%)"
+          awk -v c=$PCT -v m=$MIN 'BEGIN { if (c+0 < m) { printf("Coverage %.2f%% below minimum %d%%\n", c, m); exit 1 } }'
       - name: Upload Code Quality Artifacts
         if: always()
         uses: actions/upload-artifact@v4
