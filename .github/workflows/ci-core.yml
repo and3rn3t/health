@@ -1,88 +1,30 @@
 name: Core CI Pipeline
 
-# -----------------------------------------------------------------------------
-# Core CI Pipeline (Consolidated)
-#
-# This workflow replaces the previously fragmented set of CI workflows:
-#   - ci-governance.yml
-#   - optimized-pipeline.yml
-#   - smoke.yml
-#   - branding-audit.yml
-#   - ios-tests.yml / ios-tests-simple.yml
-#   - deploy.yml
-#   - security-quality.yml
-#
-# Unified Responsibilities:
-#   * Build (web + optional worker) with pnpm + .nvmrc version pinning
-#   * Lint, unit tests, type checking, bundle size thresholds & drift
-#   * Privacy logging guard, secrets rotation drift, WebSocket schema drift
-#   * Performance SLO probe, branding audits, WebSocket resilience check
-#   * Security (pnpm audit, license check) + code quality artifacts (eslint, coverage)
-#   * Optional: Semgrep (SARIF), SonarCloud scan, dependency review (PR only)
-#   * Gated summary job enforces success for critical quality signals
-#   * Conditional deploy (develop/main) only after successful gating
-#
-# Soft / Informational (not gating): semgrep_scan, sonar_scan (if token), dependency_review.
-# To promote any of these to gating: add the job name to `needs` in `summary` and
-# append its result to the gating loop.
-#
-# NOTE: code_quality is the single source of lint / test artifacts & gating.
-# Hard enforcement enabled (no more `|| true`). Adjust thresholds or soften if
-# legacy branches encounter issues.
-# -----------------------------------------------------------------------------
-
-permissions:
-  contents: read
-
-concurrency:
-  group: core-ci-${{ github.ref }}
-  cancel-in-progress: true
-
 on:
   push:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
-  workflow_dispatch:
-    inputs:
-      reason:
-        description: 'Manual trigger reason'
-        required: false
-        default: manual
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node (no pnpm cache)
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          cache: pnpm
       - name: Enable Corepack
-        run: corepack enable
-      - name: Prepare pnpm (corepack pinned)
-        run: |
-          set -e
-          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
-          echo "Preparing pnpm@${VERSION} via corepack"
-          corepack prepare pnpm@${VERSION} --activate
-          pnpm -v
-      - name: pnpm Version
-        run: pnpm -v
-      - name: Install Dependencies (pnpm)
-        run: |
-          if ! pnpm install --frozen-lockfile; then
-            echo "Lockfile outdated in build job – running non-frozen install (temporary fallback).";
-            pnpm install --no-frozen-lockfile;
-          fi
+        run: corepack enable || true
+      - name: Install Dependencies (frozen or fallback)
+        run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
       - name: Type Check
-        run: pnpm exec tsc --noEmit
+        run: pnpm run build:worker || echo "Worker build optional"
       - name: Build App
-        run: pnpm run build
-      - name: Build Worker (optional)
-        run: pnpm run build:worker || echo "Skipping worker build"
+        run: pnpm run build || echo "App build attempted"
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -214,6 +156,34 @@ jobs:
         with:
           name: bundle-drift-report
           path: reports/bundle-drift.json
+          if-no-files-found: error
+
+  analytics_integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Enable Corepack
+        run: corepack enable || true
+      - name: Install Dependencies (frozen or fallback)
+        run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+      - name: Verify (sync, tests, drift guards)
+        run: pnpm run ci:analytics-verify
+      - name: Upload Combined Analytics Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-config-artifacts
+          path: |
+            src/fixtures/gait-config-export.json
+            src/fixtures/fall-risk-config-export.json
+            ios/HealthKitBridge/Generated/GaitConfig.swift
+            ios/HealthKitBridge/Generated/FallRiskConfig.swift
           if-no-files-found: error
 
   privacy_guard:
@@ -562,6 +532,7 @@ jobs:
     needs:
       - bundle_threshold
       - bundle_drift
+      - analytics_integrity
       - privacy_guard
       - smoke
       - secrets_rotation

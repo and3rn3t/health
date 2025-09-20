@@ -1,0 +1,17 @@
+{
+  "version": "fb958b90",
+  "config": {
+    "magnitude": {
+      "moderate": 0.02,
+      "strong": 0.04
+    },
+    "minimumConfidence": 0.15,
+    "momentum": {
+      "downwardThreshold": -0.6,
+      "fallbackRelative": 0.5,
+      "relativeSlopeNormalizer": 0.05,
+      "upwardThreshold": 0.6
+    },
+    "stabilityRelativeSlopeThreshold": 0.01
+  }
+}

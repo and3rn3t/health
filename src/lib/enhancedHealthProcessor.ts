@@ -9,6 +9,7 @@ import type {
   HealthMetricType,
   ProcessedHealthData,
 } from '@/schemas/health';
+import { fallRiskConfig } from './fallRiskConfig';
 
 export interface HealthDataAnalytics {
   wellnessScore: number;
@@ -264,34 +265,36 @@ export class HealthDataProcessor {
     metric: HealthMetric,
     historicalData?: ProcessedHealthData[]
   ): 'low' | 'moderate' | 'high' | 'critical' {
+    const cfg = fallRiskConfig;
     let riskScore = 0;
 
     if (metric.type === 'walking_steadiness') {
-      if (metric.value < 25) riskScore += 40;
-      else if (metric.value < 50) riskScore += 20;
-      else if (metric.value < 75) riskScore += 10;
+      const v = metric.value;
+      const ws = cfg.walkingSteadiness;
+      if (v < ws.criticalThreshold) riskScore += ws.points.critical;
+      else if (v < ws.highThreshold) riskScore += ws.points.high;
+      else if (v < ws.moderateThreshold) riskScore += ws.points.moderate;
     }
 
-    // Check for concerning patterns
     if (historicalData) {
       const recentMetrics = historicalData.filter((d) => {
         const age = Date.now() - new Date(d.timestamp).getTime();
         return age < 7 * 24 * 60 * 60 * 1000; // last 7 days
       });
-
-      // Multiple concerning readings
       const concerningReadings = recentMetrics.filter(
         (d) =>
-          (d.type === 'walking_steadiness' && d.value < 50) ||
+          (d.type === 'walking_steadiness' &&
+            d.value < cfg.walkingSteadiness.highThreshold) ||
           (d.type === 'heart_rate' && (d.value < 50 || d.value > 120))
       );
-
-      if (concerningReadings.length >= 3) riskScore += 20;
+      if (concerningReadings.length >= 3)
+        riskScore += cfg.walkingSteadiness.points.high; // unchanged (20)
     }
 
-    if (riskScore >= 60) return 'critical';
-    if (riskScore >= 40) return 'high';
-    if (riskScore >= 20) return 'moderate';
+    const cls = cfg.riskScoreClassification;
+    if (riskScore >= cls.critical) return 'critical';
+    if (riskScore >= cls.high) return 'high';
+    if (riskScore >= cls.moderate) return 'moderate';
     return 'low';
   }
 

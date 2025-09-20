@@ -1,0 +1,33 @@
+{
+  "version": "a5249380",
+  "config": {
+    "walkingSteadiness": {
+      "criticalThreshold": 25,
+      "highThreshold": 50,
+      "moderateThreshold": 75,
+      "points": {
+        "critical": 40,
+        "high": 20,
+        "moderate": 10
+      }
+    },
+    "riskScoreClassification": {
+      "critical": 60,
+      "high": 40,
+      "moderate": 20
+    },
+    "modelScoreThresholds": {
+      "severe": 0.8,
+      "high": 0.6,
+      "moderate": 0.4,
+      "confidenceAdjustmentFactor": 0.1
+    },
+    "aggregationWeights": {
+      "fallEvent": 15,
+      "state": {
+        "high": 10,
+        "critical": 25
+      }
+    }
+  }
+}

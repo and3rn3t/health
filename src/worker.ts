@@ -1,50 +1,4 @@
-/**
- * Cloudflare Workers entry point for the Health App
- * This file handles the worker logic and serves the built application
- */
-
-// Cloudflare Worker types
-declare global {
-  // WebSocketPair is already declared in @cloudflare/workers-types
-}
-
-interface DurableObjectNamespace {
-  get(id: DurableObjectId): DurableObjectStub;
-  idFromName(name: string): DurableObjectId;
-  idFromString(id: string): DurableObjectId;
-  newUniqueId(): DurableObjectId;
-}
-
-interface DurableObjectId {
-  toString(): string;
-  equals(other: DurableObjectId): boolean;
-}
-
-interface DurableObjectStub {
-  fetch(request: Request): Promise<Response>;
-}
-
-interface CloudflareWebSocket extends WebSocket {
-  accept(): void;
-}
-
-// Workers Analytics Engine dataset interface (optional binding)
-interface AnalyticsEngineDataset {
-  writeDataPoint: (point: {
-    blobs?: Array<string | null>;
-    doubles?: Array<number | null>;
-    indexes?: Array<number | bigint | null>;
-    time?: number;
-  }) => void | Promise<void>;
-  writeDataPoints?: (
-    points: Array<{
-      blobs?: Array<string | null>;
-      doubles?: Array<number | null>;
-      indexes?: Array<number | bigint | null>;
-      time?: number;
-    }>
-  ) => void | Promise<void>;
-}
+// (Removed stray duplicated trend logic block introduced during refactor)
 
 import { HealthDataProcessor } from '@/lib/enhancedHealthProcessor';
 import {
@@ -80,12 +34,83 @@ import {
 import { Hono, type Context } from 'hono';
 // Trend analytics extracted to lib for testability
 import {
+  FALL_RISK_ANALYTICS_VERSION,
+  fallRiskConfig,
+} from '@/lib/fallRiskConfig';
+import { GAIT_ANALYTICS_VERSION, gaitConfig } from '@/lib/gaitConfig';
+import {
   computeMultiMetricTrends,
   computeSingleMetricTrend,
-  classifySeverity,
-  type TrendResult,
 } from '@/lib/gaitTrends';
 import { z } from 'zod';
+
+// In-memory ring buffer for recent client version mismatch events (ephemeral; dev/diagnostics only)
+const VERSION_MISMATCH_BUFFER_SIZE = 50;
+const VERSION_MISMATCH_RETENTION_MS = 30 * 60 * 1000; // 30 minutes
+const versionMismatchBuffer: Array<{
+  ts: string; // ISO timestamp
+  gaitLocal: string | null;
+  gaitRemote: string | null;
+  fallLocal: string | null;
+  fallRemote: string | null;
+  sample?: number;
+  seq?: number;
+}> = [];
+
+function pruneMismatchBuffer(now = Date.now()) {
+  // Remove events older than retention window
+  let removed = 0;
+  for (let i = 0; i < versionMismatchBuffer.length; i++) {
+    const ev = versionMismatchBuffer[i];
+    const age = now - Date.parse(ev.ts);
+    if (isFinite(age) && age > VERSION_MISMATCH_RETENTION_MS) {
+      removed++;
+    } else {
+      if (removed > 0) {
+        versionMismatchBuffer.splice(0, removed);
+      }
+      break;
+    }
+  }
+  // Enforce hard cap after retention prune
+  if (versionMismatchBuffer.length > VERSION_MISMATCH_BUFFER_SIZE) {
+    versionMismatchBuffer.splice(
+      0,
+      versionMismatchBuffer.length - VERSION_MISMATCH_BUFFER_SIZE
+    );
+  }
+}
+
+function pushVersionMismatch(ev: {
+  ts: string;
+  gaitLocal: string | null;
+  gaitRemote: string | null;
+  fallLocal: string | null;
+  fallRemote: string | null;
+  sample?: number;
+  seq?: number;
+}) {
+  versionMismatchBuffer.push(ev);
+  pruneMismatchBuffer();
+}
+
+// Schema for client-reported version mismatch ingestion
+const versionMismatchIngestSchema = z
+  .object({
+    ts: z.string().datetime().optional(),
+    gaitLocal: z.string().min(1).optional(),
+    gaitRemote: z.string().min(1).optional(),
+    fallLocal: z.string().min(1).optional(),
+    fallRemote: z.string().min(1).optional(),
+    sample: z.number().int().nonnegative().optional(),
+    seq: z.number().int().nonnegative().optional(),
+  })
+  .refine(
+    (d) =>
+      (d.gaitLocal && d.gaitRemote && d.gaitLocal !== d.gaitRemote) ||
+      (d.fallLocal && d.fallRemote && d.fallLocal !== d.fallRemote),
+    'no_mismatch_detected'
+  );
 
 type Env = {
   ENVIRONMENT?: string;
@@ -148,7 +173,11 @@ type Env = {
   PERFORMANCE_ANALYTICS?: AnalyticsEngineDataset;
 };
 
-const app = new Hono<{ Bindings: Env }>();
+// Exported Hono application instance for in-process testing and worker runtime binding.
+export const app = new Hono<{ Bindings: Env }>();
+
+// Backwards compatibility: some legacy tests import default. Re-export default alias.
+export default app;
 
 // Simple token-bucket rate limiter (per IP in-memory, acceptable for single isolate; use Durable Objects for distributed)
 const buckets = new Map<string, { tokens: number; last: number }>();
@@ -307,71 +336,7 @@ async function pushAnalytics(
   }
 }
 
-
-function classifySeverity(tr: TrendResult): TrendResult {
-  if (
-    tr.direction == null ||
-    tr.slope == null ||
-    tr.confidence == null ||
-    tr.relativeSlope == null ||
-    tr.sampleCount < 3 ||
-    tr.confidence < 0.15
-  ) {
-    return { ...tr, severity: 'insufficient_data' };
-  }
-  if (tr.direction === 'stable') return { ...tr, severity: 'stable' };
-  const rel = tr.relativeSlope;
-  // Magnitude buckets
-  let magnitude: 'mild' | 'moderate' | 'strong';
-  if (rel >= 0.04) magnitude = 'strong';
-  else if (rel >= 0.02) magnitude = 'moderate';
-  else magnitude = 'mild';
-  const prefix =
-    magnitude +
-    '_' +
-    (tr.direction === 'improving' ? 'improvement' : 'decline');
-  const severity = prefix as TrendResult['severity'];
-  return { ...tr, severity };
-}
-
-function computeMultiMetricTrends(snapshots: LiveGaitSnapshot[]) {
-  const metricExtractors: Record<
-    string,
-    (s: LiveGaitSnapshot) => number | undefined
-  > = {
-    speed: (s) => (typeof s.speed === 'number' ? s.speed : undefined),
-    cadence: (s) =>
-      typeof s.stepFrequency === 'number' ? s.stepFrequency : undefined,
-    asymmetry: (s) =>
-      typeof s.asymmetry === 'number' ? s.asymmetry : undefined,
-    variability: (s) =>
-      typeof s.variability === 'number' ? s.variability : undefined,
-  };
-  const betterWhenHigher: Record<string, boolean> = {
-    speed: true,
-    cadence: true,
-    asymmetry: false, // lower asymmetry is better
-    variability: false, // lower variability indicates consistency
-  };
-  const trends: Record<string, TrendResult> = {};
-  for (const key of Object.keys(metricExtractors)) {
-    const series = snapshots
-      .map(metricExtractors[key])
-      .filter((n): n is number => typeof n === 'number' && !Number.isNaN(n));
-    let base = computeSingleMetricTrend(series);
-    // Adjust direction semantics for metrics where lower is better
-    if (
-      base.direction &&
-      !betterWhenHigher[key] &&
-      base.direction !== 'stable'
-    ) {
-      // Trend analytics extracted to lib for testability
-      import {
-        computeMultiMetricTrends,
-        computeSingleMetricTrend,
-        classifySeverity,
-        type TrendResult,
-      } from '@/lib/gaitTrends';
+// (Removed inlined gait trend helpers; using shared '@/lib/gaitTrends')
 
 async function requireAuth(c: Context<{ Bindings: Env }>): Promise<boolean> {
   // Allow requests from demo page without auth
@@ -624,6 +589,94 @@ app.get('/health', (c) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     environment: c.env.ENVIRONMENT || 'unknown',
+  });
+});
+
+// Gait analytics configuration version exposure (read-only)
+app.get('/api/gait-config-version', (c) => {
+  return c.json({
+    version: GAIT_ANALYTICS_VERSION,
+    config: gaitConfig,
+  });
+});
+
+// Fall risk analytics configuration version exposure (read-only)
+app.get('/api/fall-risk-config-version', (c) => {
+  return c.json({
+    version: FALL_RISK_ANALYTICS_VERSION,
+    config: fallRiskConfig,
+  });
+});
+
+// Combined analytics versions (gait + fall risk) for single round-trip parity checks
+app.get('/api/analytics-config-versions', (c) => {
+  return c.json({
+    gait: { version: GAIT_ANALYTICS_VERSION, config: gaitConfig },
+    fallRisk: { version: FALL_RISK_ANALYTICS_VERSION, config: fallRiskConfig },
+    // Future: include additional analytics domain hashes here
+  });
+});
+
+// Lightweight client analytics ingestion for version mismatch (best-effort; sampled downstream)
+app.post('/api/client-analytics/version-mismatch', async (c) => {
+  try {
+    const raw = await c.req.json().catch(() => ({}));
+    const parsed = versionMismatchIngestSchema.safeParse(raw);
+    if (!parsed.success) {
+      return c.json({ ok: false, error: 'invalid_payload' }, 400);
+    }
+    const body = parsed.data;
+    const ts = body.ts || new Date().toISOString();
+    const rec = {
+      gaitLocal: body.gaitLocal ?? null,
+      gaitRemote: body.gaitRemote ?? null,
+      fallLocal: body.fallLocal ?? null,
+      fallRemote: body.fallRemote ?? null,
+      ts,
+      sample: body.sample,
+      seq: body.seq,
+    };
+    if (c.env.ENVIRONMENT !== 'production') {
+      pushVersionMismatch(rec);
+    }
+    try {
+      const ds =
+        c.env.SECURITY_ANALYTICS ||
+        c.env.ANALYTICS ||
+        c.env.PERFORMANCE_ANALYTICS;
+      if (ds) {
+        await ds.writeDataPoint({
+          blobs: [
+            c.env.ENVIRONMENT || 'development',
+            'version_mismatch',
+            rec.gaitLocal || '',
+            rec.gaitRemote || '',
+            rec.fallLocal || '',
+            rec.fallRemote || '',
+            typeof rec.sample === 'number' ? String(rec.sample) : '',
+            typeof rec.seq === 'number' ? String(rec.seq) : '',
+          ],
+          doubles: [],
+          time: Date.now() * 1_000_000,
+        });
+      }
+    } catch {
+      /* ignore */
+    }
+    return c.json({ ok: true });
+  } catch {
+    return c.json({ ok: false, error: 'server_error' }, 400);
+  }
+});
+
+// Debug endpoint to inspect recent mismatch events (non-production)
+app.get('/api/_debug/version-mismatch-events', (c) => {
+  if (c.env.ENVIRONMENT === 'production') {
+    return c.json({ error: 'not_available' }, 404);
+  }
+  return c.json({
+    ok: true,
+    events: versionMismatchBuffer.slice(-VERSION_MISMATCH_BUFFER_SIZE),
   });
 });
 
@@ -1003,19 +1056,43 @@ app.get('/api/user/export', async (c) => {
 // WebSocket endpoint for real-time health data
 app.get('/ws', async (c) => {
   const upgradeHeader = c.req.header('upgrade');
+
+  // If this is a probe (no upgrade) return metadata instead of 426 to aid health checks & test runner.
   if (upgradeHeader !== 'websocket') {
-    return c.text('Expected Upgrade: websocket', 426);
+    const host = new URL(c.req.url).host;
+    const body = {
+      ok: true,
+      upgradeRequired: true,
+      message: 'Use WebSocket upgrade to establish a realtime session',
+      url: `${c.req.url.startsWith('https') ? 'wss' : 'ws'}://${host}/ws`,
+      supportedMessageTypes: [
+        'connection_established',
+        'live_health_update',
+        'historical_data_update',
+        'emergency_alert',
+        'client_presence',
+        'pong',
+        'error',
+      ],
+      // Surface current analytics config versions so clients can decide whether to re-fetch static config artifacts
+      analyticsVersions: {
+        gait: GAIT_ANALYTICS_VERSION,
+        fallRisk: FALL_RISK_ANALYTICS_VERSION,
+      },
+      timestamp: new Date().toISOString(),
+    };
+    const res = c.json(body, 200);
+    // Strengthen caching semantics: this is informational & near-real-time (contains timestamp) so disable caching
+    res.headers.set('Cache-Control', 'no-store, max-age=0');
+    return res;
   }
 
   if (!c.env.HEALTH_WEBSOCKET) {
     return c.text('WebSocket service not available', 503);
   }
 
-  // Get or create Durable Object instance
   const id = c.env.HEALTH_WEBSOCKET.newUniqueId();
   const obj = c.env.HEALTH_WEBSOCKET.get(id);
-
-  // Forward the request to the Durable Object
   return obj.fetch(c.req.raw);
 });
 // Non-production self-test for crypto/auth
@@ -1114,6 +1191,18 @@ app.get('/api/_diagnostics', (c) => {
       clientError:
         (c.env as Record<string, string | undefined>)
           .LOG_CLIENT_ERROR_SAMPLE_RATE ?? null,
+    },
+    analyticsVersionMismatch: {
+      recentEventCount: versionMismatchBuffer.length,
+      maxStored: VERSION_MISMATCH_BUFFER_SIZE,
+      // Environment-driven desired client sampling (fallback 1.0) – exposed for UI/instrumentation
+      clientSampleRate:
+        (c.env as Record<string, string | undefined>)
+          .ANALYTICS_VERSION_MISMATCH_SAMPLE_RATE || '1.0',
+      oldestEventAgeMs:
+        versionMismatchBuffer.length > 0
+          ? Date.now() - Date.parse(versionMismatchBuffer[0].ts)
+          : 0,
     },
     datasets,
     hasKV: Boolean(c.env.HEALTH_KV),
@@ -3355,7 +3444,6 @@ app.get('*', async (c) => {
   const indexUrl = new URL('/index.html', c.req.url);
   return c.env.ASSETS.fetch(new Request(indexUrl.toString(), c.req.raw));
 });
-
 
 // Scheduled purge entry (Cloudflare Cron Triggers)
 export async function scheduled(

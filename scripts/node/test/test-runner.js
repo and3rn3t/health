@@ -30,12 +30,90 @@ program
   .option('--ios', 'Test iOS-related functionality')
   .option('--dev', 'Test development environment (default)')
   .option('--prod', 'Test production endpoints')
+  .option('--auto-start-worker', 'Automatically start wrangler dev worker if not running')
+  .option('--worker-port <port>', 'Port to run / probe local worker', '8789')
   .option('-t, --timeout <ms>', 'Request timeout in milliseconds', '5000')
   .option('-v, --verbose', 'Show detailed output')
   .parse();
 
 const options = program.opts();
 const testResults = [];
+let spawnedWorker = null; // child_process handle if we auto-start
+
+async function ensureWorker(baseUrl) {
+  // Production environment: never auto-spawn local worker
+  if (options.prod) return true;
+  // Only auto start if user explicitly requested
+  if (!options.autoStartWorker) return true;
+
+  const axiosTimeout = parseInt(options.timeout);
+  const maxWaitMs = 30_000; // maximum wait for worker readiness
+  const start = Date.now();
+  const poll = async () => {
+    try {
+      const res = await axios.get(`${baseUrl}/health`, { timeout: axiosTimeout });
+      if (res?.data?.status === 'healthy') return true;
+    } catch {
+      /* not ready */
+    }
+    return false;
+  };
+
+  // First quick probe – if already running, we're done
+  if (await poll()) return true;
+
+  // Spawn only once (default behaviour now). User can opt-out in future with a --no-auto-start-worker flag (not yet implemented)
+  if (!spawnedWorker) {
+    try {
+      const { spawn } = await import('node:child_process');
+      const port = options.workerPort || '8789';
+      // Use wrangler dev with build step; rely on project config. Keep quiet unless verbose.
+      spawnedWorker = spawn('wrangler', ['dev', '--env', 'development', '--port', port, '--var', 'DEVICE_JWT_SECRET:dev-local'], {
+        stdio: options.verbose ? 'inherit' : 'ignore',
+        shell: process.platform === 'win32',
+      });
+      spawnedWorker.on('exit', (code) => {
+        if (code !== 0 && options.verbose) {
+          writeTaskError('Worker Process', `Exited with code ${code}`);
+        }
+      });
+      process.on('exit', () => {
+        try { spawnedWorker && spawnedWorker.kill(); } catch { /* noop */ }
+      });
+    } catch (e) {
+      writeTaskError('Worker Auto-Start', `Failed to spawn worker: ${e.message}`);
+      return false;
+    }
+  }
+
+  // Poll until ready or timeout
+  while (Date.now() - start < maxWaitMs) {
+    if (await poll()) {
+      if (options.verbose) writeSuccess('✅ Local worker is ready');
+      return true;
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  writeTaskError('Worker Auto-Start', 'Timed out waiting for /health');
+  return false;
+}
+
+async function preflightConnectivity(baseUrl) {
+  // Skip in production (we'll just try real endpoints) or if auto-start will handle
+  if (options.prod || options.autoStartWorker) return true;
+  try {
+    const res = await axios.get(`${baseUrl}/health`, { timeout: 1500 });
+    if (res?.data?.status === 'healthy') return true;
+  } catch {
+    // unreachable
+  }
+  addTestResult(
+    'Environment Setup',
+    'FAIL',
+    `Worker not reachable at ${baseUrl}. Start it via VS Code task "wrangler-dev-8789" or run: wrangler dev --env development --port ${options.workerPort}`
+  );
+  return false;
+}
 
 // Default to development tests if no specific test type is selected
 if (
@@ -164,12 +242,34 @@ async function testHealthDataEndpoints(baseUrl = 'http://127.0.0.1:8789') {
 async function testHealthDataSubmission(baseUrl = 'http://127.0.0.1:8789') {
   writeInfo('Testing health data submission...');
 
+  // Must satisfy processedHealthDataSchema (includes processedAt, validated, source, etc.)
+  const now = new Date().toISOString();
   const testData = {
     type: 'heart_rate',
     value: 72,
     unit: 'bpm',
-    timestamp: new Date().toISOString(),
-    source: 'test_client',
+    timestamp: now,
+    processedAt: now,
+    validated: true,
+    healthScore: 90,
+    fallRisk: 'low',
+    trendAnalysis: {
+      direction: 'stable',
+      confidence: 0.9,
+    },
+    alert: null,
+    source: {
+      deviceId: 'test-device',
+      userId: 'user-test',
+      collectedAt: now,
+      processingPipeline: 'test-runner',
+    },
+    dataQuality: {
+      completeness: 100,
+      accuracy: 100,
+      timeliness: 100,
+      consistency: 100,
+    },
   };
 
   try {
@@ -180,13 +280,25 @@ async function testHealthDataSubmission(baseUrl = 'http://127.0.0.1:8789') {
       },
     });
 
-    writeSuccess(`✅ Health Data Submission: ${response.status}`);
+    if (response.status === 201 && response.data?.ok) {
+      writeSuccess(`✅ Health Data Submission: ${response.status}`);
+      addTestResult(
+        'Health Data Submission',
+        'PASS',
+        `Status: ${response.status}`
+      );
+      return true;
+    }
+    writeTaskError(
+      'Health Data Submission',
+      `Unexpected status: ${response.status}`
+    );
     addTestResult(
       'Health Data Submission',
-      'PASS',
-      `Status: ${response.status}`
+      'FAIL',
+      `Unexpected status: ${response.status}`
     );
-    return true;
+    return false;
   } catch (error) {
     writeTaskError(
       'Health Data Submission',
@@ -207,21 +319,43 @@ async function testWebSocketEndpoint(baseUrl = 'http://127.0.0.1:8789') {
   try {
     const response = await axios.get(`${baseUrl}/ws`, {
       timeout: parseInt(options.timeout),
+      validateStatus: () => true, // handle custom statuses
     });
 
-    writeSuccess(`✅ WebSocket Endpoint: ${response.status}`);
-    addTestResult('WebSocket Endpoint', 'PASS', `Status: ${response.status}`);
-    return true;
+    const status = response.status;
+    const contentType = response.headers['content-type'] || '';
+
+    if (status === 200 && /application\/json/i.test(contentType)) {
+      const body = response.data || {};
+      if (body.ok === true && body.upgradeRequired === true) {
+        writeSuccess('✅ WebSocket Endpoint: Metadata fallback present');
+        addTestResult('WebSocket Endpoint', 'PASS', 'Metadata JSON available');
+        return true;
+      }
+      writeTaskError('WebSocket Endpoint', '200 JSON missing expected fields');
+      addTestResult('WebSocket Endpoint', 'FAIL', 'Missing ok/upgradeRequired');
+      return false;
+    }
+
+    if (status === 426) {
+      // Legacy behavior (pre-metadata). Treat as soft pass to avoid breaking CI during rollout.
+      writeSuccess('🛈 WebSocket Endpoint: Legacy 426 (no metadata)');
+      addTestResult('WebSocket Endpoint', 'PASS', 'Legacy 426 (no metadata)');
+      return true;
+    }
+
+    if (status === 503) {
+      writeTaskError('WebSocket Endpoint', '503 Service not available (Durable Object binding?)');
+      addTestResult('WebSocket Endpoint', 'FAIL', '503 Service unavailable');
+      return false;
+    }
+
+    writeTaskError('WebSocket Endpoint', `Unexpected status ${status}`);
+    addTestResult('WebSocket Endpoint', 'FAIL', `Unexpected status ${status}`);
+    return false;
   } catch (error) {
-    writeTaskError(
-      'WebSocket Endpoint',
-      `Failed: ${error.response?.status || error.message}`
-    );
-    addTestResult(
-      'WebSocket Endpoint',
-      'FAIL',
-      error.response?.status || error.message
-    );
+    writeTaskError('WebSocket Endpoint', `Failed: ${error.message}`);
+    addTestResult('WebSocket Endpoint', 'FAIL', error.message);
     return false;
   }
 }
@@ -298,11 +432,15 @@ async function testProductionEndpoints() {
 
 async function runQuickTests() {
   writeTaskStart('Quick Tests', 'Running basic health checks');
+  const baseUrl = options.prod
+    ? 'https://health.andernet.dev'
+    : `http://127.0.0.1:${options.workerPort}`;
 
-  const results = await Promise.all([
-    testWorkerHealth(),
-    testApiAuthentication(),
-  ]);
+  const ready = await preflightConnectivity(baseUrl);
+  if (!ready) return false;
+  await ensureWorker(baseUrl);
+
+  const results = await Promise.all([testWorkerHealth(baseUrl), testApiAuthentication(baseUrl)]);
 
   return results.every((result) => result === true);
 }
@@ -312,19 +450,26 @@ async function runFullTests() {
 
   const baseUrl = options.prod
     ? 'https://health.andernet.dev'
-    : 'http://127.0.0.1:8789';
+    : `http://127.0.0.1:${options.workerPort}`;
 
-  const results = await Promise.allSettled([
-    testWorkerHealth(baseUrl),
-    testApiAuthentication(baseUrl),
-    testHealthDataEndpoints(baseUrl),
-    testHealthDataSubmission(baseUrl),
-    testWebSocketEndpoint(baseUrl),
-  ]);
+  const ready = await preflightConnectivity(baseUrl);
+  if (!ready) return false;
+  await ensureWorker(baseUrl);
 
-  return results.every(
-    (result) => result.status === 'fulfilled' && result.value === true
-  );
+  // Run sequentially to avoid race conditions with a freshly started worker
+  const steps = [
+    () => testWorkerHealth(baseUrl),
+    () => testApiAuthentication(baseUrl),
+    () => testHealthDataEndpoints(baseUrl),
+    () => testHealthDataSubmission(baseUrl),
+    () => testWebSocketEndpoint(baseUrl),
+  ];
+  let allPassed = true;
+  for (const step of steps) {
+    const ok = await step().catch(() => false);
+    if (!ok) allPassed = false;
+  }
+  return allPassed;
 }
 
 async function runApiTests() {
@@ -332,7 +477,11 @@ async function runApiTests() {
 
   const baseUrl = options.prod
     ? 'https://health.andernet.dev'
-    : 'http://127.0.0.1:8789';
+    : `http://127.0.0.1:${options.workerPort}`;
+
+  const ready = await preflightConnectivity(baseUrl);
+  if (!ready) return false;
+  await ensureWorker(baseUrl);
 
   const results = await Promise.all([
     testApiAuthentication(baseUrl),
@@ -348,7 +497,11 @@ async function runWebSocketTests() {
 
   const baseUrl = options.prod
     ? 'https://health.andernet.dev'
-    : 'http://127.0.0.1:8789';
+    : `http://127.0.0.1:${options.workerPort}`;
+
+  const ready = await preflightConnectivity(baseUrl);
+  if (!ready) return false;
+  await ensureWorker(baseUrl);
 
   return await testWebSocketEndpoint(baseUrl);
 }

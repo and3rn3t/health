@@ -64,6 +64,7 @@
     "app:status:node": "node scripts/node/health/app-status-check.js",
     "app:status:5000": "node scripts/node/health/app-status-check.js --url http://localhost:5000",
     "app:status:8789": "node scripts/node/health/app-status-check.js --url http://127.0.0.1:8789",
+    "dump:mismatch": "node scripts/node/analytics/dump-version-mismatch.js --out mismatch-events.json",
     "analyze:bundle": "node scripts/node/analysis/bundle-analyzer.js",
     "analyze:bundle:save": "node scripts/node/analysis/bundle-analyzer.js --save",
     "analyze:bundle:verbose": "node scripts/node/analysis/bundle-analyzer.js --verbose --save",
@@ -165,7 +166,15 @@
     "app:deploy:prod": "pwsh -NoProfile -File ios/scripts/main-app-deploy.ps1 -Environment production -Deploy",
     "app:status": "pwsh -NoProfile -File ios/scripts/main-app-deploy.ps1 -Status",
     "app:sync": "pwsh -NoProfile -File ios/scripts/main-app-deploy.ps1 -Sync",
-    "app:quick": "pwsh -NoProfile -File ios/scripts/main-app-deploy.ps1 -Quick"
+    "app:quick": "pwsh -NoProfile -File ios/scripts/main-app-deploy.ps1 -Quick",
+    "gait:sync": "node scripts/node/gait/sync-gait-config.js",
+    "fallrisk:sync": "node scripts/node/fall/sync-fall-risk-config.js",
+    "analytics:sync": "npm run gait:sync && npm run fallrisk:sync",
+    "ci:gait-drift": "node scripts/ci/gait-config-drift.mjs",
+    "ci:gait-verify": "npm run gait:sync && npm run test -- gaitConfigSwiftParity && npm run ci:gait-drift",
+    "ci:fallrisk-drift": "node scripts/ci/fall-risk-config-drift.mjs",
+    "ci:fallrisk-verify": "npm run fallrisk:sync && npm run test -- --run tests --filter fallRiskConfig && npm run ci:fallrisk-drift",
+    "ci:analytics-verify": "pnpm run analytics:sync && pnpm test -- src/lib/__tests__/fallRiskConfig.test.ts src/lib/__tests__/fallRiskConfigSwiftParity.test.ts src/lib/__tests__/gaitConfigSwiftParity.test.ts src/lib/__tests__/analyticsVersionsParity.test.ts src/lib/__tests__/versionMismatchIngest.test.ts src/lib/__tests__/versionMismatchDebug.test.ts && pnpm run ci:gait-drift && pnpm run ci:fallrisk-drift"
   },
   "dependencies": {
     "@auth0/auth0-react": "2.4.0",

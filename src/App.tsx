@@ -11,6 +11,7 @@ import React, {
 import { ErrorBoundary } from 'react-error-boundary';
 
 // Core components
+import { AnalyticsVersionBadge } from '@/components/analytics/AnalyticsVersionBadge';
 import Footer from '@/components/Footer';
 import NavigationHeader from '@/components/NavigationHeader';
 import { ErrorFallback } from '@/ErrorFallback';
@@ -580,12 +581,15 @@ function AppContent() {
 
       {/* Main Content Area within SidebarInset (must be immediate sibling of the peer sidebar) */}
       <AppleSidebarMain bumper="none" className="flex flex-1 flex-col">
-        <NavigationHeader
-          onSidebarToggle={toggleSidebar}
-          themeMode={themeMode}
-          onThemeToggle={toggleThemeMode}
-          onNavigate={handleTabChange}
-        />
+        <div className="pr-3 flex items-center gap-2">
+          <NavigationHeader
+            onSidebarToggle={toggleSidebar}
+            themeMode={themeMode}
+            onThemeToggle={toggleThemeMode}
+            onNavigate={handleTabChange}
+          />
+          <AnalyticsVersionBadge />
+        </div>
         {/* Remove inner overflow to avoid double scroll; AppleSidebarMain is the scroll container */}
         <ErrorBoundary
           FallbackComponent={ErrorFallback}

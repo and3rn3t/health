@@ -99,7 +99,6 @@
         "--baseUrl=https://health-app-prod.workers.dev"
       ],
       "group": "test",
-            "args": ["scripts/node/analysis/quick-bundle-check.js"],
       "detail": "Node rewrite of test-browser-endpoints.ps1"
     },
     {
@@ -118,7 +117,7 @@
       "label": "🐳 Docker: Up (dev)",
       "type": "shell",
       "command": "pwsh",
-            "args": ["scripts/node/analysis/bundle-optimization-tester.js"],
+      "args": ["scripts/node/analysis/bundle-optimization-tester.js"],
       "group": "build",
       "presentation": {
         "echo": true,
@@ -624,6 +623,19 @@
       }
     },
     {
+      "label": "📤 Dump Version Mismatch Events",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/analytics/dump-version-mismatch.js",
+        "--out",
+        "mismatch-events.json"
+      ],
+      "group": "test",
+      "icon": { "id": "file", "color": "terminal.ansiYellow" },
+      "detail": "Fetch and store current analytics version mismatch events"
+    },
+    {
       "label": "🐳 Docker: Restart (worker)",
       "type": "shell",
       "command": "pwsh",
@@ -944,7 +956,7 @@
       "label": "🎨 CSS Bundle Optimizer",
       "type": "shell",
       "command": "node",
-  "args": ["scripts/node/analysis/css/css-optimizer.js"],
+      "args": ["scripts/node/analysis/css/css-optimizer.js"],
       "group": "build",
       "presentation": {
         "echo": true,
@@ -1757,7 +1769,11 @@
       "label": "🔍 Full Bundle Analysis",
       "type": "shell",
       "command": "node",
-  "args": ["scripts/node/analysis/bundle-analyzer.js", "--save", "--verbose"],
+      "args": [
+        "scripts/node/analysis/bundle-analyzer.js",
+        "--save",
+        "--verbose"
+      ],
       "group": "test",
       "presentation": {
         "echo": true,

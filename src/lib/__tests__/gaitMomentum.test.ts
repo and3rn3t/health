@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  MOMENTUM_DOWNWARD_THRESHOLD,
+  MOMENTUM_UPWARD_THRESHOLD,
   computeMomentum,
+  formatMomentumBadge,
   momentumWeight,
   severityNumeric,
 } from '../gaitMomentum';
@@ -109,5 +112,75 @@ describe('gaitMomentum', () => {
     expect(res).not.toBeNull();
     expect(Math.abs(res!.score)).toBeLessThan(0.6);
     expect(res!.classification).toBe('Stable');
+  });
+
+  it('returns null (weight zero) when all confidences are zero', () => {
+    const res = computeMomentum({
+      speed: {
+        severity: 'mild_improvement',
+        confidence: 0,
+        relativeSlope: 0.05,
+      },
+      cadence: { severity: 'mild_decline', confidence: 0, relativeSlope: 0.05 },
+    });
+    expect(res).toBeNull();
+  });
+
+  it('formats momentum badge consistently', () => {
+    const mock = {
+      score: 1.23456,
+      classification: 'Upward' as const,
+      totalWeight: 2.5,
+      contributing: 3,
+    };
+    const badge = formatMomentumBadge(mock);
+    expect(badge.label).toBe('Upward');
+    expect(badge.title).toContain('Momentum score 1.23');
+    const empty = formatMomentumBadge(null);
+    expect(empty.label).toBe('—');
+    expect(empty.title).toBeUndefined();
+  });
+  it('respects classification thresholds over randomized samples', () => {
+    type Sev =
+      | 'strong_improvement'
+      | 'moderate_improvement'
+      | 'mild_improvement'
+      | 'stable'
+      | 'mild_decline'
+      | 'moderate_decline'
+      | 'strong_decline';
+    for (let i = 0; i < 150; i++) {
+      const metrics: Record<
+        string,
+        { severity: Sev; confidence: number; relativeSlope: number }
+      > = {};
+      const count = 3 + Math.floor(Math.random() * 5);
+      const severities = [
+        'strong_improvement',
+        'moderate_improvement',
+        'mild_improvement',
+        'stable',
+        'mild_decline',
+        'moderate_decline',
+        'strong_decline',
+      ];
+      for (let m = 0; m < count; m++) {
+        const sev = severities[
+          Math.floor(Math.random() * severities.length)
+        ] as Sev;
+        metrics['m' + m] = {
+          severity: sev,
+          confidence: Math.random(),
+          relativeSlope: Math.random() * 0.08,
+        };
+      }
+      const res = computeMomentum(metrics);
+      if (!res) continue;
+      if (res.score > MOMENTUM_UPWARD_THRESHOLD)
+        expect(res.classification).toBe('Upward');
+      else if (res.score < MOMENTUM_DOWNWARD_THRESHOLD)
+        expect(res.classification).toBe('Downward');
+      else expect(res.classification).toBe('Stable');
+    }
   });
 });

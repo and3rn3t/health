@@ -1,5 +1,5 @@
 import { useRecentGait } from '@/hooks/useRecentGait';
-import { computeMomentum } from '@/lib/gaitMomentum';
+import { computeMomentum, formatMomentumBadge } from '@/lib/gaitMomentum';
 import React, { useMemo, useState } from 'react';
 
 interface TrendMetric {
@@ -94,19 +94,48 @@ const metricRecommendation = (
   }
 };
 
-const MetricTrend: React.FC<MetricTrendProps & { showRelative: boolean }> = ({
-  name,
-  metricKey,
-  direction,
-  slope,
-  confidence,
-  sampleCount,
-  relativeSlope,
-  severity,
-  showRelative,
-}) => {
+function buildSeverityTitle(params: {
+  severity?: TrendMetric['severity'];
+  slope: number | null;
+  relativeSlope: number | null | undefined;
+  confidence: number | null;
+  lowConf: boolean;
+}): string | undefined {
+  const { severity, slope, relativeSlope, confidence, lowConf } = params;
+  if (!severity) return undefined;
+  const slopeStr = slope == null ? '—' : slope.toExponential(3);
+  const relStr = relativeSlope == null ? '—' : relativeSlope.toFixed(4);
+  const confStr =
+    confidence == null ? '—' : (confidence * 100).toFixed(1) + '%';
+  return `${severity.replace(/_/g, ' ')} | slope=${slopeStr} | rel=${relStr} | conf=${confStr}${lowConf ? ' (low confidence)' : ''}`;
+}
+
+const MetricTrend: React.FC<MetricTrendProps & { showRelative: boolean }> = (
+  props
+) => {
+  const {
+    name,
+    metricKey,
+    direction,
+    slope,
+    confidence,
+    sampleCount,
+    relativeSlope,
+    severity,
+    showRelative,
+  } = props;
   const rec = metricRecommendation(metricKey, severity, direction);
   const lowConf = confidence != null && confidence < 0.4;
+  const severityTitle = buildSeverityTitle({
+    severity,
+    slope,
+    relativeSlope: relativeSlope ?? null,
+    confidence,
+    lowConf,
+  });
+  const relDisplay = relativeSlope == null ? '—' : relativeSlope.toFixed(3);
+  const slopeDisplay = slope === null ? '—' : slope.toFixed(4);
+  const confDisplay = confidence === null ? '—' : (confidence * 100).toFixed(0);
   return (
     <div className="border-gray-200/40 flex flex-col border-b py-1 last:border-none">
       <div className="flex items-center justify-between">
@@ -125,33 +154,21 @@ const MetricTrend: React.FC<MetricTrendProps & { showRelative: boolean }> = ({
           </span>
           <span
             className={`py-0.5 rounded-full px-2 text-[10px] font-medium transition ${severityStyle(severity)} ${lowConf ? 'opacity-50' : ''}`}
-            title={
-              severity
-                ? `${severity.replace(/_/g, ' ')} | slope=${
-                    slope == null ? '—' : slope.toExponential(3)
-                  } | rel=${
-                    relativeSlope == null ? '—' : relativeSlope.toFixed(4)
-                  } | conf=${
-                    confidence == null
-                      ? '—'
-                      : (confidence * 100).toFixed(1) + '%'
-                  }${lowConf ? ' (low confidence)' : ''}`
-                : undefined
-            }
+            title={severityTitle}
           >
             {severity?.replace(/_/g, ' ') || '—'}
           </span>
           {showRelative ? (
             <span className="text-gray-600 text-[10px] tabular-nums">
-              rel: {relativeSlope == null ? '—' : relativeSlope.toFixed(3)}
+              rel: {relDisplay}
             </span>
           ) : (
             <span className="text-gray-600 text-[10px] tabular-nums">
-              slope: {slope === null ? '—' : slope.toFixed(4)}
+              slope: {slopeDisplay}
             </span>
           )}
           <span className="text-gray-600 text-[10px] tabular-nums">
-            conf: {confidence === null ? '—' : (confidence * 100).toFixed(0)}%
+            conf: {confDisplay}%
           </span>
         </div>
       </div>
@@ -178,7 +195,7 @@ export const GaitTrendsPanel: React.FC<
 
   // Aggregate momentum classification
   const momentum = useMemo(
-    () => computeMomentum(trends as Record<string, any>),
+    () => computeMomentum(trends as Record<string, TrendMetric>),
     [trends]
   );
 
@@ -201,14 +218,18 @@ export const GaitTrendsPanel: React.FC<
       <div className="mb-2 flex items-center justify-between gap-2">
         <h3 className="text-gray-800 flex items-center gap-2 text-sm font-semibold">
           Gait Trends
-          {momentum && (
-            <span
-              className={`py-0.5 rounded bg-gradient-to-r px-2 text-[10px] ${momentumGradient}`}
-              title={`Momentum score ${momentum.score.toFixed(2)} (${momentum.classification})`}
-            >
-              {momentum.classification}
-            </span>
-          )}
+          {(() => {
+            const badge = formatMomentumBadge(momentum);
+            if (!momentum) return null;
+            return (
+              <span
+                className={`py-0.5 rounded bg-gradient-to-r px-2 text-[10px] ${momentumGradient}`}
+                title={badge.title}
+              >
+                {badge.label}
+              </span>
+            );
+          })()}
         </h3>
         <div className="ml-auto flex items-center gap-2">
           <button

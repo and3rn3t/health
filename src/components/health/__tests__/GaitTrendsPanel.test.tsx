@@ -117,4 +117,68 @@ describe('GaitTrendsPanel snapshots', () => {
     const { container } = renderWithClient(<GaitTrendsPanel />);
     expect(container).toMatchSnapshot();
   });
+
+  it('momentum borderline stable vs upward snapshots', () => {
+    scenario = {
+      trends: {
+        speed: {
+          direction: 'improving',
+          slope: 0.001,
+          relativeSlope: 0.05,
+          confidence: 0.9,
+          sampleCount: 10,
+          severity: 'mild_improvement',
+        },
+        cadence: {
+          direction: 'stable',
+          slope: 0,
+          relativeSlope: 0.05,
+          confidence: 0.9,
+          sampleCount: 10,
+          severity: 'stable',
+        },
+        variability: {
+          direction: 'stable',
+          slope: 0,
+          relativeSlope: 0.05,
+          confidence: 0.9,
+          sampleCount: 10,
+          severity: 'stable',
+        },
+      },
+    };
+    const stableContainer = renderWithClient(<GaitTrendsPanel />).container;
+    expect(stableContainer).toMatchSnapshot();
+    scenario = {
+      trends: {
+        speed: {
+          direction: 'improving',
+          slope: 0.001,
+          relativeSlope: 0.05,
+          confidence: 0.9,
+          sampleCount: 10,
+          severity: 'mild_improvement',
+        },
+        cadence: {
+          direction: 'stable',
+          slope: 0,
+          relativeSlope: 0.005,
+          confidence: 0.3,
+          sampleCount: 10,
+          severity: 'stable',
+        },
+        variability: {
+          direction: 'stable',
+          slope: 0,
+          relativeSlope: 0.005,
+          confidence: 0.3,
+          sampleCount: 10,
+          severity: 'stable',
+        },
+      },
+    };
+    const upwardRender = renderWithClient(<GaitTrendsPanel />);
+    expect(upwardRender.getByText('Upward')).toBeInTheDocument();
+    expect(upwardRender.container).toMatchSnapshot();
+  });
 });

@@ -1,5 +1,6 @@
 // Gait trend analytics logic extracted from worker for reuse & testing.
 // Pure functions only; no side effects or platform APIs.
+import { gaitConfig } from './gaitConfig';
 
 export type TrendDir = 'improving' | 'stable' | 'declining' | null;
 
@@ -43,7 +44,7 @@ export function computeSingleMetricTrend(values: number[]): TrendResult {
   const slope = den === 0 ? 0 : num / den;
   const rel = meanY === 0 ? 0 : Math.abs(slope) / (Math.abs(meanY) || 1);
   let direction: TrendDir;
-  const stabilityThreshold = 0.01; // relative slope threshold for "stable"
+  const stabilityThreshold = gaitConfig.stabilityRelativeSlopeThreshold; // centralized
   if (rel < stabilityThreshold) direction = 'stable';
   else if (slope > 0) direction = 'improving';
   else direction = 'declining';
@@ -58,15 +59,15 @@ export function classifySeverity(tr: TrendResult): TrendResult {
     tr.confidence == null ||
     tr.relativeSlope == null ||
     tr.sampleCount < 3 ||
-    tr.confidence < 0.15
+    tr.confidence < gaitConfig.minimumConfidence
   ) {
     return { ...tr, severity: 'insufficient_data' };
   }
   if (tr.direction === 'stable') return { ...tr, severity: 'stable' };
   const rel = tr.relativeSlope;
   let magnitude: 'mild' | 'moderate' | 'strong';
-  if (rel >= 0.04) magnitude = 'strong';
-  else if (rel >= 0.02) magnitude = 'moderate';
+  if (rel >= gaitConfig.magnitude.strong) magnitude = 'strong';
+  else if (rel >= gaitConfig.magnitude.moderate) magnitude = 'moderate';
   else magnitude = 'mild';
   const prefix =
     magnitude +

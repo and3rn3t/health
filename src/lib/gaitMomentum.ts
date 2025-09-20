@@ -5,6 +5,29 @@
  * Weighted severity scores yield an aggregate score in roughly the range -3..3 which is then
  * normalized into an Upward / Stable / Downward classification.
  */
+// Centralized configuration for gait analytics
+import { gaitConfig } from './gaitConfig';
+import type { GaitTrendForMomentumLike } from './gaitTypes';
+export const MOMENTUM_RELATIVE_SLOPE_NORMALIZER =
+  gaitConfig.momentum.relativeSlopeNormalizer;
+export const MOMENTUM_FALLBACK_RELATIVE = gaitConfig.momentum.fallbackRelative;
+export const MOMENTUM_UPWARD_THRESHOLD = gaitConfig.momentum.upwardThreshold;
+export const MOMENTUM_DOWNWARD_THRESHOLD =
+  gaitConfig.momentum.downwardThreshold;
+
+/**
+ * Threshold & weighting rationale:
+ * - relativeSlope normalization (0.05) was chosen so typical mild gait changes (≤0.02) yield partial weights (≤0.4)
+ *   while pronounced shifts ≥0.05 saturate contribution.
+ * - fallback relativeSlope 0.5 grants medium influence to a metric with confidence but missing relative magnitude.
+ * - momentum score range nominally spans -3..3 (severity numeric mapping) but usually compresses toward 0 when
+ *   conflicting signals appear; thresholds ±0.6 provide a buffer so minor mixed improvements/declines remain Stable.
+ *
+ * Tuning guidance:
+ * - To make classification more sensitive: lower UP/DOWN thresholds (e.g. 0.45 / -0.45).
+ * - To emphasize magnitude over confidence: increase MOMENTUM_FALLBACK_RELATIVE or raise normalization divisor.
+ * - To require stronger consensus: raise thresholds or require minimum contributing metrics before classification.
+ */
 export type GaitTrendSeverity =
   | 'strong_improvement'
   | 'moderate_improvement'
@@ -15,11 +38,7 @@ export type GaitTrendSeverity =
   | 'strong_decline'
   | 'insufficient_data';
 
-export interface GaitTrendForMomentum {
-  severity?: GaitTrendSeverity;
-  confidence: number | null; // 0..1 or null if not computed
-  relativeSlope?: number | null; // normalized magnitude proxy
-}
+export type GaitTrendForMomentum = GaitTrendForMomentumLike;
 
 export interface MomentumResult {
   score: number; // weighted average severity score
@@ -56,14 +75,17 @@ export function severityNumeric(sev: GaitTrendSeverity | undefined): number {
  */
 export function momentumWeight(m: GaitTrendForMomentum): number {
   const conf = m.confidence ?? 0;
-  const rel = m.relativeSlope == null ? null : m.relativeSlope;
-  const relNorm = rel == null ? 0.5 : Math.min(1, rel / 0.05);
+  const rel = m.relativeSlope; // undefined/null treated the same
+  const relNorm =
+    rel == null
+      ? MOMENTUM_FALLBACK_RELATIVE
+      : Math.min(1, rel / MOMENTUM_RELATIVE_SLOPE_NORMALIZER);
   return conf * relNorm;
 }
 
 /** Compute aggregate momentum result from a record of trend metrics. */
 export function computeMomentum(
-  trends: Record<string, GaitTrendForMomentum> | undefined | null
+  trends: Record<string, GaitTrendForMomentumLike> | undefined | null
 ): MomentumResult | null {
   if (!trends) return null;
   const entries = Object.values(trends).filter(
@@ -81,13 +103,25 @@ export function computeMomentum(
   if (total === 0) return null;
   const score = weighted / total;
   let classification: MomentumResult['classification'];
-  if (score > 0.6) classification = 'Upward';
-  else if (score < -0.6) classification = 'Downward';
+  if (score > MOMENTUM_UPWARD_THRESHOLD) classification = 'Upward';
+  else if (score < MOMENTUM_DOWNWARD_THRESHOLD) classification = 'Downward';
   else classification = 'Stable';
   return {
     score,
     classification,
     totalWeight: total,
     contributing: entries.length,
+  };
+}
+
+/** Helper to format badge label + title consistently for UI components. */
+export function formatMomentumBadge(result: MomentumResult | null): {
+  label: string;
+  title: string | undefined;
+} {
+  if (!result) return { label: '—', title: undefined };
+  return {
+    label: result.classification,
+    title: `Momentum score ${result.score.toFixed(2)} (${result.classification})`,
   };
 }

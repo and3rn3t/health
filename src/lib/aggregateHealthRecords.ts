@@ -2,6 +2,7 @@ import type {
   AggregatedMetrics,
   TrendDirection,
 } from '@/hooks/optimizedHealthDataCore';
+import { fallRiskConfig } from '@/lib/fallRiskConfig';
 import type { ProcessedHealthRecord } from '@/types';
 
 // Utility to compute simple averages & rudimentary trends from raw records.
@@ -45,6 +46,7 @@ export function aggregateHealthRecords(
   const recentWindow = sorted.slice(-Math.min(30, sorted.length));
   const earlyWindow = sorted.slice(0, Math.min(30, sorted.length));
 
+  const weights = fallRiskConfig.aggregationWeights;
   for (const r of records) {
     switch (r.type) {
       case 'heart_rate': {
@@ -63,7 +65,7 @@ export function aggregateHealthRecords(
         break;
       }
       case 'fall_event': {
-        fallRiskScore += 15;
+        fallRiskScore += weights.fallEvent;
         break;
       }
       case 'sleep_hours': {
@@ -78,7 +80,8 @@ export function aggregateHealthRecords(
     if (typeof r.anomalyScore === 'number')
       cardioRiskScore += r.anomalyScore * 10;
     if (r.fallRisk === 'high' || r.fallRisk === 'critical')
-      fallRiskScore += r.fallRisk === 'critical' ? 25 : 10;
+      fallRiskScore +=
+        r.fallRisk === 'critical' ? weights.state.critical : weights.state.high;
   }
 
   const averageHeartRate = heartRateCount ? heartRateSum / heartRateCount : 0;

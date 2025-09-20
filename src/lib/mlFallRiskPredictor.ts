@@ -5,6 +5,7 @@
 
 import { normalizeToHealthData } from '@/lib/normalizeHealthInput';
 import type { ProcessedHealthRecord } from '@/types';
+import { fallRiskConfig } from './fallRiskConfig';
 import { MetricData, ProcessedHealthData } from './healthDataProcessor';
 
 // Added explicit model/config and context types to eliminate `any` usage
@@ -1403,12 +1404,15 @@ export class MLFallRiskPredictor {
     score: number,
     confidence: number
   ): RiskPrediction['riskLevel'] {
-    // Adjust thresholds based on confidence
-    const confidenceAdjustment = (1 - confidence) * 0.1;
-
-    if (score >= 0.8 - confidenceAdjustment) return 'severe';
-    if (score >= 0.6 - confidenceAdjustment) return 'high';
-    if (score >= 0.4 - confidenceAdjustment) return 'moderate';
+    const { modelScoreThresholds } = fallRiskConfig;
+    const confidenceAdjustment =
+      (1 - confidence) * modelScoreThresholds.confidenceAdjustmentFactor;
+    if (score >= modelScoreThresholds.severe - confidenceAdjustment)
+      return 'severe';
+    if (score >= modelScoreThresholds.high - confidenceAdjustment)
+      return 'high';
+    if (score >= modelScoreThresholds.moderate - confidenceAdjustment)
+      return 'moderate';
     return 'low';
   }
 
