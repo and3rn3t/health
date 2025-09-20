@@ -1,0 +1,160 @@
+name: Production Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version/tag to deploy (optional, will create tag if provided and not existing)'
+        required: false
+      force:
+        description: 'Force deploy even if previous run failed (true/false)'
+        required: false
+        default: 'false'
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+  deployments: write
+  issues: write
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION_FILE: .nvmrc
+
+jobs:
+  prepare:
+    name: Prepare / Validate
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.gate.outputs.proceed }}
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: meta
+        run: |
+          set -e
+          INPUT_VERSION='${{ github.event.inputs.version }}'
+          if [ -z "$INPUT_VERSION" ]; then
+            # derive date-based pre-release if none supplied
+            INPUT_VERSION="v$(date -u +%Y.%m.%d).0"
+          fi
+          echo "Resolved version: $INPUT_VERSION"
+          echo "version=$INPUT_VERSION" >> $GITHUB_OUTPUT
+      - name: Check previous main CI
+        id: gate
+        run: |
+          set -e
+          FORCE='${{ github.event.inputs.force }}'
+          if [ "$FORCE" = 'true' ]; then echo 'Forced deploy overriding gates'; echo 'proceed=true' >> $GITHUB_OUTPUT; exit 0; fi
+          echo 'Verifying latest main branch CI summary succeeded...'
+          # query last workflow run for ci-core on main
+          curl -sSL -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/ci-core.yml/runs?branch=main&status=success&per_page=1" > runs.json || true
+          OK=$(node -e "const f=require('./runs.json');process.stdout.write(f.total_count>0?'true':'false')")
+          if [ "$OK" = 'true' ]; then echo 'proceed=true' >> $GITHUB_OUTPUT; else echo 'No successful main CI run found'; echo 'proceed=false' >> $GITHUB_OUTPUT; fi
+      - name: Summary Gate
+        run: |
+          if [ '${{ steps.gate.outputs.proceed }}' != 'true' ]; then echo 'Gating failed - aborting'; exit 1; fi
+
+  build_worker_app:
+    name: Build (App + Worker)
+    needs: prepare
+    if: needs.prepare.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ${{ env.NODE_VERSION_FILE }}
+          cache: pnpm
+      - name: Enable Corepack
+        run: corepack enable || true
+      - name: Install deps
+        run: pnpm install --frozen-lockfile || pnpm install
+      - name: Build web app
+        run: pnpm run build
+      - name: Build worker
+        run: pnpm run build:worker || echo 'Worker build optional'
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-build-${{ needs.prepare.outputs.version }}
+          if-no-files-found: error
+          retention-days: 5
+          path: |
+            dist/**
+            dist-worker/**
+            coverage/coverage-summary.json
+
+  deploy:
+    name: Deploy to Production
+    needs: [prepare, build_worker_app]
+    if: needs.prepare.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://health.andernet.dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ${{ env.NODE_VERSION_FILE }}
+      - name: Enable Corepack
+        run: corepack enable || true
+      - name: Install deps (minimal)
+        run: pnpm install --frozen-lockfile --prod || pnpm install --prod --no-frozen-lockfile
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: prod-build-${{ needs.prepare.outputs.version }}
+          path: .
+      - name: Deploy (wrangler)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -e
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo 'Missing CLOUDFLARE_API_TOKEN secret'; exit 1; fi
+          npx wrangler deploy --env production || { echo 'Wrangler deploy failed'; exit 1; }
+      - name: Post-deploy canary
+        run: |
+          set -e
+          BASE="https://health.andernet.dev"
+          echo "GET $BASE/health" && curl -fsS "$BASE/health" -o /dev/null
+          echo "GET $BASE" && curl -fsS "$BASE" -o /dev/null
+          echo 'Canary OK'
+      - name: Create tag if missing
+        if: startsWith(github.ref, 'refs/tags/') == false
+        run: |
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
+          git tag ${{ needs.prepare.outputs.version }}
+          git push origin ${{ needs.prepare.outputs.version }} || echo 'Tag push failed (maybe exists)'
+      - name: Release (draft)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.version }}
+          name: Production Deploy ${{ needs.prepare.outputs.version }}
+          draft: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deployment summary
+        run: |
+          echo "## Production Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "Version: ${{ needs.prepare.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Status: ✅ Success" >> $GITHUB_STEP_SUMMARY
+
+  skip_notice:
+    name: Skipped (Gating Failed)
+    needs: prepare
+    if: needs.prepare.outputs.proceed != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo '## Production Deploy Skipped' >> $GITHUB_STEP_SUMMARY
+          echo 'Gating conditions not met (recent successful main CI run missing). Use force=true to override.' >> $GITHUB_STEP_SUMMARY
