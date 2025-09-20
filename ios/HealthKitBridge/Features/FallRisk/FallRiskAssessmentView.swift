@@ -25,27 +25,19 @@ struct FallRiskAssessmentView: View {
                 LazyVStack(spacing: VitalSenseBrand.Layout.large) {
                     // VitalSense branded header
                     VitalSenseNavigationHeader(
-                        title: "Fall Risk Assessment",
-                        subtitle: "AI-powered analysis for proactive safety",
-                        showLogo: true,
-                        actions: [
-                            (VitalSenseBrand.Icons.settings, { showingAssessmentDetail = true }),
-                            (VitalSenseBrand.Icons.share, { /* Share functionality */ })
+                        title: "Fall Risk Assessment", subtitle: "AI-powered analysis for proactive safety", showLogo: true, actions: [
+                            (VitalSenseBrand.Icons.settings, { showingAssessmentDetail = true }), (VitalSenseBrand.Icons.share, { /* Share functionality */ })
                         ]
                     )
 
                     // Hero risk status with VitalSense branding
                     VitalSenseRiskStatusHero(
-                        riskLevel: assessmentManager.currentRiskLevel,
-                        isAssessing: assessmentManager.isAssessing,
-                        lastAssessment: assessmentManager.assessmentHistory.first?.timestamp
+                        riskLevel: assessmentManager.currentRiskLevel, isAssessing: assessmentManager.isAssessing, lastAssessment: assessmentManager.assessmentHistory.first?.timestamp
                     )
 
                     // Interactive metrics grid
                     VitalSenseMetricsGrid(
-                        riskFactors: assessmentManager.riskFactors,
-                        balanceScore: assessmentManager.balanceScore,
-                        stabilityMetrics: assessmentManager.stabilityMetrics
+                        riskFactors: assessmentManager.riskFactors, balanceScore: assessmentManager.balanceScore, stabilityMetrics: assessmentManager.stabilityMetrics
                     )
 
                     // Recommendations with VitalSense styling
@@ -60,8 +52,7 @@ struct FallRiskAssessmentView: View {
                     // Assessment history with trend visualization
                     if !assessmentManager.assessmentHistory.isEmpty {
                         VitalSenseAssessmentHistory(
-                            assessments: assessmentManager.assessmentHistory,
-                            selectedTimeRange: $selectedTimeRange
+                            assessments: assessmentManager.assessmentHistory, selectedTimeRange: $selectedTimeRange
                         )
                     }
                 }
@@ -75,13 +66,8 @@ struct FallRiskAssessmentView: View {
                 HStack {
                     Spacer()
                     VitalSenseFAB(
-                        icon: "plus",
-                        action: { showingFABOptions.toggle() },
-                        isExpanded: showingFABOptions,
-                        expandedOptions: [
-                            (VitalSenseBrand.Icons.analytics, "Full Assessment", { performAssessment() }),
-                            (VitalSenseBrand.Icons.balance, "Balance Test", { performBalanceTest() }),
-                            (VitalSenseBrand.Icons.insights, "Quick Check", { /* Quick check */ })
+                        icon: "plus", action: { showingFABOptions.toggle() }, isExpanded: showingFABOptions, expandedOptions: [
+                            (VitalSenseBrand.Icons.analytics, "Full Assessment", { performAssessment() }), (VitalSenseBrand.Icons.balance, "Balance Test", { performBalanceTest() }), (VitalSenseBrand.Icons.insights, "Quick Check", { /* Quick check */ })
                         ]
                     )
                     .padding(.trailing, VitalSenseBrand.Layout.large)
@@ -129,25 +115,19 @@ struct VitalSenseRiskStatusHero: View {
                 ForEach(0..<3, id: \.self) { index in
                     Circle()
                         .stroke(
-                            riskLevel.vitalSenseColor.opacity(0.2 - Double(index) * 0.05),
-                            lineWidth: 2
+                            riskLevel.vitalSenseColor.opacity(0.2 - Double(index) * 0.05), lineWidth: 2
                         )
                         .frame(width: 200 + CGFloat(index * 20))
                         .scaleEffect(1.0 + animationOffset * 0.1)
                         .opacity(0.5 + animationOffset * 0.3)
                         .animation(
-                            VitalSenseBrand.Animations.breathe.delay(Double(index) * 0.2),
-                            value: animationOffset
+                            VitalSenseBrand.Animations.breathe.delay(Double(index) * 0.2), value: animationOffset
                         )
                 }
 
                 // Main progress ring
                 VitalSenseProgressRing(
-                    progress: riskLevel.progressValue,
-                    title: riskLevel.vitalSenseDescription,
-                    subtitle: "Risk Level",
-                    gradient: riskLevel.vitalSenseGradient,
-                    size: 160
+                    progress: riskLevel.progressValue, title: riskLevel.vitalSenseDescription, subtitle: "Risk Level", gradient: riskLevel.vitalSenseGradient, size: 160
                 )
 
                 // Assessment status overlay
@@ -204,8 +184,7 @@ struct VitalSenseMetricsGrid: View {
     let stabilityMetrics: StabilityMetrics?
 
     private let columns = [
-        GridItem(.flexible()),
-        GridItem(.flexible())
+        GridItem(.flexible()), GridItem(.flexible())
     ]
 
     var body: some View {
@@ -219,55 +198,31 @@ struct VitalSenseMetricsGrid: View {
                 // Balance Score Metric
                 if balanceScore > 0 {
                     VitalSenseMetricCard(
-                        title: "Balance",
-                        value: String(format: "%.0f", balanceScore),
-                        unit: "/100",
-                        icon: VitalSenseBrand.Icons.balance,
-                        trend: balanceScore >= 80 ? .up : balanceScore >= 60 ? .stable : .down,
-                        gradient: balanceScore >= 80 ? VitalSenseBrand.Colors.successGradient :
+                        title: "Balance", value: String(format: "%.0f", balanceScore), unit: "/100", icon: VitalSenseBrand.Icons.balance, trend: balanceScore >= 80 ? .up : balanceScore >= 60 ? .stable : .down, gradient: balanceScore >= 80 ? VitalSenseBrand.Colors.successGradient :
                                  balanceScore >= 60 ? VitalSenseBrand.Colors.warningGradient :
-                                 VitalSenseBrand.Colors.errorGradient,
-                        action: nil
+                                 VitalSenseBrand.Colors.errorGradient, action: nil
                     )
                 }
 
                 // Risk Factors Count
                 VitalSenseMetricCard(
-                    title: "Risk Factors",
-                    value: "\(riskFactors.count)",
-                    unit: "active",
-                    icon: VitalSenseBrand.Icons.risk,
-                    trend: riskFactors.isEmpty ? .up : riskFactors.count <= 2 ? .stable : .down,
-                    gradient: riskFactors.isEmpty ? VitalSenseBrand.Colors.successGradient :
+                    title: "Risk Factors", value: "\(riskFactors.count)", unit: "active", icon: VitalSenseBrand.Icons.risk, trend: riskFactors.isEmpty ? .up : riskFactors.count <= 2 ? .stable : .down, gradient: riskFactors.isEmpty ? VitalSenseBrand.Colors.successGradient :
                              riskFactors.count <= 2 ? VitalSenseBrand.Colors.warningGradient :
-                             VitalSenseBrand.Colors.errorGradient,
-                    action: nil
+                             VitalSenseBrand.Colors.errorGradient, action: nil
                 )
 
                 // Stability Index
                 if let stability = stabilityMetrics {
                     VitalSenseMetricCard(
-                        title: "Stability",
-                        value: String(format: "%.2f", stability.stabilityIndex),
-                        unit: "index",
-                        icon: VitalSenseBrand.Icons.stability,
-                        trend: stability.stabilityIndex < 0.05 ? .up :
-                               stability.stabilityIndex < 0.1 ? .stable : .down,
-                        gradient: VitalSenseBrand.Colors.primaryGradient,
-                        action: nil
+                        title: "Stability", value: String(format: "%.2f", stability.stabilityIndex), unit: "index", icon: VitalSenseBrand.Icons.stability, trend: stability.stabilityIndex < 0.05 ? .up :
+                               stability.stabilityIndex < 0.1 ? .stable : .down, gradient: VitalSenseBrand.Colors.primaryGradient, action: nil
                     )
                 }
 
                 // Safety Score (calculated)
                 let safetyScore = calculateSafetyScore()
                 VitalSenseMetricCard(
-                    title: "Safety",
-                    value: String(format: "%.0f", safetyScore),
-                    unit: "%",
-                    icon: VitalSenseBrand.Icons.safety,
-                    trend: safetyScore >= 80 ? .up : safetyScore >= 60 ? .stable : .down,
-                    gradient: VitalSenseBrand.Colors.activityGradient,
-                    action: nil
+                    title: "Safety", value: String(format: "%.0f", safetyScore), unit: "%", icon: VitalSenseBrand.Icons.safety, trend: safetyScore >= 80 ? .up : safetyScore >= 60 ? .stable : .down, gradient: VitalSenseBrand.Colors.activityGradient, action: nil
                 )
             }
         }
@@ -313,8 +268,7 @@ struct VitalSenseRecommendationsSection: View {
             VStack(spacing: VitalSenseBrand.Layout.small) {
                 ForEach(Array(priorityRecommendations.enumerated()), id: \.1.id) { index, recommendation in
                     VitalSenseRecommendationCard(
-                        recommendation: recommendation,
-                        index: index
+                        recommendation: recommendation, index: index
                     )
                 }
             }
@@ -457,12 +411,10 @@ struct VitalSenseAssessmentHistory: View {
 
     private var filteredAssessments: [FallRiskAssessment] {
         let cutoffDate = Calendar.current.date(
-            byAdding: selectedTimeRange.dateComponent,
-            value: -selectedTimeRange.value,
-            to: Date()
+            byAdding: selectedTimeRange.dateComponent, value: -selectedTimeRange.value, to: Date()
         ) ?? Date.distantPast
 
-        return assessments.filter { $0.timestamp >= cutoffDate }
+        return assessments.filter { $0.timestamp >= cutoffDate } 
     }
 }
 
@@ -538,7 +490,7 @@ struct CurrentRiskLevelCard: View {
     @ViewBuilder
     private var riskLevelExplanation: some View {
         switch riskLevel {
-        case .low:
+        case .low: 
             HStack {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
@@ -547,7 +499,7 @@ struct CurrentRiskLevelCard: View {
                     .foregroundColor(.secondary)
             }
 
-        case .medium:
+        case .medium: 
             HStack {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundColor(.yellow)
@@ -556,7 +508,7 @@ struct CurrentRiskLevelCard: View {
                     .foregroundColor(.secondary)
             }
 
-        case .high:
+        case .high: 
             HStack {
                 Image(systemName: "exclamationmark.octagon.fill")
                     .foregroundColor(.red)
@@ -565,7 +517,7 @@ struct CurrentRiskLevelCard: View {
                     .foregroundColor(.secondary)
             }
 
-        case .unknown:
+        case .unknown: 
             HStack {
                 Image(systemName: "questionmark.circle.fill")
                     .foregroundColor(.gray)
@@ -582,11 +534,11 @@ struct RiskFactorsOverviewCard: View {
     let riskFactors: [FallRiskFactor]
 
     private var highRiskFactors: [FallRiskFactor] {
-        riskFactors.filter { $0.severity == .high }
+        riskFactors.filter { $0.severity == .high } 
     }
 
     private var mediumRiskFactors: [FallRiskFactor] {
-        riskFactors.filter { $0.severity == .medium }
+        riskFactors.filter { $0.severity == .medium } 
     }
 
     var body: some View {
@@ -598,17 +550,13 @@ struct RiskFactorsOverviewCard: View {
             VStack(spacing: 12) {
                 if !highRiskFactors.isEmpty {
                     RiskFactorSection(
-                        title: "High Risk",
-                        factors: highRiskFactors,
-                        color: .red
+                        title: "High Risk", factors: highRiskFactors, color: .red
                     )
                 }
 
                 if !mediumRiskFactors.isEmpty {
                     RiskFactorSection(
-                        title: "Medium Risk",
-                        factors: mediumRiskFactors,
-                        color: .yellow
+                        title: "Medium Risk", factors: mediumRiskFactors, color: .yellow
                     )
                 }
             }
@@ -690,17 +638,17 @@ struct RiskFactorRow: View {
 
     private func formatFactorValue(_ factor: FallRiskFactor) -> String {
         switch factor.type {
-        case .slowWalkingSpeed:
+        case .slowWalkingSpeed: 
             return String(format: "%.2f m/s", factor.value)
-        case .poorBalance:
+        case .poorBalance: 
             return String(format: "%.0f/100", factor.value)
-        case .gaitAsymmetry, .gaitVariability:
+        case .gaitAsymmetry, .gaitVariability: 
             return String(format: "%.1f%%", factor.value * 100)
-        case .advancedAge:
+        case .advancedAge: 
             return "\(Int(factor.value)) years"
-        case .fallHistory:
+        case .fallHistory: 
             return "\(Int(factor.value)) falls"
-        default:
+        default: 
             return String(format: "%.1f", factor.value)
         }
     }
@@ -762,27 +710,19 @@ struct BalanceScoreCard: View {
                 if let metrics = stabilityMetrics {
                     VStack(alignment: .leading, spacing: 8) {
                         StabilityMetricRow(
-                            title: "Avg Sway",
-                            value: String(format: "%.3f", metrics.averageSway),
-                            unit: "m/s²"
+                            title: "Avg Sway", value: String(format: "%.3f", metrics.averageSway), unit: "m/s²"
                         )
 
                         StabilityMetricRow(
-                            title: "Peak Sway",
-                            value: String(format: "%.3f", metrics.peakSway),
-                            unit: "m/s²"
+                            title: "Peak Sway", value: String(format: "%.3f", metrics.peakSway), unit: "m/s²"
                         )
 
                         StabilityMetricRow(
-                            title: "Variability",
-                            value: String(format: "%.3f", metrics.swayVariability),
-                            unit: "m/s²"
+                            title: "Variability", value: String(format: "%.3f", metrics.swayVariability), unit: "m/s²"
                         )
 
                         StabilityMetricRow(
-                            title: "Stability Index",
-                            value: String(format: "%.3f", metrics.stabilityIndex),
-                            unit: ""
+                            title: "Stability Index", value: String(format: "%.3f", metrics.stabilityIndex), unit: ""
                         )
                     }
                 }
@@ -874,7 +814,7 @@ struct RecommendationsCard: View {
     let onShowDetails: () -> Void
 
     private var highPriorityRecommendations: [FallRiskRecommendation] {
-        recommendations.filter { $0.priority == .high }
+        recommendations.filter { $0.priority == .high } 
     }
 
     var body: some View {
@@ -1012,11 +952,9 @@ struct AssessmentHistoryCard: View {
 
     private var filteredAssessments: [FallRiskAssessment] {
         let cutoffDate = Calendar.current.date(
-            byAdding: selectedTimeRange.dateComponent,
-            value: -selectedTimeRange.value,
-            to: Date()
+            byAdding: selectedTimeRange.dateComponent, value: -selectedTimeRange.value, to: Date()
         ) ?? Date.distantPast
-        return assessments.filter { $0.timestamp >= cutoffDate }
+        return assessments.filter { $0.timestamp >= cutoffDate } 
     }
 }
 
@@ -1041,15 +979,13 @@ struct FallRiskTrendChart: View {
         Chart {
             ForEach(chartData, id: \.0) { date, risk in
                 LineMark(
-                    x: .value("Date", date),
-                    y: .value("Risk Level", risk)
+                    x: .value("Date", date), y: .value("Risk Level", risk)
                 )
                 .foregroundStyle(.blue)
                 .lineStyle(StrokeStyle(lineWidth: 2))
 
                 PointMark(
-                    x: .value("Date", date),
-                    y: .value("Risk Level", risk)
+                    x: .value("Date", date), y: .value("Risk Level", risk)
                 )
                 .foregroundStyle(.blue)
                 .symbolSize(36)
@@ -1126,21 +1062,13 @@ struct AssessmentActionsCard: View {
 
             VStack(spacing: 8) {
                 ActionButton(
-                    title: "Comprehensive Assessment",
-                    subtitle: "Full gait, balance, and risk factor analysis",
-                    icon: "checkmark.circle.fill",
-                    color: .blue,
-                    isLoading: isAssessing
+                    title: "Comprehensive Assessment", subtitle: "Full gait, balance, and risk factor analysis", icon: "checkmark.circle.fill", color: .blue, isLoading: isAssessing
                 ) {
                     await onPerformAssessment()
                 }
 
                 ActionButton(
-                    title: "Balance Test Only",
-                    subtitle: "Quick balance and stability assessment",
-                    icon: "figure.walk.circle.fill",
-                    color: .green,
-                    isLoading: false
+                    title: "Balance Test Only", subtitle: "Quick balance and stability assessment", icon: "figure.walk.circle.fill", color: .green, isLoading: false
                 ) {
                     await onPerformBalanceTest()
                 }

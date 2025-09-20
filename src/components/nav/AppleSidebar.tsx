@@ -206,6 +206,7 @@ export function AppleSidebarPanel({
       data-side={side}
       data-variant={variant}
       data-collapsible={collapsible}
+      aria-label="Primary navigation"
       className={cn(
         'bg-card text-foreground border-border h-full shrink-0 overflow-hidden border-r transition-[width] duration-200 ease-linear',
         widthClass,
@@ -217,6 +218,7 @@ export function AppleSidebarPanel({
         data-vs="apple-sidebar-inner"
         className="flex h-full min-h-0 w-full flex-col overflow-y-auto"
       >
+        {/* Section headings get visually-hidden heading elements for screen readers */}
         {children}
       </div>
     </aside>
@@ -328,11 +330,13 @@ export function AppleSidebarItem({
         data-active={active ? 'true' : undefined}
         aria-current={active ? 'page' : undefined}
         className={cn(
-          'h-10 gap-3 px-3 outline-hidden relative flex w-full items-center rounded-md text-left text-sm transition-colors',
+          // Increased to min-h 44px for iOS touch target compliance
+          'gap-3 px-3 outline-hidden relative flex min-h-[44px] w-full items-center rounded-md pr-4 text-left text-sm transition-colors',
           active
             ? 'bg-vitalsense-primary/10 font-semibold text-vitalsense-primary dark:bg-vitalsense-primary/20'
-            : 'text-muted-foreground hover:bg-muted dark:hover:bg-muted/70 font-medium',
-          'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-vitalsense-primary/30',
+            : 'text-muted-foreground hover:bg-muted/70 dark:hover:bg-muted/60 font-medium',
+          'focus-visible:outline-hidden focus-visible:ring-offset-background focus-visible:ring-2 focus-visible:ring-vitalsense-primary/40 focus-visible:ring-offset-2',
+          'select-none active:scale-[0.985]',
           className
         )}
         {...props}

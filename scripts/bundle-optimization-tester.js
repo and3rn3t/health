@@ -30,7 +30,7 @@ async function measureCurrentBundle() {
 
     try {
         // Run current bundle analyzer
-        const { stdout } = await execAsync('node scripts/bundle-analyzer.js --json', {
+    const { stdout } = await execAsync('node scripts/node/analysis/bundle-analyzer.js --json', {
             cwd: projectRoot
         });
 
@@ -124,7 +124,7 @@ async function testCSSOptimization() {
 
     try {
         // Run CSS optimizer
-        await execAsync('node scripts/css-optimizer.js', { cwd: projectRoot });
+    await execAsync('node scripts/node/analysis/css/css-optimizer.js', { cwd: projectRoot });
         console.log('✅ CSS optimization analysis complete');
 
         // Check if optimized config was generated

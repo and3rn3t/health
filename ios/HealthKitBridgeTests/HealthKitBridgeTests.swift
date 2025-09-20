@@ -39,9 +39,7 @@ class HealthKitBridgeTests: XCTestCase {
 
     func testConfigPlistStructure() {
         // Test Config.plist structure
-        guard let url = Bundle.main.url(forResource: "Config", withExtension: "plist"),
-              let data = try? Data(contentsOf: url),
-              let dict = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any]
+        guard let url = Bundle.main.url(forResource: "Config", withExtension: "plist"), let data = try? Data(contentsOf: url), let dict = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any]
         else {
             XCTFail("Config.plist not found or invalid")
             return

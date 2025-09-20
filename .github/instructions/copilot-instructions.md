@@ -70,14 +70,44 @@ These instructions guide GitHub Copilot Chat/Edits to produce code and docs that
 - Icons: prefer `@phosphor-icons/react` or `lucide-react` already used in the codebase.
 - Dark mode: Tailwind is configured with `darkMode: ["selector", '[data-appearance="dark"]']`. If you add theme toggles or components checking theme, prefer toggling `[data-appearance="dark"]` on `document.documentElement`. Avoid adding a separate theme mechanism.
 
-### CSS strategy (consolidation-first)
+### CSS strategy (consolidation + automated guard)
 
-- Production CSS should be consolidated into as few files as practical: one primary hashed bundle from Tailwind (via `src/main.css`).
-- Authoring can be modular with Tailwind layers, but avoid introducing new standalone component CSS files unless they are tied to a lazy‑loaded feature.
-- Split CSS only when it is coupled to a dynamically imported feature module that is large and infrequently used (e.g., LiDAR analyzer). In such cases, collocate CSS so it code‑splits with the JS chunk.
-- Rationale: fewer CSS files reduce blocking requests and maximize Cloudflare edge caching efficiency; Tailwind utilities already minimize custom styles.
-- Measurement guardrails: keep CSS bundle under ~60KB minified (current good). Use tasks "📦 Quick Bundle Check" and "🔍 Full Bundle Analysis" before/after changes.
-- Do not add separate theme systems or global CSS frameworks; use Tailwind tokens and existing primitives.
+> Canonical source: `docs/develop/CSS_STRATEGY.md` (supersedes the deprecated `CSS_GUARD_ENFORCEMENT.md`). Only keep high‑level summary here; do not drift from the strategy doc.
+
+Core principles:
+
+- Single authored entry: `src/main.css` using Tailwind `@layer base|components|utilities` (no pasted generated utilities).
+- Add new CSS files only for sizable, lazy‑loaded feature chunks (collocated for automatic code‑splitting).
+- Maintain semantic light/dark tokens with WCAG AA contrast (normal ≥4.5, large/UI ≥3.0).
+- Dark mode via `[data-appearance="dark"]` on `document.documentElement` only (no alternate theming systems).
+
+Guard summary (local + CI):
+
+| Check           | Threshold / Rule                   | Env Override                |
+| --------------- | ---------------------------------- | --------------------------- |
+| Lines           | ≤250                               | `CSS_GUARD_MAX_LINES`       |
+| Bytes           | ≤15KB authored                     | `CSS_GUARD_MAX_BYTES`       |
+| Sentinel        | Exactly one `/* SENTINEL:EOF */`   | —                           |
+| Utility leakage | Block raw `--tw-` / bulk utilities | `CSS_GUARD_ALLOW_TW` (temp) |
+| Contrast        | All semantic pairs pass AA         | —                           |
+| Duplicates      | No conflicting root token redefs   | —                           |
+| Drift (soft)    | Δ >0.10 flagged                    | `CSS_CONTRAST_MAX_DELTA`    |
+
+Key commands:
+
+```bash
+pnpm run guard:css              # Local guard
+pnpm run hook:css-guard         # Install pre-commit hook
+pnpm run ci:css-guard           # CI hard gate
+pnpm run ci:css-contrast-drift  # Drift detection
+CSS_UPDATE_BASELINE=true pnpm run ci:css-contrast-drift  # Accept new contrast baseline
+```
+
+Artifacts: `reports/contrast-report.json` + baseline `scripts/ci/baselines/contrast-baseline.json`.
+
+Dark theme (Sept 2025) updates: primary `#2563eb`, destructive `#dc2626`, accent foreground `#333333` (ensures all dark pairs ≥4.5).
+
+Use tasks "📦 Quick Bundle Check" / "🔍 Full Bundle Analysis" to confirm CSS stays ≤ ~60KB minified.
 
 ## State, data fetching, and realtime
 
@@ -167,7 +197,7 @@ These instructions guide GitHub Copilot Chat/Edits to produce code and docs that
 **CRITICAL**: This project uses VitalSense branding throughout. When implementing authentication or UI components:
 
 1. **Brand Consistency**: Always use VitalSense branding, never generic "Health App" references
-2. **Color Scheme**: Primary color is `#2563eb` (blue), secondary is `#0891b2` (teal)
+2. **Color Scheme**: Primary `#2563eb` (light & dark), accent teal base `#056487` (light) with dark accent foreground `#333333` for contrast
 3. **Typography**: Use Inter font family consistently
 4. **Auth0 Integration**: Custom branded login page exists in `auth0-custom-login/`
 

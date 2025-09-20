@@ -6,6 +6,7 @@ import Combine
 // MARK: - Fall Risk Assessment Manager
 @MainActor
 class FallRiskAssessmentManager: ObservableObject {
+    static let shared = FallRiskAssessmentManager(gaitAnalysisManager: PlaceholderGaitAnalysisManager())
     // MARK: - Published Properties
     @Published var currentRiskLevel: FallRiskLevel = .unknown
     @Published var riskFactors: [FallRiskFactor] = []
@@ -14,6 +15,9 @@ class FallRiskAssessmentManager: ObservableObject {
     @Published var isAssessing = false
     @Published var balanceScore: Double = 0.0
     @Published var stabilityMetrics: StabilityMetrics?
+    // Balance test streaming publishers
+    let balanceTestProgressPublisher = PassthroughSubject<BalanceTestProgress, Never>()
+    let balanceTestResultPublisher = PassthroughSubject<BalanceTestResultEvent, Never>()
 
     // MARK: - Dependencies
     private let gaitAnalysisManager: GaitAnalysisManager
@@ -31,6 +35,17 @@ class FallRiskAssessmentManager: ObservableObject {
         loadAssessmentHistory()
     }
 
+    // Temporary placeholder until real GaitAnalysisManager exists in project.
+    // Provides minimal surface so we can create the singleton and wire watch connectivity.
+    struct PlaceholderGaitAnalysisManager: GaitAnalysisManager {
+        var latestGaitMetrics: GaitMetrics? { nil }
+    }
+
+
+// Protocol abstraction to minimize coupling (real manager can conform later)
+protocol GaitAnalysisManager {
+    var latestGaitMetrics: GaitMetrics? { get }
+}
     // MARK: - Assessment Methods
 
     func performComprehensiveAssessment() async throws {
@@ -47,10 +62,7 @@ class FallRiskAssessmentManager: ObservableObject {
 
         // Analyze risk factors
         let riskFactors = analyzeRiskFactors(
-            gait: gaitData,
-            balance: balanceData,
-            health: healthData,
-            environmental: environmentalData
+            gait: gaitData, balance: balanceData, health: healthData, environmental: environmentalData
         )
 
         // Calculate overall risk level
@@ -61,13 +73,7 @@ class FallRiskAssessmentManager: ObservableObject {
 
         // Create assessment record
         let assessment = FallRiskAssessment(
-            id: UUID(),
-            timestamp: Date(),
-            riskLevel: riskLevel,
-            riskFactors: riskFactors,
-            gaitMetrics: gaitData,
-            balanceScore: balanceData.overallScore,
-            recommendations: recommendations
+            id: UUID(), timestamp: Date(), riskLevel: riskLevel, riskFactors: riskFactors, gaitMetrics: gaitData, balanceScore: balanceData.overallScore, recommendations: recommendations
         )
 
         // Update state
@@ -80,6 +86,34 @@ class FallRiskAssessmentManager: ObservableObject {
         saveAssessment(assessment)
 
         print("✅ Fall risk assessment completed. Risk level: \(riskLevel.rawValue)")
+    }
+
+    // MARK: - Public Balance Test (standalone) with progress streaming
+    func performBalanceTestStandalone(kind: BalanceTestType) {
+        Task { await runBalanceProgressSimulation(kind: kind) }
+    }
+
+    private func runBalanceProgressSimulation(kind: BalanceTestType) async {
+        // Placeholder simulation: emit progress every 0.5s up to 100%
+        let start = Date()
+        for step in 0...20 {
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            let percent = Double(step) / 20.0 * 100
+            let progress = BalanceTestProgress(
+                percent: percent,
+                instantaneousStability: Double.random(in: 0.0...0.005),
+                elapsed: Date().timeIntervalSince(start),
+                testKind: kind.rawValue
+            )
+            balanceTestProgressPublisher.send(progress)
+        }
+        // Synthesize result
+        let result = BalanceTestResultEvent(
+            overallScore: Double.random(in: 60...95),
+            componentScores: ["stability": Double.random(in: 60...95), "dynamic": Double.random(in: 60...95)],
+            testKind: kind.rawValue
+        )
+        balanceTestResultPublisher.send(result)
     }
 
     // MARK: - Balance Testing
@@ -158,10 +192,7 @@ class FallRiskAssessmentManager: ObservableObject {
 
                 // Record stability data point
                 let dataPoint = StabilityDataPoint(
-                    timestamp: Date(),
-                    sway: sway,
-                    gravity: gravity,
-                    userAcceleration: userAcceleration
+                    timestamp: Date(), sway: sway, gravity: gravity, userAcceleration: userAcceleration
                 )
                 self.stabilityData.append(dataPoint)
             }
@@ -237,20 +268,14 @@ class FallRiskAssessmentManager: ObservableObject {
     private func assessEnvironmentalFactors() async -> EnvironmentalRiskFactors {
         // This would typically involve user input or smart home integration
         EnvironmentalRiskFactors(
-            homeHazards: .medium,
-            lightingQuality: .good,
-            floorSurfaces: .mixed,
-            stairSafety: .good
+            homeHazards: .medium, lightingQuality: .good, floorSurfaces: .mixed, stairSafety: .good
         )
     }
 
     // MARK: - Risk Analysis
 
     private func analyzeRiskFactors(
-        gait: GaitMetrics?,
-        balance: BalanceTestResult,
-        health: HealthRiskMetrics,
-        environmental: EnvironmentalRiskFactors
+        gait: GaitMetrics?, balance: BalanceTestResult, health: HealthRiskMetrics, environmental: EnvironmentalRiskFactors
     ) -> [FallRiskFactor] {
         var factors: [FallRiskFactor] = []
 
@@ -258,28 +283,19 @@ class FallRiskAssessmentManager: ObservableObject {
         if let gait = gait {
             if let walkingSpeed = gait.averageWalkingSpeed, walkingSpeed < 0.8 {
                 factors.append(FallRiskFactor(
-                    type: .slowWalkingSpeed,
-                    severity: walkingSpeed < 0.6 ? .high : .medium,
-                    description: "Walking speed below normal range",
-                    value: walkingSpeed
+                    type: .slowWalkingSpeed, severity: walkingSpeed < 0.6 ? .high : .medium, description: "Walking speed below normal range", value: walkingSpeed
                 ))
             }
 
             if let asymmetry = gait.walkingAsymmetry, asymmetry > 0.1 {
                 factors.append(FallRiskFactor(
-                    type: .gaitAsymmetry,
-                    severity: asymmetry > 0.15 ? .high : .medium,
-                    description: "Significant gait asymmetry detected",
-                    value: asymmetry
+                    type: .gaitAsymmetry, severity: asymmetry > 0.15 ? .high : .medium, description: "Significant gait asymmetry detected", value: asymmetry
                 ))
             }
 
             if let variability = gait.gaitVariability, variability > 0.1 {
                 factors.append(FallRiskFactor(
-                    type: .gaitVariability,
-                    severity: variability > 0.15 ? .high : .medium,
-                    description: "High gait variability indicating instability",
-                    value: variability
+                    type: .gaitVariability, severity: variability > 0.15 ? .high : .medium, description: "High gait variability indicating instability", value: variability
                 ))
             }
         }
@@ -287,10 +303,7 @@ class FallRiskAssessmentManager: ObservableObject {
         // Balance-related risks
         if balance.overallScore < 70 {
             factors.append(FallRiskFactor(
-                type: .poorBalance,
-                severity: balance.overallScore < 50 ? .high : .medium,
-                description: "Below-average balance performance",
-                value: balance.overallScore
+                type: .poorBalance, severity: balance.overallScore < 50 ? .high : .medium, description: "Below-average balance performance", value: balance.overallScore
             ))
         }
 
@@ -298,40 +311,28 @@ class FallRiskAssessmentManager: ObservableObject {
         if health.age > 65 {
             let severity: RiskSeverity = health.age > 80 ? .high : .medium
             factors.append(FallRiskFactor(
-                type: .advancedAge,
-                severity: severity,
-                description: "Increased fall risk due to age",
-                value: Double(health.age)
+                type: .advancedAge, severity: severity, description: "Increased fall risk due to age", value: Double(health.age)
             ))
         }
 
         // Medication risk
         if health.medicationRiskScore > 0.5 {
             factors.append(FallRiskFactor(
-                type: .medicationEffects,
-                severity: health.medicationRiskScore > 0.7 ? .high : .medium,
-                description: "Medications that may affect balance or cognition",
-                value: health.medicationRiskScore
+                type: .medicationEffects, severity: health.medicationRiskScore > 0.7 ? .high : .medium, description: "Medications that may affect balance or cognition", value: health.medicationRiskScore
             ))
         }
 
         // Previous falls
         if health.previousFalls > 0 {
             factors.append(FallRiskFactor(
-                type: .fallHistory,
-                severity: health.previousFalls > 2 ? .high : .medium,
-                description: "History of previous falls",
-                value: Double(health.previousFalls)
+                type: .fallHistory, severity: health.previousFalls > 2 ? .high : .medium, description: "History of previous falls", value: Double(health.previousFalls)
             ))
         }
 
         // Environmental risks
         if environmental.homeHazards != .low {
             factors.append(FallRiskFactor(
-                type: .environmentalHazards,
-                severity: environmental.homeHazards == .high ? .high : .medium,
-                description: "Environmental hazards in living space",
-                value: Double(environmental.homeHazards.rawValue)
+                type: .environmentalHazards, severity: environmental.homeHazards == .high ? .high : .medium, description: "Environmental hazards in living space", value: Double(environmental.homeHazards.rawValue)
             ))
         }
 
@@ -363,72 +364,36 @@ class FallRiskAssessmentManager: ObservableObject {
             switch factor.type {
             case .slowWalkingSpeed:
                 recommendations.append(FallRiskRecommendation(
-                    type: .exerciseProgram,
-                    priority: .high,
-                    title: "Improve Walking Speed",
-                    description: "Regular walking exercises and strength training can help improve walking speed and reduce fall risk.",
-                    actions: [
-                        "Start with 10-minute daily walks",
-                        "Gradually increase walking pace",
-                        "Add resistance training 2-3 times per week",
-                        "Consider physical therapy consultation"
+                    type: .exerciseProgram, priority: .high, title: "Improve Walking Speed", description: "Regular walking exercises and strength training can help improve walking speed and reduce fall risk.", actions: [
+                        "Start with 10-minute daily walks", "Gradually increase walking pace", "Add resistance training 2-3 times per week", "Consider physical therapy consultation"
                     ]
                 ))
 
             case .poorBalance:
                 recommendations.append(FallRiskRecommendation(
-                    type: .balanceTraining,
-                    priority: .high,
-                    title: "Balance Training Program",
-                    description: "Specific balance exercises can significantly improve stability and reduce fall risk.",
-                    actions: [
-                        "Practice single-leg stands daily",
-                        "Try tai chi or yoga classes",
-                        "Use balance training apps",
-                        "Consider professional balance assessment"
+                    type: .balanceTraining, priority: .high, title: "Balance Training Program", description: "Specific balance exercises can significantly improve stability and reduce fall risk.", actions: [
+                        "Practice single-leg stands daily", "Try tai chi or yoga classes", "Use balance training apps", "Consider professional balance assessment"
                     ]
                 ))
 
             case .gaitAsymmetry:
                 recommendations.append(FallRiskRecommendation(
-                    type: .medicalConsultation,
-                    priority: .medium,
-                    title: "Address Gait Asymmetry",
-                    description: "Gait asymmetry may indicate underlying issues that should be evaluated.",
-                    actions: [
-                        "Consult with a physical therapist",
-                        "Check for leg length differences",
-                        "Assess for muscle imbalances",
-                        "Consider gait training exercises"
+                    type: .medicalConsultation, priority: .medium, title: "Address Gait Asymmetry", description: "Gait asymmetry may indicate underlying issues that should be evaluated.", actions: [
+                        "Consult with a physical therapist", "Check for leg length differences", "Assess for muscle imbalances", "Consider gait training exercises"
                     ]
                 ))
 
             case .environmentalHazards:
                 recommendations.append(FallRiskRecommendation(
-                    type: .homeModification,
-                    priority: .medium,
-                    title: "Home Safety Improvements",
-                    description: "Making your home safer can prevent many falls from occurring.",
-                    actions: [
-                        "Remove loose rugs and clutter",
-                        "Install handrails on stairs",
-                        "Improve lighting in all areas",
-                        "Add grab bars in bathroom",
-                        "Secure electrical cords"
+                    type: .homeModification, priority: .medium, title: "Home Safety Improvements", description: "Making your home safer can prevent many falls from occurring.", actions: [
+                        "Remove loose rugs and clutter", "Install handrails on stairs", "Improve lighting in all areas", "Add grab bars in bathroom", "Secure electrical cords"
                     ]
                 ))
 
             case .medicationEffects:
                 recommendations.append(FallRiskRecommendation(
-                    type: .medicationReview,
-                    priority: .high,
-                    title: "Medication Review",
-                    description: "Some medications can increase fall risk. A review with your healthcare provider is recommended.",
-                    actions: [
-                        "Schedule medication review with doctor",
-                        "Discuss side effects that affect balance",
-                        "Consider timing of medication doses",
-                        "Ask about alternative medications"
+                    type: .medicationReview, priority: .high, title: "Medication Review", description: "Some medications can increase fall risk. A review with your healthcare provider is recommended.", actions: [
+                        "Schedule medication review with doctor", "Discuss side effects that affect balance", "Consider timing of medication doses", "Ask about alternative medications"
                     ]
                 ))
 
@@ -440,15 +405,8 @@ class FallRiskAssessmentManager: ObservableObject {
         // Add general recommendations
         if riskFactors.contains(where: { $0.severity == .high }) {
             recommendations.append(FallRiskRecommendation(
-                type: .medicalConsultation,
-                priority: .high,
-                title: "Healthcare Provider Consultation",
-                description: "Given your elevated fall risk, consult with your healthcare provider for a comprehensive evaluation.",
-                actions: [
-                    "Schedule appointment with primary care physician",
-                    "Bring fall risk assessment results",
-                    "Discuss any recent changes in balance or mobility",
-                    "Consider referral to fall prevention specialist"
+                type: .medicalConsultation, priority: .high, title: "Healthcare Provider Consultation", description: "Given your elevated fall risk, consult with your healthcare provider for a comprehensive evaluation.", actions: [
+                    "Schedule appointment with primary care physician", "Bring fall risk assessment results", "Discuss any recent changes in balance or mobility", "Consider referral to fall prevention specialist"
                 ]
             ))
         }
@@ -475,10 +433,7 @@ class FallRiskAssessmentManager: ObservableObject {
         let stabilityIndex = (averageSway * 0.6) + (swayVariability * 0.4)
 
         return StabilityMetrics(
-            averageSway: averageSway,
-            peakSway: peakSway,
-            swayVariability: swayVariability,
-            stabilityIndex: stabilityIndex
+            averageSway: averageSway, peakSway: peakSway, swayVariability: swayVariability, stabilityIndex: stabilityIndex
         )
     }
 
@@ -545,8 +500,7 @@ class FallRiskAssessmentManager: ObservableObject {
 
     private func loadAssessmentHistory() {
         // Load from Core Data or UserDefaults
-        if let data = UserDefaults.standard.data(forKey: "FallRiskAssessmentHistory"),
-           let history = try? JSONDecoder().decode([FallRiskAssessment].self, from: data) {
+        if let data = UserDefaults.standard.data(forKey: "FallRiskAssessmentHistory"), let history = try? JSONDecoder().decode([FallRiskAssessment].self, from: data) {
             assessmentHistory = history
         }
     }

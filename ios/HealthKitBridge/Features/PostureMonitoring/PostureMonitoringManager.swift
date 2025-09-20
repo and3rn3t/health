@@ -81,11 +81,7 @@ class PostureMonitoringManager: ObservableObject {
         let neckAngle = calculateNeckAngle(pitch: pitch, roll: roll)
 
         let reading = PostureReading(
-            timestamp: Date(),
-            neckAngle: neckAngle,
-            devicePitch: pitch,
-            deviceRoll: roll,
-            postureState: determinePostureState(neckAngle: neckAngle)
+            timestamp: Date(), neckAngle: neckAngle, devicePitch: pitch, deviceRoll: roll, postureState: determinePostureState(neckAngle: neckAngle)
         )
 
         updatePostureState(with: reading)
@@ -123,7 +119,7 @@ class PostureMonitoringManager: ObservableObject {
 
         // Keep only last hour of readings
         let oneHourAgo = Date().addingTimeInterval(-3600)
-        postureReadings = postureReadings.filter { $0.timestamp > oneHourAgo }
+        postureReadings = postureReadings.filter { $0.timestamp > oneHourAgo } 
 
         // Update current posture
         currentPosture = reading.postureState
@@ -179,11 +175,7 @@ class PostureMonitoringManager: ObservableObject {
 
     private func createPostureAlert() {
         let alert = PostureAlert(
-            id: UUID(),
-            type: determineAlertType(),
-            message: generateAlertMessage(),
-            timestamp: Date(),
-            severity: .moderate
+            id: UUID(), type: determineAlertType(), message: generateAlertMessage(), timestamp: Date(), severity: .moderate
         )
 
         DispatchQueue.main.async {
@@ -206,10 +198,7 @@ class PostureMonitoringManager: ObservableObject {
 
     private func generateAlertMessage() -> String {
         let messages = [
-            "Time for a posture check! Roll your shoulders back and lift your head.",
-            "Notice your posture - straighten up and take a deep breath.",
-            "Posture reminder: Align your head over your shoulders.",
-            "Take a moment to improve your posture and prevent strain."
+            "Time for a posture check! Roll your shoulders back and lift your head.", "Notice your posture - straighten up and take a deep breath.", "Posture reminder: Align your head over your shoulders.", "Take a moment to improve your posture and prevent strain."
         ]
 
         return messages.randomElement() ?? "Check your posture"
@@ -234,14 +223,7 @@ class PostureMonitoringManager: ObservableObject {
         let totalTime = Double(todayReadings.count)
 
         let quality = PostureQualityMetrics(
-            date: today,
-            excellentPercentage: (excellentTime / totalTime) * 100,
-            goodPercentage: (goodTime / totalTime) * 100,
-            fairPercentage: (fairTime / totalTime) * 100,
-            poorPercentage: (poorTime / totalTime) * 100,
-            criticalPercentage: (criticalTime / totalTime) * 100,
-            averageNeckAngle: todayReadings.reduce(0.0) { $0 + $1.neckAngle } / totalTime,
-            totalAlerts: postureAlerts.filter {
+            date: today, excellentPercentage: (excellentTime / totalTime) * 100, goodPercentage: (goodTime / totalTime) * 100, fairPercentage: (fairTime / totalTime) * 100, poorPercentage: (poorTime / totalTime) * 100, criticalPercentage: (criticalTime / totalTime) * 100, averageNeckAngle: todayReadings.reduce(0.0) { $0 + $1.neckAngle } / totalTime, totalAlerts: postureAlerts.filter {
                 Calendar.current.isDate($0.timestamp, inSameDayAs: today)
             }.count
         )
@@ -272,12 +254,7 @@ class PostureMonitoringManager: ObservableObject {
 
     private func sendPostureAlert(_ alert: PostureAlert) {
         let alertData: [String: Any] = [
-            "type": "posture_alert",
-            "alert_type": alert.type.rawValue,
-            "message": alert.message,
-            "severity": alert.severity.rawValue,
-            "timestamp": ISO8601DateFormatter().string(from: alert.timestamp),
-            "user_id": AppConfig.shared.userId
+            "type": "posture_alert", "alert_type": alert.type.rawValue, "message": alert.message, "severity": alert.severity.rawValue, "timestamp": ISO8601DateFormatter().string(from: alert.timestamp), "user_id": AppConfig.shared.userId
         ]
 
         webSocketManager.sendMessage(alertData)
@@ -287,17 +264,7 @@ class PostureMonitoringManager: ObservableObject {
         guard let quality = dailyPostureQuality else { return }
 
         let postureData: [String: Any] = [
-            "type": "posture_data",
-            "date": ISO8601DateFormatter().string(from: quality.date),
-            "excellent_percentage": quality.excellentPercentage,
-            "good_percentage": quality.goodPercentage,
-            "fair_percentage": quality.fairPercentage,
-            "poor_percentage": quality.poorPercentage,
-            "critical_percentage": quality.criticalPercentage,
-            "average_neck_angle": quality.averageNeckAngle,
-            "total_alerts": quality.totalAlerts,
-            "current_score": postureScore,
-            "user_id": AppConfig.shared.userId
+            "type": "posture_data", "date": ISO8601DateFormatter().string(from: quality.date), "excellent_percentage": quality.excellentPercentage, "good_percentage": quality.goodPercentage, "fair_percentage": quality.fairPercentage, "poor_percentage": quality.poorPercentage, "critical_percentage": quality.criticalPercentage, "average_neck_angle": quality.averageNeckAngle, "total_alerts": quality.totalAlerts, "current_score": postureScore, "user_id": AppConfig.shared.userId
         ]
 
         webSocketManager.sendMessage(postureData)

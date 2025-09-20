@@ -15,16 +15,13 @@ final class WebSocketRoutingTests: XCTestCase {
         // Build envelope
         let payload = ["metric": "hr", "value": 72.0]
         let env: [String: Any] = [
-            "type": "live_health_update",
-            "timestamp": ISO8601DateFormatter().string(from: Date()),
-            "source": "test",
-            "data": payload
+            "type": "live_health_update", "timestamp": ISO8601DateFormatter().string(from: Date()), "source": "test", "data": payload
         ]
         // Send via private channel by enqueueing through public sendJSON path
-    Task { try? await webSocket.connect(with: "dev-local-token") }
+    Task { try? await webSocket.connect(with: "dev-local-token") } 
         // Give a moment for connection to settle in mock mode if needed
     let settle = expectation(description: "settle")
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { settle.fulfill() }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { settle.fulfill() } 
     wait(for: [settle], timeout: 1.0)
 
         // Use DEBUG test hook to route the message through internal dispatcher

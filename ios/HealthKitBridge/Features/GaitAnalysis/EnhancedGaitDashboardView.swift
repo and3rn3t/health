@@ -84,19 +84,11 @@ struct EnhancedGaitDashboardView: View {
                 // Quick Status Cards
                 HStack(spacing: 15) {
                     QuickStatusCard(
-                        title: "Walking Quality",
-                        value: String(format: "%.0f", walkingCalculator.walkingQualityScore),
-                        unit: "pts",
-                        color: getWalkingQualityColor(),
-                        icon: "figure.walk"
+                        title: "Walking Quality", value: String(format: "%.0f", walkingCalculator.walkingQualityScore), unit: "pts", color: getWalkingQualityColor(), icon: "figure.walk"
                     )
 
                     QuickStatusCard(
-                        title: "Posture Score",
-                        value: String(format: "%.0f", postureManager.postureScore),
-                        unit: "pts",
-                        color: postureManager.currentPosture.color,
-                        icon: "person.fill"
+                        title: "Posture Score", value: String(format: "%.0f", postureManager.postureScore), unit: "pts", color: postureManager.currentPosture.color, icon: "person.fill"
                     )
                 }
 

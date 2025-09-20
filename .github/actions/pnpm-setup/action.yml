@@ -1,0 +1,36 @@
+name: 'PNPM Setup'
+description: 'Setup Node via .nvmrc, enable Corepack, install dependencies with pnpm cache'
+inputs:
+  install-command:
+    description: 'Command to install dependencies'
+    required: false
+    default: 'pnpm install --frozen-lockfile'
+  working-directory:
+    description: 'Working directory'
+    required: false
+    default: '.'
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+    - name: Enable Corepack
+      shell: bash
+      run: corepack enable
+    - name: Prepare pnpm (activate latest)
+      shell: bash
+      run: corepack prepare pnpm@latest --activate || echo "pnpm prepare failed; continuing"
+    - name: Verify pnpm
+      shell: bash
+      run: |
+        if ! command -v pnpm >/dev/null 2>&1; then
+          echo "pnpm still not found after corepack prepare - installing via npm as fallback";
+          npm install -g pnpm@latest || { echo 'global npm install pnpm failed'; exit 1; }
+        fi
+        echo "pnpm version: $(pnpm -v)"
+    - name: Install Dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: ${{ inputs.install-command }}

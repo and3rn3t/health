@@ -426,8 +426,9 @@ function App() {
     }
   };
 
+  // Use FallbackComponent prop so ErrorFallback receives error/reset props
   return (
-    <ErrorBoundary fallback={<ErrorFallback />}>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
       <div className="bg-gray-50 flex h-screen">
         {/* Sidebar */}
         <div
@@ -507,7 +508,7 @@ function App() {
                     <button
                       key={tab.id}
                       role="tab"
-                      aria-selected={isActive ? 'true' : 'false'}
+                      aria-selected={isActive}
                       onClick={() => setActiveTab(tab.id)}
                       className={`
                         py-3 flex items-center gap-2 whitespace-nowrap border-b-2 px-4 text-sm font-medium transition-colors
@@ -539,7 +540,7 @@ function App() {
                       <button
                         key={tab.id}
                         role="tab"
-                        aria-selected={isActive ? 'true' : 'false'}
+                        aria-selected={isActive}
                         onClick={() => setActiveTab(tab.id)}
                         className={`
                           px-3 py-3 flex items-center gap-2 whitespace-nowrap border-b-2 text-sm font-medium transition-colors
@@ -564,7 +565,12 @@ function App() {
           <main className="flex-1 overflow-y-auto">{renderMainContent()}</main>
 
           {/* Footer */}
-          <Footer />
+          <Footer
+            healthScore={effectiveHealthData?.healthScore}
+            lastSync={new Date()}
+            connectionStatus="connected"
+            onNavigate={setActiveTab}
+          />
         </div>
       </div>
     </ErrorBoundary>

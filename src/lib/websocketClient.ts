@@ -3,7 +3,9 @@
  * - Auto-reconnect with exponential backoff
  * - Soft heartbeat (app-level ping/pong)
  * - Minimal subscribe API by message.type
+ * - Optional zod schema enforcement for message envelopes
  */
+import { messageEnvelopeSchema } from '@/schemas/health';
 
 export type WsEventName =
   | 'connect_start'
@@ -55,7 +57,9 @@ export class WebSocketClient {
   private readonly listeners = new Map<string, Set<MessageHandler>>();
   private closedByUser = false;
 
-  constructor(options?: WsClientOptions) {
+  private readonly enforceSchema: boolean;
+
+  constructor(options?: WsClientOptions & { enforceSchema?: boolean }) {
     this.opts = {
       url: options?.url ?? (null as unknown as string),
       maxBackoffMs: options?.maxBackoffMs ?? 30_000,
@@ -75,6 +79,7 @@ export class WebSocketClient {
           return false;
         }),
     } as Required<WsClientOptions>;
+    this.enforceSchema = !!options?.enforceSchema;
   }
 
   private telemetry(evt: WsTelemetry) {
@@ -142,10 +147,16 @@ export class WebSocketClient {
     }
   }
 
-  private dispatchMessage(data: unknown) {
-    if (!data || typeof data !== 'object') return;
-    const r = data as Record<string, unknown>;
-    const t = r.type;
+  private dispatchMessage(raw: unknown) {
+    if (!raw || typeof raw !== 'object') return;
+    // Start with unknown and refine optionally via schema
+    let data: unknown = raw;
+    if (this.enforceSchema) {
+      const parsed = messageEnvelopeSchema.safeParse(raw);
+      if (!parsed.success) return; // drop invalid
+      data = parsed.data;
+    }
+    const t = (data as { type?: unknown }).type;
     if (typeof t !== 'string') return;
     const set = this.listeners.get(t);
     if (!set) return;

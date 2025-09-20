@@ -85,24 +85,14 @@ struct VitalSignsView: View {
                 // Heart Rate Section
                 if let restingHR = metrics.restingHeartRate {
                     VitalSignCard(
-                        title: "Resting Heart Rate",
-                        value: "\(Int(restingHR))",
-                        unit: "BPM",
-                        icon: "heart.fill",
-                        color: .red,
-                        normalRange: "60-100 BPM"
+                        title: "Resting Heart Rate", value: "\(Int(restingHR))", unit: "BPM", icon: "heart.fill", color: .red, normalRange: "60-100 BPM"
                     )
                 }
                 
                 // Heart Rate Variability
                 if let hrv = metrics.heartRateVariability {
                     VitalSignCard(
-                        title: "Heart Rate Variability",
-                        value: String(format: "%.1f", hrv),
-                        unit: "ms",
-                        icon: "waveform.path.ecg",
-                        color: .blue,
-                        normalRange: "20-50 ms"
+                        title: "Heart Rate Variability", value: String(format: "%.1f", hrv), unit: "ms", icon: "waveform.path.ecg", color: .blue, normalRange: "20-50 ms"
                     )
                 }
                 
@@ -114,48 +104,28 @@ struct VitalSignsView: View {
                 // Oxygen Saturation
                 if let o2 = metrics.oxygenSaturation {
                     VitalSignCard(
-                        title: "Oxygen Saturation",
-                        value: String(format: "%.1f", o2),
-                        unit: "%",
-                        icon: "lungs.fill",
-                        color: .green,
-                        normalRange: "95-100%"
+                        title: "Oxygen Saturation", value: String(format: "%.1f", o2), unit: "%", icon: "lungs.fill", color: .green, normalRange: "95-100%"
                     )
                 }
                 
                 // Respiratory Rate
                 if let rr = metrics.respiratoryRate {
                     VitalSignCard(
-                        title: "Respiratory Rate",
-                        value: "\(Int(rr))",
-                        unit: "breaths/min",
-                        icon: "wind",
-                        color: .cyan,
-                        normalRange: "12-20 /min"
+                        title: "Respiratory Rate", value: "\(Int(rr))", unit: "breaths/min", icon: "wind", color: .cyan, normalRange: "12-20 /min"
                     )
                 }
                 
                 // Body Temperature
                 if let temp = metrics.bodyTemperature {
                     VitalSignCard(
-                        title: "Body Temperature",
-                        value: String(format: "%.1f", temp),
-                        unit: "°F",
-                        icon: "thermometer",
-                        color: .orange,
-                        normalRange: "97.0-99.0°F"
+                        title: "Body Temperature", value: String(format: "%.1f", temp), unit: "°F", icon: "thermometer", color: .orange, normalRange: "97.0-99.0°F"
                     )
                 }
                 
                 // VO2 Max
                 if let vo2 = metrics.vo2Max {
                     VitalSignCard(
-                        title: "VO₂ Max",
-                        value: String(format: "%.1f", vo2),
-                        unit: "mL/kg/min",
-                        icon: "figure.run",
-                        color: .purple,
-                        normalRange: "Varies by age/sex"
+                        title: "VO₂ Max", value: String(format: "%.1f", vo2), unit: "mL/kg/min", icon: "figure.run", color: .purple, normalRange: "Varies by age/sex"
                     )
                 }
             }
@@ -187,12 +157,7 @@ struct ActivityFitnessView: View {
                 // Environmental Audio
                 if let audioExposure = metrics.environmentalAudioExposure {
                     VitalSignCard(
-                        title: "Environmental Audio",
-                        value: String(format: "%.0f", audioExposure),
-                        unit: "dB",
-                        icon: "speaker.wave.3.fill",
-                        color: .yellow,
-                        normalRange: "< 85 dB safe"
+                        title: "Environmental Audio", value: String(format: "%.0f", audioExposure), unit: "dB", icon: "speaker.wave.3.fill", color: .yellow, normalRange: "< 85 dB safe"
                     )
                 }
             }
@@ -218,12 +183,7 @@ struct NutritionView: View {
                     // Hydration
                     if nutrition.water > 0 {
                         VitalSignCard(
-                            title: "Water Intake",
-                            value: String(format: "%.0f", nutrition.water),
-                            unit: "mL",
-                            icon: "drop.fill",
-                            color: .blue,
-                            normalRange: "2000-3000 mL/day"
+                            title: "Water Intake", value: String(format: "%.0f", nutrition.water), unit: "mL", icon: "drop.fill", color: .blue, normalRange: "2000-3000 mL/day"
                         )
                     }
                 } else {

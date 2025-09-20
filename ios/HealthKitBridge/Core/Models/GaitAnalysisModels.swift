@@ -85,11 +85,7 @@ struct GaitAssessment {
     let environmentalFactors: EnvironmentalFactors?
 
     init(
-        metrics: GaitMetrics,
-        riskScore: FallRiskScore,
-        recommendations: [String] = [],
-        detailedAnalysis: DetailedGaitAnalysis,
-        environmentalFactors: EnvironmentalFactors? = nil
+        metrics: GaitMetrics, riskScore: FallRiskScore, recommendations: [String] = [], detailedAnalysis: DetailedGaitAnalysis, environmentalFactors: EnvironmentalFactors? = nil
     ) {
         self.timestamp = Date()
         self.metrics = metrics
@@ -114,13 +110,13 @@ struct FallRiskScore {
 
         // Determine risk level based on score
         switch score {
-        case 0..<25:
+        case 0..<25: 
             self.riskLevel = .low
-        case 25..<50:
+        case 25..<50: 
             self.riskLevel = .moderate
-        case 50..<75:
+        case 50..<75: 
             self.riskLevel = .high
-        default:
+        default: 
             self.riskLevel = .critical
         }
     }
@@ -221,10 +217,7 @@ struct AsymmetryAnalysis {
     let overallAsymmetryScore: Double // 0-100 scale
 
     init(
-        stepLengthAsymmetry: Double,
-        stepTimeAsymmetry: Double,
-        swingTimeAsymmetry: Double,
-        stanceTimeAsymmetry: Double
+        stepLengthAsymmetry: Double, stepTimeAsymmetry: Double, swingTimeAsymmetry: Double, stanceTimeAsymmetry: Double
     ) {
         self.stepLengthAsymmetry = stepLengthAsymmetry
         self.stepTimeAsymmetry = stepTimeAsymmetry
@@ -233,10 +226,7 @@ struct AsymmetryAnalysis {
 
         // Calculate overall asymmetry score (lower is better)
         let asymmetries = [
-            stepLengthAsymmetry,
-            stepTimeAsymmetry,
-            swingTimeAsymmetry,
-            stanceTimeAsymmetry
+            stepLengthAsymmetry, stepTimeAsymmetry, swingTimeAsymmetry, stanceTimeAsymmetry
         ]
         let averageAsymmetry = asymmetries.reduce(0, +) / Double(asymmetries.count)
         self.overallAsymmetryScore = max(0, 100 - (averageAsymmetry * 10))
@@ -256,10 +246,7 @@ struct VariabilityAnalysis {
     let overallVariabilityScore: Double // 0-100 scale
 
     init(
-        stepTimeVariability: Double,
-        stepLengthVariability: Double,
-        walkingSpeedVariability: Double,
-        strideTimeVariability: Double
+        stepTimeVariability: Double, stepLengthVariability: Double, walkingSpeedVariability: Double, strideTimeVariability: Double
     ) {
         self.stepTimeVariability = stepTimeVariability
         self.stepLengthVariability = stepLengthVariability
@@ -268,10 +255,7 @@ struct VariabilityAnalysis {
 
         // Calculate overall variability score (lower variability = higher score)
         let variabilities = [
-            stepTimeVariability,
-            stepLengthVariability,
-            walkingSpeedVariability,
-            strideTimeVariability
+            stepTimeVariability, stepLengthVariability, walkingSpeedVariability, strideTimeVariability
         ]
         let averageVariability = variabilities.reduce(0, +) / Double(variabilities.count)
         self.overallVariabilityScore = max(0, 100 - (averageVariability * 100))
@@ -370,13 +354,7 @@ struct GaitDataPayload: Codable {
     let meta: [String: String]?
 
     init(
-        deviceId: String,
-        userId: String,
-        sessionId: String,
-        gaitMetrics: GaitMetrics,
-        assessment: GaitAssessment? = nil,
-        rawSensorData: [SensorReading]? = nil,
-        meta: [String: String]? = nil
+        deviceId: String, userId: String, sessionId: String, gaitMetrics: GaitMetrics, assessment: GaitAssessment? = nil, rawSensorData: [SensorReading]? = nil, meta: [String: String]? = nil
     ) {
         self.deviceId = deviceId
         self.userId = userId

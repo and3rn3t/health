@@ -8,13 +8,7 @@ final class WebSocketEnvelopeTests: XCTestCase {
         metrics.averageStepLength = 0.65
         metrics.stepFrequency = 100
         let payload = GaitDataPayload(
-            deviceId: "test-device",
-            userId: "user-1",
-            sessionId: "sess-123",
-            gaitMetrics: metrics,
-            assessment: nil,
-            rawSensorData: nil,
-            meta: ["protocol": "free_walk"]
+            deviceId: "test-device", userId: "user-1", sessionId: "sess-123", gaitMetrics: metrics, assessment: nil, rawSensorData: nil, meta: ["protocol": "free_walk"]
         )
 
         #if DEBUG

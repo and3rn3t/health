@@ -59,9 +59,7 @@ class WalkingSessionTracker: ObservableObject {
 
         // Initialize session
         let session = WalkingSession(
-            id: UUID(),
-            startTime: Date(),
-            type: .general
+            id: UUID(), startTime: Date(), type: .general
         )
 
         currentSession = session
@@ -145,16 +143,12 @@ class WalkingSessionTracker: ObservableObject {
         workoutBuilder = workoutSession?.associatedWorkoutBuilder()
 
         workoutBuilder?.dataSource = HKLiveWorkoutDataSource(
-            healthStore: healthStore,
-            workoutConfiguration: configuration
+            healthStore: healthStore, workoutConfiguration: configuration
         )
 
         // Start collecting data
         let typesToCollect: Set<HKSampleType> = [
-            HKQuantityType.quantityType(forIdentifier: .heartRate)!,
-            HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!,
-            HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!,
-            HKQuantityType.quantityType(forIdentifier: .stepCount)!
+            HKQuantityType.quantityType(forIdentifier: .heartRate)!, HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!, HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!, HKQuantityType.quantityType(forIdentifier: .stepCount)!
         ]
 
         workoutBuilder?.dataTypesToCollect = typesToCollect
@@ -167,8 +161,7 @@ class WalkingSessionTracker: ObservableObject {
     }
 
     private func endWorkout() async throws {
-        guard let workoutSession = workoutSession,
-              let workoutBuilder = workoutBuilder else { return }
+        guard let workoutSession = workoutSession, let workoutBuilder = workoutBuilder else { return }
 
         try await workoutSession.end()
         try await workoutBuilder.endCollection(withEnd: Date())
@@ -245,13 +238,8 @@ class WalkingSessionTracker: ObservableObject {
 
             // Update real-time gait metrics
             self.realTimeGaitMetrics = GaitMetrics(
-                walkingSpeed: self.sessionMetrics.averageSpeed,
-                cadence: self.calculateCurrentCadence(),
-                stepLength: self.calculateCurrentStepLength(),
-                walkingAsymmetry: 0.03, // Placeholder
-                gaitVariability: 0.05,  // Placeholder
-                timestamps: [Date()],
-                quality: .good
+                walkingSpeed: self.sessionMetrics.averageSpeed, cadence: self.calculateCurrentCadence(), stepLength: self.calculateCurrentStepLength(), walkingAsymmetry: 0.03, // Placeholder
+                gaitVariability: 0.05, timestamps: [Date()], quality: .good
             )
         }
     }
@@ -315,18 +303,9 @@ class WalkingSessionTracker: ObservableObject {
         guard let session = currentSession else { return }
 
         let walkingData: [String: Any] = [
-            "type": "walking_session_update",
-            "sessionId": session.id.uuidString,
-            "metrics": [
-                "duration": sessionMetrics.duration,
-                "distance": sessionMetrics.totalDistance,
-                "steps": sessionMetrics.totalSteps,
-                "averageSpeed": sessionMetrics.averageSpeed,
-                "averageCadence": sessionMetrics.averageCadence,
-                "calories": sessionMetrics.calories
-            ],
-            "realTimeGait": realTimeGaitMetrics?.toDictionary() ?? [:],
-            "timestamp": ISO8601DateFormatter().string(from: Date())
+            "type": "walking_session_update", "sessionId": session.id.uuidString, "metrics": [
+                "duration": sessionMetrics.duration, "distance": sessionMetrics.totalDistance, "steps": sessionMetrics.totalSteps, "averageSpeed": sessionMetrics.averageSpeed, "averageCadence": sessionMetrics.averageCadence, "calories": sessionMetrics.calories
+            ], "realTimeGait": realTimeGaitMetrics?.toDictionary() ?? [:], "timestamp": ISO8601DateFormatter().string(from: Date())
         ]
 
         // Send via WebSocket (implement WebSocket manager separately)
@@ -339,16 +318,11 @@ class WalkingSessionTracker: ObservableObject {
         locationManager.requestWhenInUseAuthorization()
 
         let typesToRead: Set<HKObjectType> = [
-            HKQuantityType.quantityType(forIdentifier: .heartRate)!,
-            HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!,
-            HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!,
-            HKQuantityType.quantityType(forIdentifier: .stepCount)!
+            HKQuantityType.quantityType(forIdentifier: .heartRate)!, HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!, HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!, HKQuantityType.quantityType(forIdentifier: .stepCount)!
         ]
 
         let typesToShare: Set<HKSampleType> = [
-            HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!,
-            HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!,
-            HKWorkoutType.workoutType()
+            HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!, HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!, HKWorkoutType.workoutType()
         ]
 
         healthStore.requestAuthorization(toShare: typesToShare, read: typesToRead) { _, error in
@@ -391,9 +365,7 @@ extension WalkingSessionTracker: CLLocationManagerDelegate {
 
         // Update elevation profile
         let elevationPoint = ElevationPoint(
-            coordinate: coordinate,
-            elevation: location.altitude,
-            timestamp: location.timestamp
+            coordinate: coordinate, elevation: location.altitude, timestamp: location.timestamp
         )
         elevationProfile.append(elevationPoint)
 
@@ -426,15 +398,12 @@ extension WalkingSessionTracker: HKLiveWorkoutBuilderDelegate {
     }
 
     private func processHeartRateData(from builder: HKLiveWorkoutBuilder) {
-        guard let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate),
-              let samples = builder.collectedData(for: heartRateType) as? [HKQuantitySample],
-              let latestSample = samples.last else { return }
+        guard let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate), let samples = builder.collectedData(for: heartRateType) as? [HKQuantitySample], let latestSample = samples.last else { return }
 
         let heartRate = latestSample.quantity.doubleValue(for: HKUnit(from: "count/min"))
 
         let heartRatePoint = HeartRatePoint(
-            heartRate: heartRate,
-            timestamp: latestSample.startDate
+            heartRate: heartRate, timestamp: latestSample.startDate
         )
 
         DispatchQueue.main.async {
@@ -444,8 +413,7 @@ extension WalkingSessionTracker: HKLiveWorkoutBuilderDelegate {
     }
 
     private func processEnergyData(from builder: HKLiveWorkoutBuilder) {
-        guard let energyType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned),
-              let samples = builder.collectedData(for: energyType) as? [HKQuantitySample] else { return }
+        guard let energyType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned), let samples = builder.collectedData(for: energyType) as? [HKQuantitySample] else { return }
 
         let totalEnergy = samples.reduce(0.0) { total, sample in
             total + sample.quantity.doubleValue(for: HKUnit.kilocalorie())
@@ -530,15 +498,15 @@ enum WalkingSessionError: Error {
 
     var localizedDescription: String {
         switch self {
-        case .locationNotAvailable:
+        case .locationNotAvailable: 
             return "Location services are not available"
-        case .locationPermissionDenied:
+        case .locationPermissionDenied: 
             return "Location permission is required for walk tracking"
-        case .healthKitNotAvailable:
+        case .healthKitNotAvailable: 
             return "HealthKit is not available on this device"
-        case .sessionAlreadyActive:
+        case .sessionAlreadyActive: 
             return "A walking session is already active"
-        case .noActiveSession:
+        case .noActiveSession: 
             return "No active walking session found"
         }
     }
@@ -568,12 +536,7 @@ extension CLLocationCoordinate2D: Codable {
 extension GaitMetrics {
     func toDictionary() -> [String: Any] {
         [
-            "walkingSpeed": averageWalkingSpeed ?? 0,
-            "cadence": cadence ?? 0,
-            "stepLength": averageStepLength ?? 0,
-            "asymmetry": walkingAsymmetry ?? 0,
-            "variability": gaitVariability ?? 0,
-            "quality": quality?.rawValue ?? "unknown"
+            "walkingSpeed": averageWalkingSpeed ?? 0, "cadence": cadence ?? 0, "stepLength": averageStepLength ?? 0, "asymmetry": walkingAsymmetry ?? 0, "variability": gaitVariability ?? 0, "quality": quality?.rawValue ?? "unknown"
         ]
     }
 }

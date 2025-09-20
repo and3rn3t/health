@@ -278,11 +278,11 @@ async function prebuildAnalysis() {
 
     try {
         // Run CSS optimizer
-        await execAsync('node scripts/css-optimizer.js');
+  await execAsync('node scripts/node/analysis/css/css-optimizer.js');
         console.log('✅ CSS optimization analysis complete');
 
         // Check bundle analyzer
-        await execAsync('node scripts/bundle-analyzer.js');
+  await execAsync('node scripts/node/analysis/bundle-analyzer.js');
         console.log('✅ Bundle analysis complete');
 
     } catch (err) {
@@ -326,7 +326,7 @@ async function postbuildAnalysis() {
 
     try {
         // Analyze final bundle sizes
-        await execAsync('node scripts/bundle-analyzer.js --post-build');
+  await execAsync('node scripts/node/analysis/bundle-analyzer.js --post-build');
         console.log('✅ Post-build analysis complete');
 
         // Generate performance report
@@ -447,8 +447,8 @@ function updatePackageScripts() {
         packageJson.scripts = {
             ...packageJson.scripts,
             'build:optimized': 'node scripts/optimized-build.js',
-            'build:analyze': 'node scripts/bundle-analyzer.js',
-            'css:optimize': 'node scripts/css-optimizer.js',
+            'build:analyze': 'node scripts/node/analysis/bundle-analyzer.js',
+            'css:optimize': 'node scripts/node/analysis/css/css-optimizer.js',
             'build:fast': 'vite build --config vite.config.optimized.ts',
         };
 

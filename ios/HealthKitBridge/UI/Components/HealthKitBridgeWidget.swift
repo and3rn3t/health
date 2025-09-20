@@ -13,8 +13,8 @@ struct HealthKitBridgeWidget: Widget {
         ) { entry in
             VitalSenseWidgetView(entry: entry)
         }
-        .configurationDisplayName("VitalSense Health")
-        .description("Monitor your health metrics and fall risk at a glance.")
+    .configurationDisplayName(Text(loc("widget_display_name")))
+    .description(Text(loc("widget_display_description")))
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
         .contentMarginsDisabled()
     }
@@ -51,18 +51,18 @@ struct VitalSenseProvider: TimelineProvider {
     ) {
         Task {
             let currentEntry = await fetchHealthData()
-            
+
             // Create timeline entries for the next 6 hours, updating every hour
             var entries: [VitalSenseEntry] = []
             let now = Date()
-            
+
             for hourOffset in 0..<6 {
                 let entryDate = Calendar.current.date(
                     byAdding: .hour,
                     value: hourOffset,
                     to: now
                 ) ?? now
-                
+
                 // For future entries, we'll use current data but update the date
                 let entry = VitalSenseEntry(
                     date: entryDate,
@@ -76,22 +76,22 @@ struct VitalSenseProvider: TimelineProvider {
                 )
                 entries.append(entry)
             }
-            
+
             // Refresh timeline every hour
             let nextUpdate = Calendar.current.date(
                 byAdding: .hour,
                 value: 1,
                 to: now
             ) ?? now
-            
+
             let timeline = Timeline(entries: entries, policy: .after(nextUpdate))
             completion(timeline)
         }
     }
-    
+
     private func fetchHealthData() async -> VitalSenseEntry {
         let healthManager = HealthKitManager.shared
-        
+
         // Fetch recent health data
         let healthScore = await fetchHealthScore()
         let fallRisk = await fetchFallRisk()
@@ -99,7 +99,7 @@ struct VitalSenseProvider: TimelineProvider {
         let steps = await fetchTodaySteps()
         let sleepHours = await fetchLastNightSleep()
         let trend = await calculateTrend()
-        
+
         return VitalSenseEntry(
             date: Date(),
             healthScore: healthScore,
@@ -111,33 +111,33 @@ struct VitalSenseProvider: TimelineProvider {
             lastUpdate: Date()
         )
     }
-    
+
     private func fetchHealthScore() async -> Int {
         // Implementation would calculate overall health score
         Int.random(in: 70...95) // Placeholder
     }
-    
-    private func fetchFallRisk() async -> FallRiskLevel {
+
+    private func fetchFallRisk() async -> WidgetFallRiskLevel {
         // Implementation would assess current fall risk
         .low // Placeholder
     }
-    
+
     private func fetchRecentHeartRate() async -> Int {
         // Implementation would get most recent heart rate
         Int.random(in: 60...100) // Placeholder
     }
-    
+
     private func fetchTodaySteps() async -> Int {
         // Implementation would get today's step count
         Int.random(in: 3000...15000) // Placeholder
     }
-    
+
     private func fetchLastNightSleep() async -> Double {
         // Implementation would get last night's sleep duration
         Double.random(in: 6.0...9.0) // Placeholder
     }
-    
-    private func calculateTrend() async -> TrendDirection {
+
+    private func calculateTrend() async -> ModernTrendDirection {
         // Implementation would compare recent vs historical data
         .improving // Placeholder
     }
@@ -147,11 +147,11 @@ struct VitalSenseProvider: TimelineProvider {
 struct VitalSenseEntry: TimelineEntry {
     let date: Date
     let healthScore: Int
-    let fallRisk: FallRiskLevel
+    let fallRisk: WidgetFallRiskLevel
     let heartRate: Int
     let steps: Int
     let sleepHours: Double
-    let trend: TrendDirection
+    let trend: ModernTrendDirection
     let lastUpdate: Date
 }
 
@@ -159,7 +159,7 @@ struct VitalSenseEntry: TimelineEntry {
 struct VitalSenseWidgetView: View {
     let entry: VitalSenseProvider.Entry
     @Environment(\.widgetFamily) var family
-    
+
     var body: some View {
         switch family {
         case .systemSmall:
@@ -177,7 +177,7 @@ struct VitalSenseWidgetView: View {
 // MARK: - Small Widget (Health Score Focus)
 struct SmallWidgetView: View {
     let entry: VitalSenseEntry
-    
+
     var body: some View {
         VStack(spacing: 8) {
             // Header
@@ -185,41 +185,41 @@ struct SmallWidgetView: View {
                 Image(systemName: "heart.fill")
                     .foregroundColor(ModernDesignSystem.Colors.primary)
                     .font(.caption)
-                
+
                 Text("VitalSense")
                     .font(ModernDesignSystem.Typography.caption)
                     .foregroundColor(ModernDesignSystem.Colors.textSecondary)
-                
+
                 Spacer()
-                
+
                 TrendIcon(direction: entry.trend)
             }
-            
+
             Spacer()
-            
+
             // Main Health Score
             VStack(spacing: 4) {
                 Text("\(entry.healthScore)")
                     .font(ModernDesignSystem.Typography.numericLarge)
                     .foregroundColor(healthScoreColor(entry.healthScore))
-                
+
                 Text("Health Score")
                     .font(ModernDesignSystem.Typography.caption)
                     .foregroundColor(ModernDesignSystem.Colors.textSecondary)
             }
-            
+
             Spacer()
-            
+
             // Fall Risk Indicator
             HStack {
                 Circle()
                     .fill(entry.fallRisk.color)
                     .frame(width: 6, height: 6)
-                
+
                 Text(entry.fallRisk.shortDisplayName)
                     .font(ModernDesignSystem.Typography.caption2)
                     .foregroundColor(ModernDesignSystem.Colors.textTertiary)
-                
+
                 Spacer()
             }
         }
@@ -227,7 +227,7 @@ struct SmallWidgetView: View {
         .background(ModernDesignSystem.Colors.surface)
         .cornerRadius(16)
     }
-    
+
     private func healthScoreColor(_ score: Int) -> Color {
         switch score {
         case 90...100:
@@ -247,7 +247,7 @@ struct SmallWidgetView: View {
 // MARK: - Medium Widget (Key Metrics)
 struct MediumWidgetView: View {
     let entry: VitalSenseEntry
-    
+
     var body: some View {
         VStack(spacing: 12) {
             // Header
@@ -256,15 +256,15 @@ struct MediumWidgetView: View {
                     Image(systemName: "heart.fill")
                         .foregroundColor(ModernDesignSystem.Colors.primary)
                         .font(.callout)
-                    
+
                     Text("VitalSense")
                         .font(ModernDesignSystem.Typography.callout)
                         .fontWeight(.medium)
                         .foregroundColor(ModernDesignSystem.Colors.textPrimary)
                 }
-                
+
                 Spacer()
-                
+
                 HStack(spacing: 4) {
                     TrendIcon(direction: entry.trend)
                     Text(entry.trend.displayName)
@@ -272,7 +272,7 @@ struct MediumWidgetView: View {
                         .foregroundColor(entry.trend.color)
                 }
             }
-            
+
             // Metrics Grid
             HStack(spacing: 16) {
                 // Health Score
@@ -280,53 +280,53 @@ struct MediumWidgetView: View {
                     Text("\(entry.healthScore)")
                         .font(ModernDesignSystem.Typography.numericMedium)
                         .foregroundColor(healthScoreColor(entry.healthScore))
-                    
+
                     Text("Health")
                         .font(ModernDesignSystem.Typography.caption)
                         .foregroundColor(ModernDesignSystem.Colors.textSecondary)
                 }
-                
+
                 Divider()
-                
+
                 // Heart Rate
                 VStack(spacing: 4) {
                     Text("\(entry.heartRate)")
                         .font(ModernDesignSystem.Typography.numericMedium)
                         .foregroundColor(ModernDesignSystem.Colors.textPrimary)
-                    
+
                     Text("BPM")
                         .font(ModernDesignSystem.Typography.caption)
                         .foregroundColor(ModernDesignSystem.Colors.textSecondary)
                 }
-                
+
                 Divider()
-                
+
                 // Steps
                 VStack(spacing: 4) {
                     Text("\(entry.steps.formatted(.number.notation(.compactName)))")
                         .font(ModernDesignSystem.Typography.numericMedium)
                         .foregroundColor(ModernDesignSystem.Colors.textPrimary)
-                    
-                    Text("Steps")
+
+                    Text(loc("walk_metric_steps"))
                         .font(ModernDesignSystem.Typography.caption)
                         .foregroundColor(ModernDesignSystem.Colors.textSecondary)
                 }
             }
-            
+
             // Fall Risk Status
             HStack {
                 HStack(spacing: 6) {
                     Circle()
                         .fill(entry.fallRisk.color)
                         .frame(width: 8, height: 8)
-                    
-                    Text("Fall Risk: \(entry.fallRisk.displayName)")
+
+                    Text(String(format: "%@ %@", loc("fall_risk_title"), entry.fallRisk.displayName))
                         .font(ModernDesignSystem.Typography.caption)
                         .foregroundColor(ModernDesignSystem.Colors.textSecondary)
                 }
-                
+
                 Spacer()
-                
+
                 Text(timeAgoString(from: entry.lastUpdate))
                     .font(ModernDesignSystem.Typography.caption2)
                     .foregroundColor(ModernDesignSystem.Colors.textTertiary)
@@ -336,7 +336,7 @@ struct MediumWidgetView: View {
         .background(ModernDesignSystem.Colors.surface)
         .cornerRadius(16)
     }
-    
+
     private func healthScoreColor(_ score: Int) -> Color {
         switch score {
         case 90...100:
@@ -356,7 +356,7 @@ struct MediumWidgetView: View {
 // MARK: - Large Widget (Comprehensive View)
 struct LargeWidgetView: View {
     let entry: VitalSenseEntry
-    
+
     var body: some View {
         VStack(spacing: 16) {
             // Header with Branding
@@ -365,21 +365,21 @@ struct LargeWidgetView: View {
                     Image(systemName: "heart.fill")
                         .foregroundColor(ModernDesignSystem.Colors.primary)
                         .font(.title3)
-                    
+
                     VStack(alignment: .leading, spacing: 2) {
                         Text("VitalSense")
                             .font(ModernDesignSystem.Typography.title3)
                             .fontWeight(.semibold)
                             .foregroundColor(ModernDesignSystem.Colors.textPrimary)
-                        
+
                         Text("Health Dashboard")
                             .font(ModernDesignSystem.Typography.caption)
                             .foregroundColor(ModernDesignSystem.Colors.textSecondary)
                     }
                 }
-                
+
                 Spacer()
-                
+
                 VStack(alignment: .trailing, spacing: 2) {
                     HStack(spacing: 4) {
                         TrendIcon(direction: entry.trend)
@@ -387,33 +387,33 @@ struct LargeWidgetView: View {
                             .font(ModernDesignSystem.Typography.caption)
                             .foregroundColor(entry.trend.color)
                     }
-                    
+
                     Text(timeAgoString(from: entry.lastUpdate))
                         .font(ModernDesignSystem.Typography.caption2)
                         .foregroundColor(ModernDesignSystem.Colors.textTertiary)
                 }
             }
-            
+
             // Primary Health Score
             VStack(spacing: 8) {
                 HStack {
                     Text("\(entry.healthScore)")
                         .font(.system(size: 48, weight: .bold, design: .rounded))
                         .foregroundColor(healthScoreColor(entry.healthScore))
-                    
+
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Health Score")
                             .font(ModernDesignSystem.Typography.subheadline)
                             .foregroundColor(ModernDesignSystem.Colors.textSecondary)
-                        
+
                         Text(healthScoreDescription(entry.healthScore))
                             .font(ModernDesignSystem.Typography.caption)
                             .foregroundColor(healthScoreColor(entry.healthScore))
                     }
-                    
+
                     Spacer()
                 }
-                
+
                 // Health Score Progress Bar
                 ProgressView(value: Double(entry.healthScore), total: 100)
                     .progressViewStyle(
@@ -423,51 +423,51 @@ struct LargeWidgetView: View {
                     )
                     .scaleEffect(y: 2)
             }
-            
+
             // Metrics Grid
             HStack(spacing: 20) {
-                MetricCard(
+                WidgetMetricCard(
                     title: "Heart Rate",
                     value: "\(entry.heartRate)",
                     unit: "BPM",
                     icon: "heart",
                     color: ModernDesignSystem.Colors.healthRed
                 )
-                
-                MetricCard(
+
+                WidgetMetricCard(
                     title: "Steps",
                     value: entry.steps.formatted(.number.notation(.compactName)),
                     unit: "today",
                     icon: "figure.walk",
                     color: ModernDesignSystem.Colors.primary
                 )
-                
-                MetricCard(
-                    title: "Sleep",
+
+                WidgetMetricCard(
+                    title: loc("sleep_title"),
                     value: String(format: "%.1f", entry.sleepHours),
-                    unit: "hours",
+                    unit: loc("hours_count_other").replacingOccurrences(of: "%d ", with: ""),
                     icon: "bed.double",
                     color: ModernDesignSystem.Colors.secondary
                 )
             }
-            
+
             // Fall Risk Assessment
             HStack {
                 HStack(spacing: 8) {
                     Circle()
                         .fill(entry.fallRisk.color)
                         .frame(width: 10, height: 10)
-                    
-                    Text("Fall Risk Assessment:")
+
+                    Text(loc("fall_risk_title") + ":")
                         .font(ModernDesignSystem.Typography.caption)
                         .foregroundColor(ModernDesignSystem.Colors.textSecondary)
-                    
+
                     Text(entry.fallRisk.displayName)
                         .font(ModernDesignSystem.Typography.caption)
                         .fontWeight(.medium)
                         .foregroundColor(entry.fallRisk.color)
                 }
-                
+
                 Spacer()
             }
         }
@@ -475,7 +475,7 @@ struct LargeWidgetView: View {
         .background(ModernDesignSystem.Colors.surface)
         .cornerRadius(20)
     }
-    
+
     private func healthScoreColor(_ score: Int) -> Color {
         switch score {
         case 90...100:
@@ -490,7 +490,7 @@ struct LargeWidgetView: View {
             return ModernDesignSystem.Colors.healthRed
         }
     }
-    
+
     private func healthScoreDescription(_ score: Int) -> String {
         switch score {
         case 90...100:
@@ -509,8 +509,8 @@ struct LargeWidgetView: View {
 
 // MARK: - Supporting Views
 struct TrendIcon: View {
-    let direction: TrendDirection
-    
+    let direction: ModernTrendDirection
+
     var body: some View {
         Image(systemName: direction.iconName)
             .font(.caption2)
@@ -518,29 +518,29 @@ struct TrendIcon: View {
     }
 }
 
-struct MetricCard: View {
+struct WidgetMetricCard: View {
     let title: String
     let value: String
     let unit: String
     let icon: String
     let color: Color
-    
+
     var body: some View {
         VStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.callout)
                 .foregroundColor(color)
-            
+
             Text(value)
                 .font(ModernDesignSystem.Typography.numericSmall)
                 .fontWeight(.semibold)
                 .foregroundColor(ModernDesignSystem.Colors.textPrimary)
-            
+
             VStack(spacing: 1) {
                 Text(title)
                     .font(ModernDesignSystem.Typography.caption2)
                     .foregroundColor(ModernDesignSystem.Colors.textSecondary)
-                
+
                 Text(unit)
                     .font(ModernDesignSystem.Typography.caption2)
                     .foregroundColor(ModernDesignSystem.Colors.textTertiary)
@@ -551,12 +551,12 @@ struct MetricCard: View {
 }
 
 // MARK: - Fall Risk Level
-enum FallRiskLevel: CaseIterable {
+enum WidgetFallRiskLevel: CaseIterable {
     case low
     case moderate
     case high
     case critical
-    
+
     var displayName: String {
         switch self {
         case .low:
@@ -569,7 +569,7 @@ enum FallRiskLevel: CaseIterable {
             return "Critical Risk"
         }
     }
-    
+
     var shortDisplayName: String {
         switch self {
         case .low:
@@ -582,7 +582,7 @@ enum FallRiskLevel: CaseIterable {
             return "Critical"
         }
     }
-    
+
     var color: Color {
         switch self {
         case .low:
@@ -618,14 +618,14 @@ struct VitalSenseWidget_Previews: PreviewProvider {
             trend: .improving,
             lastUpdate: Date().addingTimeInterval(-300) // 5 minutes ago
         )
-        
+
         Group {
             VitalSenseWidgetView(entry: sampleEntry)
                 .previewContext(WidgetPreviewContext(family: .systemSmall))
-            
+
             VitalSenseWidgetView(entry: sampleEntry)
                 .previewContext(WidgetPreviewContext(family: .systemMedium))
-            
+
             VitalSenseWidgetView(entry: sampleEntry)
                 .previewContext(WidgetPreviewContext(family: .systemLarge))
         }

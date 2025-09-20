@@ -29,13 +29,13 @@ struct LiDARShowcaseView: View {
 
         var recommendedDuration: Double {
             switch self {
-            case .freeWalk:
+            case .freeWalk: 
                 return 30 // seconds, default demo
-            case .tug:
+            case .tug: 
                 return 20 // typical completion time window
-            case .tenMWT:
+            case .tenMWT: 
                 return 30 // approximate for 10m at ~0.33 m/s for demo
-            case .sixMWT:
+            case .sixMWT: 
                 return 360 // 6 minutes
             }
         }
@@ -199,17 +199,15 @@ struct LiDARShowcaseView: View {
         impact(.medium)
         Task {
             for counter in stride(from: 3, through: 1, by: -1) {
-                await MainActor.run { countdown = counter }
+                await MainActor.run { countdown = counter } 
                 if counter > 1 { impact(.light) }
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
             }
-            await MainActor.run { showCountdown = false }
+            await MainActor.run { showCountdown = false } 
             impact(.heavy)
             sessionStart = Date()
             lidar.startGaitSession(
-                duration: duration,
-                simulate: simulate,
-                protocolTag: selectedProtocol.rawValue
+                duration: duration, simulate: simulate, protocolTag: selectedProtocol.rawValue
             )
         }
     }
@@ -230,5 +228,5 @@ struct LiDARShowcaseView: View {
 }
 
 #Preview {
-    NavigationView { LiDARShowcaseView() }
+    NavigationView { LiDARShowcaseView() } 
 }

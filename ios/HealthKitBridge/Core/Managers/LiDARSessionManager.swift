@@ -1,76 +1,4 @@
 import Foundation
-
-struct GaitMetricsPayload: Codable {
-    struct Gait: Codable {
-        var averageWalkingSpeed: Double?
-        var stepFrequency: Double?
-        var averageStepLength: Double?
-        var doubleSupportTime: Double?
-    }
-    var gaitMetrics: Gait
-}
-
-@MainActor
-final class LiDARSessionManager: ObservableObject {
-    static let shared = LiDARSessionManager()
-    private init() {}
-
-    @Published var isRunning: Bool = false
-    @Published var progress: Float = 0
-    @Published var lastPayload: GaitMetricsPayload?
-    @Published var qualityScore: Int = 90
-
-    private var timer: Timer?
-    private var startDate: Date?
-    private var duration: TimeInterval = 30
-
-    func startGaitSession(duration: TimeInterval, simulate: Bool, protocolTag: String) {
-        stopSession()
-        self.duration = duration
-        isRunning = true
-        startDate = Date()
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] t in
-            guard let self else { return }
-            guard let start = self.startDate else { return }
-            let elapsed = Date().timeIntervalSince(start)
-            self.progress = Float(min(1.0, elapsed / self.duration))
-            // Simulate payload
-            let speed = 1.0 + Double.random(in: -0.1...0.1)
-            let cadence = 110.0 + Double.random(in: -5...5)
-            let step = 0.68 + Double.random(in: -0.05...0.05)
-            let ds = 18.0 + Double.random(in: -2...2)
-            self.lastPayload = GaitMetricsPayload(gaitMetrics: .init(
-                averageWalkingSpeed: speed,
-                stepFrequency: cadence,
-                averageStepLength: step,
-                doubleSupportTime: ds
-            ))
-            self.qualityScore = min(100, max(20, self.qualityScore + Int.random(in: -2...2)))
-            // Push Live Activity state updates
-#if canImport(ActivityKit)
-            if #available(iOS 16.1, *) {
-                let remaining = max(0, self.duration - elapsed)
-                GaitLiveActivityController.shared.update(
-                    elapsed: elapsed,
-                    remaining: remaining,
-                    qualityScore: self.qualityScore,
-                    isConnected: WebSocketManager.shared.isConnected,
-                    protocolName: protocolTag
-                )
-            }
-#endif
-            if elapsed >= self.duration { self.stopSession() }
-        }
-        if let timer { RunLoop.main.add(timer, forMode: .common) }
-    }
-
-    func stopSession() {
-        timer?.invalidate(); timer = nil
-        isRunning = false
-        progress = 0
-    }
-}
-import Foundation
 import Combine
 import UIKit
 
@@ -110,9 +38,7 @@ final class LiDARSessionManager: ObservableObject {
     // MARK: - Public API
 
     func startGaitSession(
-        duration: TimeInterval = 30,
-        simulate: Bool = false,
-        protocolTag: String? = nil
+        duration: TimeInterval = 30, simulate: Bool = false, protocolTag: String? = nil
     ) {
         guard !isRunning else { return }
 
@@ -170,7 +96,7 @@ final class LiDARSessionManager: ObservableObject {
         streamTimer?.invalidate()
         streamTimer = nil
 
-        cancellables.forEach { $0.cancel() }
+        cancellables.forEach { $0.cancel() } 
         cancellables.removeAll()
 
         sessionStart = nil
@@ -212,8 +138,7 @@ final class LiDARSessionManager: ObservableObject {
             if let ds = gait.temporalMetrics?.doubleSupportPercentage {
                 metrics.doubleSupportTime = Double(ds)
             }
-            if let stance = gait.temporalMetrics?.stancePhasePercentage,
-               let swing = gait.temporalMetrics?.swingPhasePercentage {
+            if let stance = gait.temporalMetrics?.stancePhasePercentage, let swing = gait.temporalMetrics?.swingPhasePercentage {
                 metrics.stanceTime = Double(stance)
                 metrics.swingTime = Double(swing)
             }
@@ -227,18 +152,12 @@ final class LiDARSessionManager: ObservableObject {
         }
 
         let payload = GaitDataPayload(
-            deviceId: deviceId(),
-            userId: AppConfig.shared.userId,
-            sessionId: session.sessionId,
-            gaitMetrics: metrics,
-            assessment: nil,
-            rawSensorData: nil,
-            meta: protocolTag != nil ? ["protocol": protocolTag!] : nil
+            deviceId: deviceId(), userId: AppConfig.shared.userId, sessionId: session.sessionId, gaitMetrics: metrics, assessment: nil, rawSensorData: nil, meta: protocolTag != nil ? ["protocol": protocolTag!] : nil
         )
 
         Task {
             await WebSocketManager.shared.sendGaitDataPayload(payload)
-            await MainActor.run { self.lastPayload = payload }
+            await MainActor.run { self.lastPayload = payload } 
         }
 
         // Live Activity update with simple quality score
@@ -248,13 +167,9 @@ final class LiDARSessionManager: ObservableObject {
             let score = computeQualityScore(from: metrics)
             let proto = protocolTag ?? sessionProtocol ?? "free_walk"
             let connected = WebSocketManager.shared.isConnected
-            Task { @MainActor in self.qualityScore = score }
+            Task { @MainActor in self.qualityScore = score } 
             GaitLiveActivityController.shared.update(
-                elapsed: elapsed,
-                remaining: remaining,
-                qualityScore: score,
-                isConnected: connected,
-                protocolName: proto
+                elapsed: elapsed, remaining: remaining, qualityScore: score, isConnected: connected, protocolName: proto
             )
         }
         #endif
@@ -276,7 +191,7 @@ final class LiDARSessionManager: ObservableObject {
 
             // Update progress based on elapsed time for better UI feedback
             let progressValue = Float(elapsed / duration)
-            DispatchQueue.main.async { self.progress = min(max(progressValue, 0), 1) }
+            DispatchQueue.main.async { self.progress = min(max(progressValue, 0), 1) } 
 
             var m = GaitMetrics()
             m.averageWalkingSpeed = 1.2 + Double.random(in: -0.1...0.1)
@@ -287,18 +202,12 @@ final class LiDARSessionManager: ObservableObject {
             m.swingTime = 40 + Double.random(in: -2...2)
 
             let payload = GaitDataPayload(
-                deviceId: deviceId(),
-                userId: AppConfig.shared.userId,
-                sessionId: "sim_\(Int(start.timeIntervalSince1970))",
-                gaitMetrics: m,
-                assessment: nil,
-                rawSensorData: nil,
-                meta: protocolTag != nil ? ["protocol": protocolTag!] : nil
+                deviceId: deviceId(), userId: AppConfig.shared.userId, sessionId: "sim_\(Int(start.timeIntervalSince1970))", gaitMetrics: m, assessment: nil, rawSensorData: nil, meta: protocolTag != nil ? ["protocol": protocolTag!] : nil
             )
 
             Task {
                 await WebSocketManager.shared.sendGaitDataPayload(payload)
-                await MainActor.run { self.lastPayload = payload }
+                await MainActor.run { self.lastPayload = payload } 
             }
 
             // Live Activity update from simulated values
@@ -308,13 +217,9 @@ final class LiDARSessionManager: ObservableObject {
                 let score = self.computeQualityScore(from: m)
                 let proto = protocolTag ?? self.sessionProtocol ?? "free_walk"
                 let connected = WebSocketManager.shared.isConnected
-                Task { @MainActor in self.qualityScore = score }
+                Task { @MainActor in self.qualityScore = score } 
                 GaitLiveActivityController.shared.update(
-                    elapsed: e,
-                    remaining: r,
-                    qualityScore: score,
-                    isConnected: connected,
-                    protocolName: proto
+                    elapsed: e, remaining: r, qualityScore: score, isConnected: connected, protocolName: proto
                 )
             }
             #endif
@@ -353,9 +258,7 @@ final class LiDARSessionManager: ObservableObject {
         }
 
         if let ds = m.doubleSupportTime {
-            if ds > 20 { score -= 20 }
-            else if ds > 15 { score -= 10 }
-            else if ds < 8 { score -= 5 }
+            if ds > 20 { score -= 20 } else if ds > 15 { score -= 10 } else if ds < 8 { score -= 5 }
         }
 
         if let stance = m.stanceTime, let swing = m.swingTime {
@@ -364,8 +267,7 @@ final class LiDARSessionManager: ObservableObject {
         }
 
         if let stepLen = m.averageStepLength {
-            if stepLen < 0.45 { score -= 10 }
-            else if stepLen < 0.55 { score -= 5 }
+            if stepLen < 0.45 { score -= 10 } else if stepLen < 0.55 { score -= 5 }
         }
 
         // Ensure range 0...100

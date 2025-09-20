@@ -60,14 +60,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies (clean)
-        run: |
-          npm ci --prefer-offline
+        run: pnpm install --frozen-lockfile
 
       - name: Install npm-check-updates
-        run: npm install -g npm-check-updates
+        run: pnpm add -D npm-check-updates@latest
 
       - name: Determine update target
         id: cfg
@@ -79,33 +82,27 @@ jobs:
       - name: Check and update dependencies
         run: |
           case "${{ steps.cfg.outputs.type }}" in
-            "patch")
-              ncu -u --target patch
-              ;;
-            "minor")
-              ncu -u --target minor
-              ;;
-            "major")
-              ncu -u --target latest
-              ;;
-            "all")
-              ncu -u
-              ;;
+            "patch") npx npm-check-updates -u --target patch;;
+            "minor") npx npm-check-updates -u --target minor;;
+            "major") npx npm-check-updates -u --target latest;;
+            "all")   npx npm-check-updates -u;;
           esac
+          # Remove any generated package-lock.json to avoid confusion
+          [ -f package-lock.json ] && rm package-lock.json || true
 
       - name: Install updated dependencies
         run: |
-          if [ -n "$(git diff --name-only package.json)" ]; then
-            npm install
-            npm audit fix --audit-level=moderate || true
+          if [ -n "$(git diff --name-only package.json pnpm-lock.yaml)" ]; then
+            pnpm install --frozen-lockfile || pnpm install
+            pnpm audit --prod --audit-level=moderate || true
           else
             echo "No dependency updates detected"
           fi
 
       - name: Lint and Build (smoke)
         run: |
-          npm run lint || echo "Linting reported issues"
-          npm run build || echo "Build reported issues"
+          pnpm run lint || echo "Linting reported issues"
+          pnpm run build || echo "Build reported issues"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
@@ -146,15 +143,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies (for accurate resolution)
-        run: |
-          npm ci --prefer-offline
+        run: pnpm install --frozen-lockfile
 
-      - name: Collect npm outdated (JSON)
+      - name: Collect dependency outdated (JSON)
         run: |
-          npm outdated --json > outdated.json || echo "{}" > outdated.json
+          npx npm-check-updates --jsonUpgrades > upgrades.json || echo '{}' > upgrades.json
+          node -e "const fs=require('fs');const u=fs.existsSync('upgrades.json')?JSON.parse(fs.readFileSync('upgrades.json','utf8')):{};const d={};for(const [k,v] of Object.entries(u)){d[k]={current:'?',latest:v};}fs.writeFileSync('outdated.json',JSON.stringify(d,null,2));"
 
       - name: Generate Markdown summary
         run: |

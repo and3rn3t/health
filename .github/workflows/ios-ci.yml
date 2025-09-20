@@ -1,0 +1,239 @@
+name: iOS CI (Lint, Build, Test, Archive)
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'ios/**'
+  workflow_dispatch:
+
+env:
+  XCODE_VERSION: '16.4'
+  SCHEME: HealthKitBridge
+  PROJECT: ios/HealthKitBridge.xcodeproj
+  ARCHIVE_PATH: ios/build/HealthKitBridge.xcarchive
+  EXPORT_PATH: ios/build/export
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: SwiftLint (strict)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+      - name: Cache Homebrew
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/Homebrew
+            /usr/local/Homebrew
+          key: brew-${{ runner.os }}-${{ hashFiles('ios/.swiftlint.yml') }}
+      - name: Install SwiftLint / swift-format
+        run: |
+          brew install swiftlint || true
+          brew install swift-format || true
+      - name: Run SwiftLint (fail on errors)
+        id: swiftlint
+        working-directory: ios
+        run: |
+          set -e
+          echo 'Running SwiftLint strict mode'
+          swiftlint lint --reporter github-actions-logging > swiftlint.log || true
+          # Count errors (lines starting with Error: or containing 'error:' tokens from reporter)
+          ERROR_COUNT=$(grep -Ei 'error:' swiftlint.log | wc -l | tr -d ' ' || echo 0)
+          echo "error_count=$ERROR_COUNT" >> $GITHUB_OUTPUT
+          echo "SwiftLint error count: $ERROR_COUNT"
+          if [ "$ERROR_COUNT" -gt 0 ]; then
+            echo 'SwiftLint errors detected:'
+            cat swiftlint.log
+            exit 1
+          fi
+      - name: Upload SwiftLint Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: swiftlint-log
+          path: ios/swiftlint.log
+          retention-days: 7
+
+  build-test:
+    name: Build & Test (Debug)
+    runs-on: macos-15
+    needs: lint
+    outputs:
+      coverage_percent: ${{ steps.coverage.outputs.coverage_percent }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+      - name: Cache DerivedData & SPM
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData
+            ~/Library/Caches/org.swift.swiftpm
+            ~/.swiftpm
+            ios/build
+          key: dd-${{ runner.os }}-${{ env.XCODE_VERSION }}-${{ hashFiles('ios/Package.swift','ios/HealthKitBridge/**/*.swift') }}
+      - name: Resolve Dependencies
+        run: |
+          xcodebuild -resolvePackageDependencies -project ${{ env.PROJECT }} -scheme ${{ env.SCHEME }}
+      - name: Build for Testing (Debug)
+        run: |
+          set -e
+          xcodebuild build-for-testing \
+            -project ${{ env.PROJECT }} \
+            -scheme ${{ env.SCHEME }} \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -derivedDataPath ios/build \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" ENABLE_BITCODE=NO ONLY_ACTIVE_ARCH=YES
+      - name: Run Unit Tests
+        run: |
+          set -e
+            xcodebuild test-without-building \
+              -project ${{ env.PROJECT }} \
+              -scheme ${{ env.SCHEME }} \
+              -destination 'platform=iOS Simulator,name=iPhone 16' \
+              -derivedDataPath ios/build \
+              -only-testing HealthKitBridgeTests \
+              CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" ENABLE_BITCODE=NO || EXIT_CODE=$?
+            # Allow test failures to still collect artifacts but fail job
+            if [ ! -z "$EXIT_CODE" ]; then
+              echo "Tests reported non-zero exit ($EXIT_CODE)"; exit $EXIT_CODE; fi
+      - name: Extract Coverage (Best Effort)
+        id: coverage
+        if: always()
+        run: |
+          set +e
+          RESULT=$(ls ios/build/Logs/Test/*.xcresult 2>/dev/null | head -1)
+          if [ -z "$RESULT" ]; then echo "No xcresult found"; exit 0; fi
+          xcrun xccov view --report --json "$RESULT" > coverage.json 2>/dev/null || { echo "xccov JSON unavailable"; exit 0; }
+          TOTAL=$(python3 -c "import json;\nimport sys;\nimport math;\n\ntry:\n data=json.load(open('coverage.json'));\n cov=[t.get('lineCoverage',0) for t in data.get('targets',[]) if t.get('name')!='HealthKitBridgeUITests'];\n print(round(sum(cov)/len(cov)*100,2) if cov else 0)\nexcept Exception:\n print(0)")
+          echo "Line Coverage: ${TOTAL}%"
+          echo "coverage_percent=${TOTAL}" >> $GITHUB_OUTPUT
+      - name: Upload Coverage JSON
+        if: always() && steps.coverage.outputs.coverage_percent != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-json
+          path: coverage.json
+          retention-days: 7
+      - name: Coverage Gate (Min 40%)
+        if: always()
+        run: |
+          RESULT=$(ls ios/build/Logs/Test/*.xcresult 2>/dev/null | head -1)
+          if [ -z "$RESULT" ]; then echo "Skipping coverage gate (no results)"; exit 0; fi
+          COV=$(xcrun xccov view --report --json "$RESULT" | python3 -c "import sys,json;\n\nimport math;\n\ntry:\n data=json.load(sys.stdin);\n cov=[t.get('lineCoverage',0) for t in data.get('targets',[]) if t.get('name')!='HealthKitBridgeUITests'];\n print(round(sum(cov)/len(cov)*100,2) if cov else 0)\nexcept Exception:\n print(0)")
+          echo "Computed coverage: ${COV}%"
+          MIN=40
+          awk -v c=$COV -v m=$MIN 'BEGIN { if (c+0 < m) { printf("Coverage %.2f%% below minimum %d%%\n", c, m); exit 1 } }'
+          echo "Coverage gate passed (>= ${MIN}%)"
+      - name: Upload Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-debug
+          path: ios/build/Logs/Test/*.xcresult
+          retention-days: 7
+
+  archive-release:
+    name: Archive & Export (Release IPA)
+    runs-on: macos-15
+    needs: build-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+      - name: Cache DerivedData & SPM
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData
+            ~/Library/Caches/org.swift.swiftpm
+            ~/.swiftpm
+            ios/build
+          key: archive-${{ runner.os }}-${{ env.XCODE_VERSION }}-${{ hashFiles('ios/Package.swift','ios/HealthKitBridge/**/*.swift') }}
+      - name: Archive (Release)
+        run: |
+          set -e
+          xcodebuild archive \
+            -project ${{ env.PROJECT }} \
+            -scheme ${{ env.SCHEME }} \
+            -configuration Release \
+            -archivePath ${{ env.ARCHIVE_PATH }} \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" SKIP_INSTALL=NO ENABLE_BITCODE=NO || EXIT_CODE=$?
+          if [ ! -d "${{ env.ARCHIVE_PATH }}" ]; then echo 'Archive failed'; exit 1; fi
+      - name: Export IPA (Ad-hoc Unsigned)
+        run: |
+          set -e
+          mkdir -p ${{ env.EXPORT_PATH }}
+          cat > exportOptions.plist <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>ad-hoc</string>
+            <key>stripSwiftSymbols</key><true/>
+            <key>compileBitcode</key><false/>
+            <key>destination</key><string>export</string>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive -archivePath ${{ env.ARCHIVE_PATH }} -exportPath ${{ env.EXPORT_PATH }} -exportOptionsPlist exportOptions.plist || echo 'Export may have partial artifacts'
+          ls -la ${{ env.EXPORT_PATH }} || true
+      - name: Upload Archive Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-archive
+          path: |
+            ${{ env.ARCHIVE_PATH }}
+            ${{ env.EXPORT_PATH }}
+          retention-days: 14
+
+  summary:
+    runs-on: ubuntu-latest
+    needs: [lint, build-test, archive-release]
+    if: always()
+    steps:
+      - name: CI Summary
+        run: |
+          echo '## iOS CI Summary' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '- Lint: ${{ needs.lint.result }}' >> $GITHUB_STEP_SUMMARY
+          echo '- Build & Test: ${{ needs.build-test.result }}' >> $GITHUB_STEP_SUMMARY
+          echo '- Archive: ${{ needs.archive-release.result }}' >> $GITHUB_STEP_SUMMARY
+          echo '- Coverage: ${{ needs.build-test.outputs.coverage_percent || 'n/a' }}%' >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.build-test.result }}" = "success" ] && [ -n "${{ needs.build-test.outputs.coverage_percent }}" ]; then
+            cov=${{ needs.build-test.outputs.coverage_percent }}
+            awk -v c=$cov -v m=40 'BEGIN { if (c+0 < m) { print "- Coverage Gate: ❌ (" c "% < " m "%)" } else { print "- Coverage Gate: ✅ (" c "% >= " m "%)" } }' >> $GITHUB_STEP_SUMMARY
+          else
+            echo '- Coverage Gate: Skipped' >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ '${{ needs.lint.result }}' != 'success' ] || [ '${{ needs.build-test.result }}' != 'success' ]; then
+            echo '### ❌ One or more critical stages failed' >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo '### ✅ All critical stages passed' >> $GITHUB_STEP_SUMMARY
+          fi

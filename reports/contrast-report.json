@@ -1,0 +1,154 @@
+{
+  "generatedAt": "2025-09-20T02:03:02.620Z",
+  "lines": 202,
+  "bytes": 5699,
+  "sentinelCount": 1,
+  "fails": 0,
+  "borderline": 0,
+  "pairs": [
+    {
+      "theme": "light",
+      "pair": "foreground on background",
+      "fg": "#1e293b",
+      "bg": "#f8fafc",
+      "ratio": 13.98,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "light",
+      "pair": "card-foreground on card",
+      "fg": "#1e293b",
+      "bg": "#ffffff",
+      "ratio": 14.63,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "light",
+      "pair": "popover-foreground on popover",
+      "fg": "#1e293b",
+      "bg": "#ffffff",
+      "ratio": 14.63,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "light",
+      "pair": "primary-foreground on primary",
+      "fg": "#ffffff",
+      "bg": "#2563eb",
+      "ratio": 5.17,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "light",
+      "pair": "secondary-foreground on secondary",
+      "fg": "#475569",
+      "bg": "#e2e8f0",
+      "ratio": 6.15,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "light",
+      "pair": "muted-foreground on muted",
+      "fg": "#566176",
+      "bg": "#f1f5f9",
+      "ratio": 5.69,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "light",
+      "pair": "accent-foreground on accent",
+      "fg": "#ffffff",
+      "bg": "#056487",
+      "ratio": 6.61,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "light",
+      "pair": "destructive-foreground on destructive",
+      "fg": "#ffffff",
+      "bg": "#dc2626",
+      "ratio": 4.83,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "dark",
+      "pair": "foreground on background",
+      "fg": "#f8fafc",
+      "bg": "#0f172a",
+      "ratio": 17.06,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "dark",
+      "pair": "card-foreground on card",
+      "fg": "#f8fafc",
+      "bg": "#1e293b",
+      "ratio": 13.98,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "dark",
+      "pair": "popover-foreground on popover",
+      "fg": "#f8fafc",
+      "bg": "#1e293b",
+      "ratio": 13.98,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "dark",
+      "pair": "primary-foreground on primary",
+      "fg": "#ffffff",
+      "bg": "#2563eb",
+      "ratio": 5.17,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "dark",
+      "pair": "secondary-foreground on secondary",
+      "fg": "#cbd5e1",
+      "bg": "#334155",
+      "ratio": 6.97,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "dark",
+      "pair": "muted-foreground on muted",
+      "fg": "#94a3b8",
+      "bg": "#1e293b",
+      "ratio": 5.71,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "dark",
+      "pair": "accent-foreground on accent",
+      "fg": "#333333",
+      "bg": "#0ea5e9",
+      "ratio": 4.56,
+      "status": "AA (normal)",
+      "suggestion": null
+    },
+    {
+      "theme": "dark",
+      "pair": "destructive-foreground on destructive",
+      "fg": "#ffffff",
+      "bg": "#dc2626",
+      "ratio": 4.83,
+      "status": "AA (normal)",
+      "suggestion": null
+    }
+  ]
+}

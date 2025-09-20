@@ -31,9 +31,7 @@ struct GaitShowcaseHomeView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color.blue.opacity(0.15), Color.teal.opacity(0.15)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
+                colors: [Color.blue.opacity(0.15), Color.teal.opacity(0.15)], startPoint: .topLeading, endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
 
@@ -132,24 +130,19 @@ struct GaitShowcaseHomeView: View {
 #endif
                     } else {
                         lidar.startGaitSession(
-                            duration: 30,
-                            simulate: simulate,
-                            protocolTag: selectedProtocol.rawValue
+                            duration: 30, simulate: simulate, protocolTag: selectedProtocol.rawValue
                         )
 #if canImport(ActivityKit)
                         if #available(iOS 16.1, *) {
                             GaitLiveActivityController.shared.startSessionActivity(
-                                protocolName: selectedProtocol.label,
-                                duration: 30,
-                                isConnected: webSocket.isConnected
+                                protocolName: selectedProtocol.label, duration: 30, isConnected: webSocket.isConnected
                             )
                         }
 #endif
                     }
                 } label: {
                     Label(
-                        lidar.isRunning ? "Stop" : "Start",
-                        systemImage: lidar.isRunning ? "stop.circle.fill" : "figure.walk"
+                        lidar.isRunning ? "Stop" : "Start", systemImage: lidar.isRunning ? "stop.circle.fill" : "figure.walk"
                     )
                         .font(.title3.weight(.semibold))
                         .frame(minWidth: 120)
@@ -240,20 +233,18 @@ private struct GlassCard<Content: View>: View {
 }
 
 #Preview {
-    NavigationView { GaitShowcaseHomeView() }
+    NavigationView { GaitShowcaseHomeView() } 
 }
 
 // MARK: - AR Preview Section
 private extension GaitShowcaseHomeView {
     var arPreview: some View {
         GaitAROverlayView(
-            protocolName: selectedProtocol.label,
-            goalDistanceMeters: goalDistance(for: selectedProtocol),
-            onStabilityUpdate: { index in
+            protocolName: selectedProtocol.label, goalDistanceMeters: goalDistance(for: selectedProtocol)
+        ) { index in
                 // index is 0.0 (unstable) .. 1.0 (stable)
                 stabilityIndex = max(0, min(1, index))
             }
-        )
             .frame(height: 140)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(

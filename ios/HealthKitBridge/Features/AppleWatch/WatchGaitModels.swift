@@ -16,14 +16,14 @@ struct WatchGaitMetrics: Codable {
     let sessionDuration: TimeInterval
     let stepCount: Int
     let distanceTraveled: Double
-    
-    var overallRiskLevel: FallRiskLevel {
+
+    var overallRiskLevel: WatchFallRiskLevel {
         var riskFactors = 0
         if walkingSpeed < 1.2 { riskFactors += 1 }
         if asymmetry > 3.0 { riskFactors += 1 }
         if doubleSupportTime > 25.0 { riskFactors += 1 }
         if cadence < 100 { riskFactors += 1 }
-        
+
         switch riskFactors {
         case 0: return .low
         case 1: return .moderate
@@ -45,15 +45,15 @@ struct RealtimeGaitMetrics: Codable {
     var sessionStartTime: Date?
 }
 
-enum FallRiskLevel: String, CaseIterable, Codable {
+enum WatchFallRiskLevel: String, CaseIterable, Codable {
     case low, moderate, high, critical
-    
+
     var displayName: String {
         switch self {
-        case .low: return "Low Risk"
-        case .moderate: return "Moderate Risk"
-        case .high: return "High Risk"
-        case .critical: return "Critical Risk"
+    case .low: return "Low Risk"
+    case .moderate: return "Moderate Risk"
+    case .high: return "High Risk"
+    case .critical: return "Critical Risk"
         }
     }
 }
@@ -74,7 +74,7 @@ struct GaitMonitoringSession: Codable {
     let monitoringType: GaitMonitoringType
     let sensitivity: MonitoringSensitivity
     var metrics: [WatchGaitMetrics] = []
-    
+
     init(type: GaitMonitoringType = .continuous, sensitivity: MonitoringSensitivity = .standard) {
         self.id = UUID()
         self.startTime = Date()

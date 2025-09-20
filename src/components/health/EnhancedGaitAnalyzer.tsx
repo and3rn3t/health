@@ -3,6 +3,8 @@
  * Combines LiDAR simulation with real device sensor data
  */
 
+import GaitTrendsPanel from '@/components/health/GaitTrendsPanel';
+import { Sparkline } from '@/components/health/Sparkline';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,9 +17,11 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useRecentGait } from '@/hooks/useRecentGait';
 import type { GaitMetrics } from '@/lib/sensors/DeviceSensorManager';
 import { DeviceSensorManager } from '@/lib/sensors/DeviceSensorManager';
-import { useCallback, useEffect, useState } from 'react';
+import type { LiveGaitSnapshot } from '@/schemas/health';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 // Enhanced Gait Analysis Types
 interface EnhancedGaitSession {
@@ -56,6 +60,100 @@ export function EnhancedGaitAnalyzer() {
     null
   );
   const [notifications, setNotifications] = useState<string[]>([]);
+
+  // Remote aggregated gait data (multi-metric trends)
+  const recentGait = useRecentGait(60);
+  const remoteSnapshots: LiveGaitSnapshot[] = useMemo(
+    () => recentGait.data?.snapshots || [],
+    [recentGait.data?.snapshots]
+  );
+
+  interface RemoteTrendMetric {
+    direction: 'improving' | 'stable' | 'declining' | null;
+    slope: number | null;
+    confidence: number | null;
+    sampleCount?: number;
+  }
+
+  const remoteTrends: Record<string, RemoteTrendMetric> | undefined =
+    (recentGait.data?.trends as
+      | Record<string, RemoteTrendMetric>
+      | undefined) || undefined;
+
+  const buildSeries = useCallback(
+    (vals: (number | null | undefined)[]) =>
+      vals.filter((v): v is number => typeof v === 'number').slice(-40),
+    []
+  );
+
+  const speedSeries = useMemo(
+    () => buildSeries(remoteSnapshots.map((s) => s.speed)),
+    [remoteSnapshots, buildSeries]
+  );
+  const cadenceSeries = useMemo(
+    () => buildSeries(remoteSnapshots.map((s) => s.stepFrequency)),
+    [remoteSnapshots, buildSeries]
+  );
+  const asymSeries = useMemo(
+    () => buildSeries(remoteSnapshots.map((s) => s.asymmetry)),
+    [remoteSnapshots, buildSeries]
+  );
+  const variabilitySeries = useMemo(
+    () => buildSeries(remoteSnapshots.map((s) => s.variability)),
+    [remoteSnapshots, buildSeries]
+  );
+
+  // Sparkline row component (local to analyzer)
+  const SparklineRow: React.FC<{
+    label: string;
+    values: number[];
+    trend?: RemoteTrendMetric;
+    color: string; // Tailwind text-* color class
+  }> = ({ label, values, trend, color }) => {
+    return (
+      <div className="flex items-center justify-between py-1 first:pt-0 last:pb-0">
+        <div className="flex flex-col">
+          <span className="text-xs text-gray-700 font-medium">{label}</span>
+          <span className="text-gray-400 text-[10px]">
+            n={values.length}
+            {trend?.sampleCount ? ` / ${trend.sampleCount}` : ''}
+          </span>
+        </div>
+        <div className="gap-3 flex items-center">
+          <Sparkline
+            values={values}
+            confidence={trend?.confidence ?? null}
+            className={`${color} w-24 h-7`}
+            title={`${label} recent samples`}
+          />
+          <div className="flex flex-col items-end">
+            <Badge
+              variant={
+                trend?.direction === 'improving'
+                  ? 'default'
+                  : trend?.direction === 'declining'
+                    ? 'destructive'
+                    : 'secondary'
+              }
+              className="text-[10px] capitalize"
+            >
+              {trend?.direction ?? '—'}
+            </Badge>
+            <span className="text-[10px] tabular-nums text-gray-500">
+              {trend?.slope == null
+                ? 'slope —'
+                : `slope ${trend.slope.toFixed(4)}`}
+            </span>
+            <span className="text-[10px] tabular-nums text-gray-500">
+              {trend?.confidence == null
+                ? 'conf —'
+                : `conf ${(trend.confidence * 100).toFixed(0)}%`}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // Initialize sensor manager
   useEffect(() => {
@@ -494,82 +592,154 @@ export function EnhancedGaitAnalyzer() {
           </TabsContent>
 
           {/* Analysis & Trends */}
-          <TabsContent value="trends" className="space-y-4">
+          <TabsContent value="trends" className="space-y-6">
+            {/* Local (heuristic) trends & recommendations */}
             {metrics.trends && (
-              <>
-                <div className="md:grid-cols-2 grid grid-cols-1 gap-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Trend Analysis</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span>Speed Trend:</span>
-                        <Badge
-                          variant={
-                            metrics.trends.speedTrend === 'improving'
-                              ? 'default'
-                              : metrics.trends.speedTrend === 'stable'
-                                ? 'secondary'
-                                : 'destructive'
-                          }
-                        >
-                          {metrics.trends.speedTrend === 'improving'
-                            ? '📈 Improving'
+              <div className="md:grid-cols-2 grid grid-cols-1 gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Local Trend Heuristics</CardTitle>
+                    <CardDescription>
+                      Derived from current real-time sensor feed
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span>Speed Trend:</span>
+                      <Badge
+                        variant={
+                          metrics.trends.speedTrend === 'improving'
+                            ? 'default'
                             : metrics.trends.speedTrend === 'stable'
-                              ? '📊 Stable'
-                              : '📉 Declining'}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span>Stability Trend:</span>
-                        <Badge
-                          variant={
-                            metrics.trends.stabilityTrend === 'improving'
-                              ? 'default'
-                              : metrics.trends.stabilityTrend === 'stable'
-                                ? 'secondary'
-                                : 'destructive'
-                          }
-                        >
-                          {metrics.trends.stabilityTrend === 'improving'
-                            ? '📈 Improving'
+                              ? 'secondary'
+                              : 'destructive'
+                        }
+                      >
+                        {metrics.trends.speedTrend === 'improving'
+                          ? '📈 Improving'
+                          : metrics.trends.speedTrend === 'stable'
+                            ? '📊 Stable'
+                            : '📉 Declining'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Stability Trend:</span>
+                      <Badge
+                        variant={
+                          metrics.trends.stabilityTrend === 'improving'
+                            ? 'default'
                             : metrics.trends.stabilityTrend === 'stable'
-                              ? '📊 Stable'
-                              : '📉 Declining'}
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
+                              ? 'secondary'
+                              : 'destructive'
+                        }
+                      >
+                        {metrics.trends.stabilityTrend === 'improving'
+                          ? '📈 Improving'
+                          : metrics.trends.stabilityTrend === 'stable'
+                            ? '📊 Stable'
+                            : '📉 Declining'}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Recommendations</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        {metrics.trends.recommendations.length > 0 ? (
-                          metrics.trends.recommendations.map((rec, index) => (
-                            <Alert key={index} className="py-2">
-                              <AlertDescription className="text-sm">
-                                💡 {rec}
-                              </AlertDescription>
-                            </Alert>
-                          ))
-                        ) : (
-                          <Alert className="py-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recommendations</CardTitle>
+                    <CardDescription>
+                      Contextual guidance from live metrics
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {metrics.trends.recommendations.length > 0 ? (
+                        metrics.trends.recommendations.map((rec, index) => (
+                          <Alert key={index} className="py-2">
                             <AlertDescription className="text-sm">
-                              ✅ Your gait metrics look good! Keep up the great
-                              work.
+                              💡 {rec}
                             </AlertDescription>
                           </Alert>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </>
+                        ))
+                      ) : (
+                        <Alert className="py-2">
+                          <AlertDescription className="text-sm">
+                            ✅ Your gait metrics look good! Keep up the great
+                            work.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             )}
+
+            {/* Remote multi-metric aggregated trends */}
+            <div className="md:grid-cols-3 grid grid-cols-1 gap-4">
+              <Card className="col-span-1">
+                <CardHeader>
+                  <CardTitle>Aggregated Gait Trends</CardTitle>
+                  <CardDescription>
+                    Server-computed multi-metric regression
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <GaitTrendsPanel className="mt-1" />
+                  {recentGait.isLoading && (
+                    <p className="text-xs mt-2 text-gray-500">
+                      Fetching recent gait history…
+                    </p>
+                  )}
+                  {recentGait.error && (
+                    <p className="text-xs text-rose-600 mt-2">
+                      Remote trend fetch failed
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+              <Card className="md:col-span-2 col-span-1">
+                <CardHeader>
+                  <CardTitle>Micro Trend Sparklines</CardTitle>
+                  <CardDescription>
+                    Recent sample evolution (last {remoteSnapshots.length}{' '}
+                    samples)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {remoteSnapshots.length === 0 && !recentGait.isLoading && (
+                    <p className="text-xs text-gray-500">
+                      No remote gait samples yet.
+                    </p>
+                  )}
+                  <div className="flex flex-col divide-y divide-gray-100/60">
+                    <SparklineRow
+                      label="Speed (m/s)"
+                      values={speedSeries}
+                      trend={remoteTrends?.speed}
+                      color="text-blue-600"
+                    />
+                    <SparklineRow
+                      label="Cadence (spm)"
+                      values={cadenceSeries}
+                      trend={remoteTrends?.cadence}
+                      color="text-green-600"
+                    />
+                    <SparklineRow
+                      label="Asymmetry"
+                      values={asymSeries}
+                      trend={remoteTrends?.asymmetry}
+                      color="text-orange-600"
+                    />
+                    <SparklineRow
+                      label="Variability"
+                      values={variabilitySeries}
+                      trend={remoteTrends?.variability}
+                      color="text-purple-600"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       )}

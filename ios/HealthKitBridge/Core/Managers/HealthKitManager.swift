@@ -18,18 +18,18 @@ class ConnectionQualityMonitor: ObservableObject {
     @Published var latency: TimeInterval = 0.0
     @Published var packetLoss: Double = 0.0
     @Published var reconnectCount: Int = 0
-    
+
     private var lastPingTime: Date?
-    
+
     func recordPing() {
         lastPingTime = Date()
     }
-    
+
     func recordPong() {
         guard let pingTime = lastPingTime else { return }
         latency = Date().timeIntervalSince(pingTime)
     }
-    
+
     func recordReconnect() {
         reconnectCount += 1
     }
@@ -43,14 +43,14 @@ class HealthKitManager: NSObject, ObservableObject {
     private var webSocketManager: WebSocketManager?
     private var deviceToken: String?
     private let userId: String
-    
+
     // Enhanced configuration using new config system
     private let config = EnhancedAppConfig.shared
 
     // Health data types we want to read - enhanced for comprehensive movement analysis
     private lazy var healthDataTypes: Set<HKObjectType> = {
         var types: Set<HKObjectType> = []
-        
+
         // Core metrics
         if let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate) {
             types.insert(heartRateType)
@@ -64,7 +64,7 @@ class HealthKitManager: NSObject, ObservableObject {
         if let activeEnergyType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned) {
             types.insert(activeEnergyType)
         }
-        
+
         // EXISTING Critical fall risk indicators
         if let walkingSteadiness = HKQuantityType.quantityType(forIdentifier: .appleWalkingSteadiness) {
             types.insert(walkingSteadiness)
@@ -90,7 +90,7 @@ class HealthKitManager: NSObject, ObservableObject {
         if let walkingDoubleSupportPercentage = HKQuantityType.quantityType(forIdentifier: .walkingDoubleSupportPercentage) {
             types.insert(walkingDoubleSupportPercentage)
         }
-        
+
         // NEW: Additional Critical Movement & Balance Metrics
         if let flightsClimbed = HKQuantityType.quantityType(forIdentifier: .flightsClimbed) {
             types.insert(flightsClimbed)
@@ -104,7 +104,7 @@ class HealthKitManager: NSObject, ObservableObject {
         if let standTime = HKQuantityType.quantityType(forIdentifier: .appleStandTime) {
             types.insert(standTime)
         }
-        
+
         // NEW: Critical Postural & Balance Metrics
         if let headphoneAudioExposure = HKQuantityType.quantityType(forIdentifier: .headphoneAudioExposure) {
             types.insert(headphoneAudioExposure) // Can affect balance/spatial awareness
@@ -112,7 +112,7 @@ class HealthKitManager: NSObject, ObservableObject {
         if let environmentalAudioExposure = HKQuantityType.quantityType(forIdentifier: .environmentalAudioExposure) {
             types.insert(environmentalAudioExposure)
         }
-        
+
         // NEW: Advanced Movement Quality Indicators
         if let cyclingSpeed = HKQuantityType.quantityType(forIdentifier: .cyclingSpeed) {
             types.insert(cyclingSpeed) // Balance and coordination indicator
@@ -123,7 +123,7 @@ class HealthKitManager: NSObject, ObservableObject {
         if let cyclingCadence = HKQuantityType.quantityType(forIdentifier: .cyclingCadence) {
             types.insert(cyclingCadence) // Coordination and rhythm
         }
-        
+
         // NEW: Critical Sleep & Recovery Metrics (affect balance)
         if let sleepAnalysis = HKCategoryType.categoryType(forIdentifier: .sleepAnalysis) {
             types.insert(sleepAnalysis) // Sleep quality affects balance and cognition
@@ -131,7 +131,7 @@ class HealthKitManager: NSObject, ObservableObject {
         if let timeInDaylight = HKQuantityType.quantityType(forIdentifier: .timeInDaylight) {
             types.insert(timeInDaylight) // Circadian rhythm affects stability
         }
-        
+
         // NEW: Advanced Cardiovascular Metrics (critical for fall risk)
         if let walkingHeartRateAverage = HKQuantityType.quantityType(forIdentifier: .walkingHeartRateAverage) {
             types.insert(walkingHeartRateAverage) // Cardiovascular response to movement
@@ -142,7 +142,7 @@ class HealthKitManager: NSObject, ObservableObject {
         if let bloodPressureDiastolic = HKQuantityType.quantityType(forIdentifier: .bloodPressureDiastolic) {
             types.insert(bloodPressureDiastolic)
         }
-        
+
         // NEW: Swimming & Water Movement (balance in different environments)
         if let swimmingStrokeCount = HKQuantityType.quantityType(forIdentifier: .swimmingStrokeCount) {
             types.insert(swimmingStrokeCount) // Coordination and strength
@@ -150,7 +150,7 @@ class HealthKitManager: NSObject, ObservableObject {
         if let distanceSwimming = HKQuantityType.quantityType(forIdentifier: .distanceSwimming) {
             types.insert(distanceSwimming)
         }
-        
+
         // NEW: Advanced Running Biomechanics (critical gait indicators)
         if let runningCadence = HKQuantityType.quantityType(forIdentifier: .runningPower) {
             types.insert(runningCadence) // Using runningPower instead of runningCadence which isn't available
@@ -170,7 +170,7 @@ class HealthKitManager: NSObject, ObservableObject {
         if let runningPower = HKQuantityType.quantityType(forIdentifier: .runningPower) {
             types.insert(runningPower)
         }
-        
+
         // NEW: Physical Fitness Indicators
         if let vo2Max = HKQuantityType.quantityType(forIdentifier: .vo2Max) {
             types.insert(vo2Max)
@@ -181,7 +181,7 @@ class HealthKitManager: NSObject, ObservableObject {
         if let heartRateVariability = HKQuantityType.quantityType(forIdentifier: .heartRateVariabilitySDNN) {
             types.insert(heartRateVariability)
         }
-        
+
         // NEW: Wheelchair Movement (for accessibility)
         if let wheelchairUse = HKQuantityType.quantityType(forIdentifier: .distanceWheelchair) {
             types.insert(wheelchairUse)
@@ -189,7 +189,7 @@ class HealthKitManager: NSObject, ObservableObject {
         if let wheelchairPushes = HKQuantityType.quantityType(forIdentifier: .pushCount) {
             types.insert(wheelchairPushes)
         }
-        
+
         // NEW: Critical Environmental & Health Factors
         if let respiratoryRate = HKQuantityType.quantityType(forIdentifier: .respiratoryRate) {
             types.insert(respiratoryRate) // Can indicate physical stress affecting balance
@@ -200,25 +200,25 @@ class HealthKitManager: NSObject, ObservableObject {
         if let bodyTemperature = HKQuantityType.quantityType(forIdentifier: .bodyTemperature) {
             types.insert(bodyTemperature) // Fever/illness affects stability
         }
-        
+
         // Enhanced activity tracking
         if let appleMoveTime = HKQuantityType.quantityType(forIdentifier: .appleMoveTime) {
             types.insert(appleMoveTime)
         }
-        
+
         return types
     }()
 
     @Published var authorizationStatus: HKAuthorizationStatus = .notDetermined
     @Published var isAuthorized = false
     @Published var lastError: String?
-    
+
     // Core health metrics
     @Published var lastHeartRate: Double?
     @Published var lastStepCount: Double?
     @Published var lastActiveEnergy: Double?
     @Published var lastDistance: Double?
-    
+
     // Fall risk specific metrics
     @Published var lastWalkingSteadiness: Double?
     @Published var lastWalkingSpeed: Double?
@@ -228,7 +228,7 @@ class HealthKitManager: NSObject, ObservableObject {
     @Published var lastStairAscentSpeed: Double?
     @Published var lastStairDescentSpeed: Double?
     @Published var lastSixMinuteWalkDistance: Double?
-    
+
     // NEW: Additional Movement & Fitness Metrics
     @Published var lastFlightsClimbed: Double?
     @Published var lastExerciseTime: Double?
@@ -243,7 +243,7 @@ class HealthKitManager: NSObject, ObservableObject {
     @Published var lastRunningPower: Double?
     @Published var lastWheelchairDistance: Double?
     @Published var lastWheelchairPushes: Double?
-    
+
     // NEW: Critical Postural & Balance Metrics
     @Published var lastWalkingHeartRateAverage: Double?
     @Published var lastBloodPressureSystolic: Double?
@@ -258,7 +258,7 @@ class HealthKitManager: NSObject, ObservableObject {
     @Published var lastOxygenSaturation: Double?
     @Published var lastBodyTemperature: Double?
     @Published var lastTimeInDaylight: Double?
-    
+
     // Enhanced monitoring stats with performance optimizations
     @Published var totalDataPointsSent: Int = 0
     @Published var dataPointsPerMinute: Double = 0.0
@@ -271,10 +271,10 @@ class HealthKitManager: NSObject, ObservableObject {
     }
     @Published var connectionQuality = ConnectionQualityMonitor()
     @Published var healthDataFreshness: [String: Date] = [:]
-    
+
     // Performance tracking
     private var lastMinuteDataPoints: [Date] = []
-    
+
     var activeQueries: [HKQuery] = []
     private var dataPointTimer: Timer?
     private var performanceMonitor: PerformanceMonitor?
@@ -284,12 +284,12 @@ class HealthKitManager: NSObject, ObservableObject {
         // Use enhanced config
         self.userId = config.userId
         super.init()
-        
+
         // Initialize performance monitoring if enabled
         if config.enablePerformanceMonitoring {
             performanceMonitor = PerformanceMonitor()
         }
-        
+
         // Ensure initial state is properly set
         DispatchQueue.main.async {
             self.isMonitoringActive = false
@@ -298,11 +298,12 @@ class HealthKitManager: NSObject, ObservableObject {
                 print("🔧 Configuration: \(self.config.getConfigurationSummary())")
             }
         }
-        
+
         checkAuthorizationStatus()
         startDataPointTracking()
+        Log.info("HealthKitManager initialized", category: "healthkit")
     }
-    
+
     private func startDataPointTracking() {
         // Use optimized sync interval from config
         let interval = config.getOptimalSyncInterval()
@@ -310,18 +311,18 @@ class HealthKitManager: NSObject, ObservableObject {
             self?.updateDataPointsPerMinute()
         }
     }
-    
+
     private func updateDataPointsPerMinute() {
         let now = Date()
         let oneMinuteAgo = now.addingTimeInterval(-60)
-        
+
         // Remove data points older than 1 minute
-        lastMinuteDataPoints = lastMinuteDataPoints.filter { $0 > oneMinuteAgo } 
-        
+        lastMinuteDataPoints = lastMinuteDataPoints.filter { $0 > oneMinuteAgo }
+
         // Update rate
         dataPointsPerMinute = Double(lastMinuteDataPoints.count)
     }
-    
+
     private func recordDataPoint() {
         lastMinuteDataPoints.append(Date())
         totalDataPointsSent += 1
@@ -330,8 +331,9 @@ class HealthKitManager: NSObject, ObservableObject {
 
     // Request HealthKit permissions with enhanced feedback
     func requestAuthorization() async {
+        Telemetry.shared.record(.permissionFunnel(stage: "request_start"))
         performanceMonitor?.startTiming("authorization")
-        
+
         if config.shouldLogDebugInfo() {
             print("📋 Requesting HealthKit authorization...")
         }
@@ -358,40 +360,41 @@ class HealthKitManager: NSObject, ObservableObject {
             return
         }
         let primaryTypes: Set<HKObjectType> = [stepType]
-        
+
         do {
             if config.shouldLogDebugInfo() {
                 print("📋 Requesting authorization for step count first...")
             }
             try await healthStore.requestAuthorization(toShare: [], read: primaryTypes)
-            
+
             // Test step count access immediately
             await testStepCountAccess()
-            
+
             // If step count worked, try additional types
             if isAuthorized {
                 if config.shouldLogDebugInfo() {
                     print("📋 Step count authorized, requesting additional health data types...")
                 }
                 try await healthStore.requestAuthorization(toShare: [], read: healthDataTypes)
-                
+
                 // Wait a moment for system to process - use config timeout
                 let waitTime = min(config.connectionTimeout, 2.0) // Cap at 2 seconds for responsiveness
                 try? await Task.sleep(nanoseconds: UInt64(waitTime * 1_000_000_000))
-                
+
                 // Update status after full request
                 await MainActor.run {
                     self.checkAuthorizationStatus()
                     self.lastError = nil
+                    Telemetry.shared.record(.permissionFunnel(stage: "authorized"))
                     if self.config.shouldLogDebugInfo() {
                         print("✅ Full HealthKit authorization process completed")
                     }
                 }
-                
+
                 // Test all data types for better feedback
                 await testAllDataTypes()
             }
-            
+
         } catch {
             if config.shouldLogDebugInfo() {
                 print("❌ HealthKit authorization failed with error: \(error)")
@@ -401,19 +404,17 @@ class HealthKitManager: NSObject, ObservableObject {
                 self.authorizationStatus = .sharingDenied
                 self.lastError = "Authorization failed: \(error.localizedDescription)"
             }
+            Telemetry.shared.record(.permissionFunnel(stage: "denied"))
         }
-        
+
         performanceMonitor?.endTiming("authorization")
     }
-    
+
     func testAllDataTypes() async {
         let testTypes: [(String, HKQuantityType?)] = [
-            ("Heart Rate", HKQuantityType.quantityType(forIdentifier: .heartRate)),
-            ("Step Count", HKQuantityType.quantityType(forIdentifier: .stepCount)),
-            ("Distance", HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)),
-            ("Active Energy", HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned))
+            ("Heart Rate", HKQuantityType.quantityType(forIdentifier: .heartRate)), ("Step Count", HKQuantityType.quantityType(forIdentifier: .stepCount)), ("Distance", HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)), ("Active Energy", HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned))
         ]
-        
+
         for (name, optionalType) in testTypes {
             guard let type = optionalType else {
                 print("📊 \(name): Not available on this system")
@@ -423,25 +424,25 @@ class HealthKitManager: NSObject, ObservableObject {
             print("📊 \(name): \(statusDescription(status))")
         }
     }
-    
+
     func testStepCountAccess() async {
         print("🔬 Testing step count data access...")
-        
+
         guard let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount) else {
             print("🔬 Step count type not available on this system")
             return
         }
-        
+
         let calendar = Calendar.current
         let now = Date()
         let startOfDay = calendar.startOfDay(for: now)
         let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: now, options: .strictStartDate)
-        
+
         return await withCheckedContinuation { continuation in
             let query = HKStatisticsQuery(
                 quantityType: stepType, quantitySamplePredicate: predicate, options: .cumulativeSum
             ) { [weak self] _, result, error in
-                
+
                 if let error = error {
                     print("🔬 Step count access test failed: \(error)")
                     DispatchQueue.main.async {
@@ -453,7 +454,7 @@ class HealthKitManager: NSObject, ObservableObject {
                     DispatchQueue.main.async {
                         self?.isAuthorized = true
                         self?.authorizationStatus = .sharingAuthorized
-                        
+
                         if let sum = result.sumQuantity() {
                             let steps = sum.doubleValue(for: HKUnit.count())
                             self?.lastStepCount = steps
@@ -467,56 +468,54 @@ class HealthKitManager: NSObject, ObservableObject {
                         self?.authorizationStatus = .sharingAuthorized
                     }
                 }
-                
+
                 continuation.resume()
             }
-            
+
             self.healthStore.execute(query)
         }
     }
-    
+
     private func checkAuthorizationStatus() {
         // Check authorization for multiple key types to get a better picture with safe initialization
         let keyTypes: [HKQuantityType] = [
-            HKQuantityType.quantityType(forIdentifier: .heartRate),
-            HKQuantityType.quantityType(forIdentifier: .stepCount),
-            HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)
+            HKQuantityType.quantityType(forIdentifier: .heartRate), HKQuantityType.quantityType(forIdentifier: .stepCount), HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)
         ].compactMap { $0 } // Remove any nil values safely
-        
+
         var statusMessages: [String] = []
         var authorizedCount = 0
         var deniedCount = 0
         var notDeterminedCount = 0
-        
+
         for type in keyTypes {
             let status = healthStore.authorizationStatus(for: type)
             let typeName = type.identifier.replacingOccurrences(of: "HKQuantityTypeIdentifier", with: "")
             statusMessages.append("\(typeName): \(statusDescription(status))")
-            
+
             switch status {
-            case .sharingAuthorized: 
+            case .sharingAuthorized:
                 authorizedCount += 1
-            case .sharingDenied: 
+            case .sharingDenied:
                 deniedCount += 1
-            case .notDetermined: 
+            case .notDetermined:
                 notDeterminedCount += 1
-            @unknown default: 
+            @unknown default:
                 notDeterminedCount += 1
             }
         }
-        
+
         // Use step count as the primary indicator since it's most commonly granted
         if let stepCountType = HKQuantityType.quantityType(forIdentifier: .stepCount) {
             authorizationStatus = healthStore.authorizationStatus(for: stepCountType)
         } else {
             print("⚠️ Step count type not available on this system")
         }
-        
+
         print("📊 HealthKit authorization status details:")
         for message in statusMessages {
             print("   \(message)")
         }
-        
+
         if authorizedCount > 0 {
             // If ANY data type is authorized, consider it a success
             isAuthorized = true
@@ -531,24 +530,26 @@ class HealthKitManager: NSObject, ObservableObject {
             testActualDataAccess()
         }
     }
-    
+
     private func statusDescription(_ status: HKAuthorizationStatus) -> String {
         switch status {
-        case .notDetermined: 
+        case .notDetermined:
             return "NotDetermined"
-        case .sharingDenied: 
+        case .sharingDenied:
             return "Denied"
-        case .sharingAuthorized: 
+        case .sharingAuthorized:
             return "Authorized"
-        @unknown default: 
+        @unknown default:
             return "Unknown"
         }
     }
 
     // Start live data streaming with WebSocket manager
     func startLiveDataStreaming(webSocketManager: WebSocketManager) async {
-        print("📊 Starting enhanced live health data streaming...")
+    Log.info("Starting enhanced live health data streaming", category: "stream")
         self.webSocketManager = webSocketManager
+
+        Telemetry.shared.record(.streamStatus(started: true))
 
         await MainActor.run {
             self.isMonitoringActive = true
@@ -559,38 +560,38 @@ class HealthKitManager: NSObject, ObservableObject {
 
         // Send initial data snapshot
         try? await sendCurrentHealthData()
-        
+
         // Start periodic health checks
         startPeriodicHealthCheck()
     }
-    
+
     private func startPeriodicHealthCheck() {
         // Clean up existing timer first
         periodicHealthCheckTimer?.invalidate()
-        
+
         periodicHealthCheckTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
             Task {
                 await self?.performHealthCheck()
             }
         }
     }
-    
+
     private func performHealthCheck() async {
         print("🔍 Performing periodic health check...")
-        
+
         // Check data freshness
         let now = Date()
         let staleThreshold: TimeInterval = 300 // 5 minutes
-        
+
         for (dataType, lastUpdate) in healthDataFreshness {
             if now.timeIntervalSince(lastUpdate) > staleThreshold {
                 print("⚠️ \(dataType) data is stale (last update: \(lastUpdate))")
             }
         }
-        
+
         // Test connection quality
         connectionQuality.recordPing()
-        
+
         // Optionally fetch fresh data if needed
         if healthDataFreshness.isEmpty || healthDataFreshness.values.allSatisfy({ now.timeIntervalSince($0) > 60 }) {
             try? await sendCurrentHealthData()
@@ -604,8 +605,76 @@ class HealthKitManager: NSObject, ObservableObject {
         observeWalkingSteadiness()
         observeActiveEnergy()
         observeDistance()
+        observeWalkingSpeed()
+        observeWalkingStepLength()
+        observeWalkingAsymmetry()
+        observeWalkingDoubleSupport()
+        observeStairAscent()
+        observeStairDescent()
     }
-    
+
+    private func observeWalkingSpeed() {
+        guard let type = HKQuantityType.quantityType(forIdentifier: .walkingSpeed) else { return }
+        let query = HKObserverQuery(sampleType: type, predicate: nil) { [weak self] _, handler, error in
+            if let error = error { print("❌ Walking speed observer error: \(error)"); return }
+            Task { await self?.fetchLatestWalkingSpeed { _ in } }
+            handler()
+        }
+        healthStore.execute(query)
+        healthStore.enableBackgroundDelivery(for: type, frequency: .hourly) { _, _ in }
+        activeQueries.append(query)
+    }
+    private func observeWalkingStepLength() {
+        guard let type = HKQuantityType.quantityType(forIdentifier: .walkingStepLength) else { return }
+        let query = HKObserverQuery(sampleType: type, predicate: nil) { [weak self] _, handler, error in
+            if let error = error { print("❌ Step length observer error: \(error)"); return }
+            Task { await self?.fetchLatestWalkingStepLength { _ in } }
+            handler()
+        }
+        healthStore.execute(query)
+        activeQueries.append(query)
+    }
+    private func observeWalkingAsymmetry() {
+        guard let type = HKQuantityType.quantityType(forIdentifier: .walkingAsymmetryPercentage) else { return }
+        let query = HKObserverQuery(sampleType: type, predicate: nil) { [weak self] _, handler, error in
+            if let error = error { print("❌ Asymmetry observer error: \(error)"); return }
+            Task { await self?.fetchLatestWalkingAsymmetry { _ in } }
+            handler()
+        }
+        healthStore.execute(query)
+        activeQueries.append(query)
+    }
+    private func observeWalkingDoubleSupport() {
+        guard let type = HKQuantityType.quantityType(forIdentifier: .walkingDoubleSupportPercentage) else { return }
+        let query = HKObserverQuery(sampleType: type, predicate: nil) { [weak self] _, handler, error in
+            if let error = error { print("❌ Double support observer error: \(error)"); return }
+            Task { await self?.fetchLatestWalkingDoubleSupportPercentage { _ in } }
+            handler()
+        }
+        healthStore.execute(query)
+        activeQueries.append(query)
+    }
+    private func observeStairAscent() {
+        guard let type = HKQuantityType.quantityType(forIdentifier: .stairAscentSpeed) else { return }
+        let query = HKObserverQuery(sampleType: type, predicate: nil) { [weak self] _, handler, error in
+            if let error = error { print("❌ Stair ascent observer error: \(error)"); return }
+            Task { await self?.fetchLatestStairAscentSpeed { _ in } }
+            handler()
+        }
+        healthStore.execute(query)
+        activeQueries.append(query)
+    }
+    private func observeStairDescent() {
+        guard let type = HKQuantityType.quantityType(forIdentifier: .stairDescentSpeed) else { return }
+        let query = HKObserverQuery(sampleType: type, predicate: nil) { [weak self] _, handler, error in
+            if let error = error { print("❌ Stair descent observer error: \(error)"); return }
+            Task { await self?.fetchLatestStairDescentSpeed { _ in } }
+            handler()
+        }
+        healthStore.execute(query)
+        activeQueries.append(query)
+    }
+
     private func observeHeartRate() {
         guard let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate) else {
             print("⚠️ Heart rate type not available on this system")
@@ -656,6 +725,11 @@ class HealthKitManager: NSObject, ObservableObject {
         }
 
         healthStore.execute(query)
+        // Enable background delivery for step count (high value / low power)
+        healthStore.enableBackgroundDelivery(for: stepType, frequency: .hourly) { success, error in
+            if let error = error { print("❌ Step count background delivery error: \(error)") }
+            else if success { print("✅ Step count background delivery enabled (hourly)") }
+        }
         activeQueries.append(query)
     }
 
@@ -679,9 +753,14 @@ class HealthKitManager: NSObject, ObservableObject {
         }
 
         healthStore.execute(query)
+        // Immediate background delivery for walking steadiness signals are sparse but critical
+        healthStore.enableBackgroundDelivery(for: steadinessType, frequency: .immediate) { success, error in
+            if let error = error { print("❌ Walking steadiness background delivery error: \(error)") }
+            else if success { print("✅ Walking steadiness background delivery enabled") }
+        }
         activeQueries.append(query)
     }
-    
+
     private func observeActiveEnergy() {
         guard let energyType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned) else {
             print("⚠️ Active energy type not available on this system")
@@ -704,7 +783,7 @@ class HealthKitManager: NSObject, ObservableObject {
         healthStore.execute(query)
         activeQueries.append(query)
     }
-    
+
     private func observeDistance() {
         guard let distanceType = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning) else {
             print("⚠️ Distance type not available on this system")
@@ -727,20 +806,19 @@ class HealthKitManager: NSObject, ObservableObject {
         healthStore.execute(query)
         activeQueries.append(query)
     }
-    
+
     private func fetchLatestActiveEnergy() async {
         guard let energyType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned) else {
             print("⚠️ Active energy type not available on this system")
             return
         }
-        
+
         let calendar = Calendar.current
         let now = Date()
         let startOfDay = calendar.startOfDay(for: now)
         let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: now, options: .strictStartDate)
 
-        let query = HKStatisticsQuery(quantityType: energyType,
-        quantitySamplePredicate: predicate, options: .cumulativeSum) { [weak self] _, result, error in
+        let query = HKStatisticsQuery(quantityType: energyType, quantitySamplePredicate: predicate, options: .cumulativeSum) { [weak self] _, result, error in
 
             if let error = error {
                 print("❌ Active energy fetch error: \(error)")
@@ -760,23 +838,19 @@ class HealthKitManager: NSObject, ObservableObject {
 
         healthStore.execute(query)
     }
-    
+
     private func fetchLatestDistance() async {
         guard let distanceType = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning) else {
             print("⚠️ Distance type not available on this system")
             return
         }
-        
+
         let calendar = Calendar.current
         let now = Date()
         let startOfDay = calendar.startOfDay(for: now)
         let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: now, options: .strictStartDate)
 
-        let query = HKStatisticsQuery(quantityType: distanceType,
-        quantitySamplePredicate: predicate,
-        options: .cumulativeSum) { [weak self] _,
-        result,
-        error in
+        let query = HKStatisticsQuery(quantityType: distanceType, quantitySamplePredicate: predicate, options: .cumulativeSum) { [weak self] _, result, error in
 
             if let error = error {
                 print("❌ Distance fetch error: \(error)")
@@ -804,12 +878,7 @@ class HealthKitManager: NSObject, ObservableObject {
         }
 
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: heartRateType,
-        predicate: nil,
-        limit: 1,
-        sortDescriptors: [sortDescriptor]) { [weak self] _,
-        samples,
-        error in
+        let query = HKSampleQuery(sampleType: heartRateType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, error in
 
             if let error = error {
                 print("❌ Heart rate fetch error: \(error)")
@@ -840,11 +909,7 @@ class HealthKitManager: NSObject, ObservableObject {
         let startOfDay = calendar.startOfDay(for: now)
         let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: now, options: .strictStartDate)
 
-        let query = HKStatisticsQuery(quantityType: stepType,
-        quantitySamplePredicate: predicate,
-        options: .cumulativeSum) { [weak self] _,
-        result,
-        error in
+        let query = HKStatisticsQuery(quantityType: stepType, quantitySamplePredicate: predicate, options: .cumulativeSum) { [weak self] _, result, error in
 
             if let error = error {
                 print("❌ Step count fetch error: \(error)")
@@ -871,12 +936,7 @@ class HealthKitManager: NSObject, ObservableObject {
         }
 
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: steadinessType,
-        predicate: nil,
-        limit: 1,
-        sortDescriptors: [sortDescriptor]) { [weak self] _,
-        samples,
-        error in
+        let query = HKSampleQuery(sampleType: steadinessType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, error in
 
             if let error = error {
                 print("❌ Walking steadiness fetch error: \(error)")
@@ -895,57 +955,57 @@ class HealthKitManager: NSObject, ObservableObject {
 
         healthStore.execute(query)
     }
-    
+
     // MARK: - Fall Risk Specific Data Fetching Methods
-    
+
     func fetchComprehensiveFallRiskData() async -> [String: Double] {
         print("🏃‍♂️ Fetching comprehensive fall risk assessment data...")
-        
+
         var fallRiskData: [String: Double] = [:]
-        
+
         // Fetch all fall risk related metrics
         await fetchLatestWalkingSpeed { speed in
             if let speed = speed {
                 fallRiskData["walking_speed"] = speed
             }
         }
-        
+
         await fetchLatestWalkingStepLength { stepLength in
             if let stepLength = stepLength {
                 fallRiskData["walking_step_length"] = stepLength
             }
         }
-        
+
         await fetchLatestWalkingAsymmetry { asymmetry in
             if let asymmetry = asymmetry {
                 fallRiskData["walking_asymmetry"] = asymmetry
             }
         }
-        
+
         await fetchLatestWalkingDoubleSupportPercentage { doubleSupport in
             if let doubleSupport = doubleSupport {
                 fallRiskData["walking_double_support"] = doubleSupport
             }
         }
-        
+
         await fetchLatestStairAscentSpeed { stairSpeed in
             if let stairSpeed = stairSpeed {
                 fallRiskData["stair_ascent_speed"] = stairSpeed
             }
         }
-        
+
         await fetchLatestStairDescentSpeed { stairSpeed in
             if let stairSpeed = stairSpeed {
                 fallRiskData["stair_descent_speed"] = stairSpeed
             }
         }
-        
+
         await fetchLatestSixMinuteWalkDistance { walkDistance in
             if let walkDistance = walkDistance {
                 fallRiskData["six_minute_walk_distance"] = walkDistance
             }
         }
-        
+
         // Include existing metrics that are relevant to fall risk
         if let heartRate = lastHeartRate {
             fallRiskData["heart_rate"] = heartRate
@@ -962,256 +1022,216 @@ class HealthKitManager: NSObject, ObservableObject {
         if let steadiness = lastWalkingSteadiness {
             fallRiskData["walking_steadiness"] = steadiness
         }
-        
+
         print("📊 Collected \(fallRiskData.count) fall risk metrics")
         return fallRiskData
     }
-    
+
     private func fetchLatestWalkingSpeed(_ completion: @escaping (Double?) -> Void) async {
         guard let walkingSpeedType = HKQuantityType.quantityType(forIdentifier: .walkingSpeed) else {
             completion(nil)
             return
         }
-        
+
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: walkingSpeedType,
-        predicate: nil,
-        limit: 1,
-        sortDescriptors: [sortDescriptor]) { [weak self] _,
-        samples,
-        _ in
-            
+        let query = HKSampleQuery(sampleType: walkingSpeedType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, _ in
+
             guard let sample = samples?.first as? HKQuantitySample else {
                 completion(nil)
                 return
             }
-            
+
             let speed = sample.quantity.doubleValue(for: HKUnit.meter().unitDivided(by: .second()))
-            
+
             Task { @MainActor in
                 self?.lastWalkingSpeed = speed
                 self?.healthDataFreshness["walking_speed"] = Date()
             }
-            
+
             completion(speed)
         }
-        
+
         healthStore.execute(query)
     }
-    
+
     private func fetchLatestWalkingStepLength(_ completion: @escaping (Double?) -> Void) async {
         guard let stepLengthType = HKQuantityType.quantityType(forIdentifier: .walkingStepLength) else {
             completion(nil)
             return
         }
-        
+
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: stepLengthType,
-        predicate: nil,
-        limit: 1,
-        sortDescriptors: [sortDescriptor]) { [weak self] _,
-        samples,
-        _ in
-            
+        let query = HKSampleQuery(sampleType: stepLengthType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, _ in
+
             guard let sample = samples?.first as? HKQuantitySample else {
                 completion(nil)
                 return
             }
-            
+
             let stepLength = sample.quantity.doubleValue(for: HKUnit.meter())
-            
+
             Task { @MainActor in
                 self?.lastWalkingStepLength = stepLength
                 self?.healthDataFreshness["walking_step_length"] = Date()
             }
-            
+
             completion(stepLength)
         }
-        
+
         healthStore.execute(query)
     }
-    
+
     private func fetchLatestWalkingAsymmetry(_ completion: @escaping (Double?) -> Void) async {
         guard let asymmetryType = HKQuantityType.quantityType(forIdentifier: .walkingAsymmetryPercentage) else {
             completion(nil)
             return
         }
-        
+
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: asymmetryType,
-        predicate: nil,
-        limit: 1,
-        sortDescriptors: [sortDescriptor]) { [weak self] _,
-        samples,
-        _ in
-            
+        let query = HKSampleQuery(sampleType: asymmetryType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, _ in
+
             guard let sample = samples?.first as? HKQuantitySample else {
                 completion(nil)
                 return
             }
-            
+
             let asymmetry = sample.quantity.doubleValue(for: HKUnit.percent())
-            
+
             Task { @MainActor in
                 self?.lastWalkingAsymmetry = asymmetry
                 self?.healthDataFreshness["walking_asymmetry"] = Date()
             }
-            
+
             completion(asymmetry)
         }
-        
+
         healthStore.execute(query)
     }
-    
+
     private func fetchLatestWalkingDoubleSupportPercentage(_ completion: @escaping (Double?) -> Void) async {
         guard let doubleSupportType = HKQuantityType.quantityType(forIdentifier: .walkingDoubleSupportPercentage) else {
             completion(nil)
             return
         }
-        
+
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: doubleSupportType,
-        predicate: nil,
-        limit: 1,
-        sortDescriptors: [sortDescriptor]) { [weak self] _,
-        samples,
-        _ in
-            
+        let query = HKSampleQuery(sampleType: doubleSupportType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, _ in
+
             guard let sample = samples?.first as? HKQuantitySample else {
                 completion(nil)
                 return
             }
-            
+
             let doubleSupport = sample.quantity.doubleValue(for: HKUnit.percent())
-            
+
             Task { @MainActor in
                 self?.lastWalkingDoubleSupportPercentage = doubleSupport
                 self?.healthDataFreshness["walking_double_support"] = Date()
             }
-            
+
             completion(doubleSupport)
         }
-        
+
         healthStore.execute(query)
     }
-    
+
     private func fetchLatestStairAscentSpeed(_ completion: @escaping (Double?) -> Void) async {
         guard let stairAscentType = HKQuantityType.quantityType(forIdentifier: .stairAscentSpeed) else {
             completion(nil)
             return
         }
-        
+
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: stairAscentType,
-        predicate: nil,
-        limit: 1,
-        sortDescriptors: [sortDescriptor]) { [weak self] _,
-        samples,
-        _ in
-            
+        let query = HKSampleQuery(sampleType: stairAscentType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, _ in
+
             guard let sample = samples?.first as? HKQuantitySample else {
                 completion(nil)
                 return
             }
-            
+
             let speed = sample.quantity.doubleValue(for: HKUnit.meter().unitDivided(by: .second()))
-            
+
             Task { @MainActor in
                 self?.lastStairAscentSpeed = speed
                 self?.healthDataFreshness["stair_ascent_speed"] = Date()
             }
-            
+
             completion(speed)
         }
-        
+
         healthStore.execute(query)
     }
-    
+
     private func fetchLatestStairDescentSpeed(_ completion: @escaping (Double?) -> Void) async {
         guard let stairDescentType = HKQuantityType.quantityType(forIdentifier: .stairDescentSpeed) else {
             completion(nil)
             return
         }
-        
+
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: stairDescentType,
-        predicate: nil,
-        limit: 1,
-        sortDescriptors: [sortDescriptor]) { [weak self] _,
-        samples,
-        _ in
-            
+        let query = HKSampleQuery(sampleType: stairDescentType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, _ in
+
             guard let sample = samples?.first as? HKQuantitySample else {
                 completion(nil)
                 return
             }
-            
+
             let speed = sample.quantity.doubleValue(for: HKUnit.meter().unitDivided(by: .second()))
-            
+
             Task { @MainActor in
                 self?.lastStairDescentSpeed = speed
                 self?.healthDataFreshness["stair_descent_speed"] = Date()
             }
-            
+
             completion(speed)
         }
-        
+
         healthStore.execute(query)
     }
-    
+
     private func fetchLatestSixMinuteWalkDistance(_ completion: @escaping (Double?) -> Void) async {
         guard let sixMinuteWalkType = HKQuantityType.quantityType(forIdentifier: .sixMinuteWalkTestDistance) else {
             completion(nil)
             return
         }
-        
+
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let query = HKSampleQuery(sampleType: sixMinuteWalkType,
-        predicate: nil,
-        limit: 1,
-        sortDescriptors: [sortDescriptor]) { [weak self] _,
-        samples,
-        _ in
-            
+        let query = HKSampleQuery(sampleType: sixMinuteWalkType, predicate: nil, limit: 1, sortDescriptors: [sortDescriptor]) { [weak self] _, samples, _ in
+
             guard let sample = samples?.first as? HKQuantitySample else {
                 completion(nil)
                 return
             }
-            
+
             let distance = sample.quantity.doubleValue(for: HKUnit.meter())
-            
+
             Task { @MainActor in
                 self?.lastSixMinuteWalkDistance = distance
                 self?.healthDataFreshness["six_minute_walk_distance"] = Date()
             }
-            
+
             completion(distance)
         }
-        
+
         healthStore.execute(query)
     }
-    
+
     func performFallRiskAssessment() async {
         print("🔍 Initiating comprehensive fall risk assessment...")
-        
+
         let fallRiskEngine = FallRiskAnalysisEngine.shared
         let fallRiskData = await fetchComprehensiveFallRiskData()
-        
+
         await fallRiskEngine.performFallRiskAssessment(healthData: fallRiskData)
-        
+
         print("✅ Fall risk assessment completed")
-        
+
         // Send fall risk data through WebSocket for analysis
         if let webSocketManager = webSocketManager {
             let riskData = HealthData(
-                type: "fall_risk_assessment",
-                value: fallRiskEngine.riskScore,
-                unit: "score",
-                timestamp: Date(),
-                deviceId: await UIDevice.current.identifierForVendor?.uuidString ?? "unknown",
-                userId: userId
+                type: "fall_risk_assessment", value: fallRiskEngine.riskScore, unit: "score", timestamp: Date(), deviceId: await UIDevice.current.identifierForVendor?.uuidString ?? "unknown", userId: userId
             )
-            
+
             do {
                 try await webSocketManager.sendHealthData(riskData)
             } catch {
@@ -1219,84 +1239,80 @@ class HealthKitManager: NSObject, ObservableObject {
             }
         }
     }
-    
+
     // MARK: - Missing Methods Implementation
-    
+
     func testActualDataAccess() {
         // Test actual data access to verify authorization
         Task {
             await testStepCountAccess()
         }
     }
-    
+
     func sendCurrentHealthData() async throws {
-        print("📤 Sending current health data snapshot...")
-        
+    Log.debug("Sending current health data snapshot", category: "stream")
+
         // Fetch and send current values for all available metrics
         await fetchLatestHeartRate()
         await fetchLatestStepCount()
         await fetchLatestActiveEnergy()
         await fetchLatestDistance()
         await fetchLatestWalkingSteadiness()
-        
+
         // Update data freshness
         await MainActor.run {
             self.healthDataFreshness["snapshot"] = Date()
         }
     }
-    
+
     internal func sendHealthData(type: String, value: Double, unit: String, timestamp: Date) async {
         guard let webSocketManager = webSocketManager else {
             print("⚠️ WebSocket manager not available")
             return
         }
-        
+
         let healthData = HealthData(
-            type: type,
-            value: value,
-            unit: unit,
-            timestamp: timestamp,
-            deviceId: UIDevice.current.identifierForVendor?.uuidString ?? "unknown",
-            userId: userId
+            type: type, value: value, unit: unit, timestamp: timestamp, deviceId: UIDevice.current.identifierForVendor?.uuidString ?? "unknown", userId: userId
         )
-        
+
         do {
             try await webSocketManager.sendHealthData(healthData)
             recordDataPoint()
             await MainActor.run {
                 self.healthDataFreshness[type] = timestamp
             }
-            print("✅ Sent \(type): \(value) \(unit)")
+            Log.debug("Sent \(type): \(value) \(unit)", category: "stream")
         } catch {
-            print("❌ Failed to send \(type): \(error)")
+            Log.error("Failed to send \(type): \(error.localizedDescription)", category: "stream")
         }
     }
 
     // Stop monitoring and clean up
     func stopMonitoring() {
         print("🛑 Stopping health monitoring...")
-        
+        Telemetry.shared.record(.streamStatus(started: false))
+
         // Stop all queries
         for query in activeQueries {
             healthStore.stop(query)
         }
         activeQueries.removeAll()
-        
+
         // Stop timers
         dataPointTimer?.invalidate()
         periodicHealthCheckTimer?.invalidate()
-        
+
         // Reset state
         isMonitoringActive = false
         webSocketManager = nil
-        
+
         print("✅ Health monitoring stopped")
     }
-    
+
     // Get health data summary for display
     func getHealthDataSummary() -> String {
         var components: [String] = []
-        
+
         if let heartRate = lastHeartRate {
             components.append("HR: \(Int(heartRate)) bpm")
         }
@@ -1309,19 +1325,19 @@ class HealthKitManager: NSObject, ObservableObject {
         if let distance = lastDistance {
             components.append("Distance: \(String(format: "%.1f", distance / 1000)) km")
         }
-        
+
         return components.joined(separator: ", ")
     }
 }
 
 // MARK: - Extensions for Enhanced Functionality
 extension HealthKitManager {
-    
+
     var connectionStatusSummary: String {
         let activeCount = activeQueries.count
         let freshDataCount = healthDataFreshness.count
         let monitoringStatus = isMonitoringActive ? "Active" : "Inactive"
-        
+
         return "Monitoring: \(monitoringStatus), Queries: \(activeCount), Fresh Data: \(freshDataCount)"
     }
 }

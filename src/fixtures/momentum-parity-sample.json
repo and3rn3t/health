@@ -1,0 +1,24 @@
+{
+  "trends": {
+    "speed": {
+      "severity": "moderate_improvement",
+      "confidence": 0.82,
+      "relativeSlope": 0.031
+    },
+    "cadence": {
+      "severity": "mild_improvement",
+      "confidence": 0.64,
+      "relativeSlope": 0.018
+    },
+    "variability": {
+      "severity": "mild_decline",
+      "confidence": 0.7,
+      "relativeSlope": 0.016
+    },
+    "asymmetry": {
+      "severity": "stable",
+      "confidence": 0.55,
+      "relativeSlope": 0.004
+    }
+  }
+}

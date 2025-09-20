@@ -14,16 +14,16 @@ repos:
 
   - repo: local
     hooks:
-      - id: swiftlint
-        name: SwiftLint
-        entry: swiftlint lint --strict
-        language: system
-        files: \.swift$
-
       - id: swift-format
         name: Swift Format
         entry: swift-format
         args: [--in-place]
+        language: system
+        files: \.swift$
+
+      - id: swiftlint
+        name: SwiftLint
+        entry: swiftlint lint --strict
         language: system
         files: \.swift$
 

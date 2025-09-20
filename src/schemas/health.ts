@@ -138,6 +138,130 @@ export const processedHealthDataSchema = z.object({
     .optional(),
 });
 
+// Live gait snapshot (lightweight, ephemeral)
+export const liveGaitSnapshotSchema = z.object({
+  speed: z.number().min(0).max(4).describe('walking speed m/s'),
+  stepFrequency: z.number().min(0).max(300).describe('steps per minute'),
+  asymmetry: z.number().min(0).max(1).nullable().optional(),
+  variability: z.number().min(0).max(1).nullable().optional(),
+  userId: z.string().optional(),
+  deviceId: z.string().optional(),
+  capturedAt: z
+    .string()
+    .datetime()
+    .default(() => new Date().toISOString()),
+  source: z.string().default('ios_device'),
+});
+
+export const liveBalanceProgressSchema = z.object({
+  percent: z.number().min(0).max(100),
+  instantaneousStability: z.number().min(0).max(1).nullable().optional(),
+  elapsedSeconds: z.number().min(0),
+  testKind: z.string().optional(),
+  userId: z.string().optional(),
+  deviceId: z.string().optional(),
+  capturedAt: z
+    .string()
+    .datetime()
+    .default(() => new Date().toISOString()),
+});
+
+export const liveBalanceResultSchema = z.object({
+  overallScore: z.number().min(0).max(100),
+  componentScores: z.record(z.number().min(0).max(100)),
+  testKind: z.string().optional(),
+  userId: z.string().optional(),
+  deviceId: z.string().optional(),
+  capturedAt: z
+    .string()
+    .datetime()
+    .default(() => new Date().toISOString()),
+});
+
+// Aggregated response schemas
+export const liveGaitRecentResponseSchema = z.object({
+  ok: z.literal(true),
+  userId: z.string(),
+  count: z.number(),
+  snapshots: z.array(liveGaitSnapshotSchema),
+  rolling: z
+    .object({
+      speedAvg: z.number().nullable(),
+      speedVar: z.number().nullable(),
+      cadenceAvg: z.number().nullable(),
+      asymAvg: z.number().nullable(),
+      variabilityAvg: z.number().nullable(),
+    })
+    .optional(),
+  trend: z
+    .object({
+      direction: z.enum(['improving', 'stable', 'declining']).nullable(),
+      slope: z
+        .number()
+        .nullable()
+        .describe(
+          'approximate slope of speed over time (m/s per sample index)'
+        ),
+      confidence: z.number().min(0).max(1).nullable(),
+      sampleCount: z.number().optional(),
+      relativeSlope: z.number().nullable().optional(),
+      severity: z
+        .enum([
+          'strong_improvement',
+          'moderate_improvement',
+          'mild_improvement',
+          'stable',
+          'mild_decline',
+          'moderate_decline',
+          'strong_decline',
+          'insufficient_data',
+        ])
+        .optional(),
+    })
+    .optional(),
+  trends: z
+    .record(
+      z.object({
+        direction: z.enum(['improving', 'stable', 'declining']).nullable(),
+        slope: z.number().nullable(),
+        confidence: z.number().min(0).max(1).nullable(),
+        sampleCount: z.number().optional(),
+        relativeSlope: z.number().nullable().optional(),
+        severity: z
+          .enum([
+            'strong_improvement',
+            'moderate_improvement',
+            'mild_improvement',
+            'stable',
+            'mild_decline',
+            'moderate_decline',
+            'strong_decline',
+            'insufficient_data',
+          ])
+          .optional(),
+      })
+    )
+    .optional(),
+});
+
+export const liveBalanceRecentResponseSchema = z.object({
+  ok: z.literal(true),
+  userId: z.string(),
+  results: z.array(liveBalanceResultSchema).optional(),
+  lastProgress: liveBalanceProgressSchema.optional(),
+});
+
+export type LiveGaitSnapshot = z.infer<typeof liveGaitSnapshotSchema>;
+export type LiveBalanceProgress = z.infer<typeof liveBalanceProgressSchema>;
+export type LiveBalanceResult = z.infer<typeof liveBalanceResultSchema>;
+export const liveGaitSnapshotBatchSchema = z.object({
+  snapshots: z.array(liveGaitSnapshotSchema).min(1).max(50),
+  userId: z.string().optional(),
+  deviceId: z.string().optional(),
+  capturedAt: z.string().datetime().optional(),
+});
+export type LiveGaitSnapshotBatch = z.infer<typeof liveGaitSnapshotBatchSchema>;
+
 export type MessageEnvelope = z.infer<typeof messageEnvelopeSchema>;
 export type HealthMetric = z.infer<typeof healthMetricSchema>;
 export type HealthMetricBatch = z.infer<typeof healthMetricBatchSchema>;

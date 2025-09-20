@@ -10,8 +10,7 @@ class AppConfig {
 
     private init() {
         // Try to load from Config.plist first, then use defaults
-        if let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
-           let plist = NSDictionary(contentsOfFile: path) {
+        if let path = Bundle.main.path(forResource: "Config", ofType: "plist"), let plist = NSDictionary(contentsOfFile: path) {
             // Fix key names to match the actual plist structure
             self.userId = plist["USER_ID"] as? String ?? "default-user-\(UUID().uuidString)"
             self.apiBaseURL = plist["API_BASE_URL"] as? String ?? "https://api.andernet.dev"

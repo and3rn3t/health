@@ -1,0 +1,254 @@
+ws_schema_drift	Set up job	﻿2025-09-20T02:03:56.1589339Z Current runner version: '2.328.0'
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1614199Z ##[group]Runner Image Provisioner
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1615001Z Hosted Compute Agent
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1615530Z Version: 20250829.383
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1616189Z Commit: 27cb235aab5b0e52e153a26cd86b4742e89dac5d
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1616877Z Build Date: 2025-08-29T13:48:48Z
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1617423Z ##[endgroup]
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1618392Z ##[group]Operating System
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1618937Z Ubuntu
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1619403Z 24.04.3
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1619917Z LTS
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1620329Z ##[endgroup]
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1620805Z ##[group]Runner Image
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1621354Z Image: ubuntu-24.04
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1621861Z Version: 20250907.24.1
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1622810Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250907.24/images/ubuntu/Ubuntu2404-Readme.md
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1624186Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250907.24
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1625355Z ##[endgroup]
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1626429Z ##[group]GITHUB_TOKEN Permissions
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1628765Z Contents: read
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1629303Z Metadata: read
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1629905Z Packages: read
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1630354Z ##[endgroup]
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1632320Z Secret source: Actions
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1634087Z Prepare workflow directory
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1948982Z Prepare all required actions
+ws_schema_drift	Set up job	2025-09-20T02:03:56.1985582Z Getting action download info
+ws_schema_drift	Set up job	2025-09-20T02:03:56.4858518Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+ws_schema_drift	Set up job	2025-09-20T02:03:56.5536012Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+ws_schema_drift	Set up job	2025-09-20T02:03:56.7523942Z Complete job name: ws_schema_drift
+ws_schema_drift	Run actions/checkout@v4	﻿2025-09-20T02:03:56.8184320Z ##[group]Run actions/checkout@v4
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8185303Z with:
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8185700Z   repository: and3rn3t/health
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8186303Z   token: ***
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8186695Z   ssh-strict: true
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8187085Z   ssh-user: git
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8187475Z   persist-credentials: true
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8188149Z   clean: true
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8188552Z   sparse-checkout-cone-mode: true
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8189011Z   fetch-depth: 1
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8189394Z   fetch-tags: false
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8189777Z   show-progress: true
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8190161Z   lfs: false
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8190513Z   submodules: false
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8190905Z   set-safe-directory: true
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.8191580Z ##[endgroup]
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9250466Z Syncing repository: and3rn3t/health
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9252353Z ##[group]Getting Git version info
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9253019Z Working directory is '/home/runner/work/health/health'
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9253891Z [command]/usr/bin/git version
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9285980Z git version 2.51.0
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9311447Z ##[endgroup]
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9325888Z Temporarily overriding HOME='/home/runner/work/_temp/59f24261-1189-434f-abb7-bde189e30edd' before making global git config changes
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9327288Z Adding repository directory to the temporary git global config as a safe directory
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9331658Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/health/health
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9364507Z Deleting the contents of '/home/runner/work/health/health'
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9368068Z ##[group]Initializing the repository
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9372089Z [command]/usr/bin/git init /home/runner/work/health/health
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9429849Z hint: Using 'master' as the name for the initial branch. This default branch name
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9431566Z hint: is subject to change. To configure the initial branch name to use in all
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9433283Z hint: of your new repositories, which will suppress this warning, call:
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9434525Z hint:
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9435181Z hint: 	git config --global init.defaultBranch <name>
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9435777Z hint:
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9436568Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9437517Z hint: 'development'. The just-created branch can be renamed via this command:
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9438499Z hint:
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9438928Z hint: 	git branch -m <name>
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9439636Z hint:
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9440564Z hint: Disable this message with "git config set advice.defaultBranchName false"
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9441534Z Initialized empty Git repository in /home/runner/work/health/health/.git/
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9445116Z [command]/usr/bin/git remote add origin https://github.com/and3rn3t/health
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9476987Z ##[endgroup]
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9477975Z ##[group]Disabling automatic garbage collection
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9480552Z [command]/usr/bin/git config --local gc.auto 0
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9508222Z ##[endgroup]
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9508902Z ##[group]Setting up auth
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9514698Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9543754Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9825750Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:56.9853277Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:57.0068670Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:57.0103416Z ##[endgroup]
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:57.0104170Z ##[group]Fetching the repository
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:57.0112456Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +9c602a7182ea0100cabffa0b6d603aad790c50c7:refs/remotes/pull/24/merge
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:57.9273015Z From https://github.com/and3rn3t/health
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:57.9275170Z  * [new ref]         9c602a7182ea0100cabffa0b6d603aad790c50c7 -> pull/24/merge
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:57.9306708Z ##[endgroup]
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:57.9309920Z ##[group]Determining the checkout info
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:57.9316084Z ##[endgroup]
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:57.9316997Z [command]/usr/bin/git sparse-checkout disable
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:57.9356287Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:57.9384406Z ##[group]Checking out the ref
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:57.9388382Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/24/merge
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1460296Z Note: switching to 'refs/remotes/pull/24/merge'.
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1461316Z 
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1462156Z You are in 'detached HEAD' state. You can look around, make experimental
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1464014Z changes and commit them, and you can discard any commits you make in this
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1465890Z state without impacting any branches by switching back to a branch.
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1466985Z 
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1467942Z If you want to create a new branch to retain commits you create, you may
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1469667Z do so (now or later) by using -c with the switch command. Example:
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1470618Z 
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1471104Z   git switch -c <new-branch-name>
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1471918Z 
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1472397Z Or undo this operation with:
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1473083Z 
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1473463Z   git switch -
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1473898Z 
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1474563Z Turn off this advice by setting config variable advice.detachedHead to false
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1475440Z 
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1476375Z HEAD is now at 9c602a7 Merge c8cd708b9ad4b3e0a14bd417b7e99cc9e2c359ea into d96eab5028689ddc0cce29577029722b7b79788e
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1481146Z ##[endgroup]
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1516351Z [command]/usr/bin/git log -1 --format=%H
+ws_schema_drift	Run actions/checkout@v4	2025-09-20T02:03:58.1538433Z 9c602a7182ea0100cabffa0b6d603aad790c50c7
+ws_schema_drift	Setup Node & pnpm	﻿2025-09-20T02:03:58.1882235Z Prepare all required actions
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.1883598Z Getting action download info
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.3008679Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.5237516Z Download action repository 'actions/cache@v4' (SHA:0400d5f644dc74513175e3cd8d07132dd4860809)
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6425310Z ##[group]Run ./.github/actions/setup-pnpm
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6425660Z with:
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6425880Z   working-directory: .
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6426148Z ##[endgroup]
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6612225Z ##[group]Run echo "Working directory: ."
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6612634Z [36;1mecho "Working directory: ."[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6661895Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6662304Z ##[endgroup]
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6731049Z Working directory: .
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6813553Z ##[group]Run actions/setup-node@v4
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6813854Z with:
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6814080Z   node-version-file: .nvmrc
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6814368Z   always-auth: false
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6814619Z   check-latest: false
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6814996Z   token: ***
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.6815219Z ##[endgroup]
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.8475870Z Node version file is not JSON file
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.8477405Z Resolved .nvmrc as 20.19.0
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:58.8579244Z Attempting to download 20.19.0...
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:59.2107321Z Acquiring 20.19.0 - x64 from https://github.com/actions/node-versions/releases/download/20.19.0-13838090974/node-20.19.0-linux-x64.tar.gz
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:59.6256904Z Extracting ...
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:03:59.6384406Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/f97fdca0-7ef1-455a-a623-ad41b82117e4 -f /home/runner/work/_temp/f32b342d-0ac5-46b7-a4a7-f07b1611c490
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:00.6277968Z Adding to the cache ...
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.2786783Z ##[group]Environment details
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.6240264Z node: v20.19.0
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.6240749Z npm: 10.8.2
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.6241101Z yarn: 1.22.22
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.6242079Z ##[endgroup]
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.6389240Z ##[group]Run corepack enable || true
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.6389544Z [36;1mcorepack enable || true[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.6424571Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.6424927Z ##[endgroup]
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.7123250Z ##[group]Run set -e
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.7123513Z [36;1mset -e[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.7123920Z [36;1mSTORE_PATH=$(node -e "process.stdout.write(require('path').join(process.env.HOME,'.pnpm-store'))")[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.7124401Z [36;1mecho "Computed store path: $STORE_PATH"[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.7124717Z [36;1mecho "store-path=$STORE_PATH" >> $GITHUB_OUTPUT[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.7156799Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.7157121Z env:
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.7157291Z   PNPM_HOME: ~/.pnpm
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.7157492Z ##[endgroup]
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.7451709Z Computed store path: /home/runner/.pnpm-store
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.8042977Z ##[group]Run actions/cache@v4
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.8043217Z with:
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.8043401Z   path: /home/runner/.pnpm-store
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.8043816Z   key: pnpm-store-Linux-87d29a0c4467941fb65dba4c87d899319c09297c18c8de750dc585e78725e14a
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.8044241Z   restore-keys: pnpm-store-Linux-
+ws_schema_drift	Setup Node & pnpm	
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.8044491Z   enableCrossOsArchive: false
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.8044713Z   fail-on-cache-miss: false
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.8044933Z   lookup-only: false
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.8045149Z   save-always: false
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:02.8045335Z ##[endgroup]
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0310992Z Cache not found for input keys: pnpm-store-Linux-87d29a0c4467941fb65dba4c87d899319c09297c18c8de750dc585e78725e14a, pnpm-store-Linux-
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0392600Z ##[group]Run set -e
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0392841Z [36;1mset -e[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0393186Z [36;1mif [ ! -f package.json ]; then echo 'package.json not found in working directory'; exit 0; fi[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0393981Z [36;1mVERSION=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0394576Z [36;1mecho "Preparing pnpm@${VERSION}"[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0394892Z [36;1mif ! corepack prepare pnpm@${VERSION} --activate; then[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0395323Z [36;1m  echo "corepack prepare failed, installing fallback pnpm@${VERSION} via npm"[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0395692Z [36;1m  npm i -g pnpm@${VERSION}[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0395920Z [36;1mfi[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0396122Z [36;1mif ! command -v pnpm >/dev/null 2>&1; then[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0396481Z [36;1m  echo "pnpm still not found after corepack + fallback install" >&2[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0396808Z [36;1m  exit 1[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0396972Z [36;1mfi[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0397165Z [36;1mecho "pnpm version: $(pnpm -v)"[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0397435Z [36;1mecho "version=${VERSION}" >> $GITHUB_OUTPUT[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0429499Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0429830Z ##[endgroup]
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.0743001Z Preparing pnpm@10.16.0
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:03.1292079Z Preparing pnpm@10.16.0 for immediate activation...
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:04.2078438Z pnpm version: 10.16.0
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:04.2102873Z ##[group]Run pnpm store path || true
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:04.2103142Z [36;1mpnpm store path || true[0m
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:04.2133035Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:04.2133353Z ##[endgroup]
+ws_schema_drift	Setup Node & pnpm	2025-09-20T02:04:04.5170740Z /home/runner/.local/share/pnpm/store/v10
+ws_schema_drift	Install Dependencies	﻿2025-09-20T02:04:04.5299565Z ##[group]Run if ! pnpm install --frozen-lockfile; then
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.5299990Z [36;1mif ! pnpm install --frozen-lockfile; then[0m
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.5300392Z [36;1m  echo "Lockfile outdated – running non-frozen install (performance_slo).";[0m
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.5300799Z [36;1m  pnpm install --no-frozen-lockfile;[0m
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.5301047Z [36;1mfi[0m
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.5331732Z shell: /usr/bin/bash -e {0}
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.5331972Z ##[endgroup]
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.9384857Z  ERR_PNPM_OUTDATED_LOCKFILE  Cannot install with "frozen-lockfile" because pnpm-lock.yaml is not up to date with <ROOT>/package.json
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.9385882Z 
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.9386970Z Note that in CI environments this setting is true by default. If you still need to run install in such cases, use "pnpm install --no-frozen-lockfile"
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.9388101Z 
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.9388293Z   Failure reason:
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.9388971Z   specifiers in the lockfile don't match specifiers in package.json:
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.9390264Z * 2 dependencies were added: @vitest/coverage-v8@3.2.4, @parcel/watcher-linux-x64-gnu@^2.5.1
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.9390891Z 
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:04.9609815Z Lockfile outdated – running non-frozen install (performance_slo).
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:14.3315952Z  WARN  4 deprecated subdependencies found: browserslist@1.7.7, flatten@1.0.3, q@1.5.1, svgo@0.7.2
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:16.9588228Z 
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:16.9589002Z > vitalsense-app@0.0.0 preinstall /home/runner/work/health/health
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:16.9589538Z > node scripts/ci/ensure-node-version.mjs
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:16.9589769Z 
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:16.9972352Z ✅ Node version OK (v20.19.0)
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:17.0043496Z  WARN  Issues with peer dependencies found
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:17.0044123Z .
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:17.0044815Z ├─┬ vitest 3.2.4
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:17.0045521Z │ └─┬ vite 7.1.5
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:17.0046610Z │   └── ✕ unmet peer @types/node@"^20.19.0 || >=22.12.0": found 20.16.11
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:17.0053423Z └─┬ @github/spark 0.39.141
+ws_schema_drift	Install Dependencies	2025-09-20T02:04:17.0054101Z   └── ✕ unmet peer vite@^6.2.0: found 7.1.5
+ws_schema_drift	WebSocket Schema Drift	﻿2025-09-20T02:04:17.0980027Z ##[group]Run pnpm run ci:ws-schema
+ws_schema_drift	WebSocket Schema Drift	2025-09-20T02:04:17.0980358Z [36;1mpnpm run ci:ws-schema[0m
+ws_schema_drift	WebSocket Schema Drift	2025-09-20T02:04:17.1009817Z shell: /usr/bin/bash -e {0}
+ws_schema_drift	WebSocket Schema Drift	2025-09-20T02:04:17.1010052Z ##[endgroup]
+ws_schema_drift	WebSocket Schema Drift	2025-09-20T02:04:17.3942277Z 
+ws_schema_drift	WebSocket Schema Drift	2025-09-20T02:04:17.3943019Z > vitalsense-app@0.0.0 ci:ws-schema /home/runner/work/health/health
+ws_schema_drift	WebSocket Schema Drift	2025-09-20T02:04:17.3944009Z > node scripts/ci/websocket-schema-drift.mjs
+ws_schema_drift	WebSocket Schema Drift	2025-09-20T02:04:17.3944275Z 
+ws_schema_drift	WebSocket Schema Drift	2025-09-20T02:04:17.4270598Z ❌ Baseline hash mismatch. Run with --update-hash if intentional change.
+ws_schema_drift	WebSocket Schema Drift	2025-09-20T02:04:17.4274840Z Recorded: f2c1c6c492adefaf77a11471dc437747dc580f7d0b8424dd0070e742e3549e2c
+ws_schema_drift	WebSocket Schema Drift	2025-09-20T02:04:17.4275676Z Actual  : 9c0e7182f322f2ad68b85aa7ad2bec5939e751136f5d8d66d8b9bf5bb8373638
+ws_schema_drift	WebSocket Schema Drift	2025-09-20T02:04:17.4467261Z  ELIFECYCLE  Command failed with exit code 1.
+ws_schema_drift	WebSocket Schema Drift	2025-09-20T02:04:17.4674873Z ##[error]Process completed with exit code 1.
+ws_schema_drift	Post Setup Node & pnpm	﻿2025-09-20T02:04:17.4760861Z Post job cleanup.
+ws_schema_drift	Post Run actions/checkout@v4	﻿2025-09-20T02:04:17.4810621Z Post job cleanup.
+ws_schema_drift	Post Run actions/checkout@v4	2025-09-20T02:04:17.5733927Z [command]/usr/bin/git version
+ws_schema_drift	Post Run actions/checkout@v4	2025-09-20T02:04:17.5768790Z git version 2.51.0
+ws_schema_drift	Post Run actions/checkout@v4	2025-09-20T02:04:17.5817157Z Temporarily overriding HOME='/home/runner/work/_temp/7e9f5b31-fb08-4bad-9515-7bec08ec8411' before making global git config changes
+ws_schema_drift	Post Run actions/checkout@v4	2025-09-20T02:04:17.5818557Z Adding repository directory to the temporary git global config as a safe directory
+ws_schema_drift	Post Run actions/checkout@v4	2025-09-20T02:04:17.5821980Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/health/health
+ws_schema_drift	Post Run actions/checkout@v4	2025-09-20T02:04:17.5854095Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+ws_schema_drift	Post Run actions/checkout@v4	2025-09-20T02:04:17.5885366Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+ws_schema_drift	Post Run actions/checkout@v4	2025-09-20T02:04:17.6123411Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+ws_schema_drift	Post Run actions/checkout@v4	2025-09-20T02:04:17.6146241Z http.https://github.com/.extraheader
+ws_schema_drift	Post Run actions/checkout@v4	2025-09-20T02:04:17.6160182Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+ws_schema_drift	Post Run actions/checkout@v4	2025-09-20T02:04:17.6193400Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+ws_schema_drift	Complete job	﻿2025-09-20T02:04:17.6541255Z Cleaning up orphan processes

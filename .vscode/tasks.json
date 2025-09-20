@@ -10,24 +10,114 @@
         "kind": "build",
         "isDefault": false
       },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": true,
-        "panel": "dedicated",
-        "clear": true
-      },
-      "icon": {
-        "id": "lightbulb",
-        "color": "terminal.ansiYellow"
-      },
+      "icon": { "id": "lightbulb", "color": "terminal.ansiYellow" },
       "detail": "Interactive guided setup with progress tracking"
+    },
+    {
+      "label": "💎 Node: Production Branding Check",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/test/test-browser-endpoints.js",
+        "--baseUrl=https://health.andernet.dev",
+        "--verbose"
+      ],
+      "group": "test",
+      "icon": { "id": "heart", "color": "terminal.ansiRed" },
+      "detail": "Node rewrite of verify-production-branding.ps1"
+    },
+    {
+      "label": "💎 Node: Local Branding Check",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/branding/verify-production-branding.js",
+        "--url=http://127.0.0.1:8789",
+        "--local"
+      ],
+      "group": "test",
+      "icon": { "id": "heart", "color": "terminal.ansiMagenta" },
+      "detail": "Verify branding against local Worker (port 8789)"
+    },
+    {
+      "label": "🪄 Node: Rebrand Scan",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/branding/verify-vitalsense-rebrand.js"],
+      "group": "test",
+      "icon": { "id": "inspect", "color": "terminal.ansiYellow" },
+      "detail": "Scan repository for leftover HealthGuard references"
+    },
+    {
+      "label": "🌐 Node: Find Worker URL",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/branding/find-worker-url.js"],
+      "group": "test",
+      "icon": { "id": "globe", "color": "terminal.ansiBlue" },
+      "detail": "Probe candidate Cloudflare Worker domains and custom domain"
+    },
+    {
+      "label": "🧾 Node: Branding Audit (Combined)",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/branding/branding-audit.js"],
+      "group": "test",
+      "icon": { "id": "report", "color": "terminal.ansiGreen" },
+      "detail": "Run combined branding + rebrand scan and produce markdown summary"
+    },
+    {
+      "label": "� Node: Auth0 Login Page Test",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/node/test/test-auth0-login-page.js"],
+      "group": "test",
+      "icon": { "id": "shield", "color": "terminal.ansiYellow" },
+      "detail": "Node rewrite of Auth0: Test Custom Login Page"
+    },
+    {
+      "label": "🧪 Node: Enhanced Health Processing",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/test/test-enhanced-health-processing.js",
+        "--baseUrl",
+        "http://127.0.0.1",
+        "--port",
+        "8789"
+      ],
+      "group": "test",
+      "icon": { "id": "beaker", "color": "terminal.ansiGreen" },
+      "detail": "Node rewrite of test-enhanced-health-processing.ps1"
+    },
+    {
+      "label": "🧪 Node: Browser Endpoint Tests",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/test/test-browser-endpoints.js",
+        "--baseUrl=https://health-app-prod.workers.dev"
+      ],
+      "group": "test",
+      "detail": "Node rewrite of test-browser-endpoints.ps1"
+    },
+    {
+      "label": "🧪 Node: WebSocket Connection",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/test/test-websocket-connection.js",
+        "--backendUrl=wss://health.andernet.dev/ws"
+      ],
+      "group": "test",
+      "icon": { "id": "broadcast", "color": "terminal.ansiMagenta" },
+      "detail": "Node rewrite of test-websocket-connection.ps1"
     },
     {
       "label": "🐳 Docker: Up (dev)",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-Command", "docker compose up --build -d"],
+      "args": ["scripts/node/analysis/bundle-optimization-tester.js"],
       "group": "build",
       "presentation": {
         "echo": true,
@@ -533,6 +623,19 @@
       }
     },
     {
+      "label": "📤 Dump Version Mismatch Events",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "scripts/node/analytics/dump-version-mismatch.js",
+        "--out",
+        "mismatch-events.json"
+      ],
+      "group": "test",
+      "icon": { "id": "file", "color": "terminal.ansiYellow" },
+      "detail": "Fetch and store current analytics version mismatch events"
+    },
+    {
       "label": "🐳 Docker: Restart (worker)",
       "type": "shell",
       "command": "pwsh",
@@ -853,7 +956,7 @@
       "label": "🎨 CSS Bundle Optimizer",
       "type": "shell",
       "command": "node",
-      "args": ["scripts/css-optimizer.js"],
+      "args": ["scripts/node/analysis/css/css-optimizer.js"],
       "group": "build",
       "presentation": {
         "echo": true,
@@ -893,7 +996,7 @@
       "label": "🧪 Bundle Optimization Tester",
       "type": "shell",
       "command": "node",
-      "args": ["scripts/bundle-optimization-tester.js"],
+      "args": ["scripts/node/analysis/bundle-optimization-tester.js"],
       "group": "test",
       "presentation": {
         "echo": true,
@@ -1051,14 +1154,8 @@
     {
       "label": "Get Copilot Context",
       "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/simple-context.ps1"
-      ],
+      "command": "node",
+      "args": ["scripts/node/dev/simple-context.js"],
       "group": "test",
       "presentation": {
         "echo": true,
@@ -1087,46 +1184,15 @@
         "DEVICE_JWT_SECRET:dev-local"
       ],
       "isBackground": true,
-      "problemMatcher": ["$eslint-stylish"],
-      "group": "build"
-    },
-    {
-      "label": "probe-health-8789-curl",
-      "type": "shell",
-      "command": "curl.exe",
-      "args": ["-sS", "http://127.0.0.1:8789/health"]
-    },
-    {
-      "label": "probe-worker-default",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/probe.ps1",
-        "-HostUrl",
-        "http://127.0.0.1",
-        "-Port",
-        "8789",
-        "-UserId",
-        "demo-user"
-      ]
-    },
-    {
-      "label": "probe-worker-8789",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/probe.ps1",
-        "-HostUrl",
-        "http://127.0.0.1",
-        "-Port",
-        "8789",
-        "-UserId",
-        "demo-user"
-      ]
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      }
     },
     {
       "label": "iOS: Setup Development Tools",
@@ -1139,20 +1205,23 @@
         "-All"
       ],
       "group": "build",
+      "options": { "cwd": "${workspaceFolder}/ios" },
       "presentation": {
         "echo": true,
         "reveal": "always",
         "focus": false,
         "panel": "shared"
-      },
-      "problemMatcher": []
+      }
     },
     {
       "label": "iOS: Swift Lint",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "ios/scripts/swift-lint-windows.ps1"],
+      "args": ["-NoProfile", "-File", "scripts/swift-lint-windows.ps1"],
       "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1165,8 +1234,11 @@
       "label": "iOS: Swift Format",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "ios/scripts/swift-format-windows.ps1"],
+      "args": ["-NoProfile", "-File", "scripts/swift-format-windows.ps1"],
       "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1179,12 +1251,11 @@
       "label": "iOS: Check Swift Errors",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/HealthKitBridge/scripts/Check-SwiftErrors.ps1"
-      ],
+      "args": ["-NoProfile", "-File", "scripts/Check-SwiftErrors.ps1"],
       "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios/HealthKitBridge"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1200,10 +1271,13 @@
       "args": [
         "-NoProfile",
         "-File",
-        "ios/scripts/swift-format-windows.ps1",
+        "scripts/swift-format-windows.ps1",
         "-DryRun"
       ],
       "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1216,8 +1290,11 @@
       "label": "iOS: Build Simulator",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "ios/scripts/ios-build-simulator.ps1"],
+      "args": ["-NoProfile", "-File", "scripts/ios-build-simulator.ps1"],
       "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1233,10 +1310,141 @@
       "args": [
         "-NoProfile",
         "-File",
-        "ios/scripts/swift-dependency-analyzer.ps1",
+        "scripts/swift-dependency-analyzer.ps1",
         "-ShowGraph"
       ],
       "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "iOS: Duplicate Types Scan",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "ios/scripts/swift-duplicate-types-scan.ps1",
+        "-Root",
+        "ios/HealthKitBridge",
+        "-VerboseOutput"
+      ],
+      "group": "test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "iOS: Availability Guard Check",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "ios/scripts/swift-availability-guard-check.ps1",
+        "-Root",
+        "ios/HealthKitBridge"
+      ],
+      "group": "test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "iOS: Swift Fast Typecheck",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "ios/scripts/swift-fast-typecheck.ps1",
+        "-Root",
+        "ios/HealthKitBridge"
+      ],
+      "group": "test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "iOS: Public API Surface (list)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "ios/scripts/swift-public-api-surface.ps1",
+        "-Root",
+        "ios/HealthKitBridge"
+      ],
+      "group": "test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "iOS: Import Graph (show)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "ios/scripts/swift-import-graph.ps1",
+        "-Root",
+        "ios/HealthKitBridge",
+        "-ShowGraph"
+      ],
+      "group": "test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "iOS: SwiftLint Precheck",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "ios/scripts/swiftlint-precheck.ps1",
+        "-Root",
+        "ios/HealthKitBridge"
+      ],
+      "group": "test",
+      "options": { "cwd": "${workspaceFolder}" },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1252,10 +1460,13 @@
       "args": [
         "-NoProfile",
         "-File",
-        "ios/scripts/swift-performance-analyzer.ps1",
+        "scripts/swift-performance-analyzer.ps1",
         "-Detailed"
       ],
       "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1271,12 +1482,15 @@
       "args": [
         "-NoProfile",
         "-File",
-        "ios/scripts/main-app-deploy.ps1",
+        "scripts/main-app-deploy.ps1",
         "-Environment",
         "development",
         "-Deploy"
       ],
       "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1292,12 +1506,15 @@
       "args": [
         "-NoProfile",
         "-File",
-        "ios/scripts/main-app-deploy.ps1",
+        "scripts/main-app-deploy.ps1",
         "-Environment",
         "production",
         "-Deploy"
       ],
       "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1310,13 +1527,11 @@
       "label": "App: Status Check",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/main-app-deploy.ps1",
-        "-Status"
-      ],
+      "args": ["-NoProfile", "-File", "scripts/main-app-deploy.ps1", "-Status"],
       "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1329,13 +1544,11 @@
       "label": "App: Quick Check",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/main-app-deploy.ps1",
-        "-Quick"
-      ],
+      "args": ["-NoProfile", "-File", "scripts/main-app-deploy.ps1", "-Quick"],
       "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/ios"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -1347,26 +1560,26 @@
     {
       "label": "Test Enhanced Health Processing",
       "type": "shell",
-      "command": "pwsh",
+      "command": "node",
       "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/test-enhanced-health-processing.ps1"
+        "scripts/node/test/test-enhanced-health-processing.js",
+        "--baseUrl",
+        "http://127.0.0.1",
+        "--port",
+        "8789"
       ],
       "group": "test"
     },
     {
       "label": "Final Test Enhanced Health Processing",
       "type": "shell",
-      "command": "pwsh",
+      "command": "node",
       "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/test-enhanced-health-processing.ps1"
+        "scripts/node/test/test-enhanced-health-processing.js",
+        "--baseUrl",
+        "http://127.0.0.1",
+        "--port",
+        "8789"
       ],
       "group": "test"
     },
@@ -1535,8 +1748,8 @@
     {
       "label": "📦 Quick Bundle Check",
       "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-File", "scripts/check-bundle-size.ps1"],
+      "command": "node",
+      "args": ["scripts/node/analysis/quick-bundle-check.js"],
       "group": "test",
       "presentation": {
         "echo": true,
@@ -1556,7 +1769,11 @@
       "label": "🔍 Full Bundle Analysis",
       "type": "shell",
       "command": "node",
-      "args": ["scripts/bundle-analyzer.js", "--save", "--verbose"],
+      "args": [
+        "scripts/node/analysis/bundle-analyzer.js",
+        "--save",
+        "--verbose"
+      ],
       "group": "test",
       "presentation": {
         "echo": true,
@@ -1689,30 +1906,7 @@
       "problemMatcher": ["$tsc"],
       "group": "build"
     },
-    {
-      "label": "wrangler-dev-8789",
-      "type": "shell",
-      "command": "wrangler",
-      "args": [
-        "dev",
-        "--env",
-        "development",
-        "--port",
-        "8789",
-        "--var",
-        "DEVICE_JWT_SECRET:dev-local"
-      ],
-      "isBackground": true,
-      "group": "build"
-    },
-    {
-      "label": "iOS: Run Unit Tests",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-File", "ios/scripts/ios-test-runner.ps1"],
-      "problemMatcher": [],
-      "group": "test"
-    },
+
     {
       "label": "lint-quick-nodejs",
       "type": "shell",

@@ -46,6 +46,11 @@ type Diagnostics = {
   hasRateLimiter: boolean;
   now: string;
   endpoints: string[];
+  analyticsVersionMismatch?: {
+    recentEventCount: number;
+    maxStored: number;
+    clientSampleRate: string;
+  };
 };
 
 export default function DevDiagnostics() {
@@ -77,8 +82,191 @@ export default function DevDiagnostics() {
     error?: boolean;
     tailDev?: boolean;
     tailProd?: boolean;
+    vmjson?: boolean;
   }>({});
   const [copiedEndpoint, setCopiedEndpoint] = useState<string | null>(null);
+  // Version mismatch debug events
+  type VersionMismatchEvent = {
+    ts: string;
+    gaitLocal: string | null;
+    gaitRemote: string | null;
+    fallLocal: string | null;
+    fallRemote: string | null;
+    sample?: number;
+    seq?: number;
+  };
+  const [vmEvents, setVmEvents] = useState<VersionMismatchEvent[] | null>(null);
+  const [vmLoading, setVmLoading] = useState(false);
+  const [vmError, setVmError] = useState<string | null>(null);
+  // Filter: all | gait | fall
+  const [vmFilter, setVmFilter] = useState<'all' | 'gait' | 'fall'>('all');
+  // Persist vmFilter in localStorage for convenience
+  useEffect(() => {
+    const stored = localStorage.getItem('vs_vmFilter');
+    if (stored === 'all' || stored === 'gait' || stored === 'fall') {
+      setVmFilter(stored);
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem('vs_vmFilter', vmFilter);
+    } catch {
+      /* ignore */
+    }
+  }, [vmFilter]);
+  const filteredVmEvents = useMemo(() => {
+    if (!vmEvents) return null;
+    if (vmFilter === 'all') return vmEvents;
+    return vmEvents.filter((e) => {
+      if (vmFilter === 'gait') {
+        return !!e.gaitLocal && !!e.gaitRemote && e.gaitLocal !== e.gaitRemote;
+      }
+      if (vmFilter === 'fall') {
+        return !!e.fallLocal && !!e.fallRemote && e.fallLocal !== e.fallRemote;
+      }
+      return true;
+    });
+  }, [vmEvents, vmFilter]);
+  const vmCounts = useMemo(() => {
+    const base = { all: vmEvents?.length || 0, gait: 0, fall: 0 };
+    if (!vmEvents) return base;
+    for (const e of vmEvents) {
+      if (e.gaitLocal && e.gaitRemote && e.gaitLocal !== e.gaitRemote)
+        base.gait++;
+      if (e.fallLocal && e.fallRemote && e.fallLocal !== e.fallRemote)
+        base.fall++;
+    }
+    return base;
+  }, [vmEvents]);
+  // Lightweight sparkline data (counts per 2s bucket over the last 60s of filtered events)
+  interface SparkBucket {
+    total: number;
+    gait: number;
+    fall: number;
+    both: number; // events that have both mismatches simultaneously
+  }
+  const vmSparklineBuckets = useMemo(() => {
+    if (!filteredVmEvents) return [] as SparkBucket[];
+    const now = Date.now();
+    const windowMs = 60_000;
+    const bucketMs = 2_000;
+    const bucketCount = Math.ceil(windowMs / bucketMs);
+    const buckets: SparkBucket[] = Array(bucketCount)
+      .fill(0)
+      .map(() => ({ total: 0, gait: 0, fall: 0, both: 0 }));
+    for (const e of filteredVmEvents) {
+      const age = now - Date.parse(e.ts);
+      if (age < 0 || age > windowMs) continue;
+      const idx = bucketCount - 1 - Math.floor(age / bucketMs);
+      if (idx < 0 || idx >= bucketCount) continue;
+      const gait = e.gaitLocal && e.gaitRemote && e.gaitLocal !== e.gaitRemote;
+      const fall = e.fallLocal && e.fallRemote && e.fallLocal !== e.fallRemote;
+      buckets[idx].total++;
+      if (gait && fall) buckets[idx].both++;
+      else if (gait) buckets[idx].gait++;
+      else if (fall) buckets[idx].fall++;
+    }
+    return buckets;
+  }, [filteredVmEvents]);
+  const sparklineSvg = useMemo(() => {
+    if (!vmSparklineBuckets.length) return null;
+    const max = Math.max(...vmSparklineBuckets.map((b) => b.total), 1);
+    const w = vmSparklineBuckets.length * 3; // 3px per bucket
+    const h = 20;
+    const title = vmSparklineBuckets
+      .map((b, i) => {
+        if (!b.total) return null;
+        return `${i}: T${b.total}/G${b.gait}/F${b.fall}/B${b.both}`;
+      })
+      .filter(Boolean)
+      .join(' | ');
+    return (
+      <svg
+        width={w}
+        height={h}
+        viewBox={`0 0 ${w} ${h}`}
+        className="ml-2 opacity-80"
+        aria-label="Mismatch events sparkline"
+        role="img"
+      >
+        <title>{`Last 60s buckets (oldest→newest). ${title}`}</title>
+        {vmSparklineBuckets.map((b, i) => {
+          if (!b.total) return null;
+          const x = i * 3 + 0.5;
+          // Stacked tiny bar: both at top, then gait, then fall
+          let cursorY = h - 1;
+          const segment = (count: number, cls: string) => {
+            if (!count) return null;
+            const segH = Math.max(1, Math.round((count / max) * (h - 2)));
+            cursorY -= segH;
+            return (
+              <rect
+                key={cls}
+                x={x}
+                y={cursorY}
+                width={2}
+                height={segH}
+                className={cls}
+                rx={0.5}
+              />
+            );
+          };
+          return (
+            <g key={i}>
+              {segment(b.fall, 'fill-rose-500')}
+              {segment(b.gait, 'fill-sky-500')}
+              {segment(b.both, 'fill-amber-500')}
+            </g>
+          );
+        })}
+        <rect
+          x={0}
+          y={0}
+          width={w}
+          height={h}
+          className="stroke-border/30 pointer-events-none"
+          fill="none"
+        />
+      </svg>
+    );
+  }, [vmSparklineBuckets]);
+  const formatRelativeSec = (iso: string) => {
+    const ageMs = Date.now() - Date.parse(iso);
+    if (!isFinite(ageMs) || ageMs < 0) return '—';
+    const s = Math.floor(ageMs / 1000);
+    if (s < 60) return `${s}s ago`;
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m}m ${s % 60}s ago`;
+    const h = Math.floor(m / 60);
+    return `${h}h ${m % 60}m ago`;
+  };
+  const onFetchVmEvents = useCallback(async () => {
+    setVmLoading(true);
+    setVmError(null);
+    try {
+      const res = await fetch('/api/_debug/version-mismatch-events', {
+        headers: { 'cache-control': 'no-store' },
+      });
+      type VmResponse = {
+        ok: boolean;
+        events?: VersionMismatchEvent[];
+        error?: string;
+      };
+      const json = (await res
+        .json()
+        .catch(() => ({ ok: false, error: 'invalid_json' }))) as VmResponse;
+      if (!res.ok || !json.ok) {
+        throw new Error(json.error || `status_${res.status}`);
+      }
+      const events = json.events || [];
+      setVmEvents(events);
+    } catch (e) {
+      setVmError((e as Error).message);
+      setVmEvents(null);
+    } finally {
+      setVmLoading(false);
+    }
+  }, []);
 
   // WebSocket quick test state
   const wsRef = useRef<WebSocketClient | null>(null);
@@ -730,6 +918,187 @@ export default function DevDiagnostics() {
       <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
+            <Gauge className="h-5 w-5" />
+            Analytics Version Mismatch (Debug)
+          </CardTitle>
+          <CardDescription>
+            Recent client-reported analytics config mismatches (non-production
+            only).
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <div className="gap-3 flex flex-wrap items-center">
+            <Button size="sm" onClick={onFetchVmEvents} disabled={vmLoading}>
+              {vmLoading ? 'Loading…' : 'Fetch Events'}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={loadDiagnostics}
+              disabled={loading}
+            >
+              Refresh Diagnostics
+            </Button>
+            {vmEvents && vmEvents.length > 0 && (
+              <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant={vmFilter === 'all' ? 'default' : 'outline'}
+                  onClick={() => setVmFilter('all')}
+                >
+                  All ({vmCounts.all})
+                </Button>
+                <Button
+                  size="sm"
+                  variant={vmFilter === 'gait' ? 'default' : 'outline'}
+                  onClick={() => setVmFilter('gait')}
+                >
+                  Gait ({vmCounts.gait})
+                </Button>
+                <Button
+                  size="sm"
+                  variant={vmFilter === 'fall' ? 'default' : 'outline'}
+                  onClick={() => setVmFilter('fall')}
+                >
+                  Fall ({vmCounts.fall})
+                </Button>
+              </div>
+            )}
+            {filteredVmEvents && filteredVmEvents.length > 0 && (
+              <div className="gap-3 flex items-center">
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() =>
+                      doCopy(
+                        JSON.stringify(filteredVmEvents, null, 2),
+                        'vmjson'
+                      )
+                    }
+                  >
+                    Copy JSON
+                  </Button>
+                  {copied.vmjson && (
+                    <span className="text-xs text-muted-foreground">
+                      Copied
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const headers = [
+                        'timestamp',
+                        'relAgeSeconds',
+                        'gaitLocal',
+                        'gaitRemote',
+                        'fallLocal',
+                        'fallRemote',
+                        'sample',
+                        'seq',
+                      ];
+                      const now = Date.now();
+                      const rows = filteredVmEvents.map((e) => [
+                        e.ts,
+                        ((now - Date.parse(e.ts)) / 1000).toFixed(2),
+                        e.gaitLocal ?? '',
+                        e.gaitRemote ?? '',
+                        e.fallLocal ?? '',
+                        e.fallRemote ?? '',
+                        e.sample ?? '',
+                        e.seq ?? '',
+                      ]);
+                      const csv = [headers, ...rows]
+                        .map((r) =>
+                          r
+                            .map((c) => `"${String(c).replace(/"/g, '""')}"`)
+                            .join(',')
+                        )
+                        .join('\n');
+                      const blob = new Blob([csv], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'version-mismatch-events.csv';
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                      URL.revokeObjectURL(url);
+                    }}
+                  >
+                    Download CSV
+                  </Button>
+                </div>
+              </div>
+            )}
+            {diag?.analyticsVersionMismatch && (
+              <div className="text-xs text-muted-foreground">
+                Stored: {diag.analyticsVersionMismatch.recentEventCount}/
+                {diag.analyticsVersionMismatch.maxStored} • Suggested sample:{' '}
+                {diag.analyticsVersionMismatch.clientSampleRate}
+                {typeof diag.analyticsVersionMismatch.oldestEventAgeMs ===
+                  'number' && (
+                  <>
+                    {' '}
+                    • Oldest:{' '}
+                    {(() => {
+                      const age =
+                        diag.analyticsVersionMismatch.oldestEventAgeMs;
+                      if (age <= 0) return '0s';
+                      const secs = Math.floor(age / 1000);
+                      if (secs < 60) return `${secs}s`;
+                      const mins = Math.floor(secs / 60);
+                      if (mins < 60) return `${mins}m`;
+                      const hrs = Math.floor(mins / 60);
+                      return `${hrs}h`;
+                    })()}
+                  </>
+                )}
+                {sparklineSvg}
+                {vmSparklineBuckets.length > 0 && (
+                  <span className="text-muted-foreground ml-2 inline-flex items-center gap-1 text-[10px]">
+                    <span className="gap-0.5 inline-flex items-center">
+                      <span className="bg-sky-500 h-2 w-2 rounded-sm" />
+                      Gait
+                    </span>
+                    <span className="gap-0.5 inline-flex items-center">
+                      <span className="bg-rose-500 h-2 w-2 rounded-sm" />
+                      Fall
+                    </span>
+                    <span className="gap-0.5 inline-flex items-center">
+                      <span className="bg-amber-500 h-2 w-2 rounded-sm" />
+                      Both
+                    </span>
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+          {vmError && (
+            <div className="text-red-500 text-xs flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4" /> {vmError}
+            </div>
+          )}
+          {!vmError && vmEvents && vmEvents.length === 0 && !vmLoading && (
+            <div className="text-muted-foreground text-xs">
+              No events captured.
+            </div>
+          )}
+          {!vmError && filteredVmEvents && filteredVmEvents.length > 0 && (
+            <VirtualizedMismatchTable
+              events={filteredVmEvents}
+              formatRelativeSec={formatRelativeSec}
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <Wrench className="h-5 w-5" />
             Local Tips
           </CardTitle>
@@ -915,6 +1284,134 @@ export default function DevDiagnostics() {
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// ---------------- Virtualized Mismatch Table (extracted) ----------------
+interface VersionMismatchEventRow {
+  ts: string;
+  gaitLocal?: string | null;
+  gaitRemote?: string | null;
+  fallLocal?: string | null;
+  fallRemote?: string | null;
+  sample?: number;
+  seq?: number;
+}
+
+interface VirtualizedMismatchTableProps {
+  events: VersionMismatchEventRow[];
+  formatRelativeSec: (iso: string) => string;
+}
+
+function VirtualizedMismatchTable({
+  events,
+  formatRelativeSec,
+}: VirtualizedMismatchTableProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const ROW_HEIGHT = 26;
+  const OVERSCAN = 8;
+  const ordered = useMemo(() => events.slice().reverse(), [events]);
+  const [viewport, setViewport] = useState({
+    start: 0,
+    end: 50,
+    height: 0,
+    scrollTop: 0,
+  });
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const height = el.clientHeight;
+      const scrollTop = el.scrollTop;
+      const start = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
+      const visibleCount = Math.ceil(height / ROW_HEIGHT) + OVERSCAN * 2;
+      const end = start + visibleCount;
+      setViewport({ start, end, height, scrollTop });
+    };
+    onScroll();
+    el.addEventListener('scroll', onScroll, { passive: true });
+    const ro = new ResizeObserver(onScroll);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('scroll', onScroll);
+      ro.disconnect();
+    };
+  }, [ordered.length]);
+  useEffect(() => {
+    setViewport((v) => ({ ...v, start: 0, end: 50, scrollTop: 0 }));
+    if (containerRef.current) containerRef.current.scrollTop = 0;
+  }, [ordered.length]);
+  const slice = ordered.slice(viewport.start, viewport.end);
+  return (
+    <div
+      ref={containerRef}
+      className="border-border/40 max-h-64 relative overflow-auto rounded border [contain:strict]"
+    >
+      <table className="text-xs w-full border-separate border-spacing-0">
+        <thead className="sticky top-0 z-10">
+          <tr className="bg-muted/50 backdrop-blur supports-[backdrop-filter]:bg-muted/40 text-left">
+            <th className="p-2 font-medium">Time</th>
+            <th className="p-2 font-medium">Δ</th>
+            <th className="p-2 font-medium">Gait</th>
+            <th className="p-2 font-medium">Fall Risk</th>
+            <th className="p-2 font-medium">Sample</th>
+            <th className="p-2 font-medium">Seq</th>
+          </tr>
+        </thead>
+        <tbody>
+          {slice.map((e) => {
+            const gait =
+              e.gaitLocal && e.gaitRemote && e.gaitLocal !== e.gaitRemote
+                ? `${e.gaitLocal} → ${e.gaitRemote}`
+                : '—';
+            const fall =
+              e.fallLocal && e.fallRemote && e.fallLocal !== e.fallRemote
+                ? `${e.fallLocal} → ${e.fallRemote}`
+                : '—';
+            const type =
+              gait !== '—' && fall !== '—'
+                ? 'both'
+                : gait !== '—'
+                  ? 'gait'
+                  : fall !== '—'
+                    ? 'fall'
+                    : '—';
+            return (
+              <tr
+                key={`${e.ts}-${e.seq ?? 0}`}
+                className="even:bg-muted/10 h-[26px]"
+              >
+                <td className="whitespace-nowrap p-2 align-top">
+                  {formatRelativeSec(e.ts)}
+                </td>
+                <td className="p-2 align-top">
+                  {type === 'both' && (
+                    <Badge variant="outline" className="text-[10px]">
+                      B
+                    </Badge>
+                  )}
+                  {type === 'gait' && (
+                    <Badge variant="outline" className="text-[10px]">
+                      G
+                    </Badge>
+                  )}
+                  {type === 'fall' && (
+                    <Badge variant="outline" className="text-[10px]">
+                      F
+                    </Badge>
+                  )}
+                  {type === '—' && '—'}
+                </td>
+                <td className="p-2 align-top font-mono">{gait}</td>
+                <td className="p-2 align-top font-mono">{fall}</td>
+                <td className="p-2 align-top">{e.sample ?? '—'}</td>
+                <td className="p-2 align-top">{e.seq ?? '—'}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }

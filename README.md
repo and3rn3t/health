@@ -10,7 +10,23 @@
 [![iOS](https://img.shields.io/badge/iOS-16+-black.svg)](https://developer.apple.com/ios/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Production](https://img.shields.io/badge/Status-Live-brightgreen.svg)](https://health.andernet.dev)
+[![Branding Audit](https://github.com/and3rn3t/health/actions/workflows/branding-audit.yml/badge.svg)](.github/workflows/branding-audit.yml)
 [![iOS Tests](https://github.com/and3rn3t/health/actions/workflows/ios-tests.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/ios-tests.yml)
+[![Core CI](https://github.com/and3rn3t/health/actions/workflows/ci-core.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/ci-core.yml)
+[![Security & Quality](https://github.com/and3rn3t/health/actions/workflows/security-quality.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/security-quality.yml)
+[![Optimized Pipeline](https://github.com/and3rn3t/health/actions/workflows/optimized-pipeline.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/optimized-pipeline.yml)
+[![Smoke Tests](https://github.com/and3rn3t/health/actions/workflows/smoke.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/smoke.yml)
+
+<!-- Dynamic CI Badges (generated on main by baseline_metrics job) -->
+<p>
+  <img alt="Coverage" src="./ci-baselines/badges/coverage.svg" />
+  <img alt="ESLint Errors" src="./ci-baselines/badges/eslint-errors.svg" />
+  <img alt="ESLint Warnings" src="./ci-baselines/badges/eslint-warnings.svg" />
+  <img alt="Latency" src="./ci-baselines/badges/perf-latency.svg" />
+  <img alt="Main Bundle Size" src="./ci-baselines/badges/bundle-main.svg" />
+</p>
+
+> Badges above are lightweight SVGs committed by CI (no external shield calls) keeping repo self-contained & offline-view friendly.
 
 ## 🚀 Quick Start
 
@@ -178,6 +194,7 @@ _Latest optimization: December 2024 - See `docs/_archive/optimizations/OPTIMIZAT
 - ✅ End-to-end encryption and JWT authentication
 - ✅ Automated deployment pipelines
 - ✅ Comprehensive documentation and troubleshooting guides
+- ✅ Automated branding & rebrand residue audit (HTML markers + legacy term scan)
 
 ### 🚧 In Progress
 
@@ -191,6 +208,29 @@ _Latest optimization: December 2024 - See `docs/_archive/optimizations/OPTIMIZAT
 - 📅 Clinical integration partnerships
 - 📅 Advanced analytics and ML features
 - 📅 Healthcare provider portal
+
+## 🧾 Branding & Rebrand Integrity
+
+We enforce VitalSense branding consistency in CI:
+
+- Combined audit script: `node scripts/node/branding/branding-audit.js`
+- Runs in smoke + deploy workflows (HTML marker verification + legacy "HealthGuard" residue scan)
+- Outputs markdown report: `reports/branding-audit-summary.md` (uploaded as artifact)
+
+Local development quick checks:
+
+```bash
+npm run branding:audit:local      # Against local Worker (port 8787)
+npm run verify:branding:local     # Simple HTML marker pass
+npm run verify:rebrand            # Residual term scan only
+```
+
+Branding gates fail if required VitalSense markers are missing or any legacy brand strings remain. A dedicated workflow (`branding-audit.yml`) runs in two modes (matrix):
+
+| Mode       | Target                        | Purpose                                         |
+| ---------- | ----------------------------- | ----------------------------------------------- |
+| local      | <http://127.0.0.1:8787>       | Verifies dev Worker build branding consistency  |
+| production | <https://health.andernet.dev> | Ensures deployed site remains correctly branded |
 
 ## 📖 Documentation
 

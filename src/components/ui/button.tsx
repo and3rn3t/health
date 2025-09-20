@@ -4,27 +4,29 @@ import { ComponentProps } from 'react';
 
 import { cn } from '@/lib/utils';
 
+// Updated for iOS HIG: ensure all interactive targets meet >=44px minimum touch area.
+// Use min-h instead of fixed h when possible so content growth (dynamic type) is supported.
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-invalid:ring-destructive/30 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive select-none",
   {
     variants: {
       variant: {
         default:
-          'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
+          'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 active:scale-[0.98] focus-visible:ring-ring/50',
         destructive:
-          'bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
+          'bg-destructive text-white shadow-xs hover:bg-destructive/90 active:scale-[0.98] focus-visible:ring-destructive/50 dark:bg-destructive/70',
         outline:
-          'border bg-background shadow-xs hover:bg-muted hover:text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
+          'border bg-background shadow-xs hover:bg-muted/70 hover:text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
         secondary:
-          'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80',
-        ghost: 'hover:bg-muted hover:text-foreground dark:hover:bg-muted/50',
-        link: 'text-primary underline-offset-4 hover:underline',
+          'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80 active:scale-[0.98]',
+        ghost: 'hover:bg-muted/70 hover:text-foreground dark:hover:bg-muted/40',
+        link: 'text-primary underline-offset-4 hover:underline px-0 min-h-[44px] h-auto',
       },
       size: {
-        default: 'h-10 px-5 py-2.5 has-[>svg]:px-4',
-        sm: 'h-9 rounded-md gap-1.5 px-4 has-[>svg]:px-3',
-        lg: 'h-11 rounded-lg px-7 has-[>svg]:px-5 text-base',
-        icon: 'size-10',
+        default: 'min-h-[44px] px-5 py-2.5 has-[>svg]:pl-4',
+        sm: 'min-h-[44px] rounded-md gap-1.5 px-4 py-2 has-[>svg]:pl-3',
+        lg: 'min-h-[52px] rounded-lg px-7 py-3 has-[>svg]:pl-5 text-base',
+        icon: 'h-11 w-11', // 44px
       },
     },
     defaultVariants: {

@@ -5,7 +5,7 @@ import CoreMotion
 struct WatchGaitDashboardView: View {
     @StateObject private var gaitMonitor = AppleWatchGaitMonitor.shared
     @State private var selectedMetric: GaitMetricType = .walkingSpeed
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
@@ -19,7 +19,7 @@ struct WatchGaitDashboardView: View {
             .navigationTitle("Gait Monitor")
         }
     }
-    
+
     private var statusHeader: some View {
         HStack {
             Circle()
@@ -30,7 +30,7 @@ struct WatchGaitDashboardView: View {
             Spacer()
         }
     }
-    
+
     private var primaryMetricCard: some View {
         VStack {
             Text("1.25")
@@ -43,15 +43,11 @@ struct WatchGaitDashboardView: View {
         .background(Color.gray.opacity(0.2))
         .cornerRadius(12)
     }
-    
+
     private var controlButtons: some View {
         Button("Toggle Monitoring") {
             // Action here
         }
         .buttonStyle(.borderedProminent)
     }
-}
-
-enum GaitMetricType: CaseIterable {
-    case walkingSpeed, stepLength, asymmetry, doubleSupportTime, cadence
 }

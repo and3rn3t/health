@@ -2,12 +2,9 @@ import SwiftUI
 
 // MARK: - VitalSense Design System
 
-/// VitalSense Brand Colors
+/// VitalSense Brand primitives and helpers used across branded components.
 struct VitalSenseBrand {
-
     // MARK: - Brand Colors
-
-    /// Primary brand colors matching web platform
     struct Colors {
         // Primary Brand Colors
         static let primary = Color(hex: "#2563eb")        // Primary Blue
@@ -26,51 +23,36 @@ struct VitalSenseBrand {
 
         // Gradient Collections
         static let primaryGradient = LinearGradient(
-            colors: [primary, accent],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
+            colors: [primary, accent], startPoint: .topLeading, endPoint: .bottomTrailing
         )
 
         static let successGradient = LinearGradient(
-            colors: [success, Color(hex: "#10b981")],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
+            colors: [success, Color(hex: "#10b981")], startPoint: .topLeading, endPoint: .bottomTrailing
         )
 
         static let warningGradient = LinearGradient(
-            colors: [warning, Color(hex: "#f59e0b")],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
+            colors: [warning, Color(hex: "#f59e0b")], startPoint: .topLeading, endPoint: .bottomTrailing
         )
 
         static let errorGradient = LinearGradient(
-            colors: [error, Color(hex: "#ef4444")],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
+            colors: [error, Color(hex: "#ef4444")], startPoint: .topLeading, endPoint: .bottomTrailing
         )
 
         // Health-specific gradients
         static let vitalGradient = LinearGradient(
-            colors: [Color(hex: "#06b6d4"), Color(hex: "#3b82f6"), Color(hex: "#8b5cf6")],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
+            colors: [Color(hex: "#06b6d4"), Color(hex: "#3b82f6"), Color(hex: "#8b5cf6")], startPoint: .topLeading, endPoint: .bottomTrailing
         )
 
         static let heartRateGradient = LinearGradient(
-            colors: [Color(hex: "#ef4444"), Color(hex: "#f97316")],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
+            colors: [Color(hex: "#ef4444"), Color(hex: "#f97316")], startPoint: .topLeading, endPoint: .bottomTrailing
         )
 
         static let activityGradient = LinearGradient(
-            colors: [Color(hex: "#10b981"), Color(hex: "#06b6d4")],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
+            colors: [Color(hex: "#10b981"), Color(hex: "#06b6d4")], startPoint: .topLeading, endPoint: .bottomTrailing
         )
     }
 
     // MARK: - Typography
-
     struct Typography {
         // Headlines
         static let largeTitle = Font.system(size: 34, weight: .bold, design: .default)
@@ -95,7 +77,6 @@ struct VitalSenseBrand {
     }
 
     // MARK: - Spacing & Layout
-
     struct Layout {
         // Spacing
         static let extraSmall: CGFloat = 4
@@ -111,37 +92,26 @@ struct VitalSenseBrand {
         static let cornerRadiusLarge: CGFloat = 16
         static let cornerRadiusXLarge: CGFloat = 24
 
-        // Shadows
-        static let shadowElevation1 = Shadow(
-            color: Colors.textPrimary.opacity(0.05),
-            radius: 2,
-            x: 0,
-            y: 1
+        // Shadows (use a uniquely named shadow struct to avoid collisions)
+        static let shadowElevation1 = VitalSenseShadow(
+            color: Colors.textPrimary.opacity(0.05), radius: 2, x: 0, y: 1
         )
 
-        static let shadowElevation2 = Shadow(
-            color: Colors.textPrimary.opacity(0.1),
-            radius: 4,
-            x: 0,
-            y: 2
+        static let shadowElevation2 = VitalSenseShadow(
+            color: Colors.textPrimary.opacity(0.1), radius: 4, x: 0, y: 2
         )
 
-        static let shadowElevation3 = Shadow(
-            color: Colors.textPrimary.opacity(0.15),
-            radius: 8,
-            x: 0,
-            y: 4
+        static let shadowElevation3 = VitalSenseShadow(
+            color: Colors.textPrimary.opacity(0.15), radius: 8, x: 0, y: 4
         )
     }
 
     // MARK: - Animations
-
     struct Animations {
         static let quickResponse = Animation.easeInOut(duration: 0.2)
         static let smooth = Animation.easeInOut(duration: 0.3)
         static let dramatic = Animation.spring(response: 0.6, dampingFraction: 0.8)
         static let pulse = Animation.easeInOut(duration: 1.0).repeatForever(autoreverses: true)
-        static let bounce = Animation.interpolatingSpring(stiffness: 300, damping: 10)
 
         // Health-specific animations
         static let heartbeat = Animation.easeInOut(duration: 0.8).repeatForever(autoreverses: true)
@@ -150,7 +120,6 @@ struct VitalSenseBrand {
     }
 
     // MARK: - Icons
-
     struct Icons {
         // Core Health
         static let vitals = "waveform.path.ecg"
@@ -182,7 +151,6 @@ struct VitalSenseBrand {
 }
 
 // MARK: - Color Extension for Hex Support
-
 extension Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
@@ -201,18 +169,13 @@ extension Color {
         }
 
         self.init(
-            .sRGB,
-            red: Double(red) / 255,
-            green: Double(green) / 255,
-            blue: Double(blue) / 255,
-            opacity: Double(alpha) / 255
+            .sRGB, red: Double(red) / 255, green: Double(green) / 255, blue: Double(blue) / 255, opacity: Double(alpha) / 255
         )
     }
 }
 
-// MARK: - Shadow Helper
-
-struct Shadow {
+// MARK: - Shadow Helper (uniquely named)
+struct VitalSenseShadow {
     let color: Color
     let radius: CGFloat
     let x: CGFloat
@@ -220,11 +183,10 @@ struct Shadow {
 }
 
 // MARK: - Brand-specific View Modifiers
-
 extension View {
     /// Apply VitalSense brand card styling
     func vitalSenseCard(elevation: Int = 1) -> some View {
-        let shadow: Shadow
+        let shadow: VitalSenseShadow
         switch elevation {
         case 1: shadow = VitalSenseBrand.Layout.shadowElevation1
         case 2: shadow = VitalSenseBrand.Layout.shadowElevation2
@@ -235,14 +197,11 @@ extension View {
             .background(Color(.systemBackground))
             .cornerRadius(VitalSenseBrand.Layout.cornerRadiusMedium)
             .shadow(
-                color: shadow.color,
-                radius: shadow.radius,
-                x: shadow.x,
-                y: shadow.y
+                color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y
             )
     }
 
-    /// Apply VitalSense brand button styling
+    /// Apply VitalSense brand primary button styling
     func vitalSensePrimaryButton() -> some View {
         self
             .font(VitalSenseBrand.Typography.headline)
@@ -251,10 +210,7 @@ extension View {
             .background(VitalSenseBrand.Colors.primaryGradient)
             .cornerRadius(VitalSenseBrand.Layout.cornerRadiusMedium)
             .shadow(
-                color: VitalSenseBrand.Colors.primary.opacity(0.3),
-                radius: 4,
-                x: 0,
-                y: 2
+                color: VitalSenseBrand.Colors.primary.opacity(0.3), radius: 4, x: 0, y: 2
             )
     }
 
@@ -296,7 +252,6 @@ extension View {
 }
 
 // MARK: - Brand Constants
-
 extension VitalSenseBrand {
     /// App name for display
     static let appName = "VitalSense"

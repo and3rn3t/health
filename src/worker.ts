@@ -1,50 +1,4 @@
-/**
- * Cloudflare Workers entry point for the Health App
- * This file handles the worker logic and serves the built application
- */
-
-// Cloudflare Worker types
-declare global {
-  // WebSocketPair is already declared in @cloudflare/workers-types
-}
-
-interface DurableObjectNamespace {
-  get(id: DurableObjectId): DurableObjectStub;
-  idFromName(name: string): DurableObjectId;
-  idFromString(id: string): DurableObjectId;
-  newUniqueId(): DurableObjectId;
-}
-
-interface DurableObjectId {
-  toString(): string;
-  equals(other: DurableObjectId): boolean;
-}
-
-interface DurableObjectStub {
-  fetch(request: Request): Promise<Response>;
-}
-
-interface CloudflareWebSocket extends WebSocket {
-  accept(): void;
-}
-
-// Workers Analytics Engine dataset interface (optional binding)
-interface AnalyticsEngineDataset {
-  writeDataPoint: (point: {
-    blobs?: Array<string | null>;
-    doubles?: Array<number | null>;
-    indexes?: Array<number | bigint | null>;
-    time?: number;
-  }) => void | Promise<void>;
-  writeDataPoints?: (
-    points: Array<{
-      blobs?: Array<string | null>;
-      doubles?: Array<number | null>;
-      indexes?: Array<number | bigint | null>;
-      time?: number;
-    }>
-  ) => void | Promise<void>;
-}
+// (Removed stray duplicated trend logic block introduced during refactor)
 
 import { HealthDataProcessor } from '@/lib/enhancedHealthProcessor';
 import {
@@ -67,11 +21,96 @@ import {
 import {
   healthMetricBatchSchema,
   healthMetricSchema,
+  liveBalanceProgressSchema,
+  liveBalanceResultSchema,
+  liveGaitSnapshotBatchSchema,
+  liveGaitSnapshotSchema,
   processedHealthDataSchema,
+  type LiveBalanceResult,
+  type LiveGaitSnapshot,
+  type LiveGaitSnapshotBatch,
   type ProcessedHealthData,
 } from '@/schemas/health';
 import { Hono, type Context } from 'hono';
+// Trend analytics extracted to lib for testability
+import {
+  FALL_RISK_ANALYTICS_VERSION,
+  fallRiskConfig,
+} from '@/lib/fallRiskConfig';
+import { GAIT_ANALYTICS_VERSION, gaitConfig } from '@/lib/gaitConfig';
+import {
+  computeMultiMetricTrends,
+  computeSingleMetricTrend,
+} from '@/lib/gaitTrends';
 import { z } from 'zod';
+
+// In-memory ring buffer for recent client version mismatch events (ephemeral; dev/diagnostics only)
+const VERSION_MISMATCH_BUFFER_SIZE = 50;
+const VERSION_MISMATCH_RETENTION_MS = 30 * 60 * 1000; // 30 minutes
+const versionMismatchBuffer: Array<{
+  ts: string; // ISO timestamp
+  gaitLocal: string | null;
+  gaitRemote: string | null;
+  fallLocal: string | null;
+  fallRemote: string | null;
+  sample?: number;
+  seq?: number;
+}> = [];
+
+function pruneMismatchBuffer(now = Date.now()) {
+  // Remove events older than retention window
+  let removed = 0;
+  for (let i = 0; i < versionMismatchBuffer.length; i++) {
+    const ev = versionMismatchBuffer[i];
+    const age = now - Date.parse(ev.ts);
+    if (isFinite(age) && age > VERSION_MISMATCH_RETENTION_MS) {
+      removed++;
+    } else {
+      if (removed > 0) {
+        versionMismatchBuffer.splice(0, removed);
+      }
+      break;
+    }
+  }
+  // Enforce hard cap after retention prune
+  if (versionMismatchBuffer.length > VERSION_MISMATCH_BUFFER_SIZE) {
+    versionMismatchBuffer.splice(
+      0,
+      versionMismatchBuffer.length - VERSION_MISMATCH_BUFFER_SIZE
+    );
+  }
+}
+
+function pushVersionMismatch(ev: {
+  ts: string;
+  gaitLocal: string | null;
+  gaitRemote: string | null;
+  fallLocal: string | null;
+  fallRemote: string | null;
+  sample?: number;
+  seq?: number;
+}) {
+  versionMismatchBuffer.push(ev);
+  pruneMismatchBuffer();
+}
+
+// Schema for client-reported version mismatch ingestion
+const versionMismatchIngestSchema = z
+  .object({
+    ts: z.string().datetime().optional(),
+    gaitLocal: z.string().min(1).optional(),
+    gaitRemote: z.string().min(1).optional(),
+    fallLocal: z.string().min(1).optional(),
+    fallRemote: z.string().min(1).optional(),
+    sample: z.number().int().nonnegative().optional(),
+    seq: z.number().int().nonnegative().optional(),
+  })
+  .refine(
+    (d) =>
+      (d.gaitLocal && d.gaitRemote && d.gaitLocal !== d.gaitRemote) ||
+      (d.fallLocal && d.fallRemote && d.fallLocal !== d.fallRemote),
+    'no_mismatch_detected'
+  );
 
 type Env = {
   ENVIRONMENT?: string;
@@ -134,7 +173,11 @@ type Env = {
   PERFORMANCE_ANALYTICS?: AnalyticsEngineDataset;
 };
 
-const app = new Hono<{ Bindings: Env }>();
+// Exported Hono application instance for in-process testing and worker runtime binding.
+export const app = new Hono<{ Bindings: Env }>();
+
+// Backwards compatibility: some legacy tests import default. Re-export default alias.
+export default app;
 
 // Simple token-bucket rate limiter (per IP in-memory, acceptable for single isolate; use Durable Objects for distributed)
 const buckets = new Map<string, { tokens: number; last: number }>();
@@ -216,6 +259,30 @@ function shouldSample(c: Context<{ Bindings: Env }>): boolean {
   return Math.random() < rate;
 }
 
+// Best-effort broadcast to a user's active WebSocket sessions via Durable Object namespace if available
+async function broadcastUserLiveEvent(
+  c: Context<{ Bindings: Env }>,
+  userId: string,
+  payload: Record<string, unknown>
+): Promise<void> {
+  try {
+    const ns = c.env.HEALTH_WEBSOCKET;
+    if (!ns) return; // no namespace bound
+    // Use userId as name to get a deterministic DO where sessions may be colocated
+    const id = ns.idFromName(userId);
+    const stub = ns.get(id);
+    await stub.fetch(
+      new Request('https://do.local/broadcast', {
+        method: 'POST',
+        body: JSON.stringify({ userId, payload }),
+        headers: { 'content-type': 'application/json' },
+      })
+    );
+  } catch (e) {
+    log.warn('broadcast_user_event_failed', { err: (e as Error).message });
+  }
+}
+
 // Category-specific sampling using env var (e.g., LOG_WS_SAMPLE_RATE)
 function shouldSampleWithKey(
   c: Context<{ Bindings: Env }>,
@@ -269,110 +336,7 @@ async function pushAnalytics(
   }
 }
 
-// Generic analytics write (dev-only helpers can use this)
-async function writeAnalyticsPoint(
-  c: Context<{ Bindings: Env }>,
-  blobs: string[],
-  doubles?: number[]
-): Promise<boolean> {
-  try {
-    const ds =
-      c.env.ANALYTICS ||
-      c.env.HEALTH_ANALYTICS ||
-      c.env.PERFORMANCE_ANALYTICS ||
-      c.env.SECURITY_ANALYTICS;
-    if (!ds) return false;
-    await ds.writeDataPoint({
-      blobs,
-      doubles,
-      time: Date.now() * 1_000_000,
-    });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// Central error serialization for unexpected exceptions
-app.onError(async (err, c) => {
-  // CorrelationId here may differ from header set later by middleware, acceptable for now
-  const correlationId = crypto.randomUUID();
-  let msg: string;
-  if (err instanceof Error) {
-    msg = err.message;
-  } else if (typeof err === 'string') {
-    msg = err;
-  } else {
-    try {
-      msg = JSON.stringify(err);
-    } catch {
-      msg = 'unknown_error';
-    }
-  }
-  log.error('unhandled_error', {
-    path: new URL(c.req.url).pathname,
-    error: msg,
-    correlationId,
-  });
-  await writeAudit(c.env, {
-    type: 'worker_error',
-    resource: new URL(c.req.url).pathname,
-    actor: getAuthSub(c) ?? undefined,
-    meta: { correlationId },
-  });
-  // Unconditional analytics write for error events (avoid duplicate post-response logging)
-  try {
-    const sub = getAuthSub(c);
-    await pushAnalytics(c, {
-      path: new URL(c.req.url).pathname,
-      method: c.req.method,
-      status: 500,
-      durMs: 0,
-      correlationId,
-      sub,
-    });
-  } catch {
-    /* best-effort */
-  }
-  const headers = new Headers({
-    'content-type': 'application/json',
-    'X-Error-Logged': '1',
-  });
-  return new Response(
-    JSON.stringify({ error: 'server_error', correlationId }),
-    { status: 500, headers }
-  );
-});
-
-// 404 JSON for API, text for others
-app.notFound((c) => {
-  const path = new URL(c.req.url).pathname;
-  // Unconditional analytics for API 404s
-  if (path.startsWith('/api/')) {
-    try {
-      const sub = getAuthSub(c);
-      pushAnalytics(c, {
-        path,
-        method: c.req.method,
-        status: 404,
-        durMs: 0,
-        correlationId: crypto.randomUUID(),
-        sub,
-      });
-    } catch {
-      /* noop */
-    }
-    const headers = new Headers({
-      'content-type': 'application/json',
-      'X-Error-Logged': '1',
-    });
-    return new Response(JSON.stringify({ error: 'not_found' }), {
-      status: 404,
-      headers,
-    });
-  }
-  return c.text('Not Found', 404);
-});
+// (Removed inlined gait trend helpers; using shared '@/lib/gaitTrends')
 
 async function requireAuth(c: Context<{ Bindings: Env }>): Promise<boolean> {
   // Allow requests from demo page without auth
@@ -625,6 +589,94 @@ app.get('/health', (c) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     environment: c.env.ENVIRONMENT || 'unknown',
+  });
+});
+
+// Gait analytics configuration version exposure (read-only)
+app.get('/api/gait-config-version', (c) => {
+  return c.json({
+    version: GAIT_ANALYTICS_VERSION,
+    config: gaitConfig,
+  });
+});
+
+// Fall risk analytics configuration version exposure (read-only)
+app.get('/api/fall-risk-config-version', (c) => {
+  return c.json({
+    version: FALL_RISK_ANALYTICS_VERSION,
+    config: fallRiskConfig,
+  });
+});
+
+// Combined analytics versions (gait + fall risk) for single round-trip parity checks
+app.get('/api/analytics-config-versions', (c) => {
+  return c.json({
+    gait: { version: GAIT_ANALYTICS_VERSION, config: gaitConfig },
+    fallRisk: { version: FALL_RISK_ANALYTICS_VERSION, config: fallRiskConfig },
+    // Future: include additional analytics domain hashes here
+  });
+});
+
+// Lightweight client analytics ingestion for version mismatch (best-effort; sampled downstream)
+app.post('/api/client-analytics/version-mismatch', async (c) => {
+  try {
+    const raw = await c.req.json().catch(() => ({}));
+    const parsed = versionMismatchIngestSchema.safeParse(raw);
+    if (!parsed.success) {
+      return c.json({ ok: false, error: 'invalid_payload' }, 400);
+    }
+    const body = parsed.data;
+    const ts = body.ts || new Date().toISOString();
+    const rec = {
+      gaitLocal: body.gaitLocal ?? null,
+      gaitRemote: body.gaitRemote ?? null,
+      fallLocal: body.fallLocal ?? null,
+      fallRemote: body.fallRemote ?? null,
+      ts,
+      sample: body.sample,
+      seq: body.seq,
+    };
+    if (c.env.ENVIRONMENT !== 'production') {
+      pushVersionMismatch(rec);
+    }
+    try {
+      const ds =
+        c.env.SECURITY_ANALYTICS ||
+        c.env.ANALYTICS ||
+        c.env.PERFORMANCE_ANALYTICS;
+      if (ds) {
+        await ds.writeDataPoint({
+          blobs: [
+            c.env.ENVIRONMENT || 'development',
+            'version_mismatch',
+            rec.gaitLocal || '',
+            rec.gaitRemote || '',
+            rec.fallLocal || '',
+            rec.fallRemote || '',
+            typeof rec.sample === 'number' ? String(rec.sample) : '',
+            typeof rec.seq === 'number' ? String(rec.seq) : '',
+          ],
+          doubles: [],
+          time: Date.now() * 1_000_000,
+        });
+      }
+    } catch {
+      /* ignore */
+    }
+    return c.json({ ok: true });
+  } catch {
+    return c.json({ ok: false, error: 'server_error' }, 400);
+  }
+});
+
+// Debug endpoint to inspect recent mismatch events (non-production)
+app.get('/api/_debug/version-mismatch-events', (c) => {
+  if (c.env.ENVIRONMENT === 'production') {
+    return c.json({ error: 'not_available' }, 404);
+  }
+  return c.json({
+    ok: true,
+    events: versionMismatchBuffer.slice(-VERSION_MISMATCH_BUFFER_SIZE),
   });
 });
 
@@ -1004,19 +1056,43 @@ app.get('/api/user/export', async (c) => {
 // WebSocket endpoint for real-time health data
 app.get('/ws', async (c) => {
   const upgradeHeader = c.req.header('upgrade');
+
+  // If this is a probe (no upgrade) return metadata instead of 426 to aid health checks & test runner.
   if (upgradeHeader !== 'websocket') {
-    return c.text('Expected Upgrade: websocket', 426);
+    const host = new URL(c.req.url).host;
+    const body = {
+      ok: true,
+      upgradeRequired: true,
+      message: 'Use WebSocket upgrade to establish a realtime session',
+      url: `${c.req.url.startsWith('https') ? 'wss' : 'ws'}://${host}/ws`,
+      supportedMessageTypes: [
+        'connection_established',
+        'live_health_update',
+        'historical_data_update',
+        'emergency_alert',
+        'client_presence',
+        'pong',
+        'error',
+      ],
+      // Surface current analytics config versions so clients can decide whether to re-fetch static config artifacts
+      analyticsVersions: {
+        gait: GAIT_ANALYTICS_VERSION,
+        fallRisk: FALL_RISK_ANALYTICS_VERSION,
+      },
+      timestamp: new Date().toISOString(),
+    };
+    const res = c.json(body, 200);
+    // Strengthen caching semantics: this is informational & near-real-time (contains timestamp) so disable caching
+    res.headers.set('Cache-Control', 'no-store, max-age=0');
+    return res;
   }
 
   if (!c.env.HEALTH_WEBSOCKET) {
     return c.text('WebSocket service not available', 503);
   }
 
-  // Get or create Durable Object instance
   const id = c.env.HEALTH_WEBSOCKET.newUniqueId();
   const obj = c.env.HEALTH_WEBSOCKET.get(id);
-
-  // Forward the request to the Durable Object
   return obj.fetch(c.req.raw);
 });
 // Non-production self-test for crypto/auth
@@ -1115,6 +1191,18 @@ app.get('/api/_diagnostics', (c) => {
       clientError:
         (c.env as Record<string, string | undefined>)
           .LOG_CLIENT_ERROR_SAMPLE_RATE ?? null,
+    },
+    analyticsVersionMismatch: {
+      recentEventCount: versionMismatchBuffer.length,
+      maxStored: VERSION_MISMATCH_BUFFER_SIZE,
+      // Environment-driven desired client sampling (fallback 1.0) – exposed for UI/instrumentation
+      clientSampleRate:
+        (c.env as Record<string, string | undefined>)
+          .ANALYTICS_VERSION_MISMATCH_SAMPLE_RATE || '1.0',
+      oldestEventAgeMs:
+        versionMismatchBuffer.length > 0
+          ? Date.now() - Date.parse(versionMismatchBuffer[0].ts)
+          : 0,
     },
     datasets,
     hasKV: Boolean(c.env.HEALTH_KV),
@@ -1444,6 +1532,302 @@ app.post('/api/_purge', async (c) => {
 });
 
 // Enhanced health data processing endpoints
+
+// Live gait snapshot ingestion (ephemeral + optional KV persistence for short TTL)
+app.post('/api/live/gait', async (c) => {
+  // Enforce auth if configured
+  const sub = getAuthSub(c);
+  if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'invalid_json' }, 400);
+  }
+  const parsed = liveGaitSnapshotSchema.safeParse(body);
+  if (!parsed.success)
+    return c.json(
+      { error: 'validation_error', details: parsed.error.flatten() },
+      400
+    );
+  const data = { ...parsed.data, userId: parsed.data.userId || sub };
+  // Optional persistence (short TTL for aggregation)
+  const kv = c.env.HEALTH_KV;
+  if (kv) {
+    const key = `live:gait:${data.userId || 'anon'}:${data.capturedAt}`;
+    try {
+      await kv.put(key, JSON.stringify(data), { expirationTtl: 3600 });
+    } catch (e) {
+      log.warn('kv_put_live_gait_failed', { error: (e as Error).message });
+    }
+  }
+  // Lightweight analytics sample
+  if (shouldSample(c))
+    log.info('live_gait_snapshot', {
+      speed: data.speed,
+      sf: data.stepFrequency,
+      asym: data.asymmetry,
+    });
+  try {
+    await broadcastUserLiveEvent(c, sub, {
+      type: 'live_health_update',
+      subtype: 'gait_snapshot',
+      snapshot: data,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (e) {
+    log.warn('ws_broadcast_gait_failed', { error: (e as Error).message });
+  }
+  return c.json({ ok: true });
+});
+
+// Batched gait snapshots endpoint
+app.post('/api/live/gait/batch', async (c) => {
+  const sub = getAuthSub(c);
+  if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'invalid_json' }, 400);
+  }
+  const parsed = liveGaitSnapshotBatchSchema.safeParse(body);
+  if (!parsed.success)
+    return c.json(
+      { error: 'validation_error', details: parsed.error.flatten() },
+      400
+    );
+  const batch: LiveGaitSnapshotBatch = parsed.data;
+  const kv = c.env.HEALTH_KV;
+  let stored = 0;
+  if (kv) {
+    for (const snap of batch.snapshots) {
+      const key = `live:gait:${sub}:${snap.capturedAt}`;
+      try {
+        await kv.put(key, JSON.stringify({ ...snap, userId: sub }), {
+          expirationTtl: 3600,
+        });
+        stored += 1;
+      } catch (e) {
+        log.warn('kv_put_live_gait_batch_failed', {
+          error: (e as Error).message,
+        });
+      }
+    }
+  }
+  const last = batch.snapshots[batch.snapshots.length - 1];
+  try {
+    await broadcastUserLiveEvent(c, sub, {
+      type: 'live_health_update',
+      subtype: 'gait_batch',
+      count: batch.snapshots.length,
+      lastSnapshot: last,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (e) {
+    log.warn('ws_broadcast_gait_batch_failed', { error: (e as Error).message });
+  }
+  return c.json({ ok: true, stored });
+});
+
+app.post('/api/live/balance/progress', async (c) => {
+  const sub = getAuthSub(c);
+  if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'invalid_json' }, 400);
+  }
+  const parsed = liveBalanceProgressSchema.safeParse(body);
+  if (!parsed.success)
+    return c.json(
+      { error: 'validation_error', details: parsed.error.flatten() },
+      400
+    );
+  const data = { ...parsed.data, userId: parsed.data.userId || sub };
+  if (shouldSample(c))
+    log.info('balance_progress', {
+      pct: data.percent,
+      stab: data.instantaneousStability,
+      user: data.userId,
+    });
+  try {
+    await broadcastUserLiveEvent(c, sub, {
+      type: 'live_health_update',
+      subtype: 'balance_progress',
+      progress: data,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (e) {
+    log.warn('ws_broadcast_balance_progress_failed', {
+      error: (e as Error).message,
+    });
+  }
+  return c.json({ ok: true });
+});
+
+app.post('/api/live/balance/result', async (c) => {
+  const sub = getAuthSub(c);
+  if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'invalid_json' }, 400);
+  }
+  const parsed = liveBalanceResultSchema.safeParse(body);
+  if (!parsed.success)
+    return c.json(
+      { error: 'validation_error', details: parsed.error.flatten() },
+      400
+    );
+  const data = { ...parsed.data, userId: parsed.data.userId || sub };
+  // Persist final result longer for trend analysis
+  const kv = c.env.HEALTH_KV;
+  if (kv) {
+    const key = `live:balance_result:${data.userId || 'anon'}:${data.capturedAt}`;
+    try {
+      await kv.put(key, JSON.stringify(data), { expirationTtl: 7 * 24 * 3600 });
+    } catch (e) {
+      log.warn('kv_put_balance_result_failed', { error: (e as Error).message });
+    }
+  }
+  if (shouldSample(c)) log.info('balance_result', { score: data.overallScore });
+  try {
+    await broadcastUserLiveEvent(c, sub, {
+      type: 'live_health_update',
+      subtype: 'balance_result',
+      result: data,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (e) {
+    log.warn('ws_broadcast_balance_result_failed', {
+      error: (e as Error).message,
+    });
+  }
+  return c.json({ ok: true });
+});
+
+// Recent gait snapshots + rolling aggregates
+app.get('/api/live/gait/recent', async (c) => {
+  const sub = getAuthSub(c);
+  if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  const limit = Math.min(
+    200,
+    Number(new URL(c.req.url).searchParams.get('limit') || 50)
+  );
+  const kv = c.env.HEALTH_KV;
+  if (!kv || typeof kv.list !== 'function') {
+    return c.json({ error: 'kv_unavailable' }, 503);
+  }
+  const prefix = `live:gait:${sub}:`;
+  const list = await kv.list({ prefix, limit });
+  const snapshots: LiveGaitSnapshot[] = [];
+  if (kv && typeof kv.get === 'function') {
+    for (const k of list.keys) {
+      let raw: string | null = null;
+      try {
+        raw = await kv.get(k.name);
+      } catch (e) {
+        log.warn('kv_get_gait_failed', { error: (e as Error).message });
+      }
+      if (!raw) continue;
+      try {
+        const parsed = JSON.parse(raw) as LiveGaitSnapshot;
+        if (parsed && typeof parsed.capturedAt === 'string') {
+          snapshots.push(parsed);
+        }
+      } catch (e) {
+        log.warn('parse_gait_snapshot_failed', { error: (e as Error).message });
+      }
+    }
+  }
+  // Compute rolling aggregates
+  const speeds = snapshots
+    .map((s) => s.speed)
+    .filter((n): n is number => typeof n === 'number');
+  const cad = snapshots
+    .map((s) => s.stepFrequency)
+    .filter((n): n is number => typeof n === 'number');
+  const asym = snapshots
+    .map((s) => s.asymmetry ?? undefined)
+    .filter((n): n is number => typeof n === 'number');
+  const varr = snapshots
+    .map((s) => s.variability ?? undefined)
+    .filter((n): n is number => typeof n === 'number');
+  const mean = (arr: number[]) =>
+    arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+  const variance = (arr: number[]) =>
+    arr.length
+      ? arr.reduce((a, b) => a + Math.pow(b - mean(arr)!, 2), 0) / arr.length
+      : null;
+  const orderedSnapshots = snapshots
+    .slice()
+    .sort((a, b) => (a.capturedAt || '').localeCompare(b.capturedAt || ''));
+  // Legacy single speed trend (backwards compatibility) and new multi-metric trends
+  const multiTrends = computeMultiMetricTrends(orderedSnapshots);
+  const trend = multiTrends.speed || computeSingleMetricTrend([]);
+  const response = {
+    ok: true,
+    userId: sub,
+    count: snapshots.length,
+    snapshots: orderedSnapshots,
+    rolling: {
+      speedAvg: mean(speeds),
+      speedVar: variance(speeds),
+      cadenceAvg: mean(cad),
+      asymAvg: mean(asym),
+      variabilityAvg: mean(varr),
+    },
+    trend,
+    trends: multiTrends,
+  };
+  return c.json(response);
+});
+
+// Recent balance data
+app.get('/api/live/balance/recent', async (c) => {
+  const sub = getAuthSub(c);
+  if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  const kv = c.env.HEALTH_KV;
+  if (!kv || typeof kv.list !== 'function') {
+    return c.json({ error: 'kv_unavailable' }, 503);
+  }
+  const limit = Math.min(
+    50,
+    Number(new URL(c.req.url).searchParams.get('limit') || 20)
+  );
+  const prefixRes = `live:balance_result:${sub}:`;
+  const listRes = await kv.list({ prefix: prefixRes, limit });
+  const results: LiveBalanceResult[] = [];
+  if (kv && typeof kv.get === 'function') {
+    for (const k of listRes.keys) {
+      let raw: string | null = null;
+      try {
+        raw = await kv.get(k.name);
+      } catch (e) {
+        log.warn('kv_get_balance_failed', { error: (e as Error).message });
+      }
+      if (!raw) continue;
+      try {
+        const parsed = JSON.parse(raw) as LiveBalanceResult;
+        if (parsed && typeof parsed.capturedAt === 'string') {
+          results.push(parsed);
+        }
+      } catch (e) {
+        log.warn('parse_balance_result_failed', {
+          error: (e as Error).message,
+        });
+      }
+    }
+  }
+  // No persistence for progress, but could add a lightweight cache later. Return latest result only.
+  const ordered = results
+    .slice()
+    .sort((a, b) => (b.capturedAt || '').localeCompare(a.capturedAt || ''));
+  return c.json({ ok: true, userId: sub, results: ordered });
+});
 
 // Process raw health metrics with analytics
 app.post('/api/health-data/process', async (c) => {
@@ -3061,8 +3445,6 @@ app.get('*', async (c) => {
   return c.env.ASSETS.fetch(new Request(indexUrl.toString(), c.req.raw));
 });
 
-export default app;
-
 // Scheduled purge entry (Cloudflare Cron Triggers)
 export async function scheduled(
   _controller: { cron: string; scheduledTime: number },
@@ -3139,8 +3521,34 @@ export class HealthWebSocket {
   }
 
   async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
     const upgradeHeader = request.headers.get('Upgrade');
+    // Support internal broadcast POST (non-upgrade)
     if (upgradeHeader !== 'websocket') {
+      if (url.pathname.endsWith('/broadcast') && request.method === 'POST') {
+        try {
+          const body = (await request.json()) as {
+            userId?: string;
+            payload?: Record<string, unknown>;
+          };
+          const payload = body.payload || {};
+          // Attach server timestamp
+          (payload as Record<string, unknown>).serverTime =
+            new Date().toISOString();
+          for (const [ws] of this.sessions) {
+            await this.sendMessage(ws, payload);
+          }
+          return new Response(JSON.stringify({ ok: true }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          });
+        } catch (e) {
+          return new Response(
+            JSON.stringify({ ok: false, error: (e as Error).message }),
+            { status: 500, headers: { 'content-type': 'application/json' } }
+          );
+        }
+      }
       return new Response('Expected WebSocket Upgrade', { status: 426 });
     }
 
@@ -3153,7 +3561,7 @@ export class HealthWebSocket {
       ];
 
       // Parse connection parameters
-      const url = new URL(request.url);
+      // url already declared
       const userId = url.searchParams.get('userId') || `user_${Date.now()}`;
       const deviceId =
         url.searchParams.get('deviceId') || `device_${Date.now()}`;

@@ -14,6 +14,41 @@ This app uses a local Node bridge (`server/websocket-server.js`) during developm
 
 See `src/schemas/health.ts` for the zod schema and TS types.
 
+## /ws HTTP Metadata Fallback
+
+The `/ws` endpoint now returns a JSON metadata document (HTTP 200) when requested without an `Upgrade: websocket` header. This enables health checks, CI tests, and tooling to introspect capabilities without opening a real socket.
+
+Example response:
+
+```json
+{
+  "ok": true,
+  "upgradeRequired": true,
+  "message": "Use WebSocket upgrade to establish a realtime session",
+  "url": "wss://example.dev/ws",
+  "supportedMessageTypes": [
+    "connection_established",
+    "live_health_update",
+    "historical_data_update",
+    "emergency_alert",
+    "client_presence",
+    "pong",
+    "error"
+  ],
+  "analyticsVersions": {
+    "gait": "<GAIT_ANALYTICS_VERSION>",
+    "fallRisk": "<FALL_RISK_ANALYTICS_VERSION>"
+  },
+  "timestamp": "2025-09-19T18:45:12.123Z"
+}
+```
+
+Notes:
+
+- `Cache-Control: no-store` is set to avoid stale capability metadata.
+- `analyticsVersions` lets clients decide whether cached config artifacts (e.g., gait/fall risk thresholds) are current.
+- A legacy build may still return `426 Upgrade Required`; clients should treat that as a hint to re-deploy or fall back gracefully.
+
 ## Client behavior
 
 - Auto-reconnect with exponential backoff (jitter recommended).

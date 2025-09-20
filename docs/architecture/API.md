@@ -65,3 +65,19 @@ The Cloudflare Worker exposes lightweight, edge-friendly APIs using Hono. All re
 - 5xx for unexpected errors with `{ error: 'server_error' }`.
 
 Refer to `src/worker.ts` for implementation details.
+
+### WebSocket Metadata (GET /ws without upgrade)
+
+Issuing a plain HTTP GET to `/ws` (omitting the `Upgrade: websocket` header) returns a JSON metadata payload describing supported message types and current analytics configuration versions:
+
+```json
+{
+  "ok": true,
+  "upgradeRequired": true,
+  "supportedMessageTypes": ["connection_established", "live_health_update", "historical_data_update", "emergency_alert", "client_presence", "pong", "error"],
+  "analyticsVersions": { "gait": "<hash>", "fallRisk": "<hash>" },
+  "timestamp": "2025-09-19T18:45:12.123Z"
+}
+```
+
+Clients can compare the `analyticsVersions` hashes against local constants (`GAIT_ANALYTICS_VERSION`, `FALL_RISK_ANALYTICS_VERSION`). A mismatch indicates the user should refresh or fetch updated static artifacts. The response is served with `Cache-Control: no-store` to avoid stale data.
