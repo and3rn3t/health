@@ -1253,19 +1253,25 @@ jobs:
           fi
           printf '\n## Deployment Readiness\n' >> FINAL_SUMMARY.md
           if [ -f "$READINESS" ]; then
+            printf '```json\n' >> FINAL_SUMMARY.md
             cat "$READINESS" | jq '. | {ready,reason,coverage,generated}' >> FINAL_SUMMARY.md || cat "$READINESS" >> FINAL_SUMMARY.md
+            printf '```\n' >> FINAL_SUMMARY.md
           else
             echo "(deploy-readiness artifact missing)" >> FINAL_SUMMARY.md
           fi
-          printf '\n## Deployment Status\n' >> FINAL_SUMMARY.md
+          echo "\n## Deployment Status" >> FINAL_SUMMARY.md
           if [ -f "$DEPLOY" ]; then
+            printf '```json\n' >> FINAL_SUMMARY.md
             cat "$DEPLOY" | jq '.' >> FINAL_SUMMARY.md || cat "$DEPLOY" >> FINAL_SUMMARY.md
+            printf '```\n' >> FINAL_SUMMARY.md
           else
             echo "(deploy-status artifact missing)" >> FINAL_SUMMARY.md
           fi
           if [ -f final/ci-baselines/baselines.json ]; then
-            printf '\n## Baselines Snapshot\n' >> FINAL_SUMMARY.md
+            echo "\n## Baselines Snapshot" >> FINAL_SUMMARY.md
+            printf '```json\n' >> FINAL_SUMMARY.md
             cat final/ci-baselines/baselines.json | jq '{generatedAt, coverage: .coverage.linesPct?, eslint: .eslintSummary?, bundle: (.bundleSummary.summary? // .bundleSummary), perf: .performance?.status, ws: (.wsSchema?.pass // .wsSchema?.status)}' >> FINAL_SUMMARY.md || true
+            printf '```\n' >> FINAL_SUMMARY.md
           fi
           cat FINAL_SUMMARY.md >> $GITHUB_STEP_SUMMARY
       - name: Upload Final Summary Artifact
