@@ -1257,6 +1257,11 @@ jobs:
             cat "$READINESS" | jq '. | {ready,reason,coverage,generated}' >> FINAL_SUMMARY.md || cat "$READINESS" >> FINAL_SUMMARY.md
             printf '```\n' >> FINAL_SUMMARY.md
           else
+          if [ -f "$READINESS" ]; then
+            printf '```json\n' >> FINAL_SUMMARY.md
+            cat "$READINESS" | jq '. | {ready,reason,coverage,generated}' >> FINAL_SUMMARY.md || cat "$READINESS" >> FINAL_SUMMARY.md
+            printf '```\n' >> FINAL_SUMMARY.md
+          else
             echo "(deploy-readiness artifact missing)" >> FINAL_SUMMARY.md
           fi
           echo "\n## Deployment Status" >> FINAL_SUMMARY.md
@@ -1271,6 +1276,7 @@ jobs:
             echo "\n## Baselines Snapshot" >> FINAL_SUMMARY.md
             printf '```json\n' >> FINAL_SUMMARY.md
             cat final/ci-baselines/baselines.json | jq '{generatedAt, coverage: .coverage.linesPct?, eslint: .eslintSummary?, bundle: (.bundleSummary.summary? // .bundleSummary), perf: .performance?.status, ws: (.wsSchema?.pass // .wsSchema?.status)}' >> FINAL_SUMMARY.md || true
+            printf '```\n' >> FINAL_SUMMARY.md
             printf '```\n' >> FINAL_SUMMARY.md
           fi
           cat FINAL_SUMMARY.md >> $GITHUB_STEP_SUMMARY
