@@ -1241,8 +1241,8 @@ jobs:
         run: |
           set -e
           SCORECARD=final/ci-scorecard.md
-            READINESS=final/reports/deploy-readiness.json
-            DEPLOY=final/reports/deploy-status.json
+          READINESS=final/reports/deploy-readiness.json
+          DEPLOY=final/reports/deploy-status.json
           echo "# Final CI Summary" > FINAL_SUMMARY.md
           echo "Generated: $(date -u +%FT%TZ)" >> FINAL_SUMMARY.md
           echo "\n## Gating Summary" >> FINAL_SUMMARY.md
