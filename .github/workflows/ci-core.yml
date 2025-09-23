@@ -1245,26 +1245,26 @@ jobs:
           DEPLOY=final/reports/deploy-status.json
           echo "# Final CI Summary" > FINAL_SUMMARY.md
           echo "Generated: $(date -u +%FT%TZ)" >> FINAL_SUMMARY.md
-          echo "\n## Gating Summary" >> FINAL_SUMMARY.md
+          printf '\n## Gating Summary\n' >> FINAL_SUMMARY.md
           if [ -f "$SCORECARD" ]; then
             cat "$SCORECARD" >> FINAL_SUMMARY.md
           else
             echo "(scorecard artifact missing)" >> FINAL_SUMMARY.md
           fi
-          echo "\n## Deployment Readiness" >> FINAL_SUMMARY.md
+          printf '\n## Deployment Readiness\n' >> FINAL_SUMMARY.md
           if [ -f "$READINESS" ]; then
             cat "$READINESS" | jq '. | {ready,reason,coverage,generated}' >> FINAL_SUMMARY.md || cat "$READINESS" >> FINAL_SUMMARY.md
           else
             echo "(deploy-readiness artifact missing)" >> FINAL_SUMMARY.md
           fi
-          echo "\n## Deployment Status" >> FINAL_SUMMARY.md
+          printf '\n## Deployment Status\n' >> FINAL_SUMMARY.md
           if [ -f "$DEPLOY" ]; then
             cat "$DEPLOY" | jq '.' >> FINAL_SUMMARY.md || cat "$DEPLOY" >> FINAL_SUMMARY.md
           else
             echo "(deploy-status artifact missing)" >> FINAL_SUMMARY.md
           fi
           if [ -f final/ci-baselines/baselines.json ]; then
-            echo "\n## Baselines Snapshot" >> FINAL_SUMMARY.md
+            printf '\n## Baselines Snapshot\n' >> FINAL_SUMMARY.md
             cat final/ci-baselines/baselines.json | jq '{generatedAt, coverage: .coverage.linesPct?, eslint: .eslintSummary?, bundle: (.bundleSummary.summary? // .bundleSummary), perf: .performance?.status, ws: (.wsSchema?.pass // .wsSchema?.status)}' >> FINAL_SUMMARY.md || true
           fi
           cat FINAL_SUMMARY.md >> $GITHUB_STEP_SUMMARY
