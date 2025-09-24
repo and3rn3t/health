@@ -1,70 +1,45 @@
-# Makefile for VitalSense Monitor
-# Provides convenient commands for common development tasks
+# Root Makefile for VitalSense automation
+# Usage: make <target>
 
-.PHONY: help setup build test clean lint format install-deps
+SCHEME ?= VitalSense
+WORKSPACE ?= VitalSense.xcworkspace
+CONFIG ?= Debug
+DEST ?= 'platform=iOS Simulator,name=iPhone 15'
+ARCHIVE_PATH ?= build/VitalSense.xcarchive
+EXPORT_PATH ?= build/export
+EXPORT_OPTIONS_PLIST ?= scripts/ExportOptions-AppStore.plist
 
-help: ## Show this help message
-	@echo "Available commands:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+.PHONY: build test archive export clean lint-project format help
 
-setup: ## Setup development environment
-	@echo "Setting up development environment..."
-	./scripts/setup-dev-env.sh
-	npm install
+help:
+	@echo 'Primary targets:'
+	@echo '  build    - Build the app (Debug by default)'
+	@echo '  test     - Run unit tests on simulator'
+	@echo '  archive  - Create an unsigned archive (requires signing setup)'
+	@echo '  export   - Export IPA from existing archive (needs ExportOptions plist)'
+	@echo '  lint-project - Basic sanity checks on project.pbxproj'
+	@echo '  clean    - Clean derived data and build artifacts'
 
-build: ## Build the iOS project
-	@echo "Building VitalSense Monitor..."
-	xcodebuild clean build \
-		-project VitalSenseMonitor.xcodeproj \
-		-scheme VitalSenseMonitor \
-		-configuration Debug
+build:
+	xcodebuild -workspace $(WORKSPACE) -scheme $(SCHEME) -configuration $(CONFIG) -destination $(DEST) build | xcpretty || exit 1
+	touch build/.build_stamp
 
-test: ## Run tests
-	@echo "Running tests..."
-	xcodebuild test \
-		-project VitalSenseMonitor.xcodeproj \
-		-scheme VitalSenseMonitor \
-		-destination 'platform=iOS Simulator,name=iPhone 15 Pro'
+test:
+	xcodebuild -workspace $(WORKSPACE) -scheme $(SCHEME) -destination $(DEST) -parallel-testing-enabled YES -enableCodeCoverage YES test | xcpretty || exit 1
 
-clean: ## Clean build artifacts
-	@echo "Cleaning build artifacts..."
-	xcodebuild clean -project VitalSenseMonitor.xcodeproj
-	rm -rf build/
-	rm -rf DerivedData/
+archive:
+	mkdir -p build
+	xcodebuild -workspace $(WORKSPACE) -scheme $(SCHEME) -configuration Release \
+		archive -archivePath $(ARCHIVE_PATH) SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES | xcpretty || exit 1
 
-lint: ## Run Swift linting
-	@echo "Running SwiftLint..."
-	swiftlint lint
+export: archive
+	mkdir -p $(EXPORT_PATH)
+	xcodebuild -exportArchive -archivePath $(ARCHIVE_PATH) -exportPath $(EXPORT_PATH) \
+		-exportOptionsPlist $(EXPORT_OPTIONS_PLIST) | xcpretty || exit 1
 
-format: ## Format Swift code
-	@echo "Formatting Swift code..."
-	swiftlint --fix
+lint-project:
+	bash scripts/pbxproj-lint.sh
 
-install-deps: ## Install development dependencies
-	@echo "Installing dependencies..."
-	brew install swiftlint
-	npm install
-
-simulator: ## Start iOS Simulator
-	@echo "Starting iOS Simulator..."
-	open -a Simulator
-
-watch: ## Watch for changes and rebuild
-	@echo "Watching for changes..."
-	fswatch -o HealthKitBridge/ | xargs -n1 -I{} make build
-
-dev-server: ## Start development WebSocket server
-	@echo "Starting development server..."
-	npm start
-
-backend-services: ## Start backend services with Docker
-	@echo "Starting backend services (WebSocket, Redis, PostgreSQL)..."
-	docker-compose up -d
-
-stop-services: ## Stop backend services
-	@echo "Stopping backend services..."
-	docker-compose down
-
-logs: ## View backend service logs
-	@echo "Viewing service logs..."
-	docker-compose logs -f
+clean:
+	rm -rf build DerivedData
+	xcodebuild -workspace $(WORKSPACE) -scheme $(SCHEME) clean | xcpretty || exit 0
