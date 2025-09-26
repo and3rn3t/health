@@ -23,9 +23,9 @@ export default defineConfig({
     globals: true,
     coverage: {
       provider: 'v8',
-  // Added 'json-summary' so CI coverage gate (expects coverage/coverage-summary.json)
-  // succeeds; previously only 'json' produced coverage-final.json causing gate failure.
-  reporter: ['text', 'json', 'json-summary', 'lcov'],
+      // Added 'json-summary' so CI coverage gate (expects coverage/coverage-summary.json)
+      // succeeds; previously only 'json' produced coverage-final.json causing gate failure.
+      reporter: ['text', 'json', 'json-summary', 'lcov'],
       reportsDirectory: 'coverage',
       // Exclude large, non-runtime or archival areas to raise meaningful signal
       exclude: [

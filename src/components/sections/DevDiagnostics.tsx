@@ -1,3 +1,4 @@
+import { MicroCoachToasts } from '@/components/coaching/MicroCoachToasts';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -128,15 +129,14 @@ export default function DevDiagnostics() {
     });
   }, [vmEvents, vmFilter]);
   const vmCounts = useMemo(() => {
-    const base = { all: vmEvents?.length || 0, gait: 0, fall: 0 };
-    if (!vmEvents) return base;
+    if (!vmEvents) return { all: 0, gait: 0, fall: 0 };
+    let gait = 0;
+    let fall = 0;
     for (const e of vmEvents) {
-      if (e.gaitLocal && e.gaitRemote && e.gaitLocal !== e.gaitRemote)
-        base.gait++;
-      if (e.fallLocal && e.fallRemote && e.fallLocal !== e.fallRemote)
-        base.fall++;
+      if (e.gaitLocal && e.gaitRemote && e.gaitLocal !== e.gaitRemote) gait++;
+      if (e.fallLocal && e.fallRemote && e.fallLocal !== e.fallRemote) fall++;
     }
-    return base;
+    return { all: vmEvents.length, gait, fall };
   }, [vmEvents]);
   // Lightweight sparkline data (counts per 2s bucket over the last 60s of filtered events)
   interface SparkBucket {
@@ -187,12 +187,11 @@ export default function DevDiagnostics() {
         viewBox={`0 0 ${w} ${h}`}
         className="ml-2 opacity-80"
         aria-label="Mismatch events sparkline"
-        role="img"
       >
         <title>{`Last 60s buckets (oldest→newest). ${title}`}</title>
         {vmSparklineBuckets.map((b, i) => {
           if (!b.total) return null;
-          const x = i * 3 + 0.5;
+          const x = i * 3 + 0.5; // position mapping
           // Stacked tiny bar: both at top, then gait, then fall
           let cursorY = h - 1;
           const segment = (count: number, cls: string) => {
@@ -212,7 +211,7 @@ export default function DevDiagnostics() {
             );
           };
           return (
-            <g key={i}>
+            <g key={`vm-spark-${i}-${b.total}-${b.gait}-${b.fall}-${b.both}`}>
               {segment(b.fall, 'fill-rose-500')}
               {segment(b.gait, 'fill-sky-500')}
               {segment(b.both, 'fill-amber-500')}
@@ -270,6 +269,7 @@ export default function DevDiagnostics() {
 
   // WebSocket quick test state
   const wsRef = useRef<WebSocketClient | null>(null);
+  const [rawWs, setRawWs] = useState<WebSocket | null>(null);
   const [wsStatus, setWsStatus] = useState<
     'idle' | 'connecting' | 'open' | 'retrying' | 'closed'
   >('idle');
@@ -288,6 +288,12 @@ export default function DevDiagnostics() {
     });
     wsRef.current = client;
     await client.open().catch(() => setWsStatus('closed'));
+    try {
+      const internal = (client as any).ws as WebSocket | undefined; // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (internal) setRawWs(internal);
+    } catch {
+      /* noop */
+    }
     setWsLastEvent('connect_start');
   }, []);
   const onWsDisconnect = useCallback(() => {
@@ -883,7 +889,14 @@ export default function DevDiagnostics() {
             )}
           </div>
           <div className="space-y-2">
-            <div className="text-sm">WebSocket Quick Test</div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-sm">WebSocket Quick Test</div>
+              {rawWs && (
+                <div className="bg-teal-700/20 py-0.5 text-teal-400 rounded px-2 text-[10px]">
+                  Coaching Active
+                </div>
+              )}
+            </div>
             <div className="flex gap-2">
               <Button size="sm" onClick={onWsConnect}>
                 Connect
@@ -911,6 +924,7 @@ export default function DevDiagnostics() {
                 Last RTT: {wsLastRtt} ms
               </div>
             )}
+            {rawWs && <MicroCoachToasts ws={rawWs} />}
           </div>
         </CardContent>
       </Card>
@@ -1039,16 +1053,19 @@ export default function DevDiagnostics() {
                 Stored: {diag.analyticsVersionMismatch.recentEventCount}/
                 {diag.analyticsVersionMismatch.maxStored} • Suggested sample:{' '}
                 {diag.analyticsVersionMismatch.clientSampleRate}
-                {typeof diag.analyticsVersionMismatch.oldestEventAgeMs ===
+                {typeof (diag.analyticsVersionMismatch as any)
+                  .oldestEventAgeMs === // eslint-disable-line @typescript-eslint/no-explicit-any
                   'number' && (
                   <>
                     {' '}
                     • Oldest:{' '}
                     {(() => {
-                      const age =
-                        diag.analyticsVersionMismatch.oldestEventAgeMs;
-                      if (age <= 0) return '0s';
-                      const secs = Math.floor(age / 1000);
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      const ageVal = (diag.analyticsVersionMismatch as any)
+                        .oldestEventAgeMs as number | undefined;
+                      if (typeof ageVal !== 'number' || ageVal <= 0)
+                        return '0s';
+                      const secs = Math.floor(ageVal / 1000);
                       if (secs < 60) return `${secs}s`;
                       const mins = Math.floor(secs / 60);
                       if (mins < 60) return `${mins}m`;
@@ -1059,20 +1076,20 @@ export default function DevDiagnostics() {
                 )}
                 {sparklineSvg}
                 {vmSparklineBuckets.length > 0 && (
-                  <span className="text-muted-foreground ml-2 inline-flex items-center gap-1 text-[10px]">
-                    <span className="gap-0.5 inline-flex items-center">
-                      <span className="bg-sky-500 h-2 w-2 rounded-sm" />
-                      Gait
-                    </span>
-                    <span className="gap-0.5 inline-flex items-center">
-                      <span className="bg-rose-500 h-2 w-2 rounded-sm" />
-                      Fall
-                    </span>
-                    <span className="gap-0.5 inline-flex items-center">
-                      <span className="bg-amber-500 h-2 w-2 rounded-sm" />
-                      Both
-                    </span>
-                  </span>
+                  <div className="text-muted-foreground ml-2 flex items-center gap-2 text-[10px]">
+                    <div className="flex items-center gap-1">
+                      <span className="bg-sky-500 inline-block h-2 w-2 rounded-sm" />
+                      <span>Gait</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="bg-rose-500 inline-block h-2 w-2 rounded-sm" />
+                      <span>Fall</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="bg-amber-500 inline-block h-2 w-2 rounded-sm" />
+                      <span>Both</span>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -1304,10 +1321,9 @@ interface VirtualizedMismatchTableProps {
   formatRelativeSec: (iso: string) => string;
 }
 
-function VirtualizedMismatchTable({
-  events,
-  formatRelativeSec,
-}: VirtualizedMismatchTableProps) {
+const VirtualizedMismatchTable: React.FC<
+  Readonly<VirtualizedMismatchTableProps>
+> = ({ events, formatRelativeSec }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const ROW_HEIGHT = 26;
   const OVERSCAN = 8;
@@ -1369,14 +1385,10 @@ function VirtualizedMismatchTable({
               e.fallLocal && e.fallRemote && e.fallLocal !== e.fallRemote
                 ? `${e.fallLocal} → ${e.fallRemote}`
                 : '—';
-            const type =
-              gait !== '—' && fall !== '—'
-                ? 'both'
-                : gait !== '—'
-                  ? 'gait'
-                  : fall !== '—'
-                    ? 'fall'
-                    : '—';
+            let type: 'both' | 'gait' | 'fall' | '—' = '—';
+            if (gait !== '—' && fall !== '—') type = 'both';
+            else if (gait !== '—') type = 'gait';
+            else if (fall !== '—') type = 'fall';
             return (
               <tr
                 key={`${e.ts}-${e.seq ?? 0}`}
@@ -1414,4 +1426,4 @@ function VirtualizedMismatchTable({
       </table>
     </div>
   );
-}
+};

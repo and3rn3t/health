@@ -96,6 +96,8 @@
     "ci:css-contrast-drift": "node scripts/ci/css-contrast-drift.mjs",
     "ci:localization": "node ios/scripts/localization-audit.js",
     "ci:perf-slo": "node scripts/ci/performance-slo-probe.mjs",
+    "perf:sample": "node scripts/node/analysis/perf-slo-sampler.js",
+    "pre:release:gate": "node scripts/node/dev/pre-release-gate.js",
     "audit:localization:ios": "node ios/scripts/localization-audit.js",
     "task:run": "node scripts/node/dev/task-runner.js",
     "start:dev": "node scripts/node/dev/start-dev.js",

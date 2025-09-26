@@ -8,6 +8,10 @@ export default defineConfig({
   // Ensure Tailwind uses JS implementation (no native oxide binding)
   define: {
     'process.env.TAILWIND_DISABLE_OXIDE': JSON.stringify('1'),
+    __APP_VERSION__: JSON.stringify(
+      process.env.npm_package_version || '0.0.0-dev'
+    ),
+    __RUM_SAMPLE_RATE__: JSON.stringify(process.env.RUM_SAMPLE_RATE || '1'),
   },
   plugins: [react()],
   resolve: {

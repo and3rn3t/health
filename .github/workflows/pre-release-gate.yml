@@ -1,0 +1,79 @@
+name: Pre-Release Gate
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      full:
+        description: 'Run full test suite'
+        required: false
+        default: 'false'
+      strict:
+        description: 'Treat soft-fail steps as hard failures'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node & pnpm
+        uses: ./.github/actions/setup-pnpm
+      - name: Install Dependencies (frozen or fallback)
+        run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+      - name: Run Pre-Release Gate
+        id: gate
+        env:
+          CI: true
+        run: |
+          ARGS=()
+          if [ "${{ github.event.inputs.full }}" = 'true' ]; then ARGS+=(--full); fi
+            if [ "${{ github.event.inputs.strict }}" = 'true' ]; then ARGS+=(--strict); fi
+          echo "[gate] args: ${ARGS[*]}"
+          pnpm run pre:release:gate -- "${ARGS[@]}" || echo "GATE_EXIT=$?" >> $GITHUB_OUTPUT
+      - name: Upload Gate JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-release-gate-json
+          path: reports/pre-release-gate.json
+          if-no-files-found: error
+      - name: Upload Gate Markdown
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-release-gate-md
+          path: reports/pre-release-gate.md
+          if-no-files-found: warn
+      - name: Append Summary
+        if: always()
+        run: |
+          if [ -f reports/pre-release-gate.md ]; then
+            echo "## Pre-Release Gate" >> $GITHUB_STEP_SUMMARY
+            cat reports/pre-release-gate.md >> $GITHUB_STEP_SUMMARY
+          fi
+      - name: PR Comment (sticky)
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: reports/pre-release-gate.md
+      - name: Enforce Gate
+        if: always()
+        run: |
+          set -e
+          FILE=reports/pre-release-gate.json
+          if [ ! -f "$FILE" ]; then echo "Gate summary missing"; exit 1; fi
+          STATUS=$(node -e "const f=require('./'+process.argv[1]);process.stdout.write(f.overallStatus||'');" $FILE)
+          echo "Gate status: $STATUS"
+          if [ "$STATUS" != 'PASS' ]; then echo 'Pre-Release Gate failed'; exit 1; fi
+          echo 'Pre-Release Gate passed'

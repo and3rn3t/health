@@ -1,4 +1,7 @@
 import { Toaster } from '@/components/ui/sonner';
+// RUM metrics (must be imported very early before app renders)
+import { CoachingControlPanel } from '@/components/coaching/CoachingControlPanel';
+import { AppWebSocketProvider } from '@/contexts/AppWebSocketProvider';
 import { AuthProvider } from '@/contexts/AuthProvider';
 import '@/polyfills/importMetaEnv';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -7,7 +10,15 @@ import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
 import App from './App';
 import './main.css';
+import './monitor/rum';
 import './types/global.d.ts';
+
+// Declare global augmentation for RUM hydration marker
+declare global {
+  interface Window {
+    __rumHydration?: () => void;
+  }
+}
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -151,10 +162,19 @@ root.render(
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <QueryClientProvider client={queryClient}>
         <Suspense fallback={<LoadingFallback />}>
-          <AppWrapper />
+          <AppWebSocketProvider>
+            <AppWrapper />
+            <CoachingControlPanel />
+          </AppWebSocketProvider>
         </Suspense>
         <Toaster position="top-right" richColors />
       </QueryClientProvider>
     </ErrorBoundary>
   </StrictMode>
 );
+// Trigger hydration timing marker (defined in rum.ts)
+try {
+  window.__rumHydration?.();
+} catch {
+  /* noop */
+}

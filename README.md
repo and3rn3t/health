@@ -181,6 +181,33 @@ Endpoints:
 
 _Latest optimization: December 2024 - See `docs/_archive/optimizations/OPTIMIZATION_DEPLOYMENT_COMPLETE.md`_
 
+#### Performance & SLO Monitoring
+
+A new synthetic + config-driven performance layer enforces budgets:
+
+Files:
+
+- `slo.config.json` – central thresholds (JS/CSS gzip budgets, import latency, WebSocket connect time)
+- `scripts/node/analysis/perf-slo-sampler.js` – synthetic sampler (writes `reports/perf-sample.json`)
+- `scripts/ci/performance-slo-probe.mjs` – existing bundle/import latency probe (writes `reports/perf-slo.json`)
+
+Usage:
+
+```bash
+pnpm run perf:sample           # Generate synthetic perf sample
+pnpm run ci:perf-slo           # CI SLO probe (bundle + import latency)
+pnpm run pre:release:gate      # Includes perf sample + SLO probe (soft-fail unless --strict)
+```
+
+Outputs:
+
+- `reports/perf-sample.json` / `perf-sample-history.json`
+- `reports/perf-slo.json` / `perf-slo-history.json`
+
+Statuses: `ok`, `degraded` (budget exceeded), `soft-missing-dist` (dist absent but tolerated), or `error`.
+
+Extend later: real-user metrics (LCP, CLS) + daily trend aggregator.
+
 - **JWT authentication** with secure token management
 
 ## 📊 Project Status
@@ -231,6 +258,38 @@ Branding gates fail if required VitalSense markers are missing or any legacy bra
 | ---------- | ----------------------------- | ----------------------------------------------- |
 | local      | <http://127.0.0.1:8787>       | Verifies dev Worker build branding consistency  |
 | production | <https://health.andernet.dev> | Ensures deployed site remains correctly branded |
+
+## ✅ Pre-Release Gate (Unified Quality Check)
+
+Run a consolidated set of validations before any production (or critical) deployment:
+
+```bash
+pnpm run pre:release:gate            # Quick tests, standard mode
+pnpm run pre:release:gate -- --full  # Full test suite
+pnpm run pre:release:gate -- --strict # Treat soft-fail steps as hard failures
+```
+
+What it runs (in order):
+
+1. Config validator
+2. Lint (TypeScript quick; strict with `--strict`)
+3. Test suite (quick or full)
+4. Production build + bundle size thresholds (JS <400KB gzip, CSS <60KB gzip)
+5. Branding + rebrand residue audit (soft-fail unless `--strict`)
+6. WebSocket schema drift guard (soft-fail unless `--strict`)
+7. Performance SLO probe (if present, soft-fail)
+8. Analytics version mismatch snapshot (soft-fail)
+9. Privacy / log guard (hard-fail)
+
+Outputs:
+
+- `reports/pre-release-gate.json` structured machine-readable summary
+- `reports/pre-release-gate.md` markdown table for CI artifact / PR comment
+
+Flags:
+`--skip-build` `--skip-tests` `--skip-branding` `--skip-ws` `--skip-perf` `--json`
+
+Integrate this as a mandatory CI job prior to deploy to enforce performance, branding, and protocol integrity.
 
 ## 📖 Documentation
 
