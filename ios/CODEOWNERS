@@ -1,0 +1,82 @@
+{
+  "configurations" : [
+    {
+      "id" : "2B9C4A85-2F9B-4C9B-9F1A-8D7E6F5C4B3A",
+      "name" : "Test Scheme Action",
+      "options" : {
+        "codeCoverage" : true,
+        "codeCoverageTargets" : [
+          {
+            "containerPath" : "container:VitalSense.xcodeproj",
+            "identifier" : "VitalSense",
+            "name" : "VitalSense"
+          },
+          {
+            "containerPath" : "container:VitalSense.xcodeproj", 
+            "identifier" : "VitalSenseWatch",
+            "name" : "VitalSenseWatch"
+          },
+          {
+            "containerPath" : "container:VitalSense.xcodeproj",
+            "identifier" : "VitalSenseWidgets", 
+            "name" : "VitalSenseWidgets"
+          }
+        ],
+        "environmentVariableEntries" : [
+          {
+            "key" : "VITALSENSE_TEST_MODE",
+            "value" : "1"
+          },
+          {
+            "key" : "HEALTHKIT_SIMULATION_MODE",
+            "value" : "1"
+          },
+          {
+            "key" : "GAIT_ANALYSIS_DEBUG",
+            "value" : "1"
+          }
+        ],
+        "maximumTestRepetitions" : 3,
+        "testRepetitionMode" : "retryOnFailure",
+        "testTimeoutsEnabled" : true
+      },
+      "testTargets" : [
+        {
+          "target" : {
+            "containerPath" : "container:VitalSenseTests",
+            "identifier" : "VitalSenseTests",
+            "name" : "VitalSenseTests"
+          }
+        },
+        {
+          "target" : {
+            "containerPath" : "container:VitalSenseUITests", 
+            "identifier" : "VitalSenseUITests",
+            "name" : "VitalSenseUITests"
+          }
+        }
+      ]
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : true,
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:VitalSenseTests",
+        "identifier" : "VitalSenseTests", 
+        "name" : "VitalSenseTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:VitalSenseUITests",
+        "identifier" : "VitalSenseUITests",
+        "name" : "VitalSenseUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

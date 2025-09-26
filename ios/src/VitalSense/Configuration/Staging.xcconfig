@@ -1,0 +1,31 @@
+# VitalSense Staging Configuration
+# This file contains staging environment settings and environment variables
+
+# Staging URLs
+STAGING_API_BASE_URL=https://api-staging.vitalsense.com
+STAGING_WS_BASE_URL=wss://ws-staging.vitalsense.com
+
+# Feature Flags for Staging
+ENABLE_DEBUG_LOGGING=true
+ENABLE_MOCK_DATA=false
+ENABLE_CRASH_REPORTING=true
+ENABLE_BETA_FEATURES=true
+
+# Build Configuration
+SWIFT_TREAT_WARNINGS_AS_ERRORS=false
+ENABLE_TESTABILITY=true
+DEBUG_INFORMATION_FORMAT=dwarf-with-dsym
+
+# Health Data Settings
+HEALTH_DATA_SYNC_ENABLED=true
+HEALTH_DATA_MOCK_MODE=false
+HEALTH_DATA_VALIDATION_STRICT=true
+
+# Analytics
+ANALYTICS_ENABLED=true
+ANALYTICS_DEBUG_MODE=true
+ANALYTICS_SAMPLE_RATE=1.0
+
+# Testing
+UI_TESTING_ENABLED=true
+PERFORMANCE_TESTING_ENABLED=true
