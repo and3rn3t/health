@@ -1,0 +1,80 @@
+import Foundation
+
+// MARK: - Shared Core Types for VitalSense
+
+// MARK: - Gait Metrics
+struct GaitMetrics: Codable {
+	var averageWalkingSpeed: Double? // m/s
+	var averageStepLength: Double? // meters
+	var walkingAsymmetry: Double? // percentage
+	var doubleSupportTime: Double? // percentage of gait cycle
+	var stanceTime: Double? // percentage of gait cycle
+	var swingTime: Double? // percentage of gait cycle
+	var stepFrequency: Double? // steps per minute
+	var strideLength: Double? // meters
+	var walkingSpeedVariability: Double? // coefficient of variation
+	var stepLengthVariability: Double? // coefficient of variation
+	var averageToeClearance: Double? // meters (engineered / LiDAR derived)
+	// Engineered features
+	var strideTimeVariability: Double? // coefficient of variation of stride time
+	var harmonicRatio: Double? // stability smoothness proxy
+	var mediolateralSwayProxy: Double? // normalized sway
+	var nearTripEvents: Int? // count within session window
+	var mobilityStatus: MobilityStatus
+	var riskLevel: RiskLevel?
+
+	init() {
+		self.mobilityStatus = .unknown
+	}
+}
+
+// MARK: - Mobility Status
+enum MobilityStatus: String, CaseIterable, Codable {
+	case excellent, good, fair, poor, unknown
+	
+	var displayName: String {
+		switch self {
+		case .excellent: return "Excellent"
+		case .good: return "Good"
+		case .fair: return "Fair"
+		case .poor: return "Poor"
+		case .unknown: return "Unknown"
+		}
+	}
+}
+
+// MARK: - Risk Level
+enum RiskLevel: String, CaseIterable, Codable {
+	case low, moderate, high, critical
+	
+	var displayName: String {
+		switch self {
+		case .low: return "Low Risk"
+		case .moderate: return "Moderate Risk"
+		case .high: return "High Risk"
+		case .critical: return "Critical Risk"
+		}
+	}
+	
+	var color: String {
+		switch self {
+		case .low: return "green"
+		case .moderate: return "yellow"
+		case .high: return "orange"
+		case .critical: return "red"
+		}
+	}
+}
+
+// MARK: - Gait Risk Assessment
+struct GaitRiskAssessment: Codable {
+	let score: Double // 0-100
+	let level: RiskLevel
+	let confidence: Double // 0-1
+	
+	init(score: Double, level: RiskLevel, confidence: Double) {
+		self.score = score
+		self.level = level
+		self.confidence = confidence
+	}
+}

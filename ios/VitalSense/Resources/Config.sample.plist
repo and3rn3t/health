@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>USER_ID</key>
+	<string>replace-with-stable-user-id</string>
+	<key>API_BASE_URL</key>
+	<string>https://api.andernet.dev</string>
+	<key>WS_URL</key>
+	<string>wss://api.andernet.dev/ws</string>
+</dict>
+</plist>

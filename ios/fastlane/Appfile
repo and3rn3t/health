@@ -1,0 +1,11 @@
+# fastlane/Appfile
+# Basic metadata; override via environment variables in CI if needed.
+
+app_identifier(ENV['APP_IDENTIFIER'] || 'com.example.vitalsense')
+apple_id(ENV['FASTLANE_USER'] || 'your-apple-id@example.com')
+team_id(ENV['TEAM_ID'] || 'TEAMID1234')
+
+# Optional: specify ITC team name/id if different
+# itc_team_id('123456789')
+
+# If using App Store Connect API key, set env APP_STORE_CONNECT_API_KEY_PATH

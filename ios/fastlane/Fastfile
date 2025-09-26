@@ -1,0 +1,143 @@
+# Fastlane configuration for VitalSense
+# Requires: bundle install
+# Environment variables (set via CI or shell):
+#   APP_IDENTIFIER (e.g. com.example.vitalsense)
+#   TEAM_ID (Apple Developer Team ID)
+#   FASTLANE_USER (Apple ID email)
+#   MATCH_GIT_URL (if using match)
+#   APP_STORE_CONNECT_API_KEY_PATH (optional JSON key for API auth)
+
+fastlane_version '2.220.0'
+
+def shared_build_settings
+  {
+    workspace: 'VitalSense.xcworkspace',
+    scheme: 'VitalSense',
+    configuration: 'Release'
+  }
+end
+
+def test_settings
+  {
+    workspace: 'VitalSense.xcworkspace',
+    scheme: 'VitalSense',
+    testplan: 'VitalSenseTests/VitalSenseTests.xctestplan',
+    devices: ['iPhone 15'],
+    result_bundle: true,
+    buildlog_path: 'fastlane/build_logs',
+    output_directory: 'fastlane/test_output'
+  }
+end
+
+def archive_output
+  'build/Fastlane-VitalSense.xcarchive'
+end
+
+platform :ios do
+  desc 'Run unit tests with coverage'
+  lane :tests do
+    run_tests(test_settings)
+  end
+
+  desc 'Build (gym) an unsigned archive (CODE_SIGNING_ALLOWED=NO)'
+  lane :build do
+    gym(shared_build_settings.merge(
+      archive_path: archive_output,
+      skip_codesigning: true,
+      clean: true,
+      output_directory: 'build',
+      output_name: 'VitalSense-unsigned'
+    ))
+  end
+
+  desc 'Archive + export App Store IPA (requires signing & ExportOptions plist)'
+  lane :archive do |options|
+    plist = options[:export_options] || 'VitalSense/scripts/ExportOptions-AppStore.plist'
+    gym(shared_build_settings.merge(
+      export_method: 'app-store',
+      export_options: plist,
+      clean: true,
+      output_directory: 'build',
+      output_name: 'VitalSense-AppStore'
+    ))
+  end
+
+  desc 'Sync signing assets with match (optional; set MATCH_GIT_URL)'
+  lane :sync_signing do
+    unless ENV['MATCH_GIT_URL']
+      UI.important('MATCH_GIT_URL not set; skipping match signing sync')
+      next
+    end
+    match(type: 'appstore', readonly: false, app_identifier: [ENV['APP_IDENTIFIER']])
+    match(type: 'development', readonly: false, app_identifier: [ENV['APP_IDENTIFIER']])
+  end
+
+  desc 'Submit to TestFlight (requires credentials / API key)'
+  lane :beta do |options|
+    # Ensure signing assets
+    sync_signing
+
+    # Build for beta distribution
+    gym(shared_build_settings.merge(
+      export_method: 'app-store',
+      clean: true,
+      output_directory: 'build',
+      output_name: 'VitalSense-Beta'
+    ))
+
+    if ENV['APP_STORE_CONNECT_API_KEY_PATH']
+      api_key = app_store_connect_api_key(
+        key_filepath: ENV['APP_STORE_CONNECT_API_KEY_PATH']
+      )
+      pilot(api_key: api_key, skip_waiting_for_build_processing: true)
+    else
+      pilot(skip_waiting_for_build_processing: true)
+    end
+  end
+
+  desc 'Run pbxproj lint (and SwiftLint if available)'
+  lane :lint do
+    sh 'bash VitalSense/scripts/pbxproj-lint.sh'
+    if File.exist?('.swiftlint.yml') || File.exist?('swiftlint.yml')
+      UI.message('Running SwiftLint')
+      sh 'if which swiftlint >/dev/null; then swiftlint; else echo "SwiftLint not installed"; fi'
+    end
+  end
+
+  desc 'Bump marketing version (type: patch|minor|major) and tag'
+  lane :bump_version do |options|
+    type = (options[:type] || 'patch').to_s
+    increment_version_number(bump_type: type)
+    version = get_version_number(xcodeproj: 'VitalSense.xcodeproj', target: 'VitalSense')
+    sh 'git add .'
+    sh "git commit -m 'chore: bump version to #{version}' || echo 'No changes to commit'"
+    sh "git tag v#{version} || echo 'Tag exists'"
+    UI.success("Version bumped to #{version}")
+  end
+
+  desc 'Upload dSYMs from last archive (zip only)'
+  lane :upload_symbols do
+    sh "bash VitalSense/scripts/upload-dsyms.sh #{archive_output} build/dSYMs"
+  end
+
+  desc 'Generate coverage (requires slather config if present)'
+  lane :coverage do
+    tests
+    if File.exist?('fastlane/slather.yml')
+      begin
+        slather(build_directory: 'fastlane/test_output', output_directory: 'fastlane/coverage')
+      rescue => e
+        UI.important("Slather failed: #{e.message}")
+      end
+    else
+      UI.message('No slather.yml, skipping slather coverage step')
+    end
+  end
+
+  desc 'Full CI pipeline: lint -> tests -> build'
+  lane :ci do
+    lint
+    tests
+    build
+  end
+end

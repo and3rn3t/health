@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDEDidComputeMac32BitWarning</key>
+	<true/>
+	<key>IDESourceControlProjectFavoriteDirs</key>
+	<array>
+		<string>src</string>
+		<string>scripts</string>
+		<string>docs</string>
+	</array>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>VitalSense</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>VitalSense</string>
+			<key>IDESourceControlWCCName</key>
+			<string>VitalSense</string>
+		</dict>
+	</array>
+</dict>
+</plist>

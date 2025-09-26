@@ -1,0 +1,29 @@
+// VitalSense Production Configuration
+// This file contains production-ready settings and environment variables
+
+// Production URLs
+PROD_API_BASE_URL=https://api.vitalsense.com
+BACKUP_API_BASE_URL=https://api-backup.vitalsense.com
+
+// Feature Flags
+ENABLE_DEBUG_LOGGING=false
+ENABLE_MOCK_DATA=false
+ENABLE_CRASH_REPORTING=true
+
+// Build Configuration
+SWIFT_TREAT_WARNINGS_AS_ERRORS=true
+ENABLE_TESTABILITY=false
+DEBUG_INFORMATION_FORMAT=dwarf-with-dsym
+
+// Health Data Settings
+HEALTH_DATA_SYNC_ENABLED=true
+HEALTH_DATA_MOCK_MODE=false
+
+// Analytics
+ANALYTICS_ENABLED=true
+ANALYTICS_DEBUG_MODE=false
+
+// Security
+CODE_SIGN_STYLE=Manual
+ENABLE_BITCODE=NO
+VALIDATE_PRODUCT=YES

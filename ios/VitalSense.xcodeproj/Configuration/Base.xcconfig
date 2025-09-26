@@ -1,0 +1,37 @@
+#include "Base.xcconfig"
+
+// Debug Configuration
+// Optimized for development and debugging
+
+// Build Configuration
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+ENABLE_TESTABILITY = YES
+ONLY_ACTIVE_ARCH = YES
+
+// Optimization
+GCC_OPTIMIZATION_LEVEL = 0
+SWIFT_OPTIMIZATION_LEVEL = -Onone
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG
+
+// Code Generation
+GCC_DYNAMIC_NO_PIC = NO
+GCC_NO_COMMON_BLOCKS = YES
+GCC_C_LANGUAGE_STANDARD = gnu17
+
+// Preprocessor
+GCC_PREPROCESSOR_DEFINITIONS = DEBUG=1 $(inherited)
+
+// Swift Compiler
+SWIFT_COMPILATION_MODE = singlefile
+ENABLE_STRICT_OBJC_MSGSEND = YES
+
+// Debugging
+MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE
+COPY_PHASE_STRIP = NO
+
+// Validation
+VALIDATE_PRODUCT = NO
+ENABLE_NS_ASSERTIONS = YES
+
+// Performance
+SWIFT_EMIT_LOC_STRINGS = YES
