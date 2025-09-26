@@ -2,9 +2,9 @@ import SwiftUI
 import HealthKit
 import WatchConnectivity
 
-// MARK: - VitalSense Monitor Apple Watch App
+// MARK: - VitalSense Apple Watch App
 @main
-struct VitalSenseMonitorWatchApp: App {
+struct VitalSenseWatchApp: App {
     var body: some Scene {
         WindowGroup {
             WatchContentView()

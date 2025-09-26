@@ -1,6 +1,0 @@
-FILE:C:\git\health\src\main.css
-LINES:116
-BYTES:4886
-SHA256:d3808b24ec45898724732c12c39ef8e7a9399b2ffd28393e0bd41b38dab0bc70
-DUMP:C:\git\health\debug\main.css.raw-2025-09-19T15-53-48-494Z.txt
-META:C:\git\health\debug\main.css.meta-2025-09-19T15-53-48-494Z.txt
