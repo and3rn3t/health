@@ -1,7 +1,7 @@
 #!/usr/bin/env node
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 
 // Configuration (env-overridable)
 const MAX_LINES = parseInt(process.env.CSS_GUARD_MAX_LINES || '250', 10);
@@ -37,7 +37,9 @@ if (lines > maxLines) {
   failed = true;
 }
 if (bytes > MAX_BYTES) {
-  console.error(`❌ main.css byte size too large: ${bytes} bytes (limit ${MAX_BYTES})`);
+  console.error(
+    `❌ main.css byte size too large: ${bytes} bytes (limit ${MAX_BYTES})`
+  );
   failed = true;
 }
 if (sentinelCount !== 1) {
@@ -52,15 +54,23 @@ if (!ALLOW_TW) {
     const matches = raw.match(pattern);
     if (matches) {
       // Filter: exclude custom prefixes & known semantic classes
-      const filtered = matches.filter(m => !/\.vitalsense-|\.vs-|\.thin-scrollbar|\.sr-only/.test(m));
+      const filtered = matches.filter(
+        (m) => !/\.vitalsense-|\.vs-|\.thin-scrollbar|\.sr-only/.test(m)
+      );
       // Additional filter: ignore if selector contains two hyphens (likely BEM / custom)
-      const refined = filtered.filter(m => !(m.match(/-/g) || []).length || (m.match(/-/g) || []).length < 2);
+      const refined = filtered.filter(
+        (m) => !(m.match(/-/g) || []).length || (m.match(/-/g) || []).length < 2
+      );
       utilityHits += refined.length;
     }
   }
   if (utilityHits > 0) {
-    console.error(`❌ Detected ${utilityHits} potential generated utility selectors / Tailwind runtime markers in authored main.css.`);
-    console.error('    This likely indicates accidental paste of compiled utilities.');
+    console.error(
+      `❌ Detected ${utilityHits} potential generated utility selectors / Tailwind runtime markers in authored main.css.`
+    );
+    console.error(
+      '    This likely indicates accidental paste of compiled utilities.'
+    );
     failed = true;
   }
 }
@@ -96,45 +106,58 @@ try {
 }
 
 // Run contrast audit in JSON mode
-const audit = spawnSync('node', ['scripts/node/analysis/css/contrast-audit.js', '--json'], { encoding: 'utf8' });
+const audit = spawnSync(
+  'node',
+  ['scripts/analysis/css/contrast-audit.js', '--json'],
+  { encoding: 'utf8' }
+);
 if (audit.status !== 0) {
   console.error('❌ Contrast audit process failed');
   console.error(audit.stderr || audit.stdout);
   failed = true;
 } else {
   try {
-  const result = JSON.parse(audit.stdout.trim());
-  const pairs = result.pairs || result.results || [];
-  const fails = pairs.filter(p => p.status === 'FAIL');
-  const borderline = [];
-  for (const p of pairs) {
-    // Heuristic: if audit status already FAIL, skip; only evaluate passes near threshold.
-    if (p.status === 'FAIL') continue;
-    const ratio = Number(p.ratio);
-    if (Number.isNaN(ratio)) continue;
-    const largeOrUi = p.isLarge || /large|ui/i.test(p.category || '') || /ui/i.test(p.pair || '');
-    if (!largeOrUi) {
-      if (ratio < BORDERLINE_NORMAL_MIN && ratio >= BORDERLINE_NORMAL_WARN) {
-        borderline.push({ ...p, threshold: BORDERLINE_NORMAL_MIN });
-      }
-    } else {
-      if (ratio < BORDERLINE_LARGE_MIN && ratio >= BORDERLINE_LARGE_WARN) {
-        borderline.push({ ...p, threshold: BORDERLINE_LARGE_MIN });
+    const result = JSON.parse(audit.stdout.trim());
+    const pairs = result.pairs || result.results || [];
+    const fails = pairs.filter((p) => p.status === 'FAIL');
+    const borderline = [];
+    for (const p of pairs) {
+      // Heuristic: if audit status already FAIL, skip; only evaluate passes near threshold.
+      if (p.status === 'FAIL') continue;
+      const ratio = Number(p.ratio);
+      if (Number.isNaN(ratio)) continue;
+      const largeOrUi =
+        p.isLarge ||
+        /large|ui/i.test(p.category || '') ||
+        /ui/i.test(p.pair || '');
+      if (!largeOrUi) {
+        if (ratio < BORDERLINE_NORMAL_MIN && ratio >= BORDERLINE_NORMAL_WARN) {
+          borderline.push({ ...p, threshold: BORDERLINE_NORMAL_MIN });
+        }
+      } else {
+        if (ratio < BORDERLINE_LARGE_MIN && ratio >= BORDERLINE_LARGE_WARN) {
+          borderline.push({ ...p, threshold: BORDERLINE_LARGE_MIN });
+        }
       }
     }
-  }
     if (fails.length) {
       console.error('❌ Contrast failures detected:');
       for (const f of fails) {
-        console.error(`  - ${f.theme} ${f.pair} ratio ${f.ratio} suggestion ${f.suggestion || ''}`);
+        console.error(
+          `  - ${f.theme} ${f.pair} ratio ${f.ratio} suggestion ${f.suggestion || ''}`
+        );
       }
       failed = true;
     } else {
       console.log('✅ Contrast audit passed (no FAIL pairs)');
       if (borderline.length) {
-        console.warn(`⚠️  ${borderline.length} borderline contrast pairs within 0.05 of threshold:`);
+        console.warn(
+          `⚠️  ${borderline.length} borderline contrast pairs within 0.05 of threshold:`
+        );
         for (const b of borderline) {
-          console.warn(`  - ${b.theme} ${b.pair} ratio ${b.ratio} (threshold ${b.threshold})`);
+          console.warn(
+            `  - ${b.theme} ${b.pair} ratio ${b.ratio} (threshold ${b.threshold})`
+          );
         }
       }
     }
@@ -152,10 +175,16 @@ if (audit.status !== 0) {
         borderline: borderline.length,
         pairs,
       };
-      fs.writeFileSync(path.join(reportsDir, 'contrast-report.json'), JSON.stringify(artifact, null, 2));
+      fs.writeFileSync(
+        path.join(reportsDir, 'contrast-report.json'),
+        JSON.stringify(artifact, null, 2)
+      );
       console.log('📝 Wrote reports/contrast-report.json');
     } catch (e) {
-      console.warn('⚠️  Unable to write contrast-report.json artifact:', e.message);
+      console.warn(
+        '⚠️  Unable to write contrast-report.json artifact:',
+        e.message
+      );
     }
   } catch (e) {
     console.error('❌ Unable to parse contrast audit JSON output');
@@ -167,5 +196,7 @@ if (failed) {
   console.error('🔒 main.css guard failed');
   process.exit(1);
 } else {
-  console.log(`✅ main.css guard success (lines=${lines}, bytes=${bytes}, sentinel=1)`);
+  console.log(
+    `✅ main.css guard success (lines=${lines}, bytes=${bytes}, sentinel=1)`
+  );
 }

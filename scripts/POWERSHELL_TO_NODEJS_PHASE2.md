@@ -8,21 +8,21 @@ This document outlines the second phase of converting PowerShell scripts to Node
 
 ### High Priority Conversions ✅
 
-| PowerShell Script | Node.js Equivalent | Purpose | Benefits |
-|------------------|-------------------|---------|----------|
-| `debug-device-auth.ps1` | `scripts/node/dev/debug-device-auth.js` | API endpoint testing | Better JSON handling, cross-platform HTTP |
-| `setup-git-hooks.ps1` | `scripts/node/dev/setup-git-hooks.js` | Git hooks configuration | Cross-platform git operations, better error handling |
-| `fix-circular-dependencies.ps1` | `scripts/node/analysis/fix-circular-dependencies.js` | Icon import circular dependency fixing | Better async file operations, improved regex handling |
-| `setup.ps1` | `scripts/node/dev/setup-project.js` | Project setup and dependency installation | Native npm integration, better error handling |
-| `optimize-icons.ps1` | `scripts/node/analysis/optimize-icons.js` | Bundle optimization through icon processing | Integration with build tools, better performance |
-| `convert-phosphor-to-lucide.ps1` | `scripts/node/analysis/convert-phosphor-to-lucide.js` | Icon library migration | Comprehensive mapping, better file processing |
+| PowerShell Script                | Node.js Equivalent                                    | Purpose                                     | Benefits                                              |
+| -------------------------------- | ----------------------------------------------------- | ------------------------------------------- | ----------------------------------------------------- |
+| `debug-device-auth.ps1`          | `scripts/node/dev/debug-device-auth.js`               | API endpoint testing                        | Better JSON handling, cross-platform HTTP             |
+| `setup-git-hooks.ps1`            | `scripts/node/dev/setup-git-hooks.js`                 | Git hooks configuration                     | Cross-platform git operations, better error handling  |
+| `fix-circular-dependencies.ps1`  | `scripts/node/analysis/fix-circular-dependencies.js`  | Icon import circular dependency fixing      | Better async file operations, improved regex handling |
+| `setup.ps1`                      | `scripts/node/dev/setup-project.js`                   | Project setup and dependency installation   | Native npm integration, better error handling         |
+| `optimize-icons.ps1`             | `scripts/node/analysis/optimize-icons.js`             | Bundle optimization through icon processing | Integration with build tools, better performance      |
+| `convert-phosphor-to-lucide.ps1` | `scripts/node/analysis/convert-phosphor-to-lucide.js` | Icon library migration                      | Comprehensive mapping, better file processing         |
 
 ## New npm Scripts Added
 
 ```json
 {
   "setup:project": "node scripts/node/dev/setup-project.js",
-  "setup:git-hooks": "node scripts/node/dev/setup-git-hooks.js", 
+  "setup:git-hooks": "node scripts/node/dev/setup-git-hooks.js",
   "debug:device-auth": "node scripts/node/dev/debug-device-auth.js",
   "fix:circular-deps": "node scripts/node/analysis/fix-circular-dependencies.js",
   "optimize:icons": "node scripts/node/analysis/optimize-icons.js",

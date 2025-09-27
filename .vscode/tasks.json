@@ -24,7 +24,7 @@
       "label": "Onboarding: New User Wizard",
       "type": "shell",
       "command": "node",
-      "args": ["scripts/node/dev/onboarding-wizard.js"],
+      "args": ["scripts/development/onboarding-wizard.js"],
       "group": {
         "kind": "build",
         "isDefault": false
@@ -37,7 +37,7 @@
       "type": "shell",
       "command": "node",
       "args": [
-        "scripts/node/test/test-browser-endpoints.js",
+        "scripts/testing/test-browser-endpoints.js",
         "--baseUrl=https://health.andernet.dev",
         "--verbose"
       ],
@@ -50,7 +50,7 @@
       "type": "shell",
       "command": "node",
       "args": [
-        "scripts/node/branding/verify-production-branding.js",
+        "scripts/branding/verify-production-branding.js",
         "--url=http://127.0.0.1:8789",
         "--local"
       ],
@@ -62,7 +62,7 @@
       "label": "🪄 Node: Rebrand Scan",
       "type": "shell",
       "command": "node",
-      "args": ["scripts/node/branding/verify-vitalsense-rebrand.js"],
+      "args": ["scripts/branding/verify-vitalsense-rebrand.js"],
       "group": "test",
       "icon": { "id": "inspect", "color": "terminal.ansiYellow" },
       "detail": "Scan repository for leftover HealthGuard references"
@@ -71,7 +71,7 @@
       "label": "🌐 Node: Find Worker URL",
       "type": "shell",
       "command": "node",
-      "args": ["scripts/node/branding/find-worker-url.js"],
+      "args": ["scripts/branding/find-worker-url.js"],
       "group": "test",
       "icon": { "id": "globe", "color": "terminal.ansiBlue" },
       "detail": "Probe candidate Cloudflare Worker domains and custom domain"
@@ -80,7 +80,7 @@
       "label": "🧾 Node: Branding Audit (Combined)",
       "type": "shell",
       "command": "node",
-      "args": ["scripts/node/branding/branding-audit.js"],
+      "args": ["scripts/branding/branding-audit.js"],
       "group": "test",
       "icon": { "id": "report", "color": "terminal.ansiGreen" },
       "detail": "Run combined branding + rebrand scan and produce markdown summary"
@@ -89,7 +89,7 @@
       "label": "� Node: Auth0 Login Page Test",
       "type": "shell",
       "command": "node",
-      "args": ["scripts/node/test/test-auth0-login-page.js"],
+      "args": ["scripts/testing/test-auth0-login-page.js"],
       "group": "test",
       "icon": { "id": "shield", "color": "terminal.ansiYellow" },
       "detail": "Node rewrite of Auth0: Test Custom Login Page"
@@ -99,7 +99,7 @@
       "type": "shell",
       "command": "node",
       "args": [
-        "scripts/node/test/test-enhanced-health-processing.js",
+        "scripts/testing/test-enhanced-health-processing.js",
         "--baseUrl",
         "http://127.0.0.1",
         "--port",
@@ -114,7 +114,7 @@
       "type": "shell",
       "command": "node",
       "args": [
-        "scripts/node/test/test-browser-endpoints.js",
+        "scripts/testing/test-browser-endpoints.js",
         "--baseUrl=https://health-app-prod.workers.dev"
       ],
       "group": "test",
@@ -125,7 +125,7 @@
       "type": "shell",
       "command": "node",
       "args": [
-        "scripts/node/test/test-websocket-connection.js",
+        "scripts/testing/test-websocket-connection.js",
         "--backendUrl=wss://health.andernet.dev/ws"
       ],
       "group": "test",
@@ -174,7 +174,7 @@
       "label": "�🐳 Docker: Up (dev)",
       "type": "shell",
       "command": "pwsh",
-      "args": ["scripts/node/analysis/bundle-optimization-tester.js"],
+      "args": ["scripts/analysis/bundle-optimization-tester.js"],
       "group": "build",
       "presentation": {
         "echo": true,

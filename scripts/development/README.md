@@ -23,7 +23,7 @@ This directory contains scripts for development environment setup, debugging, an
 
 ### Git Management
 
-- **`install-git-hook.js`** - Individual git hook installation  
+- **`install-git-hook.js`** - Individual git hook installation
 - **`remove-git-hook.js`** - Git hook removal
 - **`install-precommit-guard.js`** - Pre-commit guard installation
 

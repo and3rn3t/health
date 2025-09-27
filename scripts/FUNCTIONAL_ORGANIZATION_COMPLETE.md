@@ -9,7 +9,7 @@ Successfully reorganized all VitalSense scripts by **function** rather than prog
 ```text
 scripts/
 ├── development/          # Setup, debugging, git hooks (15 scripts)
-├── testing/             # Health checks, endpoint testing (13 scripts)  
+├── testing/             # Health checks, endpoint testing (13 scripts)
 ├── analysis/           # Performance monitoring, bundle optimization (28 scripts)
 ├── deployment/         # Infrastructure, Auth0, DNS setup (6 scripts)
 ├── branding/           # VitalSense branding, icon optimization (10 scripts)
@@ -24,15 +24,15 @@ scripts/
 
 ### ✅ Scripts Moved by Function
 
-| From | To | Count | Purpose |
-|------|----|----|---------|
-| `scripts/node/dev/` | `scripts/development/` | 15 | Development workflow |
-| `scripts/node/test/` + `scripts/node/health/` | `scripts/testing/` | 13 | Testing & health monitoring |
-| `scripts/node/analysis/` + `scripts/node/analytics/` + `scripts/node/utils/` | `scripts/analysis/` | 28 | Performance & optimization |
-| `scripts/node/deploy/` + `scripts/node/infrastructure/` + `scripts/node/auth/` | `scripts/deployment/` | 6 | Infrastructure & deployment |
-| `scripts/node/branding/` + icon scripts | `scripts/branding/` | 10 | Branding & visual consistency |
-| iOS-specific PowerShell | `scripts/ios/` | 1 | iOS development |
-| PowerShell profiles & VS Code | `scripts/powershell-tools/` | 8 | PowerShell tooling |
+| From                                                                           | To                          | Count | Purpose                       |
+| ------------------------------------------------------------------------------ | --------------------------- | ----- | ----------------------------- |
+| `scripts/node/dev/`                                                            | `scripts/development/`      | 15    | Development workflow          |
+| `scripts/node/test/` + `scripts/node/health/`                                  | `scripts/testing/`          | 13    | Testing & health monitoring   |
+| `scripts/node/analysis/` + `scripts/node/analytics/` + `scripts/node/utils/`   | `scripts/analysis/`         | 28    | Performance & optimization    |
+| `scripts/node/deploy/` + `scripts/node/infrastructure/` + `scripts/node/auth/` | `scripts/deployment/`       | 6     | Infrastructure & deployment   |
+| `scripts/node/branding/` + icon scripts                                        | `scripts/branding/`         | 10    | Branding & visual consistency |
+| iOS-specific PowerShell                                                        | `scripts/ios/`              | 1     | iOS development               |
+| PowerShell profiles & VS Code                                                  | `scripts/powershell-tools/` | 8     | PowerShell tooling            |
 
 ### ✅ Package.json Updated
 
@@ -41,7 +41,7 @@ All npm scripts updated to reflect new functional paths:
 ```json
 {
   "start:dev": "node scripts/development/start-dev.js",
-  "test:quick": "node scripts/testing/test-runner.js --quick", 
+  "test:quick": "node scripts/testing/test-runner.js --quick",
   "deploy:platform:dry": "node scripts/deployment/platform-deploy.js --dry-run",
   "branding:audit": "node scripts/branding/branding-audit.js",
   "optimize:icons": "node scripts/branding/optimize-icons.js"
@@ -83,7 +83,7 @@ All npm scripts updated to reflect new functional paths:
 **Key Scripts**: setup-project.js, setup-git-hooks.js, debug-device-auth.js
 **npm Scripts**: `npm run setup:project`, `npm run start:dev`
 
-### 🧪 Testing  
+### 🧪 Testing
 
 **Purpose**: Health monitoring, endpoint validation, integration testing
 **Key Scripts**: test-runner.js, simple-probe.js, test-integration.js
