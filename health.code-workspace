@@ -27,17 +27,68 @@
       "**/DerivedData": true,
       "**/*.xcuserdata": true,
       "**/logs": true,
+      "**/coverage": true,
+      "**/.build": true,
+      "**/Pods": true,
+      "**/.cache": true,
+      "**/*.tsbuildinfo": true,
     },
 
-    // PowerShell workspace settings
-    "powershell.enableProfileLoading": false,
+    // PowerShell workspace settings with enhanced profile loading
+    "powershell.enableProfileLoading": true,
     "powershell.scriptAnalysis.enable": true,
-    "powershell.integratedConsole.suppressStartupBanner": true,
+    "powershell.integratedConsole.suppressStartupBanner": false,
+    "powershell.powerShellDefaultVersion": "PowerShell-7",
+    "powershell.codeFormatting.preset": "OTBS",
+    "powershell.codeFormatting.useConstantStrings": true,
+    "powershell.codeFormatting.useCorrectCasing": true,
+
+    // Terminal configuration with VitalSense profile
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    "terminal.integrated.defaultProfile.windows": "VitalSense Development",
+    "terminal.integrated.profiles.windows": {
+      "VitalSense Development": {
+        "path": "pwsh.exe",
+        "icon": "heart",
+        "color": "terminal.ansiBlue",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-NoExit",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-Command",
+          ". '${workspaceFolder}\\scripts\\fast-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}'",
+        ],
+      },
+      "Swift Development": {
+        "path": "pwsh.exe",
+        "icon": "symbol-method",
+        "color": "terminal.ansiMagenta",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-NoExit",
+          "-Command",
+          ". '${workspaceFolder}\\scripts\\enhanced-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}' -SwiftMode",
+        ],
+      },
+      "PowerShell 7 (Clean)": {
+        "path": "pwsh.exe",
+        "icon": "terminal-powershell",
+        "args": ["-NoLogo", "-NoProfile"],
+      },
+    },
 
     // Task and terminal optimization
-    "terminal.integrated.cwd": "${workspaceFolder}",
     "task.autoDetect": "on",
     "task.showDecorations": true,
+    "terminal.integrated.shellIntegration.enabled": true,
+    "terminal.integrated.shellIntegration.decorationsEnabled": "both",
+    "terminal.integrated.showCommandGuide": true,
+    "terminal.integrated.tabs.title": "💙 ${process} • ${cwdBasename}",
+    "terminal.integrated.copyOnSelection": true,
+    "terminal.integrated.confirmOnKill": "never",
 
     // Search optimization
     "search.followSymlinks": false,
@@ -46,9 +97,43 @@
       "**/logs/**": true,
       "**/.wrangler/**": true,
       "**/DerivedData/**": true,
+      "**/node_modules/**": true,
+      "**/coverage/**": true,
+      "**/.build/**": true,
+      "**/Pods/**": true,
+      "**/*.xcuserdata/**": true,
     },
+
+    // Language-specific settings
     "powershell.cwd": "Health App (Root)",
     "typescript.tsdk": "Health App (Root)\\node_modules\\typescript\\lib",
+    "swift.path": "/usr/bin/swift",
+    "swift.sourcekit-lsp.serverPath": "/usr/bin/sourcekit-lsp",
+
+    // File associations for better syntax highlighting
+    "files.associations": {
+      "*.ps1": "powershell",
+      "*.swift": "swift",
+      "*.toml": "toml",
+      "wrangler*.toml": "toml",
+      "*.plist": "xml",
+      "Podfile": "ruby",
+      "Fastfile": "ruby",
+      "*.yml": "yaml",
+      "*.yaml": "yaml",
+    },
+
+    // Copilot optimization for this workspace
+    "github.copilot.enable": {
+      "*": true,
+      "yaml": true,
+      "plaintext": false,
+      "markdown": true,
+      "swift": true,
+      "powershell": true,
+      "typescript": true,
+      "javascript": true,
+    },
   },
 
   "extensions": {
@@ -58,6 +143,16 @@
       "github.copilot-chat",
       "cloudflare.vscode-cloudflare-workers",
       "ms-vscode.vscode-typescript-next",
+      "sswg.swift-lang",
+      "ms-vscode.vscode-json",
+      "esbenp.prettier-vscode",
+      "bradlc.vscode-tailwindcss",
+      "ms-vscode.vscode-yaml",
+      "tamasfe.even-better-toml",
+      "redhat.vscode-xml",
+      "ms-vsliveshare.vsliveshare",
+      "formulahendry.auto-rename-tag",
+      "streetsidesoftware.code-spell-checker",
     ],
   },
 
@@ -66,8 +161,43 @@
     "options": {
       "shell": {
         "executable": "pwsh",
-        "args": ["-NoProfile", "-ExecutionPolicy", "Bypass"],
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-Command",
+          ". '${workspaceFolder}\\scripts\\fast-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}'; ",
+        ],
       },
     },
+  },
+
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug VitalSense Web App",
+        "type": "node",
+        "request": "launch",
+        "program": "${workspaceFolder}/node_modules/.bin/vite",
+        "args": ["dev", "--host", "0.0.0.0", "--port", "5173"],
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "NODE_ENV": "development",
+        },
+        "console": "integratedTerminal",
+        "internalConsoleOptions": "neverOpen",
+      },
+      {
+        "name": "Debug Wrangler Worker",
+        "type": "node",
+        "request": "launch",
+        "program": "${workspaceFolder}/node_modules/.bin/wrangler",
+        "args": ["dev", "--port", "8789", "--env", "development"],
+        "cwd": "${workspaceFolder}",
+        "console": "integratedTerminal",
+        "internalConsoleOptions": "neverOpen",
+      },
+    ],
   },
 }

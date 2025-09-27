@@ -86,15 +86,43 @@
   ],
   "git.autofetch": true,
   "git.confirmSync": false,
-  "terminal.integrated.defaultProfile.windows": "VitalSense pwsh",
+  "terminal.integrated.defaultProfile.windows": "VitalSense Enhanced",
   "terminal.integrated.automationProfile.windows": {
     "path": "pwsh.exe",
     "args": ["-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass"]
   },
   "terminal.integrated.profiles.windows": {
-    "VitalSense pwsh": {
+    "VitalSense Enhanced": {
       "path": "pwsh.exe",
       "icon": "heart",
+      "color": "terminal.ansiBlue",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-NoExit",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        ". '${workspaceFolder}\\scripts\\fast-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}'"
+      ]
+    },
+    "Swift Development": {
+      "path": "pwsh.exe",
+      "icon": "symbol-method",
+      "color": "terminal.ansiMagenta",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-NoExit",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        ". '${workspaceFolder}\\scripts\\enhanced-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}' -SwiftMode"
+      ]
+    },
+    "Legacy VitalSense": {
+      "path": "pwsh.exe",
+      "icon": "terminal",
       "args": [
         "-NoLogo",
         "-NoProfile",
@@ -103,17 +131,6 @@
         "Bypass",
         "-Command",
         ". '${workspaceFolder}\\scripts\\terminal-init.ps1' -WorkspaceRoot '${workspaceFolder}'"
-      ]
-    },
-    "Swift Development": {
-      "path": "pwsh.exe",
-      "icon": "symbol-method",
-      "args": [
-        "-NoLogo",
-        "-NoProfile",
-        "-NoExit",
-        "-Command",
-        ". '${workspaceFolder}\\ios\\scripts\\SwiftDevelopmentProfile.ps1'"
       ]
     },
     "PowerShell 7": {
@@ -139,11 +156,11 @@
   "terminal.integrated.showExitAlert": false,
   "terminal.integrated.scrollback": 10000,
   "terminal.integrated.shellIntegration.enabled": true,
-  "terminal.integrated.shellIntegration.decorationsEnabled": "all",
+  "terminal.integrated.shellIntegration.decorationsEnabled": "both",
   "terminal.integrated.shellIntegration.showCommandGuide": true,
   "terminal.integrated.stickyScroll.enabled": true,
   "terminal.integrated.suggest.enabled": true,
-  "terminal.integrated.suggest.inlineSuggestion": true,
+  "terminal.integrated.suggest.inlineSuggestion": "alwaysOnTop",
   "terminal.integrated.suggest.showStatusBar": true,
   "terminal.integrated.shellIntegration.history": 1000,
   "terminal.integrated.smoothScrolling": true,
@@ -153,7 +170,7 @@
   "terminal.integrated.copyOnSelection": true,
   "terminal.integrated.rightClickBehavior": "copyPaste",
   "terminal.integrated.confirmOnKill": "never",
-  "terminal.integrated.enableMultiLinePasteWarning": false,
+  "terminal.integrated.enableMultiLinePasteWarning": "never",
   "terminal.integrated.gpuAcceleration": "auto",
   "terminal.integrated.tabs.enabled": true,
   "terminal.integrated.env.windows": {
@@ -162,7 +179,7 @@
   "terminal.integrated.defaultLocation": "editor",
   "terminal.integrated.drawBoldTextInBrightColors": false,
   "terminal.integrated.minimumContrastRatio": 4.5,
-  "terminal.integrated.unicodeVersion": "15",
+  "terminal.integrated.unicodeVersion": "11",
   "workbench.colorCustomizations": {
     "terminalCommandDecoration.defaultBackground": "#2563eb",
     "terminalCommandDecoration.defaultForeground": "#ffffff",

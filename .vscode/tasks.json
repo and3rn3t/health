@@ -2,6 +2,25 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "🔧 Setup VS Code Workspace",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "scripts/setup-vscode-workspace.ps1",
+        "-All"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "icon": { "id": "settings-gear", "color": "terminal.ansiBlue" },
+      "detail": "Configure VS Code workspace with VitalSense settings and extensions"
+    },
+    {
       "label": "Onboarding: New User Wizard",
       "type": "shell",
       "command": "node",
