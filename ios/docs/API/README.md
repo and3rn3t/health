@@ -1,25 +1,31 @@
 # VitalSense API Documentation
 
 ## Overview
+
 This document describes the API endpoints and data structures used in the VitalSense health monitoring application.
 
 ## Base URLs
+
 - **Development**: `https://api-dev.vitalsense.com`
 - **Staging**: `https://api-staging.vitalsense.com`
 - **Production**: `https://api.vitalsense.com`
 
 ## Authentication
+
 All API requests require authentication using JWT tokens:
-```
+
+```text
 Authorization: Bearer <jwt_token>
 ```
 
 ## Health Data Endpoints
 
 ### GET /api/v1/health/gait
+
 Retrieve gait analysis data for the authenticated user.
 
 **Response:**
+
 ```json
 {
   "gait_data": {
@@ -33,9 +39,11 @@ Retrieve gait analysis data for the authenticated user.
 ```
 
 ### POST /api/v1/health/sync
+
 Synchronize local health data with the server.
 
 **Request Body:**
+
 ```json
 {
   "health_metrics": [
@@ -49,9 +57,11 @@ Synchronize local health data with the server.
 ```
 
 ## WebSocket Events
+
 Real-time updates are delivered via WebSocket connection at `/ws/health`.
 
-### Event Types:
+### Event Types
+
 - `gait_update`: Real-time gait analysis results
 - `health_alert`: Health threshold notifications
 - `sync_status`: Data synchronization status updates
