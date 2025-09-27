@@ -10,7 +10,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "scripts/setup-vscode-workspace.ps1",
+        "scripts/powershell/setup-vscode-workspace.ps1",
         "-All"
       ],
       "group": {
