@@ -103,7 +103,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-Command",
-        ". '${workspaceFolder}\\scripts\\fast-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}'"
+        ". '${workspaceFolder}\\scripts\\powershell-tools\\fast-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}'"
       ]
     },
     "Swift Development": {
@@ -117,7 +117,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-Command",
-        ". '${workspaceFolder}\\scripts\\enhanced-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}' -SwiftMode"
+        ". '${workspaceFolder}\\scripts\\powershell-tools\\enhanced-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}' -SwiftMode"
       ]
     },
     "Legacy VitalSense": {
@@ -130,7 +130,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-Command",
-        ". '${workspaceFolder}\\scripts\\terminal-init.ps1' -WorkspaceRoot '${workspaceFolder}'"
+        ". '${workspaceFolder}\\scripts\\powershell-tools\\terminal-init.ps1' -WorkspaceRoot '${workspaceFolder}' -Verbose"
       ]
     },
     "PowerShell 7": {

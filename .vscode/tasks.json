@@ -1232,7 +1232,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-Command",
-        ". '${workspaceFolder}\\scripts\\terminal-init.ps1' -WorkspaceRoot '${workspaceFolder}'"
+        ". '${workspaceFolder}\\scripts\\powershell-tools\\terminal-init.ps1' -WorkspaceRoot '${workspaceFolder}' -Verbose"
       ],
       "group": "build",
       "icon": { "id": "terminal", "color": "terminal.ansiBlue" },
