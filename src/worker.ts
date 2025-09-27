@@ -40,12 +40,13 @@ import {
 import { GAIT_ANALYTICS_VERSION, gaitConfig } from '@/lib/gaitConfig';
 import { summarizeGaitSnapshots } from '@/lib/liveGaitSummaries';
 import { normalizeBatch } from '@/sensors/lidar/normalize';
+import { SimpleHealthWebSocket } from '@/SimpleHealthWebSocket';
 import { z } from 'zod';
 
 // Minimal alias to satisfy type usage for platform-specific WebSocket accept()
 // Cloudflare Workers runtime provides accept(); standard lib typing may not expose it.
 // We model it structurally to avoid bringing in @cloudflare/workers-types dependency here.
-interface CloudflareWebSocket extends WebSocket {
+interface _CloudflareWebSocket extends WebSocket {
   accept(): void;
 }
 
@@ -1231,6 +1232,12 @@ app.get('/ws', async (c) => {
         fallRisk: FALL_RISK_ANALYTICS_VERSION,
       },
       timestamp: new Date().toISOString(),
+      // Debug info
+      debug: {
+        hasWebSocketBinding: !!c.env.HEALTH_WEBSOCKET,
+        environment: c.env.ENVIRONMENT,
+        webSocketPairAvailable: typeof WebSocketPair !== 'undefined'
+      }
     };
     const res = c.json(body, 200);
     // Strengthen caching semantics: this is informational & near-real-time (contains timestamp) so disable caching
@@ -1238,13 +1245,30 @@ app.get('/ws', async (c) => {
     return res;
   }
 
+  console.log('🔌 WebSocket upgrade request received');
+  
   if (!c.env.HEALTH_WEBSOCKET) {
+    console.log('❌ HEALTH_WEBSOCKET binding not available');
     return c.text('WebSocket service not available', 503);
   }
 
-  const id = c.env.HEALTH_WEBSOCKET.newUniqueId();
-  const obj = c.env.HEALTH_WEBSOCKET.get(id);
-  return obj.fetch(c.req.raw);
+  try {
+    console.log('🔧 Creating Durable Object instance...');
+    const id = c.env.HEALTH_WEBSOCKET.newUniqueId();
+    console.log('✅ Durable Object ID created:', id.toString());
+    
+    const obj = c.env.HEALTH_WEBSOCKET.get(id);
+    console.log('✅ Durable Object instance obtained');
+    
+    console.log('🚀 Forwarding request to Durable Object...');
+    const response = await obj.fetch(c.req.raw);
+    console.log('✅ Response received from Durable Object:', response.status);
+    
+    return response;
+  } catch (error) {
+    console.error('❌ Error in WebSocket handler:', error);
+    return c.text(`WebSocket error: ${error instanceof Error ? error.message : String(error)}`, 500);
+  }
 });
 // Non-production self-test for crypto/auth
 app.get('/api/_selftest', async (c) => {
@@ -3619,539 +3643,5 @@ export class RateLimiter {
   }
 }
 
-// Durable Object: HealthWebSocket - Enhanced real-time health data streaming
-export class HealthWebSocket {
-  private readonly state: DurableObjectState;
-  private readonly env?: Env;
-  private readonly sessions: Map<WebSocket, SessionInfo>;
-  private heartbeatInterval?: ReturnType<typeof setInterval>;
-  // Per-session micro coaching engines
-  private readonly coachingEngines: Map<
-    WebSocket,
-    import('./lib/coaching/microCoachingRules').MicroCoachEngine
-  > = new Map();
-
-  constructor(state: DurableObjectState, env?: Env) {
-    this.state = state;
-    this.env = env;
-    this.sessions = new Map();
-    this.startHeartbeat();
-  }
-
-  async fetch(request: Request): Promise<Response> {
-    const url = new URL(request.url);
-    const upgradeHeader = request.headers.get('Upgrade');
-    // Support internal broadcast POST (non-upgrade)
-    if (upgradeHeader !== 'websocket') {
-      if (url.pathname.endsWith('/broadcast') && request.method === 'POST') {
-        try {
-          const body = (await request.json()) as {
-            userId?: string;
-            payload?: Record<string, unknown>;
-          };
-          const payload = body.payload || {};
-          // Attach server timestamp
-          (payload as Record<string, unknown>).serverTime =
-            new Date().toISOString();
-          for (const [ws] of this.sessions) {
-            await this.sendMessage(ws, payload);
-          }
-          return new Response(JSON.stringify({ ok: true }), {
-            status: 200,
-            headers: { 'content-type': 'application/json' },
-          });
-        } catch (e) {
-          return new Response(
-            JSON.stringify({ ok: false, error: (e as Error).message }),
-            { status: 500, headers: { 'content-type': 'application/json' } }
-          );
-        }
-      }
-      return new Response('Expected WebSocket Upgrade', { status: 426 });
-    }
-
-    try {
-      // Create WebSocket pair
-      const webSocketPair = new WebSocketPair();
-      const [client, server] = Object.values(webSocketPair) as [
-        WebSocket,
-        WebSocket,
-      ];
-
-      // Parse connection parameters
-      // url already declared
-      const userId = url.searchParams.get('userId') || `user_${Date.now()}`;
-      const deviceId =
-        url.searchParams.get('deviceId') || `device_${Date.now()}`;
-      const token = url.searchParams.get('token') || 'anonymous';
-
-      // Accept WebSocket connection
-      (server as CloudflareWebSocket).accept();
-
-      // Create session info
-      const sessionInfo: SessionInfo = {
-        userId,
-        deviceId,
-        token,
-        connectedAt: new Date(),
-        lastActivity: new Date(),
-        messageCount: 0,
-        bytesReceived: 0,
-        bytesSent: 0,
-        latency: 0,
-      };
-
-      this.sessions.set(server, sessionInfo);
-      // Lazy import micro coaching engine (dynamic to avoid cold-start cost if unused)
-      try {
-        const { MicroCoachEngine } = await import(
-          './lib/coaching/microCoachingRules'
-        );
-        this.coachingEngines.set(server, new MicroCoachEngine());
-      } catch {
-        // ignore coaching init failure
-      }
-
-      // Set up event handlers
-      server.addEventListener('message', async (event: MessageEvent) => {
-        await this.handleMessage(server, event, sessionInfo);
-      });
-
-      server.addEventListener('close', (event: CloseEvent) => {
-        this.handleDisconnection(server, sessionInfo, event);
-      });
-
-      server.addEventListener('error', (event: Event) => {
-        console.error('WebSocket error:', event);
-        this.sessions.delete(server);
-      });
-
-      // Send welcome message
-      await this.sendMessage(server, {
-        type: 'connection_established',
-        message: 'Connected to VitalSense WebSocket',
-        userId,
-        deviceId,
-        serverTime: new Date().toISOString(),
-        sessionId: this.generateSessionId(),
-      });
-
-      console.log(`WebSocket connected: ${userId} from ${deviceId}`);
-
-      // Return successful WebSocket upgrade
-      return new Response(null, {
-        status: 101,
-        webSocket: client,
-      } as ResponseInit & { webSocket: WebSocket });
-    } catch (error) {
-      console.error('WebSocket connection error:', error);
-      return new Response('WebSocket connection failed', { status: 500 });
-    }
-  }
-
-  private async handleMessage(
-    ws: WebSocket,
-    event: MessageEvent,
-    session: SessionInfo
-  ) {
-    try {
-      // Update session activity
-      session.lastActivity = new Date();
-      session.messageCount++;
-      session.bytesReceived += new Blob([event.data]).size;
-
-      const data = JSON.parse(event.data as string);
-      console.log(`Message from ${session.userId}:`, data.type);
-
-      switch (data.type) {
-        case 'health_data':
-          await this.processHealthData(ws, data, session);
-          break;
-
-        case 'health_batch':
-          await this.processHealthBatch(ws, data, session);
-          break;
-
-        case 'ping':
-          await this.handlePing(ws, data, session);
-          break;
-
-        case 'client_info':
-          await this.updateClientInfo(ws, data, session);
-          break;
-
-        case 'get_status':
-          await this.sendStatus(ws, session);
-          break;
-
-        default:
-          await this.sendMessage(ws, {
-            type: 'error',
-            message: `Unknown message type: ${data.type}`,
-            timestamp: new Date().toISOString(),
-          });
-      }
-    } catch (error) {
-      console.error('Message handling error:', error);
-      await this.sendMessage(ws, {
-        type: 'error',
-        message: 'Failed to process message',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-      });
-    }
-  }
-
-  private async processHealthData(
-    ws: WebSocket,
-    data: unknown,
-    session: SessionInfo
-  ) {
-    try {
-      const { metrics, timestamp } = this.validateHealthPayload(data);
-      const processedMetrics = await this.enrichAndCoachMetrics(
-        ws,
-        metrics,
-        session
-      );
-      await this.persistHealthMetrics(processedMetrics, session);
-      await this.ackHealth(ws, processedMetrics.length, timestamp);
-      await this.broadcastToUserSessions(
-        session.userId,
-        this.buildHealthBroadcast(session, processedMetrics)
-      );
-    } catch (error) {
-      await this.sendMessage(ws, this.healthErrorPayload(error));
-    }
-  }
-
-  private async processHealthBatch(
-    ws: WebSocket,
-    data: unknown,
-    session: SessionInfo
-  ) {
-    try {
-      const items = this.validateHealthBatch(data);
-      const { processedBatches, totalMetrics } =
-        await this.enrichAndCoachBatches(ws, items, session);
-      await this.persistHealthBatches(processedBatches, totalMetrics, session);
-      await this.sendMessage(
-        ws,
-        this.healthBatchAck(processedBatches.length, totalMetrics)
-      );
-    } catch (error) {
-      await this.sendMessage(ws, this.healthBatchErrorPayload(error));
-    }
-  }
-
-  // ---- Refactored helper methods (private) ----
-  private validateHealthPayload(data: unknown): {
-    metrics: Record<string, unknown>[];
-    timestamp: string;
-  } {
-    const payload = data as { metrics?: unknown[]; timestamp?: string };
-    if (!Array.isArray(payload.metrics))
-      throw new Error('Invalid health data format - missing metrics array');
-    const metrics = payload.metrics.map((m) =>
-      m && typeof m === 'object' ? (m as Record<string, unknown>) : {}
-    );
-    return {
-      metrics,
-      timestamp: payload.timestamp || new Date().toISOString(),
-    };
-  }
-  private async enrichAndCoachMetrics(
-    ws: WebSocket,
-    metrics: Record<string, unknown>[],
-    session: SessionInfo
-  ) {
-    const out: Record<string, unknown>[] = [];
-    const coach = this.coachingEngines.get(ws);
-    const nowTs = Date.now();
-    for (const metricObj of metrics) {
-      out.push({
-        ...metricObj,
-        userId: session.userId,
-        deviceId: session.deviceId,
-        receivedAt: new Date().toISOString(),
-        sessionId: this.generateSessionId(),
-      });
-      if (coach)
-        this.evaluateCoaching(ws, coach, metricObj, nowTs).catch(() => void 0);
-    }
-    return out;
-  }
-  private async evaluateCoaching(
-    ws: WebSocket,
-    coach: import('./lib/coaching/microCoachingRules').MicroCoachEngine,
-    metricObj: Record<string, unknown>,
-    nowTs: number
-  ) {
-    const metricType = (metricObj.metric ||
-      metricObj.type ||
-      metricObj.metricType) as string | undefined;
-    const val = metricObj.value as number | undefined;
-    if (!metricType || typeof val !== 'number') return;
-    const events = coach.evaluate(metricType, val, nowTs);
-    for (const ev of events)
-      await this.sendMessage(ws, ev as unknown as Record<string, unknown>);
-  }
-  private async persistHealthMetrics(
-    processed: Record<string, unknown>[],
-    session: SessionInfo
-  ) {
-    if (!this.env?.HEALTH_KV || processed.length === 0) return;
-    const key = `health:${session.userId}:${Date.now()}`;
-    const body = {
-      userId: session.userId,
-      deviceId: session.deviceId,
-      metrics: processed,
-      processedAt: new Date().toISOString(),
-      metricCount: processed.length,
-    };
-    await this.env.HEALTH_KV.put(key, JSON.stringify(body), {
-      expirationTtl: 86400,
-    });
-  }
-  private async ackHealth(ws: WebSocket, count: number, ts: string) {
-    const processingTime = Date.now() - new Date(ts).getTime();
-    await this.sendMessage(ws, {
-      type: 'health_data_ack',
-      message: 'Health data processed successfully',
-      metricsProcessed: count,
-      processingTime,
-      timestamp: new Date().toISOString(),
-    });
-  }
-  private buildHealthBroadcast(
-    session: SessionInfo,
-    processed: Record<string, unknown>[]
-  ) {
-    return {
-      type: 'live_health_update',
-      userId: session.userId,
-      deviceId: session.deviceId,
-      metricsCount: processed.length,
-      lastMetric: processed[processed.length - 1],
-      timestamp: new Date().toISOString(),
-    };
-  }
-  private healthErrorPayload(error: unknown) {
-    return {
-      type: 'health_data_error',
-      message: 'Failed to process health data',
-      error: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  private validateHealthBatch(data: unknown) {
-    const batchData = data as { batch?: unknown[] };
-    if (!Array.isArray(batchData.batch))
-      throw new Error('Invalid batch format');
-    return batchData.batch as { metrics?: unknown[] }[];
-  }
-  private async enrichAndCoachBatches(
-    ws: WebSocket,
-    items: { metrics?: unknown[] }[],
-    session: SessionInfo
-  ) {
-    const processedBatches: Record<string, unknown>[] = [];
-    let totalMetrics = 0;
-    const coach = this.coachingEngines.get(ws);
-    const nowTs = Date.now();
-    for (const it of items) {
-      const metricsArr = Array.isArray(it.metrics) ? it.metrics : [];
-      totalMetrics += metricsArr.length;
-      processedBatches.push({
-        ...(it as Record<string, unknown>),
-        userId: session.userId,
-        deviceId: session.deviceId,
-        processedAt: new Date().toISOString(),
-      });
-      if (coach) {
-        for (const m of metricsArr)
-          this.evaluateCoaching(
-            ws,
-            coach,
-            m as Record<string, unknown>,
-            nowTs
-          ).catch(() => void 0);
-      }
-    }
-    return { processedBatches, totalMetrics };
-  }
-  private async persistHealthBatches(
-    processedBatches: Record<string, unknown>[],
-    totalMetrics: number,
-    session: SessionInfo
-  ) {
-    if (!this.env?.HEALTH_KV || processedBatches.length === 0) return;
-    const key = `health:batch:${session.userId}:${Date.now()}`;
-    const body = {
-      userId: session.userId,
-      deviceId: session.deviceId,
-      batches: processedBatches,
-      totalMetrics,
-      processedAt: new Date().toISOString(),
-    };
-    await this.env.HEALTH_KV.put(key, JSON.stringify(body), {
-      expirationTtl: 86400,
-    });
-  }
-  private healthBatchAck(batchesProcessed: number, totalMetrics: number) {
-    return {
-      type: 'health_batch_ack',
-      message: 'Health batch processed successfully',
-      batchesProcessed,
-      totalMetrics,
-      timestamp: new Date().toISOString(),
-    };
-  }
-  private healthBatchErrorPayload(error: unknown) {
-    return {
-      type: 'health_batch_error',
-      message: 'Failed to process health batch',
-      error: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  private async handlePing(ws: WebSocket, data: unknown, session: SessionInfo) {
-    const now = Date.now();
-    const pingData = data as { timestamp?: string };
-    const pingTime = pingData.timestamp
-      ? new Date(pingData.timestamp).getTime()
-      : now;
-    const latency = now - pingTime;
-
-    session.latency = latency;
-
-    await this.sendMessage(ws, {
-      type: 'pong',
-      timestamp: new Date().toISOString(),
-      latency,
-      serverTime: now,
-    });
-  }
-
-  private async updateClientInfo(
-    ws: WebSocket,
-    data: unknown,
-    session: SessionInfo
-  ) {
-    // Update session with client information
-    const clientData = data as {
-      deviceInfo?: Record<string, unknown>;
-      appVersion?: string;
-    };
-    if (clientData.deviceInfo) {
-      session.deviceInfo = clientData.deviceInfo;
-    }
-    if (clientData.appVersion) {
-      session.appVersion = clientData.appVersion;
-    }
-
-    await this.sendMessage(ws, {
-      type: 'client_info_ack',
-      message: 'Client information updated',
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  private async sendStatus(ws: WebSocket, session: SessionInfo) {
-    const sessionCount = this.sessions.size;
-    const uptime = Date.now() - session.connectedAt.getTime();
-
-    await this.sendMessage(ws, {
-      type: 'status_response',
-      sessionInfo: {
-        userId: session.userId,
-        deviceId: session.deviceId,
-        connectedAt: session.connectedAt.toISOString(),
-        uptime,
-        messageCount: session.messageCount,
-        bytesReceived: session.bytesReceived,
-        bytesSent: session.bytesSent,
-        latency: session.latency,
-      },
-      serverInfo: {
-        activeSessions: sessionCount,
-        serverTime: new Date().toISOString(),
-      },
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  private async sendMessage(ws: WebSocket, message: Record<string, unknown>) {
-    if (ws.readyState === 1) {
-      // WebSocket.OPEN
-      const messageStr = JSON.stringify(message);
-      ws.send(messageStr);
-
-      // Update bytes sent
-      const session = this.sessions.get(ws);
-      if (session) {
-        session.bytesSent += new Blob([messageStr]).size;
-      }
-    }
-  }
-
-  private async broadcastToUserSessions(
-    userId: string,
-    message: Record<string, unknown>
-  ) {
-    for (const [ws, session] of this.sessions) {
-      if (session.userId === userId && ws.readyState === 1) {
-        await this.sendMessage(ws, message);
-      }
-    }
-  }
-
-  private handleDisconnection(
-    ws: WebSocket,
-    session: SessionInfo,
-    event: CloseEvent
-  ) {
-    console.log(
-      `WebSocket disconnected: ${session.userId} (${event.code}: ${event.reason})`
-    );
-    this.sessions.delete(ws);
-    this.coachingEngines.delete(ws);
-  }
-
-  private generateSessionId(): string {
-    return Math.random().toString(36).substring(2, 15);
-  }
-
-  private startHeartbeat() {
-    // Clean up inactive sessions every 30 seconds
-    this.heartbeatInterval = setInterval(() => {
-      const now = Date.now();
-      for (const [ws, session] of this.sessions) {
-        const inactiveTime = now - session.lastActivity.getTime();
-        if (inactiveTime > 300000) {
-          // 5 minutes of inactivity
-          console.log(`Closing inactive session: ${session.userId}`);
-          ws.close(1000, 'Session timeout');
-          this.sessions.delete(ws);
-        }
-      }
-    }, 30000);
-  }
-}
-
-// Type definitions for enhanced WebSocket messages
-interface SessionInfo {
-  userId: string;
-  deviceId: string;
-  token: string;
-  connectedAt: Date;
-  lastActivity: Date;
-  messageCount: number;
-  bytesReceived: number;
-  bytesSent: number;
-  latency: number;
-  deviceInfo?: Record<string, unknown>;
-  appVersion?: string;
-}
+// Export the simple WebSocket implementation
+export { SimpleHealthWebSocket as HealthWebSocket };

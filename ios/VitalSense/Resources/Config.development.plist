@@ -7,7 +7,7 @@
 	<key>API_BASE_URL</key>
 	<string>http://127.0.0.1:8789/api</string>
 	<key>WS_URL</key>
-	<string>ws://localhost:3001/ws</string>
+	<string>wss://vitalsense-websocket-advanced-dev.andernet.workers.dev/ws</string>
 	<key>useMLGaitRiskScorer</key>
 	<true/>
 	<key>useWatchCadenceFusion</key>
