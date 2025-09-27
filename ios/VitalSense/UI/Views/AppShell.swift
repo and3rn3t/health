@@ -1,9 +1,12 @@
 import SwiftUI
 
-// Stubbed AppShell to unblock test build; original implementation disabled.
 struct AppShell: View {
     var body: some View {
-        Text("AppShell stub")
+        if #available(iOS 16.0, *) {
+            EnhancedHealthMonitoringView()
+        } else {
+            HealthMonitoringView()
+        }
     }
 }
 

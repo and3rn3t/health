@@ -151,8 +151,11 @@ export function useLiveHealthData(_userId: string = 'demo-user') {
 
   const { connectionState, sendMessage, connect, disconnect } = useWebSocket(
     {
-      url: '', // use default same-origin /ws in production
-      enableInDevelopment: false, // Disable WebSocket in development to prevent console errors
+      url: 'ws://localhost:3001/ws', // Connect to enhanced server in development
+      enableInDevelopment: true, // Enable WebSocket in development for enhanced server
+      reconnectAttempts: 10,
+      reconnectDelay: 2000,
+      pingInterval: 30000,
     },
     handlers
   );

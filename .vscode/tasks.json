@@ -114,7 +114,45 @@
       "detail": "Node rewrite of test-websocket-connection.ps1"
     },
     {
-      "label": "🐳 Docker: Up (dev)",
+      "label": "� Enhanced WebSocket Server",
+      "type": "shell",
+      "command": "node",
+      "args": ["start-enhanced.js"],
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+      "group": "build",
+      "isBackground": true,
+      "icon": { "id": "server-process", "color": "terminal.ansiGreen" },
+      "detail": "Start enhanced WebSocket server with database persistence and authentication",
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(ERROR|WARN|Error):\\s+(.*)$",
+          "severity": 1,
+          "message": 2
+        }
+      }
+    },
+    {
+      "label": "🔧 Enhanced Server (Dev Mode)",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "dev"],
+      "options": {
+        "cwd": "${workspaceFolder}/server",
+        "env": {
+          "NODE_ENV": "development",
+          "JWT_SECRET": "dev-local-secret",
+          "PORT": "3001"
+        }
+      },
+      "group": "build",
+      "isBackground": true,
+      "icon": { "id": "debug-alt", "color": "terminal.ansiBlue" },
+      "detail": "Start enhanced server in development mode with auto-restart"
+    },
+    {
+      "label": "�🐳 Docker: Up (dev)",
       "type": "shell",
       "command": "pwsh",
       "args": ["scripts/node/analysis/bundle-optimization-tester.js"],

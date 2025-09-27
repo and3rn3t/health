@@ -55,28 +55,29 @@ import {
 } from 'lucide-react';
 
 // Lazy loaded components with fallbacks
-const HealthDashboard = lazy(
-  () => import('@/components/sections/HealthDashboard')
-);
 const LandingPage = lazy(() => import('@/components/LandingPage'));
 const OnboardingFlow = lazy(
   () => import('@/components/onboarding/OnboardingFlow')
 );
 
 const LiveHealthMonitoring = lazy(() =>
-  import('@/components/health/LiveHealthMonitoring').catch(() => ({
-    default: () => (
-      <div className="p-8 text-center">
-        <Activity className="h-12 w-12 text-vitalsense-teal mx-auto mb-4" />
-        <h2 className="text-foreground mb-2 text-2xl font-bold">
-          Live Health Monitoring
-        </h2>
-        <p className="text-muted-foreground">
-          Real-time health monitoring dashboard coming soon.
-        </p>
-      </div>
-    ),
-  }))
+  import('@/components/health/VitalSenseEnhancedDashboard')
+    .then((module) => ({
+      default: module.VitalSenseEnhancedDashboard,
+    }))
+    .catch(() => ({
+      default: () => (
+        <div className="p-8 text-center">
+          <Activity className="h-12 w-12 text-vitalsense-teal mx-auto mb-4" />
+          <h2 className="text-foreground mb-2 text-2xl font-bold">
+            VitalSense Live Monitoring
+          </h2>
+          <p className="text-muted-foreground">
+            Real-time health monitoring dashboard loading...
+          </p>
+        </div>
+      ),
+    }))
 );
 
 const FallDetection = lazy(() => import('@/components/health/FallDetection'));
@@ -165,7 +166,7 @@ const navigationItems = [
     id: 'dashboard',
     label: 'VitalSense Dashboard',
     icon: Activity,
-    component: HealthDashboard,
+    component: LiveHealthMonitoring,
     priority: 1,
   },
   {
@@ -378,7 +379,7 @@ function AppContent() {
       case 'dashboard':
         return import('@/components/sections/HealthDashboard');
       case 'live-monitoring':
-        return import('@/components/health/LiveHealthMonitoring');
+        return import('@/components/health/EnhancedVitalSenseDashboard');
       case 'fall-detection':
         return import('@/components/health/FallDetection');
       case 'analytics':
