@@ -1,0 +1,304 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🚀 Swift: Complete Workflow",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/swift-windows-toolkit.ps1",
+        "-Action",
+        "all",
+        "-UseDocker"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "icon": {
+        "id": "rocket",
+        "color": "terminal.ansiBlue"
+      },
+      "detail": "Run complete Swift workflow: lint + format + build",
+      "problemMatcher": {
+        "owner": "swiftlint",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.+):(\\d+):(\\d+):\\s+(warning|error):\\s+(.+)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
+    },
+    {
+      "label": "🔍 Swift: Lint Only",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/swift-windows-toolkit.ps1",
+        "-Action",
+        "lint",
+        "-UseDocker"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "icon": {
+        "id": "search",
+        "color": "terminal.ansiYellow"
+      },
+      "detail": "Run SwiftLint via Docker container",
+      "problemMatcher": {
+        "owner": "swiftlint",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.+):(\\d+):(\\d+):\\s+(warning|error):\\s+(.+)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
+    },
+    {
+      "label": "🔧 Swift: Lint + Fix",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/swift-windows-toolkit.ps1",
+        "-Action",
+        "lint",
+        "-Fix",
+        "-UseDocker"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "icon": {
+        "id": "tools",
+        "color": "terminal.ansiGreen"
+      },
+      "detail": "Run SwiftLint with auto-fix enabled",
+      "problemMatcher": {
+        "owner": "swiftlint",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.+):(\\d+):(\\d+):\\s+(warning|error):\\s+(.+)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
+    },
+    {
+      "label": "🎨 Swift: Format Files",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/swift-windows-toolkit.ps1",
+        "-Action",
+        "format",
+        "-UseDocker"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "icon": {
+        "id": "paintcan",
+        "color": "terminal.ansiMagenta"
+      },
+      "detail": "Format Swift files using swift-format in Docker"
+    },
+    {
+      "label": "🔨 Swift: Build Project",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/swift-windows-toolkit.ps1",
+        "-Action",
+        "build",
+        "-UseDocker"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "icon": {
+        "id": "gear",
+        "color": "terminal.ansiCyan"
+      },
+      "detail": "Build Swift project using Docker"
+    },
+    {
+      "label": "⚙️ Swift: Setup Environment",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/swift-windows-toolkit.ps1",
+        "-Action",
+        "setup"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "icon": {
+        "id": "settings-gear",
+        "color": "terminal.ansiBlue"
+      },
+      "detail": "Setup Swift development environment (pull Docker images)"
+    },
+    {
+      "label": "🩺 Swift: Environment Doctor",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/swift-windows-toolkit.ps1",
+        "-Action",
+        "doctor"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "icon": {
+        "id": "pulse",
+        "color": "terminal.ansiGreen"
+      },
+      "detail": "Diagnose Swift development environment issues"
+    },
+    {
+      "label": "🐳 Docker: Pull Swift Images",
+      "type": "shell",
+      "command": "docker",
+      "args": ["pull", "ghcr.io/realm/swiftlint:latest"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "icon": {
+        "id": "package",
+        "color": "terminal.ansiBlue"
+      },
+      "detail": "Pull SwiftLint Docker image"
+    },
+    {
+      "label": "📊 Swift: Analyze Code Quality",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "$files = Get-ChildItem -Recurse -Filter '*.swift' | Measure-Object; $lines = Get-ChildItem -Recurse -Filter '*.swift' | Get-Content | Measure-Object -Line; Write-Host \"📁 Swift Files: $($files.Count)\" -ForegroundColor Green; Write-Host \"📄 Total Lines: $($lines.Lines)\" -ForegroundColor Yellow; Write-Host \"📊 Average Lines per File: $([Math]::Round($lines.Lines / $files.Count, 1))\" -ForegroundColor Cyan"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "icon": {
+        "id": "graph",
+        "color": "terminal.ansiMagenta"
+      },
+      "detail": "Analyze Swift codebase statistics"
+    },
+    {
+      "label": "🔍 Swift: Find iOS 26 Features",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "Write-Host '🔍 Scanning for iOS 26 enhancements...' -ForegroundColor Cyan; $results = Get-ChildItem -Recurse -Filter '*.swift' | Select-String 'iOS 26|@available.*26.*|Variable.*Draw|Liquid.*Glass|Magic.*Replace' | Group-Object Filename | Sort-Object Name; Write-Host \"📱 Files with iOS 26 features: $($results.Count)\" -ForegroundColor Green; $results | ForEach-Object { Write-Host \"  ✅ $($_.Name): $($_.Count) references\" -ForegroundColor Yellow }"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "icon": {
+        "id": "device-mobile",
+        "color": "terminal.ansiBlue"
+      },
+      "detail": "Find iOS 26 feature implementations in Swift code"
+    },
+    {
+      "label": "🧹 Swift: Clean Build Artifacts",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "Write-Host '🧹 Cleaning Swift build artifacts...' -ForegroundColor Yellow; $dirs = @('build', 'DerivedData', '.build'); $dirs | ForEach-Object { if (Test-Path $_) { Remove-Item $_ -Recurse -Force; Write-Host \"✅ Removed: $_\" -ForegroundColor Green } else { Write-Host \"⚪ Not found: $_\" -ForegroundColor Gray } }; Write-Host '✨ Clean complete!' -ForegroundColor Cyan"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "icon": {
+        "id": "trash",
+        "color": "terminal.ansiRed"
+      },
+      "detail": "Clean Swift build artifacts and caches"
+    }
+  ]
+}

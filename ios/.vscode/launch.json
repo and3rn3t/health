@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "🐳 Swift: Docker Build & Debug",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "/workspace",
+      "preLaunchTask": "🔨 Swift: Build Project",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "📱 Swift: Lint & Debug Setup",
+      "type": "node",
+      "request": "attach",
+      "port": 9230,
+      "preLaunchTask": "🔍 Swift: Lint Only",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "🚀 Swift: Complete Development Workflow",
+      "configurations": ["� Swift: Docker Build & Debug"],
+      "preLaunchTask": "🚀 Swift: Complete Workflow",
+      "stopAll": true
+    }
+  ]
+}

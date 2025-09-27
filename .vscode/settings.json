@@ -99,8 +99,21 @@
         "-NoLogo",
         "-NoProfile",
         "-NoExit",
+        "-ExecutionPolicy",
+        "Bypass",
         "-Command",
-        ". '${workspaceFolder}\\scripts\\vitalsense-banner.ps1'"
+        ". '${workspaceFolder}\\scripts\\terminal-init.ps1' -WorkspaceRoot '${workspaceFolder}'"
+      ]
+    },
+    "Swift Development": {
+      "path": "pwsh.exe",
+      "icon": "symbol-method",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-NoExit",
+        "-Command",
+        ". '${workspaceFolder}\\ios\\scripts\\SwiftDevelopmentProfile.ps1'"
       ]
     },
     "PowerShell 7": {

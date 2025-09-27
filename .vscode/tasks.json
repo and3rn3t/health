@@ -1203,6 +1203,29 @@
       }
     },
     {
+      "label": "🔄 Open VitalSense Terminal",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-NoExit",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        ". '${workspaceFolder}\\scripts\\terminal-init.ps1' -WorkspaceRoot '${workspaceFolder}'"
+      ],
+      "group": "build",
+      "icon": { "id": "terminal", "color": "terminal.ansiBlue" },
+      "detail": "Open terminal with VitalSense profile and aliases pre-loaded",
+      "presentation": {
+        "echo": false,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new"
+      }
+    },
+    {
       "label": "probe-health-8788-curl",
       "type": "shell",
       "command": "curl.exe",
@@ -1592,6 +1615,110 @@
         "reveal": "always",
         "focus": false,
         "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "⚡ iOS: Quick Environment Switch",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "scripts/ios-quick-switch.ps1",
+        "-Interactive",
+        "-ShowPerformance"
+      ],
+      "group": "build",
+      "icon": { "id": "zap", "color": "terminal.ansiCyan" },
+      "detail": "Interactive menu for fast iOS environment switching with performance metrics",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🔧 iOS: Environment Manager",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "scripts/ios-config-manager.ps1",
+        "-Environment",
+        "${input:iosEnvironment}",
+        "-Validate"
+      ],
+      "group": "build",
+      "icon": { "id": "gear", "color": "terminal.ansiBlue" },
+      "detail": "Switch iOS configuration with validation and backup",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🧠 iOS: Smart Configuration",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "scripts/ios-smart-config.ps1",
+        "-AutoOptimize",
+        "-Context",
+        "${input:developmentContext}",
+        "-Verbose"
+      ],
+      "group": "build",
+      "icon": { "id": "lightbulb", "color": "terminal.ansiYellow" },
+      "detail": "Intelligent configuration with auto-optimization and performance insights",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "📊 iOS: Configuration Monitor",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "scripts/ios-config-monitor.ps1",
+        "-StartMonitoring",
+        "-AlertsEnabled",
+        "-Verbose"
+      ],
+      "group": "test",
+      "isBackground": true,
+      "icon": { "id": "pulse", "color": "terminal.ansiMagenta" },
+      "detail": "Continuous monitoring of iOS configuration health with alerts",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false
       },
       "problemMatcher": []
     },
@@ -2172,6 +2299,56 @@
         {
           "label": "🌐 DNS Only",
           "value": "dns"
+        }
+      ]
+    },
+    {
+      "id": "iosEnvironment",
+      "description": "Select iOS environment configuration",
+      "type": "pickString",
+      "options": [
+        {
+          "label": "🏭 Production - Live backend (health.andernet.dev)",
+          "value": "production"
+        },
+        {
+          "label": "🧪 Development - Local backend (localhost:8789)",
+          "value": "development"
+        },
+        {
+          "label": "🎯 Staging - Pre-production testing",
+          "value": "staging"
+        },
+        {
+          "label": "🧪 Testing - Automated testing environment",
+          "value": "testing"
+        }
+      ]
+    },
+    {
+      "id": "developmentContext",
+      "description": "Select development context for smart configuration",
+      "type": "pickString",
+      "options": [
+        {
+          "label": "🐛 Debugging - Debug mode with enhanced logging",
+          "value": "debugging"
+        },
+        {
+          "label": "🧪 Testing - Testing with mock data",
+          "value": "testing"
+        },
+        {
+          "label": "⚡ Performance - Performance optimization mode",
+          "value": "performance"
+        },
+        {
+          "label": "🚀 Demo - Demo mode with sample data",
+          "value": "demo"
+        },
+        {
+          "label": "🏗️ Development - General development work",
+          "value": "development"
         }
       ]
     }

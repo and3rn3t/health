@@ -40,8 +40,8 @@ final class AppConfig {
         let rawWS     = value(for: ["webSocketURL", "WS_URL"])
 
         var resolvedUser = rawUser ?? "default-user-\(UUID().uuidString)"
-        var resolvedAPI  = rawAPI ?? "https://api.andernet.dev"
-        var resolvedWS   = rawWS ?? "wss://api.andernet.dev/ws"
+        var resolvedAPI  = rawAPI ?? "https://health.andernet.dev/api"
+        var resolvedWS   = rawWS ?? "wss://health.andernet.dev/ws"
 
         // Unit test expectations (see existing test suite):
         // * apiBaseURL should include 127.0.0.1

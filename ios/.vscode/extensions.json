@@ -1,0 +1,40 @@
+{
+  "recommendations": [
+    // Swift Development
+    "swift-server.swift",
+    "vknabel.vscode-apple-swift-format",
+    "swiftlang.swift-vscode",
+
+    // Docker Integration
+    "ms-azuretools.vscode-docker",
+    "ms-vscode-remote.remote-containers",
+
+    // PowerShell & Windows Development
+    "ms-vscode.powershell",
+
+    // Code Quality & AI
+    "github.copilot",
+    "github.copilot-chat",
+    "sonarsource.sonarlint-vscode",
+
+    // Git Integration
+    "eamodio.gitlens",
+    "github.vscode-pull-request-github",
+
+    // iOS Development Support
+    "ms-vscode.lldb-dap",
+
+    // Utilities
+    "streetsidesoftware.code-spell-checker",
+    "usernamehw.errorlens",
+    "ms-vscode.hexeditor",
+
+    // Theme & Icons
+    "pkief.material-icon-theme",
+    "vscode-icons-team.vscode-icons"
+  ],
+  "unwantedRecommendations": [
+    "ms-vscode.vscode-typescript-next",
+    "ms-python.python"
+  ]
+}

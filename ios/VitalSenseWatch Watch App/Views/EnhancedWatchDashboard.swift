@@ -105,15 +105,31 @@ struct EnhancedWatchDashboard: View {
         .navigationTitle("Actions")
     }
 
-    // MARK: - Connection Status Card
+    // MARK: - Connection Status Card (iOS 26 Enhanced)
     private var connectionStatusCard: some View {
         VStack(spacing: 6) {
             HStack {
-                Circle()
-                    .fill(connectivityManager.isConnected ? .green : .red)
-                    .frame(width: 6, height: 6)
-                    .scaleEffect(connectivityManager.isConnected && animateHeartRate ? 1.3 : 1.0)
-                    .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: animateHeartRate)
+                if #available(iOS 26.0, watchOS 13.0, *) {
+                    // iOS 26 Enhanced status indicator with Variable Draw
+                    Image(systemName: connectivityManager.isConnected ? "wifi" : "wifi.slash")
+                        .font(.caption2)
+                        .foregroundStyle(
+                            iOS26Integration.gradientStyle(
+                                for: connectivityManager.isConnected ? .success : .destructive
+                            )
+                        )
+                        .symbolEffect(
+                            .variableColor.iterative.dimInactiveLayers.nonReversing,
+                            options: .speed(connectivityManager.isConnected ? 1.5 : 0.5),
+                            value: animateHeartRate
+                        )
+                } else {
+                    Circle()
+                        .fill(connectivityManager.isConnected ? .green : .red)
+                        .frame(width: 6, height: 6)
+                        .scaleEffect(connectivityManager.isConnected && animateHeartRate ? 1.3 : 1.0)
+                        .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: animateHeartRate)
+                }
 
                 Text(connectivityManager.isConnected ? "iPhone Connected" : "Disconnected")
                     .font(.caption2)
@@ -135,51 +151,107 @@ struct EnhancedWatchDashboard: View {
         .padding(8)
         .background {
             RoundedRectangle(cornerRadius: 8)
-                .fill(.regularMaterial)
+                .fill(
+                    if #available(iOS 26.0, watchOS 13.0, *) {
+                        iOS26Integration.liquidGlassMaterial()
+                    } else {
+                        .regularMaterial
+                    }
+                )
         }
     }
 
-    // MARK: - Primary Metrics Grid
+    // MARK: - Primary Metrics Grid (iOS 26 Enhanced)
     private var primaryMetricsGrid: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 8) {
-                WatchMetricCard(
-                    title: "Heart Rate",
-                    value: "\(Int(healthManager.currentHeartRate))",
-                    unit: "BPM",
-                    icon: "heart.fill",
-                    color: .red,
-                    animate: animateHeartRate
-                )
+        if #available(iOS 26.0, watchOS 13.0, *) {
+            // iOS 26 Enhanced Watch Metrics with Variable Draw
+            VStack(spacing: 8) {
+                HStack(spacing: 8) {
+                    iOS26WatchMetricCard(
+                        title: "Heart Rate",
+                        value: "\(Int(healthManager.currentHeartRate))",
+                        unit: "BPM",
+                        symbol: "heart.fill",
+                        color: .red,
+                        variableValue: Double(healthManager.currentHeartRate) / 180.0,
+                        animate: animateHeartRate
+                    )
 
-                WatchMetricCard(
-                    title: "Steps",
-                    value: "\(Int(healthManager.todaySteps))",
-                    unit: "",
-                    icon: "figure.walk",
-                    color: .green,
-                    animate: false
-                )
+                    iOS26WatchMetricCard(
+                        title: "Steps",
+                        value: "\(Int(healthManager.todaySteps))",
+                        unit: "",
+                        symbol: "figure.walk",
+                        color: .green,
+                        variableValue: min(Double(healthManager.todaySteps) / 10000.0, 1.0),
+                        animate: true
+                    )
+                }
+
+                HStack(spacing: 8) {
+                    iOS26WatchMetricCard(
+                        title: "Active",
+                        value: "\(Int(healthManager.activeEnergyBurned))",
+                        unit: "cal",
+                        symbol: "flame.fill",
+                        color: .orange,
+                        variableValue: min(Double(healthManager.activeEnergyBurned) / 500.0, 1.0),
+                        animate: true
+                    )
+
+                    iOS26WatchMetricCard(
+                        title: "Exercise",
+                        value: "\(Int(healthManager.exerciseMinutes))",
+                        unit: "min",
+                        symbol: "stopwatch.fill",
+                        color: .blue,
+                        variableValue: min(Double(healthManager.exerciseMinutes) / 30.0, 1.0),
+                        animate: true
+                    )
+                }
             }
+        } else {
+            // Fallback to existing implementation
+            VStack(spacing: 8) {
+                HStack(spacing: 8) {
+                    WatchMetricCard(
+                        title: "Heart Rate",
+                        value: "\(Int(healthManager.currentHeartRate))",
+                        unit: "BPM",
+                        icon: "heart.fill",
+                        color: .red,
+                        animate: animateHeartRate
+                    )
 
-            HStack(spacing: 8) {
-                WatchMetricCard(
-                    title: "Active",
-                    value: "\(Int(healthManager.activeEnergyBurned))",
-                    unit: "cal",
-                    icon: "flame.fill",
-                    color: .orange,
-                    animate: false
-                )
+                    WatchMetricCard(
+                        title: "Steps",
+                        value: "\(Int(healthManager.todaySteps))",
+                        unit: "",
+                        icon: "figure.walk",
+                        color: .green,
+                        animate: false
+                    )
+                }
 
-                WatchMetricCard(
-                    title: "Exercise",
-                    value: "\(Int(healthManager.exerciseMinutes))",
-                    unit: "min",
-                    icon: "stopwatch.fill",
-                    color: .blue,
-                    animate: false
-                )
+                HStack(spacing: 8) {
+                    WatchMetricCard(
+                        title: "Active",
+                        value: "\(Int(healthManager.activeEnergyBurned))",
+                        unit: "cal",
+                        icon: "flame.fill",
+                        color: .orange,
+                        animate: false
+                    )
+
+                    WatchMetricCard(
+                        title: "Exercise",
+                        value: "\(Int(healthManager.exerciseMinutes))",
+                        unit: "min",
+                        icon: "stopwatch.fill",
+                        color: .blue,
+                        animate: false
+                    )
+                }
             }
         }
     }

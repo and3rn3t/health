@@ -16,4 +16,3 @@ The format loosely follows Keep a Changelog and Semantic Versioning where applic
 - Health endpoints verified on workers.dev and custom domain
 
 ---
-
