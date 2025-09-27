@@ -16,6 +16,11 @@ struct EnhancedHealthMonitoringView: View {
     @State private var showingLiDARPermissions = false
     @StateObject private var lidarManager = LiDARScanningManager.shared
 
+    // Enhanced Fall Risk System
+    @StateObject private var fallRiskEngine = EnhancedFallRiskEngine()
+    @StateObject private var fallDetectionEngine = EnhancedFallDetectionEngine()
+    @StateObject private var interventionEngine = EnhancedInterventionEngine()
+
     // Chart data for trends
     @State private var heartRateHistory: [HealthDataPoint] = []
     @State private var stepsHistory: [HealthDataPoint] = []
@@ -37,13 +42,21 @@ struct EnhancedHealthMonitoringView: View {
                     }
                     .tag(0)
 
+                // Fall Risk Tab - New Enhanced System
+                fallRiskTab
+                    .tabItem {
+                        Image(systemName: "figure.fall")
+                        Text("Fall Risk")
+                    }
+                    .tag(1)
+
                 // Metrics Tab
                 metricsTab
                     .tabItem {
                         Image(systemName: "chart.line.uptrend.xyaxis")
                         Text("Metrics")
                     }
-                    .tag(1)
+                    .tag(2)
 
                 // Alerts Tab
                 alertsTab
@@ -51,7 +64,7 @@ struct EnhancedHealthMonitoringView: View {
                         Image(systemName: "bell.fill")
                         Text("Alerts")
                     }
-                    .tag(2)
+                    .tag(3)
 
                 // Settings Tab
                 settingsTab
@@ -59,7 +72,7 @@ struct EnhancedHealthMonitoringView: View {
                         Image(systemName: "gear")
                         Text("Settings")
                     }
-                    .tag(3)
+                    .tag(4)
             }
             .navigationTitle("VitalSense")
             .onAppear {
@@ -90,6 +103,8 @@ struct EnhancedHealthMonitoringView: View {
                     stepsCard
                     steadinessCard
                     energyCard
+                    fallRiskCard
+                    interventionCard
                 }
 
                 // Quick actions
@@ -103,6 +118,15 @@ struct EnhancedHealthMonitoringView: View {
         .refreshable {
             await refreshData()
         }
+    }
+
+    // MARK: - Fall Risk Tab
+    var fallRiskTab: some View {
+        EnhancedFallRiskDashboardView(
+            fallRiskEngine: fallRiskEngine,
+            fallDetectionEngine: fallDetectionEngine,
+            interventionEngine: interventionEngine
+        )
     }
 
     // MARK: - Connection Status Card
@@ -223,6 +247,35 @@ struct EnhancedHealthMonitoringView: View {
         )
     }
 
+    var fallRiskCard: some View {
+        HealthMetricCard(
+            title: "Fall Risk",
+            value: fallRiskEngine.currentAssessment?.overallRisk.map { "\(Int($0 * 100))" } ?? "--",
+            unit: "%",
+            icon: "figure.fall",
+            iconColor: fallRiskEngine.currentAssessment?.riskLevel == .high ? .red :
+                      fallRiskEngine.currentAssessment?.riskLevel == .moderate ? .orange : .green,
+            status: getFallRiskStatus(),
+            trend: .stable
+        ) {
+            selectedTab = 1 // Navigate to Fall Risk tab
+        }
+    }
+
+    var interventionCard: some View {
+        HealthMetricCard(
+            title: "Active Programs",
+            value: "\(interventionEngine.activeInterventions.count)",
+            unit: "programs",
+            icon: "list.clipboard.fill",
+            iconColor: .purple,
+            status: interventionEngine.activeInterventions.isEmpty ? .warning : .good,
+            trend: .stable
+        ) {
+            selectedTab = 1 // Navigate to Fall Risk tab
+        }
+    }
+
     // MARK: - Quick Actions Card
     var quickActionsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -266,6 +319,16 @@ struct EnhancedHealthMonitoringView: View {
                         showingLiDARScanning = true
                     } else {
                         showingLiDARPermissions = true
+                    }
+                }
+
+                ActionButton(
+                    title: "Fall Risk Check",
+                    icon: "figure.fall",
+                    color: .orange
+                ) {
+                    Task {
+                        await fallRiskEngine.performEnhancedAssessment()
                     }
                 }
 
@@ -320,6 +383,16 @@ struct EnhancedHealthMonitoringView: View {
                     title: "Health Metrics Streamed",
                     timestamp: "5 min ago"
                 )
+
+                if let assessment = fallRiskEngine.currentAssessment {
+                    RecentActivityRow(
+                        icon: "figure.fall",
+                        iconColor: assessment.riskLevel == .high ? .red :
+                                  assessment.riskLevel == .moderate ? .orange : .green,
+                        title: "Fall Risk Assessment",
+                        timestamp: assessment.timestamp.formatted(.relative(presentation: .named))
+                    )
+                }
 
                 if lidarManager.totalScans > 0 {
                     RecentActivityRow(
@@ -662,6 +735,30 @@ struct EnhancedHealthMonitoringView: View {
                     Toggle("Auto-connect to Server", isOn: .constant(true))
                 }
 
+                Section(header: Text("Enhanced Fall Risk System")) {
+                    HStack {
+                        Image(systemName: "figure.fall")
+                            .foregroundColor(.orange)
+                            .frame(width: 24)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Fall Detection Monitoring")
+                                .font(.subheadline)
+                            Text(fallDetectionEngine.isMonitoring ? "Active" : "Stopped")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Spacer()
+
+                        Toggle("", isOn: .constant(fallDetectionEngine.isMonitoring))
+                    }
+
+                    Toggle("AI Risk Assessment", isOn: .constant(true))
+                    Toggle("Intervention Programs", isOn: .constant(true))
+                    Toggle("Emergency Detection", isOn: .constant(true))
+                }
+
                 Section(header: Text("Health Notifications")) {
                     Toggle("Critical Health Alerts", isOn: .constant(true))
                     Toggle("Daily Goal Reminders", isOn: .constant(true))
@@ -745,6 +842,13 @@ struct EnhancedHealthMonitoringView: View {
             webSocketManager.connect()
         }
 
+        // Initialize Enhanced Fall Risk System
+        Task {
+            await fallRiskEngine.initializeSystem()
+            await fallDetectionEngine.startMonitoring()
+            await interventionEngine.initializeInterventions()
+        }
+
         // Generate sample chart data
         generateSampleChartData()
     }
@@ -806,6 +910,18 @@ struct EnhancedHealthMonitoringView: View {
         if percentage >= 60 { return .good }
         if percentage >= 40 { return .warning }
         return .critical
+    }
+
+    private func getFallRiskStatus() -> HealthStatus {
+        guard let assessment = fallRiskEngine.currentAssessment else { return .unknown }
+        switch assessment.riskLevel {
+        case .low:
+            return .excellent
+        case .moderate:
+            return .warning
+        case .high:
+            return .critical
+        }
     }
 
     private func getHeartRateTrend() -> HealthTrend {

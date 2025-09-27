@@ -81,6 +81,9 @@ const LiveHealthMonitoring = lazy(() =>
 );
 
 const FallDetection = lazy(() => import('@/components/health/FallDetection'));
+const EnhancedFallRiskSystem = lazy(
+  () => import('@/components/health/EnhancedFallRiskSystem')
+);
 const HealthAnalytics = lazy(
   () => import('@/components/health/HealthAnalytics')
 );
@@ -191,6 +194,13 @@ const navigationItems = [
     label: 'Fall Detection',
     icon: Shield,
     component: FallDetection,
+    priority: 1,
+  },
+  {
+    id: 'enhanced-fall-risk',
+    label: 'Enhanced Fall Risk',
+    icon: AlertTriangle,
+    component: EnhancedFallRiskSystem,
     priority: 1,
   },
   {
