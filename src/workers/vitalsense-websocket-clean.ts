@@ -35,34 +35,39 @@ export class VitalSenseWebSocketDO {
     const url = new URL(request.url);
 
     if (url.pathname === '/health') {
-      return new Response(JSON.stringify({
-        status: 'healthy',
-        service: 'VitalSense Enhanced WebSocket',
-        clients: this.clients.size,
-        features: [
-          'real_time_health_processing',
-          'wellness_scoring',
-          'fall_risk_assessment',
-          'emergency_alerts'
-        ]
-      }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({
+          status: 'healthy',
+          service: 'VitalSense Enhanced WebSocket',
+          clients: this.clients.size,
+          features: [
+            'real_time_health_processing',
+            'wellness_scoring',
+            'fall_risk_assessment',
+            'emergency_alerts',
+          ],
+        }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     if (request.headers.get('Upgrade') === 'websocket') {
       const webSocketPair = new WebSocketPair();
       const [client, server] = Object.values(webSocketPair);
-      
+
       await this.handleWebSocketConnection(server);
-      
+
       return new Response(null, {
         status: 101,
         webSocket: client,
       });
     }
 
-    return new Response('VitalSense Enhanced WebSocket Worker', { status: 200 });
+    return new Response('VitalSense Enhanced WebSocket Worker', {
+      status: 200,
+    });
   }
 
   private async handleWebSocketConnection(ws: WebSocket): Promise<void> {
@@ -89,8 +94,8 @@ export class VitalSenseWebSocketDO {
           'wellness_scoring',
           'fall_risk_assessment',
           'gait_analysis',
-          'emergency_alerts'
-        ]
+          'emergency_alerts',
+        ],
       },
       timestamp: new Date().toISOString(),
     });
@@ -105,7 +110,11 @@ export class VitalSenseWebSocketDO {
     });
   }
 
-  private async handleMessage(ws: WebSocket, data: string, clientInfo: VitalSenseClient): Promise<void> {
+  private async handleMessage(
+    ws: WebSocket,
+    data: string,
+    clientInfo: VitalSenseClient
+  ): Promise<void> {
     try {
       const message = JSON.parse(data);
       const { type, ...payload } = message;
@@ -114,13 +123,13 @@ export class VitalSenseWebSocketDO {
         case 'client_identification':
           clientInfo.userId = payload.userId;
           console.log(`👤 VitalSense client identified: ${payload.userId}`);
-          
+
           this.sendMessage(ws, {
             type: 'identification_confirmed',
             data: {
               status: 'authenticated',
-              features_enabled: ['health_monitoring', 'emergency_alerts']
-            }
+              features_enabled: ['health_monitoring', 'emergency_alerts'],
+            },
           });
           break;
 
@@ -132,7 +141,7 @@ export class VitalSenseWebSocketDO {
           clientInfo.lastHeartbeat = Date.now();
           this.sendMessage(ws, {
             type: 'heartbeat_ack',
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
           break;
 
@@ -144,17 +153,22 @@ export class VitalSenseWebSocketDO {
     }
   }
 
-  private async processVitalSenseHealthData(clientInfo: VitalSenseClient, payload: any): Promise<void> {
+  private async processVitalSenseHealthData(
+    clientInfo: VitalSenseClient,
+    payload: any
+  ): Promise<void> {
     if (!clientInfo.userId) return;
 
-    const healthDataArray = Array.isArray(payload.data) ? payload.data : [payload.data || payload];
+    const healthDataArray = Array.isArray(payload.data)
+      ? payload.data
+      : [payload.data || payload];
     const processedData = [];
     const alerts = [];
 
     for (const dataPoint of healthDataArray) {
       // Calculate VitalSense wellness score
       const wellnessScore = this.calculateWellnessScore(dataPoint);
-      
+
       // Check for health alerts
       const alert = this.checkForHealthAlerts(dataPoint);
       if (alert) {
@@ -167,7 +181,7 @@ export class VitalSenseWebSocketDO {
         id: crypto.randomUUID(),
         user_id: clientInfo.userId,
         wellness_score: wellnessScore,
-        processed_at: Date.now()
+        processed_at: Date.now(),
       };
 
       // Store in durable storage
@@ -181,12 +195,14 @@ export class VitalSenseWebSocketDO {
       data: {
         metrics: processedData,
         alerts: alerts,
-        wellness_insights: this.generateWellnessInsights(processedData)
+        wellness_insights: this.generateWellnessInsights(processedData),
       },
       timestamp: new Date().toISOString(),
     });
 
-    console.log(`📊 VitalSense processed ${healthDataArray.length} health data points`);
+    console.log(
+      `📊 VitalSense processed ${healthDataArray.length} health data points`
+    );
   }
 
   private calculateWellnessScore(healthData: HealthData): number {
@@ -228,7 +244,7 @@ export class VitalSenseWebSocketDO {
             title: '🚨 Critical Heart Rate Alert',
             message: `Heart rate dangerously elevated to ${hr} bpm`,
             metric_type: 'heart_rate',
-            threshold: 180
+            threshold: 180,
           };
         } else if (hr > 150) {
           return {
@@ -236,7 +252,7 @@ export class VitalSenseWebSocketDO {
             title: '⚠️ High Heart Rate Alert',
             message: `Heart rate elevated to ${hr} bpm`,
             metric_type: 'heart_rate',
-            threshold: 150
+            threshold: 150,
           };
         } else if (hr < 30) {
           return {
@@ -244,7 +260,7 @@ export class VitalSenseWebSocketDO {
             title: '🚨 Critical Low Heart Rate',
             message: `Heart rate critically low at ${hr} bpm`,
             metric_type: 'heart_rate',
-            threshold: 30
+            threshold: 30,
           };
         }
         break;
@@ -257,7 +273,7 @@ export class VitalSenseWebSocketDO {
             title: '🚨 Critical Fall Risk',
             message: `Walking steadiness critically low at ${steadiness}%`,
             metric_type: 'walking_steadiness',
-            threshold: 20
+            threshold: 20,
           };
         } else if (steadiness < 30) {
           return {
@@ -265,7 +281,7 @@ export class VitalSenseWebSocketDO {
             title: '⚠️ High Fall Risk',
             message: `Walking steadiness low at ${steadiness}%`,
             metric_type: 'walking_steadiness',
-            threshold: 30
+            threshold: 30,
           };
         }
         break;
@@ -278,7 +294,7 @@ export class VitalSenseWebSocketDO {
             title: '🚨 Severe Mobility Concern',
             message: `Gait speed critically low at ${speed} m/s`,
             metric_type: 'gait_speed',
-            threshold: 0.4
+            threshold: 0.4,
           };
         }
         break;
@@ -290,29 +306,31 @@ export class VitalSenseWebSocketDO {
   private generateWellnessInsights(healthData: any[]): any {
     if (healthData.length === 0) return {};
 
-    const avgWellness = healthData.reduce((sum, d) => sum + (d.wellness_score || 0.8), 0) / healthData.length;
-    
+    const avgWellness =
+      healthData.reduce((sum, d) => sum + (d.wellness_score || 0.8), 0) /
+      healthData.length;
+
     return {
       overall_wellness_score: avgWellness,
       trend: 'stable',
       recommendations: this.getHealthRecommendations(healthData[0]),
-      processed_metrics: healthData.length
+      processed_metrics: healthData.length,
     };
   }
 
   private getHealthRecommendations(healthData: any): string[] {
     const recommendations = [];
-    
+
     if (healthData.type === 'walking_steadiness' && healthData.value < 50) {
       recommendations.push('Consider balance training exercises');
       recommendations.push('Use assistive devices when walking');
     }
-    
+
     if (healthData.type === 'gait_speed' && healthData.value < 0.8) {
       recommendations.push('Practice walking exercises daily');
       recommendations.push('Consider physical therapy consultation');
     }
-    
+
     if (healthData.type === 'heart_rate' && healthData.value > 120) {
       recommendations.push('Take rest breaks during activity');
       recommendations.push('Monitor stress levels');
@@ -360,21 +378,24 @@ export default {
       return stub.fetch(request);
     }
 
-    return new Response(JSON.stringify({
-      service: 'VitalSense Enhanced WebSocket Worker',
-      version: '2.0.0-enhanced',
-      timestamp: new Date().toISOString(),
-      endpoints: { websocket: '/ws', health: '/health' },
-      features: [
-        'real_time_health_processing',
-        'emergency_alert_system', 
-        'wellness_scoring',
-        'fall_risk_assessment',
-        'gait_analysis',
-        'health_analytics'
-      ]
-    }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({
+        service: 'VitalSense Enhanced WebSocket Worker',
+        version: '2.0.0-enhanced',
+        timestamp: new Date().toISOString(),
+        endpoints: { websocket: '/ws', health: '/health' },
+        features: [
+          'real_time_health_processing',
+          'emergency_alert_system',
+          'wellness_scoring',
+          'fall_risk_assessment',
+          'gait_analysis',
+          'health_analytics',
+        ],
+      }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   },
 };

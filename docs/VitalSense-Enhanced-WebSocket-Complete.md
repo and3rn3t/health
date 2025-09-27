@@ -23,7 +23,7 @@ Your VitalSense WebSocket server now includes **all the essential health monitor
 ```typescript
 ✅ calculateVitalSenseWellnessScore()
    - Heart rate: 60-100 bpm = 0.95 score (optimal)
-   - Walking steadiness: >80% = 0.95 score (excellent stability)  
+   - Walking steadiness: >80% = 0.95 score (excellent stability)
    - Gait speed: 1.0-1.4 m/s = 0.95 score (optimal mobility)
    - Step asymmetry: <2% = 0.95 score (perfect balance)
 ```
@@ -84,7 +84,7 @@ Your VitalSense WebSocket server now includes **all the essential health monitor
 ```
 📊 Health metrics processed: 3
    - Heart rate: 75 bpm (wellness: 0.95)
-   - Walking steadiness: 85% (wellness: 0.95) 
+   - Walking steadiness: 85% (wellness: 0.95)
    - Gait speed: 1.2 m/s (wellness: 0.95)
 💡 Overall wellness score: 0.95
 ```
@@ -111,15 +111,15 @@ Your VitalSense WebSocket server now includes **all the essential health monitor
 
 ## 📊 **Key Differences: Basic vs Enhanced**
 
-| Feature | Basic WebSocket | Enhanced VitalSense WebSocket |
-|---------|----------------|-------------------------------|
-| Health Processing | Simple ping/pong | ✅ Full health metrics analysis |
-| Wellness Scoring | None | ✅ Advanced scoring for all metrics |
-| Emergency Alerts | None | ✅ Critical/High/Medium severity system |
-| Fall Risk Assessment | None | ✅ Walking steadiness + gait analysis |
-| Data Persistence | None | ✅ Durable Object storage with history |
-| Real-time Insights | None | ✅ Personalized recommendations |
-| iOS Integration | Basic connection | ✅ Full VitalSense health monitoring |
+| Feature              | Basic WebSocket  | Enhanced VitalSense WebSocket           |
+| -------------------- | ---------------- | --------------------------------------- |
+| Health Processing    | Simple ping/pong | ✅ Full health metrics analysis         |
+| Wellness Scoring     | None             | ✅ Advanced scoring for all metrics     |
+| Emergency Alerts     | None             | ✅ Critical/High/Medium severity system |
+| Fall Risk Assessment | None             | ✅ Walking steadiness + gait analysis   |
+| Data Persistence     | None             | ✅ Durable Object storage with history  |
+| Real-time Insights   | None             | ✅ Personalized recommendations         |
+| iOS Integration      | Basic connection | ✅ Full VitalSense health monitoring    |
 
 ---
 
@@ -144,7 +144,7 @@ Your VitalSense WebSocket server now includes **all the essential health monitor
 
 4. **Emergency Response**
    - Automatic critical alert detection
-   - Real-time notification system  
+   - Real-time notification system
    - Emergency contact integration ready
 
 ---

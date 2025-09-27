@@ -2,7 +2,7 @@
 
 /**
  * Minimal WebSocket Test Script
- * 
+ *
  * This script tests the most basic WebSocket connection to help isolate
  * the 500 error we're getting from the production WebSocket endpoint.
  */
@@ -20,13 +20,15 @@ const ws = new WebSocket(url);
 
 ws.on('open', function open() {
   console.log('✅ WebSocket connection opened!');
-  
+
   // Send a simple ping
-  ws.send(JSON.stringify({
-    type: 'ping',
-    timestamp: new Date().toISOString()
-  }));
-  
+  ws.send(
+    JSON.stringify({
+      type: 'ping',
+      timestamp: new Date().toISOString(),
+    })
+  );
+
   console.log('📤 Sent ping message');
 });
 

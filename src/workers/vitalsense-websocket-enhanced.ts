@@ -63,7 +63,7 @@ export class VitalSenseWebSocketDO {
   constructor(ctx: DurableObjectState, env: Env) {
     this.storage = ctx.storage;
     this.env = env;
-    
+
     // Start background health monitoring tasks
     this.startBackgroundTasks();
   }
@@ -80,7 +80,7 @@ export class VitalSenseWebSocketDO {
         clients: this.clients.size,
         features: [
           'real_time_health_processing',
-          'emergency_alerts', 
+          'emergency_alerts',
           'wellness_scoring',
           'fall_risk_detection',
           'gait_analysis'
@@ -96,7 +96,7 @@ export class VitalSenseWebSocketDO {
       const [client, server] = Object.values(webSocketPair);
 
       await this.handleWebSocketUpgrade(server, request);
-      
+
       return new Response(null, {
         status: 101,
         webSocket: client,
@@ -115,7 +115,7 @@ export class VitalSenseWebSocketDO {
     };
 
     this.clients.set(ws, clientInfo);
-    
+
     console.log(`🏥 VitalSense client connected: ${clientId} (Total: ${this.clients.size})`);
 
     // Accept the WebSocket connection
@@ -273,7 +273,7 @@ export class VitalSenseWebSocketDO {
 
       // Store health data in durable storage
       await this.storage.put(`health:${healthData.id}`, healthData);
-      
+
       // Store in user's recent data (keep last 100 points)
       const userDataKey = `user_health:${clientInfo.userId}`;
       const existingData = (await this.storage.get(userDataKey)) as HealthDataPoint[] || [];
@@ -476,7 +476,7 @@ export class VitalSenseWebSocketDO {
 
     // Return the most severe alert
     const severityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-    const mostSevere = alerts.reduce((prev, curr) => 
+    const mostSevere = alerts.reduce((prev, curr) =>
       severityOrder[curr.severity!] > severityOrder[prev.severity!] ? curr : prev
     );
 
@@ -560,7 +560,7 @@ export class VitalSenseWebSocketDO {
 
   private generateHealthRecommendations(healthData: HealthDataPoint): string[] {
     const recommendations: string[] = [];
-    
+
     switch (healthData.metric_type) {
       case 'walking_steadiness':
         if (healthData.value < 50) {
@@ -589,14 +589,14 @@ export class VitalSenseWebSocketDO {
 
   private assessRiskFactors(healthData: HealthDataPoint[]): string[] {
     const risks: string[] = [];
-    
+
     // Analyze recent health data for risk patterns
     const recentData = healthData.slice(0, 10);
-    
+
     const steadinessValues = recentData
       .filter(d => d.metric_type === 'walking_steadiness')
       .map(d => d.value);
-    
+
     if (steadinessValues.length > 0) {
       const avgSteadiness = steadinessValues.reduce((a, b) => a + b, 0) / steadinessValues.length;
       if (avgSteadiness < 40) risks.push('Elevated fall risk');
@@ -642,7 +642,7 @@ export class VitalSenseWebSocketDO {
 
     // Filter by requested metrics and time range
     let filteredData = historicalData;
-    
+
     if (payload.metrics) {
       filteredData = filteredData.filter(d => payload.metrics.includes(d.metric_type));
     }

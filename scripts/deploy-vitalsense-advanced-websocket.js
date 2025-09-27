@@ -25,12 +25,17 @@ class VitalSenseAdvancedDeployer {
       await this.buildWorker();
       await this.deployToCloudflare();
       await this.testDeployment();
-      
-      console.log('\n🎉 VitalSense Advanced ML WebSocket deployed successfully!');
+
+      console.log(
+        '\n🎉 VitalSense Advanced ML WebSocket deployed successfully!'
+      );
       console.log('📍 Service URL: https://vitalsense-advanced.andernet.dev');
-      console.log('🔍 Health Check: https://vitalsense-advanced.andernet.dev/health');
-      console.log('🧠 ML Features: Predictive analytics, anomaly detection, personalized insights');
-      
+      console.log(
+        '🔍 Health Check: https://vitalsense-advanced.andernet.dev/health'
+      );
+      console.log(
+        '🧠 ML Features: Predictive analytics, anomaly detection, personalized insights'
+      );
     } catch (error) {
       console.error('❌ Deployment failed:', error.message);
       process.exit(1);
@@ -39,10 +44,13 @@ class VitalSenseAdvancedDeployer {
 
   async validateFiles() {
     console.log('🔍 Validating deployment files...');
-    
+
     // Check if advanced worker exists
     try {
-      const workerContent = readFileSync(join(this.projectRoot, this.workerPath), 'utf8');
+      const workerContent = readFileSync(
+        join(this.projectRoot, this.workerPath),
+        'utf8'
+      );
       if (!workerContent.includes('VitalSenseAdvancedWebSocketDO')) {
         throw new Error('Advanced WebSocket worker class not found');
       }
@@ -53,7 +61,10 @@ class VitalSenseAdvancedDeployer {
 
     // Check wrangler config
     try {
-      const configContent = readFileSync(join(this.projectRoot, this.configPath), 'utf8');
+      const configContent = readFileSync(
+        join(this.projectRoot, this.configPath),
+        'utf8'
+      );
       if (!configContent.includes('vitalsense-websocket-advanced')) {
         throw new Error('Advanced WebSocket configuration not found');
       }
@@ -65,26 +76,32 @@ class VitalSenseAdvancedDeployer {
 
   async buildWorker() {
     console.log('🔨 Building advanced WebSocket worker...');
-    
+
     try {
       // Build the worker
       execSync('npx vite build --config vite.worker.config.ts', {
         stdio: 'pipe',
-        cwd: this.projectRoot
+        cwd: this.projectRoot,
       });
 
       // Copy the advanced worker to the build output
-      const workerContent = readFileSync(join(this.projectRoot, this.workerPath), 'utf8');
-      
+      const workerContent = readFileSync(
+        join(this.projectRoot, this.workerPath),
+        'utf8'
+      );
+
       // Create the built version
-      const builtWorkerPath = join(this.projectRoot, 'dist-worker', 'vitalsense-websocket-advanced.js');
-      
+      const builtWorkerPath = join(
+        this.projectRoot,
+        'dist-worker',
+        'vitalsense-websocket-advanced.js'
+      );
+
       // Compile TypeScript to JavaScript (simplified)
       const compiledContent = this.compileWorker(workerContent);
       writeFileSync(builtWorkerPath, compiledContent);
-      
+
       console.log('✅ Advanced WebSocket worker built successfully');
-      
     } catch (error) {
       throw new Error(`Build failed: ${error.message}`);
     }
@@ -104,26 +121,31 @@ class VitalSenseAdvancedDeployer {
 
   async deployToCloudflare() {
     console.log('☁️  Deploying to Cloudflare Workers...');
-    
+
     try {
       // Deploy to development environment first
       console.log('   🚀 Deploying to development...');
-      execSync(`npx wrangler deploy --config ${this.configPath} --env development`, {
-        stdio: 'inherit',
-        cwd: this.projectRoot
-      });
-      
+      execSync(
+        `npx wrangler deploy --config ${this.configPath} --env development`,
+        {
+          stdio: 'inherit',
+          cwd: this.projectRoot,
+        }
+      );
+
       console.log('✅ Development deployment successful');
-      
+
       // Ask for production deployment
       console.log('   🚀 Deploying to production...');
-      execSync(`npx wrangler deploy --config ${this.configPath} --env production`, {
-        stdio: 'inherit',
-        cwd: this.projectRoot
-      });
-      
+      execSync(
+        `npx wrangler deploy --config ${this.configPath} --env production`,
+        {
+          stdio: 'inherit',
+          cwd: this.projectRoot,
+        }
+      );
+
       console.log('✅ Production deployment successful');
-      
     } catch (error) {
       throw new Error(`Cloudflare deployment failed: ${error.message}`);
     }
@@ -131,25 +153,26 @@ class VitalSenseAdvancedDeployer {
 
   async testDeployment() {
     console.log('🧪 Testing deployed service...');
-    
+
     try {
       // Test health endpoint
-      const response = await fetch('https://vitalsense-advanced.andernet.dev/health');
-      
+      const response = await fetch(
+        'https://vitalsense-advanced.andernet.dev/health'
+      );
+
       if (!response.ok) {
         throw new Error(`Health check failed: ${response.status}`);
       }
-      
+
       const healthData = await response.json();
-      
+
       if (!healthData.features?.includes('predictive_analytics')) {
         throw new Error('ML features not detected in deployed service');
       }
-      
+
       console.log('✅ Deployment test successful');
       console.log(`   📊 Features: ${healthData.features?.join(', ')}`);
       console.log(`   👥 Active clients: ${healthData.clients || 0}`);
-      
     } catch (error) {
       console.warn(`⚠️  Deployment test failed: ${error.message}`);
       console.warn('   Service may still be starting up...');

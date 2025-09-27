@@ -60,38 +60,43 @@ export class VitalSenseAdvancedWebSocketDO {
     const url = new URL(request.url);
 
     if (url.pathname === '/health') {
-      return new Response(JSON.stringify({
-        status: 'healthy',
-        service: 'VitalSense Advanced ML WebSocket',
-        version: '3.0.0-ml',
-        clients: this.clients.size,
-        features: [
-          'real_time_health_processing',
-          'predictive_analytics',
-          'anomaly_detection',
-          'personalized_insights',
-          'emergency_alerts',
-          'wellness_scoring',
-          'fall_risk_assessment'
-        ]
-      }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({
+          status: 'healthy',
+          service: 'VitalSense Advanced ML WebSocket',
+          version: '3.0.0-ml',
+          clients: this.clients.size,
+          features: [
+            'real_time_health_processing',
+            'predictive_analytics',
+            'anomaly_detection',
+            'personalized_insights',
+            'emergency_alerts',
+            'wellness_scoring',
+            'fall_risk_assessment',
+          ],
+        }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     if (request.headers.get('Upgrade') === 'websocket') {
       const webSocketPair = new WebSocketPair();
       const [client, server] = Object.values(webSocketPair);
-      
+
       await this.handleWebSocketConnection(server);
-      
+
       return new Response(null, {
         status: 101,
         webSocket: client,
       });
     }
 
-    return new Response('VitalSense Advanced ML WebSocket Worker', { status: 200 });
+    return new Response('VitalSense Advanced ML WebSocket Worker', {
+      status: 200,
+    });
   }
 
   private async handleWebSocketConnection(ws: WebSocket): Promise<void> {
@@ -118,9 +123,9 @@ export class VitalSenseAdvancedWebSocketDO {
           'predictive_analytics',
           'anomaly_detection',
           'personalized_coaching',
-          'emergency_alerts'
+          'emergency_alerts',
         ],
-        ml_models: ['trend_predictor', 'anomaly_detector', 'wellness_scorer']
+        ml_models: ['trend_predictor', 'anomaly_detector', 'wellness_scorer'],
       },
       timestamp: new Date().toISOString(),
     });
@@ -135,7 +140,11 @@ export class VitalSenseAdvancedWebSocketDO {
     });
   }
 
-  private async handleMessage(ws: WebSocket, data: string, clientInfo: VitalSenseClient): Promise<void> {
+  private async handleMessage(
+    ws: WebSocket,
+    data: string,
+    clientInfo: VitalSenseClient
+  ): Promise<void> {
     try {
       const message = JSON.parse(data);
       const { type, ...payload } = message;
@@ -144,13 +153,13 @@ export class VitalSenseAdvancedWebSocketDO {
         case 'client_identification':
           clientInfo.userId = payload.userId;
           console.log(`👤 VitalSense ML client identified: ${payload.userId}`);
-          
+
           this.sendMessage(ws, {
             type: 'identification_confirmed',
             data: {
               status: 'authenticated',
-              ml_features_enabled: true
-            }
+              ml_features_enabled: true,
+            },
           });
           break;
 
@@ -170,7 +179,7 @@ export class VitalSenseAdvancedWebSocketDO {
           clientInfo.lastHeartbeat = Date.now();
           this.sendMessage(ws, {
             type: 'heartbeat_ack',
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
           break;
 
@@ -185,7 +194,10 @@ export class VitalSenseAdvancedWebSocketDO {
   /**
    * Process health data with advanced ML analytics
    */
-  private async processHealthDataWithML(clientInfo: VitalSenseClient, payload: Record<string, unknown>): Promise<void> {
+  private async processHealthDataWithML(
+    clientInfo: VitalSenseClient,
+    payload: Record<string, unknown>
+  ): Promise<void> {
     if (!clientInfo.userId) return;
 
     const healthDataArray = this.extractHealthDataArray(payload);
@@ -201,7 +213,10 @@ export class VitalSenseAdvancedWebSocketDO {
       if (alert) alerts.push(alert);
 
       // ML Processing
-      const prediction = await this.predictHealthTrend(clientInfo.userId, dataPoint);
+      const prediction = await this.predictHealthTrend(
+        clientInfo.userId,
+        dataPoint
+      );
       if (prediction) predictions.push(prediction);
 
       const anomaly = await this.detectAnomalies(clientInfo.userId, dataPoint);
@@ -212,7 +227,7 @@ export class VitalSenseAdvancedWebSocketDO {
         id: crypto.randomUUID(),
         user_id: clientInfo.userId,
         wellness_score: wellnessScore,
-        processed_at: Date.now()
+        processed_at: Date.now(),
       };
 
       // Store with ML metadata
@@ -224,7 +239,10 @@ export class VitalSenseAdvancedWebSocketDO {
     await this.updateUserHealthHistory(clientInfo.userId, processedData);
 
     // Generate personalized insights
-    const insights = await this.generateInsights(clientInfo.userId, processedData);
+    const insights = await this.generateInsights(
+      clientInfo.userId,
+      processedData
+    );
 
     // Broadcast enhanced update
     await this.broadcastToUser(clientInfo.userId, {
@@ -236,26 +254,34 @@ export class VitalSenseAdvancedWebSocketDO {
         anomalies: anomalies,
         insights: insights,
         wellness_summary: this.generateWellnessSummary(processedData),
-        ml_confidence: 0.87
+        ml_confidence: 0.87,
       },
       timestamp: new Date().toISOString(),
     });
 
-    console.log(`🧠 Processed ${healthDataArray.length} health data points with ML analysis`);
+    console.log(
+      `🧠 Processed ${healthDataArray.length} health data points with ML analysis`
+    );
   }
 
   /**
    * Predict health trends using simplified ML approach
    */
-  private async predictHealthTrend(userId: string, healthData: HealthData): Promise<HealthPrediction | null> {
-    const historicalData = await this.getUserHealthHistory(userId, healthData.type);
-    
+  private async predictHealthTrend(
+    userId: string,
+    healthData: HealthData
+  ): Promise<HealthPrediction | null> {
+    const historicalData = await this.getUserHealthHistory(
+      userId,
+      healthData.type
+    );
+
     if (historicalData.length < 7) return null; // Need minimum data
 
     // Calculate trend using linear regression
-    const values = historicalData.slice(-14).map(d => d.value); // Last 2 weeks
+    const values = historicalData.slice(-14).map((d) => d.value); // Last 2 weeks
     const trend = this.calculateTrend(values);
-    const predicted_value = healthData.value + (trend * 7); // 7-day prediction
+    const predicted_value = healthData.value + trend * 7; // 7-day prediction
 
     // Calculate confidence based on data consistency
     const confidence = this.calculatePredictionConfidence(values);
@@ -267,22 +293,31 @@ export class VitalSenseAdvancedWebSocketDO {
       confidence: Math.round(confidence * 100) / 100,
       time_horizon_days: 7,
       risk_level,
-      contributing_factors: this.identifyTrendFactors(healthData.type, trend)
+      contributing_factors: this.identifyTrendFactors(healthData.type, trend),
     };
   }
 
   /**
    * Detect anomalies using statistical analysis
    */
-  private async detectAnomalies(userId: string, healthData: HealthData): Promise<AnomalyAlert | null> {
-    const historicalData = await this.getUserHealthHistory(userId, healthData.type);
-    
+  private async detectAnomalies(
+    userId: string,
+    healthData: HealthData
+  ): Promise<AnomalyAlert | null> {
+    const historicalData = await this.getUserHealthHistory(
+      userId,
+      healthData.type
+    );
+
     if (historicalData.length < 10) return null;
 
-    const values = historicalData.slice(-30).map(d => d.value);
+    const values = historicalData.slice(-30).map((d) => d.value);
     const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
-    const stdDev = Math.sqrt(values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length);
-    
+    const stdDev = Math.sqrt(
+      values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+        values.length
+    );
+
     const deviation = Math.abs(healthData.value - mean);
     const threshold = 2.5 * stdDev;
 
@@ -291,7 +326,7 @@ export class VitalSenseAdvancedWebSocketDO {
     const severity = this.determineSeverity(deviation, threshold);
     const expected_range: [number, number] = [
       Math.round((mean - threshold) * 100) / 100,
-      Math.round((mean + threshold) * 100) / 100
+      Math.round((mean + threshold) * 100) / 100,
     ];
 
     return {
@@ -299,27 +334,37 @@ export class VitalSenseAdvancedWebSocketDO {
       current_value: healthData.value,
       expected_range,
       severity,
-      explanation: this.generateAnomalyExplanation(healthData.type, healthData.value, expected_range)
+      explanation: this.generateAnomalyExplanation(
+        healthData.type,
+        healthData.value,
+        expected_range
+      ),
     };
   }
 
   /**
    * Generate personalized health insights
    */
-  private async generatePredictions(ws: WebSocket, clientInfo: VitalSenseClient): Promise<void> {
+  private async generatePredictions(
+    ws: WebSocket,
+    clientInfo: VitalSenseClient
+  ): Promise<void> {
     if (!clientInfo.userId) return;
 
     const predictions: HealthPrediction[] = [];
     const metricTypes = ['heart_rate', 'walking_steadiness', 'gait_speed'];
 
     for (const metricType of metricTypes) {
-      const historicalData = await this.getUserHealthHistory(clientInfo.userId, metricType);
-      
+      const historicalData = await this.getUserHealthHistory(
+        clientInfo.userId,
+        metricType
+      );
+
       if (historicalData.length >= 7) {
-        const recentValues = historicalData.slice(-7).map(d => d.value);
+        const recentValues = historicalData.slice(-7).map((d) => d.value);
         const trend = this.calculateTrend(recentValues);
         const lastValue = recentValues[recentValues.length - 1];
-        const predicted_value = lastValue + (trend * 7);
+        const predicted_value = lastValue + trend * 7;
 
         predictions.push({
           metric_type: metricType,
@@ -327,7 +372,7 @@ export class VitalSenseAdvancedWebSocketDO {
           confidence: this.calculatePredictionConfidence(recentValues),
           time_horizon_days: 7,
           risk_level: this.assessRiskLevel(metricType, predicted_value),
-          contributing_factors: this.identifyTrendFactors(metricType, trend)
+          contributing_factors: this.identifyTrendFactors(metricType, trend),
         });
       }
     }
@@ -335,57 +380,75 @@ export class VitalSenseAdvancedWebSocketDO {
     this.sendMessage(ws, {
       type: 'health_predictions_response',
       data: { predictions },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
   /**
    * Generate personalized insights and recommendations
    */
-  private async generatePersonalizedInsights(ws: WebSocket, clientInfo: VitalSenseClient): Promise<void> {
+  private async generatePersonalizedInsights(
+    ws: WebSocket,
+    clientInfo: VitalSenseClient
+  ): Promise<void> {
     if (!clientInfo.userId) return;
 
     const insights = [];
     const recommendations = [];
 
     // Analyze user's health patterns
-    const heartRateData = await this.getUserHealthHistory(clientInfo.userId, 'heart_rate');
-    const steadinessData = await this.getUserHealthHistory(clientInfo.userId, 'walking_steadiness');
-    const gaitData = await this.getUserHealthHistory(clientInfo.userId, 'gait_speed');
+    const heartRateData = await this.getUserHealthHistory(
+      clientInfo.userId,
+      'heart_rate'
+    );
+    const steadinessData = await this.getUserHealthHistory(
+      clientInfo.userId,
+      'walking_steadiness'
+    );
+    const gaitData = await this.getUserHealthHistory(
+      clientInfo.userId,
+      'gait_speed'
+    );
 
     // Generate insights based on trends
     if (heartRateData.length >= 7) {
-      const trend = this.calculateTrend(heartRateData.slice(-7).map(d => d.value));
+      const trend = this.calculateTrend(
+        heartRateData.slice(-7).map((d) => d.value)
+      );
       if (trend > 2) {
         insights.push('Your heart rate has been trending upward this week');
         recommendations.push({
-          recommendation: 'Consider stress management techniques and adequate rest',
+          recommendation:
+            'Consider stress management techniques and adequate rest',
           priority: 'medium' as RiskLevel,
-          category: 'cardiovascular'
+          category: 'cardiovascular',
         });
       }
     }
 
     if (steadinessData.length >= 7) {
-      const avgSteadiness = steadinessData.slice(-7).reduce((sum, d) => sum + d.value, 0) / 7;
+      const avgSteadiness =
+        steadinessData.slice(-7).reduce((sum, d) => sum + d.value, 0) / 7;
       if (avgSteadiness < 50) {
         insights.push('Walking steadiness shows room for improvement');
         recommendations.push({
           recommendation: 'Practice balance exercises daily for 10-15 minutes',
           priority: 'high' as RiskLevel,
-          category: 'mobility'
+          category: 'mobility',
         });
       }
     }
 
     if (gaitData.length >= 7) {
-      const avgGait = gaitData.slice(-7).reduce((sum, d) => sum + d.value, 0) / 7;
+      const avgGait =
+        gaitData.slice(-7).reduce((sum, d) => sum + d.value, 0) / 7;
       if (avgGait > 1.0) {
         insights.push('Excellent gait speed indicates good mobility');
         recommendations.push({
-          recommendation: 'Maintain current activity level to preserve mobility',
+          recommendation:
+            'Maintain current activity level to preserve mobility',
           priority: 'low' as RiskLevel,
-          category: 'maintenance'
+          category: 'maintenance',
         });
       }
     }
@@ -395,14 +458,17 @@ export class VitalSenseAdvancedWebSocketDO {
       data: {
         insights,
         recommendations,
-        motivation_message: 'Your commitment to health monitoring is making a positive impact!'
+        motivation_message:
+          'Your commitment to health monitoring is making a positive impact!',
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
   // Utility methods
-  private extractHealthDataArray(payload: Record<string, unknown>): HealthData[] {
+  private extractHealthDataArray(
+    payload: Record<string, unknown>
+  ): HealthData[] {
     const data = payload.data;
     if (Array.isArray(data)) {
       return data.filter(this.isHealthData);
@@ -413,46 +479,60 @@ export class VitalSenseAdvancedWebSocketDO {
   }
 
   private isHealthData(data: unknown): data is HealthData {
-    return typeof data === 'object' && data !== null &&
-           typeof (data as HealthData).type === 'string' &&
-           typeof (data as HealthData).value === 'number' &&
-           typeof (data as HealthData).unit === 'string' &&
-           typeof (data as HealthData).timestamp === 'string';
+    return (
+      typeof data === 'object' &&
+      data !== null &&
+      typeof (data as HealthData).type === 'string' &&
+      typeof (data as HealthData).value === 'number' &&
+      typeof (data as HealthData).unit === 'string' &&
+      typeof (data as HealthData).timestamp === 'string'
+    );
   }
 
-  private async getUserHealthHistory(userId: string, metricType: string): Promise<HealthData[]> {
+  private async getUserHealthHistory(
+    userId: string,
+    metricType: string
+  ): Promise<HealthData[]> {
     const historicalKey = `user_health:${userId}`;
-    const historicalData = (await this.storage.get(historicalKey)) as HealthData[] || [];
-    return historicalData.filter(d => d.type === metricType).slice(-60); // Last 60 records
+    const historicalData =
+      ((await this.storage.get(historicalKey)) as HealthData[]) || [];
+    return historicalData.filter((d) => d.type === metricType).slice(-60); // Last 60 records
   }
 
-  private async updateUserHealthHistory(userId: string, newData: Record<string, unknown>[]): Promise<void> {
+  private async updateUserHealthHistory(
+    userId: string,
+    newData: Record<string, unknown>[]
+  ): Promise<void> {
     const historicalKey = `user_health:${userId}`;
-    const existingData = (await this.storage.get(historicalKey)) as Record<string, unknown>[] || [];
+    const existingData =
+      ((await this.storage.get(historicalKey)) as Record<string, unknown>[]) ||
+      [];
     const updatedData = [...existingData, ...newData].slice(-1000); // Keep last 1000 records
     await this.storage.put(historicalKey, updatedData);
   }
 
   private calculateTrend(values: number[]): number {
     if (values.length < 2) return 0;
-    
+
     const n = values.length;
-    const x = Array.from({length: n}, (_, i) => i);
+    const x = Array.from({ length: n }, (_, i) => i);
     const sumX = x.reduce((a, b) => a + b, 0);
     const sumY = values.reduce((a, b) => a + b, 0);
     const sumXY = x.reduce((sum, xi, i) => sum + xi * values[i], 0);
     const sumXX = x.reduce((sum, xi) => sum + xi * xi, 0);
-    
+
     return (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
   }
 
   private calculatePredictionConfidence(values: number[]): number {
     if (values.length < 3) return 0.6;
-    
+
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+    const variance =
+      values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+      values.length;
     const coefficientOfVariation = Math.sqrt(variance) / mean;
-    
+
     return Math.max(0.6, Math.min(0.95, 1 - coefficientOfVariation));
   }
 
@@ -463,18 +543,18 @@ export class VitalSenseAdvancedWebSocketDO {
         if (value > 150 || value < 40) return 'high';
         if (value > 120 || value < 50) return 'medium';
         return 'low';
-      
+
       case 'walking_steadiness':
         if (value < 20) return 'critical';
         if (value < 30) return 'high';
         if (value < 50) return 'medium';
         return 'low';
-      
+
       case 'gait_speed':
         if (value < 0.4) return 'high';
         if (value < 0.6) return 'medium';
         return 'low';
-      
+
       default:
         return 'low';
     }
@@ -482,16 +562,20 @@ export class VitalSenseAdvancedWebSocketDO {
 
   private identifyTrendFactors(metricType: string, trend: number): string[] {
     const factors = [];
-    
+
     switch (metricType) {
       case 'heart_rate':
         if (trend > 0) {
           factors.push('Activity level', 'Stress factors', 'Sleep quality');
         } else {
-          factors.push('Improved fitness', 'Better recovery', 'Medication effects');
+          factors.push(
+            'Improved fitness',
+            'Better recovery',
+            'Medication effects'
+          );
         }
         break;
-      
+
       case 'walking_steadiness':
         if (trend < 0) {
           factors.push('Balance challenges', 'Environmental factors');
@@ -499,7 +583,7 @@ export class VitalSenseAdvancedWebSocketDO {
           factors.push('Balance training', 'Strength improvement');
         }
         break;
-      
+
       case 'gait_speed':
         if (trend < 0) {
           factors.push('Mobility decline', 'Fatigue');
@@ -508,7 +592,7 @@ export class VitalSenseAdvancedWebSocketDO {
         }
         break;
     }
-    
+
     return factors;
   }
 
@@ -520,20 +604,28 @@ export class VitalSenseAdvancedWebSocketDO {
     return 'low';
   }
 
-  private generateAnomalyExplanation(metricType: string, value: number, expectedRange: [number, number]): string {
+  private generateAnomalyExplanation(
+    metricType: string,
+    value: number,
+    expectedRange: [number, number]
+  ): string {
     const metricName = metricType.replace('_', ' ');
     return `${metricName} of ${value} is outside expected range ${expectedRange[0]}-${expectedRange[1]}`;
   }
 
-  private async generateInsights(userId: string, healthData: Record<string, unknown>[]): Promise<PersonalizedInsight[]> {
+  private async generateInsights(
+    userId: string,
+    healthData: Record<string, unknown>[]
+  ): Promise<PersonalizedInsight[]> {
     const insights: PersonalizedInsight[] = [];
-    
+
     // Sample insights based on recent data
     if (healthData.length > 0) {
       insights.push({
-        recommendation: 'Your health monitoring consistency is excellent - keep it up!',
+        recommendation:
+          'Your health monitoring consistency is excellent - keep it up!',
         priority: 'low',
-        category: 'motivation'
+        category: 'motivation',
       });
     }
 
@@ -566,7 +658,9 @@ export class VitalSenseAdvancedWebSocketDO {
     }
   }
 
-  private checkForHealthAlerts(healthData: HealthData): Record<string, unknown> | null {
+  private checkForHealthAlerts(
+    healthData: HealthData
+  ): Record<string, unknown> | null {
     switch (healthData.type) {
       case 'heart_rate': {
         const hr = healthData.value;
@@ -575,7 +669,7 @@ export class VitalSenseAdvancedWebSocketDO {
             severity: 'critical',
             title: '🚨 Critical Heart Rate Alert',
             message: `Heart rate dangerously elevated to ${hr} bpm`,
-            metric_type: 'heart_rate'
+            metric_type: 'heart_rate',
           };
         }
         break;
@@ -587,7 +681,7 @@ export class VitalSenseAdvancedWebSocketDO {
             severity: 'critical',
             title: '🚨 Critical Fall Risk',
             message: `Walking steadiness critically low at ${steadiness}%`,
-            metric_type: 'walking_steadiness'
+            metric_type: 'walking_steadiness',
           };
         }
         break;
@@ -596,20 +690,26 @@ export class VitalSenseAdvancedWebSocketDO {
     return null;
   }
 
-  private generateWellnessSummary(healthData: Record<string, unknown>[]): Record<string, unknown> {
+  private generateWellnessSummary(
+    healthData: Record<string, unknown>[]
+  ): Record<string, unknown> {
     if (healthData.length === 0) return { overall_score: 0.8 };
 
-    const scores = healthData.map(d => (d.wellness_score as number) || 0.8);
-    const avgScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-    
+    const scores = healthData.map((d) => (d.wellness_score as number) || 0.8);
+    const avgScore =
+      scores.reduce((sum, score) => sum + score, 0) / scores.length;
+
     return {
       overall_score: Math.round(avgScore * 100) / 100,
       metrics_processed: healthData.length,
-      trend: 'stable'
+      trend: 'stable',
     };
   }
 
-  private async broadcastToUser(userId: string, message: Record<string, unknown>): Promise<void> {
+  private async broadcastToUser(
+    userId: string,
+    message: Record<string, unknown>
+  ): Promise<void> {
     for (const [ws, clientInfo] of this.clients) {
       if (clientInfo.userId === userId && ws.readyState === WebSocket.OPEN) {
         this.sendMessage(ws, message);
@@ -648,21 +748,24 @@ export default {
       return stub.fetch(request);
     }
 
-    return new Response(JSON.stringify({
-      service: 'VitalSense Advanced ML WebSocket Worker',
-      version: '3.0.0-ml-clean',
-      timestamp: new Date().toISOString(),
-      endpoints: { websocket: '/ws', health: '/health' },
-      features: [
-        'real_time_health_processing',
-        'predictive_analytics',
-        'anomaly_detection',
-        'personalized_insights',
-        'emergency_alerts',
-        'wellness_scoring'
-      ]
-    }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({
+        service: 'VitalSense Advanced ML WebSocket Worker',
+        version: '3.0.0-ml-clean',
+        timestamp: new Date().toISOString(),
+        endpoints: { websocket: '/ws', health: '/health' },
+        features: [
+          'real_time_health_processing',
+          'predictive_analytics',
+          'anomaly_detection',
+          'personalized_insights',
+          'emergency_alerts',
+          'wellness_scoring',
+        ],
+      }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   },
 };

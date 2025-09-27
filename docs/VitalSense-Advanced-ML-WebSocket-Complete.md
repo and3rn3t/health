@@ -225,16 +225,18 @@ The VitalSense system has been successfully updated to use the Advanced ML WebSo
 **Service URL**: `wss://vitalsense-websocket-advanced-dev.andernet.workers.dev/ws`
 
 **Updated Configuration Files**:
+
 - `ios/VitalSense/Resources/Config.plist` - Main iOS configuration
-- `ios/VitalSense/Resources/Config.development.plist` - Development environment 
+- `ios/VitalSense/Resources/Config.development.plist` - Development environment
 - `ios/VitalSense/Resources/Config.production.plist` - Production environment
 - `wrangler.toml` - Cloudflare Workers environment variables
 
 **Verification**: All configuration files tested and service confirmed operational with health status `200 OK`
 
-**Available ML Features**: 
+**Available ML Features**:
+
 - Real-time health processing ✅
-- Predictive analytics ✅  
+- Predictive analytics ✅
 - Anomaly detection ✅
 - Personalized insights ✅
 - Emergency alerts ✅

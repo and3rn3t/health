@@ -1236,8 +1236,8 @@ app.get('/ws', async (c) => {
       debug: {
         hasWebSocketBinding: !!c.env.HEALTH_WEBSOCKET,
         environment: c.env.ENVIRONMENT,
-        webSocketPairAvailable: typeof WebSocketPair !== 'undefined'
-      }
+        webSocketPairAvailable: typeof WebSocketPair !== 'undefined',
+      },
     };
     const res = c.json(body, 200);
     // Strengthen caching semantics: this is informational & near-real-time (contains timestamp) so disable caching
@@ -1246,7 +1246,7 @@ app.get('/ws', async (c) => {
   }
 
   console.log('🔌 WebSocket upgrade request received');
-  
+
   if (!c.env.HEALTH_WEBSOCKET) {
     console.log('❌ HEALTH_WEBSOCKET binding not available');
     return c.text('WebSocket service not available', 503);
@@ -1256,18 +1256,21 @@ app.get('/ws', async (c) => {
     console.log('🔧 Creating Durable Object instance...');
     const id = c.env.HEALTH_WEBSOCKET.newUniqueId();
     console.log('✅ Durable Object ID created:', id.toString());
-    
+
     const obj = c.env.HEALTH_WEBSOCKET.get(id);
     console.log('✅ Durable Object instance obtained');
-    
+
     console.log('🚀 Forwarding request to Durable Object...');
     const response = await obj.fetch(c.req.raw);
     console.log('✅ Response received from Durable Object:', response.status);
-    
+
     return response;
   } catch (error) {
     console.error('❌ Error in WebSocket handler:', error);
-    return c.text(`WebSocket error: ${error instanceof Error ? error.message : String(error)}`, 500);
+    return c.text(
+      `WebSocket error: ${error instanceof Error ? error.message : String(error)}`,
+      500
+    );
   }
 });
 // Non-production self-test for crypto/auth

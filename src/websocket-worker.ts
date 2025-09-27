@@ -1,6 +1,6 @@
 // Simple test worker to deploy just the WebSocket functionality
-import { SimpleHealthWebSocket } from './SimpleHealthWebSocket';
 import { Hono } from 'hono';
+import { SimpleHealthWebSocket } from './SimpleHealthWebSocket';
 
 interface Env {
   HEALTH_WEBSOCKET: DurableObjectNamespace;
@@ -14,7 +14,7 @@ app.get('/health', (c) => {
     ok: true,
     service: 'VitalSense WebSocket Service',
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    version: '1.0.0',
   });
 });
 
@@ -51,7 +51,10 @@ app.get('/ws', async (c) => {
     return obj.fetch(c.req.raw);
   } catch (error) {
     console.error('WebSocket handler error:', error);
-    return c.text(`WebSocket error: ${error instanceof Error ? error.message : String(error)}`, 500);
+    return c.text(
+      `WebSocket error: ${error instanceof Error ? error.message : String(error)}`,
+      500
+    );
   }
 });
 
