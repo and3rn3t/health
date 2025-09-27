@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VitalSense - Offline</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      body {
+        font-family:
+          'Inter',
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+      }
+
+      .offline-container {
+        text-align: center;
+        max-width: 400px;
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.1);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+
+      .offline-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .offline-icon svg {
+        width: 40px;
+        height: 40px;
+      }
+
+      h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: white;
+      }
+
+      p {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        opacity: 0.9;
+      }
+
+      .retry-button {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .retry-button:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
+
+      .features-list {
+        margin-top: 2rem;
+        text-align: left;
+      }
+
+      .features-list h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+        text-align: center;
+      }
+
+      .feature-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+        opacity: 0.8;
+      }
+
+      .feature-item svg {
+        width: 16px;
+        height: 16px;
+        margin-right: 0.5rem;
+      }
+
+      .status-indicator {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(255, 59, 48, 0.9);
+        color: white;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+      }
+
+      @media (max-width: 480px) {
+        .offline-container {
+          margin: 1rem;
+          padding: 1.5rem;
+        }
+
+        h1 {
+          font-size: 1.5rem;
+        }
+
+        .status-indicator {
+          top: 0.5rem;
+          right: 0.5rem;
+          font-size: 0.75rem;
+          padding: 0.375rem 0.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="status-indicator">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+        <path
+          d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.07 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"
+        />
+      </svg>
+      Offline
+    </div>
+
+    <div class="offline-container">
+      <div class="offline-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M23.64,7C23.89,7.18 24,7.46 24,7.75C24,8.04 23.89,8.32 23.64,8.5L7.64,18.5C7.36,18.7 7,18.67 6.75,18.42C6.5,18.17 6.46,17.81 6.67,17.53L8.84,14.67L3.64,12.5C3.36,12.32 3.18,12 3.18,11.64C3.18,11.29 3.36,10.96 3.64,10.78L23.64,7Z"
+          />
+        </svg>
+      </div>
+
+      <h1>You're Offline</h1>
+      <p>
+        VitalSense is currently offline, but don't worry - your health data is
+        still being tracked locally and will sync when you're back online.
+      </p>
+
+      <button class="retry-button" onclick="window.location.reload()">
+        Try Again
+      </button>
+
+      <div class="features-list">
+        <h3>Available Offline</h3>
+
+        <div class="feature-item">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M9,4V6H15V4H17V6H20A2,2 0 0,1 22,8V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V8A2,2 0 0,1 4,6H7V4H9M4,10V18H20V10H4Z"
+            />
+          </svg>
+          View cached health data
+        </div>
+
+        <div class="feature-item">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"
+            />
+          </svg>
+          Record health metrics
+        </div>
+
+        <div class="feature-item">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"
+            />
+          </svg>
+          Access safety features
+        </div>
+
+        <div class="feature-item">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
+            />
+          </svg>
+          Review settings
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Check for network connection
+      function checkConnection() {
+        if (navigator.onLine) {
+          window.location.reload();
+        }
+      }
+
+      // Listen for online event
+      window.addEventListener('online', checkConnection);
+
+      // Periodic check every 5 seconds
+      setInterval(checkConnection, 5000);
+
+      // Update last cached time
+      const lastUpdate = localStorage.getItem('lastHealthDataUpdate');
+      if (lastUpdate) {
+        const date = new Date(parseInt(lastUpdate));
+        const timeString = date.toLocaleTimeString();
+        console.log('Last health data update:', timeString);
+      }
+    </script>
+  </body>
+</html>

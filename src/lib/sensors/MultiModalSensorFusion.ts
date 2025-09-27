@@ -6,6 +6,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Sensor Data Types
+interface SensorMetrics {
+  stability: number;
+  coordination: number;
+  symmetry: number;
+  fluidity: number;
+  riskScore: number;
+}
 interface AccelerometerData {
   x: number;
   y: number;
@@ -123,8 +130,8 @@ interface FusionResult {
 }
 
 export class MultiModalSensorFusion {
-  private config: SensorFusionConfig;
-  private sensorData: FusedSensorData;
+  private readonly config: SensorFusionConfig;
+  private readonly sensorData: FusedSensorData;
   private isCollecting: boolean = false;
   private collectionInterval?: NodeJS.Timeout;
   private webSocketConnection?: WebSocket;
@@ -200,7 +207,14 @@ export class MultiModalSensorFusion {
         typeof DeviceMotionEvent !== 'undefined' &&
         'requestPermission' in DeviceMotionEvent
       ) {
-        const permission = await (DeviceMotionEvent as any).requestPermission();
+        // Define the type for DeviceMotionEvent with the iOS-specific requestPermission method
+        interface DeviceMotionEventWithPermission extends EventTarget {
+          requestPermission: () => Promise<'granted' | 'denied' | 'default'>;
+        }
+
+        const permission = await (
+          DeviceMotionEvent as unknown as DeviceMotionEventWithPermission
+        ).requestPermission();
         if (permission !== 'granted') {
           console.warn('⚠️ Device motion permission denied');
           return false;
@@ -342,9 +356,7 @@ export class MultiModalSensorFusion {
   }
 
   private handleAppleWatchData(data: AppleWatchData): void {
-    if (!this.sensorData.appleWatch) {
-      this.sensorData.appleWatch = [];
-    }
+    this.sensorData.appleWatch ??= [];
 
     this.sensorData.appleWatch.push(data);
 
@@ -356,10 +368,7 @@ export class MultiModalSensorFusion {
   }
 
   private handleEnvironmentalData(data: EnvironmentalData): void {
-    if (!this.sensorData.environmental) {
-      this.sensorData.environmental = [];
-    }
-
+    this.sensorData.environmental ??= [];
     this.sensorData.environmental.push(data);
 
     // Keep only recent data
@@ -478,7 +487,7 @@ export class MultiModalSensorFusion {
     return this.sensorData.lidar.some((d) => d.timestamp > cutoff);
   }
 
-  private analyzeSmartphoneData(): typeof combinedMetrics {
+  private analyzeSmartphoneData(): SensorMetrics {
     const accelData = this.sensorData.smartphone.accelerometer;
     const gyroData = this.sensorData.smartphone.gyroscope;
 
@@ -501,7 +510,7 @@ export class MultiModalSensorFusion {
     };
   }
 
-  private analyzeAppleWatchData(): typeof combinedMetrics {
+  private analyzeAppleWatchData(): SensorMetrics {
     if (
       !this.sensorData.appleWatch ||
       this.sensorData.appleWatch.length === 0
@@ -527,7 +536,7 @@ export class MultiModalSensorFusion {
     };
   }
 
-  private analyzeCameraPoseData(): typeof combinedMetrics {
+  private analyzeCameraPoseData(): SensorMetrics {
     // Placeholder implementation
     return {
       stability: 80,
@@ -538,7 +547,7 @@ export class MultiModalSensorFusion {
     };
   }
 
-  private analyzeLiDARData(): typeof combinedMetrics {
+  private analyzeLiDARData(): SensorMetrics {
     // Placeholder implementation - would analyze point cloud data
     return {
       stability: 90,
@@ -550,8 +559,8 @@ export class MultiModalSensorFusion {
   }
 
   private weightedMerge(
-    target: typeof combinedMetrics,
-    source: typeof combinedMetrics,
+    target: SensorMetrics,
+    source: SensorMetrics,
     weight: number
   ): void {
     target.stability =

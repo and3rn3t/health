@@ -8,10 +8,13 @@ import {
   Brain,
   Database,
   Download,
+  Eye,
   Settings,
   Zap,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { AROverlayIntegration } from '../ar/AROverlayIntegration';
+import { MLWasmDemo } from '../ml/MLWasmDemo';
 import { AdvancedLiDARAnalytics } from './AdvancedLiDARAnalytics';
 import type { LiDARScanData } from './CleanLiDARComponents';
 import { CleanLiDARPerformanceProvider } from './index';
@@ -52,7 +55,7 @@ export const CompleteLiDARIntegration: React.FC<{
 
   const [scanHistory, setScanHistory] = useState<LiDARScanData[]>([]);
   const [activeTab, setActiveTab] = useState<
-    'realtime' | 'analytics' | 'reports' | 'settings'
+    'realtime' | 'analytics' | 'ar-overlay' | 'ml-wasm' | 'reports' | 'settings'
   >('realtime');
   const [clinicalReports] = useState<ClinicalReportPreview[]>([
     {
@@ -180,6 +183,13 @@ export const CompleteLiDARIntegration: React.FC<{
               label="Advanced Analytics"
             />
             <TabButton
+              active={activeTab === 'ar-overlay'}
+              onClick={() => setActiveTab('ar-overlay')}
+              icon={<Eye className="h-4 w-4" />}
+              label="AR Overlay"
+              badge="New"
+            />
+            <TabButton
               active={activeTab === 'reports'}
               onClick={() => setActiveTab('reports')}
               icon={<Database className="h-4 w-4" />}
@@ -207,6 +217,17 @@ export const CompleteLiDARIntegration: React.FC<{
             {activeTab === 'analytics' && settings.enableAdvancedAnalytics && (
               <AdvancedLiDARAnalytics scanData={scanHistory} />
             )}
+
+            {/* AR Overlay Tab */}
+            {activeTab === 'ar-overlay' && (
+              <AROverlayIntegration
+                scanData={scanHistory}
+                enableRealTimeGuidance={true}
+                enableHazardDetection={true}
+              />
+            )}
+
+            {activeTab === 'ml-wasm' && <MLWasmDemo />}
 
             {/* Clinical Reports Tab (Preview) */}
             {activeTab === 'reports' && (
@@ -339,10 +360,14 @@ export const CompleteLiDARIntegration: React.FC<{
 
                     <div className="md:grid-cols-2 grid grid-cols-1 gap-4 border-t pt-4">
                       <div>
-                        <label className="text-gray-700 mb-2 block text-sm font-medium">
+                        <label
+                          htmlFor="update-interval-select"
+                          className="text-gray-700 mb-2 block text-sm font-medium"
+                        >
                           Update Interval (ms)
                         </label>
                         <select
+                          id="update-interval-select"
                           value={settings.updateInterval}
                           onChange={(e) =>
                             setSettings((prev) => ({
@@ -361,10 +386,14 @@ export const CompleteLiDARIntegration: React.FC<{
                       </div>
 
                       <div>
-                        <label className="text-gray-700 mb-2 block text-sm font-medium">
+                        <label
+                          htmlFor="max-history-select"
+                          className="text-gray-700 mb-2 block text-sm font-medium"
+                        >
                           Max History Items
                         </label>
                         <select
+                          id="max-history-select"
                           value={settings.maxHistoryItems}
                           onChange={(e) =>
                             setSettings((prev) => ({

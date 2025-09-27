@@ -152,22 +152,41 @@ class LiDARAnalyticsEngine {
       0
     );
 
+    // Calculate risk weights using proper conditionals
+    const getStabilityWeight = (stability: number): number => {
+      if (stability < 0.7) return 0.8;
+      if (stability < 0.8) return 0.4;
+      return 0.1;
+    };
+
+    const getSymmetryWeight = (symmetry: number): number => {
+      if (symmetry < 0.7) return 0.6;
+      if (symmetry < 0.85) return 0.3;
+      return 0.1;
+    };
+
+    const getDataQualityWeight = (anomalies: number): number => {
+      if (anomalies > 5) return 0.4;
+      if (anomalies > 2) return 0.2;
+      return 0.05;
+    };
+
     return [
       {
         name: 'Gait Stability',
-        weight: avgStability < 0.7 ? 0.8 : avgStability < 0.8 ? 0.4 : 0.1,
+        weight: getStabilityWeight(avgStability),
         description: `Average stability: ${(avgStability * 100).toFixed(1)}%`,
         trend: avgStability > 0.8 ? 'stable' : 'declining',
       },
       {
         name: 'Movement Symmetry',
-        weight: avgSymmetry < 0.7 ? 0.6 : avgSymmetry < 0.85 ? 0.3 : 0.1,
+        weight: getSymmetryWeight(avgSymmetry),
         description: `Movement symmetry: ${(avgSymmetry * 100).toFixed(1)}%`,
         trend: avgSymmetry > 0.85 ? 'stable' : 'declining',
       },
       {
         name: 'Data Quality',
-        weight: anomalyCount > 5 ? 0.4 : anomalyCount > 2 ? 0.2 : 0.05,
+        weight: getDataQualityWeight(anomalyCount),
         description: `${anomalyCount} anomalies detected in recent scans`,
         trend: anomalyCount < 2 ? 'stable' : 'declining',
       },
@@ -241,15 +260,18 @@ class LiDARAnalyticsEngine {
     const change = recentAvg - baselineAvg;
     const changePercent = (change / baselineAvg) * 100;
 
+    // Calculate trend using proper conditionals
+    const getTrendDirection = (
+      changePercent: number
+    ): 'stable' | 'up' | 'down' => {
+      if (Math.abs(changePercent) < 2) return 'stable';
+      return changePercent > 0 ? 'up' : 'down';
+    };
+
     return {
       current: recentAvg,
       change: changePercent,
-      trend:
-        Math.abs(changePercent) < 2
-          ? 'stable'
-          : changePercent > 0
-            ? 'up'
-            : 'down',
+      trend: getTrendDirection(changePercent),
       confidence: Math.min(recent.length / 10, 1.0),
     };
   }
@@ -267,15 +289,18 @@ class LiDARAnalyticsEngine {
     const overallCurrent =
       (mobilityTrend.current + balanceTrend.current + postureTrend.current) / 3;
 
+    // Calculate overall trend using proper conditionals
+    const getOverallTrendDirection = (
+      change: number
+    ): 'stable' | 'up' | 'down' => {
+      if (Math.abs(change) < 2) return 'stable';
+      return change > 0 ? 'up' : 'down';
+    };
+
     return {
       current: overallCurrent,
       change: overallChange,
-      trend:
-        Math.abs(overallChange) < 2
-          ? 'stable'
-          : overallChange > 0
-            ? 'up'
-            : 'down',
+      trend: getOverallTrendDirection(overallChange),
       confidence:
         (mobilityTrend.confidence +
           balanceTrend.confidence +
@@ -340,9 +365,9 @@ export const AdvancedLiDARAnalytics: React.FC<{
             <div>
               <h4 className="mb-3 font-medium text-gray-900">Risk Factors</h4>
               <div className="space-y-2">
-                {fallRisk.factors.map((factor, index) => (
+                {fallRisk.factors.map((factor) => (
                   <div
-                    key={index}
+                    key={factor.name}
                     className="p-3 bg-gray-50 flex items-center justify-between rounded"
                   >
                     <div>
@@ -362,9 +387,9 @@ export const AdvancedLiDARAnalytics: React.FC<{
                 Recommendations
               </h4>
               <div className="space-y-2">
-                {fallRisk.recommendations.map((recommendation, index) => (
+                {fallRisk.recommendations.map((recommendation) => (
                   <div
-                    key={index}
+                    key={recommendation.slice(0, 20).replace(/\s/g, '-')}
                     className="p-3 bg-blue-50 flex items-start rounded"
                   >
                     <div className="bg-blue-500 mr-3 mt-2 h-2 w-2 flex-shrink-0 rounded-full" />
@@ -429,8 +454,10 @@ export const AdvancedLiDARAnalytics: React.FC<{
                 Detected Anomalies
               </h4>
               <ul className="text-yellow-700 space-y-1 text-sm">
-                {latestPattern.anomalies.map((anomaly, index) => (
-                  <li key={index}>• {anomaly}</li>
+                {latestPattern.anomalies.map((anomaly) => (
+                  <li key={anomaly.slice(0, 15).replace(/\s/g, '-')}>
+                    • {anomaly}
+                  </li>
                 ))}
               </ul>
             </div>

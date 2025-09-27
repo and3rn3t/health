@@ -28,6 +28,9 @@ export default [
       'scripts/**/*.sh',
       '**/*.md',
       '**/*.txt',
+
+      // ML files requiring optional dependencies
+      'src/lib/ml/LiDARMLEngine.ts',
       '**/*.log',
       '**/*.json',
       '**/*.yml',

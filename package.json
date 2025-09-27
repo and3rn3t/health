@@ -28,6 +28,8 @@
     "lint:all": "pwsh -NoProfile -File scripts/lint-all.ps1",
     "lint:all:fix": "pwsh -NoProfile -File scripts/lint-all.ps1 -Fix",
     "lint:swift": "pwsh -NoProfile -File ios/scripts/swift-lint-windows.ps1",
+    "pwa:validate": "node scripts/validate-pwa.js",
+    "pwa:icons": "node scripts/generate-pwa-icons.js",
     "optimize": "vite optimize",
     "preview": "vite preview",
     "wrangler": "wrangler",

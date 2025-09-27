@@ -24,6 +24,7 @@ declare global {
       };
     };
     __VITALSENSE_CONFIG_LOADED__?: boolean;
+    pwaManager?: import('../lib/pwa').PWAManager;
   }
 }
 

@@ -9,6 +9,7 @@ import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
 import App from './App';
+import './lib/pwa'; // Initialize PWA functionality
 import './main.css';
 import './monitor/rum';
 import './types/global.d.ts';

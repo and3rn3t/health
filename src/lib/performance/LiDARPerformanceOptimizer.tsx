@@ -158,14 +158,14 @@ const PerformanceContext = createContext<{
 
 // Data Batch Processor for high-performance data handling
 class DataBatchProcessor {
-  private batchQueue: LiDARDataBatch[] = [];
+  private readonly batchQueue: LiDARDataBatch[] = [];
   private processingInterval: NodeJS.Timeout | null = null;
-  private batchSize = 50;
-  private processingDelay = 100; // ms
+  private readonly batchSize = 50;
+  private readonly processingDelay = 100; // ms
 
   constructor(
-    private dispatch: React.Dispatch<PerformanceAction>,
-    private onBatchProcessed: (results: any[]) => void
+    private readonly dispatch: React.Dispatch<PerformanceAction>,
+    private readonly onBatchProcessed: (results: any[]) => void
   ) {
     this.startProcessing();
   }
@@ -225,9 +225,9 @@ class DataBatchProcessor {
 // Memory Optimizer for efficient resource management
 class MemoryOptimizer {
   private memoryCheckInterval: NodeJS.Timeout | null = null;
-  private memoryThreshold = 100 * 1024 * 1024; // 100MB
+  private readonly memoryThreshold = 100 * 1024 * 1024; // 100MB
 
-  constructor(private dispatch: React.Dispatch<PerformanceAction>) {
+  constructor(private readonly dispatch: React.Dispatch<PerformanceAction>) {
     this.startMemoryMonitoring();
   }
 
@@ -267,11 +267,11 @@ class MemoryOptimizer {
 
 // WebSocket Connection Manager for optimized connections
 class WebSocketManager {
-  private connections = new Map<string, WebSocket>();
-  private messageQueues = new Map<string, any[]>();
-  private batchInterval = 100; // ms
+  private readonly connections = new Map<string, WebSocket>();
+  private readonly messageQueues = new Map<string, any[]>();
+  private readonly batchInterval = 100; // ms
 
-  constructor(private dispatch: React.Dispatch<PerformanceAction>) {}
+  constructor(private readonly dispatch: React.Dispatch<PerformanceAction>) {}
 
   getConnection(endpoint: string): WebSocket {
     if (!this.connections.has(endpoint)) {
