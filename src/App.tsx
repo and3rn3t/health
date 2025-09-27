@@ -104,6 +104,16 @@ const GaitDashboard = lazy(() =>
   }))
 );
 
+// Enhanced LiDAR Performance Integration
+const EnhancedLiDARDashboard = lazy(
+  () => import('@/components/health/lidar/EnhancedLiDARIntegration')
+);
+
+// Complete LiDAR Advanced System (Next Steps Implementation)
+const CompleteLiDARIntegration = lazy(
+  () => import('@/components/health/lidar/CompleteLiDARIntegration')
+);
+
 const NotificationCenter = lazy(() =>
   import('@/components/sections/NotificationCenter').catch(() => ({
     default: () => (
@@ -225,6 +235,20 @@ const navigationItems = [
     label: 'LiDAR AR',
     icon: Scan,
     component: GaitDashboard,
+    priority: 2,
+  },
+  {
+    id: 'lidar-performance',
+    label: 'LiDAR Performance',
+    icon: Activity,
+    component: EnhancedLiDARDashboard,
+    priority: 2,
+  },
+  {
+    id: 'lidar-advanced',
+    label: 'LiDAR Advanced',
+    icon: Brain,
+    component: CompleteLiDARIntegration,
     priority: 2,
   },
   {
@@ -394,6 +418,10 @@ function AppContent() {
         return import('@/components/health/CognitiveHealth');
       case 'lidar-ar':
         return import('@/components/health/GaitDashboardClean');
+      case 'lidar-performance':
+        return import('@/components/health/lidar/EnhancedLiDARIntegration');
+      case 'lidar-advanced':
+        return import('@/components/health/lidar/CompleteLiDARIntegration');
       case 'emergency-contacts':
         return import('@/components/health/EmergencyContactsPage');
       case 'settings':
