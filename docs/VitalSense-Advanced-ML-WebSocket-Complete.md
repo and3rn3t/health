@@ -138,7 +138,7 @@ npx wrangler deploy --config wrangler.advanced-websocket.toml --env development
 node scripts/test-vitalsense-ml-websocket.js ws://127.0.0.1:8787
 
 # Test deployed service
-node scripts/test-vitalsense-ml-websocket.js wss://vitalsense-advanced.andernet.dev
+node scripts/test-vitalsense-ml-websocket.js wss://vitalsense-websocket-advanced-prod.andernet.workers.dev
 ```
 
 ### **3. Update iOS Configuration**
@@ -147,7 +147,7 @@ Update your iOS `Config.plist` to use the advanced service:
 
 ```xml
 <key>WEBSOCKET_URL</key>
-<string>wss://vitalsense-advanced.andernet.dev/ws</string>
+<string>wss://vitalsense-websocket-advanced-prod.andernet.workers.dev/ws</string>
 ```
 
 ## 📊 Performance Characteristics
