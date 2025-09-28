@@ -1,114 +1,84 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./src/**/*.{js,jsx,ts,tsx}', './index.html'],
-
-  // PHASE 5: Minimal Tailwind + Custom CSS Components
-  corePlugins: {
-    // Disable ALL Tailwind base styles (using our custom reset)
-    preflight: false,
-
-    // Disable most utility generators (using custom CSS)
-    container: false,
-    accessibility: false,
-    backgroundOpacity: false,
-    borderOpacity: false,
-    textOpacity: false,
-    placeholderOpacity: false,
-    divideOpacity: false,
-    ringOpacity: false,
-    animation: false,
-    backdropBlur: false,
-    backdropBrightness: false,
-    backdropContrast: false,
-    backdropGrayscale: false,
-    backdropHueRotate: false,
-    backdropInvert: false,
-    backdropOpacity: false,
-    backdropSaturate: false,
-    backdropSepia: false,
-    blur: false,
-    brightness: false,
-    contrast: false,
-    dropShadow: false,
-    grayscale: false,
-    hueRotate: false,
-    invert: false,
-    saturate: false,
-    sepia: false,
-
-    // Keep only essential utilities
-    backgroundColor: true,
-    textColor: true,
-    padding: true,
-    margin: true,
-    display: true,
-    flexbox: true,
-    gridTemplateColumns: true,
-    gap: true,
-    borderRadius: true,
-    fontSize: true,
-    fontWeight: true,
-  },
-
-  // Extremely limited theme
+  darkMode: ['selector', '[data-appearance="dark"]'],
   theme: {
-    screens: {
-      'sm': '640px',
-      'lg': '1024px'
-    },
-
-    colors: {
-      transparent: 'transparent',
-      current: 'currentColor',
-      white: '#ffffff',
-      black: '#000000',
-
-      // Only VitalSense brand colors
-      'vitalsense': {
-        primary: '#007AFF',
-        secondary: '#34C759',
-        success: '#30D158',
-        warning: '#FF9500',
-        error: '#FF3B30',
-        info: '#5AC8FA',
+    extend: {
+      colors: {
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
+        card: {
+          DEFAULT: 'var(--card)',
+          foreground: 'var(--card-foreground)',
+        },
+        popover: {
+          DEFAULT: 'var(--popover)',
+          foreground: 'var(--popover-foreground)',
+        },
+        primary: {
+          DEFAULT: 'var(--primary)',
+          foreground: 'var(--primary-foreground)',
+        },
+        secondary: {
+          DEFAULT: 'var(--secondary)',
+          foreground: 'var(--secondary-foreground)',
+        },
+        muted: {
+          DEFAULT: 'var(--muted)',
+          foreground: 'var(--muted-foreground)',
+        },
+        accent: {
+          DEFAULT: 'var(--accent)',
+          foreground: 'var(--accent-foreground)',
+        },
+        destructive: {
+          DEFAULT: 'var(--destructive)',
+          foreground: 'var(--destructive-foreground)',
+        },
+        border: 'var(--border)',
+        input: 'var(--input)',
+        ring: 'var(--ring)',
+        // VitalSense brand colors
+        vitalsense: {
+          primary: '#2563eb',
+          secondary: '#34C759',
+          success: '#30D158',
+          warning: '#FF9500',
+          error: '#FF3B30',
+          info: '#5AC8FA',
+          teal: '#056487',
+        },
       },
-
-      // Minimal gray scale
-      gray: {
-        100: '#f3f4f6',
-        500: '#6b7280',
-        900: '#111827'
-      }
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+      },
+      fontFamily: {
+        sans: [
+          'Inter',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'sans-serif',
+        ],
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.2s ease-in-out',
+        'slide-in': 'slideIn 0.3s ease-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideIn: {
+          '0%': { transform: 'translateY(-10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+      },
     },
-
-    spacing: {
-      0: '0',
-      1: '0.25rem',
-      2: '0.5rem',
-      4: '1rem',
-      6: '1.5rem',
-      8: '2rem'
-    },
-
-    fontSize: {
-      sm: '0.875rem',
-      base: '1rem',
-      lg: '1.125rem',
-      xl: '1.25rem',
-      '2xl': '1.5rem',
-      '3xl': '1.875rem'
-    },
-
-    extend: {}
   },
-
-  // Minimal safelist - only for dynamic classes
-  safelist: [
-    'text-vitalsense-primary',
-    'text-vitalsense-secondary',
-    'bg-vitalsense-primary',
-    'bg-vitalsense-secondary'
-  ],
-
-  plugins: []
+  plugins: [],
 };

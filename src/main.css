@@ -154,6 +154,9 @@
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }
+  .h-safe-bottom {
+    height: env(safe-area-inset-bottom);
+  }
   .vs-tap-target {
     min-width: 44px;
     min-height: 44px;

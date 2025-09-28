@@ -55,7 +55,7 @@ import {
 } from 'lucide-react';
 
 // Lazy loaded components with fallbacks
-const LandingPage = lazy(() => import('@/components/LandingPage'));
+const LandingPage = lazy(() => import('@/components/LandingPageOptimized'));
 const OnboardingFlow = lazy(
   () => import('@/components/onboarding/OnboardingFlow')
 );
@@ -68,8 +68,8 @@ const LiveHealthMonitoring = lazy(() =>
     .catch(() => ({
       default: () => (
         <div className="p-8 text-center">
-          <Activity className="h-12 w-12 text-vitalsense-teal mx-auto mb-4" />
-          <h2 className="text-foreground mb-2 text-2xl font-bold">
+          <Activity className="mx-auto mb-4 h-12 w-12 text-vitalsense-teal" />
+          <h2 className="mb-2 text-2xl font-bold text-foreground">
             VitalSense Live Monitoring
           </h2>
           <p className="text-muted-foreground">
@@ -121,8 +121,8 @@ const NotificationCenter = lazy(() =>
   import('@/components/sections/NotificationCenter').catch(() => ({
     default: () => (
       <div className="p-8 text-center">
-        <Bell className="h-12 w-12 text-vitalsense-teal mx-auto mb-4" />
-        <h2 className="text-foreground mb-2 text-2xl font-bold">
+        <Bell className="mx-auto mb-4 h-12 w-12 text-vitalsense-teal" />
+        <h2 className="mb-2 text-2xl font-bold text-foreground">
           Notification Center
         </h2>
         <p className="text-muted-foreground">
@@ -137,8 +137,8 @@ const CaregiverDashboard = lazy(() =>
   import('@/components/sections/CaregiverDashboard').catch(() => ({
     default: () => (
       <div className="p-8 text-center">
-        <Users className="h-12 w-12 text-vitalsense-teal mx-auto mb-4" />
-        <h2 className="text-foreground mb-2 text-2xl font-bold">
+        <Users className="mx-auto mb-4 h-12 w-12 text-vitalsense-teal" />
+        <h2 className="mb-2 text-2xl font-bold text-foreground">
           Caregiver Dashboard
         </h2>
         <p className="text-muted-foreground">Caregiver portal coming soon.</p>
@@ -162,8 +162,8 @@ const PrivacyControls = lazy(() =>
   import('@/components/sections/PrivacyControls').catch(() => ({
     default: () => (
       <div className="p-8 text-center">
-        <Shield className="h-12 w-12 text-vitalsense-teal mx-auto mb-4" />
-        <h2 className="text-foreground mb-2 text-2xl font-bold">
+        <Shield className="mx-auto mb-4 h-12 w-12 text-vitalsense-teal" />
+        <h2 className="mb-2 text-2xl font-bold text-foreground">
           Privacy Controls
         </h2>
         <p className="text-muted-foreground">Privacy settings coming soon.</p>
@@ -468,7 +468,7 @@ function AppContent() {
   );
 
   return (
-    <div className="bg-background text-foreground pt-safe-top pb-safe-bottom flex h-screen">
+    <div className="pt-safe-top pb-safe-bottom flex h-screen bg-background text-foreground">
       {/* Unified Sidebar (Apple HIG style) */}
       <AppleSidebarPanel
         id="app-sidebar"
@@ -478,15 +478,15 @@ function AppContent() {
         withSpacer={true}
       >
         <AppleSidebarHeader>
-          <div className="h-12 px-3 flex items-center justify-between py-2">
-            <h2 className="text-foreground text-sm font-semibold">
+          <div className="flex h-12 items-center justify-between px-3 py-2">
+            <h2 className="text-sm font-semibold text-foreground">
               VitalSense
             </h2>
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleSidebar}
-              className="md:hidden hover:bg-muted"
+              className="hover:bg-muted md:hidden"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -495,7 +495,7 @@ function AppContent() {
         {/* Quick Access */}
         {hasAnyUsage && !lockNavOrder && (
           <AppleSidebarSection>
-            <div className="text-xs text-muted-foreground px-2 pb-2 font-medium">
+            <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
               Quick Access
             </div>
             <AppleSidebarList>
@@ -523,7 +523,7 @@ function AppContent() {
         )}
         {/* Primary */}
         <AppleSidebarSection>
-          <div className="text-xs text-muted-foreground px-2 pb-2 font-medium">
+          <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
             Primary
           </div>
           <AppleSidebarList>
@@ -550,7 +550,7 @@ function AppContent() {
         </AppleSidebarSection>
         {/* Secondary */}
         <AppleSidebarSection>
-          <div className="text-xs text-muted-foreground px-2 pb-2 font-medium">
+          <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
             More
           </div>
           <AppleSidebarList>
@@ -577,7 +577,7 @@ function AppContent() {
         </AppleSidebarSection>
         {/* Tertiary */}
         <AppleSidebarSection>
-          <div className="text-xs text-muted-foreground px-2 pb-2 font-medium">
+          <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
             Settings
           </div>
           <AppleSidebarList>
@@ -605,7 +605,7 @@ function AppContent() {
               active={false}
               onClick={() => setLockNavOrder((v) => !v)}
               aria-pressed={lockNavOrder}
-              className="text-xs h-auto min-h-[36px] justify-start py-1"
+              className="h-auto min-h-[36px] justify-start py-1 text-xs"
             >
               {lockNavOrder
                 ? 'Unlock Navigation Order'
@@ -613,14 +613,14 @@ function AppContent() {
             </AppleSidebarItem>
           </AppleSidebarList>
         </AppleSidebarSection>
-        <div className="py-1.5 text-xs text-muted-foreground mt-auto px-2">
+        <div className="mt-auto px-2 py-1.5 text-xs text-muted-foreground">
           © {new Date().getFullYear()} VitalSense
         </div>
       </AppleSidebarPanel>
 
       {/* Main Content Area within SidebarInset (must be immediate sibling of the peer sidebar) */}
       <AppleSidebarMain bumper="none" className="flex flex-1 flex-col">
-        <div className="pr-3 flex items-center gap-2">
+        <div className="flex items-center gap-2 pr-3">
           <NavigationHeader
             onSidebarToggle={toggleSidebar}
             themeMode={themeMode}
@@ -638,7 +638,7 @@ function AppContent() {
             id="main-content"
             role="main"
             aria-label={activeLabel || 'Main content'}
-            className="bg-background md:px-6 md:pt-3 pb-3 md:pb-4 flex-1 px-4 pt-2"
+            className="flex-1 bg-background px-4 pb-3 pt-2 md:px-6 md:pb-4 md:pt-3"
           >
             {/* Lightweight onboarding banner on dashboard only */}
             {activeTab === 'dashboard' && (
@@ -651,8 +651,8 @@ function AppContent() {
             )}
             <Suspense
               fallback={
-                <div className="h-64 flex items-center justify-center">
-                  <div className="animate-spin border-teal-600 h-8 w-8 rounded-full border-b-2"></div>
+                <div className="flex h-64 items-center justify-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-teal-600"></div>
                   <span className="ml-3 text-muted-foreground">
                     Loading VitalSense...
                   </span>
