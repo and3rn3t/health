@@ -6,19 +6,25 @@
  */
 
 import { spawn } from 'child_process';
-import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Redirect to the actual script location
-const actualScript = join(__dirname, '..', '..', 'testing', 'app-status-check.js');
+const actualScript = join(
+  __dirname,
+  '..',
+  '..',
+  'testing',
+  'app-status-check.js'
+);
 const args = process.argv.slice(2);
 
 const child = spawn('node', [actualScript, ...args], {
   stdio: 'inherit',
-  cwd: process.cwd()
+  cwd: process.cwd(),
 });
 
 child.on('exit', (code) => {

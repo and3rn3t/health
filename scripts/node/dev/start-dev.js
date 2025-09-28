@@ -5,7 +5,7 @@
  * This maintains compatibility with VS Code tasks
  */
 
-import { writeTaskStart, writeInfo, writeSuccess } from '../../core/logger.js';
+import { writeInfo, writeSuccess, writeTaskStart } from '../../core/logger.js';
 
 writeTaskStart('Development Environment');
 writeInfo('Starting VitalSense development services...');

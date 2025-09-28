@@ -24,9 +24,13 @@ try {
 console.log('🔍 Testing Advanced WebSocket ML...');
 try {
   // Test DNS resolution first
-  const dnsTest = await fetch('https://vitalsense-advanced.andernet.dev', { method: 'HEAD' });
+  const dnsTest = await fetch('https://vitalsense-advanced.andernet.dev', {
+    method: 'HEAD',
+  });
   console.log('✅ Advanced WebSocket DNS: RESOLVED');
-  console.log('✅ Advanced WebSocket ML: WORKING (8/8 tests passed previously)');
+  console.log(
+    '✅ Advanced WebSocket ML: WORKING (8/8 tests passed previously)'
+  );
 } catch (error) {
   console.log('⚠️  Advanced WebSocket DNS: Check connection');
 }
@@ -39,7 +43,9 @@ try {
     const html = await frontendResponse.text();
     const hasVitalSense = html.includes('VitalSense');
     console.log('✅ Frontend Server: RUNNING (port 5173)');
-    console.log(`${hasVitalSense ? '✅' : '⚠️ '} VitalSense Branding: ${hasVitalSense ? 'DETECTED' : 'NEEDS CHECK'}`);
+    console.log(
+      `${hasVitalSense ? '✅' : '⚠️ '} VitalSense Branding: ${hasVitalSense ? 'DETECTED' : 'NEEDS CHECK'}`
+    );
     console.log(`📊 Content Size: ${html.length} bytes`);
   } else {
     console.log('❌ Frontend Server: ERROR');
@@ -52,7 +58,9 @@ console.log();
 console.log('📋 INTEGRATION STATUS:');
 console.log('├─ ✅ DNS Resolution: COMPLETE (all 3 domains working)');
 console.log('├─ ✅ Quick Fix ML: OPERATIONAL (mock ML responses ready)');
-console.log('├─ ✅ Advanced WebSocket: DEPLOYED (vitalsense-advanced.andernet.dev)');
+console.log(
+  '├─ ✅ Advanced WebSocket: DEPLOYED (vitalsense-advanced.andernet.dev)'
+);
 console.log('├─ ✅ Frontend Server: RUNNING (Vite dev server on 5173)');
 console.log('└─ ⚠️  Security Dependencies: 11 vulnerabilities need updates');
 
@@ -67,8 +75,12 @@ console.log('5. 📊 Run comprehensive integration test suite');
 console.log();
 console.log('💡 WORKING SOLUTIONS SUMMARY:');
 console.log('├─ Quick Fix ML Server: http://localhost:3002');
-console.log('│  └─ Endpoints: /health, /ml/analyze, /ml/predictions, /ml/insights');
-console.log('├─ Advanced WebSocket ML: wss://vitalsense-advanced.andernet.dev/ws');
+console.log(
+  '│  └─ Endpoints: /health, /ml/analyze, /ml/predictions, /ml/insights'
+);
+console.log(
+  '├─ Advanced WebSocket ML: wss://vitalsense-advanced.andernet.dev/ws'
+);
 console.log('│  └─ Status: 8/8 ML tests passing, full functionality');
 console.log('├─ VitalSense Frontend: http://localhost:5173');
 console.log('│  └─ Status: Running with web-vitals import bypassed');
@@ -77,4 +89,6 @@ console.log('└─ DNS Infrastructure: 100% resolved (3/3 domains)');
 console.log();
 console.log('🎯 PRIORITY #3 FRONTEND INTEGRATION: IN PROGRESS');
 console.log('Ready for ML integration testing and security updates.');
-console.log('All backend services operational and ready for frontend connection.');
+console.log(
+  'All backend services operational and ready for frontend connection.'
+);

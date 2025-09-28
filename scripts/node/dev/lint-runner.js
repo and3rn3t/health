@@ -6,13 +6,18 @@
  */
 
 import { program } from 'commander';
-import { writeTaskStart, writeTaskComplete, writeInfo, writeSuccess } from '../../core/logger.js';
+import {
+  writeInfo,
+  writeSuccess,
+  writeTaskComplete,
+  writeTaskStart,
+} from '../../core/logger.js';
 
 program
   .name('lint-runner')
   .description('Run linting checks')
   .option('--typescript', 'Lint TypeScript files only')
-  .option('--swift', 'Lint Swift files only')  
+  .option('--swift', 'Lint Swift files only')
   .option('--all', 'Lint all files')
   .option('--quick', 'Quick lint check')
   .option('--fix', 'Auto-fix issues where possible')

@@ -13,7 +13,7 @@ const SERVER_START_DELAY = 3000;
 let serverProcess = null;
 
 async function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function makeRequest(endpoint, data = null) {
@@ -42,10 +42,10 @@ async function makeRequest(endpoint, data = null) {
 
 async function startServer() {
   console.log('🚀 Starting VitalSense Enhanced Server...');
-  
+
   serverProcess = spawn('node', ['vitalsense-enhanced-server.js'], {
     cwd: 'server',
-    stdio: ['inherit', 'pipe', 'pipe']
+    stdio: ['inherit', 'pipe', 'pipe'],
   });
 
   serverProcess.stdout.on('data', (data) => {
@@ -68,7 +68,7 @@ async function testMLEndpoints() {
     health: null,
     analysis: null,
     predictions: null,
-    insights: null
+    insights: null,
   };
 
   try {
@@ -84,28 +84,41 @@ async function testMLEndpoints() {
         metric_type: 'heart_rate',
         value: 75,
         timestamp: new Date().toISOString(),
-        source: 'test_device'
-      }
+        source: 'test_device',
+      },
     };
     results.analysis = await makeRequest('/api/ml/analyze', analysisData);
     console.log('✅ ML Analysis completed');
     console.log(`   - Analysis ID: ${results.analysis.data.analysisId}`);
-    console.log(`   - Metrics: ${results.analysis.data.analysis.metrics.length}`);
-    console.log(`   - Predictions: ${results.analysis.data.analysis.predictions.length}`);
-    console.log(`   - Anomalies: ${results.analysis.data.analysis.anomalies.length}`);
+    console.log(
+      `   - Metrics: ${results.analysis.data.analysis.metrics.length}`
+    );
+    console.log(
+      `   - Predictions: ${results.analysis.data.analysis.predictions.length}`
+    );
+    console.log(
+      `   - Anomalies: ${results.analysis.data.analysis.anomalies.length}`
+    );
     console.log(`   - Confidence: ${results.analysis.data.confidence}`);
 
     // Test 3: Predictions
     console.log('\n3️⃣ Testing predictions...');
     const predictionData = {
       metrics: ['heart_rate', 'walking_steadiness'],
-      time_horizon_days: 7
+      time_horizon_days: 7,
     };
-    results.predictions = await makeRequest('/api/ml/predictions', predictionData);
+    results.predictions = await makeRequest(
+      '/api/ml/predictions',
+      predictionData
+    );
     console.log('✅ Predictions generated');
-    console.log(`   - Predictions count: ${results.predictions.data.predictions.length}`);
+    console.log(
+      `   - Predictions count: ${results.predictions.data.predictions.length}`
+    );
     results.predictions.data.predictions.forEach((pred) => {
-      console.log(`   - ${pred.metric_type}: ${pred.predicted_value} (${pred.confidence} confidence)`);
+      console.log(
+        `   - ${pred.metric_type}: ${pred.predicted_value} (${pred.confidence} confidence)`
+      );
     });
 
     // Test 4: Insights
@@ -113,10 +126,11 @@ async function testMLEndpoints() {
     results.insights = await makeRequest('/api/ml/insights', {});
     console.log('✅ Insights generated');
     console.log(`   - Insights: ${results.insights.data.insights.length}`);
-    console.log(`   - Recommendations: ${results.insights.data.recommendations.length}`);
+    console.log(
+      `   - Recommendations: ${results.insights.data.recommendations.length}`
+    );
 
     return results;
-
   } catch (error) {
     console.error(`❌ Test failed: ${error.message}`);
     throw error;
@@ -135,25 +149,29 @@ async function main() {
   try {
     await startServer();
     const results = await testMLEndpoints();
-    
+
     console.log('\n🎉 HTTP ML Endpoints Test Results:');
     console.log('==================================');
     console.log('✅ All ML endpoints functional!');
     console.log(`✅ Health check: ${results.health?.status}`);
-    console.log(`✅ ML Analysis: ${results.analysis?.data?.analysis?.metrics?.length || 0} metrics processed`);
-    console.log(`✅ Predictions: ${results.predictions?.data?.predictions?.length || 0} generated`);
-    console.log(`✅ Insights: ${results.insights?.data?.insights?.length || 0} insights provided`);
-    
+    console.log(
+      `✅ ML Analysis: ${results.analysis?.data?.analysis?.metrics?.length || 0} metrics processed`
+    );
+    console.log(
+      `✅ Predictions: ${results.predictions?.data?.predictions?.length || 0} generated`
+    );
+    console.log(
+      `✅ Insights: ${results.insights?.data?.insights?.length || 0} insights provided`
+    );
+
     console.log('\n💡 Quick Fix Option A Status: ✅ SUCCESS');
     console.log('📊 ML functionality is working via HTTP endpoints');
     console.log('🔧 WebSocket connection issues can be resolved separately');
-    
   } catch (error) {
     console.error('\n❌ HTTP ML Endpoints Test Failed:');
     console.error('=================================');
     console.error(error.message);
     process.exit(1);
-    
   } finally {
     await cleanup();
   }

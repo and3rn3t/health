@@ -25,20 +25,20 @@ const testResults = {
         httpStatus: 200,
         contentLength: 5874,
         hasVitalSense: true,
-        hasReactContent: true
-      }
+        hasReactContent: true,
+      },
     },
     {
       name: 'Quick Fix ML Server',
-      status: 'PASS', 
+      status: 'PASS',
       message: 'ML server fully operational with comprehensive analysis',
       details: {
         healthEndpoint: 'http://localhost:3002/health',
         healthStatus: 'healthy',
         mlAnalysisWorking: true,
         sampleResponseReceived: true,
-        analysisQuality: 'comprehensive'
-      }
+        analysisQuality: 'comprehensive',
+      },
     },
     {
       name: 'Advanced WebSocket ML',
@@ -48,8 +48,8 @@ const testResults = {
         url: 'wss://vitalsense-websocket-advanced-prod.andernet.workers.dev',
         connectionStatus: 'working',
         mlFunctionality: 'operational',
-        testsPassed: '8/8'
-      }
+        testsPassed: '8/8',
+      },
     },
     {
       name: 'DNS Resolution',
@@ -59,8 +59,8 @@ const testResults = {
         domainsResolved: 3,
         totalDomains: 3,
         httpEndpointsWorking: 2,
-        resolutionRate: '100%'
-      }
+        resolutionRate: '100%',
+      },
     },
     {
       name: 'Security Status',
@@ -68,10 +68,15 @@ const testResults = {
       message: 'Critical security vulnerabilities resolved',
       details: {
         vulnerabilitiesFixed: 3,
-        criticalPackagesSecure: ['axios 1.12.2', 'esbuild 0.25.10', 'hono 4.9.9', 'web-vitals 5.1.0'],
+        criticalPackagesSecure: [
+          'axios 1.12.2',
+          'esbuild 0.25.10',
+          'hono 4.9.9',
+          'web-vitals 5.1.0',
+        ],
         remainingVulnerabilities: 8,
-        securityLevel: 'HIGH'
-      }
+        securityLevel: 'HIGH',
+      },
     },
     {
       name: 'Frontend-ML Integration',
@@ -81,17 +86,17 @@ const testResults = {
         mlEndpointAccessible: true,
         corsConfigured: true,
         sampleAnalysisWorking: true,
-        integrationReady: true
-      }
-    }
+        integrationReady: true,
+      },
+    },
   ],
   summary: {
     total: 6,
     passed: 6,
     failed: 0,
     warnings: 0,
-    successRate: 100
-  }
+    successRate: 100,
+  },
 };
 
 // Print detailed results
@@ -99,11 +104,12 @@ console.log('📊 INTEGRATION TEST RESULTS:');
 console.log('='.repeat(30));
 
 testResults.tests.forEach((test, index) => {
-  const icon = test.status === 'PASS' ? '✅' : test.status === 'FAIL' ? '❌' : '⚠️';
+  const icon =
+    test.status === 'PASS' ? '✅' : test.status === 'FAIL' ? '❌' : '⚠️';
   console.log(`${icon} ${index + 1}. ${test.name}`);
   console.log(`   Status: ${test.status}`);
   console.log(`   Result: ${test.message}`);
-  
+
   // Show key details
   if (test.details) {
     const keyDetails = Object.entries(test.details).slice(0, 3);
@@ -132,7 +138,7 @@ console.log('='.repeat(40));
 if (successRate === 100) {
   console.log('🟢 EXCELLENT - All integration tests passed!');
   console.log('🚀 System is fully ready for production deployment');
-  
+
   console.log('\n✅ VERIFIED CAPABILITIES:');
   console.log('├─ Frontend: VitalSense branding and React app working');
   console.log('├─ ML Backend: Quick Fix server with comprehensive analysis');
@@ -140,7 +146,6 @@ if (successRate === 100) {
   console.log('├─ DNS: 100% domain resolution and connectivity');
   console.log('├─ Security: All critical vulnerabilities resolved');
   console.log('└─ Integration: Frontend can communicate with ML backends');
-  
 } else if (successRate >= 80) {
   console.log('🟡 GOOD - Most tests passed, minor issues to address');
   console.log('🔧 System needs minor adjustments before production');
@@ -188,13 +193,21 @@ console.log();
 console.log('🚀 READY FOR PRODUCTION DEPLOYMENT!');
 
 // Save results to file
-import('fs').then(fs => {
-  const reportPath = './integration-test-complete-report.json';
-  return fs.promises.writeFile(reportPath, JSON.stringify(testResults, null, 2));
-}).then(() => {
-  console.log('\n📋 Complete test report saved: integration-test-complete-report.json');
-}).catch(err => {
-  console.log('\n⚠️  Could not save report file:', err.message);
-});
+import('fs')
+  .then((fs) => {
+    const reportPath = './integration-test-complete-report.json';
+    return fs.promises.writeFile(
+      reportPath,
+      JSON.stringify(testResults, null, 2)
+    );
+  })
+  .then(() => {
+    console.log(
+      '\n📋 Complete test report saved: integration-test-complete-report.json'
+    );
+  })
+  .catch((err) => {
+    console.log('\n⚠️  Could not save report file:', err.message);
+  });
 
 export default testResults;

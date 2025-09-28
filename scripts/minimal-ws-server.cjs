@@ -24,20 +24,24 @@ console.log('🔌 WebSocket server created');
 wss.on('connection', (ws, req) => {
   console.log('📱 NEW CONNECTION RECEIVED!');
   console.log(`   Client IP: ${req.socket.remoteAddress}`);
-  
-  ws.send(JSON.stringify({
-    type: 'welcome',
-    message: 'Hello from minimal server'
-  }));
-  
+
+  ws.send(
+    JSON.stringify({
+      type: 'welcome',
+      message: 'Hello from minimal server',
+    })
+  );
+
   ws.on('message', (data) => {
     console.log('📥 Received:', data.toString());
-    ws.send(JSON.stringify({
-      type: 'echo',
-      received: data.toString()
-    }));
+    ws.send(
+      JSON.stringify({
+        type: 'echo',
+        received: data.toString(),
+      })
+    );
   });
-  
+
   ws.on('close', () => {
     console.log('👋 Connection closed');
   });

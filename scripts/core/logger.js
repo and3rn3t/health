@@ -28,39 +28,60 @@ function formatMessage(level, message) {
 }
 
 export function writeTaskStart(taskName) {
-  const message = formatMessage(colors.blue + '🚀 START' + colors.reset, `${taskName}`);
+  const message = formatMessage(
+    colors.blue + '🚀 START' + colors.reset,
+    `${taskName}`
+  );
   console.log(message);
 }
 
 export function writeTaskComplete(taskName, duration = null) {
   const durationStr = duration ? ` (${duration}ms)` : '';
-  const message = formatMessage(colors.green + '✅ COMPLETE' + colors.reset, `${taskName}${durationStr}`);
+  const message = formatMessage(
+    colors.green + '✅ COMPLETE' + colors.reset,
+    `${taskName}${durationStr}`
+  );
   console.log(message);
 }
 
 export function writeTaskError(taskName, error = null) {
   const errorStr = error ? ` - ${error}` : '';
-  const message = formatMessage(colors.red + '❌ ERROR' + colors.reset, `${taskName}${errorStr}`);
+  const message = formatMessage(
+    colors.red + '❌ ERROR' + colors.reset,
+    `${taskName}${errorStr}`
+  );
   console.error(message);
 }
 
 export function writeInfo(message) {
-  const formatted = formatMessage(colors.cyan + 'ℹ️  INFO' + colors.reset, message);
+  const formatted = formatMessage(
+    colors.cyan + 'ℹ️  INFO' + colors.reset,
+    message
+  );
   console.log(formatted);
 }
 
 export function writeSuccess(message) {
-  const formatted = formatMessage(colors.green + '✅ SUCCESS' + colors.reset, message);
+  const formatted = formatMessage(
+    colors.green + '✅ SUCCESS' + colors.reset,
+    message
+  );
   console.log(formatted);
 }
 
 export function writeWarning(message) {
-  const formatted = formatMessage(colors.yellow + '⚠️  WARNING' + colors.reset, message);
+  const formatted = formatMessage(
+    colors.yellow + '⚠️  WARNING' + colors.reset,
+    message
+  );
   console.log(formatted);
 }
 
 export function writeError(message) {
-  const formatted = formatMessage(colors.red + '❌ ERROR' + colors.reset, message);
+  const formatted = formatMessage(
+    colors.red + '❌ ERROR' + colors.reset,
+    message
+  );
   console.error(formatted);
 }
 
@@ -76,11 +97,7 @@ export function exitWithSuccess(message) {
 
 // HTTP request utility
 export async function makeHttpRequest(url, options = {}) {
-  const {
-    method = 'GET',
-    timeout = 5000,
-    headers = {},
-  } = options;
+  const { method = 'GET', timeout = 5000, headers = {} } = options;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -90,7 +107,7 @@ export async function makeHttpRequest(url, options = {}) {
       method,
       headers,
       signal: controller.signal,
-      ...options
+      ...options,
     });
 
     clearTimeout(timeoutId);

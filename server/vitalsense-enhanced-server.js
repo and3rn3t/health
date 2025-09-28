@@ -224,7 +224,10 @@ class VitalSenseEnhancedServer {
     // Simple test endpoint
     console.log('🐛 DEBUG: Adding simple test endpoint...');
     this.app.get('/api/test', (req, res) => {
-      res.json({ message: 'Test endpoint works!', timestamp: new Date().toISOString() });
+      res.json({
+        message: 'Test endpoint works!',
+        timestamp: new Date().toISOString(),
+      });
     });
 
     // Quick Fix Option A: HTTP ML endpoints for testing
@@ -234,7 +237,7 @@ class VitalSenseEnhancedServer {
       try {
         const healthData = req.body.data || req.body;
         const analysis = this.generateMLAnalysis([healthData]);
-        
+
         res.json({
           type: 'ml_analysis_complete',
           data: {
@@ -243,8 +246,8 @@ class VitalSenseEnhancedServer {
             healthData: healthData,
             analysis: analysis,
             confidence: analysis.confidence,
-            recommendations: analysis.insights.map(i => i.insight)
-          }
+            recommendations: analysis.insights.map((i) => i.insight),
+          },
         });
       } catch (error) {
         console.error('❌ ML Analysis error:', error);
@@ -257,15 +260,18 @@ class VitalSenseEnhancedServer {
       console.log('🔮 HTTP ML Predictions requested');
       try {
         const { metrics = ['heart_rate'], time_horizon_days = 7 } = req.body;
-        const predictions = this.generatePredictiveAnalytics(metrics, time_horizon_days);
-        
+        const predictions = this.generatePredictiveAnalytics(
+          metrics,
+          time_horizon_days
+        );
+
         res.json({
           type: 'health_predictions_response',
           data: {
             time_horizon_days,
             predictions,
             generated_at: new Date().toISOString(),
-          }
+          },
         });
       } catch (error) {
         console.error('❌ ML Predictions error:', error);
@@ -278,14 +284,14 @@ class VitalSenseEnhancedServer {
       console.log('💡 HTTP ML Insights requested');
       try {
         const insights = this.generatePersonalizedInsights('test_user');
-        
+
         res.json({
           type: 'personalized_insights_response',
           data: {
             insights: insights.insights,
             recommendations: insights.recommendations,
             generated_at: new Date().toISOString(),
-          }
+          },
         });
       } catch (error) {
         console.error('❌ ML Insights error:', error);
@@ -589,7 +595,7 @@ class VitalSenseEnhancedServer {
     });
 
     console.log('🐛 DEBUG: Setting up WebSocket connection handler...');
-    
+
     this.wss.on('connection', (ws, req) => {
       console.log('🐛 DEBUG: WebSocket connection handler triggered!');
       const clientId = crypto.randomUUID();
@@ -1050,13 +1056,13 @@ class VitalSenseEnhancedServer {
     }
 
     console.log('🧠 Processing ML health data for', clientInfo.userId);
-    
+
     // Extract health data
     const healthData = payload.data || payload;
-    
+
     // Generate ML analysis
     const mlAnalysis = this.generateMLAnalysis([healthData]);
-    
+
     // Send ML processing response
     this.sendMessage(ws, {
       type: 'vitalsense_health_processing_response',
@@ -1082,13 +1088,20 @@ class VitalSenseEnhancedServer {
     }
 
     console.log('🔮 Generating predictions for', clientInfo.userId);
-    
-    const requestedMetrics = payload.metrics || ['heart_rate', 'walking_steadiness', 'gait_speed'];
+
+    const requestedMetrics = payload.metrics || [
+      'heart_rate',
+      'walking_steadiness',
+      'gait_speed',
+    ];
     const timeHorizonDays = payload.time_horizon_days || 7;
-    
+
     // Generate predictive analytics
-    const predictions = this.generatePredictiveAnalytics(requestedMetrics, timeHorizonDays);
-    
+    const predictions = this.generatePredictiveAnalytics(
+      requestedMetrics,
+      timeHorizonDays
+    );
+
     this.sendMessage(ws, {
       type: 'health_predictions_response',
       data: {
@@ -1110,10 +1123,10 @@ class VitalSenseEnhancedServer {
     }
 
     console.log('💡 Generating personalized insights for', clientInfo.userId);
-    
+
     // Generate personalized insights and recommendations
     const insights = this.generatePersonalizedInsights(clientInfo.userId);
-    
+
     this.sendMessage(ws, {
       type: 'personalized_insights_response',
       data: {
@@ -1125,7 +1138,9 @@ class VitalSenseEnhancedServer {
       timestamp: new Date().toISOString(),
     });
 
-    console.log(`✅ Generated ${insights.insights.length} insights and ${insights.recommendations.length} recommendations`);
+    console.log(
+      `✅ Generated ${insights.insights.length} insights and ${insights.recommendations.length} recommendations`
+    );
   }
 
   generateMLAnalysis(healthDataArray) {
@@ -1134,8 +1149,8 @@ class VitalSenseEnhancedServer {
     const predictions = [];
     const anomalies = [];
     const insights = [];
-    
-    healthDataArray.forEach(healthData => {
+
+    healthDataArray.forEach((healthData) => {
       // Mock metric analysis
       const metricAnalysis = {
         metric_type: healthData.metric_type || healthData.type || 'heart_rate',
@@ -1149,7 +1164,8 @@ class VitalSenseEnhancedServer {
       // Mock predictions
       const prediction = {
         metric_type: metricAnalysis.metric_type,
-        predicted_value: metricAnalysis.current_value + (Math.random() - 0.5) * 10,
+        predicted_value:
+          metricAnalysis.current_value + (Math.random() - 0.5) * 10,
         confidence: Math.round((Math.random() * 0.3 + 0.7) * 100) / 100,
         risk_level: Math.random() > 0.8 ? 'elevated' : 'normal',
         time_horizon: '24h',
@@ -1173,12 +1189,12 @@ class VitalSenseEnhancedServer {
         'Heart rate showing steady improvement over past week',
         'Walking patterns indicate good mobility consistency',
         'Sleep quality metrics within healthy range',
-        'Activity levels trending positively'
+        'Activity levels trending positively',
       ];
       insights.push({
         metric_type: metricAnalysis.metric_type,
         insight: mockInsights[Math.floor(Math.random() * mockInsights.length)],
-        confidence: Math.round(Math.random() * 100) / 100
+        confidence: Math.round(Math.random() * 100) / 100,
       });
     });
 
@@ -1193,26 +1209,30 @@ class VitalSenseEnhancedServer {
 
   generatePredictiveAnalytics(requestedMetrics, timeHorizonDays) {
     // Quick Fix Mock: Generate predictive analytics with mock data
-    return requestedMetrics.map(metricType => {
+    return requestedMetrics.map((metricType) => {
       // Mock baseline values
       const baselineValues = {
         heart_rate: 72,
         walking_steadiness: 85,
         gait_speed: 1.2,
         step_count: 8500,
-        sleep_duration: 7.5
+        sleep_duration: 7.5,
       };
-      
+
       const baseValue = baselineValues[metricType] || 100;
       const trendFactor = (Math.random() - 0.5) * 0.2; // ±10% trend
-      
+
       return {
         metric_type: metricType,
-        predicted_value: Math.round((baseValue * (1 + trendFactor)) * 100) / 100,
+        predicted_value: Math.round(baseValue * (1 + trendFactor) * 100) / 100,
         confidence: Math.round((Math.random() * 0.3 + 0.7) * 100) / 100,
         risk_level: Math.random() > 0.7 ? 'elevated' : 'normal',
         trend_direction: trendFactor > 0 ? 'increasing' : 'decreasing',
-        factors: [`Recent ${metricType} patterns`, 'Historical trends', 'Activity correlation'],
+        factors: [
+          `Recent ${metricType} patterns`,
+          'Historical trends',
+          'Activity correlation',
+        ],
         time_horizon_days: timeHorizonDays,
       };
     });
@@ -1223,14 +1243,16 @@ class VitalSenseEnhancedServer {
       {
         category: 'activity_patterns',
         title: 'Walking Consistency Improving',
-        description: 'Your daily walking patterns show 15% improvement over the past week',
+        description:
+          'Your daily walking patterns show 15% improvement over the past week',
         confidence: 0.89,
         impact: 'positive',
       },
       {
         category: 'health_trends',
         title: 'Heart Rate Variability',
-        description: 'Your resting heart rate has been stable, indicating good cardiovascular health',
+        description:
+          'Your resting heart rate has been stable, indicating good cardiovascular health',
         confidence: 0.92,
         impact: 'neutral',
       },
@@ -1246,13 +1268,15 @@ class VitalSenseEnhancedServer {
     const recommendations = [
       {
         category: 'exercise',
-        recommendation: 'Consider adding 10 minutes of balance exercises to your daily routine',
+        recommendation:
+          'Consider adding 10 minutes of balance exercises to your daily routine',
         priority: 'medium',
         expected_benefit: 'Improved stability and reduced fall risk',
       },
       {
         category: 'monitoring',
-        recommendation: 'Continue current activity level - your metrics are trending positively',
+        recommendation:
+          'Continue current activity level - your metrics are trending positively',
         priority: 'low',
         expected_benefit: 'Maintained health improvements',
       },
@@ -1277,7 +1301,9 @@ class VitalSenseEnhancedServer {
   }
 
   calculateZScore(healthData) {
-    const mean = this.getBaselineValue(healthData.metric_type || healthData.type);
+    const mean = this.getBaselineValue(
+      healthData.metric_type || healthData.type
+    );
     const stdDev = mean * 0.15; // Assume 15% standard deviation
     return (healthData.value - mean) / stdDev;
   }
@@ -1290,7 +1316,9 @@ class VitalSenseEnhancedServer {
   predictNextValue(healthData) {
     const current = healthData.value;
     const variation = current * 0.1; // ±10% variation
-    return Math.round((current + (Math.random() - 0.5) * variation) * 100) / 100;
+    return (
+      Math.round((current + (Math.random() - 0.5) * variation) * 100) / 100
+    );
   }
 
   assessRiskLevel(healthData) {
@@ -1322,7 +1350,7 @@ class VitalSenseEnhancedServer {
 
   generateMetricInsight(healthData, analysis) {
     const metricType = healthData.metric_type || healthData.type;
-    
+
     if (analysis.trend === 'improving') {
       return {
         category: 'improvement',
@@ -1331,7 +1359,7 @@ class VitalSenseEnhancedServer {
         confidence: 0.8 + Math.random() * 0.2,
       };
     }
-    
+
     if (Math.abs(analysis.z_score) > 1.5) {
       return {
         category: 'attention',
@@ -1340,14 +1368,18 @@ class VitalSenseEnhancedServer {
         confidence: 0.7 + Math.random() * 0.3,
       };
     }
-    
+
     return null;
   }
 
   getPredictionFactors(metricType) {
     const factors = {
       heart_rate: ['physical_activity', 'stress_level', 'sleep_quality'],
-      walking_steadiness: ['muscle_strength', 'balance_training', 'environmental_factors'],
+      walking_steadiness: [
+        'muscle_strength',
+        'balance_training',
+        'environmental_factors',
+      ],
       gait_speed: ['fitness_level', 'joint_health', 'motivation'],
     };
     return factors[metricType] || ['general_health', 'lifestyle_factors'];

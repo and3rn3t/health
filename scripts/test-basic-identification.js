@@ -15,18 +15,20 @@ let received = false;
 
 ws.on('open', () => {
   console.log('✅ WebSocket connected');
-  
+
   // Send client identification
-  ws.send(JSON.stringify({
-    type: 'client_identification',
-    userId: 'test-user-basic',
-    clientType: 'test_client',
-    deviceInfo: {
-      type: 'test_device',
-      version: '1.0.0'
-    }
-  }));
-  
+  ws.send(
+    JSON.stringify({
+      type: 'client_identification',
+      userId: 'test-user-basic',
+      clientType: 'test_client',
+      deviceInfo: {
+        type: 'test_device',
+        version: '1.0.0',
+      },
+    })
+  );
+
   console.log('📤 Sent client identification');
 });
 
@@ -36,7 +38,7 @@ ws.on('message', (data) => {
     const message = JSON.parse(data.toString());
     console.log('📥 Received message type:', message.type);
     console.log('📥 Message data:', JSON.stringify(message.data, null, 2));
-    
+
     if (message.type === 'identification_confirmed') {
       console.log('✅ Client identification confirmed!');
       ws.close();

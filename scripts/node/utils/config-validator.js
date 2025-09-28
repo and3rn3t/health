@@ -12,7 +12,7 @@ console.log('=====================================');
 
 writeInfo('Checking project configuration...');
 writeInfo('✅ package.json: Valid');
-writeInfo('✅ tsconfig.json: Valid'); 
+writeInfo('✅ tsconfig.json: Valid');
 writeInfo('✅ vite.config.ts: Valid');
 writeInfo('✅ wrangler.toml: Valid');
 

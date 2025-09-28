@@ -4,8 +4,8 @@
  * WebSocket debug test that doesn't use console
  */
 
-import WebSocket from 'ws';
 import fs from 'fs';
+import WebSocket from 'ws';
 
 const logFile = 'websocket-debug.log';
 
@@ -30,20 +30,22 @@ let messageCount = 0;
 ws.on('open', () => {
   log('✅ WebSocket connection opened');
   testPhase = 'connected';
-  
+
   setTimeout(() => {
     log('📤 Sending client identification');
     testPhase = 'identifying';
-    
-    ws.send(JSON.stringify({
-      type: 'client_identification',
-      userId: 'debug-test-user',
-      clientType: 'debug_client',
-      deviceInfo: {
-        type: 'debug_device',
-        version: '1.0.0'
-      }
-    }));
+
+    ws.send(
+      JSON.stringify({
+        type: 'client_identification',
+        userId: 'debug-test-user',
+        clientType: 'debug_client',
+        deviceInfo: {
+          type: 'debug_device',
+          version: '1.0.0',
+        },
+      })
+    );
   }, 100);
 });
 
@@ -52,7 +54,7 @@ ws.on('message', (data) => {
   try {
     const message = JSON.parse(data.toString());
     log(`📥 Message ${messageCount}: ${message.type}`);
-    
+
     if (message.type === 'connection_established') {
       log('✅ Connection established confirmed');
     } else if (message.type === 'identification_confirmed') {
@@ -73,18 +75,22 @@ ws.on('error', (error) => {
 
 ws.on('close', (code, reason) => {
   log(`🔌 WebSocket closed: ${code} ${reason}`);
-  
+
   if (testPhase === 'complete') {
     log('✅ Test completed successfully');
     process.exit(0);
   } else {
-    log(`❌ Test failed in phase: ${testPhase}, received ${messageCount} messages`);
+    log(
+      `❌ Test failed in phase: ${testPhase}, received ${messageCount} messages`
+    );
     process.exit(1);
   }
 });
 
 // Timeout after 10 seconds
 setTimeout(() => {
-  log(`⏰ Test timeout in phase: ${testPhase}, received ${messageCount} messages`);
+  log(
+    `⏰ Test timeout in phase: ${testPhase}, received ${messageCount} messages`
+  );
   ws.close();
 }, 10000);

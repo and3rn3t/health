@@ -14,7 +14,9 @@ console.log();
 // Critical Security Packages Status
 console.log('🎯 CRITICAL SECURITY PACKAGES:');
 console.log('├─ ✅ axios: 1.12.2 (≥1.12.0 required) - DoS vulnerability FIXED');
-console.log('├─ ✅ esbuild: 0.25.10 (≥0.25.0 required) - Dev server vulnerability FIXED');
+console.log(
+  '├─ ✅ esbuild: 0.25.10 (≥0.25.0 required) - Dev server vulnerability FIXED'
+);
 console.log('├─ ✅ hono: 4.9.9 (≥4.9.7 required) - Body limit bypass FIXED');
 console.log('└─ ✅ web-vitals: 5.1.0 - Missing dependency ADDED');
 
@@ -66,18 +68,20 @@ console.log('🧪 TESTING SECURE SERVICES...');
 
 // Quick Fix ML Server Test
 fetch('http://localhost:3002/health')
-  .then(response => response.json())
-  .then(data => {
+  .then((response) => response.json())
+  .then((data) => {
     console.log('✅ Quick Fix ML Server: HEALTHY & SECURE');
   })
   .catch(() => {
-    console.log('⚠️  Quick Fix ML Server: Not running (start with: node scripts/quickfix-ml-server.js)');
+    console.log(
+      '⚠️  Quick Fix ML Server: Not running (start with: node scripts/quickfix-ml-server.js)'
+    );
   });
 
-// Frontend Test  
+// Frontend Test
 fetch('http://localhost:5173')
-  .then(response => {
-    if(response.ok) {
+  .then((response) => {
+    if (response.ok) {
       console.log('✅ Frontend Server: RUNNING & SECURE');
     }
   })
@@ -88,5 +92,7 @@ fetch('http://localhost:5173')
 setTimeout(() => {
   console.log();
   console.log('🎉 SECURITY ASSESSMENT COMPLETE');
-  console.log('All critical vulnerabilities resolved. System ready for production.');
+  console.log(
+    'All critical vulnerabilities resolved. System ready for production.'
+  );
 }, 2000);
