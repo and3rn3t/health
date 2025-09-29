@@ -7,8 +7,8 @@ function Card({ className, ...props }: ComponentProps<'div'>) {
     <div
       data-slot="card"
       className={cn(
-        // Base card styling + consistent outer spacing so stacked cards don't touch
-        'text-card-foreground bg-card border-gray-200 md:my-10 my-6 flex flex-col gap-6 rounded-xl border py-6 shadow-sm transition-shadow hover:shadow-md',
+        // Base card styling + optimized outer spacing for better mobile experience
+        'text-card-foreground bg-card border-gray-200 my-4 md:my-6 flex flex-col gap-6 rounded-xl border py-6 shadow-sm transition-shadow hover:shadow-md',
         className
       )}
       {...props}

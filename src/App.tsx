@@ -651,15 +651,15 @@ function AppContent() {
             )}
             <Suspense
               fallback={
-                <div className="flex h-64 items-center justify-center">
+                <div className="flex h-64 items-center justify-center gap-3">
                   <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-teal-600"></div>
-                  <span className="ml-3 text-muted-foreground">
+                  <span className="text-muted-foreground">
                     Loading VitalSense...
                   </span>
                 </div>
               }
             >
-              <div className="mx-auto max-w-7xl space-y-6">
+              <div className="mx-auto max-w-7xl space-y-8">
                 <h1 className="sr-only" aria-live="polite">
                   {activeLabel}
                 </h1>

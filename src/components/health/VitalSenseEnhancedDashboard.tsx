@@ -60,10 +60,10 @@ function AlertCard({
     <Card
       className={`${severityStyles[severity]} border-border rounded-md border`}
     >
-      <CardContent className="px-4 py-4">
-        <div className="flex items-start justify-between space-x-4">
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <div className="mb-2 flex items-center space-x-2">
+            <div className="mb-2 flex items-center gap-2">
               <AlertTriangle
                 className={`h-4 w-4 ${
                   severity === 'critical'
@@ -88,7 +88,7 @@ function AlertCard({
             <p className="text-vitalsense-gray mb-2 text-sm">{message}</p>
             <p className="text-xs text-vitalsense-gray/80">{timestamp}</p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => onView(id)}>
               <Eye className="w-3 h-3" />
             </Button>

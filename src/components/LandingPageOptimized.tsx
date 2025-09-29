@@ -249,7 +249,7 @@ export default function LandingPageOptimized({
   return (
     <div className="min-h-screen bg-background">
       {/* iOS 26 Large Title Header */}
-      <div className="pt-safe-top px-4 pb-6">
+      <div className="pt-safe-top px-4 py-6">
         <div className="space-y-4">
           {/* Large Title Section */}
           <div className="space-y-2">
@@ -287,8 +287,8 @@ export default function LandingPageOptimized({
 
       {/* Critical Health Metrics - Prominent Display */}
       {healthData && criticalMetrics.length > 0 && (
-        <div className="px-4 pb-8">
-          <div className="space-y-4">
+        <div className="px-4 py-6">
+          <div className="space-y-6">
             <h2 className="text-2xl font-semibold text-foreground">
               Health Overview
             </h2>
@@ -322,7 +322,7 @@ export default function LandingPageOptimized({
 
       {/* Time Range Controls - iOS 26 Segmented Control */}
       {healthData && (
-        <div className="px-4 pb-6">
+        <div className="px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center rounded-xl bg-muted p-1">
               {(['today', '7d', '30d', '90d'] as const).map((tf) => (
@@ -404,8 +404,8 @@ export default function LandingPageOptimized({
       )}
 
       {/* Featured Actions - iOS 26 Large Cards */}
-      <div className="px-4 pb-8">
-        <div className="space-y-4">
+      <div className="px-4 py-6">
+        <div className="space-y-6">
           <h2 className="text-2xl font-semibold text-foreground">
             Featured Tools
           </h2>
@@ -441,10 +441,10 @@ export default function LandingPageOptimized({
       </div>
 
       {/* Additional Actions - Compact List */}
-      <div className="px-4 pb-8">
-        <div className="space-y-4">
+      <div className="px-4 py-6">
+        <div className="space-y-6">
           <h2 className="text-xl font-semibold text-foreground">More Tools</h2>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {otherActions.map((action) => {
               const IconComponent = action.icon;
               return (

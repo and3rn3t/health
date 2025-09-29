@@ -131,17 +131,17 @@ function NavigationHeader({
   };
 
   return (
-    <header className="border-border bg-card sticky top-0 z-40 mb-1 w-full border-b">
+    <header className="border-border bg-card sticky top-0 z-40 mb-2 md:mb-3 w-full border-b">
       {/* Primary bar: Sidebar, title (mobile), search, key actions */}
-      <div className="px-3 md:px-6 flex items-center justify-between gap-2 py-1">
+      <div className="px-3 md:px-6 flex items-center justify-between gap-3 md:gap-4 py-2 md:py-3">
         {/* Left: Sidebar trigger + mobile title */}
-        <div className="flex min-w-0 flex-1 items-center gap-2">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <AppleSidebarTrigger
             aria-controls="app-sidebar"
             className="hover:bg-muted shrink-0"
           />
           {/* Mobile title */}
-          <div className="md:hidden min-w-0">
+          <div className="md:hidden min-w-0 space-y-0.5">
             <h1 className="truncate text-base font-semibold leading-tight">
               {currentPageInfo.label}
             </h1>
@@ -165,7 +165,7 @@ function NavigationHeader({
         </div>
 
         {/* Right: prioritized actions */}
-        <div className="md:gap-3 flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-3 md:gap-4">
           {/* Mobile search */}
           <Button
             variant="ghost"
@@ -292,7 +292,7 @@ function NavigationHeader({
       </div>
 
       {/* Secondary bar: breadcrumbs & status */}
-      <div className="px-3 md:px-6 md:flex hidden items-center justify-between pb-2">
+      <div className="px-3 md:px-6 md:flex hidden items-center justify-between py-2 md:py-3">
         {/* Breadcrumbs */}
         <div className="min-w-0 flex-1">
           <div className="flex flex-col gap-1">
@@ -332,7 +332,7 @@ function NavigationHeader({
         </div>
 
         {/* Right: health & status */}
-        <div className="gap-3 flex items-center">
+        <div className="flex items-center gap-3 md:gap-4">
           {healthScore !== undefined && (
             <Badge
               variant="outline"
