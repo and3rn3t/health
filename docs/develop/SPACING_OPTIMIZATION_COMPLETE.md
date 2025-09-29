@@ -32,12 +32,12 @@
 
 ### Before vs After Comparison
 
-| Component | Before | After | Improvement |
-|-----------|--------|-------|-------------|
-| Card margins | `my-6 md:my-10` | `my-4 md:my-6` | 33% less mobile spacing |
-| Section gaps | Mixed `pb-6/pb-8` | Consistent `py-6` | Standardized padding |
-| Grid spacing | Various `gap-*` | Systematic `gap-4 md:gap-6` | Consistent responsive scaling |
-| Touch targets | Inconsistent | All `min-h-[44px]` | iOS HIG compliant |
+| Component     | Before            | After                       | Improvement                   |
+| ------------- | ----------------- | --------------------------- | ----------------------------- |
+| Card margins  | `my-6 md:my-10`   | `my-4 md:my-6`              | 33% less mobile spacing       |
+| Section gaps  | Mixed `pb-6/pb-8` | Consistent `py-6`           | Standardized padding          |
+| Grid spacing  | Various `gap-*`   | Systematic `gap-4 md:gap-6` | Consistent responsive scaling |
+| Touch targets | Inconsistent      | All `min-h-[44px]`          | iOS HIG compliant             |
 
 ### Mobile UX Improvements
 
@@ -57,7 +57,7 @@ import { SPACING_CLASSES } from '@/lib/spacing-constants';
   <div className={SPACING_CLASSES.cardGrid}>
     {/* Cards with optimized spacing */}
   </div>
-</div>
+</div>;
 ```
 
 ### Using Spacing Components
@@ -70,7 +70,7 @@ import { SpacedSection, SpacedGrid } from '@/components/ui/spacing';
   <SpacedGrid cols="metrics" spacing="normal">
     {/* Content with perfect spacing */}
   </SpacedGrid>
-</SpacedSection>
+</SpacedSection>;
 ```
 
 ## 📱 Mobile-First Benefits
@@ -93,7 +93,7 @@ import { SpacedSection, SpacedGrid } from '@/components/ui/spacing';
 ### Core Changes
 
 - ✅ `src/components/ui/card.tsx` - Optimized card margins
-- ✅ `src/components/LandingPageOptimized.tsx` - Consistent section spacing  
+- ✅ `src/components/LandingPageOptimized.tsx` - Consistent section spacing
 - ✅ `src/components/health/VitalSenseEnhancedDashboard.tsx` - Gap utilities
 - ✅ `src/App.tsx` - Improved loading state spacing
 
@@ -116,7 +116,7 @@ import { SpacedSection, SpacedGrid } from '@/components/ui/spacing';
 ```tsx
 // Find and replace opportunities:
 // "space-x-4" → use gap-4 instead
-// "px-4 py-4" → use p-4 instead  
+// "px-4 py-4" → use p-4 instead
 // Manual spacing → use SPACING_CLASSES presets
 ```
 
@@ -125,7 +125,7 @@ import { SpacedSection, SpacedGrid } from '@/components/ui/spacing';
 The VitalSense app now has:
 
 - **Consistent spacing patterns** across all components
-- **Mobile-optimized spacing** that doesn't waste screen real estate  
+- **Mobile-optimized spacing** that doesn't waste screen real estate
 - **Scalable spacing system** for future component development
 - **Better accessibility** with proper touch target sizing
 - **Cleaner codebase** with centralized spacing management

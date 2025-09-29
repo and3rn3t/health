@@ -8,7 +8,7 @@ function Card({ className, ...props }: ComponentProps<'div'>) {
       data-slot="card"
       className={cn(
         // Base card styling + optimized outer spacing for better mobile experience
-        'text-card-foreground bg-card border-gray-200 my-4 md:my-6 flex flex-col gap-6 rounded-xl border py-6 shadow-sm transition-shadow hover:shadow-md',
+        'my-4 flex flex-col gap-6 rounded-xl border border-gray-200 bg-card py-6 text-card-foreground shadow-sm transition-shadow hover:shadow-md md:my-6',
         className
       )}
       {...props}
@@ -34,7 +34,7 @@ function CardTitle({ className, ...props }: ComponentProps<'div'>) {
     <div
       data-slot="card-title"
       className={cn(
-        'text-foreground md:text-lg text-base font-semibold leading-none',
+        'text-base font-semibold leading-none text-foreground md:text-lg',
         className
       )}
       {...props}
@@ -46,7 +46,7 @@ function CardDescription({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-description"
-      className={cn('text-muted-foreground text-sm', className)}
+      className={cn('text-sm text-muted-foreground', className)}
       {...props}
     />
   );
@@ -79,7 +79,7 @@ function CardFooter({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-footer"
-      className={cn('pt-3 flex items-center px-6', className)}
+      className={cn('flex items-center px-6 pt-3', className)}
       {...props}
     />
   );

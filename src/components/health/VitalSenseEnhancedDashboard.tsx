@@ -58,7 +58,7 @@ function AlertCard({
 
   return (
     <Card
-      className={`${severityStyles[severity]} border-border rounded-md border`}
+      className={`${severityStyles[severity]} rounded-md border border-border`}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
@@ -86,14 +86,14 @@ function AlertCard({
               </Badge>
             </div>
             <p className="text-vitalsense-gray mb-2 text-sm">{message}</p>
-            <p className="text-xs text-vitalsense-gray/80">{timestamp}</p>
+            <p className="text-vitalsense-gray/80 text-xs">{timestamp}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => onView(id)}>
-              <Eye className="w-3 h-3" />
+              <Eye className="h-3 w-3" />
             </Button>
             <Button variant="ghost" size="sm" onClick={() => onDismiss(id)}>
-              <X className="w-3 h-3" />
+              <X className="h-3 w-3" />
             </Button>
           </div>
         </div>
@@ -117,26 +117,26 @@ function DeviceStatus({ devices }: DeviceStatusProps) {
   const getDeviceIcon = (type: string) => {
     switch (type) {
       case 'ios_app':
-        return <Smartphone className="w-5 h-5" />;
+        return <Smartphone className="h-5 w-5" />;
       case 'watch_app':
-        return <Activity className="w-5 h-5" />;
+        return <Activity className="h-5 w-5" />;
       default:
-        return <Monitor className="w-5 h-5" />;
+        return <Monitor className="h-5 w-5" />;
     }
   };
 
   return (
-    <Card className="border-border rounded-md border">
-      <CardHeader className="py-3 pb-3 px-4">
+    <Card className="rounded-md border border-border">
+      <CardHeader className="px-4 py-3 pb-3">
         <CardTitle className="flex items-center space-x-2 text-lg">
-          <Shield className="w-5 h-5" />
+          <Shield className="h-5 w-5" />
           <span>Connected Devices</span>
         </CardTitle>
         <CardDescription className="text-base">
           Active health monitoring devices
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-3 px-4">
+      <CardContent className="px-4 pt-3">
         <div className="space-y-4">
           {devices.length === 0 ? (
             <div className="text-vitalsense-gray py-8 text-center">
@@ -147,9 +147,9 @@ function DeviceStatus({ devices }: DeviceStatusProps) {
             devices.map((device) => (
               <div
                 key={device.id}
-                className="p-3 flex items-center justify-between rounded-lg border border-vitalsense-secondary/10 bg-vitalsense-secondary/5"
+                className="flex items-center justify-between rounded-lg border border-vitalsense-secondary/10 bg-vitalsense-secondary/5 p-3"
               >
-                <div className="space-x-3 flex items-center">
+                <div className="flex items-center space-x-3">
                   <div
                     className={`rounded-lg p-2 ${
                       device.status === 'online'
@@ -161,7 +161,7 @@ function DeviceStatus({ devices }: DeviceStatusProps) {
                   </div>
                   <div>
                     <div className="text-sm font-medium">{device.name}</div>
-                    <div className="text-xs text-vitalsense-gray capitalize">
+                    <div className="text-vitalsense-gray text-xs capitalize">
                       {device.type.replace('_', ' ')}
                     </div>
                   </div>
@@ -169,7 +169,7 @@ function DeviceStatus({ devices }: DeviceStatusProps) {
 
                 <div className="flex items-center space-x-2">
                   {device.batteryLevel && (
-                    <div className="text-xs text-vitalsense-gray">
+                    <div className="text-vitalsense-gray text-xs">
                       {device.batteryLevel}%
                     </div>
                   )}
@@ -252,12 +252,12 @@ export function VitalSenseEnhancedDashboard() {
   );
 
   return (
-    <div className="md:space-y-5 space-y-4">
+    <div className="space-y-4 md:space-y-5">
       {/* Header Section - VitalSense Branded */}
       <div className="py-6">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="space-x-3 flex items-center">
+            <div className="flex items-center space-x-3">
               <Heart className="h-8 w-8 text-vitalsense-primary" />
               <h1 className="text-3xl font-bold text-vitalsense-primary">
                 VitalSense Live
@@ -268,9 +268,9 @@ export function VitalSenseEnhancedDashboard() {
             >
               <div className="flex items-center space-x-1">
                 {connectionStatus.connected ? (
-                  <Wifi className="w-3 h-3" />
+                  <Wifi className="h-3 w-3" />
                 ) : (
-                  <WifiOff className="w-3 h-3" />
+                  <WifiOff className="h-3 w-3" />
                 )}
                 <span>
                   {connectionStatus.connected ? 'Connected' : 'Disconnected'}
@@ -311,7 +311,7 @@ export function VitalSenseEnhancedDashboard() {
           {/* Critical Alerts Banner */}
           {getCriticalAlerts().length > 0 && (
             <Alert className="border-red-200 bg-red-50">
-              <AlertTriangle className="text-red-600 h-4 w-4" />
+              <AlertTriangle className="h-4 w-4 text-red-600" />
               <AlertDescription className="flex items-center justify-between">
                 <span>
                   <strong>
@@ -331,20 +331,20 @@ export function VitalSenseEnhancedDashboard() {
           )}
 
           {/* Health Metrics Grid - VitalSense Style */}
-          <div className="md:grid-cols-2 lg:gap-7 grid gap-6 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 lg:gap-7">
             {latestMetrics.heart_rate && (
-              <Card className="border-border rounded-md border border-vitalsense-primary/20 bg-gradient-to-br from-vitalsense-primary/5 to-vitalsense-primary/10">
-                <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0 px-4">
+              <Card className="rounded-md border border-border border-vitalsense-primary/20 bg-gradient-to-br from-vitalsense-primary/5 to-vitalsense-primary/10">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4 py-3">
                   <CardTitle className="text-sm font-medium">
                     Heart Rate
                   </CardTitle>
                   <Heart className="h-5 w-5 text-vitalsense-primary" />
                 </CardHeader>
-                <CardContent className="pb-5 md:pt-3 px-4 pt-2">
+                <CardContent className="px-4 pb-5 pt-2 md:pt-3">
                   <div className="mb-2 text-3xl font-bold text-vitalsense-primary">
                     {Math.round(latestMetrics.heart_rate.value)}
                   </div>
-                  <p className="text-xs text-vitalsense-gray">
+                  <p className="text-vitalsense-gray text-xs">
                     {formatTimeAgo(latestMetrics.heart_rate.timestamp)} • bpm
                   </p>
                 </CardContent>
@@ -352,18 +352,18 @@ export function VitalSenseEnhancedDashboard() {
             )}
 
             {latestMetrics.walking_steadiness && (
-              <Card className="border-border rounded-md border border-vitalsense-secondary/20 bg-gradient-to-br from-vitalsense-secondary/5 to-vitalsense-secondary/10">
-                <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0 px-4">
+              <Card className="rounded-md border border-border border-vitalsense-secondary/20 bg-gradient-to-br from-vitalsense-secondary/5 to-vitalsense-secondary/10">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4 py-3">
                   <CardTitle className="text-sm font-medium">
                     Walking Steadiness
                   </CardTitle>
                   <Activity className="h-5 w-5 text-vitalsense-secondary" />
                 </CardHeader>
-                <CardContent className="pb-5 md:pt-3 px-4 pt-2">
+                <CardContent className="px-4 pb-5 pt-2 md:pt-3">
                   <div className="mb-2 text-3xl font-bold text-vitalsense-secondary">
                     {Math.round(latestMetrics.walking_steadiness.value * 100)}
                   </div>
-                  <p className="text-xs text-vitalsense-gray">
+                  <p className="text-vitalsense-gray text-xs">
                     {formatTimeAgo(latestMetrics.walking_steadiness.timestamp)}{' '}
                     • percent
                   </p>
@@ -372,38 +372,38 @@ export function VitalSenseEnhancedDashboard() {
             )}
 
             {latestMetrics.step_count && (
-              <Card className="from-vitalsense-accent/5 to-vitalsense-accent/10 border-vitalsense-accent/20 border-border rounded-md border bg-gradient-to-br">
-                <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0 px-4">
+              <Card className="from-vitalsense-accent/5 to-vitalsense-accent/10 border-vitalsense-accent/20 rounded-md border border-border bg-gradient-to-br">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4 py-3">
                   <CardTitle className="text-sm font-medium">
                     Daily Steps
                   </CardTitle>
                   <MapPin className="text-vitalsense-accent h-5 w-5" />
                 </CardHeader>
-                <CardContent className="pb-5 md:pt-3 px-4 pt-2">
+                <CardContent className="px-4 pb-5 pt-2 md:pt-3">
                   <div className="text-vitalsense-accent mb-2 text-3xl font-bold">
                     {Math.round(
                       latestMetrics.step_count.value
                     ).toLocaleString()}
                   </div>
-                  <p className="text-xs text-vitalsense-gray">
+                  <p className="text-vitalsense-gray text-xs">
                     {formatTimeAgo(latestMetrics.step_count.timestamp)} • steps
                   </p>
                 </CardContent>
               </Card>
             )}
 
-            <Card className="border-border rounded-md border border-vitalsense-success/20 bg-gradient-to-br from-vitalsense-success/5 to-vitalsense-success/10">
-              <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0 px-4">
+            <Card className="rounded-md border border-border border-vitalsense-success/20 bg-gradient-to-br from-vitalsense-success/5 to-vitalsense-success/10">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4 py-3">
                 <CardTitle className="text-sm font-medium">
                   System Status
                 </CardTitle>
                 <Monitor className="h-5 w-5 text-vitalsense-success" />
               </CardHeader>
-              <CardContent className="pb-5 md:pt-3 px-4 pt-2">
+              <CardContent className="px-4 pb-5 pt-2 md:pt-3">
                 <div className="mb-2 text-3xl font-bold text-vitalsense-success">
                   {connectionStatus.connected ? 'Online' : 'Offline'}
                 </div>
-                <p className="text-xs text-vitalsense-gray">
+                <p className="text-vitalsense-gray text-xs">
                   {Math.round(connectionStatus.latency)}ms latency
                 </p>
               </CardContent>
@@ -411,25 +411,25 @@ export function VitalSenseEnhancedDashboard() {
           </div>
 
           {/* Recent Activity Section */}
-          <div className="md:grid-cols-2 grid gap-8">
-            <Card className="border-border rounded-md border">
-              <CardHeader className="py-3 pb-3 px-4">
+          <div className="grid gap-8 md:grid-cols-2">
+            <Card className="rounded-md border border-border">
+              <CardHeader className="px-4 py-3 pb-3">
                 <CardTitle className="flex items-center space-x-2 text-lg">
-                  <Clock className="w-5 h-5" />
+                  <Clock className="h-5 w-5" />
                   <span>Recent Activity</span>
                 </CardTitle>
                 <CardDescription className="text-base">
                   Live health data updates
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-3 px-4">
+              <CardContent className="px-4 pt-3">
                 <div className="space-y-6">
                   {liveMetrics.slice(0, 5).map((metric) => (
                     <div
                       key={`${metric.metricType}-${metric.timestamp}`}
-                      className="border-border flex items-center justify-between border-b pb-4"
+                      className="flex items-center justify-between border-b border-border pb-4"
                     >
-                      <div className="space-x-3 flex items-center">
+                      <div className="flex items-center space-x-3">
                         <div className="h-2 w-2 rounded-full bg-vitalsense-success" />
                         <span className="text-sm font-medium capitalize">
                           {metric.metricType.replace('_', ' ')}
@@ -455,15 +455,15 @@ export function VitalSenseEnhancedDashboard() {
         </TabsContent>
 
         <TabsContent value="metrics" className="space-y-6">
-          <div className="md:grid-cols-2 grid gap-8">
-            <Card className="border-border rounded-md border">
-              <CardHeader className="py-3 pb-3 px-4">
+          <div className="grid gap-8 md:grid-cols-2">
+            <Card className="rounded-md border border-border">
+              <CardHeader className="px-4 py-3 pb-3">
                 <CardTitle className="text-lg">Live Health Metrics</CardTitle>
                 <CardDescription className="text-base">
                   Current health data values
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-3 px-4">
+              <CardContent className="px-4 pt-3">
                 <div className="space-y-6">
                   {Object.entries(latestMetrics).map(([key, metric]) => {
                     const multiplier = getMetricMultiplier(key);
@@ -475,7 +475,7 @@ export function VitalSenseEnhancedDashboard() {
                     return (
                       <div
                         key={key}
-                        className="border-border flex items-center justify-between border-b pb-4"
+                        className="flex items-center justify-between border-b border-border pb-4"
                       >
                         <span className="text-sm font-medium capitalize">
                           {key.replace('_', ' ')}
@@ -490,16 +490,16 @@ export function VitalSenseEnhancedDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="border-border rounded-md border">
-              <CardHeader className="py-3 pb-3 px-4">
+            <Card className="rounded-md border border-border">
+              <CardHeader className="px-4 py-3 pb-3">
                 <CardTitle className="text-lg">System Performance</CardTitle>
                 <CardDescription className="text-base">
                   Real-time monitoring stats
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-3 px-4">
+              <CardContent className="px-4 pt-3">
                 <div className="space-y-6">
-                  <div className="border-border flex items-center justify-between border-b pb-4">
+                  <div className="flex items-center justify-between border-b border-border pb-4">
                     <span className="text-sm font-medium">Data Quality</span>
                     <Badge
                       variant={
@@ -511,13 +511,13 @@ export function VitalSenseEnhancedDashboard() {
                       {connectionStatus.dataQuality}
                     </Badge>
                   </div>
-                  <div className="border-border flex items-center justify-between border-b pb-4">
+                  <div className="flex items-center justify-between border-b border-border pb-4">
                     <span className="text-sm font-medium">Response Time</span>
                     <span className="text-sm font-medium">
                       {Math.round(connectionStatus.latency)}ms
                     </span>
                   </div>
-                  <div className="border-border flex items-center justify-between border-b pb-4">
+                  <div className="flex items-center justify-between border-b border-border pb-4">
                     <span className="text-sm font-medium">iOS Device</span>
                     <Badge variant={isIOSConnected() ? 'default' : 'secondary'}>
                       {isIOSConnected() ? 'Connected' : 'Disconnected'}
@@ -543,9 +543,9 @@ export function VitalSenseEnhancedDashboard() {
 
           <div className="space-y-4">
             {activeAlerts.length === 0 ? (
-              <Card className="border-border rounded-md border">
-                <CardContent className="py-16 flex flex-col items-center justify-center">
-                  <CheckCircle className="w-16 h-16 mb-4 text-vitalsense-success" />
+              <Card className="rounded-md border border-border">
+                <CardContent className="flex flex-col items-center justify-center py-16">
+                  <CheckCircle className="mb-4 h-16 w-16 text-vitalsense-success" />
                   <h3 className="mb-2 text-lg font-medium text-vitalsense-primary">
                     All Clear!
                   </h3>
@@ -575,25 +575,25 @@ export function VitalSenseEnhancedDashboard() {
         </TabsContent>
 
         <TabsContent value="devices" className="space-y-6">
-          <div className="md:grid-cols-2 grid gap-8">
+          <div className="grid gap-8 md:grid-cols-2">
             <DeviceStatus devices={connectedDevices} />
 
-            <Card className="border-border rounded-md border">
-              <CardHeader className="py-3 pb-3 px-4">
+            <Card className="rounded-md border border-border">
+              <CardHeader className="px-4 py-3 pb-3">
                 <CardTitle className="text-lg">System Information</CardTitle>
                 <CardDescription className="text-base">
                   Connected devices and server status
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-3 px-4">
+              <CardContent className="px-4 pt-3">
                 <div className="space-y-6">
-                  <div className="border-border flex items-center justify-between border-b pb-4">
+                  <div className="flex items-center justify-between border-b border-border pb-4">
                     <span className="text-sm font-medium">Active Devices</span>
                     <span className="text-sm font-medium">
                       {connectedDevices.length}
                     </span>
                   </div>
-                  <div className="border-border flex items-center justify-between border-b pb-4">
+                  <div className="flex items-center justify-between border-b border-border pb-4">
                     <span className="text-sm font-medium">Server Status</span>
                     <Badge
                       variant={
@@ -603,7 +603,7 @@ export function VitalSenseEnhancedDashboard() {
                       {connectionStatus.connected ? 'Online' : 'Offline'}
                     </Badge>
                   </div>
-                  <div className="border-border flex items-center justify-between border-b pb-4">
+                  <div className="flex items-center justify-between border-b border-border pb-4">
                     <span className="text-sm font-medium">Enhanced Server</span>
                     <Badge variant="default">Running on :3001</Badge>
                   </div>

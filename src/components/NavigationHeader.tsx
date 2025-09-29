@@ -131,21 +131,21 @@ function NavigationHeader({
   };
 
   return (
-    <header className="border-border bg-card sticky top-0 z-40 mb-2 md:mb-3 w-full border-b">
+    <header className="sticky top-0 z-40 mb-2 w-full border-b border-border bg-card md:mb-3">
       {/* Primary bar: Sidebar, title (mobile), search, key actions */}
-      <div className="px-3 md:px-6 flex items-center justify-between gap-3 md:gap-4 py-2 md:py-3">
+      <div className="flex items-center justify-between gap-3 px-3 py-2 md:gap-4 md:px-6 md:py-3">
         {/* Left: Sidebar trigger + mobile title */}
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <AppleSidebarTrigger
             aria-controls="app-sidebar"
-            className="hover:bg-muted shrink-0"
+            className="shrink-0 hover:bg-muted"
           />
           {/* Mobile title */}
-          <div className="md:hidden min-w-0 space-y-0.5">
+          <div className="min-w-0 space-y-0.5 md:hidden">
             <h1 className="truncate text-base font-semibold leading-tight">
               {currentPageInfo.label}
             </h1>
-            <p className="text-muted-foreground text-xs truncate leading-tight">
+            <p className="truncate text-xs leading-tight text-muted-foreground">
               {currentPageInfo.category}
             </p>
           </div>
@@ -154,12 +154,12 @@ function NavigationHeader({
         {/* Center: Search (large screens) */}
         <div className="mx-4 hidden max-w-xl flex-1 lg:flex">
           <form onSubmit={handleSearch} className="relative w-full">
-            <Search className="text-muted-foreground left-3 absolute top-1/2 h-4 w-4 -translate-y-1/2" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search health data..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 pr-4"
+              className="h-10 pl-10 pr-4"
             />
           </form>
         </div>
@@ -185,13 +185,13 @@ function NavigationHeader({
           >
             <Bell className="h-4 w-4" />
             {hasAlerts && (
-              <span className="bg-red-500 absolute -right-1 -top-1 h-2 w-2 rounded-full" />
+              <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
             )}
           </Button>
 
           {/* Emergency */}
           <EmergencyButton
-            className="w-28 md:w-32 min-w-[112px]"
+            className="w-28 min-w-[112px] md:w-32"
             onClick={() => onNavigate('emergency')}
           />
 
@@ -252,7 +252,7 @@ function NavigationHeader({
                         {user?.name || 'Signed in'}
                       </p>
                       {user?.email && (
-                        <p className="text-muted-foreground text-xs">
+                        <p className="text-xs text-muted-foreground">
                           {user?.email}
                         </p>
                       )}
@@ -260,7 +260,7 @@ function NavigationHeader({
                   ) : (
                     <>
                       <p className="text-sm font-medium">Not signed in</p>
-                      <p className="text-muted-foreground text-xs">
+                      <p className="text-xs text-muted-foreground">
                         Sign in to access all features
                       </p>
                     </>
@@ -292,7 +292,7 @@ function NavigationHeader({
       </div>
 
       {/* Secondary bar: breadcrumbs & status */}
-      <div className="px-3 md:px-6 md:flex hidden items-center justify-between py-2 md:py-3">
+      <div className="hidden items-center justify-between px-3 py-2 md:flex md:px-6 md:py-3">
         {/* Breadcrumbs */}
         <div className="min-w-0 flex-1">
           <div className="flex flex-col gap-1">
@@ -301,7 +301,7 @@ function NavigationHeader({
                 <BreadcrumbItem>
                   <BreadcrumbLink
                     onClick={() => onNavigate('dashboard')}
-                    className="gap-1.5 flex cursor-pointer items-center hover:text-vitalsense-primary"
+                    className="flex cursor-pointer items-center gap-1.5 hover:text-vitalsense-primary"
                   >
                     <Home className="h-3.5 w-3.5" />
                     VitalSense
@@ -317,7 +317,7 @@ function NavigationHeader({
                     </BreadcrumbItem>
                     <BreadcrumbSeparator className="mx-2" />
                     <BreadcrumbItem>
-                      <BreadcrumbPage className="text-foreground font-medium">
+                      <BreadcrumbPage className="font-medium text-foreground">
                         {currentPageInfo.label}
                       </BreadcrumbPage>
                     </BreadcrumbItem>
@@ -325,7 +325,7 @@ function NavigationHeader({
                 )}
               </BreadcrumbList>
             </Breadcrumb>
-            <p className="text-muted-foreground text-xs truncate leading-tight">
+            <p className="truncate text-xs leading-tight text-muted-foreground">
               {getPageDescription()}
             </p>
           </div>
@@ -336,9 +336,9 @@ function NavigationHeader({
           {healthScore !== undefined && (
             <Badge
               variant="outline"
-              className="px-3 border-vitalsense-primary py-1 text-vitalsense-primary"
+              className="border-vitalsense-primary px-3 py-1 text-vitalsense-primary"
             >
-              <Shield className="h-3 w-3 mr-2" />
+              <Shield className="mr-2 h-3 w-3" />
               {healthScore}/100
             </Badge>
           )}

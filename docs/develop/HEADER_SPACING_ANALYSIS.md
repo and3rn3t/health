@@ -73,7 +73,8 @@
 **Sidebar Header Container:**
 
 ```tsx
-className="h-12 px-3 border-border sticky top-0 z-20 flex items-center gap-2 border-b"
+className =
+  'h-12 px-3 border-border sticky top-0 z-20 flex items-center gap-2 border-b';
 ```
 
 - **Height**: `h-12` (48px) - matches touch target guidelines
@@ -84,7 +85,7 @@ className="h-12 px-3 border-border sticky top-0 z-20 flex items-center gap-2 bor
 **Sidebar Sections:**
 
 ```tsx
-className="px-2 py-2"
+className = 'px-2 py-2';
 ```
 
 - **Padding**: `px-2 py-2` (8px all around)
@@ -230,11 +231,11 @@ className="px-2 py-2"
 
 ### Height Changes
 
-| Component | Before | After | Change |
-|-----------|--------|-------|---------|
-| Primary bar | ~44px | ~52px | +18% |
-| Secondary bar | ~32px | ~40px | +25% |
-| Total header | ~84px | ~92px | +9.5% |
+| Component     | Before | After | Change |
+| ------------- | ------ | ----- | ------ |
+| Primary bar   | ~44px  | ~52px | +18%   |
+| Secondary bar | ~32px  | ~40px | +25%   |
+| Total header  | ~84px  | ~92px | +9.5%  |
 
 ### Mobile Benefits
 
@@ -268,7 +269,7 @@ className="px-2 py-2"
 
 ```tsx
 // Recommended pattern for header elements
-className="py-2 md:py-3 gap-3 md:gap-4 px-4 md:px-6"
+className = 'py-2 md:py-3 gap-3 md:gap-4 px-4 md:px-6';
 ```
 
 ### Touch Target Compliance

@@ -87,39 +87,39 @@ py-6     /* 24px vertical */
 export const SPACING_TOKENS = {
   // Core scale (based on 4px grid)
   tight: {
-    gap: 'gap-2',      // 8px
-    padding: 'p-3',    // 12px
-    margin: 'm-2'      // 8px
+    gap: 'gap-2', // 8px
+    padding: 'p-3', // 12px
+    margin: 'm-2', // 8px
   },
   normal: {
-    gap: 'gap-4',      // 16px
-    padding: 'p-4',    // 16px  
-    margin: 'm-4'      // 16px
+    gap: 'gap-4', // 16px
+    padding: 'p-4', // 16px
+    margin: 'm-4', // 16px
   },
   loose: {
-    gap: 'gap-6',      // 24px
-    padding: 'p-6',    // 24px
-    margin: 'm-6'      // 24px
+    gap: 'gap-6', // 24px
+    padding: 'p-6', // 24px
+    margin: 'm-6', // 24px
   },
-  
+
   // Component-specific presets
   card: {
-    internal: 'gap-4 p-6',         // Internal card spacing
-    external: 'my-4 md:my-6',      // Card-to-card spacing
-    grid: 'gap-4 md:gap-6'         // Card grid gaps
+    internal: 'gap-4 p-6', // Internal card spacing
+    external: 'my-4 md:my-6', // Card-to-card spacing
+    grid: 'gap-4 md:gap-6', // Card grid gaps
   },
-  
+
   section: {
-    spacing: 'space-y-6 md:space-y-8',  // Section separation
-    padding: 'px-4 py-6 md:px-6 md:py-8' // Section padding
+    spacing: 'space-y-6 md:space-y-8', // Section separation
+    padding: 'px-4 py-6 md:px-6 md:py-8', // Section padding
   },
-  
+
   navigation: {
-    items: 'gap-1',                // Nav item gaps
-    sections: 'py-2',              // Section padding
-    content: 'gap-3 px-3'         // Item content gaps
-  }
-}
+    items: 'gap-1', // Nav item gaps
+    sections: 'py-2', // Section padding
+    content: 'gap-3 px-3', // Item content gaps
+  },
+};
 ```
 
 ## 🔧 Optimization Recommendations
@@ -132,7 +132,7 @@ export const SPACING_TOKENS = {
 <Card className="p-4">
 <Card className="px-4 py-4">
 
-// AFTER - Consistent 
+// AFTER - Consistent
 <Card className="my-4 md:my-6 p-6">  // Standard card spacing
 <Card className="p-4">               // Compact card spacing
 ```
@@ -172,7 +172,7 @@ export const SPACING_TOKENS = {
 
 // AFTER - Standardized system
 <div className="space-y-4">      // Tight sections
-<div className="space-y-6">      // Standard sections  
+<div className="space-y-6">      // Standard sections
 <div className="space-y-8">      // Major sections only
 ```
 
@@ -208,12 +208,12 @@ export const SPACING_TOKENS = {
 ```tsx
 // Clear spacing hierarchy
 const HIERARCHY = {
-  major: 'space-y-8',      // Page sections
-  section: 'space-y-6',    // Within sections  
-  group: 'space-y-4',      // Content groups
-  items: 'gap-3',          // Related items
-  tight: 'gap-2'           // Very related items
-}
+  major: 'space-y-8', // Page sections
+  section: 'space-y-6', // Within sections
+  group: 'space-y-4', // Content groups
+  items: 'gap-3', // Related items
+  tight: 'gap-2', // Very related items
+};
 ```
 
 ## ✅ Action Items
