@@ -226,7 +226,9 @@ function NavigationHeader({
                 <DropdownMenuItem onClick={onThemeToggle}>
                   {themeMode === 'dark' && <Moon className="mr-2 h-4 w-4" />}
                   {themeMode === 'light' && <Sun className="mr-2 h-4 w-4" />}
-                  {themeMode === 'system' && <Monitor className="mr-2 h-4 w-4" />}
+                  {themeMode === 'system' && (
+                    <Monitor className="mr-2 h-4 w-4" />
+                  )}
                   Theme: {themeMode}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -301,7 +303,7 @@ function NavigationHeader({
       </div>
 
       {/* Secondary bar: breadcrumbs & status - improved balance */}
-      <div className="hidden items-center justify-between border-t border-border/50 px-3 py-2 md:flex md:px-6 md:py-3">
+      <div className="border-border/50 hidden items-center justify-between border-t px-3 py-2 md:flex md:px-6 md:py-3">
         {/* Breadcrumbs with better spacing */}
         <div className="min-w-0 flex-1">
           <div className="flex flex-col gap-1.5">
