@@ -1,4 +1,4 @@
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { useCallback, useEffect, useMemo } from 'react';
 
 export type ThemeMode = 'light' | 'dark' | 'system';

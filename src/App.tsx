@@ -10,11 +10,19 @@ import React, {
 } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
+// Debug logging
+console.log('🚀 App.tsx: Starting to load...');
+
 // Core components
 import { AnalyticsVersionBadge } from '@/components/analytics/AnalyticsVersionBadge';
 import Footer from '@/components/Footer';
 import NavigationHeader from '@/components/NavigationHeader';
 import { ErrorFallback } from '@/ErrorFallback';
+
+// Mobile-optimized components
+import { FloatingActionButton } from '@/components/nav/FloatingActionButton';
+import { MobileBottomTabs } from '@/components/nav/MobileBottomTabs';
+import { MobileHeader } from '@/components/nav/MobileHeader';
 
 // Icons for navigation
 import {
@@ -28,13 +36,14 @@ import {
   useAppleSidebar,
 } from '@/components/nav/AppleSidebar';
 import { Button } from '@/components/ui/button';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { useLiveRegion } from '@/hooks/useLiveRegion';
 import { useNavUsage } from '@/hooks/useNavUsage';
 import { useThemeMode } from '@/hooks/useThemeMode';
 import { HealthDataProcessor } from '@/lib/healthDataProcessor';
 import type { AllSettings } from '@/lib/settingsTypes';
+import { cn } from '@/lib/utils';
 import type { ProcessedHealthData } from '@/types';
-import { useKV } from '@github/spark/hooks';
 import {
   Activity,
   AlertTriangle,
@@ -345,6 +354,10 @@ function AppContent() {
     setOpen: _setOpen,
     setOpenMobile: _setOpenMobile,
   } = useAppleSidebar();
+
+  // TEMPORARY: Force mobile mode for testing
+  const _isMobileForced = true;
+  console.log('🔧 Mobile forced mode:', _isMobileForced);
   // Respect default sidebar behavior; do not force-open on mount.
   const { recordUse, sortByUsage, hasAnyUsage } = useNavUsage();
   const announce = useLiveRegion();
@@ -405,6 +418,33 @@ function AppContent() {
       recordUse(tabId);
     },
     [recordUse, startTransition]
+  );
+
+  // Mobile quick actions handler
+  const handleQuickAction = useCallback(
+    (action: string) => {
+      switch (action) {
+        case 'emergency':
+          handleTabChange('emergency-contacts');
+          announce('Emergency contacts opened');
+          break;
+        case 'quick-vitals':
+          handleTabChange('live-monitoring');
+          announce('Live monitoring opened');
+          break;
+        case 'photo':
+          // Future: open camera or image capture
+          announce('Photo capture feature coming soon');
+          break;
+        case 'note':
+          // Future: open note-taking feature
+          announce('Note taking feature coming soon');
+          break;
+        default:
+          break;
+      }
+    },
+    [handleTabChange, announce]
   );
 
   // Prefetch lazy-loaded modules on hover for snappier navigation
@@ -468,45 +508,95 @@ function AppContent() {
   );
 
   return (
-    <div className="pt-safe-top pb-safe-bottom flex h-screen bg-background text-foreground">
-      {/* Unified Sidebar (Apple HIG style) */}
-      <AppleSidebarPanel
-        id="app-sidebar"
-        side="left"
-        collapsible="offcanvas"
-        variant="inset"
-        withSpacer={true}
+    <>
+      {/* Mobile-specific overlays */}
+      {_isMobileForced && (
+        <>
+          {/* Mobile Bottom Navigation */}
+          <MobileBottomTabs
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            navigationItems={navigationItems}
+          />
+
+          {/* Floating Action Button */}
+          <FloatingActionButton onQuickAction={handleQuickAction} />
+        </>
+      )}
+
+      <div
+        className={cn(
+          'pt-safe-top pb-safe-bottom flex min-h-screen bg-background text-foreground',
+          _isMobileForced ? 'mobile-forced flex-col pb-20' : 'flex-row' // Mobile: column layout with padding, Desktop: row layout
+        )}
       >
-        <AppleSidebarHeader>
-          <div className="flex h-12 items-center justify-between px-3 py-2">
-            <h2 className="text-sm font-semibold text-foreground">
-              VitalSense
-            </h2>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSidebar}
-              className="hover:bg-muted md:hidden"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </AppleSidebarHeader>
-        {/* Quick Access */}
-        {hasAnyUsage && !lockNavOrder && (
+        {/* Unified Sidebar (Apple HIG style) - hidden on mobile except for overflow */}
+        <AppleSidebarPanel
+          id="app-sidebar"
+          side="left"
+          collapsible="offcanvas"
+          variant="inset"
+          withSpacer={true}
+          className={cn(_isMobileForced && 'hidden')}
+        >
+          <AppleSidebarHeader>
+            <div className="flex h-12 items-center justify-between px-3 py-2">
+              <h2 className="text-sm font-semibold text-foreground">
+                VitalSense
+              </h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleSidebar}
+                className="hover:bg-muted md:hidden"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </AppleSidebarHeader>
+          {/* Quick Access */}
+          {hasAnyUsage && !lockNavOrder && (
+            <AppleSidebarSection>
+              <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
+                Quick Access
+              </div>
+              <AppleSidebarList>
+                {sortByUsage(navigationItems)
+                  .slice(0, 4)
+                  .map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    return (
+                      <AppleSidebarItem
+                        key={`qa-${item.id}`}
+                        active={isActive}
+                        aria-current={isActive ? 'page' : undefined}
+                        data-id={item.id}
+                        onClick={onNavItemClick}
+                        onMouseEnter={onNavItemHover}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {item.label}
+                      </AppleSidebarItem>
+                    );
+                  })}
+              </AppleSidebarList>
+            </AppleSidebarSection>
+          )}
+          {/* Primary */}
           <AppleSidebarSection>
             <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
-              Quick Access
+              Primary
             </div>
             <AppleSidebarList>
-              {sortByUsage(navigationItems)
-                .slice(0, 4)
+              {primaryTabs
+                .filter((i) => !quickAccessIds.has(i.id))
                 .map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
                   return (
                     <AppleSidebarItem
-                      key={`qa-${item.id}`}
+                      key={item.id}
                       active={isActive}
                       aria-current={isActive ? 'page' : undefined}
                       data-id={item.id}
@@ -520,198 +610,186 @@ function AppContent() {
                 })}
             </AppleSidebarList>
           </AppleSidebarSection>
-        )}
-        {/* Primary */}
-        <AppleSidebarSection>
-          <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
-            Primary
+          {/* Secondary */}
+          <AppleSidebarSection>
+            <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
+              More
+            </div>
+            <AppleSidebarList>
+              {secondaryTabs
+                .filter((i) => !quickAccessIds.has(i.id))
+                .map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <AppleSidebarItem
+                      key={item.id}
+                      active={isActive}
+                      aria-current={isActive ? 'page' : undefined}
+                      data-id={item.id}
+                      onClick={onNavItemClick}
+                      onMouseEnter={onNavItemHover}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                    </AppleSidebarItem>
+                  );
+                })}
+            </AppleSidebarList>
+          </AppleSidebarSection>
+          {/* Tertiary */}
+          <AppleSidebarSection>
+            <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
+              Settings
+            </div>
+            <AppleSidebarList>
+              {navigationItems
+                .filter((i) => i.priority === 3 && !quickAccessIds.has(i.id))
+                .map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <AppleSidebarItem
+                      key={item.id}
+                      active={isActive}
+                      aria-current={isActive ? 'page' : undefined}
+                      data-id={item.id}
+                      onClick={onNavItemClick}
+                      onMouseEnter={onNavItemHover}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                    </AppleSidebarItem>
+                  );
+                })}
+              <AppleSidebarItem
+                data-id="__lock-nav-order"
+                active={false}
+                onClick={() => setLockNavOrder((v) => !v)}
+                aria-pressed={lockNavOrder}
+                className="h-auto min-h-[36px] justify-start py-1 text-xs"
+              >
+                {lockNavOrder
+                  ? 'Unlock Navigation Order'
+                  : 'Lock Navigation Order'}
+              </AppleSidebarItem>
+            </AppleSidebarList>
+          </AppleSidebarSection>
+          <div className="mt-auto px-2 py-1.5 text-xs text-muted-foreground">
+            © {new Date().getFullYear()} VitalSense
           </div>
-          <AppleSidebarList>
-            {primaryTabs
-              .filter((i) => !quickAccessIds.has(i.id))
-              .map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <AppleSidebarItem
-                    key={item.id}
-                    active={isActive}
-                    aria-current={isActive ? 'page' : undefined}
-                    data-id={item.id}
-                    onClick={onNavItemClick}
-                    onMouseEnter={onNavItemHover}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </AppleSidebarItem>
-                );
-              })}
-          </AppleSidebarList>
-        </AppleSidebarSection>
-        {/* Secondary */}
-        <AppleSidebarSection>
-          <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
-            More
-          </div>
-          <AppleSidebarList>
-            {secondaryTabs
-              .filter((i) => !quickAccessIds.has(i.id))
-              .map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <AppleSidebarItem
-                    key={item.id}
-                    active={isActive}
-                    aria-current={isActive ? 'page' : undefined}
-                    data-id={item.id}
-                    onClick={onNavItemClick}
-                    onMouseEnter={onNavItemHover}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </AppleSidebarItem>
-                );
-              })}
-          </AppleSidebarList>
-        </AppleSidebarSection>
-        {/* Tertiary */}
-        <AppleSidebarSection>
-          <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
-            Settings
-          </div>
-          <AppleSidebarList>
-            {navigationItems
-              .filter((i) => i.priority === 3 && !quickAccessIds.has(i.id))
-              .map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <AppleSidebarItem
-                    key={item.id}
-                    active={isActive}
-                    aria-current={isActive ? 'page' : undefined}
-                    data-id={item.id}
-                    onClick={onNavItemClick}
-                    onMouseEnter={onNavItemHover}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </AppleSidebarItem>
-                );
-              })}
-            <AppleSidebarItem
-              data-id="__lock-nav-order"
-              active={false}
-              onClick={() => setLockNavOrder((v) => !v)}
-              aria-pressed={lockNavOrder}
-              className="h-auto min-h-[36px] justify-start py-1 text-xs"
-            >
-              {lockNavOrder
-                ? 'Unlock Navigation Order'
-                : 'Lock Navigation Order'}
-            </AppleSidebarItem>
-          </AppleSidebarList>
-        </AppleSidebarSection>
-        <div className="mt-auto px-2 py-1.5 text-xs text-muted-foreground">
-          © {new Date().getFullYear()} VitalSense
-        </div>
-      </AppleSidebarPanel>
+        </AppleSidebarPanel>
 
-      {/* Main Content Area within SidebarInset (must be immediate sibling of the peer sidebar) */}
-      <AppleSidebarMain bumper="none" className="flex flex-1 flex-col">
-        <div className="flex items-center gap-2 pr-3">
-          <NavigationHeader
-            onSidebarToggle={toggleSidebar}
-            themeMode={themeMode}
-            onThemeToggle={toggleThemeMode}
-            onNavigate={handleTabChange}
-          />
-          <AnalyticsVersionBadge />
-        </div>
-        {/* Remove inner overflow to avoid double scroll; AppleSidebarMain is the scroll container */}
-        <ErrorBoundary
-          FallbackComponent={ErrorFallback}
-          resetKeys={[activeTab]}
+        {/* Main Content Area within SidebarInset (must be immediate sibling of the peer sidebar) */}
+        <AppleSidebarMain
+          bumper="none"
+          className={cn('flex flex-1 flex-col', _isMobileForced && 'w-full')}
         >
-          <main
-            id="main-content"
-            role="main"
-            aria-label={activeLabel || 'Main content'}
-            className="flex-1 bg-background px-4 pb-3 pt-2 md:px-6 md:pb-4 md:pt-3"
+          {_isMobileForced ? (
+            <MobileHeader
+              activeTab={activeTab}
+              activeLabel={activeLabel}
+              themeMode={themeMode}
+              onThemeToggle={toggleThemeMode}
+              onMenuToggle={toggleSidebar}
+              navigationItems={navigationItems}
+              onNavigate={handleTabChange}
+            />
+          ) : (
+            <div className="flex items-center gap-2 pr-3">
+              <NavigationHeader
+                onSidebarToggle={toggleSidebar}
+                themeMode={themeMode}
+                onThemeToggle={toggleThemeMode}
+                onNavigate={handleTabChange}
+              />
+              <AnalyticsVersionBadge />
+            </div>
+          )}
+          {/* Remove inner overflow to avoid double scroll; AppleSidebarMain is the scroll container */}
+          <ErrorBoundary
+            FallbackComponent={ErrorFallback}
+            resetKeys={[activeTab]}
           >
-            {/* Lightweight onboarding banner on dashboard only */}
-            {activeTab === 'dashboard' && (
-              <Suspense fallback={null}>
-                <OnboardingFlow
-                  onNavigate={handleTabChange}
-                  onHealthDataImported={(d) => setHealthData(d)}
-                />
-              </Suspense>
-            )}
-            <Suspense
-              fallback={
-                <div className="flex h-64 items-center justify-center gap-3">
-                  <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-teal-600"></div>
-                  <span className="text-muted-foreground">
-                    Loading VitalSense...
-                  </span>
-                </div>
-              }
+            <main
+              id="main-content"
+              role="main"
+              aria-label={activeLabel || 'Main content'}
+              className="flex-1 bg-background px-4 pb-3 pt-2 md:px-6 md:pb-4 md:pt-3"
             >
-              <div className="mx-auto max-w-7xl space-y-8">
-                <h1 className="sr-only" aria-live="polite">
-                  {activeLabel}
-                </h1>
-                {activeTab === 'dashboard' ? (
-                  <LandingPage
-                    healthData={healthData ?? null}
-                    fallRiskScore={derivedFallRiskScore}
-                    onRefreshData={async () => {
-                      const data =
-                        await HealthDataProcessor.processHealthData();
-                      setHealthData(data);
-                    }}
-                    onNavigateToFeature={(featureId) => {
-                      const map: Record<string, string> = {
-                        insights: 'analytics',
-                        analytics: 'analytics',
-                        'fall-risk': 'fall-detection',
-                        'ai-recommendations': 'advanced-analytics',
-                        'realtime-scoring': 'live-monitoring',
-                        family: 'caregiver',
-                        emergency: 'emergency-contacts',
-                        import: 'dashboard',
-                        'healthkit-guide': 'device-sync',
-                        'system-status': 'dev-diagnostics',
-                      };
-                      const target = map[featureId] ?? 'dashboard';
-                      handleTabChange(target);
-                    }}
+              {/* Lightweight onboarding banner on dashboard only */}
+              {activeTab === 'dashboard' && (
+                <Suspense fallback={null}>
+                  <OnboardingFlow
+                    onNavigate={handleTabChange}
+                    onHealthDataImported={(d) => setHealthData(d)}
                   />
-                ) : (
-                  (() => {
-                    type WithOptionalHealthData = {
-                      healthData?: unknown;
-                    };
-                    const ActiveComponent = activeComponent as unknown as
-                      | React.ComponentType<WithOptionalHealthData>
-                      | undefined;
-                    return ActiveComponent ? (
-                      // Provide shared healthData to components that can consume it.
-                      <ActiveComponent healthData={healthData} />
-                    ) : null;
-                  })()
-                )}
-              </div>
-            </Suspense>
-          </main>
-        </ErrorBoundary>
-        <Footer onNavigate={handleTabChange} />
-      </AppleSidebarMain>
+                </Suspense>
+              )}
+              <Suspense
+                fallback={
+                  <div className="flex h-64 items-center justify-center gap-3">
+                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-teal-600"></div>
+                    <span className="text-muted-foreground">
+                      Loading VitalSense...
+                    </span>
+                  </div>
+                }
+              >
+                <div className="mx-auto max-w-7xl space-y-8">
+                  <h1 className="sr-only" aria-live="polite">
+                    {activeLabel}
+                  </h1>
+                  {activeTab === 'dashboard' ? (
+                    <LandingPage
+                      healthData={healthData ?? null}
+                      fallRiskScore={derivedFallRiskScore}
+                      onRefreshData={async () => {
+                        const data =
+                          await HealthDataProcessor.processHealthData();
+                        setHealthData(data);
+                      }}
+                      onNavigateToFeature={(featureId) => {
+                        const map: Record<string, string> = {
+                          insights: 'analytics',
+                          analytics: 'analytics',
+                          'fall-risk': 'fall-detection',
+                          'ai-recommendations': 'advanced-analytics',
+                          'realtime-scoring': 'live-monitoring',
+                          family: 'caregiver',
+                          emergency: 'emergency-contacts',
+                          import: 'dashboard',
+                          'healthkit-guide': 'device-sync',
+                          'system-status': 'dev-diagnostics',
+                        };
+                        const target = map[featureId] ?? 'dashboard';
+                        handleTabChange(target);
+                      }}
+                    />
+                  ) : (
+                    (() => {
+                      type WithOptionalHealthData = {
+                        healthData?: unknown;
+                      };
+                      const ActiveComponent = activeComponent as unknown as
+                        | React.ComponentType<WithOptionalHealthData>
+                        | undefined;
+                      return ActiveComponent ? (
+                        // Provide shared healthData to components that can consume it.
+                        <ActiveComponent healthData={healthData} />
+                      ) : null;
+                    })()
+                  )}
+                </div>
+              </Suspense>
+            </main>
+          </ErrorBoundary>
+          <Footer onNavigate={handleTabChange} />
+        </AppleSidebarMain>
 
-      {/* AppleSidebar handles mobile overlay internally */}
-    </div>
+        {/* AppleSidebar handles mobile overlay internally */}
+      </div>
+    </>
   );
 }
 

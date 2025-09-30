@@ -2,8 +2,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { useKV } from '@/hooks/useCloudflareKV';
 import type { ProcessedHealthData } from '@/types';
-import { useKV } from '@github/spark/hooks';
 import {
   BarChart3,
   CheckCircle2,
@@ -120,7 +120,7 @@ export default function OnboardingFlow({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-base">Getting started</CardTitle>
-            <div className="text-muted-foreground text-xs mt-1">
+            <div className="mt-1 text-xs text-muted-foreground">
               {completed === total
                 ? 'All set! Explore VitalSense.'
                 : 'Follow these steps to get the best experience.'}
@@ -139,18 +139,18 @@ export default function OnboardingFlow({
       <CardContent className="space-y-4">
         <div>
           <Progress value={percent} />
-          <div className="text-muted-foreground text-xs mt-1">
+          <div className="mt-1 text-xs text-muted-foreground">
             {completed} of {total} completed
           </div>
         </div>
 
-        <div className="gap-3 md:grid-cols-2 grid">
+        <div className="grid gap-3 md:grid-cols-2">
           {/* Step 1: Import */}
-          <div className="p-3 rounded-md border">
+          <div className="rounded-md border p-3">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm font-medium">{steps[0].title}</div>
-                <div className="text-muted-foreground text-xs">
+                <div className="text-xs text-muted-foreground">
                   {steps[0].description}
                 </div>
               </div>
@@ -164,7 +164,7 @@ export default function OnboardingFlow({
               <div className="mt-3">
                 <Suspense
                   fallback={
-                    <div className="text-muted-foreground text-xs">
+                    <div className="text-xs text-muted-foreground">
                       Loading uploader…
                     </div>
                   }
@@ -182,11 +182,11 @@ export default function OnboardingFlow({
           </div>
 
           {/* Step 2: Contacts */}
-          <div className="p-3 rounded-md border">
+          <div className="rounded-md border p-3">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm font-medium">{steps[1].title}</div>
-                <div className="text-muted-foreground text-xs">
+                <div className="text-xs text-muted-foreground">
                   {steps[1].description}
                 </div>
               </div>
@@ -217,11 +217,11 @@ export default function OnboardingFlow({
           </div>
 
           {/* Step 3: Device */}
-          <div className="p-3 rounded-md border">
+          <div className="rounded-md border p-3">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm font-medium">{steps[2].title}</div>
-                <div className="text-muted-foreground text-xs">
+                <div className="text-xs text-muted-foreground">
                   {steps[2].description}
                 </div>
               </div>
@@ -248,11 +248,11 @@ export default function OnboardingFlow({
           </div>
 
           {/* Step 4: Analytics */}
-          <div className="p-3 rounded-md border">
+          <div className="rounded-md border p-3">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm font-medium">{steps[3].title}</div>
-                <div className="text-muted-foreground text-xs">
+                <div className="text-xs text-muted-foreground">
                   {steps[3].description}
                 </div>
               </div>

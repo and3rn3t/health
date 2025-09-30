@@ -9,8 +9,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { ProcessedHealthData } from '@/types';
-import { useKV } from '@github/spark/hooks';
 import {
   Activity,
   AlertTriangle,
@@ -245,10 +245,10 @@ export default function FamilyDashboard({
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-primary text-2xl font-bold">
+            <div className="text-2xl font-bold text-primary">
               {(familyMembers || []).length}
             </div>
-            <div className="text-muted-foreground text-sm">Family Members</div>
+            <div className="text-sm text-muted-foreground">Family Members</div>
           </CardContent>
         </Card>
         <Card>
@@ -256,7 +256,7 @@ export default function FamilyDashboard({
             <div className="text-2xl font-bold text-green-600">
               {activeFamilyMembers}
             </div>
-            <div className="text-muted-foreground text-sm">Active Today</div>
+            <div className="text-sm text-muted-foreground">Active Today</div>
           </CardContent>
         </Card>
         <Card>
@@ -264,7 +264,7 @@ export default function FamilyDashboard({
             <div className="text-2xl font-bold text-purple-600">
               {totalReactions}
             </div>
-            <div className="text-muted-foreground text-sm">Total Support</div>
+            <div className="text-sm text-muted-foreground">Total Support</div>
           </CardContent>
         </Card>
       </div>
@@ -286,13 +286,13 @@ export default function FamilyDashboard({
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Overall Health</span>
                 <span>
-                  <p className="text-muted-foreground text-xs">
+                  <p className="text-xs text-muted-foreground">
                     {getHealthStatusMessage(healthData.healthScore || 0)}
                   </p>
                 </span>
               </div>
               <Progress value={healthData.healthScore || 0} className="h-2" />
-              <p className="text-muted-foreground text-xs">
+              <p className="text-xs text-muted-foreground">
                 {(healthData.healthScore || 0) >= 80
                   ? 'Excellent health status! Keep it up!'
                   : (healthData.healthScore || 0) >= 60
@@ -328,7 +328,7 @@ export default function FamilyDashboard({
                   return <Badge variant={badgeVariant}>{badgeText}</Badge>;
                 })()}
               </div>
-              <p className="text-muted-foreground text-xs">
+              <p className="text-xs text-muted-foreground">
                 {healthData.fallRiskFactors?.some((f) => f.risk === 'high')
                   ? 'Higher fall risk detected - extra care recommended'
                   : 'Fall risk is well managed'}
@@ -368,7 +368,7 @@ export default function FamilyDashboard({
                   </Avatar>
                   <div>
                     <h4 className="font-medium">{member.name}</h4>
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-sm text-muted-foreground">
                       {member.relationship}
                     </p>
                   </div>
@@ -383,7 +383,7 @@ export default function FamilyDashboard({
                           : 'bg-gray-400'
                       }`}
                     />
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-xs text-muted-foreground">
                       {getRelativeTime(member.lastSeen)}
                     </span>
                   </div>
@@ -428,12 +428,12 @@ export default function FamilyDashboard({
                       </div>
                       <div>
                         <h4 className="font-medium">{share.title}</h4>
-                        <p className="text-muted-foreground text-sm">
+                        <p className="text-sm text-muted-foreground">
                           {share.description}
                         </p>
                       </div>
                     </div>
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-xs text-muted-foreground">
                       {getRelativeTime(share.date)}
                     </span>
                   </div>
@@ -441,10 +441,10 @@ export default function FamilyDashboard({
                   {share.value && (
                     <div className="mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-primary text-2xl font-bold">
+                        <span className="text-2xl font-bold text-primary">
                           {share.value}
                         </span>
-                        <span className="text-muted-foreground text-sm">
+                        <span className="text-sm text-muted-foreground">
                           {share.unit}
                         </span>
                         {share.previousValue && (
@@ -464,7 +464,7 @@ export default function FamilyDashboard({
                         </span>
                       ))}
                       {share.reactions.length === 0 && (
-                        <span className="text-muted-foreground text-sm">
+                        <span className="text-sm text-muted-foreground">
                           No reactions yet
                         </span>
                       )}

@@ -32,35 +32,21 @@
   backdrop-filter: saturate(180%) blur(12px);
 }
 
-/* Independent scroll */
+/* Natural content flow without forced scrolling */
 [data-vs='apple-sidebar-inner'] {
-  overflow-y: auto;
-  min-height: 0;
+  overflow: visible;
 }
 
-/* Thin scrollbars for main and sidebar */
+/* Hide any scrollbars that might appear */
 [data-vs='apple-sidebar-inner'],
 [data-vs='apple-sidebar-main'] {
-  scrollbar-width: thin; /* Firefox */
-  /* Use muted for thumb color to respect theme */
-  scrollbar-color: var(--muted) transparent;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
 
 [data-vs='apple-sidebar-inner']::-webkit-scrollbar,
 [data-vs='apple-sidebar-main']::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-[data-vs='apple-sidebar-inner']::-webkit-scrollbar-thumb,
-[data-vs='apple-sidebar-main']::-webkit-scrollbar-thumb {
-  background-color: var(--muted);
-  border-radius: 8px;
-}
-
-[data-vs='apple-sidebar-inner']::-webkit-scrollbar-track,
-[data-vs='apple-sidebar-main']::-webkit-scrollbar-track {
-  background-color: transparent;
+  display: none; /* WebKit browsers */
 }
 
 /* Main content area respects sticky header by being the scroll container */

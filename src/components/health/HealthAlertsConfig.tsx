@@ -19,8 +19,8 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { ProcessedHealthData } from '@/types';
-import { useKV } from '@github/spark/hooks';
 import {
   AlertTriangle,
   Bell,
@@ -367,12 +367,12 @@ export default function HealthAlertsConfig({
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-sm font-medium text-muted-foreground">
                   Total Alerts
                 </p>
                 <p className="text-2xl font-bold">{alerts.length}</p>
               </div>
-              <Bell className="text-muted-foreground h-8 w-8" />
+              <Bell className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -381,7 +381,7 @@ export default function HealthAlertsConfig({
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-sm font-medium text-muted-foreground">
                   Active Alerts
                 </p>
                 <p className="text-2xl font-bold text-green-600">
@@ -397,7 +397,7 @@ export default function HealthAlertsConfig({
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-sm font-medium text-muted-foreground">
                   Triggered Today
                 </p>
                 <p className="text-2xl font-bold text-orange-600">
@@ -413,7 +413,7 @@ export default function HealthAlertsConfig({
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-sm font-medium text-muted-foreground">
                   Critical Alerts
                 </p>
                 <p className="text-2xl font-bold text-red-600">
@@ -646,11 +646,11 @@ export default function HealthAlertsConfig({
             {alerts.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <Bell className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                  <Bell className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                   <h3 className="mb-2 text-lg font-semibold">
                     No Alerts Configured
                   </h3>
-                  <p className="text-muted-foreground mb-4">
+                  <p className="mb-4 text-muted-foreground">
                     Create your first health monitoring alert to get started
                     with personalized monitoring.
                   </p>
@@ -673,7 +673,7 @@ export default function HealthAlertsConfig({
                           />
                           <div>
                             <h4 className="font-semibold">{alert.name}</h4>
-                            <p className="text-muted-foreground text-sm">
+                            <p className="text-sm text-muted-foreground">
                               {getMetricLabel(alert.metric)} •{' '}
                               {CONDITION_LABELS[alert.condition]}
                             </p>
@@ -717,7 +717,7 @@ export default function HealthAlertsConfig({
                           </div>
                         )}
 
-                        <div className="text-muted-foreground flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span>
                             Created:{' '}
                             {new Date(alert.createdAt).toLocaleDateString()}
@@ -761,7 +761,7 @@ export default function HealthAlertsConfig({
                     <div className="space-y-3">
                       <div>
                         <h4 className="font-semibold">{metric.label}</h4>
-                        <p className="text-muted-foreground text-sm">
+                        <p className="text-sm text-muted-foreground">
                           Normal range: {metric.normalRange[0]}-
                           {metric.normalRange[1]} {metric.unit}
                         </p>
@@ -796,7 +796,7 @@ export default function HealthAlertsConfig({
               <div className="flex items-center justify-between">
                 <div>
                   <Label htmlFor="global-alerts">Enable All Alerts</Label>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm text-muted-foreground">
                     Master switch for all health monitoring alerts
                   </p>
                 </div>
@@ -868,7 +868,7 @@ export default function HealthAlertsConfig({
                     })
                   }
                 />
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   Prevent alert fatigue by limiting daily notifications
                 </p>
               </div>
@@ -883,7 +883,7 @@ export default function HealthAlertsConfig({
                     <Label htmlFor="email-notifications">
                       Email Notifications
                     </Label>
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-sm text-muted-foreground">
                       Receive alerts via email
                     </p>
                   </div>
@@ -904,7 +904,7 @@ export default function HealthAlertsConfig({
                     <Label htmlFor="push-notifications">
                       Push Notifications
                     </Label>
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-sm text-muted-foreground">
                       Receive immediate push notifications
                     </p>
                   </div>
@@ -935,7 +935,7 @@ export default function HealthAlertsConfig({
             <CardContent>
               {alertHistory.length === 0 ? (
                 <div className="py-8 text-center">
-                  <Clock className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                  <Clock className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                   <h3 className="mb-2 text-lg font-semibold">
                     No Alert History
                   </h3>
@@ -966,7 +966,7 @@ export default function HealthAlertsConfig({
                           />
                           <div>
                             <p className="font-medium">{entry.alertName}</p>
-                            <p className="text-muted-foreground text-sm">
+                            <p className="text-sm text-muted-foreground">
                               {entry.metric}: {entry.value} {entry.unit}
                             </p>
                           </div>
@@ -975,7 +975,7 @@ export default function HealthAlertsConfig({
                           <p className="text-sm font-medium">
                             {date.toLocaleDateString()}
                           </p>
-                          <p className="text-muted-foreground text-sm">
+                          <p className="text-sm text-muted-foreground">
                             {date.toLocaleTimeString()}
                           </p>
                         </div>

@@ -11,8 +11,8 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { ProcessedHealthData } from '@/types';
-import { useKV } from '@github/spark/hooks';
 import {
   Activity,
   AlertTriangle,
@@ -248,7 +248,7 @@ const AIRecommendations = ({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <Brain className="text-primary h-6 w-6" />
+            <Brain className="h-6 w-6 text-primary" />
             AI Health Recommendations
           </h2>
           <p className="text-muted-foreground">
@@ -272,11 +272,11 @@ const AIRecommendations = ({
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="bg-primary/10 rounded-lg p-2">
-                <Target className="text-primary h-5 w-5" />
+                <Target className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{totalRecommendations}</p>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   Total Recommendations
                 </p>
               </div>
@@ -292,7 +292,7 @@ const AIRecommendations = ({
               </div>
               <div>
                 <p className="text-2xl font-bold">{completedCount}</p>
-                <p className="text-muted-foreground text-sm">Completed</p>
+                <p className="text-sm text-muted-foreground">Completed</p>
               </div>
             </div>
           </CardContent>
@@ -308,7 +308,7 @@ const AIRecommendations = ({
                 <p className="text-2xl font-bold">
                   {completionRate.toFixed(0)}%
                 </p>
-                <p className="text-muted-foreground text-sm">Completion Rate</p>
+                <p className="text-sm text-muted-foreground">Completion Rate</p>
               </div>
             </div>
           </CardContent>
@@ -329,7 +329,7 @@ const AIRecommendations = ({
                     ).length
                   }
                 </p>
-                <p className="text-muted-foreground text-sm">High Priority</p>
+                <p className="text-sm text-muted-foreground">High Priority</p>
               </div>
             </div>
           </CardContent>
@@ -358,7 +358,7 @@ const AIRecommendations = ({
                 <Progress value={completionRate} className="h-2" />
               </div>
               {lastGenerated && (
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   Last updated: {new Date(lastGenerated).toLocaleDateString()}
                 </p>
               )}
@@ -391,7 +391,7 @@ const AIRecommendations = ({
             <TabsContent value={activeCategory} className="mt-6">
               {filteredRecommendations.length === 0 ? (
                 <div className="py-8 text-center">
-                  <Lightbulb className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                  <Lightbulb className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                   <h3 className="mb-2 text-lg font-semibold">
                     No recommendations found
                   </h3>
@@ -433,7 +433,7 @@ const AIRecommendations = ({
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                   <div className="mb-2 flex items-center gap-3">
-                                    <CategoryIcon className="text-primary h-5 w-5" />
+                                    <CategoryIcon className="h-5 w-5 text-primary" />
                                     <Badge
                                       variant="outline"
                                       className={getPriorityColor(
@@ -492,7 +492,7 @@ const AIRecommendations = ({
                             <CardContent>
                               <div className="space-y-4">
                                 {/* Timeframe and Category */}
-                                <div className="text-muted-foreground flex items-center gap-4 text-sm">
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                   <div className="flex items-center gap-1">
                                     <Calendar className="h-4 w-4" />
                                     {recommendation.timeframe}
@@ -515,7 +515,7 @@ const AIRecommendations = ({
                                           key={`step-${recommendation.id}-${index}-${step.slice(0, 20)}`}
                                           className="flex items-start gap-2 text-sm"
                                         >
-                                          <span className="text-primary mt-1 font-semibold">
+                                          <span className="mt-1 font-semibold text-primary">
                                             {index + 1}.
                                           </span>
                                           <span>{step}</span>
@@ -533,7 +533,7 @@ const AIRecommendations = ({
                                     <h4 className="mb-2 font-semibold">
                                       Why This Helps:
                                     </h4>
-                                    <p className="text-muted-foreground text-sm">
+                                    <p className="text-sm text-muted-foreground">
                                       {recommendation.reasoning}
                                     </p>
                                   </div>
@@ -546,7 +546,7 @@ const AIRecommendations = ({
                                         (evidence: string, index: number) => (
                                           <li
                                             key={`evidence-${recommendation.id}-${index}-${evidence.slice(0, 20)}`}
-                                            className="text-muted-foreground flex items-start gap-1 text-sm"
+                                            className="flex items-start gap-1 text-sm text-muted-foreground"
                                           >
                                             <span className="text-primary">
                                               •

@@ -18,10 +18,20 @@ export class PWAManager {
     // Register service worker
     if ('serviceWorker' in navigator) {
       try {
+        // Check if sw.js is available before registering
+        const swResponse = await fetch('/sw.js', { method: 'HEAD' });
+        if (!swResponse.ok) {
+          console.warn(
+            '[PWA] Service Worker file not available, skipping registration'
+          );
+          return;
+        }
+
         this.swRegistration = (await navigator.serviceWorker.register(
           '/sw.js',
           {
             scope: '/',
+            updateViaCache: 'none', // Prevent caching issues
           }
         )) as ServiceWorkerRegistrationWithSync;
 

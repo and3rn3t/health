@@ -471,7 +471,8 @@ app.use('*', async (c, next) => {
     ].join('; ');
   }
 
-  {
+  // Skip header modification for WebSocket responses (status 101)
+  if (resp.status !== 101) {
     // Always clone headers to ensure mutability and avoid runtime header immutability issues
     const newHeaders = new Headers(resp.headers);
     newHeaders.set(

@@ -23,9 +23,9 @@ import {
 } from '@/components/ui/ios26-button-system';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { iOS26MotionAccessibility } from '@/lib/ios26-accessibility-enhanced';
 import { getiOS26TypographyClass } from '@/lib/ios26-dynamic-type';
-import { useKV } from '@github/spark/hooks';
 import { Clock, Eye, MousePointerClick, Sparkles, Target } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { z } from 'zod';
@@ -137,7 +137,7 @@ function ReactionTest({ onComplete }: { onComplete: (avgMs: number) => void }) {
   return (
     <div className="space-y-3">
       <div className="bg-muted/50 rounded-lg p-4 text-center">
-        <p className="text-muted-foreground mb-2 text-sm">
+        <p className="mb-2 text-sm text-muted-foreground">
           Click as soon as the prompt turns green. 5 tries.
         </p>
         <Button
@@ -151,7 +151,7 @@ function ReactionTest({ onComplete }: { onComplete: (avgMs: number) => void }) {
       </div>
       <button
         onClick={handleClick}
-        className={`h-24 border-border w-full rounded-md border transition-colors duration-150 ${bgClass}`}
+        className={`h-24 w-full rounded-md border border-border transition-colors duration-150 ${bgClass}`}
         aria-label="Reaction area"
       >
         <div className="text-center">
@@ -245,7 +245,7 @@ function MemorySequenceTest({
           Max Level: {maxLevel}
         </div>
       </div>
-      <div className="gap-3 grid grid-cols-2">
+      <div className="grid grid-cols-2 gap-3">
         {[0, 1, 2, 3].map((i) => (
           <button
             key={i}
@@ -367,7 +367,7 @@ function AttentionGoNoGoTest({
       >
         <div className="text-center">
           {stimulus === 'go' && (
-            <span className="text-foreground font-semibold">Tap!</span>
+            <span className="font-semibold text-foreground">Tap!</span>
           )}
           {stimulus === 'nogo' && (
             <span className="text-muted-foreground">Do not tap</span>
@@ -378,7 +378,7 @@ function AttentionGoNoGoTest({
         </div>
       </button>
 
-      <div className="ios-26-surface p-3 text-xs text-muted-foreground backdrop-blur-sm rounded-lg border border-white/10">
+      <div className="ios-26-surface rounded-lg border border-white/10 p-3 text-xs text-muted-foreground backdrop-blur-sm">
         <div>Correct taps: {correct}</div>
         <div>False positives: {falsePositives}</div>
       </div>
@@ -518,7 +518,7 @@ export default function CognitiveHealth() {
               Cognitive Health
             </h1>
             <p
-              className={`text-muted-foreground mt-2 ${getiOS26TypographyClass('body')}`}
+              className={`mt-2 text-muted-foreground ${getiOS26TypographyClass('body')}`}
             >
               Measure memory, attention, and reaction time to monitor cognitive
               wellness.
@@ -539,8 +539,8 @@ export default function CognitiveHealth() {
         </div>
 
         {/* Overview cards */}
-        <div className="md:grid-cols-3 grid gap-4">
-          <Card className="ios-26-surface-elevated backdrop-blur-md border border-white/10">
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <HIGIcon
@@ -557,7 +557,7 @@ export default function CognitiveHealth() {
                   <div className="text-3xl font-bold">
                     {last?.compositeScore ?? '—'}
                   </div>
-                  <div className="text-muted-foreground text-xs mt-1">
+                  <div className="mt-1 text-xs text-muted-foreground">
                     {last
                       ? new Date(last.date).toLocaleDateString()
                       : 'No data yet'}
@@ -573,7 +573,7 @@ export default function CognitiveHealth() {
             </CardContent>
           </Card>
 
-          <Card className="ios-26-surface-elevated backdrop-blur-md border border-white/10">
+          <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MousePointerClick className="h-5 w-5 text-vitalsense-primary" />{' '}
@@ -584,17 +584,17 @@ export default function CognitiveHealth() {
             <CardContent>
               <div className="text-3xl font-bold">
                 {last?.reactionAvgMs ?? '—'}
-                <span className="text-muted-foreground ml-1 text-lg font-normal">
+                <span className="ml-1 text-lg font-normal text-muted-foreground">
                   ms
                 </span>
               </div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="mt-1 text-xs text-muted-foreground">
                 Lower is better
               </div>
             </CardContent>
           </Card>
 
-          <Card className="ios-26-surface-elevated backdrop-blur-md border border-white/10">
+          <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Eye className="h-5 w-5 text-vitalsense-primary" /> Memory
@@ -606,7 +606,7 @@ export default function CognitiveHealth() {
               <div className="text-3xl font-bold">
                 {last?.memoryMaxLevel ?? '—'}
               </div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="mt-1 text-xs text-muted-foreground">
                 Higher is better
               </div>
             </CardContent>
@@ -624,7 +624,7 @@ export default function CognitiveHealth() {
           <TabsContent value="assessments" className="space-y-4">
             <Card
               id="reaction-test"
-              className="ios-26-surface-elevated backdrop-blur-md border border-white/10"
+              className="ios-26-surface-elevated border border-white/10 backdrop-blur-md"
             >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -646,7 +646,7 @@ export default function CognitiveHealth() {
 
             <Card
               id="memory-test"
-              className="ios-26-surface-elevated backdrop-blur-md border border-white/10"
+              className="ios-26-surface-elevated border border-white/10 backdrop-blur-md"
             >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -668,7 +668,7 @@ export default function CognitiveHealth() {
 
             <Card
               id="attention-test"
-              className="ios-26-surface-elevated backdrop-blur-md border border-white/10"
+              className="ios-26-surface-elevated border border-white/10 backdrop-blur-md"
             >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -693,7 +693,7 @@ export default function CognitiveHealth() {
           </TabsContent>
 
           <TabsContent value="trends">
-            <Card className="ios-26-surface-elevated backdrop-blur-md border border-white/10">
+            <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md">
               <CardHeader>
                 <CardTitle>Performance Trends</CardTitle>
                 <CardDescription>Recent cognitive scores</CardDescription>
@@ -718,7 +718,7 @@ export default function CognitiveHealth() {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-muted-foreground text-center">
+                  <div className="text-center text-muted-foreground">
                     No trend data yet
                   </div>
                 )}
@@ -727,7 +727,7 @@ export default function CognitiveHealth() {
           </TabsContent>
 
           <TabsContent value="settings">
-            <Card className="ios-26-surface-elevated backdrop-blur-md border border-white/10">
+            <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md">
               <CardHeader>
                 <CardTitle>Assessment Settings</CardTitle>
                 <CardDescription>
@@ -738,7 +738,7 @@ export default function CognitiveHealth() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">Weekly Frequency</div>
-                    <div className="text-muted-foreground text-sm">
+                    <div className="text-sm text-muted-foreground">
                       Assessments per week
                     </div>
                   </div>
@@ -790,7 +790,7 @@ export default function CognitiveHealth() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">Reminders</div>
-                    <div className="text-muted-foreground text-sm">
+                    <div className="text-sm text-muted-foreground">
                       Enable in-app reminders
                     </div>
                   </div>
@@ -814,7 +814,7 @@ export default function CognitiveHealth() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">Share with Caregivers</div>
-                    <div className="text-muted-foreground text-sm">
+                    <div className="text-sm text-muted-foreground">
                       Allow caregivers to view results
                     </div>
                   </div>
@@ -849,7 +849,7 @@ export default function CognitiveHealth() {
 
       {/* Guided Session Dialog */}
       <Dialog open={guidedOpen} onOpenChange={setGuidedOpen}>
-        <DialogContent className="ios-26-surface-elevated backdrop-blur-md border border-white/10">
+        <DialogContent className="ios-26-surface-elevated border border-white/10 backdrop-blur-md">
           <DialogHeader>
             <DialogTitle className={getiOS26TypographyClass('title-2')}>
               Start Guided Cognitive Session
@@ -861,7 +861,7 @@ export default function CognitiveHealth() {
           </DialogHeader>
 
           <div className="space-y-3">
-            <div className="ios-26-surface p-3 rounded-lg border border-white/10">
+            <div className="ios-26-surface rounded-lg border border-white/10 p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <HIGIcon icon={IOSHIGIcons.system.clock} />
@@ -875,7 +875,7 @@ export default function CognitiveHealth() {
                 </IOS26Button>
               </div>
             </div>
-            <div className="ios-26-surface p-3 rounded-lg border border-white/10">
+            <div className="ios-26-surface rounded-lg border border-white/10 p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <HIGIcon icon={IOSHIGIcons.health.brain} />
@@ -889,7 +889,7 @@ export default function CognitiveHealth() {
                 </IOS26Button>
               </div>
             </div>
-            <div className="ios-26-surface p-3 rounded-lg border border-white/10">
+            <div className="ios-26-surface rounded-lg border border-white/10 p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <HIGIcon icon={IOSHIGIcons.health.activity} />
@@ -921,7 +921,7 @@ export default function CognitiveHealth() {
 
       {/* Session Summary Dialog */}
       <Dialog open={showSummary} onOpenChange={setShowSummary}>
-        <DialogContent className="ios-26-surface-elevated backdrop-blur-md border border-white/10">
+        <DialogContent className="ios-26-surface-elevated border border-white/10 backdrop-blur-md">
           <DialogHeader>
             <DialogTitle className={getiOS26TypographyClass('title-2')}>
               Session Summary
@@ -932,14 +932,14 @@ export default function CognitiveHealth() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="gap-3 md:grid-cols-3 grid grid-cols-1">
-            <div className="ios-26-surface p-3 rounded-lg border border-white/10">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="ios-26-surface rounded-lg border border-white/10 p-3">
               <div className="text-xs text-muted-foreground">Reaction</div>
               <div className="text-2xl font-semibold">
                 {summary?.reactionAvgMs != null ? (
                   <>
                     {summary.reactionAvgMs}
-                    <span className="text-muted-foreground ml-1 text-sm">
+                    <span className="ml-1 text-sm text-muted-foreground">
                       ms
                     </span>
                   </>
@@ -948,13 +948,13 @@ export default function CognitiveHealth() {
                 )}
               </div>
             </div>
-            <div className="ios-26-surface p-3 rounded-lg border border-white/10">
+            <div className="ios-26-surface rounded-lg border border-white/10 p-3">
               <div className="text-xs text-muted-foreground">Memory</div>
               <div className="text-2xl font-semibold">
                 {summary?.memoryMaxLevel ?? '—'}
               </div>
             </div>
-            <div className="ios-26-surface p-3 rounded-lg border border-white/10">
+            <div className="ios-26-surface rounded-lg border border-white/10 p-3">
               <div className="text-xs text-muted-foreground">Attention</div>
               <div className="text-2xl font-semibold">
                 {summary?.attentionScore ?? '—'}
@@ -962,7 +962,7 @@ export default function CognitiveHealth() {
             </div>
           </div>
 
-          <div className="ios-26-surface p-3 rounded-lg border border-white/10">
+          <div className="ios-26-surface rounded-lg border border-white/10 p-3">
             <div className="text-xs text-muted-foreground">Composite</div>
             <div className="text-2xl font-semibold">
               {summary?.compositeScore ?? last?.compositeScore ?? '—'}

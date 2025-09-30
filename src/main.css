@@ -93,6 +93,19 @@
     background: var(--background);
     color: var(--foreground);
     font-size: calc(16px * var(--vs-dynamic-scale));
+    overflow-x: hidden; /* Prevent horizontal scrollbars */
+    overflow-y: auto; /* Allow vertical scrolling but optimize */
+  }
+
+  /* Optimize global scrolling behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Ensure root container doesn't force scrollbars */
+  #root {
+    min-height: 100vh;
+    overflow: visible;
   }
 }
 
@@ -181,6 +194,32 @@
     background: rgba(148, 163, 184, 0.4);
     border-radius: 4px;
   }
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .natural-flow {
+    overflow: visible;
+  }
+  .responsive-height {
+    min-height: 0;
+    max-height: none;
+  }
+  .flex-responsive {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  @media (min-width: 768px) {
+    .md\:flex-responsive {
+      display: flex;
+      flex-direction: row;
+      min-height: 0;
+    }
+  }
   .sr-only {
     position: absolute;
     width: 1px;
@@ -198,6 +237,111 @@
       transition: none !important;
     }
   }
+
+  /* Mobile-specific utilities */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Safe area utilities for mobile notches */
+  .pt-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .pb-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .px-safe-x {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .h-safe-bottom {
+    height: env(safe-area-inset-bottom);
+  }
+}
+
+/* Mobile-forced override styles */
+.mobile-forced [data-sidebar] {
+  display: none !important;
+}
+
+.mobile-forced .sidebar-panel {
+  display: none !important;
+}
+
+/* VitalSense Mobile Tab Styling Overrides */
+.mobile-forced [role='tablist'] {
+  @apply border border-vitalsense-teal/20 bg-background;
+  @apply rounded-xl shadow-lg;
+  @apply p-1;
+}
+
+.mobile-forced [role='tab'] {
+  @apply bg-gradient-to-br from-vitalsense-teal/10 to-vitalsense-teal/5;
+  @apply hover:from-vitalsense-teal/20 hover:to-vitalsense-teal/10;
+  @apply font-semibold text-vitalsense-teal;
+  @apply rounded-lg border border-vitalsense-teal/20;
+  @apply shadow-sm hover:shadow-md;
+  @apply transition-all duration-300;
+  @apply px-4 py-2;
+}
+
+.mobile-forced [role='tab'][aria-selected='true'] {
+  @apply bg-gradient-to-br from-vitalsense-teal to-vitalsense-teal/80;
+  @apply font-bold text-white;
+  @apply shadow-lg shadow-vitalsense-teal/30;
+  @apply border-vitalsense-teal/40;
+  @apply scale-105;
+}
+
+/* AGGRESSIVE Mobile Button Overrides - Force VitalSense Styling */
+.mobile-forced button {
+  background: linear-gradient(
+    135deg,
+    rgb(5 150 105 / 0.15),
+    rgb(5 150 105 / 0.05)
+  ) !important;
+  color: rgb(5 150 105) !important;
+  border: 1px solid rgb(5 150 105 / 0.2) !important;
+  border-radius: 0.5rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 3px rgb(5 150 105 / 0.1) !important;
+  transition: all 0.3s ease !important;
+}
+
+.mobile-forced button:hover {
+  background: linear-gradient(
+    135deg,
+    rgb(5 150 105 / 0.25),
+    rgb(5 150 105 / 0.1)
+  ) !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 8px rgb(5 150 105 / 0.2) !important;
+}
+
+.mobile-forced button[aria-selected='true'],
+.mobile-forced button.active,
+.mobile-forced button[data-state='active'] {
+  background: linear-gradient(
+    135deg,
+    rgb(5 150 105),
+    rgb(5 150 105 / 0.8)
+  ) !important;
+  color: white !important;
+  border-color: rgb(5 150 105 / 0.4) !important;
+  box-shadow: 0 4px 12px rgb(5 150 105 / 0.3) !important;
+  transform: scale(1.05) !important;
 }
 
 /* Guard: DO NOT append generated Tailwind utilities below this line. */

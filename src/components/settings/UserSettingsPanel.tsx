@@ -18,13 +18,13 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
+import { useKV } from '@/hooks/useCloudflareKV';
 import {
   DEFAULT_SETTINGS,
   type AllSettings,
   type SyncFrequency,
   type ThemeMode,
 } from '@/lib/settingsTypes';
-import { useKV } from '@github/spark/hooks';
 import { Lock, Settings, Shield, Users, Wifi } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -241,7 +241,7 @@ export default function UserSettingsPanel() {
         </p>
       </div>
 
-      <div className="md:grid-cols-2 grid gap-6">
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Profile */}
         <Card>
           <CardHeader>
@@ -348,7 +348,7 @@ export default function UserSettingsPanel() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Shield className="h-5 w-5 text-vitalsense-accent" />
+              <Shield className="text-vitalsense-accent h-5 w-5" />
               <span>Privacy & Security</span>
             </CardTitle>
             <CardDescription>Control how your data is used</CardDescription>
@@ -357,7 +357,7 @@ export default function UserSettingsPanel() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-medium">Data sharing</div>
-                <div className="text-muted-foreground text-sm">
+                <div className="text-sm text-muted-foreground">
                   Allow anonymized usage to improve VitalSense
                 </div>
               </div>
@@ -374,7 +374,7 @@ export default function UserSettingsPanel() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-medium">Product analytics</div>
-                <div className="text-muted-foreground text-sm">
+                <div className="text-sm text-muted-foreground">
                   Help us understand feature usage (first-party only)
                 </div>
               </div>
@@ -391,7 +391,7 @@ export default function UserSettingsPanel() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-medium">Two-factor authentication</div>
-                <div className="text-muted-foreground text-sm">
+                <div className="text-sm text-muted-foreground">
                   Add an extra layer of protection
                 </div>
               </div>
@@ -539,12 +539,12 @@ export default function UserSettingsPanel() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Settings className="h-5 w-5 text-vitalsense-gray" />
+            <Settings className="text-vitalsense-gray h-5 w-5" />
             <span>App Preferences</span>
           </CardTitle>
           <CardDescription>Personalize VitalSense</CardDescription>
         </CardHeader>
-        <CardContent className="md:grid-cols-2 grid gap-4">
+        <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="grid gap-2">
             <Label>Theme</Label>
             <Select
@@ -649,10 +649,10 @@ export default function UserSettingsPanel() {
             >
               <Lock className="h-4 w-4" /> Navigation order lock
             </Label>
-            <div className="px-3 flex items-center justify-between rounded-md border py-2">
+            <div className="flex items-center justify-between rounded-md border px-3 py-2">
               <div className="pr-4 text-sm leading-tight">
                 <div className="font-medium">Lock sidebar order</div>
-                <div className="text-muted-foreground text-xs">
+                <div className="text-xs text-muted-foreground">
                   Prevent adaptive quick access reordering
                 </div>
               </div>

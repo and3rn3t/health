@@ -1,3 +1,4 @@
+import { useKV } from '@/hooks/useCloudflareKV';
 import {
   computeCompositeScore,
   createInitialInsightState,
@@ -7,7 +8,6 @@ import {
   updateInsights,
 } from '@/lib/insights/liveInsights';
 import type { LiveHealthMetric } from '@/lib/liveHealthDataSync';
-import { useKV } from '@github/spark/hooks';
 import { useEffect, useMemo, useState } from 'react';
 
 export function useLiveInsights(

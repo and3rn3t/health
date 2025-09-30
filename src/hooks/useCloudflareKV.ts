@@ -7,28 +7,37 @@ import { useCallback, useState } from 'react';
 export function useKV<T>(
   key: string,
   defaultValue: T
-): [T, (value: T) => void] {
+): [T, (value: T | ((prev: T) => T)) => void] {
   // Simple localStorage-based implementation to avoid async complexity
   const [value, setValue] = useState<T>(() => {
     try {
       const stored = localStorage.getItem(`kv:${key}`);
-      return stored ? JSON.parse(stored) : defaultValue;
-    } catch {
+      const result = stored ? JSON.parse(stored) : defaultValue;
+      return result;
+    } catch (error) {
+      console.error('❌ useKV error for key', key, ':', error);
       return defaultValue;
     }
   });
 
-  // Update value function
+  // Update value function that supports both direct values and updater functions
   const updateValue = useCallback(
-    (newValue: T) => {
-      setValue(newValue);
+    (newValue: T | ((prev: T) => T)) => {
       try {
-        localStorage.setItem(`kv:${key}`, JSON.stringify(newValue));
+        const actualValue =
+          typeof newValue === 'function'
+            ? (newValue as (prev: T) => T)(value)
+            : newValue;
+        setValue(actualValue);
+        localStorage.setItem(`kv:${key}`, JSON.stringify(actualValue));
       } catch (error) {
-        console.warn(`Failed to save to localStorage for key "${key}":`, error);
+        console.error(
+          `❌ Failed to save to localStorage for key "${key}":`,
+          error
+        );
       }
     },
-    [key]
+    [key, value]
   );
 
   return [value, updateValue];

@@ -11,8 +11,8 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { useWebSocket } from '@/hooks/useWebSocket';
-import { useKV } from '@github/spark/hooks';
 import {
   Activity,
   AlertTriangle,
@@ -352,7 +352,7 @@ export default function LiveConnectionDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-sm font-medium text-muted-foreground">
                   Connection Status
                 </p>
                 <div className="mt-1 flex items-center gap-2">
@@ -366,7 +366,7 @@ export default function LiveConnectionDashboard() {
                   </span>
                 </div>
               </div>
-              <Signal className="text-muted-foreground h-8 w-8" />
+              <Signal className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -375,15 +375,15 @@ export default function LiveConnectionDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-sm font-medium text-muted-foreground">
                   Message Rate
                 </p>
                 <p className="text-2xl font-bold">
                   {connectionMetrics.messagesPerSecond}
                 </p>
-                <p className="text-muted-foreground text-xs">per second</p>
+                <p className="text-xs text-muted-foreground">per second</p>
               </div>
-              <Activity className="text-muted-foreground h-8 w-8" />
+              <Activity className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -392,15 +392,15 @@ export default function LiveConnectionDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-sm font-medium text-muted-foreground">
                   Total Messages
                 </p>
                 <p className="text-2xl font-bold">
                   {connectionMetrics.totalMessages}
                 </p>
-                <p className="text-muted-foreground text-xs">this session</p>
+                <p className="text-xs text-muted-foreground">this session</p>
               </div>
-              <Monitor className="text-muted-foreground h-8 w-8" />
+              <Monitor className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -409,18 +409,18 @@ export default function LiveConnectionDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-sm font-medium text-muted-foreground">
                   Uptime
                 </p>
                 <p className="text-2xl font-bold">
                   {formatUptime(connectionMetrics.uptime)}
                 </p>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs text-muted-foreground">
                   {connectionMetrics.reconnections > 0 &&
                     `${connectionMetrics.reconnections} reconnects`}
                 </p>
               </div>
-              <Zap className="text-muted-foreground h-8 w-8" />
+              <Zap className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -447,7 +447,7 @@ export default function LiveConnectionDashboard() {
             </CardHeader>
             <CardContent>
               {liveMetrics.length === 0 ? (
-                <div className="text-muted-foreground py-8 text-center">
+                <div className="py-8 text-center text-muted-foreground">
                   {isEnabled && connectionState.isConnected ? (
                     <>
                       <Monitor className="mx-auto mb-4 h-12 w-12 opacity-50" />
@@ -479,7 +479,7 @@ export default function LiveConnectionDashboard() {
                           <p className="font-medium capitalize">
                             {metric.type.replace('_', ' ')}
                           </p>
-                          <p className="text-muted-foreground text-sm">
+                          <p className="text-sm text-muted-foreground">
                             {metric.deviceId}
                           </p>
                         </div>
@@ -495,7 +495,7 @@ export default function LiveConnectionDashboard() {
                           >
                             {metric.quality}
                           </Badge>
-                          <span className="text-muted-foreground text-xs">
+                          <span className="text-xs text-muted-foreground">
                             {new Date(metric.timestamp).toLocaleTimeString()}
                           </span>
                         </div>
@@ -599,13 +599,13 @@ export default function LiveConnectionDashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium">WebSocket URL</label>
-                  <p className="bg-muted rounded p-2 font-mono text-sm">
+                  <p className="rounded bg-muted p-2 font-mono text-sm">
                     {getWebSocketUrl()}
                   </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium">Ready State</label>
-                  <p className="bg-muted rounded p-2 font-mono text-sm">
+                  <p className="rounded bg-muted p-2 font-mono text-sm">
                     {connectionState.isConnected
                       ? 'OPEN (1)'
                       : connectionState.isConnecting

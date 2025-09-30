@@ -208,43 +208,44 @@ app.use('/api/*', async (c, next) => {
     c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || '';
   const userAgent = c.req.header('User-Agent') || '';
 
-  // Check rate limiting with Durable Object
-  const rateLimiterId = c.env.RATE_LIMITER.idFromName(clientIP);
-  const rateLimiter = c.env.RATE_LIMITER.get(rateLimiterId);
+  // Check rate limiting with Durable Object (only if available)
+  if (c.env.RATE_LIMITER) {
+    try {
+      const rateLimiterId = c.env.RATE_LIMITER.idFromName(clientIP);
+      const rateLimiter = c.env.RATE_LIMITER.get(rateLimiterId);
+      const rateLimitResult = await rateLimiter.fetch(c.req.raw);
+      const rateLimitData = (await rateLimitResult.json()) as {
+        ok: boolean;
+        remaining?: number;
+      };
 
-  try {
-    const rateLimitResult = await rateLimiter.fetch(c.req.raw);
-    const rateLimitData = (await rateLimitResult.json()) as {
-      allowed: boolean;
-      remaining: number;
-    };
+      if (!rateLimitData.ok) {
+        // Log security event
+        if (c.env.ENABLE_SECURITY_LOGGING === 'true') {
+          const securityEvent: SecurityAnalyticsEvent = {
+            timestamp: Date.now(),
+            ip: clientIP,
+            userAgent,
+            eventType: 'rate_limit_hit',
+            metadata: {
+              endpoint: c.req.path,
+              method: c.req.method,
+            },
+            severity: 'medium',
+          };
 
-    if (!rateLimitData.allowed) {
-      // Log security event
-      if (c.env.ENABLE_SECURITY_LOGGING === 'true') {
-        const securityEvent: SecurityAnalyticsEvent = {
-          timestamp: Date.now(),
-          ip: clientIP,
-          userAgent,
-          eventType: 'rate_limit_hit',
-          metadata: {
-            endpoint: c.req.path,
-            method: c.req.method,
-          },
-          severity: 'medium',
-        };
+          c.executionCtx.waitUntil(
+            c.env.SECURITY_ANALYTICS.writeDataPoint(securityEvent)
+          );
+        }
 
-        c.executionCtx.waitUntil(
-          c.env.SECURITY_ANALYTICS.writeDataPoint(securityEvent)
-        );
+        return c.json({ error: 'Rate limit exceeded' }, 429);
       }
 
-      return c.json({ error: 'Rate limit exceeded' }, 429);
+      c.set('rateLimitRemaining', rateLimitData.remaining ?? 0);
+    } catch (error) {
+      console.warn('Rate limiting check failed:', error);
     }
-
-    c.set('rateLimitRemaining', rateLimitData.remaining);
-  } catch (error) {
-    console.warn('Rate limiting check failed:', error);
   }
 
   await next();

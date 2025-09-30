@@ -12,6 +12,8 @@ import {
   useState,
 } from 'react';
 
+import './apple-sidebar.css';
+
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -157,7 +159,7 @@ export function AppleSidebarPanel({
         data-side={side}
         className={cn(
           // Responsive comfort widths on large displays
-          'md:w-[360px] xl:w-[420px] 2xl:w-[520px] bg-card text-foreground border-border h-full w-[320px] shrink-0 border-r',
+          'h-full w-[320px] shrink-0 border-r border-border bg-card text-foreground md:w-[360px] xl:w-[420px] 2xl:w-[520px]',
           className
         )}
         {...props}
@@ -177,16 +179,13 @@ export function AppleSidebarPanel({
       <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
         <SheetContent
           side={side}
-          className="bg-card text-foreground w-[90vw] max-w-[420px] p-0 shadow-xl" // cap width on large phones/tablets
+          className="w-[90vw] max-w-[420px] bg-card p-0 text-foreground shadow-xl" // cap width on large phones/tablets
           id="vs-apple-sidebar-mobile"
         >
           <SheetHeader className="sr-only">
             <SheetTitle>Navigation</SheetTitle>
           </SheetHeader>
-          <div
-            data-vs="apple-sidebar-inner"
-            className="flex h-full min-h-0 w-full flex-col overflow-y-auto"
-          >
+          <div data-vs="apple-sidebar-inner" className="flex w-full flex-col">
             {children}
           </div>
         </SheetContent>
@@ -208,16 +207,13 @@ export function AppleSidebarPanel({
       data-collapsible={collapsible}
       aria-label="Primary navigation"
       className={cn(
-        'bg-card text-foreground border-border h-full shrink-0 overflow-hidden border-r transition-[width] duration-200 ease-linear',
+        'shrink-0 border-r border-border bg-card text-foreground transition-[width] duration-200 ease-linear',
         widthClass,
         className
       )}
       {...props}
     >
-      <div
-        data-vs="apple-sidebar-inner"
-        className="flex h-full min-h-0 w-full flex-col overflow-y-auto"
-      >
+      <div data-vs="apple-sidebar-inner" className="flex w-full flex-col">
         {/* Section headings get visually-hidden heading elements for screen readers */}
         {children}
       </div>
@@ -262,8 +258,8 @@ export function AppleSidebarMain({
     <main
       data-vs="apple-sidebar-main"
       className={cn(
-        // Make this the scrolling container so sticky headers work correctly
-        'bg-background text-foreground flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto',
+        // Allow content to flow naturally without forcing scrollbars
+        'flex w-full min-w-0 flex-1 flex-col bg-background text-foreground',
         className
       )}
       data-state={state}
@@ -283,7 +279,7 @@ export function AppleSidebarHeader({
       data-vs="apple-sidebar-header"
       className={cn(
         // z-20 to sit above sidebar items, below main NavigationHeader (z-40)
-        'h-12 px-3 border-border sticky top-0 z-20 flex items-center gap-2 border-b',
+        'sticky top-0 z-20 flex h-12 items-center gap-2 border-b border-border px-3',
         className
       )}
       {...props}
@@ -331,11 +327,11 @@ export function AppleSidebarItem({
         aria-current={active ? 'page' : undefined}
         className={cn(
           // Increased to min-h 44px for iOS touch target compliance
-          'gap-3 px-3 outline-hidden relative flex min-h-[44px] w-full items-center rounded-md pr-4 text-left text-sm transition-colors',
+          'outline-hidden relative flex min-h-[44px] w-full items-center gap-3 rounded-md px-3 pr-4 text-left text-sm transition-colors',
           active
-            ? 'bg-vitalsense-primary/10 font-semibold text-vitalsense-primary dark:bg-vitalsense-primary/20'
-            : 'text-muted-foreground hover:bg-muted/70 dark:hover:bg-muted/60 font-medium',
-          'focus-visible:outline-hidden focus-visible:ring-offset-background focus-visible:ring-2 focus-visible:ring-vitalsense-primary/40 focus-visible:ring-offset-2',
+            ? 'dark:bg-vitalsense-primary/20 bg-vitalsense-primary/10 font-semibold text-vitalsense-primary'
+            : 'hover:bg-muted/70 dark:hover:bg-muted/60 font-medium text-muted-foreground',
+          'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-vitalsense-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
           'select-none active:scale-[0.985]',
           className
         )}
@@ -353,7 +349,7 @@ export function AppleSidebarBadge({
     <div
       data-vs="apple-sidebar-badge"
       className={cn(
-        'h-5 min-w-5 text-xs bg-muted text-muted-foreground pointer-events-none ml-auto inline-flex items-center justify-center rounded-md px-1 tabular-nums',
+        'pointer-events-none ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-md bg-muted px-1 text-xs tabular-nums text-muted-foreground',
         className
       )}
       {...props}
