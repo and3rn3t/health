@@ -1933,7 +1933,7 @@
       "label": "📦 Quick Bundle Check",
       "type": "shell",
       "command": "node",
-      "args": ["scripts/node/analysis/quick-bundle-check.js"],
+      "args": ["scripts/quick-bundle-check.js"],
       "group": "test",
       "presentation": {
         "echo": true,
