@@ -18,7 +18,7 @@ describe('LiDAR ingest API', () => {
       }),
     });
     expect(res.status).toBe(200);
-    const json = await res.json();
+    const json = (await res.json()) as { ok: boolean; frames: number };
     expect(json.ok).toBe(true);
     expect(json.frames).toBe(1);
   });

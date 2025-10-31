@@ -76,7 +76,7 @@ export default function LandingPageOptimized({
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Live region for screen readers
-  const { announceToScreenReader: _announceToScreenReader } = useLiveRegion();
+  const _announceToScreenReader = useLiveRegion();
 
   // Update time every minute
   useEffect(() => {
@@ -96,10 +96,12 @@ export default function LandingPageOptimized({
   const getHealthMetrics = (): HealthMetric[] => {
     if (!healthData) return [];
 
-    const healthScore = Math.round(
-      (healthData.summary.averageSteps / 10000) * 40 +
-        (healthData.summary.averageWalkingSteadiness || 0) * 0.6
-    );
+    const healthScore =
+      healthData.healthScore ||
+      Math.round(
+        (healthData.metrics.steps.average / 10000) * 40 +
+          (healthData.metrics.walkingSteadiness.average || 0) * 0.6
+      );
 
     const computedFallRisk = fallRiskScore || 0;
 

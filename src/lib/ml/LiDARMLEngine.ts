@@ -11,9 +11,18 @@ interface TensorFlowMock {
   env: () => { set: (key: string, value: boolean) => void };
   loadLayersModel: (path: string) => Promise<any>;
   zeros: (shape: number[]) => any;
-  tensor: (data: any) => { reshape: (shape: number[]) => any };
+  tensor: (
+    data: any,
+    shape?: number[],
+    dtype?: string
+  ) => { reshape: (shape: number[]) => any; dispose: () => void };
   tensor1d: (data: any) => any;
   oneHot: (indices: any, depth: number) => any;
+  train: {
+    adam: (learningRate: number) => any;
+  };
+  getBackend: () => string;
+  memory: () => { numTensors: number; numBytes: number };
 }
 
 const tf: TensorFlowMock = {
@@ -22,11 +31,17 @@ const tf: TensorFlowMock = {
   env: () => ({ set: () => {} }),
   loadLayersModel: async () => ({ predict: () => ({ dataSync: () => [0.5] }) }),
   zeros: () => ({ predict: () => {} }),
-  tensor: (data: any) => ({
+  tensor: (data: any, shape?: number[], dtype?: string) => ({
     reshape: () => ({ predict: () => ({ dataSync: () => [0.5] }) }),
+    dispose: () => {},
   }),
   tensor1d: () => ({}),
-  oneHot: () => ({}),
+  oneHot: (indices: any, depth: number) => ({}),
+  train: {
+    adam: (learningRate: number) => ({}),
+  },
+  getBackend: () => 'cpu',
+  memory: () => ({ numTensors: 0, numBytes: 0 }),
 };
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -98,7 +113,7 @@ const ML_MODELS: Record<string, MLModelConfig> = {
 };
 
 export class LiDARMLEngine {
-  private models: Map<string, tf.LayersModel> = new Map();
+  private models: Map<string, any> = new Map();
   private loadingStates: Map<string, boolean> = new Map();
   private trainingData: TrainingData[] = [];
   private federatedConfig: FederatedLearningConfig;
@@ -172,7 +187,7 @@ export class LiDARMLEngine {
       const inputTensor = tf.tensor(inputData).reshape(config.inputShape);
 
       // Make prediction
-      const prediction = model.predict(inputTensor) as tf.Tensor;
+      const prediction = model.predict(inputTensor) as any;
       const probabilities = await prediction.data();
 
       // Find the class with highest probability
@@ -260,8 +275,7 @@ export class LiDARMLEngine {
         tf.tensor1d(
           dataToUse
             .map((d) => d.labels[0])
-            .map((label) => ML_MODELS[modelType].outputClasses.indexOf(label)),
-          'int32'
+            .map((label) => ML_MODELS[modelType].outputClasses.indexOf(label))
         ),
         ML_MODELS[modelType].outputClasses.length
       );

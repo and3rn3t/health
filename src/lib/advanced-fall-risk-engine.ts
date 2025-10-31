@@ -3,8 +3,8 @@
  * Multi-algorithm ensemble approach with temporal analysis and contextual risk assessment
  */
 
-import { ProcessedHealthData } from './healthDataProcessor';
 import { fallRiskConfig } from './fallRiskConfig';
+import { ProcessedHealthData } from './healthDataProcessor';
 
 // Enhanced interfaces for comprehensive fall risk analysis
 export interface AdvancedFallRiskPrediction {
@@ -99,7 +99,12 @@ export interface BehavioralRiskAssessment {
 
 export interface RiskFactor {
   id: string;
-  category: 'gait' | 'balance' | 'environmental' | 'physiological' | 'behavioral';
+  category:
+    | 'gait'
+    | 'balance'
+    | 'environmental'
+    | 'physiological'
+    | 'behavioral';
   severity: 'low' | 'moderate' | 'high' | 'severe';
   weight: number; // 0-1 contribution to overall risk
   description: string;
@@ -154,7 +159,12 @@ export interface FallHistoryAnalysis {
 
 export interface ModelContribution {
   name: string;
-  algorithm: 'random_forest' | 'gradient_boost' | 'neural_network' | 'lstm' | 'transformer';
+  algorithm:
+    | 'random_forest'
+    | 'gradient_boost'
+    | 'neural_network'
+    | 'lstm'
+    | 'transformer';
   weight: number;
   prediction: number;
   confidence: number;
@@ -173,11 +183,11 @@ export class AdvancedFallRiskEngine {
   // Model weights for ensemble
   private readonly modelWeights = {
     clinical_assessment: 0.25,
-    gait_analysis: 0.20,
-    balance_metrics: 0.20,
+    gait_analysis: 0.2,
+    balance_metrics: 0.2,
     temporal_patterns: 0.15,
-    environmental_context: 0.10,
-    behavioral_factors: 0.10,
+    environmental_context: 0.1,
+    behavioral_factors: 0.1,
   };
 
   /**
@@ -198,7 +208,10 @@ export class AdvancedFallRiskEngine {
     const balanceRisk = this.assessBalanceRisk(healthData, historicalData);
     const environmentalRisk = this.assessEnvironmentalRisk(contextData);
     const physiologicalRisk = this.assessPhysiologicalRisk(healthData);
-    const behavioralRisk = this.assessBehavioralRisk(healthData, historicalData);
+    const behavioralRisk = this.assessBehavioralRisk(
+      healthData,
+      historicalData
+    );
 
     // Calculate overall risk score
     const riskScore = this.calculateOverallRisk({
@@ -226,7 +239,10 @@ export class AdvancedFallRiskEngine {
     const protectiveFactors = this.identifyProtectiveFactors(healthData);
 
     // Generate personalized interventions
-    const interventions = this.generateInterventions(primaryRiskFactors, riskScore);
+    const interventions = this.generateInterventions(
+      primaryRiskFactors,
+      riskScore
+    );
     const emergencyActions = this.generateEmergencyActions(riskScore);
 
     // Model ensemble contributions
@@ -266,12 +282,19 @@ export class AdvancedFallRiskEngine {
     const metrics = healthData.metrics;
 
     // Walking steadiness analysis
-    const walkingSteadiness = metrics.walking_steadiness?.average || 50;
+    const walkingSteadiness = metrics.walkingSteadiness?.average || 50;
     const walkingSpeed = this.calculateWalkingSpeed(metrics);
-    const stepVariability = this.calculateStepVariability(metrics, historicalData);
+    const stepVariability = this.calculateStepVariability(
+      metrics,
+      historicalData
+    );
     const gaitAsymmetry = this.calculateGaitAsymmetry(metrics);
-    const cadenceVariability = this.calculateCadenceVariability(metrics, historicalData);
-    const strideLengthVariability = this.calculateStrideLengthVariability(metrics);
+    const cadenceVariability = this.calculateCadenceVariability(
+      metrics,
+      historicalData
+    );
+    const strideLengthVariability =
+      this.calculateStrideLengthVariability(metrics);
     const doubleSupportTime = this.calculateDoubleSupportTime(metrics);
 
     // Calculate overall gait risk score
@@ -333,7 +356,7 @@ export class AdvancedFallRiskEngine {
       overallScore,
       staticBalance,
       dynamicBalance,
-      'postural Control': posturalControl,
+      posturalControl,
       reactionTime,
       stabilityIndex,
       fallHistory,
@@ -343,13 +366,17 @@ export class AdvancedFallRiskEngine {
   /**
    * Assess environmental fall risk
    */
-  private assessEnvironmentalRisk(contextData?: any): EnvironmentalRiskAssessment {
+  private assessEnvironmentalRisk(
+    contextData?: any
+  ): EnvironmentalRiskAssessment {
     // Environmental risk factors
     const homeHazards = this.assessHomeHazards(contextData);
     const weatherConditions = this.assessWeatherRisk(contextData?.weather);
     const lightingConditions = this.assessLightingRisk(contextData);
     const terrainDifficulty = this.assessTerrainRisk(contextData?.location);
-    const locationComplexity = this.assessLocationComplexity(contextData?.location);
+    const locationComplexity = this.assessLocationComplexity(
+      contextData?.location
+    );
     const timeOfDayRisk = this.assessTimeOfDayRisk(contextData?.timeOfDay);
 
     const overallScore = this.calculateEnvironmentalRiskScore({
@@ -375,7 +402,9 @@ export class AdvancedFallRiskEngine {
   /**
    * Assess physiological fall risk factors
    */
-  private assessPhysiologicalRisk(healthData: ProcessedHealthData): PhysiologicalRiskAssessment {
+  private assessPhysiologicalRisk(
+    healthData: ProcessedHealthData
+  ): PhysiologicalRiskAssessment {
     const metrics = healthData.metrics;
 
     const cardiovascularHealth = this.assessCardiovascularHealth(metrics);
@@ -453,10 +482,10 @@ export class AdvancedFallRiskEngine {
 
     return Math.round(
       risks.gaitRisk.overallScore * weights.gait_analysis +
-      risks.balanceRisk.overallScore * weights.balance_metrics +
-      risks.environmentalRisk.overallScore * weights.environmental_context +
-      risks.physiologicalRisk.overallScore * weights.clinical_assessment +
-      risks.behavioralRisk.overallScore * weights.behavioral_factors
+        risks.balanceRisk.overallScore * weights.balance_metrics +
+        risks.environmentalRisk.overallScore * weights.environmental_context +
+        risks.physiologicalRisk.overallScore * weights.clinical_assessment +
+        risks.behavioralRisk.overallScore * weights.behavioral_factors
     );
   }
 
@@ -476,7 +505,9 @@ export class AdvancedFallRiskEngine {
     };
   }
 
-  private classifyRiskLevel(riskScore: number): AdvancedFallRiskPrediction['riskLevel'] {
+  private classifyRiskLevel(
+    riskScore: number
+  ): AdvancedFallRiskPrediction['riskLevel'] {
     if (riskScore >= 85) return 'critical';
     if (riskScore >= 70) return 'severe';
     if (riskScore >= 50) return 'high';
@@ -491,14 +522,13 @@ export class AdvancedFallRiskEngine {
     const dataQuality = this.assessDataQuality(healthData);
     const timelinessScore = this.assessDataTimeliness(healthData);
 
-    return (dataCompleteness * 0.4 + dataQuality * 0.4 + timelinessScore * 0.2);
+    return dataCompleteness * 0.4 + dataQuality * 0.4 + timelinessScore * 0.2;
   }
 
   private calculateNextAssessment(riskScore: number): Date {
     // Higher risk = more frequent assessments
-    const hoursUntilNext = riskScore >= 70 ? 4 :
-                          riskScore >= 50 ? 12 :
-                          riskScore >= 30 ? 24 : 168; // 1 week for low risk
+    const hoursUntilNext =
+      riskScore >= 70 ? 4 : riskScore >= 50 ? 12 : riskScore >= 30 ? 24 : 168; // 1 week for low risk
 
     return new Date(Date.now() + hoursUntilNext * 60 * 60 * 1000);
   }
@@ -510,7 +540,10 @@ export class AdvancedFallRiskEngine {
     return metrics.walking_speed?.average || 50;
   }
 
-  private calculateStepVariability(metrics: any, historicalData?: any[]): number {
+  private calculateStepVariability(
+    metrics: any,
+    historicalData?: any[]
+  ): number {
     return Math.random() * 40 + 30; // Placeholder
   }
 
@@ -518,7 +551,10 @@ export class AdvancedFallRiskEngine {
     return Math.random() * 30 + 20; // Placeholder
   }
 
-  private calculateCadenceVariability(metrics: any, historicalData?: any[]): number {
+  private calculateCadenceVariability(
+    metrics: any,
+    historicalData?: any[]
+  ): number {
     return Math.random() * 25 + 15; // Placeholder
   }
 
@@ -534,7 +570,7 @@ export class AdvancedFallRiskEngine {
     // Weighted combination of gait metrics
     const weights = {
       walkingSteadiness: 0.25,
-      stepVariability: 0.20,
+      stepVariability: 0.2,
       gaitAsymmetry: 0.15,
       walkingSpeed: 0.15,
       cadenceVariability: 0.15,
@@ -542,9 +578,11 @@ export class AdvancedFallRiskEngine {
       doubleSupportTime: 0.05,
     };
 
-    return Math.round(Object.entries(weights).reduce((score, [key, weight]) => {
-      return score + (gaitMetrics[key] || 50) * weight;
-    }, 0));
+    return Math.round(
+      Object.entries(weights).reduce((score, [key, weight]) => {
+        return score + (gaitMetrics[key] || 50) * weight;
+      }, 0)
+    );
   }
 
   private analyzeGaitTrends(historicalData?: ProcessedHealthData[]): any {
@@ -556,11 +594,21 @@ export class AdvancedFallRiskEngine {
   }
 
   // Additional stub methods...
-  private calculateStaticBalance(metrics: any): number { return Math.random() * 40 + 30; }
-  private calculateDynamicBalance(metrics: any): number { return Math.random() * 40 + 30; }
-  private calculatePosturalControl(metrics: any): number { return Math.random() * 40 + 30; }
-  private calculateReactionTime(metrics: any): number { return Math.random() * 40 + 30; }
-  private calculateStabilityIndex(metrics: any): number { return Math.random() * 40 + 30; }
+  private calculateStaticBalance(metrics: any): number {
+    return Math.random() * 40 + 30;
+  }
+  private calculateDynamicBalance(metrics: any): number {
+    return Math.random() * 40 + 30;
+  }
+  private calculatePosturalControl(metrics: any): number {
+    return Math.random() * 40 + 30;
+  }
+  private calculateReactionTime(metrics: any): number {
+    return Math.random() * 40 + 30;
+  }
+  private calculateStabilityIndex(metrics: any): number {
+    return Math.random() * 40 + 30;
+  }
   private analyzeFallHistory(historicalData?: any[]): FallHistoryAnalysis {
     return {
       totalFalls: 0,
@@ -575,14 +623,26 @@ export class AdvancedFallRiskEngine {
   }
 
   private calculateBalanceRiskScore(balanceMetrics: any): number {
-    return Math.round((balanceMetrics.staticBalance + balanceMetrics.dynamicBalance) / 2);
+    return Math.round(
+      (balanceMetrics.staticBalance + balanceMetrics.dynamicBalance) / 2
+    );
   }
 
-  private assessHomeHazards(contextData?: any): number { return Math.random() * 30 + 10; }
-  private assessWeatherRisk(weather?: any): number { return Math.random() * 40 + 20; }
-  private assessLightingRisk(contextData?: any): number { return Math.random() * 35 + 15; }
-  private assessTerrainRisk(location?: string): number { return Math.random() * 45 + 25; }
-  private assessLocationComplexity(location?: string): number { return Math.random() * 40 + 20; }
+  private assessHomeHazards(contextData?: any): number {
+    return Math.random() * 30 + 10;
+  }
+  private assessWeatherRisk(weather?: any): number {
+    return Math.random() * 40 + 20;
+  }
+  private assessLightingRisk(contextData?: any): number {
+    return Math.random() * 35 + 15;
+  }
+  private assessTerrainRisk(location?: string): number {
+    return Math.random() * 45 + 25;
+  }
+  private assessLocationComplexity(location?: string): number {
+    return Math.random() * 40 + 20;
+  }
   private assessTimeOfDayRisk(timeOfDay?: number): number {
     // Higher risk during early morning and late evening
     if (!timeOfDay) return 25;
@@ -591,34 +651,77 @@ export class AdvancedFallRiskEngine {
     return 20;
   }
 
-  private calculateEnvironmentalRiskScore(envMetrics: any): number {
-    return Math.round(Object.values(envMetrics).reduce((sum: any, val: any) => sum + val, 0) / 6);
+  private calculateEnvironmentalRiskScore(
+    envMetrics: Record<string, number>
+  ): number {
+    return Math.round(
+      Object.values(envMetrics).reduce(
+        (sum: number, val: number) => sum + val,
+        0
+      ) / 6
+    );
   }
 
-  private assessCardiovascularHealth(metrics: any): number { return Math.random() * 40 + 30; }
-  private assessMuscleStrength(metrics: any): number { return Math.random() * 40 + 30; }
-  private assessFlexibility(metrics: any): number { return Math.random() * 40 + 30; }
-  private assessVisionHealth(metrics: any): number { return Math.random() * 40 + 30; }
-  private assessMedicationEffects(healthData: any): number { return Math.random() * 50 + 25; }
-  private assessCognitiveFunction(metrics: any): number { return Math.random() * 40 + 30; }
+  private assessCardiovascularHealth(metrics: any): number {
+    return Math.random() * 40 + 30;
+  }
+  private assessMuscleStrength(metrics: any): number {
+    return Math.random() * 40 + 30;
+  }
+  private assessFlexibility(metrics: any): number {
+    return Math.random() * 40 + 30;
+  }
+  private assessVisionHealth(metrics: any): number {
+    return Math.random() * 40 + 30;
+  }
+  private assessMedicationEffects(healthData: any): number {
+    return Math.random() * 50 + 25;
+  }
+  private assessCognitiveFunction(metrics: any): number {
+    return Math.random() * 40 + 30;
+  }
   private assessSleepQuality(metrics: any): number {
     return metrics.sleep_analysis?.average || Math.random() * 40 + 30;
   }
 
-  private calculatePhysiologicalRiskScore(physMetrics: any): number {
-    return Math.round(Object.values(physMetrics).reduce((sum: any, val: any) => sum + val, 0) / 7);
+  private calculatePhysiologicalRiskScore(
+    physMetrics: Record<string, number>
+  ): number {
+    return Math.round(
+      Object.values(physMetrics).reduce(
+        (sum: number, val: number) => sum + val,
+        0
+      ) / 7
+    );
   }
 
   private assessActivityLevel(metrics: any, historicalData?: any[]): number {
-    return metrics.steps?.average ? Math.max(0, 100 - metrics.steps.average / 100) : 50;
+    return metrics.steps?.average
+      ? Math.max(0, 100 - metrics.steps.average / 100)
+      : 50;
   }
-  private assessRiskTakingBehavior(metrics: any): number { return Math.random() * 30 + 20; }
-  private assessAdherence(historicalData?: any[]): number { return Math.random() * 40 + 60; }
-  private assessSocialSupport(healthData: any): number { return Math.random() * 30 + 70; }
-  private assessHealthcareEngagement(healthData: any): number { return Math.random() * 30 + 70; }
+  private assessRiskTakingBehavior(metrics: any): number {
+    return Math.random() * 30 + 20;
+  }
+  private assessAdherence(historicalData?: any[]): number {
+    return Math.random() * 40 + 60;
+  }
+  private assessSocialSupport(healthData: any): number {
+    return Math.random() * 30 + 70;
+  }
+  private assessHealthcareEngagement(healthData: any): number {
+    return Math.random() * 30 + 70;
+  }
 
-  private calculateBehavioralRiskScore(behaviorMetrics: any): number {
-    return Math.round(Object.values(behaviorMetrics).reduce((sum: any, val: any) => sum + val, 0) / 5);
+  private calculateBehavioralRiskScore(
+    behaviorMetrics: Record<string, number>
+  ): number {
+    return Math.round(
+      Object.values(behaviorMetrics).reduce(
+        (sum: number, val: number) => sum + val,
+        0
+      ) / 5
+    );
   }
 
   private identifyPrimaryRiskFactors(risks: any): RiskFactor[] {
@@ -631,10 +734,15 @@ export class AdvancedFallRiskEngine {
         severity: 'high',
         weight: 0.8,
         description: 'Significant gait instability detected',
-        explanation: 'Walking patterns show increased variability and reduced steadiness',
+        explanation:
+          'Walking patterns show increased variability and reduced steadiness',
         trend: 'worsening',
         modifiable: true,
-        interventions: ['balance-training', 'physical-therapy', 'strength-exercises'],
+        interventions: [
+          'balance-training',
+          'physical-therapy',
+          'strength-exercises',
+        ],
       });
     }
 
@@ -655,15 +763,22 @@ export class AdvancedFallRiskEngine {
     return factors;
   }
 
-  private identifySecondaryRiskFactors(healthData: ProcessedHealthData): RiskFactor[] {
+  private identifySecondaryRiskFactors(
+    healthData: ProcessedHealthData
+  ): RiskFactor[] {
     return []; // Placeholder
   }
 
-  private identifyProtectiveFactors(healthData: ProcessedHealthData): ProtectiveFactor[] {
+  private identifyProtectiveFactors(
+    healthData: ProcessedHealthData
+  ): ProtectiveFactor[] {
     return []; // Placeholder
   }
 
-  private generateInterventions(riskFactors: RiskFactor[], riskScore: number): FallPreventionIntervention[] {
+  private generateInterventions(
+    riskFactors: RiskFactor[],
+    riskScore: number
+  ): FallPreventionIntervention[] {
     const interventions: FallPreventionIntervention[] = [];
 
     if (riskScore > 60) {
@@ -672,7 +787,8 @@ export class AdvancedFallRiskEngine {
         type: 'exercise',
         priority: 'high',
         title: 'Balance Training Program',
-        description: 'Structured balance exercises to improve stability and reduce fall risk',
+        description:
+          'Structured balance exercises to improve stability and reduce fall risk',
         instructions: [
           'Practice single-leg standing for 30 seconds',
           'Walk heel-to-toe for 20 steps',
@@ -720,7 +836,7 @@ export class AdvancedFallRiskEngine {
       {
         name: 'Gait Analysis Model',
         algorithm: 'neural_network',
-        weight: 0.20,
+        weight: 0.2,
         prediction: riskScore * 1.1,
         confidence: 0.78,
       },
@@ -728,7 +844,9 @@ export class AdvancedFallRiskEngine {
   }
 
   // Additional helper methods...
-  private calculateTrendMultiplier(historicalData?: ProcessedHealthData[]): number {
+  private calculateTrendMultiplier(
+    historicalData?: ProcessedHealthData[]
+  ): number {
     return 1.0; // Placeholder
   }
 
@@ -746,8 +864,15 @@ export class AdvancedFallRiskEngine {
 
   private assessDataCompleteness(healthData: ProcessedHealthData): number {
     const metrics = healthData.metrics;
-    const requiredMetrics = ['walking_steadiness', 'steps', 'heart_rate', 'sleep_analysis'];
-    const availableMetrics = requiredMetrics.filter(metric => metrics[metric]);
+    const requiredMetrics: (keyof typeof metrics)[] = [
+      'walkingSteadiness',
+      'steps',
+      'heartRate',
+      'sleepHours',
+    ];
+    const availableMetrics = requiredMetrics.filter(
+      (metric) => metrics[metric]
+    );
     return availableMetrics.length / requiredMetrics.length;
   }
 
@@ -757,7 +882,7 @@ export class AdvancedFallRiskEngine {
   }
 
   private assessDataTimeliness(healthData: ProcessedHealthData): number {
-    const age = Date.now() - new Date(healthData.timestamp).getTime();
+    const age = Date.now() - new Date(healthData.lastUpdated).getTime();
     const ageInHours = age / (1000 * 60 * 60);
 
     if (ageInHours < 1) return 1.0;

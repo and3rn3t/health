@@ -6,6 +6,7 @@
 
 interface Env {
   VITALSENSE_WEBSOCKET: DurableObjectNamespace;
+  EMERGENCY_WEBHOOK_URL?: string;
 }
 
 interface HealthDataPoint {
@@ -62,21 +63,24 @@ export class VitalSenseWebSocketDO {
 
     // Health check endpoint
     if (url.pathname === '/health') {
-      return new Response(JSON.stringify({
-        status: 'healthy',
-        service: 'VitalSense Enhanced WebSocket',
-        timestamp: new Date().toISOString(),
-        clients: this.clients.size,
-        features: [
-          'real_time_health_processing',
-          'emergency_alerts',
-          'wellness_scoring',
-          'fall_risk_detection',
-          'gait_analysis'
-        ]
-      }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({
+          status: 'healthy',
+          service: 'VitalSense Enhanced WebSocket',
+          timestamp: new Date().toISOString(),
+          clients: this.clients.size,
+          features: [
+            'real_time_health_processing',
+            'emergency_alerts',
+            'wellness_scoring',
+            'fall_risk_detection',
+            'gait_analysis',
+          ],
+        }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     // WebSocket upgrade
@@ -92,10 +96,15 @@ export class VitalSenseWebSocketDO {
       });
     }
 
-    return new Response('VitalSense Enhanced WebSocket Worker', { status: 200 });
+    return new Response('VitalSense Enhanced WebSocket Worker', {
+      status: 200,
+    });
   }
 
-  private async handleWebSocketUpgrade(ws: WebSocket, request: Request): Promise<void> {
+  private async handleWebSocketUpgrade(
+    ws: WebSocket,
+    request: Request
+  ): Promise<void> {
     const clientId = crypto.randomUUID();
     const clientInfo: VitalSenseClient = {
       id: clientId,
@@ -105,7 +114,9 @@ export class VitalSenseWebSocketDO {
 
     this.clients.set(ws, clientInfo);
 
-    console.log(`🏥 VitalSense client connected: ${clientId} (Total: ${this.clients.size})`);
+    console.log(
+      `🏥 VitalSense client connected: ${clientId} (Total: ${this.clients.size})`
+    );
 
     // Accept the WebSocket connection
     ws.accept();
@@ -122,9 +133,9 @@ export class VitalSenseWebSocketDO {
           'wellness_scoring',
           'fall_risk_assessment',
           'gait_analysis',
-          'heart_rate_monitoring'
+          'heart_rate_monitoring',
         ],
-        server_version: '2.0.0-enhanced'
+        server_version: '2.0.0-enhanced',
       },
       timestamp: new Date().toISOString(),
     });
@@ -143,7 +154,11 @@ export class VitalSenseWebSocketDO {
     });
   }
 
-  private async handleMessage(ws: WebSocket, data: string, clientInfo: VitalSenseClient): Promise<void> {
+  private async handleMessage(
+    ws: WebSocket,
+    data: string,
+    clientInfo: VitalSenseClient
+  ): Promise<void> {
     try {
       const message = JSON.parse(data);
       const { type, ...payload } = message;
@@ -191,7 +206,11 @@ export class VitalSenseWebSocketDO {
     }
   }
 
-  private async handleClientIdentification(ws: WebSocket, clientInfo: VitalSenseClient, payload: any): Promise<void> {
+  private async handleClientIdentification(
+    ws: WebSocket,
+    clientInfo: VitalSenseClient,
+    payload: any
+  ): Promise<void> {
     clientInfo.userId = payload.userId;
     clientInfo.clientType = payload.clientType || 'unknown';
     clientInfo.deviceInfo = payload.deviceInfo;
@@ -204,7 +223,9 @@ export class VitalSenseWebSocketDO {
       deviceInfo: clientInfo.deviceInfo,
     });
 
-    console.log(`👤 VitalSense client identified: ${clientInfo.userId} (${clientInfo.clientType})`);
+    console.log(
+      `👤 VitalSense client identified: ${clientInfo.userId} (${clientInfo.clientType})`
+    );
 
     this.sendMessage(ws, {
       type: 'identification_confirmed',
@@ -214,8 +235,8 @@ export class VitalSenseWebSocketDO {
           'real_time_monitoring',
           'emergency_alerts',
           'wellness_insights',
-          'health_analytics'
-        ]
+          'health_analytics',
+        ],
       },
       timestamp: new Date().toISOString(),
     });
@@ -225,13 +246,20 @@ export class VitalSenseWebSocketDO {
    * Core VitalSense Health Data Processing
    * Processes incoming health metrics with wellness scoring and alert checking
    */
-  private async processVitalSenseHealthData(clientInfo: VitalSenseClient, payload: any): Promise<void> {
+  private async processVitalSenseHealthData(
+    clientInfo: VitalSenseClient,
+    payload: any
+  ): Promise<void> {
     if (!clientInfo.userId) {
-      console.warn('🚨 Health data received from unidentified VitalSense client');
+      console.warn(
+        '🚨 Health data received from unidentified VitalSense client'
+      );
       return;
     }
 
-    const healthDataArray = Array.isArray(payload.data) ? payload.data : [payload.data || payload];
+    const healthDataArray = Array.isArray(payload.data)
+      ? payload.data
+      : [payload.data || payload];
     const processedData: HealthDataPoint[] = [];
     const alerts: HealthAlert[] = [];
 
@@ -242,7 +270,9 @@ export class VitalSenseWebSocketDO {
         metric_type: dataPoint.type,
         value: dataPoint.value,
         unit: dataPoint.unit,
-        timestamp: dataPoint.timestamp ? new Date(dataPoint.timestamp).getTime() : Date.now(),
+        timestamp: dataPoint.timestamp
+          ? new Date(dataPoint.timestamp).getTime()
+          : Date.now(),
         device_id: payload.deviceId || dataPoint.deviceId || 'unknown',
         source_type: payload.sourceType || 'ios_app',
         confidence_level: dataPoint.confidence || 1.0,
@@ -257,7 +287,11 @@ export class VitalSenseWebSocketDO {
       const alert = this.checkForVitalSenseHealthAlerts(healthData);
       if (alert) {
         alerts.push(alert);
-        await this.triggerVitalSenseHealthAlert(clientInfo.userId, alert, healthData);
+        await this.triggerVitalSenseHealthAlert(
+          clientInfo.userId,
+          alert,
+          healthData
+        );
       }
 
       // Store health data in durable storage
@@ -265,7 +299,8 @@ export class VitalSenseWebSocketDO {
 
       // Store in user's recent data (keep last 100 points)
       const userDataKey = `user_health:${clientInfo.userId}`;
-      const existingData = (await this.storage.get(userDataKey)) as HealthDataPoint[] || [];
+      const existingData =
+        ((await this.storage.get(userDataKey)) as HealthDataPoint[]) || [];
       existingData.unshift(healthData);
       if (existingData.length > 100) existingData.splice(100);
       await this.storage.put(userDataKey, existingData);
@@ -284,59 +319,63 @@ export class VitalSenseWebSocketDO {
       timestamp: new Date().toISOString(),
     });
 
-    console.log(`📊 VitalSense processed ${healthDataArray.length} health data points for user ${clientInfo.userId}`);
+    console.log(
+      `📊 VitalSense processed ${healthDataArray.length} health data points for user ${clientInfo.userId}`
+    );
   }
 
   /**
    * VitalSense Wellness Score Calculation
    * Enhanced scoring system for comprehensive health assessment
    */
-  private calculateVitalSenseWellnessScore(healthData: HealthDataPoint): number {
+  private calculateVitalSenseWellnessScore(
+    healthData: HealthDataPoint
+  ): number {
     switch (healthData.metric_type) {
       case 'heart_rate':
         const hr = healthData.value;
         if (hr >= 60 && hr <= 100) return 0.95; // Optimal range
-        if (hr >= 50 && hr <= 120) return 0.8;  // Good range
-        if (hr >= 40 && hr <= 150) return 0.6;  // Acceptable range
-        if (hr >= 30 && hr <= 180) return 0.4;  // Concerning range
+        if (hr >= 50 && hr <= 120) return 0.8; // Good range
+        if (hr >= 40 && hr <= 150) return 0.6; // Acceptable range
+        if (hr >= 30 && hr <= 180) return 0.4; // Concerning range
         return 0.2; // Critical range
 
       case 'walking_steadiness':
         const steadiness = healthData.value;
         if (steadiness >= 80) return 0.95; // Excellent stability
-        if (steadiness >= 60) return 0.8;  // Good stability
-        if (steadiness >= 40) return 0.6;  // Moderate stability
-        if (steadiness >= 20) return 0.4;  // Poor stability
+        if (steadiness >= 60) return 0.8; // Good stability
+        if (steadiness >= 40) return 0.6; // Moderate stability
+        if (steadiness >= 20) return 0.4; // Poor stability
         return 0.2; // Very poor stability - high fall risk
 
       case 'gait_speed':
         const speed = healthData.value;
         if (speed >= 1.0 && speed <= 1.4) return 0.95; // Optimal gait speed
-        if (speed >= 0.8 && speed <= 1.6) return 0.8;  // Good gait speed
+        if (speed >= 0.8 && speed <= 1.6) return 0.8; // Good gait speed
         if (speed >= 0.6) return 0.6; // Moderate gait speed
         if (speed >= 0.4) return 0.4; // Slow gait speed
         return 0.2; // Very slow - mobility concern
 
       case 'step_asymmetry':
         const asymmetry = healthData.value;
-        if (asymmetry <= 2) return 0.95;   // Excellent symmetry
-        if (asymmetry <= 5) return 0.8;    // Good symmetry
-        if (asymmetry <= 10) return 0.6;   // Moderate asymmetry
-        if (asymmetry <= 20) return 0.4;   // Poor symmetry
+        if (asymmetry <= 2) return 0.95; // Excellent symmetry
+        if (asymmetry <= 5) return 0.8; // Good symmetry
+        if (asymmetry <= 10) return 0.6; // Moderate asymmetry
+        if (asymmetry <= 20) return 0.4; // Poor symmetry
         return 0.2; // Severe asymmetry - balance concern
 
       case 'double_support_time_percentage':
         const supportTime = healthData.value;
         if (supportTime <= 25) return 0.95; // Excellent dynamic balance
-        if (supportTime <= 30) return 0.8;  // Good balance
-        if (supportTime <= 35) return 0.6;  // Moderate balance
+        if (supportTime <= 30) return 0.8; // Good balance
+        if (supportTime <= 35) return 0.6; // Moderate balance
         return 0.4; // Poor balance
 
       case 'walking_speed_variability':
         const variability = healthData.value;
-        if (variability <= 5) return 0.95;  // Very consistent
-        if (variability <= 10) return 0.8;  // Consistent
-        if (variability <= 15) return 0.6;  // Moderate variability
+        if (variability <= 5) return 0.95; // Very consistent
+        if (variability <= 10) return 0.8; // Consistent
+        if (variability <= 15) return 0.6; // Moderate variability
         return 0.4; // High variability - instability
 
       default:
@@ -348,7 +387,9 @@ export class VitalSenseWebSocketDO {
    * VitalSense Health Alert System
    * Comprehensive alert logic for all health metrics
    */
-  private checkForVitalSenseHealthAlerts(healthData: HealthDataPoint): HealthAlert | null {
+  private checkForVitalSenseHealthAlerts(
+    healthData: HealthDataPoint
+  ): HealthAlert | null {
     const alerts: Partial<HealthAlert>[] = [];
 
     switch (healthData.metric_type) {
@@ -466,7 +507,9 @@ export class VitalSenseWebSocketDO {
     // Return the most severe alert
     const severityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
     const mostSevere = alerts.reduce((prev, curr) =>
-      severityOrder[curr.severity!] > severityOrder[prev.severity!] ? curr : prev
+      severityOrder[curr.severity!] > severityOrder[prev.severity!]
+        ? curr
+        : prev
     );
 
     return {
@@ -487,13 +530,18 @@ export class VitalSenseWebSocketDO {
    * VitalSense Emergency Alert System
    * Handles critical health alerts with emergency response
    */
-  private async triggerVitalSenseHealthAlert(userId: string, alert: HealthAlert, healthData: HealthDataPoint): Promise<void> {
+  private async triggerVitalSenseHealthAlert(
+    userId: string,
+    alert: HealthAlert,
+    healthData: HealthDataPoint
+  ): Promise<void> {
     // Store alert in durable storage
     await this.storage.put(`alert:${alert.id}`, alert);
 
     // Store in user's alerts list
     const userAlertsKey = `user_alerts:${userId}`;
-    const existingAlerts = (await this.storage.get(userAlertsKey)) as HealthAlert[] || [];
+    const existingAlerts =
+      ((await this.storage.get(userAlertsKey)) as HealthAlert[]) || [];
     existingAlerts.unshift(alert);
     if (existingAlerts.length > 50) existingAlerts.splice(50); // Keep last 50 alerts
     await this.storage.put(userAlertsKey, existingAlerts);
@@ -530,7 +578,9 @@ export class VitalSenseWebSocketDO {
       }
     }
 
-    console.log(`🚨 VitalSense ${alert.severity} alert triggered: ${alert.title} for user ${userId}`);
+    console.log(
+      `🚨 VitalSense ${alert.severity} alert triggered: ${alert.title} for user ${userId}`
+    );
   }
 
   private generateWellnessInsights(healthData: HealthDataPoint[]): any {
@@ -583,18 +633,22 @@ export class VitalSenseWebSocketDO {
     const recentData = healthData.slice(0, 10);
 
     const steadinessValues = recentData
-      .filter(d => d.metric_type === 'walking_steadiness')
-      .map(d => d.value);
+      .filter((d) => d.metric_type === 'walking_steadiness')
+      .map((d) => d.value);
 
     if (steadinessValues.length > 0) {
-      const avgSteadiness = steadinessValues.reduce((a, b) => a + b, 0) / steadinessValues.length;
+      const avgSteadiness =
+        steadinessValues.reduce((a, b) => a + b, 0) / steadinessValues.length;
       if (avgSteadiness < 40) risks.push('Elevated fall risk');
     }
 
     return risks;
   }
 
-  private async handleHeartbeat(ws: WebSocket, clientInfo: VitalSenseClient): Promise<void> {
+  private async handleHeartbeat(
+    ws: WebSocket,
+    clientInfo: VitalSenseClient
+  ): Promise<void> {
     clientInfo.lastHeartbeat = Date.now();
     this.sendMessage(ws, {
       type: 'heartbeat_ack',
@@ -603,7 +657,11 @@ export class VitalSenseWebSocketDO {
     });
   }
 
-  private async handleHealthSubscription(ws: WebSocket, clientInfo: VitalSenseClient, payload: any): Promise<void> {
+  private async handleHealthSubscription(
+    ws: WebSocket,
+    clientInfo: VitalSenseClient,
+    payload: any
+  ): Promise<void> {
     // Store subscription preferences
     if (clientInfo.userId) {
       await this.storage.put(`subscription:${clientInfo.userId}`, {
@@ -623,22 +681,29 @@ export class VitalSenseWebSocketDO {
     });
   }
 
-  private async handleHistoricalHealthRequest(ws: WebSocket, clientInfo: VitalSenseClient, payload: any): Promise<void> {
+  private async handleHistoricalHealthRequest(
+    ws: WebSocket,
+    clientInfo: VitalSenseClient,
+    payload: any
+  ): Promise<void> {
     if (!clientInfo.userId) return;
 
     const userDataKey = `user_health:${clientInfo.userId}`;
-    const historicalData = (await this.storage.get(userDataKey)) as HealthDataPoint[] || [];
+    const historicalData =
+      ((await this.storage.get(userDataKey)) as HealthDataPoint[]) || [];
 
     // Filter by requested metrics and time range
     let filteredData = historicalData;
 
     if (payload.metrics) {
-      filteredData = filteredData.filter(d => payload.metrics.includes(d.metric_type));
+      filteredData = filteredData.filter((d) =>
+        payload.metrics.includes(d.metric_type)
+      );
     }
 
     if (payload.since) {
       const sinceTime = new Date(payload.since).getTime();
-      filteredData = filteredData.filter(d => d.timestamp >= sinceTime);
+      filteredData = filteredData.filter((d) => d.timestamp >= sinceTime);
     }
 
     // Limit results
@@ -656,7 +721,10 @@ export class VitalSenseWebSocketDO {
     });
   }
 
-  private async handleEmergencyEvent(clientInfo: VitalSenseClient, payload: any): Promise<void> {
+  private async handleEmergencyEvent(
+    clientInfo: VitalSenseClient,
+    payload: any
+  ): Promise<void> {
     if (!clientInfo.userId) return;
 
     const emergencyEvent = {
@@ -696,26 +764,30 @@ export class VitalSenseWebSocketDO {
       }
     }
 
-    console.log(`🚨 Emergency event recorded: ${emergencyEvent.event_type} for user ${clientInfo.userId}`);
+    console.log(
+      `🚨 Emergency event recorded: ${emergencyEvent.event_type} for user ${clientInfo.userId}`
+    );
   }
 
   private async broadcastToUser(userId: string, message: any): Promise<void> {
     for (const [ws, clientInfo] of this.clients) {
-      if (clientInfo.userId === userId && ws.readyState === WebSocket.READY_STATE_OPEN) {
+      if (clientInfo.userId === userId && ws.readyState === WebSocket.OPEN) {
         this.sendMessage(ws, message);
       }
     }
   }
 
   private sendMessage(ws: WebSocket, message: any): void {
-    if (ws.readyState === WebSocket.READY_STATE_OPEN) {
+    if (ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify(message));
     }
   }
 
   private handleDisconnect(ws: WebSocket, clientInfo: VitalSenseClient): void {
     this.clients.delete(ws);
-    console.log(`📴 VitalSense client disconnected: ${clientInfo.id} (Total: ${this.clients.size})`);
+    console.log(
+      `📴 VitalSense client disconnected: ${clientInfo.id} (Total: ${this.clients.size})`
+    );
   }
 
   private startBackgroundTasks(): void {
@@ -726,14 +798,19 @@ export class VitalSenseWebSocketDO {
 
       for (const [ws, clientInfo] of this.clients) {
         if (now - clientInfo.lastHeartbeat > timeoutMs) {
-          console.log(`💔 VitalSense client timeout: ${clientInfo.id} (${clientInfo.userId})`);
-          ws.terminate();
+          console.log(
+            `💔 VitalSense client timeout: ${clientInfo.id} (${clientInfo.userId})`
+          );
+          ws.close(1000, 'Connection timeout');
         }
       }
     }, 30000); // Check every 30 seconds
 
     // Demo health data generation for development
-    if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+    if (
+      typeof process !== 'undefined' &&
+      process.env?.NODE_ENV === 'development'
+    ) {
       this.startDemoHealthDataGeneration();
     }
   }
@@ -768,7 +845,7 @@ export class VitalSenseWebSocketDO {
         // Send to demo users
         this.clients.forEach((clientInfo, ws) => {
           if (
-            ws.readyState === WebSocket.READY_STATE_OPEN &&
+            ws.readyState === WebSocket.OPEN &&
             (clientInfo.userId === 'demo-user' || !clientInfo.userId)
           ) {
             this.sendMessage(ws, {
@@ -799,25 +876,28 @@ export default {
     }
 
     // Default response
-    return new Response(JSON.stringify({
-      service: 'VitalSense Enhanced WebSocket Worker',
-      version: '2.0.0',
-      timestamp: new Date().toISOString(),
-      endpoints: {
-        websocket: '/ws',
-        health: '/health',
-      },
-      features: [
-        'real_time_health_processing',
-        'emergency_alert_system',
-        'wellness_scoring',
-        'fall_risk_assessment',
-        'gait_analysis',
-        'health_analytics',
-        'emergency_response',
-      ],
-    }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({
+        service: 'VitalSense Enhanced WebSocket Worker',
+        version: '2.0.0',
+        timestamp: new Date().toISOString(),
+        endpoints: {
+          websocket: '/ws',
+          health: '/health',
+        },
+        features: [
+          'real_time_health_processing',
+          'emergency_alert_system',
+          'wellness_scoring',
+          'fall_risk_assessment',
+          'gait_analysis',
+          'health_analytics',
+          'emergency_response',
+        ],
+      }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   },
 };

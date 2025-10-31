@@ -1080,6 +1080,17 @@ export class VitalSenseAdvancedWebSocketDO {
       }
     }, 30000);
   }
+
+  private isHealthData(dataPoint: any): dataPoint is HealthData {
+    return (
+      dataPoint &&
+      typeof dataPoint === 'object' &&
+      typeof dataPoint.id === 'string' &&
+      typeof dataPoint.user_id === 'string' &&
+      typeof dataPoint.metric_type === 'string' &&
+      typeof dataPoint.value === 'number'
+    );
+  }
 }
 
 export default {
