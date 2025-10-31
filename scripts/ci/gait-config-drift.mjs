@@ -49,7 +49,7 @@ function snapshot(){
 }
 
 function runSync(){
-  const res = spawnSync('node', ['scripts/node/gait/sync-gait-config.js'], { stdio: 'inherit' });
+  const res = spawnSync('node', ['scripts/analysis/gait/sync-gait-config.js'], { stdio: 'inherit' });
   if(res.status !== 0){
     console.error('❌ gait:sync script failed');
     process.exit(res.status ?? 1);

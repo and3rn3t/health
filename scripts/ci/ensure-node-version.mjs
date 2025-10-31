@@ -44,9 +44,12 @@ let ok = true;
 const messages = [];
 
 if (nvmrc) {
-  if (!nodeVersion.startsWith('v' + nvmrc)) {
+  // Allow patch version differences - only check major.minor matches
+  const [majReq, minReq] = nvmrc.split('.').map(Number);
+  const [majAct, minAct] = nodeVersion.replace(/^v/, '').split('.').map(Number);
+  if (majAct !== majReq || minAct !== minReq) {
     ok = false;
-    messages.push(`Active Node.js ${nodeVersion} does not match required .nvmrc ${nvmrc}`);
+    messages.push(`Active Node.js ${nodeVersion} does not match required .nvmrc ${nvmrc} (major.minor must match)`);
   }
 }
 

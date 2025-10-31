@@ -8,8 +8,8 @@
     "onboarding": "node scripts/development/onboarding-wizard.js",
     "dev": "node scripts/build/dev-esbuild.js",
     "kill": "fuser -k 5000/tcp",
-    "build": "node scripts/build/build.js",
-    "build:app": "tsc --noEmit && node scripts/build/build.js",
+    "build": "vite build",
+    "build:app": "tsc --noEmit && vite build",
     "build:worker": "node scripts/build/build-worker.js",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
@@ -305,7 +305,7 @@
     "yaml": "^2.4.0"
   },
   "optionalDependencies": {
-    "@parcel/watcher-linux-x64-gnu": "^2.5.1",
+    "@parcel/watcher-linux-x64-glibc": "^2.5.1",
     "@parcel/watcher-win32-x64": "^2.5.1",
     "@rollup/rollup-linux-x64-gnu": "4.50.1",
     "@rollup/rollup-win32-x64-msvc": "4.50.1",

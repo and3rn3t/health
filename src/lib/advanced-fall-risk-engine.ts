@@ -61,7 +61,7 @@ export interface BalanceRiskAssessment {
   overallScore: number; // 0-100
   staticBalance: number;
   dynamicBalance: number;
-  postural Control: number;
+  posturalControl: number;
   reactionTime: number;
   stabilityIndex: number;
   fallHistory: FallHistoryAnalysis;
