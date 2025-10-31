@@ -28,19 +28,8 @@ interface HealthAlert {
   alert_type: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
   title: string;
-  message: string  private async broadcastToUser(userId: string, message: Record<string, unknown>): Promise<void> {
-    for (const [ws, clientInfo] of this.clients) {
-      if (clientInfo.userId === userId && ws.readyState === WebSocket.OPEN) {
-        this.sendMessage(ws, message);
-      }
-    }
-  }
-
-  private sendMessage(ws: WebSocket, message: Record<string, unknown>): void {
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(message));
-    }
-  }pe: string;
+  message: string;
+  metric_type: string;
   metric_value: number;
   threshold_value: number;
   timestamp: number;

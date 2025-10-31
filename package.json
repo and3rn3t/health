@@ -305,7 +305,7 @@
     "yaml": "^2.4.0"
   },
   "optionalDependencies": {
-    "@parcel/watcher-linux-x64-gnu": "^2.5.1",
+    "@parcel/watcher-linux-x64-glibc": "^2.5.1",
     "@parcel/watcher-win32-x64": "^2.5.1",
     "@rollup/rollup-linux-x64-gnu": "4.50.1",
     "@rollup/rollup-win32-x64-msvc": "4.50.1",
