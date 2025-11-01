@@ -1,21 +1,7 @@
 import WidgetKit
 import SwiftUI
 
-// MARK: - Widget Bundle
-@main
-struct VitalSenseWidgetBundle: WidgetBundle {
-    var body: some Widget {
-        // Main comprehensive widget
-        VitalSenseHealthWidget()
-
-        // Specialized widgets
-        VitalSenseHeartRateWidget()
-        VitalSenseActivityWidget()
-        VitalSenseStepsWidget()
-
-        // Lock screen widgets are included in the specialized widgets
-    }
-}
+// MARK: - Widget Bundle (Note: This is a backup/preview file - main bundle is in VitalSenseHealthWidgets.swift)
 
 // MARK: - Widget Preview Provider
 struct VitalSenseWidget_Previews: PreviewProvider {

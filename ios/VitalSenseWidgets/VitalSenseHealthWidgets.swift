@@ -20,7 +20,6 @@ struct VitalSenseWidgetBundle: WidgetBundle {
         VitalSenseHealthWidget()
         VitalSenseHeartRateWidget()
         VitalSenseActivityWidget()
-        VitalSenseGaitWidget()
     }
 }
 
