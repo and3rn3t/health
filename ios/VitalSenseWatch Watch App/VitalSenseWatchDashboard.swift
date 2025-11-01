@@ -427,15 +427,14 @@ struct VitalSenseWatchDashboard: View {
                     Text(connectivityManager.isConnectedToPhone ? "Connected" : "Disconnected")
                         .foregroundColor(connectivityManager.isConnectedToPhone ? .green : .red)
                 }
-            } header: {
-                Text("Connection")
-            }
 
                 if !connectivityManager.isConnectedToPhone {
                     Button("Reconnect") {
                         connectivityManager.startSession()
                     }
                 }
+            } header: {
+                Text("Connection")
             }
         }
         .navigationTitle("Settings")
