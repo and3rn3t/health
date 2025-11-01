@@ -44,6 +44,14 @@ Complete guides for iOS development, deployment, and tooling.
 - Fixed GitHub Actions workflow lane calls with `ios` platform prefix
 - Validated lane syntax and execution patterns
 
+### [EXIT_STATUS_74_FIX.md](EXIT_STATUS_74_FIX.md)
+
+**🔧 Xcode build exit status 74** troubleshooting and resolution.
+
+- Fixed gym build configuration issues in CI environment
+- Added CODE_SIGNING_ALLOWED=NO for unsigned CI builds
+- Enhanced diagnostic tools and step-by-step troubleshooting
+
 ## 🔗 Related Documentation
 
 - **Getting Started**: [`../getting-started/`](../getting-started/) for basic iOS setup

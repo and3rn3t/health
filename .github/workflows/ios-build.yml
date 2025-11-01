@@ -69,6 +69,18 @@ jobs:
           cd ios
           ./scripts/build-cache-optimizer.sh quick
 
+      - name: Environment diagnostics
+        run: |
+          cd ios
+          echo "🔍 Running environment diagnostics..."
+          bundle exec fastlane ios diagnose
+
+      - name: Test minimal build
+        run: |
+          cd ios
+          echo "🧪 Testing minimal build configuration..."
+          bundle exec fastlane ios test_build
+
       - name: Build VitalSense
         run: |
           cd ios

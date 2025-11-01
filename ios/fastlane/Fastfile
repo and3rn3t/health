@@ -146,6 +146,60 @@ platform :ios do
     UI.success('✅ Fastfile syntax is working correctly!')
   end
 
+  desc 'Diagnostic information for build troubleshooting'
+  lane :diagnose do
+    UI.message('🔍 Diagnostic Information')
+    UI.message('========================')
+
+    # Check workspace and scheme
+    UI.message('📁 Checking project files...')
+    if File.exist?('VitalSense.xcworkspace')
+      UI.success('✅ VitalSense.xcworkspace exists')
+    else
+      UI.error('❌ VitalSense.xcworkspace not found')
+    end
+
+    if File.exist?('VitalSense.xcodeproj')
+      UI.success('✅ VitalSense.xcodeproj exists')
+    else
+      UI.error('❌ VitalSense.xcodeproj not found')
+    end
+
+    # Check available schemes
+    UI.message('📋 Available schemes:')
+    begin
+      schemes = sh('xcodebuild -workspace VitalSense.xcworkspace -list', log: false)
+      UI.message(schemes)
+    rescue => e
+      UI.error("Could not list schemes: #{e.message}")
+    end
+
+    # Check Xcode version
+    UI.message('🔧 Development environment:')
+    begin
+      xcode_version = sh('xcodebuild -version', log: false)
+      UI.message(xcode_version)
+    rescue => e
+      UI.error("Could not get Xcode version: #{e.message}")
+    end
+  end
+
+  desc 'Minimal test build to verify basic functionality'
+  lane :test_build do
+    UI.message('🧪 Testing minimal build configuration...')
+
+    # Try the exact same configuration as the working build lane
+    gym(shared_build_settings.merge(
+      archive_path: 'build/VitalSense-Test.xcarchive',
+      skip_codesigning: true,
+      clean: false,  # Don't clean to make it faster
+      output_directory: 'build',
+      output_name: 'VitalSense-Test'
+    ))
+
+    UI.success('✅ Minimal test build completed successfully!')
+  end
+
   # === PERFORMANCE LANES ===
 
   desc 'Build with maximum performance optimizations'
@@ -160,18 +214,15 @@ platform :ios do
       UI.important("Could not clean derived data: #{e.message}")
     end
 
-    # Use the same settings as the regular build but with optimization flags
-    gym(
-      workspace: 'VitalSense.xcworkspace',
-      scheme: 'VitalSense',
-      configuration: 'Release',
+    # Use the same pattern as the working build lane but with optimization flags
+    gym(shared_build_settings.merge(
+      archive_path: 'build/VitalSense-Optimized.xcarchive',
+      skip_codesigning: true,
       clean: true,
       output_directory: 'build',
       output_name: 'VitalSense-Optimized',
-      archive_path: 'build/VitalSense-Optimized.xcarchive',
-      skip_codesigning: true,
-      xcargs: 'COMPILER_INDEX_STORE_ENABLE=NO SWIFT_WHOLE_MODULE_OPTIMIZATION=YES GCC_OPTIMIZATION_LEVEL=fast'
-    )
+      xcargs: 'CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO SWIFT_WHOLE_MODULE_OPTIMIZATION=YES GCC_OPTIMIZATION_LEVEL=fast'
+    ))
 
     UI.success('✅ Optimized build completed successfully!')
   end
@@ -219,16 +270,14 @@ platform :ios do
     UI.message('💓 Building health monitoring optimized version...')
 
     # Specialized build for health monitoring with gait analysis optimizations
-    gym(
-      workspace: 'VitalSense.xcworkspace',
-      scheme: 'VitalSense',
-      configuration: 'Release',
+    gym(shared_build_settings.merge(
+      archive_path: 'build/VitalSense-HealthMonitoring.xcarchive',
+      skip_codesigning: true,
       clean: true,
       output_directory: 'build',
       output_name: 'VitalSense-HealthMonitoring',
-      skip_codesigning: true,
-      xcargs: 'MTL_FAST_MATH=YES GCC_UNROLL_LOOPS=YES GCC_VECTORIZE_LOOPS=YES SWIFT_DETERMINISTIC_HASHING=YES'
-    )
+      xcargs: 'CODE_SIGNING_ALLOWED=NO MTL_FAST_MATH=YES GCC_UNROLL_LOOPS=YES GCC_VECTORIZE_LOOPS=YES SWIFT_DETERMINISTIC_HASHING=YES'
+    ))
 
     UI.success('💪 Health monitoring build optimized for real-time gait analysis!')
   end
