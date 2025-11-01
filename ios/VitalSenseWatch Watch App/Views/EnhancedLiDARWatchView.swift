@@ -1,6 +1,8 @@
 import SwiftUI
 import HealthKit
 import WatchKit
+import WatchConnectivity
+import Symbols
 
 /// Enhanced LiDAR Watch View
 /// Apple Watch interface for enhanced health analysis integration
@@ -81,11 +83,12 @@ struct EnhancedLiDARWatchView: View {
             "source": "apple_watch"
         ]
 
-        WCSession.default.sendMessage(message, replyHandler: { reply in
-            DispatchQueue.main.async {
-                handleAnalysisResponse(reply)
-            }
-        }) { error in
+        if WCSession.default.isReachable {
+            WCSession.default.sendMessage(message, replyHandler: { reply in
+                DispatchQueue.main.async {
+                    handleAnalysisResponse(reply)
+                }
+            }) { error in
             print("Failed to trigger analysis: \(error.localizedDescription)")
         }
 
@@ -143,7 +146,7 @@ struct ConnectionStatusCard: View {
             }
         }
         .padding(12)
-        .background(Color(.systemGray6))
+        .background(Color.gray.opacity(0.1))
         .cornerRadius(8)
     }
 
@@ -221,7 +224,7 @@ struct DataStreamingCard: View {
             }
         }
         .padding(12)
-        .background(Color(.systemGray6))
+        .background(Color.gray.opacity(0.1))
         .cornerRadius(8)
     }
 }
@@ -302,7 +305,7 @@ struct QuickMetricsCard: View {
             }
         }
         .padding(12)
-        .background(Color(.systemGray6))
+        .background(Color.gray.opacity(0.1))
         .cornerRadius(8)
         .onAppear {
             startMetricsUpdates()
@@ -392,7 +395,7 @@ struct ActionButton: View {
             .foregroundColor(isEnabled ? color : .gray)
             .frame(maxWidth: .infinity)
             .frame(height: 44)
-            .background(Color(.systemGray6))
+            .background(Color.gray.opacity(0.1))
             .cornerRadius(8)
         }
         .disabled(!isEnabled)
@@ -472,7 +475,7 @@ struct AnalysisDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button("Close") {
                         presentationMode.wrappedValue.dismiss()
                     }
@@ -545,7 +548,7 @@ struct ResultCard: View {
             }
         }
         .padding(12)
-        .background(Color(.systemGray6))
+        .background(Color.gray.opacity(0.1))
         .cornerRadius(8)
     }
 }

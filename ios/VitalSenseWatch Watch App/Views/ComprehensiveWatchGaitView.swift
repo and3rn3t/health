@@ -79,7 +79,7 @@ struct ComprehensiveWatchGaitView: View {
                 Image(systemName: isMonitoring ? "figure.walk.motion" : "figure.walk")
                     .font(.title2)
                     .foregroundStyle(isMonitoring ? .green : .secondary)
-                    .symbolEffect(.bounce, value: isMonitoring)
+                    .animation(.easeInOut(duration: 0.3), value: isMonitoring)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Gait Monitoring")
@@ -347,7 +347,14 @@ struct ComprehensiveWatchGaitView: View {
     }
 
     private func syncToiPhone() {
-        connectivityManager.syncGaitDataToiPhone(gaitManager.currentGaitData)
+        let gaitDict = [
+            "walkingSpeed": gaitManager.currentGaitData.walkingSpeed,
+            "stepLength": gaitManager.currentGaitData.stepLength,
+            "cadence": gaitManager.currentGaitData.cadence,
+            "walkingAsymmetry": gaitManager.currentGaitData.walkingAsymmetry,
+            "doubleSupportPercentage": gaitManager.currentGaitData.doubleSupportPercentage
+        ] as [String: Any]
+        connectivityManager.sendQuickEvent(gaitDict)
 
         if hapticFeedbackEnabled {
             WKInterfaceDevice.current().play(.success)
@@ -356,7 +363,7 @@ struct ComprehensiveWatchGaitView: View {
 
     private func emergencyContact() {
         // Trigger emergency contact system
-        connectivityManager.sendEmergencyAlert()
+        connectivityManager.sendQuickEvent(["emergencyAlert": true, "timestamp": Date().timeIntervalSince1970])
 
         if hapticFeedbackEnabled {
             WKInterfaceDevice.current().play(.failure)
@@ -446,11 +453,11 @@ struct GaitDetailView: View {
                 .font(.headline)
 
             VStack(spacing: 4) {
-                MetricRow(title: "Walking Speed", value: "\(gaitData.walkingSpeed, specifier: "%.2f") m/s")
-                MetricRow(title: "Step Length", value: "\(gaitData.stepLength * 100, specifier: "%.0f") cm")
-                MetricRow(title: "Cadence", value: "\(gaitData.cadence, specifier: "%.0f") steps/min")
-                MetricRow(title: "Asymmetry", value: "\(gaitData.walkingAsymmetry * 100, specifier: "%.1f")%")
-                MetricRow(title: "Double Support", value: "\(gaitData.doubleSupportPercentage * 100, specifier: "%.1f")%")
+                MetricRow(title: "Walking Speed", value: String(format: "%.2f m/s", gaitData.walkingSpeed))
+                MetricRow(title: "Step Length", value: String(format: "%.0f cm", gaitData.stepLength * 100))
+                MetricRow(title: "Cadence", value: String(format: "%.0f steps/min", gaitData.cadence))
+                MetricRow(title: "Asymmetry", value: String(format: "%.1f%%", gaitData.walkingAsymmetry * 100))
+                MetricRow(title: "Double Support", value: String(format: "%.1f%%", gaitData.doubleSupportPercentage * 100))
             }
         }
     }
