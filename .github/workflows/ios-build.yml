@@ -24,7 +24,7 @@ on:
 
 jobs:
   build-ios:
-    runs-on: macos-14 # Latest macOS with Xcode 15+
+    runs-on: macos-15 # Latest macOS with Xcode 16+
 
     steps:
       - name: Checkout code
@@ -33,7 +33,7 @@ jobs:
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '15.4'
+          xcode-version: '16.4'
 
       - name: Install Ruby dependencies
         run: |
