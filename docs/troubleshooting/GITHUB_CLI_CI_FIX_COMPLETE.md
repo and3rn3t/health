@@ -6,7 +6,8 @@
 
 **File**: `.github/workflows/ios-ci.yml`
 
-**❌ Problem**: 
+**❌ Problem**:
+
 ```
 xcodebuild: error: 'ios/HealthKitBridge.xcodeproj' does not exist.
 ```
@@ -24,6 +25,7 @@ xcodebuild: error: 'ios/HealthKitBridge.xcodeproj' does not exist.
 | **Cache Keys** | `ios/HealthKitBridge/**/*.swift` | `ios/VitalSense/**/*.swift` |
 
 **Updated Commands**:
+
 - ✅ `xcodebuild -resolvePackageDependencies -workspace ${{ env.WORKSPACE }} -scheme ${{ env.SCHEME }}`
 - ✅ `xcodebuild build-for-testing -workspace ${{ env.WORKSPACE }}`
 - ✅ `xcodebuild test-without-building -workspace ${{ env.WORKSPACE }}`
@@ -33,12 +35,14 @@ xcodebuild: error: 'ios/HealthKitBridge.xcodeproj' does not exist.
 
 **File**: `.github/workflows/ios-build.yml`
 
-**❌ Problem**: 
+**❌ Problem**:
+
 ```
 xcodebuild: error: If you specify a workspace then you must also specify a scheme.
 ```
 
 **✅ Fix Applied**:
+
 ```bash
 # Before (MISSING SCHEME)
 xcodebuild -resolvePackageDependencies -workspace VitalSense.xcworkspace
@@ -74,6 +78,7 @@ env:
 ## 🚀 **Expected Results After Fixes**
 
 ### **iOS CI (Lint, Build, Test, Archive)** - `ios-ci.yml`
+
 1. ✅ **SwiftLint**: Should pass (already working)
 2. ✅ **Resolve Dependencies**: Now uses correct workspace + scheme
 3. ✅ **Build for Testing**: Now uses workspace instead of project
@@ -82,6 +87,7 @@ env:
 6. ✅ **Archive**: Now uses workspace and creates VitalSense.xcarchive
 
 ### **VitalSense iOS Build** - `ios-build.yml`
+
 1. ✅ **Resolve Swift Packages**: Now includes scheme parameter
 2. ✅ **Build VitalSense iOS app**: Uses correct Fastlane build_optimized lane
 3. ✅ **Fallback Build**: Available via fallback-build.sh script
@@ -89,7 +95,8 @@ env:
 
 ## 🔍 **How We Diagnosed This**
 
-### **GitHub CLI Commands Used**:
+### **GitHub CLI Commands Used**
+
 ```bash
 gh run list --limit 10                    # List recent workflow runs
 gh run view 19002318139                   # View specific run details  
@@ -97,11 +104,13 @@ gh run view 19002318139 --log-failed     # Get detailed failure logs
 gh run view 19002386092 --log-failed     # Check latest VitalSense build logs
 ```
 
-### **Key Error Messages Identified**:
+### **Key Error Messages Identified**
+
 1. `'ios/HealthKitBridge.xcodeproj' does not exist` → **Wrong project path**
 2. `If you specify a workspace then you must also specify a scheme` → **Missing scheme parameter**
 
-### **File Structure Verification**:
+### **File Structure Verification**
+
 ```
 ios/
 ├── VitalSense.xcodeproj/         ✅ ACTUAL PROJECT
