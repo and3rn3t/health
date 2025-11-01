@@ -420,13 +420,16 @@ struct VitalSenseWatchDashboard: View {
                 Toggle("Workout Reminders", isOn: .constant(false))
             }
 
-            Section("Connection") {
+            Section {
                 HStack {
                     Text("iPhone")
                     Spacer()
                     Text(connectivityManager.isConnectedToPhone ? "Connected" : "Disconnected")
                         .foregroundColor(connectivityManager.isConnectedToPhone ? .green : .red)
                 }
+            } header: {
+                Text("Connection")
+            }
 
                 if !connectivityManager.isConnectedToPhone {
                     Button("Reconnect") {

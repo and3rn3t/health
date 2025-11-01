@@ -21,7 +21,7 @@ struct VitalSenseWidgetsAttributes: ActivityAttributes {
 
 struct VitalSenseWidgetsLiveActivity: Widget {
     typealias Body = some WidgetConfiguration
-    
+
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: VitalSenseWidgetsAttributes.self) { context in
             // Lock screen/banner UI goes here
@@ -68,7 +68,7 @@ extension VitalSenseWidgetsAttributes.ContentState {
     fileprivate static var smiley: VitalSenseWidgetsAttributes.ContentState {
         VitalSenseWidgetsAttributes.ContentState(emoji: "😀")
      }
-     
+
      fileprivate static var starEyes: VitalSenseWidgetsAttributes.ContentState {
          VitalSenseWidgetsAttributes.ContentState(emoji: "🤩")
      }

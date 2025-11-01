@@ -19,7 +19,7 @@ import OSLog
 
 struct VitalSenseHealthWidget: Widget {
     let kind: String = "VitalSenseHealthWidget"
-    
+
     typealias Body = some WidgetConfiguration
 
     var body: some WidgetConfiguration {
@@ -37,7 +37,7 @@ struct VitalSenseHealthWidget: Widget {
 
 struct VitalSenseHeartRateWidget: Widget {
     let kind: String = "VitalSenseHeartRateWidget"
-    
+
     typealias Body = some WidgetConfiguration
 
     var body: some WidgetConfiguration {
@@ -54,7 +54,7 @@ struct VitalSenseHeartRateWidget: Widget {
 
 struct VitalSenseActivityWidget: Widget {
     let kind: String = "VitalSenseActivityWidget"
-    
+
     typealias Body = some WidgetConfiguration
 
     var body: some WidgetConfiguration {
@@ -71,7 +71,7 @@ struct VitalSenseActivityWidget: Widget {
 
 struct VitalSenseGaitWidget: Widget {
     let kind: String = "VitalSenseGaitWidget"
-    
+
     typealias Body = some WidgetConfiguration
 
     var body: some WidgetConfiguration {
@@ -88,7 +88,7 @@ struct VitalSenseGaitWidget: Widget {
 
 struct HealthTimelineProvider: TimelineProvider {
     typealias Entry = HealthEntry
-    
+
     private let logger = Logger(subsystem: "com.vitalsense.widgets", category: "HealthTimeline")
 
     func placeholder(in context: Context) -> HealthEntry {

@@ -11,7 +11,7 @@ import HealthKit
 // MARK: - Widget Timeline Provider
 struct HealthProvider: TimelineProvider {
     typealias Entry = HealthEntry
-    
+
     func placeholder(in context: Context) -> HealthEntry {
         HealthEntry(
             date: Date(),
@@ -56,7 +56,7 @@ struct HealthProvider: TimelineProvider {
 // MARK: - Main VitalSense Health Widget
 struct VitalSenseHealthWidget: Widget {
     let kind: String = "VitalSenseHealthWidget"
-    
+
     typealias Body = some WidgetConfiguration
 
     var body: some WidgetConfiguration {

@@ -444,8 +444,8 @@ extension WatchLiDARIntegrationManager: WCSessionDelegate {
 
     private func handleConfigurationUpdate(_ message: [String: Any], replyHandler: @escaping ([String: Any]) -> Void) {
         // Update streaming configuration based on iPhone request
-        if let newConfig = WatchStreamingConfig.fromDictionary(message) {
-            // Update configuration
+        if WatchStreamingConfig.fromDictionary(message) != nil {
+            // Configuration is valid, could be updated here
             // streamingConfig = newConfig (if made mutable)
             replyHandler(["status": "config_updated"])
         } else {

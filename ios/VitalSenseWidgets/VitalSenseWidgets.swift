@@ -14,7 +14,7 @@ import AppIntents
 struct Provider: AppIntentTimelineProvider {
     typealias Entry = SimpleEntry
     typealias Intent = ConfigurationAppIntent
-    
+
     func placeholder(in context: Context) -> SimpleEntry {
         SimpleEntry(date: Date(), configuration: ConfigurationAppIntent())
     }
@@ -63,7 +63,7 @@ struct VitalSenseWidgetsEntryView : View {
 
 struct VitalSenseWidgets: Widget {
     let kind: String = "VitalSenseWidgets"
-    
+
     typealias Body = some WidgetConfiguration
 
     var body: some WidgetConfiguration {

@@ -22,7 +22,7 @@ struct GaitSessionAttributes: ActivityAttributes {
 @available(iOS 16.1, *)
 struct GaitActivityWidget: Widget {
     typealias Body = some WidgetConfiguration
-    
+
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: GaitSessionAttributes.self) { context in
             // Lock Screen / Banner
