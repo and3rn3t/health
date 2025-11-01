@@ -158,7 +158,7 @@ class WatchLiDARIntegrationManager: NSObject, ObservableObject {
 
     private func setupGaitMetricsQueries() {
         let gaitTypes: [HKQuantityTypeIdentifier] = [
-            .walkingSteadiness,
+            .stepCount,
             .walkingSpeed,
             .walkingStepLength,
             .walkingAsymmetryPercentage,
@@ -354,8 +354,8 @@ class WatchLiDARIntegrationManager: NSObject, ObservableObject {
 
     private func extractGaitValue(_ sample: HKQuantitySample, type: HKQuantityTypeIdentifier) -> Double {
         switch type {
-        case .walkingSteadiness:
-            return sample.quantity.doubleValue(for: HKUnit.percent())
+        case .stepCount:
+            return sample.quantity.doubleValue(for: HKUnit.count())
         case .walkingSpeed:
             return sample.quantity.doubleValue(for: HKUnit.meter().unitDivided(by: .second()))
         case .walkingStepLength:

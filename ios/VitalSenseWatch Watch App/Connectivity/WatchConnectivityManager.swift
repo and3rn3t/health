@@ -15,6 +15,9 @@ final class WatchAppConnectivityManager: NSObject, ObservableObject {
     @Published private(set) var lastContextStatus: LiveStatusPayload?
     @Published private(set) var balanceProgress: [String: Any]?
     @Published private(set) var balanceResult: [String: Any]?
+    
+    // Alias for isReachable for compatibility
+    var isConnectedToPhone: Bool { isReachable }
 
     private let session: WCSession? = WCSession.isSupported() ? WCSession.default : nil
     private var bufferedOutbound: [Data] = []
@@ -32,6 +35,16 @@ final class WatchAppConnectivityManager: NSObject, ObservableObject {
     func triggerAssessment() { sendSimple(type: .triggerFallRiskAssessment) }
     func sendQuickEvent(_ event: [String: Any]) {
         let env = WatchMessageEnvelope(type: .sendQuickEvent, payload: event)
+        if let data = try? WatchMessageCodec.encode(env) { send(data) }
+    }
+    
+    func sendHealthDataToPhone(_ data: [[String: Any]]) {
+        let env = WatchMessageEnvelope(type: .sendQuickEvent, payload: ["healthData": data])
+        if let encodedData = try? WatchMessageCodec.encode(env) { send(encodedData) }
+    }
+    
+    func sendHeartRateToPhone(_ heartRate: Double) {
+        let env = WatchMessageEnvelope(type: .sendQuickEvent, payload: ["heartRate": heartRate])
         if let data = try? WatchMessageCodec.encode(env) { send(data) }
     }
 

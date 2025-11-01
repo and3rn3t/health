@@ -293,7 +293,7 @@ struct VitalSenseWatchDashboard: View {
         }
         .padding(12)
         .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius, 12))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     // MARK: - Heart Rate Detail View
