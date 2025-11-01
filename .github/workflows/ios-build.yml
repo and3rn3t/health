@@ -1,0 +1,115 @@
+name: VitalSense iOS Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - release
+          - performance
+      run_tests:
+        description: 'Run performance tests'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  build-ios:
+    runs-on: macos-14 # Latest macOS with Xcode 15+
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.4'
+
+      - name: Install dependencies
+        run: |
+          cd ios
+          bundle install
+
+      - name: Cache derived data
+        uses: actions/cache@v3
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-xcode-${{ hashFiles('ios/**/*.swift', 'ios/**/*.m', 'ios/**/*.h') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-
+
+      - name: Cache Swift packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ios/.build
+            ~/Library/Caches/org.swift.swiftpm
+          key: ${{ runner.os }}-spm-${{ hashFiles('ios/Package.swift', 'ios/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Build cache optimization
+        run: |
+          cd ios
+          ./scripts/build-cache-optimizer.sh quick
+
+      - name: Build VitalSense
+        run: |
+          cd ios
+          if [ "${{ github.event.inputs.build_type }}" == "performance" ]; then
+            bundle exec fastlane build_health_monitoring
+          elif [ "${{ github.event.inputs.build_type }}" == "release" ]; then
+            bundle exec fastlane archive
+          else
+            bundle exec fastlane build_optimized
+          fi
+
+      - name: Run performance tests
+        if: ${{ github.event.inputs.run_tests != 'false' }}
+        run: |
+          cd ios
+          bundle exec fastlane performance_test
+
+      - name: Build metrics analysis
+        run: |
+          cd ios
+          ./scripts/build-performance-monitor.sh analyze
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: vitalsense-build
+          path: |
+            ios/build/
+            ios/build_metrics.json
+            ios/fastlane/performance_results/
+
+      - name: Upload to TestFlight (on main branch)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cd ios
+          bundle exec fastlane beta
+        env:
+          APP_STORE_CONNECT_API_KEY_PATH: ${{ secrets.APP_STORE_CONNECT_API_KEY_PATH }}
+          FASTLANE_USER: ${{ secrets.FASTLANE_USER }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+
+  notify-completion:
+    needs: build-ios
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Notify build status
+        run: |
+          echo "VitalSense iOS build completed"
+          echo "Status: ${{ needs.build-ios.result }}"
