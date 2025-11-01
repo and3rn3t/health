@@ -1,3 +1,69 @@
-// Release build settings
-SWIFT_ACTIVE_COMPILATION_CONDITIONS = 
+#include "Base.xcconfig"
+
+// Enhanced Release Configuration
+// Optimized for production performance and app size
+
+// Build Configuration
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+ENABLE_TESTABILITY = NO
+ONLY_ACTIVE_ARCH = NO
+
+// Advanced Optimization Settings
+GCC_OPTIMIZATION_LEVEL = fast
 SWIFT_OPTIMIZATION_LEVEL = -O
+SWIFT_COMPILATION_MODE = wholemodule
+SWIFT_WHOLE_MODULE_OPTIMIZATION = YES
+
+// Link-Time Optimization
+LLVM_LTO = YES_THIN
+GCC_GENERATE_DEBUGGING_SYMBOLS = NO
+STRIP_INSTALLED_PRODUCT = YES
+COPY_PHASE_STRIP = YES
+
+// Code Stripping and Size Optimization
+DEAD_CODE_STRIPPING = YES
+PRESERVE_DEAD_CODE_INITS_AND_TERMS = NO
+DEPLOYMENT_POSTPROCESSING = YES
+
+// Swift Compiler Performance
+SWIFT_SERIALIZE_DEBUGGING_OPTIONS = NO
+SWIFT_DETERMINISTIC_HASHING = YES
+SWIFT_REFLECTION_METADATA_LEVEL = minimal
+
+// Health App Specific Optimizations
+// Core Motion and HealthKit performance tuning
+MTL_FAST_MATH = YES
+GCC_UNROLL_LOOPS = YES
+GCC_VECTORIZE_LOOPS = YES
+
+// Memory Management
+GCC_NO_COMMON_BLOCKS = YES
+ENABLE_STRICT_OBJC_MSGSEND = YES
+GCC_DYNAMIC_NO_PIC = NO
+
+// Validation and Security
+VALIDATE_PRODUCT = YES
+ENABLE_NS_ASSERTIONS = NO
+
+// Module Stability (for better incremental builds)
+BUILD_LIBRARY_FOR_DISTRIBUTION = YES
+SWIFT_MODULE_INTERFACES = YES
+
+// Performance Preprocessor Definitions
+GCC_PREPROCESSOR_DEFINITIONS = NDEBUG=1 $(inherited)
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = RELEASE
+
+// Archive and Distribution
+SKIP_INSTALL = NO
+DWARF_DSYM_FOLDER_PATH = $(CONFIGURATION_BUILD_DIR)
+DWARF_DSYM_FILE_NAME = $(PRODUCT_NAME).dSYM
+
+// Health Monitoring Optimizations
+// Reduce background processing overhead
+GCC_FAST_OBJC_DISPATCH = YES
+CLANG_ENABLE_OBJC_ARC_WEAK = YES
+
+// Battery and Performance Settings for Real-Time Monitoring
+// These settings optimize for the gait analysis and health monitoring features
+GCC_STRICT_ALIASING = YES
+GCC_THREADSAFE_STATICS = NO

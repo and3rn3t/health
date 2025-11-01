@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>configurations</key>
+    <array>
+        <dict>
+            <key>id</key>
+            <string>Performance</string>
+            <key>name</key>
+            <string>Performance Tests</string>
+        </dict>
+    </array>
+    <key>defaultOptions</key>
+    <dict>
+        <key>commandLineArgumentEntries</key>
+        <array>
+            <dict>
+                <key>argument</key>
+                <string>-performance-testing</string>
+                <key>enabled</key>
+                <true/>
+            </dict>
+        </array>
+        <key>environmentVariableEntries</key>
+        <array>
+            <dict>
+                <key>key</key>
+                <string>ENABLE_PERFORMANCE_LOGGING</string>
+                <key>value</key>
+                <string>1</string>
+            </dict>
+            <dict>
+                <key>key</key>
+                <string>GAIT_ANALYSIS_PERFORMANCE_MODE</string>
+                <key>value</key>
+                <string>1</string>
+            </dict>
+        </array>
+        <key>testTimeoutsEnabled</key>
+        <true/>
+    </dict>
+    <key>testTargets</key>
+    <array>
+        <dict>
+            <key>target</key>
+            <dict>
+                <key>containerPath</key>
+                <string>container:VitalSense.xcodeproj</string>
+                <key>identifier</key>
+                <string>VitalSensePerformanceTests</string>
+                <key>name</key>
+                <string>VitalSensePerformanceTests</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>target</key>
+            <dict>
+                <key>containerPath</key>
+                <string>container:VitalSense.xcodeproj</string>
+                <key>identifier</key>
+                <string>VitalSenseGaitAnalysisPerformanceTests</string>
+                <key>name</key>
+                <string>VitalSenseGaitAnalysisPerformanceTests</string>
+            </dict>
+        </dict>
+    </array>
+    <key>version</key>
+    <integer>1</integer>
+</dict>
+</plist>
