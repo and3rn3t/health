@@ -14,9 +14,10 @@ on:
 
 env:
   XCODE_VERSION: '16.4'
-  SCHEME: HealthKitBridge
-  PROJECT: ios/HealthKitBridge.xcodeproj
-  ARCHIVE_PATH: ios/build/HealthKitBridge.xcarchive
+  SCHEME: VitalSense
+  PROJECT: ios/VitalSense.xcodeproj
+  WORKSPACE: ios/VitalSense.xcworkspace
+  ARCHIVE_PATH: ios/build/VitalSense.xcarchive
   EXPORT_PATH: ios/build/export
 
 permissions:
@@ -91,15 +92,15 @@ jobs:
             ~/Library/Caches/org.swift.swiftpm
             ~/.swiftpm
             ios/build
-          key: dd-${{ runner.os }}-${{ env.XCODE_VERSION }}-${{ hashFiles('ios/Package.swift','ios/HealthKitBridge/**/*.swift') }}
+          key: dd-${{ runner.os }}-${{ env.XCODE_VERSION }}-${{ hashFiles('ios/Package.swift','ios/VitalSense/**/*.swift') }}
       - name: Resolve Dependencies
         run: |
-          xcodebuild -resolvePackageDependencies -project ${{ env.PROJECT }} -scheme ${{ env.SCHEME }}
+          xcodebuild -resolvePackageDependencies -workspace ${{ env.WORKSPACE }} -scheme ${{ env.SCHEME }}
       - name: Build for Testing (Debug)
         run: |
           set -e
           xcodebuild build-for-testing \
-            -project ${{ env.PROJECT }} \
+            -workspace ${{ env.WORKSPACE }} \
             -scheme ${{ env.SCHEME }} \
             -destination 'platform=iOS Simulator,name=iPhone 16' \
             -derivedDataPath ios/build \
@@ -109,11 +110,11 @@ jobs:
         run: |
           set -e
             xcodebuild test-without-building \
-              -project ${{ env.PROJECT }} \
+              -workspace ${{ env.WORKSPACE }} \
               -scheme ${{ env.SCHEME }} \
               -destination 'platform=iOS Simulator,name=iPhone 16' \
               -derivedDataPath ios/build \
-              -only-testing HealthKitBridgeTests \
+              -only-testing VitalSenseTests \
               CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" ENABLE_BITCODE=NO || EXIT_CODE=$?
             # Allow test failures to still collect artifacts but fail job
             if [ ! -z "$EXIT_CODE" ]; then
@@ -126,7 +127,7 @@ jobs:
           RESULT=$(ls ios/build/Logs/Test/*.xcresult 2>/dev/null | head -1)
           if [ -z "$RESULT" ]; then echo "No xcresult found"; exit 0; fi
           xcrun xccov view --report --json "$RESULT" > coverage.json 2>/dev/null || { echo "xccov JSON unavailable"; exit 0; }
-          TOTAL=$(python3 -c "import json;\nimport sys;\nimport math;\n\ntry:\n data=json.load(open('coverage.json'));\n cov=[t.get('lineCoverage',0) for t in data.get('targets',[]) if t.get('name')!='HealthKitBridgeUITests'];\n print(round(sum(cov)/len(cov)*100,2) if cov else 0)\nexcept Exception:\n print(0)")
+          TOTAL=$(python3 -c "import json;\nimport sys;\nimport math;\n\ntry:\n data=json.load(open('coverage.json'));\n cov=[t.get('lineCoverage',0) for t in data.get('targets',[]) if t.get('name')!='VitalSenseUITests'];\n print(round(sum(cov)/len(cov)*100,2) if cov else 0)\nexcept Exception:\n print(0)")
           echo "Line Coverage: ${TOTAL}%"
           echo "coverage_percent=${TOTAL}" >> $GITHUB_OUTPUT
       - name: Upload Coverage JSON
@@ -141,7 +142,7 @@ jobs:
         run: |
           RESULT=$(ls ios/build/Logs/Test/*.xcresult 2>/dev/null | head -1)
           if [ -z "$RESULT" ]; then echo "Skipping coverage gate (no results)"; exit 0; fi
-          COV=$(xcrun xccov view --report --json "$RESULT" | python3 -c "import sys,json;\n\nimport math;\n\ntry:\n data=json.load(sys.stdin);\n cov=[t.get('lineCoverage',0) for t in data.get('targets',[]) if t.get('name')!='HealthKitBridgeUITests'];\n print(round(sum(cov)/len(cov)*100,2) if cov else 0)\nexcept Exception:\n print(0)")
+          COV=$(xcrun xccov view --report --json "$RESULT" | python3 -c "import sys,json;\n\nimport math;\n\ntry:\n data=json.load(sys.stdin);\n cov=[t.get('lineCoverage',0) for t in data.get('targets',[]) if t.get('name')!='VitalSenseUITests'];\n print(round(sum(cov)/len(cov)*100,2) if cov else 0)\nexcept Exception:\n print(0)")
           echo "Computed coverage: ${COV}%"
           MIN=40
           awk -v c=$COV -v m=$MIN 'BEGIN { if (c+0 < m) { printf("Coverage %.2f%% below minimum %d%%\n", c, m); exit 1 } }'
@@ -172,12 +173,12 @@ jobs:
             ~/Library/Caches/org.swift.swiftpm
             ~/.swiftpm
             ios/build
-          key: archive-${{ runner.os }}-${{ env.XCODE_VERSION }}-${{ hashFiles('ios/Package.swift','ios/HealthKitBridge/**/*.swift') }}
+          key: archive-${{ runner.os }}-${{ env.XCODE_VERSION }}-${{ hashFiles('ios/Package.swift','ios/VitalSense/**/*.swift') }}
       - name: Archive (Release)
         run: |
           set -e
           xcodebuild archive \
-            -project ${{ env.PROJECT }} \
+            -workspace ${{ env.WORKSPACE }} \
             -scheme ${{ env.SCHEME }} \
             -configuration Release \
             -archivePath ${{ env.ARCHIVE_PATH }} \

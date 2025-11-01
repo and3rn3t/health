@@ -72,7 +72,7 @@ jobs:
         run: |
           cd ios
           echo "📦 Resolving Swift package dependencies..."
-          xcodebuild -resolvePackageDependencies -workspace VitalSense.xcworkspace
+          xcodebuild -resolvePackageDependencies -workspace VitalSense.xcworkspace -scheme VitalSense
 
       - name: Build VitalSense iOS app
         run: |
