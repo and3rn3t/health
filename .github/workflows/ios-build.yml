@@ -76,16 +76,16 @@ jobs:
 
           if [ "$BUILD_TYPE" == "performance" ]; then
             echo "🏃‍♂️ Running performance build..."
-            bundle exec fastlane build_health_monitoring
+            bundle exec fastlane ios build_health_monitoring
           elif [ "$BUILD_TYPE" == "release" ]; then
             echo "🚀 Running release build..."
-            bundle exec fastlane archive
+            bundle exec fastlane ios archive
           elif [ -n "$BUILD_TYPE" ] && [ "$BUILD_TYPE" != "development" ]; then
             echo "⚠️ Unknown build type '$BUILD_TYPE', falling back to optimized build"
-            bundle exec fastlane build_optimized
+            bundle exec fastlane ios build_optimized
           else
             echo "🔧 Running optimized development build..."
-            bundle exec fastlane build_optimized
+            bundle exec fastlane ios build_optimized
           fi
 
       - name: Run performance tests
@@ -93,7 +93,7 @@ jobs:
         run: |
           cd ios
           echo "🧪 Running performance tests..."
-          bundle exec fastlane performance_test || echo "⚠️ Performance tests failed, continuing build..."
+          bundle exec fastlane ios performance_test || echo "⚠️ Performance tests failed, continuing build..."
 
       - name: Build metrics analysis
         run: |
@@ -113,7 +113,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           cd ios
-          bundle exec fastlane beta
+          bundle exec fastlane ios beta
         env:
           APP_STORE_CONNECT_API_KEY_PATH: ${{ secrets.APP_STORE_CONNECT_API_KEY_PATH }}
           FASTLANE_USER: ${{ secrets.FASTLANE_USER }}

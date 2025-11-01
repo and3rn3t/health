@@ -36,6 +36,14 @@ Complete guides for iOS development, deployment, and tooling.
 - GitHub Actions workflow enhancement
 - Cross-platform build automation setup
 
+### [PLATFORM_PREFIX_FIX.md](PLATFORM_PREFIX_FIX.md)
+
+**🔧 Critical platform prefix fix** for Fastlane lane execution.
+
+- Resolved "Could not find 'build_optimized'" CI failure
+- Fixed GitHub Actions workflow lane calls with `ios` platform prefix
+- Validated lane syntax and execution patterns
+
 ## 🔗 Related Documentation
 
 - **Getting Started**: [`../getting-started/`](../getting-started/) for basic iOS setup
