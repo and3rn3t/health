@@ -13,8 +13,8 @@ final class WatchAppConnectivityManager: NSObject, ObservableObject {
     @Published private(set) var lastAlert: AlertPayload?
     @Published private(set) var isReachable: Bool = false
     @Published private(set) var lastContextStatus: LiveStatusPayload?
-    @Published private(set) var balanceProgress: [String: Any]?
-    @Published private(set) var balanceResult: [String: Any]?
+    @Published private(set) var balanceProgress: BalanceTestProgressPayload?
+    @Published private(set) var balanceResult: BalanceTestResultPayload?
 
     // Alias for isReachable for compatibility
     var isConnectedToPhone: Bool { isReachable }
@@ -33,23 +33,27 @@ final class WatchAppConnectivityManager: NSObject, ObservableObject {
     func startMonitoring() { sendSimple(type: .startMonitoring) }
     func stopMonitoring() { sendSimple(type: .stopMonitoring) }
     func triggerAssessment() { sendSimple(type: .triggerFallRiskAssessment) }
-    func sendQuickEvent(_ event: [String: Any]) {
-        let env = WatchMessageEnvelope(type: .sendQuickEvent, payload: event)
+    func sendQuickEvent(_ eventData: [String: String]) {
+        let payload = QuickEventPayload(data: eventData)
+        let env = WatchMessageEnvelope(type: .sendQuickEvent, payload: payload)
         if let data = try? WatchMessageCodec.encode(env) { send(data) }
     }
 
-    func sendHealthDataToPhone(_ data: [[String: Any]]) {
-        let env = WatchMessageEnvelope(type: .sendQuickEvent, payload: ["healthData": data])
+    func sendHealthDataToPhone(_ data: [String]) {
+        let payload = HealthDataPayload(healthData: data)
+        let env = WatchMessageEnvelope(type: .sendQuickEvent, payload: payload)
         if let encodedData = try? WatchMessageCodec.encode(env) { send(encodedData) }
     }
 
     func sendHeartRateToPhone(_ heartRate: Double) {
-        let env = WatchMessageEnvelope(type: .sendQuickEvent, payload: ["heartRate": heartRate])
+        let payload = HeartRatePayload(heartRate: heartRate)
+        let env = WatchMessageEnvelope(type: .sendQuickEvent, payload: payload)
         if let data = try? WatchMessageCodec.encode(env) { send(data) }
     }
 
     private func sendSimple(type: WatchMessageType) {
-        let env = WatchMessageEnvelope(type: type, payload: [String:String]())
+        let payload = QuickEventPayload(data: [:])
+        let env = WatchMessageEnvelope(type: type, payload: payload)
         if let data = try? WatchMessageCodec.encode(env) { send(data) }
     }
 
