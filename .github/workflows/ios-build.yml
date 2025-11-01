@@ -41,7 +41,7 @@ jobs:
           bundle install
 
       - name: Cache derived data
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/Library/Developer/Xcode/DerivedData
           key: ${{ runner.os }}-xcode-${{ hashFiles('ios/**/*.swift', 'ios/**/*.m', 'ios/**/*.h') }}
@@ -49,7 +49,7 @@ jobs:
             ${{ runner.os }}-xcode-
 
       - name: Cache Swift packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ios/.build
@@ -86,7 +86,7 @@ jobs:
           ./scripts/build-performance-monitor.sh analyze
 
       - name: Archive build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: vitalsense-build
           path: |
