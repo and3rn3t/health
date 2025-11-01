@@ -95,12 +95,12 @@ jobs:
           key: dd-${{ runner.os }}-${{ env.XCODE_VERSION }}-${{ hashFiles('ios/Package.swift','ios/VitalSense/**/*.swift') }}
       - name: Resolve Dependencies
         run: |
-          xcodebuild -resolvePackageDependencies -workspace ${{ env.WORKSPACE }} -scheme ${{ env.SCHEME }}
+          xcodebuild -resolvePackageDependencies -project ${{ env.PROJECT }} -scheme ${{ env.SCHEME }}
       - name: Build for Testing (Debug)
         run: |
           set -e
           xcodebuild build-for-testing \
-            -workspace ${{ env.WORKSPACE }} \
+            -project ${{ env.PROJECT }} \
             -scheme ${{ env.SCHEME }} \
             -destination 'platform=iOS Simulator,name=iPhone 16' \
             -derivedDataPath ios/build \
@@ -110,7 +110,7 @@ jobs:
         run: |
           set -e
             xcodebuild test-without-building \
-              -workspace ${{ env.WORKSPACE }} \
+              -project ${{ env.PROJECT }} \
               -scheme ${{ env.SCHEME }} \
               -destination 'platform=iOS Simulator,name=iPhone 16' \
               -derivedDataPath ios/build \
@@ -178,7 +178,7 @@ jobs:
         run: |
           set -e
           xcodebuild archive \
-            -workspace ${{ env.WORKSPACE }} \
+            -project ${{ env.PROJECT }} \
             -scheme ${{ env.SCHEME }} \
             -configuration Release \
             -archivePath ${{ env.ARCHIVE_PATH }} \
