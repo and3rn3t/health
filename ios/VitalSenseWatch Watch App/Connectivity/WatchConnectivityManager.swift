@@ -13,8 +13,8 @@ final class WatchAppConnectivityManager: NSObject, ObservableObject {
     @Published private(set) var lastAlert: AlertPayload?
     @Published private(set) var isReachable: Bool = false
     @Published private(set) var lastContextStatus: LiveStatusPayload?
-    @Published private(set) var balanceProgress: BalanceTestProgressPayload?
-    @Published private(set) var balanceResult: BalanceTestResultPayload?
+    @Published private(set) var balanceProgress: [String: Any]?
+    @Published private(set) var balanceResult: [String: Any]?
 
     private let session: WCSession? = WCSession.isSupported() ? WCSession.default : nil
     private var bufferedOutbound: [Data] = []
@@ -30,7 +30,7 @@ final class WatchAppConnectivityManager: NSObject, ObservableObject {
     func startMonitoring() { sendSimple(type: .startMonitoring) }
     func stopMonitoring() { sendSimple(type: .stopMonitoring) }
     func triggerAssessment() { sendSimple(type: .triggerFallRiskAssessment) }
-    func sendQuickEvent(_ event: QuickEventPayload) {
+    func sendQuickEvent(_ event: [String: Any]) {
         let env = WatchMessageEnvelope(type: .sendQuickEvent, payload: event)
         if let data = try? WatchMessageCodec.encode(env) { send(data) }
     }

@@ -10,6 +10,7 @@ import SwiftUI
 import HealthKit
 import WatchConnectivity
 import OSLog
+import Combine
 
 struct WatchSettingsView: View {
     @StateObject private var settingsManager = WatchSettingsManager()

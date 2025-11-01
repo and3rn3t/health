@@ -591,7 +591,7 @@ struct WatchCurrentMetrics {
 class WatchHealthDataBuffer {
     private var heartRateBuffer: [WatchHealthDataPoint] = []
     private var gaitDataBuffer: [HKQuantityTypeIdentifier: [WatchHealthDataPoint]] = [:]
-    private var fallRiskBuffer: [HKQuantityTypeIdentifier: [WatchHealthDataPoint]] = []
+    private var fallRiskBuffer: [HKQuantityTypeIdentifier: [WatchHealthDataPoint]] = [:]
     private var pendingBatches: [WatchDataBatch] = []
 
     private let maxBufferSize = 1000

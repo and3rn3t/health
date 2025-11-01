@@ -1,6 +1,7 @@
 import SwiftUI
 import HealthKit
 import WatchConnectivity
+import Combine
 
 // MARK: - Enhanced Apple Watch Dashboard
 
@@ -476,32 +477,6 @@ struct WatchActionButton: View {
                 .onChanged { _ in isPressed = true }
                 .onEnded { _ in isPressed = false }
         )
-    }
-}
-
-// MARK: - Mock Managers (Replace with actual implementations)
-class WatchHealthManager: ObservableObject {
-    static let shared = WatchHealthManager()
-
-    @Published var currentHeartRate: Double = 72
-    @Published var todaySteps: Double = 8_540
-    @Published var activeEnergyBurned: Double = 420
-    @Published var exerciseMinutes: Double = 30
-
-    private init() {}
-}
-
-class WatchConnectivityManager: ObservableObject {
-    static let shared = WatchConnectivityManager()
-
-    @Published var isConnected: Bool = true
-    @Published var lastSyncTime: Date = Date().addingTimeInterval(-300) // 5 minutes ago
-
-    private init() {}
-
-    func syncWithiPhone() {
-        // Sync implementation
-        lastSyncTime = Date()
     }
 }
 

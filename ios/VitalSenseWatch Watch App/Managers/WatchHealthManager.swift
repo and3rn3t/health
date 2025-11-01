@@ -1,6 +1,7 @@
 import Foundation
 import HealthKit
 import WatchKit
+import Combine
 
 class WatchHealthManager: NSObject, ObservableObject {
     static let shared = WatchHealthManager()
