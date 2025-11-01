@@ -7,6 +7,15 @@
 
 import WidgetKit
 import SwiftUI
+import AppIntents
+
+struct ConfigurationAppIntent: WidgetConfigurationIntent {
+    static var title: LocalizedStringResource = "Configuration"
+    static var description = IntentDescription("This is an example widget.")
+
+    @Parameter(title: "Favorite Emoji", default: "😃")
+    var favoriteEmoji: String
+}
 
 struct Provider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
