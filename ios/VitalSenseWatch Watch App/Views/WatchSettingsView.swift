@@ -59,15 +59,15 @@ struct WatchSettingsView: View {
         Section {
             HStack {
                 Image(systemName: "iphone")
-                    .foregroundStyle(connectivityManager.isiPhoneReachable ? .green : .red)
+                    .foregroundStyle(connectivityManager.isConnectedToPhone ? .green : .red)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("iPhone Connection")
                         .font(.headline)
 
-                    Text(connectivityManager.isiPhoneReachable ? "Connected" : "Not Connected")
+                    Text(connectivityManager.isConnectedToPhone ? "Connected" : "Not Connected")
                         .font(.caption)
-                        .foregroundStyle(connectivityManager.isiPhoneReachable ? .green : .red)
+                        .foregroundStyle(connectivityManager.isConnectedToPhone ? .green : .red)
                 }
 
                 Spacer()
@@ -658,19 +658,19 @@ struct EmergencyContact: Identifiable {
 extension WatchAppConnectivityManager {
     func attemptReconnection() {
         // Attempt to reestablish connection with iPhone
-        session?.activate()
+        WCSession.default.activate()
     }
 
     func syncAllData() {
         // Sync all health data to iPhone
-        guard let session = session, session.isReachable else { return }
+        guard WCSession.default.isReachable else { return }
 
         let syncMessage = [
             "type": "fullSync",
             "timestamp": Date().timeIntervalSince1970
         ] as [String: Any]
 
-        session.sendMessage(syncMessage, replyHandler: nil) { error in
+        WCSession.default.sendMessage(syncMessage, replyHandler: nil) { error in
             print("Sync failed: \(error.localizedDescription)")
         }
     }

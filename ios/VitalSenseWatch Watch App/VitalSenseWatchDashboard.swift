@@ -475,12 +475,12 @@ struct VitalSenseWatchDashboard: View {
     }
 
     private func sendDataToPhone() {
-        connectivityManager.sendHealthDataToPhone([
+        connectivityManager.sendHealthDataToPhone([[
             "heartRate": currentHeartRate ?? 0,
             "steps": dailySteps ?? 0,
             "activeEnergy": activeEnergy ?? 0,
             "timestamp": Date().timeIntervalSince1970
-        ])
+        ]])
     }
 
     private func sendHeartRateDataToPhone() {
