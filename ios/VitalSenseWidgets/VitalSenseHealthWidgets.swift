@@ -12,21 +12,15 @@ import HealthKit
 import Intents
 import OSLog
 
-// MARK: - Main Widget Bundle
-
-@main
-struct VitalSenseWidgetBundle: WidgetBundle {
-    var body: some Widget {
-        VitalSenseHealthWidget()
-        VitalSenseHeartRateWidget()
-        VitalSenseActivityWidget()
-    }
-}
+// MARK: - Main Widget Bundle (removed @main to avoid conflicts)
+// Note: Widget bundle is now defined in VitalSenseWidgetsBundle.swift
 
 // MARK: - Main Health Widget
 
 struct VitalSenseHealthWidget: Widget {
     let kind: String = "VitalSenseHealthWidget"
+    
+    typealias Body = some WidgetConfiguration
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: HealthTimelineProvider()) { entry in
@@ -43,6 +37,8 @@ struct VitalSenseHealthWidget: Widget {
 
 struct VitalSenseHeartRateWidget: Widget {
     let kind: String = "VitalSenseHeartRateWidget"
+    
+    typealias Body = some WidgetConfiguration
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: HeartRateTimelineProvider()) { entry in
@@ -58,6 +54,8 @@ struct VitalSenseHeartRateWidget: Widget {
 
 struct VitalSenseActivityWidget: Widget {
     let kind: String = "VitalSenseActivityWidget"
+    
+    typealias Body = some WidgetConfiguration
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: ActivityTimelineProvider()) { entry in
@@ -73,6 +71,8 @@ struct VitalSenseActivityWidget: Widget {
 
 struct VitalSenseGaitWidget: Widget {
     let kind: String = "VitalSenseGaitWidget"
+    
+    typealias Body = some WidgetConfiguration
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: GaitTimelineProvider()) { entry in
@@ -87,6 +87,8 @@ struct VitalSenseGaitWidget: Widget {
 // MARK: - Timeline Providers
 
 struct HealthTimelineProvider: TimelineProvider {
+    typealias Entry = HealthEntry
+    
     private let logger = Logger(subsystem: "com.vitalsense.widgets", category: "HealthTimeline")
 
     func placeholder(in context: Context) -> HealthEntry {
@@ -769,6 +771,48 @@ extension View {
 
 // MARK: - Data Types
 
+enum ConnectionStatus {
+    case connected, disconnected, unknown, noHealthData, stale
+
+    var color: Color {
+        switch self {
+        case .connected: return .green
+        case .disconnected, .stale: return .red
+        case .unknown, .noHealthData: return .gray
+        }
+    }
+
+    var text: String {
+        switch self {
+        case .connected: return "Connected"
+        case .disconnected: return "Offline"
+        case .stale: return "Stale Data"
+        case .noHealthData: return "No Data"
+        case .unknown: return "Unknown"
+        }
+    }
+}
+
+enum HealthTrend {
+    case improving, stable, declining, increasing, decreasing
+
+    var color: Color {
+        switch self {
+        case .improving, .increasing: return .green
+        case .stable: return .blue
+        case .declining, .decreasing: return .red
+        }
+    }
+
+    var text: String {
+        switch self {
+        case .improving, .increasing: return "↗️ Improving"
+        case .stable: return "→ Stable"
+        case .declining, .decreasing: return "↘️ Declining"
+        }
+    }
+}
+
 struct HealthEntry: TimelineEntry {
     let date: Date
     let heartRate: Int
@@ -777,6 +821,7 @@ struct HealthEntry: TimelineEntry {
     let gaitScore: Double
     let fallRisk: Double
     let isDataAvailable: Bool
+    let connectionStatus: ConnectionStatus
 }
 
 struct HeartRateEntry: TimelineEntry {

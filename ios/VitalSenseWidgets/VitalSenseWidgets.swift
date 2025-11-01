@@ -9,15 +9,12 @@ import WidgetKit
 import SwiftUI
 import AppIntents
 
-struct ConfigurationAppIntent: WidgetConfigurationIntent {
-    static var title: LocalizedStringResource = "Configuration"
-    static var description = IntentDescription("This is an example widget.")
-
-    @Parameter(title: "Favorite Emoji", default: "😃")
-    var favoriteEmoji: String
-}
+// Note: ConfigurationAppIntent is defined in AppIntent.swift to avoid duplication
 
 struct Provider: AppIntentTimelineProvider {
+    typealias Entry = SimpleEntry
+    typealias Intent = ConfigurationAppIntent
+    
     func placeholder(in context: Context) -> SimpleEntry {
         SimpleEntry(date: Date(), configuration: ConfigurationAppIntent())
     }
@@ -25,7 +22,7 @@ struct Provider: AppIntentTimelineProvider {
     func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> SimpleEntry {
         SimpleEntry(date: Date(), configuration: configuration)
     }
-    
+
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
         var entries: [SimpleEntry] = []
 
@@ -66,6 +63,8 @@ struct VitalSenseWidgetsEntryView : View {
 
 struct VitalSenseWidgets: Widget {
     let kind: String = "VitalSenseWidgets"
+    
+    typealias Body = some WidgetConfiguration
 
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: Provider()) { entry in
@@ -81,7 +80,7 @@ extension ConfigurationAppIntent {
         intent.favoriteEmoji = "😀"
         return intent
     }
-    
+
     fileprivate static var starEyes: ConfigurationAppIntent {
         let intent = ConfigurationAppIntent()
         intent.favoriteEmoji = "🤩"
@@ -92,6 +91,6 @@ extension ConfigurationAppIntent {
 #Preview(as: .systemSmall) {
     VitalSenseWidgets()
 } timeline: {
-    SimpleEntry(date: .now, configuration: .smiley)
-    SimpleEntry(date: .now, configuration: .starEyes)
+    SimpleEntry(date: Date(), configuration: ConfigurationAppIntent())
+    SimpleEntry(date: Date(), configuration: ConfigurationAppIntent())
 }

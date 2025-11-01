@@ -2,56 +2,25 @@ import WidgetKit
 import SwiftUI
 import HealthKit
 
-// MARK: - VitalSense Widget Bundle
-@main
-struct VitalSenseWidgetBundle: WidgetBundle {
-    var body: some Widget {
-        VitalSenseHealthWidget()
-        VitalSenseHeartRateWidget()
-        VitalSenseActivityWidget()
-        VitalSenseStepsWidget()
-    }
-}
+// MARK: - VitalSense Widget Bundle (removed @main to avoid conflicts)
+// Note: Widget bundle is now defined in VitalSenseWidgetsBundle.swift
 
 // MARK: - Health Data Timeline Entry
-struct HealthEntry: TimelineEntry {
-    let date: Date
-    let heartRate: Double?
-    let steps: Double?
-    let activeEnergy: Double?
-    let walkingSteadiness: Double?
-    let connectionStatus: ConnectionStatus
-
-    enum ConnectionStatus {
-        case connected, disconnected, unknown
-
-        var color: Color {
-            switch self {
-            case .connected: return .green
-            case .disconnected: return .red
-            case .unknown: return .gray
-            }
-        }
-
-        var text: String {
-            switch self {
-            case .connected: return "Connected"
-            case .disconnected: return "Offline"
-            case .unknown: return "Unknown"
-            }
-        }
-    }
-}
+// Note: HealthEntry is now defined in VitalSenseHealthWidgets.swift to avoid duplication
 
 // MARK: - Widget Timeline Provider
 struct HealthProvider: TimelineProvider {
+    typealias Entry = HealthEntry
+    
     func placeholder(in context: Context) -> HealthEntry {
         HealthEntry(
             date: Date(),
             heartRate: 72,
             steps: 8432,
-            activeEnergy: 245,
-            walkingSteadiness: 0.85,
+            activeEnergy: 245.0,
+            gaitScore: 85.0,
+            fallRisk: 15.0,
+            isDataAvailable: true,
             connectionStatus: .connected
         )
     }
@@ -61,25 +30,20 @@ struct HealthProvider: TimelineProvider {
             date: Date(),
             heartRate: 75,
             steps: 6789,
-            activeEnergy: 189,
-            walkingSteadiness: 0.82,
+            activeEnergy: 189.0,
+            gaitScore: 82.0,
+            fallRisk: 18.0,
+            isDataAvailable: true,
             connectionStatus: .connected
         )
         completion(entry)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
+    func getTimeline(in context: Context, completion: @escaping (Timeline<HealthEntry>) -> ()) {
         let healthManager = WidgetHealthManager.shared
 
-        healthManager.fetchLatestHealthData { heartRate, steps, energy, steadiness in
-            let entry = HealthEntry(
-                date: Date(),
-                heartRate: heartRate,
-                steps: steps,
-                activeEnergy: energy,
-                walkingSteadiness: steadiness,
-                connectionStatus: healthManager.getConnectionStatus()
-            )
+        healthManager.fetchAllHealthData { entry in
+            // Use the entry from WidgetHealthManager
 
             // Update every 15 minutes
             let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date()) ?? Date()
@@ -92,6 +56,8 @@ struct HealthProvider: TimelineProvider {
 // MARK: - Main VitalSense Health Widget
 struct VitalSenseHealthWidget: Widget {
     let kind: String = "VitalSenseHealthWidget"
+    
+    typealias Body = some WidgetConfiguration
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: HealthProvider()) { entry in

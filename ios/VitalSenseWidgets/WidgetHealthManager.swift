@@ -1,6 +1,7 @@
 import Foundation
 import HealthKit
 import WidgetKit
+import Combine
 
 // MARK: - Widget Health Manager
 @MainActor

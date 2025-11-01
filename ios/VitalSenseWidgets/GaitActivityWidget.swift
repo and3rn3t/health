@@ -7,8 +7,22 @@ import SwiftUI
 import WidgetKit
 import ActivityKit
 
+struct GaitSessionAttributes: ActivityAttributes {
+    public struct ContentState: Codable, Hashable {
+        // Dynamic stateful properties about your activity go here!
+        var emoji: String
+        var sessionDuration: TimeInterval
+        var status: String
+    }
+
+    // Fixed non-changing properties about your activity go here!
+    var sessionID: String
+}
+
 @available(iOS 16.1, *)
 struct GaitActivityWidget: Widget {
+    typealias Body = some WidgetConfiguration
+    
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: GaitSessionAttributes.self) { context in
             // Lock Screen / Banner

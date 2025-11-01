@@ -20,6 +20,8 @@ struct VitalSenseWidgetsAttributes: ActivityAttributes {
 }
 
 struct VitalSenseWidgetsLiveActivity: Widget {
+    typealias Body = some WidgetConfiguration
+    
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: VitalSenseWidgetsAttributes.self) { context in
             // Lock screen/banner UI goes here
