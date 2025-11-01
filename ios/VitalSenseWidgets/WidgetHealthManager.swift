@@ -549,6 +549,56 @@ class WidgetPreferences: ObservableObject {
         userDefaults.set(configuration.compactMode, forKey: "compact_mode")
         userDefaults.set(configuration.primaryMetric.rawValue, forKey: "primary_metric")
     }
+
+    // MARK: - Connection Status
+
+    /// Get current connection status for widgets
+    func getConnectionStatus() -> ConnectionStatus {
+        // Check HealthKit authorization
+        guard HKHealthStore.isHealthDataAvailable() else {
+            return .noHealthData
+        }
+
+        // Check if we have recent data (within last 4 hours)
+        guard let lastUpdate = getCachedDate(for: CacheKeys.lastUpdate) else {
+            return .disconnected
+        }
+
+        let fourHoursAgo = Date().addingTimeInterval(-4 * 60 * 60)
+        if lastUpdate < fourHoursAgo {
+            return .stale
+        }
+
+        return .connected
+    }
+
+    private func getCachedDate(for key: String) -> Date? {
+        return userDefaults?.object(forKey: key) as? Date
+    }
+
+    // MARK: - Trend Calculations
+
+    /// Calculate heart rate trend based on recent data
+    func calculateHeartRateTrend() -> HealthTrend {
+        // Get current and previous heart rate values
+        let current = getCachedValue(for: CacheKeys.heartRate) ?? 0
+        let previous = getCachedValue(for: "previous_heart_rate") ?? current
+
+        let difference = current - previous
+
+        if difference > 5 {
+            return .increasing
+        } else if difference < -5 {
+            return .decreasing
+        } else {
+            return .stable
+        }
+    }
+
+    /// Cache previous value for trend calculation
+    func cachePreviousHeartRate(_ value: Double) {
+        userDefaults?.set(value, forKey: "previous_heart_rate")
+    }
 }
 
 // MARK: - Widget Intent Configuration

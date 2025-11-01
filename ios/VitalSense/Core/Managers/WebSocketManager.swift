@@ -615,6 +615,132 @@ class WebSocketManager: NSObject, ObservableObject {
 #endif
 
     private func stopReconnectTimer() { reconnectTimer?.invalidate(); reconnectTimer = nil; reconnectAttempts = 0 }
+
+    // MARK: - Methods Required by VitalSenseApp
+    func initialize() async throws {
+        print("🔌 Initializing WebSocket connection...")
+
+        // Set up network monitoring if not already done
+        if pathMonitor == nil {
+            let monitor = NWPathMonitor()
+            pathMonitor = monitor
+            monitor.pathUpdateHandler = { [weak self] path in
+                guard let self else { return }
+                let reachable = path.status == .satisfied
+                DispatchQueue.main.async {
+                    self.isNetworkReachable = reachable
+                    if reachable && !self.isConnected {
+                        self.updateConnectionStatus("Network available")
+                    } else if !reachable {
+                        self.updateConnectionStatus("Network unavailable")
+                    }
+                }
+            }
+            monitor.start(queue: pathMonitorQueue)
+        }
+
+        // Try to establish initial connection
+        if isNetworkReachable {
+            if let token = currentToken {
+                await connect(with: token)
+            } else {
+                // Initialize without authentication for now
+                await connect(with: "device-token-placeholder")
+            }
+        }
+
+        print("✅ WebSocket manager initialized")
+    }
+
+    func sendHealthUpdate(_ metrics: Any) async {
+        print("📊 Sending health update...")
+
+        var healthData: [String: Any] = [:]
+
+        // Handle different types of health data
+        if let metricsDict = metrics as? [String: Any] {
+            healthData = metricsDict
+        } else if let healthMetrics = metrics as? HealthMetrics {
+            healthData = [
+                "stepCount": healthMetrics.stepCount ?? 0,
+                "heartRate": healthMetrics.heartRate ?? 0,
+                "heartRateVariability": healthMetrics.heartRateVariability ?? 0,
+                "walkingSteadiness": healthMetrics.walkingSteadiness ?? 0,
+                "fallRisk": healthMetrics.fallRisk,
+                "timestamp": healthMetrics.timestamp.timeIntervalSince1970
+            ]
+        } else {
+            print("⚠️ Unknown health metrics format")
+            return
+        }
+
+        let envelope: [String: Any] = [
+            "type": "live_health_update",
+            "timestamp": ISO8601DateFormatter().string(from: Date()),
+            "source": "ios-vitalsense",
+            "data": healthData
+        ]
+
+        do {
+            try await sendJSON(envelope)
+            print("✅ Health update sent successfully")
+        } catch {
+            print("❌ Failed to send health update: \(error)")
+        }
+    }
+
+    func sendAnalyticsUpdate(_ data: Any) async {
+        print("📈 Sending analytics update...")
+
+        var analyticsData: [String: Any] = [:]
+
+        if let dataDict = data as? [String: Any] {
+            analyticsData = dataDict
+        } else {
+            print("⚠️ Unknown analytics data format")
+            return
+        }
+
+        let envelope: [String: Any] = [
+            "type": "analytics_update",
+            "timestamp": ISO8601DateFormatter().string(from: Date()),
+            "source": "ios-vitalsense",
+            "data": analyticsData
+        ]
+
+        do {
+            try await sendJSON(envelope)
+            print("✅ Analytics update sent successfully")
+        } catch {
+            print("❌ Failed to send analytics update: \(error)")
+        }
+    }
+
+    // MARK: - Helper Methods
+    private func sendJSON(_ data: [String: Any]) async throws {
+        let jsonData = try JSONSerialization.data(withJSONObject: data, options: [])
+
+        guard isConnected else {
+            // Buffer the message if not connected
+            if sendBuffer.count < sendBufferMax {
+                sendBuffer.append(jsonData)
+                print("📦 Message buffered (not connected)")
+            } else {
+                print("⚠️ Send buffer full, dropping message")
+            }
+            return
+        }
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            taskAdapter?.send(.data(jsonData)) { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
 }
 
 // Add global extension for WebSocketTasking default implementations

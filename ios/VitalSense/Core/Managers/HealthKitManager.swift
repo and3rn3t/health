@@ -300,25 +300,19 @@ class HealthKitManager: NSObject, ObservableObject {
         performanceMonitor?.recordDataPoint()
     }
 
-    // Request HealthKit permissions with enhanced feedback
-    func requestAuthorization() async {
-        Telemetry.shared.record(.permissionFunnel(stage: "request_start"))
+    // MARK: - Enhanced Authorization
+    func requestAuthorization() async throws -> Bool {
+        print("📋 Starting HealthKit authorization request...")
         performanceMonitor?.startTiming("authorization")
 
-        if config.shouldLogDebugInfo() {
-            print("📋 Requesting HealthKit authorization...")
-        }
-
         guard HKHealthStore.isHealthDataAvailable() else {
-            if config.shouldLogDebugInfo() {
-                print("❌ HealthKit not available on this device")
-            }
+            print("❌ HealthKit not available on this device")
             await MainActor.run {
                 self.isAuthorized = false
                 self.lastError = "HealthKit is not available on this device"
             }
             performanceMonitor?.endTiming("authorization")
-            return
+            throw HealthKitError.healthKitNotAvailable
         }
 
         // Start with step count first since it's most reliable
@@ -1562,6 +1556,354 @@ extension HealthKitManager {
             _ = self.lastDistance
             _ = self.lastActiveEnergy
             _ = self.lastWalkingSteadiness
+        }
+    }
+
+    // MARK: - Methods Required by VitalSenseApp
+    func startBackgroundMonitoring() async {
+        print("🔄 Starting background health monitoring...")
+
+        guard isAuthorized else {
+            print("⚠️ Cannot start monitoring - HealthKit not authorized")
+            return
+        }
+
+        // Start background query observers
+        await startBackgroundQueries()
+
+        await MainActor.run {
+            isMonitoringActive = true
+        }
+
+        print("✅ Background health monitoring started")
+    }
+
+    func syncRecentData() async throws {
+        print("🔄 Syncing recent health data...")
+
+        // Fetch data from the last 24 hours
+        let endDate = Date()
+        let startDate = Calendar.current.date(byAdding: .day, value: -1, to: endDate)!
+
+        // Sync key metrics
+        try await syncMetric(.stepCount, from: startDate, to: endDate)
+        try await syncMetric(.heartRate, from: startDate, to: endDate)
+        try await syncMetric(.distanceWalkingRunning, from: startDate, to: endDate)
+
+        print("✅ Recent data sync completed")
+    }
+
+    func fetchLatestMetrics() async throws -> HealthMetrics {
+        print("📊 Fetching latest health metrics...")
+
+        // Fetch latest values for each metric
+        let stepCount = try await fetchLatestValue(for: .stepCount)
+        let heartRate = try await fetchLatestValue(for: .heartRate)
+        let walkingSteadiness = try await fetchLatestValue(for: .appleWalkingSteadiness)
+        let heartRateVariability = try await fetchLatestValue(for: .heartRateVariabilitySDNN)
+
+        // Calculate fall risk based on available metrics
+        let fallRisk = calculateFallRisk(
+            walkingSteadiness: walkingSteadiness,
+            heartRate: heartRate,
+            stepCount: stepCount
+        )
+
+        return HealthMetrics(
+            stepCount: stepCount != nil ? Int(stepCount!) : nil,
+            heartRate: heartRate,
+            heartRateVariability: heartRateVariability,
+            walkingSteadiness: walkingSteadiness,
+            fallRisk: fallRisk,
+            sleepQuality: nil, // To be implemented
+            timestamp: Date()
+        )
+    }
+
+    func processFallRiskAnalytics() async {
+        print("🧠 Processing fall risk analytics...")
+
+        do {
+            let metrics = try await fetchLatestMetrics()
+
+            // Process fall risk indicators
+            if metrics.fallRisk > 0.7 {
+                print("⚠️ High fall risk detected: \(metrics.fallRisk)")
+                // Trigger alerts through notification manager
+            }
+
+            // Update local analytics
+            await updateFallRiskTrends(metrics.fallRisk)
+
+        } catch {
+            print("❌ Fall risk analytics processing failed: \(error)")
+        }
+    }
+
+    func processGaitAnalytics() async {
+        print("🚶‍♂️ Processing gait analytics...")
+
+        do {
+            // Fetch gait-related metrics
+            let walkingSpeed = try await fetchLatestValue(for: .walkingSpeed)
+            let walkingStepLength = try await fetchLatestValue(for: .walkingStepLength)
+            let walkingAsymmetry = try await fetchLatestValue(for: .walkingAsymmetryPercentage)
+
+            // Process gait patterns
+            let gaitScore = calculateGaitScore(
+                speed: walkingSpeed,
+                stepLength: walkingStepLength,
+                asymmetry: walkingAsymmetry
+            )
+
+            print("📊 Gait score calculated: \(gaitScore)")
+
+        } catch {
+            print("❌ Gait analytics processing failed: \(error)")
+        }
+    }
+
+    // MARK: - Private Helper Methods
+    private func startBackgroundQueries() async {
+        // Start observer queries for real-time monitoring
+        startObserverQuery(for: .heartRate)
+        startObserverQuery(for: .stepCount)
+        startObserverQuery(for: .appleWalkingSteadiness)
+    }
+
+    private func startObserverQuery(for identifier: HKQuantityTypeIdentifier) {
+        guard let quantityType = HKQuantityType.quantityType(forIdentifier: identifier) else {
+            return
+        }
+
+        let query = HKObserverQuery(sampleType: quantityType, predicate: nil) { [weak self] query, completionHandler, error in
+            if let error = error {
+                print("❌ Observer query error for \(identifier): \(error)")
+                return
+            }
+
+            Task {
+                await self?.handleNewHealthData(for: identifier)
+            }
+
+            completionHandler()
+        }
+
+        healthStore.execute(query)
+        activeQueries.append(query)
+    }
+
+    private func handleNewHealthData(for identifier: HKQuantityTypeIdentifier) async {
+        // Fetch and process new health data
+        do {
+            let newValue = try await fetchLatestValue(for: identifier)
+            await MainActor.run {
+                // Update published properties based on the metric type
+                switch identifier {
+                case .heartRate:
+                    self.lastHeartRate = newValue
+                case .stepCount:
+                    self.lastStepCount = newValue
+                case .appleWalkingSteadiness:
+                    self.lastWalkingSteadiness = newValue
+                default:
+                    break
+                }
+            }
+        } catch {
+            print("❌ Failed to handle new health data for \(identifier): \(error)")
+        }
+    }
+
+    private func syncMetric(_ identifier: HKQuantityTypeIdentifier, from startDate: Date, to endDate: Date) async throws {
+        guard let quantityType = HKQuantityType.quantityType(forIdentifier: identifier) else {
+            throw HealthKitError.invalidQuantityType
+        }
+
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
+
+        return try await withCheckedThrowingContinuation { continuation in
+            let query = HKSampleQuery(
+                sampleType: quantityType,
+                predicate: predicate,
+                limit: HKObjectQueryNoLimit,
+                sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)]
+            ) { query, samples, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                // Process samples and send to server
+                if let samples = samples as? [HKQuantitySample] {
+                    Task {
+                        await self.processSamplesForSync(samples, identifier: identifier)
+                    }
+                }
+
+                continuation.resume()
+            }
+
+            healthStore.execute(query)
+        }
+    }
+
+    private func processSamplesForSync(_ samples: [HKQuantitySample], identifier: HKQuantityTypeIdentifier) async {
+        for sample in samples {
+            let value = sample.quantity.doubleValue(for: getUnit(for: identifier))
+
+            // Send to WebSocket if available
+            let healthData = [
+                "type": identifier.rawValue,
+                "value": value,
+                "timestamp": sample.startDate.timeIntervalSince1970,
+                "endDate": sample.endDate.timeIntervalSince1970
+            ]
+
+            await webSocketManager.sendHealthUpdate(healthData)
+        }
+    }
+
+    private func fetchLatestValue(for identifier: HKQuantityTypeIdentifier) async throws -> Double? {
+        guard let quantityType = HKQuantityType.quantityType(forIdentifier: identifier) else {
+            throw HealthKitError.invalidQuantityType
+        }
+
+        let predicate = HKQuery.predicateForSamples(withStart: Calendar.current.date(byAdding: .day, value: -7, to: Date()), end: Date(), options: .strictEndDate)
+
+        return try await withCheckedThrowingContinuation { continuation in
+            let query = HKSampleQuery(
+                sampleType: quantityType,
+                predicate: predicate,
+                limit: 1,
+                sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)]
+            ) { query, samples, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                guard let samples = samples as? [HKQuantitySample],
+                      let latestSample = samples.first else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                let value = latestSample.quantity.doubleValue(for: self.getUnit(for: identifier))
+                continuation.resume(returning: value)
+            }
+
+            healthStore.execute(query)
+        }
+    }
+
+    private func getUnit(for identifier: HKQuantityTypeIdentifier) -> HKUnit {
+        switch identifier {
+        case .heartRate:
+            return HKUnit.count().unitDivided(by: .minute())
+        case .stepCount:
+            return HKUnit.count()
+        case .distanceWalkingRunning:
+            return HKUnit.meter()
+        case .activeEnergyBurned:
+            return HKUnit.kilocalorie()
+        case .appleWalkingSteadiness:
+            return HKUnit.percent()
+        case .walkingSpeed:
+            return HKUnit.meter().unitDivided(by: .second())
+        case .heartRateVariabilitySDNN:
+            return HKUnit.secondUnit(with: .milli)
+        default:
+            return HKUnit.count()
+        }
+    }
+
+    private func calculateFallRisk(walkingSteadiness: Double?, heartRate: Double?, stepCount: Double?) -> Double {
+        var riskScore: Double = 0.0
+
+        // Walking steadiness contribution (40% of risk)
+        if let steadiness = walkingSteadiness {
+            if steadiness < 50.0 {
+                riskScore += 0.4 * (1.0 - steadiness / 100.0)
+            }
+        } else {
+            riskScore += 0.2 // Penalty for missing data
+        }
+
+        // Heart rate contribution (30% of risk)
+        if let hr = heartRate {
+            if hr > 120 || hr < 50 {
+                riskScore += 0.3
+            }
+        }
+
+        // Activity level contribution (30% of risk)
+        if let steps = stepCount {
+            if steps < 3000 { // Low activity
+                riskScore += 0.3
+            }
+        }
+
+        return min(riskScore, 1.0) // Cap at 100%
+    }
+
+    private func calculateGaitScore(speed: Double?, stepLength: Double?, asymmetry: Double?) -> Double {
+        var score: Double = 100.0 // Start with perfect score
+
+        if let speed = speed {
+            if speed < 1.0 { // Slow walking speed
+                score -= 20.0
+            }
+        }
+
+        if let asymmetry = asymmetry {
+            if asymmetry > 10.0 { // High asymmetry
+                score -= 30.0
+            }
+        }
+
+        if let stepLength = stepLength {
+            if stepLength < 0.6 { // Short step length
+                score -= 15.0
+            }
+        }
+
+        return max(score, 0.0)
+    }
+
+    private func updateFallRiskTrends(_ currentRisk: Double) async {
+        // Store fall risk trend data for analytics
+        let trendData = [
+            "timestamp": Date().timeIntervalSince1970,
+            "fallRisk": currentRisk,
+            "userId": userId
+        ]
+
+        // Send trend data to analytics
+        await webSocketManager.sendAnalyticsUpdate(trendData)
+    }
+}
+
+// MARK: - HealthKit Errors
+enum HealthKitError: LocalizedError {
+    case healthKitNotAvailable
+    case authorizationDenied
+    case invalidQuantityType
+    case dataNotAvailable
+    case queryFailed(Error)
+
+    var errorDescription: String? {
+        switch self {
+        case .healthKitNotAvailable:
+            return "HealthKit is not available on this device"
+        case .authorizationDenied:
+            return "HealthKit authorization was denied"
+        case .invalidQuantityType:
+            return "Invalid quantity type specified"
+        case .dataNotAvailable:
+            return "Requested health data is not available"
+        case .queryFailed(let error):
+            return "HealthKit query failed: \(error.localizedDescription)"
         }
     }
 }

@@ -78,7 +78,7 @@ struct HealthProvider: TimelineProvider {
                 steps: steps,
                 activeEnergy: energy,
                 walkingSteadiness: steadiness,
-                connectionStatus: .connected // TODO: Get real connection status
+                connectionStatus: healthManager.getConnectionStatus()
             )
 
             // Update every 15 minutes

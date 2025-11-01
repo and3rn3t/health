@@ -29,10 +29,11 @@ struct HeartRateProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
         WidgetHealthManager.shared.fetchHeartRateData { heartRate in
             let zone = HeartRateZone.from(heartRate: heartRate ?? 0)
+            let trend = WidgetHealthManager.shared.calculateHeartRateTrend()
             let entry = HeartRateEntry(
                 date: Date(),
                 heartRate: heartRate,
-                trend: .stable, // TODO: Calculate actual trend
+                trend: trend,
                 zone: zone
             )
 

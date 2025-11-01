@@ -116,8 +116,9 @@ final class WatchConnectivityManager: NSObject, ObservableObject {
             // Trigger a standalone dynamic balance test simulation for now.
             fallRiskManager?.performBalanceTestStandalone(kind: .dynamic)
         case .acknowledgeAlert:
-            // TODO: Mark alert acknowledged (would require alert storage).
-            break
+            // Mark alert as acknowledged in local storage
+            AlertStorage.shared.acknowledgeAlert(userInfo["alertId"] as? String ?? "")
+            sendMessage(.alertAcknowledged, userInfo: ["status": "success"])
         case .sendQuickEvent:
             // Decode the quick event and buffer it.
             if let env = WatchMessageCodec.decodePayload(data, as: QuickEventPayload.self) {
