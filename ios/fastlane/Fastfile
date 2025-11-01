@@ -140,4 +140,120 @@ platform :ios do
     tests
     build
   end
+
+  # === PERFORMANCE LANES ===
+
+  desc 'Build with maximum performance optimizations'
+  lane :build_optimized do
+    # Clean derived data for fresh optimized build
+    clear_derived_data
+
+    # Build with parallel processing and performance flags
+    gym(
+      workspace: 'VitalSense.xcworkspace',
+      scheme: 'VitalSense',
+      configuration: 'Release',
+      clean: true,
+      output_directory: 'build',
+      output_name: 'VitalSense-Optimized',
+      archive_path: 'build/VitalSense-Optimized.xcarchive',
+      skip_codesigning: false,
+      # Performance optimization flags
+      xcargs: {
+        'COMPILER_INDEX_STORE_ENABLE' => 'NO',
+        'OTHER_SWIFT_FLAGS' => '-whole-module-optimization -num-threads 8',
+        'SWIFT_WHOLE_MODULE_OPTIMIZATION' => 'YES',
+        'GCC_OPTIMIZATION_LEVEL' => 'fast',
+        'LLVM_LTO' => 'YES_THIN'
+      }.map { |key, value| "-#{key}=#{value}" }.join(' ')
+    )
+
+    UI.success('✅ Optimized build completed successfully!')
+  end
+
+  desc 'Performance testing with metrics collection'
+  lane :performance_test do
+    # Run performance tests with detailed metrics
+    run_tests(
+      workspace: 'VitalSense.xcworkspace',
+      scheme: 'VitalSense',
+      configuration: 'Release',
+      devices: ['iPhone 15 Pro', 'iPhone 15'],
+      testplan: 'VitalSenseTests/VitalSensePerformanceTests.xctestplan',
+      code_coverage: true,
+      result_bundle: true,
+      output_directory: 'fastlane/performance_results',
+      xcargs: '-enableCodeCoverage YES -parallel-testing-enabled YES -maximum-concurrent-test-device-destinations 2'
+    )
+
+    UI.success('📊 Performance tests completed with metrics!')
+  end
+
+  desc 'Build cache management and optimization'
+  lane :optimize_cache do
+    UI.message('🧹 Cleaning and optimizing build caches...')
+
+    # Clear derived data
+    clear_derived_data
+
+    # Reset Swift Package Manager cache
+    sh 'rm -rf ~/Library/Caches/org.swift.swiftpm'
+    sh 'rm -rf .build'
+
+    # Clear Xcode archives (keep only latest 5)
+    sh 'find ~/Library/Developer/Xcode/Archives -name "*.xcarchive" -type d -exec ls -t1 {} + | tail -n +6 | xargs -r rm -rf'
+
+    # Resolve Swift packages with fresh cache
+    sh 'cd .. && xcodebuild -resolvePackageDependencies -workspace VitalSense.xcworkspace -scheme VitalSense'
+
+    UI.success('✨ Build cache optimized!')
+  end
+
+  desc 'Health monitoring build - optimized for real-time gait analysis'
+  lane :build_health_monitoring do
+    UI.message('💓 Building health monitoring optimized version...')
+
+    # Specialized build for health monitoring with gait analysis optimizations
+    gym(
+      workspace: 'VitalSense.xcworkspace',
+      scheme: 'VitalSense',
+      configuration: 'Release',
+      clean: true,
+      output_directory: 'build',
+      output_name: 'VitalSense-HealthMonitoring',
+      xcargs: {
+        # Core Motion optimizations
+        'MTL_FAST_MATH' => 'YES',
+        'GCC_UNROLL_LOOPS' => 'YES',
+        'GCC_VECTORIZE_LOOPS' => 'YES',
+        # Memory optimizations for real-time processing
+        'SWIFT_DETERMINISTIC_HASHING' => 'YES',
+        'SWIFT_REFLECTION_METADATA_LEVEL' => 'minimal',
+        # Battery optimization flags
+        'GCC_FAST_OBJC_DISPATCH' => 'YES',
+        'GCC_STRICT_ALIASING' => 'YES'
+      }.map { |key, value| "-#{key}=#{value}" }.join(' ')
+    )
+
+    UI.success('💪 Health monitoring build optimized for real-time gait analysis!')
+  end
+
+  desc 'Complete performance CI pipeline'
+  lane :performance_ci do
+    UI.message('🚀 Starting complete performance CI pipeline...')
+
+    # Step 1: Optimize cache
+    optimize_cache
+
+    # Step 2: Run linting
+    lint
+
+    # Step 3: Performance tests
+    performance_test
+
+    # Step 4: Optimized health monitoring build
+    build_health_monitoring
+
+    UI.success('🎉 Performance CI completed successfully!')
+  end
 end

@@ -28,6 +28,14 @@ Complete guides for iOS development, deployment, and tooling.
 - Build optimization and automation
 - Performance monitoring and analysis
 
+### [FASTLANE_INTEGRATION_FIX.md](FASTLANE_INTEGRATION_FIX.md)
+
+**🔧 Fastlane CI integration** fix for GitHub Actions workflow.
+
+- Performance lanes integration into main Fastfile
+- GitHub Actions workflow enhancement
+- Cross-platform build automation setup
+
 ## 🔗 Related Documentation
 
 - **Getting Started**: [`../getting-started/`](../getting-started/) for basic iOS setup
