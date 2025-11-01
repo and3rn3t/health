@@ -58,6 +58,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spm-
 
+      - name: Make scripts executable
+        run: |
+          cd ios
+          chmod +x scripts/build-cache-optimizer.sh
+          chmod +x scripts/build-performance-monitor.sh
+
       - name: Build cache optimization
         run: |
           cd ios
