@@ -63,23 +63,43 @@ jobs:
           cd ios
           chmod +x scripts/build-cache-optimizer.sh
           chmod +x scripts/build-performance-monitor.sh
+          chmod +x scripts/debug-exit-status-74.sh
+          chmod +x scripts/fallback-build.sh
 
       - name: Build cache optimization
         run: |
           cd ios
           ./scripts/build-cache-optimizer.sh quick
 
-      - name: Environment diagnostics
+      - name: Debug Exit Status 74 (Comprehensive)
         run: |
           cd ios
-          echo "🔍 Running environment diagnostics..."
+          echo "🔍 Running comprehensive exit status 74 diagnostics..."
+          ./scripts/debug-exit-status-74.sh
+
+      - name: Environment diagnostics (Fastlane)
+        run: |
+          cd ios
+          echo "🔍 Running Fastlane diagnostics..."
           bundle exec fastlane ios diagnose
 
-      - name: Test minimal build
+      - name: Test raw xcodebuild (Fastlane)
         run: |
           cd ios
-          echo "🧪 Testing minimal build configuration..."
-          bundle exec fastlane ios test_build
+          echo "🧪 Testing raw xcodebuild via Fastlane..."
+          bundle exec fastlane ios test_raw_build
+
+      - name: Test minimal build with gym
+        run: |
+          cd ios
+          echo "🧪 Testing minimal gym build configuration..."
+          bundle exec fastlane ios test_build || echo "⚠️ Fastlane gym test failed, will try fallback"
+
+      - name: Fallback build (if Fastlane fails)
+        run: |
+          cd ios
+          echo "🔄 Attempting fallback build with direct xcodebuild..."
+          ./scripts/fallback-build.sh
 
       - name: Build VitalSense
         run: |

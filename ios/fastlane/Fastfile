@@ -148,8 +148,8 @@ platform :ios do
 
   desc 'Diagnostic information for build troubleshooting'
   lane :diagnose do
-    UI.message('🔍 Diagnostic Information')
-    UI.message('========================')
+    UI.message('🔍 Comprehensive Diagnostic Information')
+    UI.message('======================================')
 
     # Check workspace and scheme
     UI.message('📁 Checking project files...')
@@ -157,6 +157,7 @@ platform :ios do
       UI.success('✅ VitalSense.xcworkspace exists')
     else
       UI.error('❌ VitalSense.xcworkspace not found')
+      return
     end
 
     if File.exist?('VitalSense.xcodeproj')
@@ -165,22 +166,74 @@ platform :ios do
       UI.error('❌ VitalSense.xcodeproj not found')
     end
 
-    # Check available schemes
-    UI.message('📋 Available schemes:')
+    # Check Xcode version and SDKs
+    UI.message('🔧 Xcode environment:')
+    begin
+      xcode_version = sh('xcodebuild -version', log: false)
+      UI.message("Xcode Version:\n#{xcode_version}")
+
+      sdks = sh('xcodebuild -showsdks', log: false)
+      UI.message("Available SDKs:\n#{sdks}")
+    rescue => e
+      UI.error("Could not get Xcode environment: #{e.message}")
+    end
+
+    # Check available schemes and build configurations
+    UI.message('📋 Project structure:')
     begin
       schemes = sh('xcodebuild -workspace VitalSense.xcworkspace -list', log: false)
-      UI.message(schemes)
+      UI.message("Schemes and Configurations:\n#{schemes}")
     rescue => e
       UI.error("Could not list schemes: #{e.message}")
     end
 
-    # Check Xcode version
-    UI.message('🔧 Development environment:')
+    # Check for package dependencies
+    UI.message('📦 Swift Package dependencies:')
     begin
-      xcode_version = sh('xcodebuild -version', log: false)
-      UI.message(xcode_version)
+      if File.exist?('Package.swift') || File.exist?('Package.resolved')
+        UI.message('Package.swift found - checking package resolution...')
+        packages = sh('xcodebuild -resolvePackageDependencies -workspace VitalSense.xcworkspace 2>&1 || echo "Package resolution failed"', log: false)
+        UI.message("Package Resolution:\n#{packages}")
+      else
+        UI.message('No Package.swift found')
+      end
     rescue => e
-      UI.error("Could not get Xcode version: #{e.message}")
+      UI.error("Could not check packages: #{e.message}")
+    end
+
+    # Check build settings for VitalSense scheme
+    UI.message('⚙️ Build settings check:')
+    begin
+      settings = sh('xcodebuild -workspace VitalSense.xcworkspace -scheme VitalSense -showBuildSettings 2>&1 | head -50', log: false)
+      UI.message("Build Settings (first 50 lines):\n#{settings}")
+    rescue => e
+      UI.error("Could not get build settings: #{e.message}")
+    end
+
+    # Check destinations
+    UI.message('📱 Available destinations:')
+    begin
+      destinations = sh('xcodebuild -workspace VitalSense.xcworkspace -scheme VitalSense -showdestinations 2>&1 | head -20', log: false)
+      UI.message("Destinations:\n#{destinations}")
+    rescue => e
+      UI.error("Could not get destinations: #{e.message}")
+    end
+  end  desc 'Raw Xcode build test without gym wrapper'
+  lane :test_raw_build do
+    UI.message('🧪 Testing raw xcodebuild command...')
+
+    begin
+      # Create build directory
+      sh 'mkdir -p build'
+
+      # Test basic xcodebuild command with minimal options
+      result = sh('xcodebuild -workspace VitalSense.xcworkspace -scheme VitalSense -configuration Release -destination generic/platform=iOS CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build', log: true)
+
+      UI.success('✅ Raw xcodebuild completed successfully!')
+      UI.message(result)
+    rescue => e
+      UI.error("❌ Raw xcodebuild failed: #{e.message}")
+      raise e
     end
   end
 
@@ -188,16 +241,25 @@ platform :ios do
   lane :test_build do
     UI.message('🧪 Testing minimal build configuration...')
 
-    # Try the exact same configuration as the working build lane
-    gym(shared_build_settings.merge(
-      archive_path: 'build/VitalSense-Test.xcarchive',
-      skip_codesigning: true,
-      clean: false,  # Don't clean to make it faster
-      output_directory: 'build',
-      output_name: 'VitalSense-Test'
-    ))
+    # First try raw build to isolate gym vs xcodebuild issues
+    test_raw_build
 
-    UI.success('✅ Minimal test build completed successfully!')
+    # If that works, try with gym but with absolute minimal configuration
+    begin
+      gym(
+        workspace: 'VitalSense.xcworkspace',
+        scheme: 'VitalSense',
+        configuration: 'Release',
+        skip_archive: true,
+        skip_codesigning: true,
+        buildlog_path: 'fastlane/logs',
+        xcargs: 'CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO'
+      )
+      UI.success('✅ Minimal gym build completed successfully!')
+    rescue => e
+      UI.error("❌ Gym build failed: #{e.message}")
+      raise e
+    end
   end
 
   # === PERFORMANCE LANES ===

@@ -52,6 +52,14 @@ Complete guides for iOS development, deployment, and tooling.
 - Added CODE_SIGNING_ALLOWED=NO for unsigned CI builds
 - Enhanced diagnostic tools and step-by-step troubleshooting
 
+### [DEEP_TROUBLESHOOTING_EXIT_74.md](DEEP_TROUBLESHOOTING_EXIT_74.md)
+
+**🔍 Comprehensive exit status 74** deep analysis and fallback solution.
+
+- Multi-phase diagnostic strategy for persistent build failures
+- Direct xcodebuild fallback bypassing Fastlane completely
+- Enhanced CI pipeline with step-by-step validation and debugging
+
 ## 🔗 Related Documentation
 
 - **Getting Started**: [`../getting-started/`](../getting-started/) for basic iOS setup
