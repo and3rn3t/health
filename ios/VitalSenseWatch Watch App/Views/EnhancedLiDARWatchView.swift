@@ -89,7 +89,8 @@ struct EnhancedLiDARWatchView: View {
                     handleAnalysisResponse(reply)
                 }
             }) { error in
-            print("Failed to trigger analysis: \(error.localizedDescription)")
+                print("Failed to trigger analysis: \(error.localizedDescription)")
+            }
         }
 
         // Provide haptic feedback
