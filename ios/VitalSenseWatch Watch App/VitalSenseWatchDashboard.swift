@@ -5,7 +5,7 @@ import WatchConnectivity
 @available(watchOS 9.0, *)
 struct VitalSenseWatchDashboard: View {
     @StateObject private var healthManager = WatchHealthManager.shared
-    @StateObject private var connectivityManager = WatchConnectivityManager.shared
+    @StateObject private var connectivityManager = WatchAppConnectivityManager.shared
     @State private var selectedTab = 0
     @State private var showingHeartRateDetail = false
     @State private var animateHeartRate = false

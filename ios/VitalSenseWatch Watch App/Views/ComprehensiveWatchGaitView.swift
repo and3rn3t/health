@@ -16,7 +16,7 @@ import Combine
 struct ComprehensiveWatchGaitView: View {
     @StateObject private var gaitManager = WatchGaitManager()
     @StateObject private var healthManager = WatchHealthManager.shared
-    @StateObject private var connectivityManager = WatchConnectivityManager.shared
+    @StateObject private var connectivityManager = WatchAppConnectivityManager.shared
 
     @State private var isMonitoring = false
     @State private var showingStartWorkout = false

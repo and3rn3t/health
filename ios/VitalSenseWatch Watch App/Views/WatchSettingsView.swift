@@ -15,7 +15,7 @@ import Combine
 struct WatchSettingsView: View {
     @StateObject private var settingsManager = WatchSettingsManager()
     @StateObject private var healthManager = WatchHealthManager.shared
-    @StateObject private var connectivityManager = WatchConnectivityManager.shared
+    @StateObject private var connectivityManager = WatchAppConnectivityManager.shared
 
     @State private var showingHealthPermissions = false
     @State private var showingAbout = false
@@ -655,7 +655,7 @@ struct EmergencyContact: Identifiable {
 
 // MARK: - WatchConnectivityManager Extensions
 
-extension WatchConnectivityManager {
+extension WatchAppConnectivityManager {
     func attemptReconnection() {
         // Attempt to reestablish connection with iPhone
         session?.activate()
