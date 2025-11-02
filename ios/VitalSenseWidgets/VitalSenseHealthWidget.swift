@@ -53,19 +53,8 @@ struct HealthProvider: TimelineProvider {
     }
 }
 
-// MARK: - Main VitalSense Health Widget
-struct VitalSenseHealthWidget: Widget {
-    let kind: String = "VitalSenseHealthWidget"
-
-    var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: HealthProvider()) { entry in
-            VitalSenseHealthWidgetView(entry: entry)
-        }
-        .configurationDisplayName("VitalSense Health")
-        .description("Monitor your real-time health metrics at a glance.")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryCircular, .accessoryRectangular])
-    }
-}
+// MARK: - Main VitalSense Health Widget (Duplicate Removed)
+// Note: VitalSenseHealthWidget is now defined in VitalSenseHealthWidgets.swift to avoid conflicts
 
 // MARK: - iOS 26 Enhanced Health Widget Views
 struct VitalSenseHealthWidgetView: View {

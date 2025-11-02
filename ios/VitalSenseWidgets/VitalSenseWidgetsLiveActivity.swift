@@ -19,8 +19,9 @@ struct VitalSenseWidgetsAttributes: ActivityAttributes {
     var name: String
 }
 
-struct VitalSenseWidgetsLiveActivity: Widget {
-    var body: some WidgetConfiguration {
+struct VitalSenseWidgetsLiveActivity {
+    @available(iOS 16.1, *)
+    static func configuration() -> some ActivityConfiguration {
         ActivityConfiguration(for: VitalSenseWidgetsAttributes.self) { context in
             // Lock screen/banner UI goes here
             VStack {

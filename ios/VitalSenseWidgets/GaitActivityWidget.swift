@@ -20,8 +20,9 @@ struct GaitSessionAttributes: ActivityAttributes {
 }
 
 @available(iOS 16.1, *)
-struct GaitActivityWidget: Widget {
-    var body: some WidgetConfiguration {
+struct GaitActivityWidget {
+    @available(iOS 16.1, *)
+    static func configuration() -> some ActivityConfiguration {
         ActivityConfiguration(for: GaitSessionAttributes.self) { context in
             // Lock Screen / Banner
             GaitActivityLockScreenView(state: context.state)
