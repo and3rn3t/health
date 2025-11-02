@@ -57,8 +57,6 @@ struct HealthProvider: TimelineProvider {
 struct VitalSenseHealthWidget: Widget {
     let kind: String = "VitalSenseHealthWidget"
 
-    typealias Body = some WidgetConfiguration
-
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: HealthProvider()) { entry in
             VitalSenseHealthWidgetView(entry: entry)

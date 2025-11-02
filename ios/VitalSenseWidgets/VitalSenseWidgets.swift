@@ -64,8 +64,6 @@ struct VitalSenseWidgetsEntryView : View {
 struct VitalSenseWidgets: Widget {
     let kind: String = "VitalSenseWidgets"
 
-    typealias Body = some WidgetConfiguration
-
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: Provider()) { entry in
             VitalSenseWidgetsEntryView(entry: entry)
@@ -91,6 +89,6 @@ extension ConfigurationAppIntent {
 #Preview(as: .systemSmall) {
     VitalSenseWidgets()
 } timeline: {
-    SimpleEntry(date: Date(), configuration: ConfigurationAppIntent())
-    SimpleEntry(date: Date(), configuration: ConfigurationAppIntent())
+    SimpleEntry(date: Date(), configuration: ConfigurationAppIntent(favoriteEmoji: "😃"))
+    SimpleEntry(date: Date(), configuration: ConfigurationAppIntent(favoriteEmoji: "💓"))
 }

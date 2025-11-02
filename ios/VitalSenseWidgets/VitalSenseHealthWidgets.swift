@@ -20,8 +20,6 @@ import OSLog
 struct VitalSenseHealthWidget: Widget {
     let kind: String = "VitalSenseHealthWidget"
 
-    typealias Body = some WidgetConfiguration
-
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: HealthTimelineProvider()) { entry in
             VitalSenseHealthWidgetEntryView(entry: entry)
@@ -38,8 +36,6 @@ struct VitalSenseHealthWidget: Widget {
 struct VitalSenseHeartRateWidget: Widget {
     let kind: String = "VitalSenseHeartRateWidget"
 
-    typealias Body = some WidgetConfiguration
-
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: HeartRateTimelineProvider()) { entry in
             HeartRateWidgetEntryView(entry: entry)
@@ -55,8 +51,6 @@ struct VitalSenseHeartRateWidget: Widget {
 struct VitalSenseActivityWidget: Widget {
     let kind: String = "VitalSenseActivityWidget"
 
-    typealias Body = some WidgetConfiguration
-
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: ActivityTimelineProvider()) { entry in
             ActivityWidgetEntryView(entry: entry)
@@ -71,8 +65,6 @@ struct VitalSenseActivityWidget: Widget {
 
 struct VitalSenseGaitWidget: Widget {
     let kind: String = "VitalSenseGaitWidget"
-
-    typealias Body = some WidgetConfiguration
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: GaitTimelineProvider()) { entry in
