@@ -28,7 +28,7 @@ function snapshot(){
 }
 
 function runSync(){
-  const res = spawnSync('node', ['scripts/node/fall/sync-fall-risk-config.js'], { stdio: 'inherit' });
+  const res = spawnSync('node', ['scripts/analysis/fall/sync-fall-risk-config.js'], { stdio: 'inherit' });
   if(res.status !== 0){
     console.error('❌ fallrisk:sync failed');
     process.exit(res.status ?? 1);
