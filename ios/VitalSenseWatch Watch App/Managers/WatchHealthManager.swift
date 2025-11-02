@@ -179,7 +179,7 @@ class WatchHealthManager: NSObject, ObservableObject {
             // Start enhanced heart rate monitoring during workout
             startRealTimeHeartRateMonitoring { heartRate in
                 // Send to phone via connectivity
-                WatchConnectivityManager.shared.sendHeartRateToPhone(heartRate)
+                WatchAppConnectivityManager.shared.sendHeartRateToPhone(heartRate)
             }
         } catch {
             print("Failed to start heart rate workout: \(error)")
