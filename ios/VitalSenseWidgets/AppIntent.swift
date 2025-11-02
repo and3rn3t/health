@@ -14,7 +14,7 @@ import SwiftUI
 struct VitalSenseWidgetConfiguration {
     let displayName: String
     let description: String
-    
+
     static let `default` = VitalSenseWidgetConfiguration(
         displayName: "VitalSense Health",
         description: "Monitor your key health metrics at a glance"

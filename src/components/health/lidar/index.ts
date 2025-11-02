@@ -22,13 +22,13 @@ export {
 } from './CleanLiDARComponents';
 
 // Integration Components
-export { default as EnhancedLiDARIntegration } from './EnhancedLiDARIntegration';
+// Note: EnhancedLiDARIntegration is dynamically imported in App.tsx for code splitting
 export { default as LiDARPerformanceDemo } from './LiDARPerformanceDemo';
 export { LiDARPerformanceIntegration } from './LiDARPerformanceIntegration';
 
 // Next Steps Implementation - Advanced LiDAR System
 export { AdvancedLiDARAnalytics } from './AdvancedLiDARAnalytics';
-export { default as CompleteLiDARIntegration } from './CompleteLiDARIntegration';
+// Note: CompleteLiDARIntegration is dynamically imported in App.tsx for code splitting
 export { RealDataLiDARIntegration } from './RealDataLiDARIntegration';
 
 // Re-export performance config

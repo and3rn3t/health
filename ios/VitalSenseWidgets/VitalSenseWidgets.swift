@@ -54,7 +54,7 @@ struct VitalSenseWidgetsEntryView : View {
                     .font(.headline)
                     .fontWeight(.bold)
             }
-            
+
             Text("Time:")
             Text(entry.date, style: .time)
 
