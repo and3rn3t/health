@@ -43,10 +43,16 @@ export default defineConfig({
           // Vendor libraries - ultra-granular splitting
           if (id.includes('node_modules')) {
             // React ecosystem - extremely granular
-            if (id.includes('react-dom/client') || id.includes('react-dom/server')) {
+            if (
+              id.includes('react-dom/client') ||
+              id.includes('react-dom/server')
+            ) {
               return 'react-dom-client';
             }
-            if (id.includes('react-dom/cjs/react-dom.production') || id.includes('react-dom.production')) {
+            if (
+              id.includes('react-dom/cjs/react-dom.production') ||
+              id.includes('react-dom.production')
+            ) {
               return 'react-dom-core';
             }
             if (id.includes('react-dom/cjs') || id.includes('react-dom/lib')) {
@@ -55,7 +61,10 @@ export default defineConfig({
             if (id.includes('react-dom')) {
               return 'react-dom-misc';
             }
-            if (id.includes('react/jsx-runtime') || id.includes('react/jsx-dev-runtime')) {
+            if (
+              id.includes('react/jsx-runtime') ||
+              id.includes('react/jsx-dev-runtime')
+            ) {
               return 'react-jsx';
             }
             if (id.includes('react/cjs') || id.includes('react.production')) {
@@ -64,21 +73,30 @@ export default defineConfig({
             if (id.includes('react')) {
               return 'react-misc';
             }
-            
+
             // UI Libraries
-            if (id.includes('@radix-ui/react-dialog') || id.includes('@radix-ui/react-alert-dialog')) {
+            if (
+              id.includes('@radix-ui/react-dialog') ||
+              id.includes('@radix-ui/react-alert-dialog')
+            ) {
               return 'radix-dialogs';
             }
-            if (id.includes('@radix-ui/react-select') || id.includes('@radix-ui/react-dropdown-menu')) {
+            if (
+              id.includes('@radix-ui/react-select') ||
+              id.includes('@radix-ui/react-dropdown-menu')
+            ) {
               return 'radix-menus';
             }
-            if (id.includes('@radix-ui/react-tabs') || id.includes('@radix-ui/react-accordion')) {
+            if (
+              id.includes('@radix-ui/react-tabs') ||
+              id.includes('@radix-ui/react-accordion')
+            ) {
               return 'radix-navigation';
             }
             if (id.includes('@radix-ui')) {
               return 'radix-core';
             }
-            
+
             // Data & State
             if (id.includes('@tanstack/react-query')) {
               return 'react-query';
@@ -86,7 +104,7 @@ export default defineConfig({
             if (id.includes('zustand') || id.includes('jotai')) {
               return 'state-mgmt';
             }
-            
+
             // Icons - separate large icon libraries
             if (id.includes('lucide-react')) {
               return 'lucide-icons';
@@ -97,9 +115,13 @@ export default defineConfig({
             if (id.includes('react-icons')) {
               return 'react-icons';
             }
-            
+
             // Utilities
-            if (id.includes('date-fns') || id.includes('moment') || id.includes('dayjs')) {
+            if (
+              id.includes('date-fns') ||
+              id.includes('moment') ||
+              id.includes('dayjs')
+            ) {
               return 'date-utils';
             }
             if (id.includes('lodash') || id.includes('ramda')) {
@@ -108,21 +130,27 @@ export default defineConfig({
             if (id.includes('zod') || id.includes('yup')) {
               return 'validation';
             }
-            
+
             // Remaining vendor code
             return 'vendor-misc';
           }
-          
+
           // Feature-based splitting - very granular
-          if (id.includes('AdvancedAnalytics') || id.includes('analytics/advanced')) {
+          if (
+            id.includes('AdvancedAnalytics') ||
+            id.includes('analytics/advanced')
+          ) {
             return 'analytics-advanced';
           }
           if (id.includes('analytics') || id.includes('/analytics/')) {
             return 'analytics-core';
           }
-          
+
           // Health features
-          if (id.includes('HealthDashboard') || id.includes('health/dashboard')) {
+          if (
+            id.includes('HealthDashboard') ||
+            id.includes('health/dashboard')
+          ) {
             return 'health-dashboard';
           }
           if (id.includes('gait') || id.includes('Gait')) {
@@ -134,7 +162,7 @@ export default defineConfig({
           if (id.includes('health') || id.includes('/health/')) {
             return 'health-core';
           }
-          
+
           // Large application components - move out of main bundle
           if (id.includes('DeveloperTools') || id.includes('DevDiagnostics')) {
             return 'dev-tools';
@@ -157,18 +185,21 @@ export default defineConfig({
           if (id.includes('PrivacyControls') || id.includes('privacy')) {
             return 'privacy';
           }
-          if (id.includes('NotificationCenter') || id.includes('notifications')) {
+          if (
+            id.includes('NotificationCenter') ||
+            id.includes('notifications')
+          ) {
             return 'notifications';
           }
           if (id.includes('ConnectedDevices') || id.includes('devices')) {
             return 'devices';
           }
-          
+
           // VitalSense features
           if (id.includes('VitalSense') || id.includes('/vitalsense/')) {
             return 'vitalsense';
           }
-          
+
           // LiDAR and ML - these are typically large
           if (id.includes('CompleteLiDAR') || id.includes('EnhancedLiDAR')) {
             return 'lidar-advanced';
@@ -182,7 +213,7 @@ export default defineConfig({
           if (id.includes('ml') || id.includes('/ml/')) {
             return 'ml-core';
           }
-          
+
           // UI Components
           if (id.includes('/ui/') && id.includes('vitalsense-components')) {
             return 'ui-vitalsense';
@@ -190,7 +221,7 @@ export default defineConfig({
           if (id.includes('/ui/')) {
             return 'ui-components';
           }
-          
+
           // Utilities
           if (id.includes('/hooks/')) {
             return 'hooks';
@@ -198,14 +229,14 @@ export default defineConfig({
           if (id.includes('/lib/')) {
             return 'lib-utils';
           }
-          
+
           // Default fallback
           return 'app-core';
         },
-        
+
         // Optimize chunk file names for caching
         chunkFileNames: 'js/[name]-[hash].js',
-        
+
         // Optimize entry file names
         entryFileNames: 'js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
@@ -219,7 +250,7 @@ export default defineConfig({
           return 'assets/[name]-[hash].[ext]';
         },
       },
-      
+
       // Tree shaking optimizations
       treeshake: {
         moduleSideEffects: false,
@@ -230,12 +261,12 @@ export default defineConfig({
         unknownGlobalSideEffects: false,
       },
     },
-    
+
     // Additional aggressive optimizations
     chunkSizeWarningLimit: 350, // Force even smaller chunks
     minify: 'esbuild',
     target: 'esnext',
-    
+
     // Compression and optimization
     cssCodeSplit: true,
     assetsInlineLimit: 4096,
