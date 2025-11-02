@@ -420,7 +420,7 @@ struct VitalSenseWatchDashboard: View {
                 Toggle("Workout Reminders", isOn: .constant(false))
             }
 
-            Section {
+            Section("Connectivity") {
                 HStack {
                     Text("iPhone")
                     Spacer()
@@ -477,12 +477,12 @@ struct VitalSenseWatchDashboard: View {
     }
 
     private func sendDataToPhone() {
-        connectivityManager.sendHealthDataToPhone([[
-            "heartRate": currentHeartRate ?? 0,
-            "steps": dailySteps ?? 0,
-            "activeEnergy": activeEnergy ?? 0,
-            "timestamp": Date().timeIntervalSince1970
-        ]])
+        connectivityManager.sendHealthDataToPhone([
+            "heartRate:\(currentHeartRate ?? 0)",
+            "steps:\(dailySteps ?? 0)",
+            "activeEnergy:\(activeEnergy ?? 0)",
+            "timestamp:\(Date().timeIntervalSince1970)"
+        ])
     }
 
     private func sendHeartRateDataToPhone() {

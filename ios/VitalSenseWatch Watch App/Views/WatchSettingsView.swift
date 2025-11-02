@@ -72,9 +72,10 @@ struct WatchSettingsView: View {
 
                 Spacer()
 
-                if !connectivityManager.isiPhoneReachable {
+                if !connectivityManager.isReachable {
                     Button("Retry") {
-                        connectivityManager.attemptReconnection()
+                        // Reconnection happens automatically when reachability changes
+                        print("Waiting for iPhone connection...")
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.mini)
