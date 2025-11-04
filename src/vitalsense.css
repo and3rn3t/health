@@ -4,8 +4,11 @@
  * Updated for iOS 26 design standards and enhanced accessibility
  */
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* === VITALSENSE BRAND THEME - iOS 26 ENHANCED === */
-/* Note: Tailwind directives are in main.css to avoid duplication */
 :root {
   /* VitalSense Brand Colors - iOS 26 Enhanced */
   --vitalsense-primary: #2563eb; /* VitalSense Blue */
