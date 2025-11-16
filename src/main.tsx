@@ -1,4 +1,4 @@
-import { Toaster } from '@/components/ui/sonner';
+import { AppToaster } from '@/components/ui/sonner';
 // RUM metrics (must be imported very early before app renders)
 import { CoachingControlPanel } from '@/components/coaching/CoachingControlPanel';
 import { AppWebSocketProvider } from '@/contexts/AppWebSocketProvider';
@@ -221,7 +221,7 @@ try {
               <CoachingControlPanel />
             </AppWebSocketProvider>
           </Suspense>
-          <Toaster position="top-right" richColors />
+          <AppToaster position="top-right" richColors />
         </QueryClientProvider>
       </ErrorBoundary>
     </StrictMode>
