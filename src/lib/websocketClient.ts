@@ -84,6 +84,14 @@ export class WebSocketClient {
 
   private telemetry(evt: WsTelemetry) {
     try {
+      // Skip telemetry in local development to avoid 404 noise
+      if (
+        typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' ||
+          window.location.hostname === '127.0.0.1')
+      ) {
+        return;
+      }
       fetch('/api/ws-telemetry', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },

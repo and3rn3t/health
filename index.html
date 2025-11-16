@@ -89,6 +89,19 @@
     />
     <!-- CSS is imported via Vite in src/main.tsx -->
     <script>
+      // In local development, disable live WebSocket features to avoid 404s
+      (function () {
+        try {
+          var isLocal =
+            location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+          if (isLocal) {
+            window.VITALSENSE_DISABLE_WEBSOCKET = true;
+            window.VITALSENSE_LIVE_DISABLED = true;
+          }
+        } catch {}
+      })();
+    </script>
+    <script>
       (function () {
         try {
           var u = new URL(window.location.href);

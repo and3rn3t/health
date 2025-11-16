@@ -3,6 +3,10 @@ import { resolve } from 'path';
 import { defineConfig } from 'vite';
 
 const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname;
+const isDev =
+  process.env.NODE_ENV !== 'production' &&
+  process.env.BUILD !== 'production' &&
+  process.env.CI !== 'true';
 
 export default defineConfig({
   // Ensure Tailwind uses JS implementation (no native oxide binding)
@@ -11,7 +15,10 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(
       process.env.npm_package_version || '0.0.0-dev'
     ),
-    __RUM_SAMPLE_RATE__: JSON.stringify(process.env.RUM_SAMPLE_RATE || '1'),
+    // Disable RUM in dev to avoid 404s for /api/_perf_ingest
+    __RUM_SAMPLE_RATE__: JSON.stringify(
+      process.env.RUM_SAMPLE_RATE || (isDev ? '0' : '1')
+    ),
   },
   plugins: [react()],
   esbuild: {
