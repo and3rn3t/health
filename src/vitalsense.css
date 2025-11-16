@@ -4,8 +4,6 @@
  * Updated for iOS 26 design standards and enhanced accessibility
  */
 
-/* === IMPORTS === */
-@import 'tw-animate-css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
