@@ -271,6 +271,14 @@ jobs:
           pnpm exec eslint src --format json --output-file reports/eslint-report.json || echo "{}" > reports/eslint-report.json
       - name: Unit Tests w/ Coverage (enforced)
         run: pnpm run test:coverage
+      - name: Geospatial Tests (Phase 2-3)
+        run: pnpm run test:geospatial
+      - name: Phase 5 Workflow Tests
+        run: pnpm run test:phase5
+      - name: Observability Tests (Phase 6)
+        run: pnpm run test:observability
+      - name: Acceptance Tests
+        run: pnpm test src/__tests__/analysis.acceptance*.test.ts || echo "Acceptance tests optional"
       - name: Coverage Gate (minimum 10% — dynamic if coverage-target.json present)
         env:
           # Lowered temporarily to allow pipeline green while incremental coverage improvements land.

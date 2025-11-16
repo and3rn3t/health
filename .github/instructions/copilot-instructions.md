@@ -642,6 +642,108 @@ Kill-Port 8787  # Terminate processes on specific ports
 
 When working with PowerShell scripts in this project, always consider VS Code integration and Copilot context. Reference `docs/development/POWERSHELL_VSCODE_INTEGRATION.md` for comprehensive usage guide.
 
+## Geospatial Health Platform - Catalog API & Observability (Phase 6)
+
+This project includes a comprehensive geospatial health platform with a catalog API and full observability features:
+
+### Catalog API Architecture
+
+- **Location**: `scripts/catalog/catalog-api.js` - Express.js API server
+- **Port**: 5055 (configurable via `CATALOG_PORT` environment variable)
+- **Features**: 
+  - STAC-compliant data catalog (Items, Collections)
+  - Multi-modal analysis (NDVI, NDWI, NDMI, zonal statistics, terrain analysis)
+  - LiDAR processing (DTM, DSM, CHM, feature extraction)
+  - Advanced AI (risk scoring, explainability, change detection, object detection)
+  - Phase 5 workflows (Projects, AOIs, scheduling, exports, RBAC)
+  - Phase 6 observability (structured logging, metrics, health checks)
+
+### Observability Features (Phase 6)
+
+**Structured Logging**:
+- Location: `scripts/observability/logger.cjs`
+- JSON-structured logs with timestamps, levels (DEBUG/INFO/WARN/ERROR), context
+- Configurable via `LOG_LEVEL` environment variable
+- Request logging with automatic status-based log levels
+
+**Metrics Collection**:
+- Location: `scripts/observability/metrics.cjs`
+- Tracks: requests, response times (P50/P95/P99), errors, analysis metrics, cache performance
+- Endpoints: `GET /health`, `GET /metrics`
+- Automatic tracking of all API operations
+
+**Performance Optimizations**:
+- Response compression (gzip) for all responses
+- Security headers (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection)
+- CORS support (configurable via `CORS_ORIGIN`)
+- In-memory tile caching with LRU eviction
+
+### Catalog API Usage Patterns
+
+**Starting the API**:
+```bash
+# Default configuration
+npm run catalog:api
+
+# With custom log level
+LOG_LEVEL=DEBUG npm run catalog:api
+
+# With custom port
+CATALOG_PORT=8080 npm run catalog:api
+```
+
+**Testing Endpoints**:
+- Health check: `GET http://127.0.0.1:5055/health`
+- Metrics: `GET http://127.0.0.1:5055/metrics`
+- Catalog browser: `http://127.0.0.1:5055/catalog.html`
+
+**Analysis Endpoints**:
+- NDVI: `POST /analysis/ndvi` with `{ nir: number[], red: number[] }`
+- Zonal stats: `POST /analysis/zonal` with `{ values: number[], zones: number[] }`
+- LiDAR: `POST /analysis/lidar/*` endpoints for point cloud processing
+- Risk scoring: `POST /analysis/risk` with weighted factors
+- Change detection: `POST /analysis/change` with before/after arrays
+
+### Observability Integration Patterns
+
+**Logging in API Routes**:
+```javascript
+const logger = require('../observability/logger.cjs');
+const metrics = require('../observability/metrics.cjs');
+
+app.post('/analysis/ndvi', (req, res) => {
+  const startTime = Date.now();
+  try {
+    // ... analysis logic ...
+    const duration = Date.now() - startTime;
+    metrics.recordAnalysis('ndvi', duration, true);
+    res.json(result);
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logger.error('NDVI analysis error', error, { endpoint: '/analysis/ndvi' });
+    metrics.recordAnalysis('ndvi', duration, false);
+    metrics.recordError(error.name, '/analysis/ndvi');
+    res.status(400).json({ error: error.message });
+  }
+});
+```
+
+**Testing Observability**:
+```bash
+# Unit tests
+pnpm run test:observability
+
+# Integration tests (requires running API)
+pnpm test src/__tests__/observability.integration.test.ts
+```
+
+### Documentation References
+
+- **Observability**: `docs/develop/observability.md` - Complete observability guide
+- **Phase 6 Summary**: `docs/develop/phase6-summary.md` - Implementation details
+- **CI Integration**: `docs/develop/ci-integration.md` - CI/CD testing guide
+- **Testing**: `docs/develop/testing.md` - Testing strategies
+
 ### Available VS Code Tasks
 
 The project includes comprehensive VS Code tasks accessible via `Ctrl+Shift+P` → "Tasks: Run Task":

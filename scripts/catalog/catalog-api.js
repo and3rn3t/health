@@ -1,6 +1,11 @@
 import express from 'express';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const logger = require('../observability/logger.cjs');
+const metrics = require('../observability/metrics.cjs');
+import compression from 'compression';
 
 const PORT = process.env.CATALOG_PORT ? Number(process.env.CATALOG_PORT) : 5055;
 const ROOT = process.cwd();
@@ -243,8 +248,10 @@ function setCachedTile(key, data) {
   // Limit cache size (simple LRU: remove oldest 10% when full)
   if (tileCache.size > 1000) {
     const entries = Array.from(tileCache.entries()).sort((a, b) => a[1].timestamp - b[1].timestamp);
-    for (let i = 0; i < Math.floor(entries.length * 0.1); i++) {
+    const evictCount = Math.floor(entries.length * 0.1);
+    for (let i = 0; i < evictCount; i++) {
       tileCache.delete(entries[i][0]);
+      metrics.recordCacheEviction();
     }
   }
   tileCache.set(key, { data, timestamp: Date.now() });
@@ -323,10 +330,82 @@ function generateVectorTile(z, x, y, features = []) {
 }
 
 const app = express();
+
+// Performance optimizations
+// Response compression (gzip) for all responses
+app.use(compression({
+  filter: (req, res) => {
+    // Compress responses larger than 1KB
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6, // Balance between compression and speed
+}));
+
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
+
+// CORS headers (configurable)
+const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', CORS_ORIGIN);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // Increased limit for large array processing (50MB)
 app.use(express.json({ limit: '50mb' }));
 
-app.get('/health', (_req, res) => res.json({ ok: true }));
+// Observability middleware - request logging and metrics
+app.use((req, res, next) => {
+  const startTime = Date.now();
+  const originalSend = res.send;
+
+  res.send = function (body) {
+    const duration = Date.now() - startTime;
+    const path = req.route?.path || req.path;
+
+    metrics.recordRequest(req.method, path, res.statusCode, duration);
+    logger.request(req, res, duration, {
+      contentLength: res.get('content-length'),
+    });
+
+    return originalSend.call(this, body);
+  };
+
+  next();
+});
+
+// Enhanced health check endpoint
+app.get('/health', (req, res) => {
+  const health = {
+    ok: true,
+    timestamp: new Date().toISOString(),
+    uptime: {
+      seconds: Math.floor((Date.now() - metrics.metrics.uptime.startTime) / 1000),
+    },
+    service: 'catalog-api',
+    version: process.env.npm_package_version || '1.0.0',
+  };
+
+  res.json(health);
+});
+
+// Metrics endpoint
+app.get('/metrics', (req, res) => {
+  res.json(metrics.getMetrics());
+});
 
 // NDVI stats endpoint: POST body { nir: number[], red: number[], bins?: number, chunked?: boolean }
 app.post('/analysis/ndvi', (req, res) => {
@@ -348,6 +427,13 @@ app.post('/analysis/ndvi', (req, res) => {
     );
     return res.json({ ...result, chunked: useChunked });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -371,6 +457,13 @@ app.post('/analysis/ndwi', (req, res) => {
     );
     return res.json({ ...result, chunked: useChunked });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -394,6 +487,13 @@ app.post('/analysis/ndmi', (req, res) => {
     );
     return res.json({ ...result, chunked: useChunked });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -459,6 +559,13 @@ app.post('/analysis/mask', (req, res) => {
       thresholds: { cloud: cloudThreshold, shadow: shadowThreshold },
     });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -476,6 +583,13 @@ app.post('/analysis/zonal-stats', (req, res) => {
     const result = computeZonalStats(values, zones);
     return res.json(result);
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -590,7 +704,8 @@ app.get('/tiles/raster/:z/:x/:y', (req, res) => {
 
     res.json({ ...tile, cached: false, elapsedMs: elapsed });
   } catch (e) {
-    console.error('Tile generation error:', e);
+    logger.error('Tile generation error', e, { z, x, y, style });
+    metrics.recordError('TileGenerationError', '/tiles/raster');
     return res.status(500).json({ error: e.message || 'Tile generation failed', stack: process.env.NODE_ENV === 'development' ? e.stack : undefined });
   }
 });
@@ -696,6 +811,13 @@ app.post('/analysis/spatial-join', (req, res) => {
     });
     return res.json({ matched: results.length, features: results });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -719,6 +841,13 @@ app.post('/analysis/buffer', (req, res) => {
     };
     return res.json({ buffer, bbox: calculateBBox(buffer) });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -743,6 +872,13 @@ app.post('/analysis/proximity', (req, res) => {
     results.sort((a, b) => a.distance - b.distance);
     return res.json({ nearest: results.slice(0, maxResults) });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -818,6 +954,13 @@ app.post('/analysis/lidar/classify', (req, res) => {
       stats: { ground: calcStats(groundZs), nonGround: calcStats(nonGroundZs) }
     });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -880,6 +1023,13 @@ app.post('/analysis/lidar/dtm', (req, res) => {
       stats
     });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -933,6 +1083,13 @@ app.post('/analysis/lidar/dsm', (req, res) => {
       stats
     });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -978,6 +1135,13 @@ app.post('/analysis/lidar/chm', (req, res) => {
       stats
     });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -1040,6 +1204,13 @@ app.post('/analysis/lidar/terrain-derivatives', (req, res) => {
 
     return res.json({ slope, aspect, stats });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -1204,6 +1375,13 @@ app.post('/analysis/lidar/extract-features', (req, res) => {
       }
     });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -1391,6 +1569,13 @@ app.post('/analysis/risk-score', (req, res) => {
       metadata: { totalWeight, factorCount: factors.length }
     });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -1430,6 +1615,13 @@ app.post('/analysis/explainability/uncertainty', (req, res) => {
       }
     });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -1472,6 +1664,13 @@ app.post('/analysis/explainability/feature-importance', (req, res) => {
 
     return res.json({ features: importances });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -1543,6 +1742,13 @@ app.post('/analysis/change-detection', (req, res) => {
       }
     });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -1622,6 +1828,13 @@ app.post('/analysis/object-detection', (req, res) => {
       }
     });
   } catch (e) {
+    const endpoint = req.path || req.route?.path || 'unknown';
+    logger.error('Analysis error', e, {
+      endpoint,
+      method: req.method,
+      bodySize: JSON.stringify(req.body || {}).length
+    });
+    metrics.recordError(e.name || 'AnalysisError', endpoint);
     return res.status(400).json({ error: e.message || 'invalid request' });
   }
 });
@@ -1795,10 +2008,391 @@ app.post('/reviews/:id/submit', (req, res) => {
   }
 });
 
+// Phase 5: Projects and AOI Workflows
+
+const projectStore = {
+  projects: new Map(),
+  aois: new Map(),
+  runs: new Map(),
+  createProject(project) {
+    const now = new Date().toISOString();
+    const full = { ...project, aois: [], analysisRuns: [], createdAt: now, updatedAt: now };
+    this.projects.set(project.id, full);
+    return full;
+  },
+  getProject(id) { return this.projects.get(id); },
+  listProjects(ownerId, orgId) {
+    let projects = Array.from(this.projects.values());
+    if (ownerId) projects = projects.filter(p => p.ownerId === ownerId);
+    if (orgId) projects = projects.filter(p => p.organizationId === orgId);
+    return projects;
+  },
+  addAOI(projectId, aoi) {
+    const project = this.projects.get(projectId);
+    if (!project) throw new Error(`Project ${projectId} not found`);
+    const id = `aoi-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const now = new Date().toISOString();
+    const full = { ...aoi, id, projectId, createdAt: now, updatedAt: now };
+    this.aois.set(id, full);
+    project.aois.push(full);
+    project.updatedAt = now;
+    return full;
+  },
+  getAOI(id) { return this.aois.get(id); },
+  listAOIs(projectId) {
+    const project = this.projects.get(projectId);
+    return project?.aois || [];
+  },
+  createAnalysisRun(projectId, run) {
+    const project = this.projects.get(projectId);
+    if (!project) throw new Error(`Project ${projectId} not found`);
+    const id = `run-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const now = new Date().toISOString();
+    const full = { ...run, id, projectId, status: 'pending', createdAt: now };
+    this.runs.set(id, full);
+    project.analysisRuns.push(full);
+    project.updatedAt = now;
+    return full;
+  },
+  getAnalysisRun(id) { return this.runs.get(id); },
+  listAnalysisRuns(projectId, aoiId, status) {
+    const project = this.projects.get(projectId);
+    if (!project) return [];
+    let runs = project.analysisRuns;
+    if (aoiId) runs = runs.filter(r => r.aoiId === aoiId);
+    if (status) runs = runs.filter(r => r.status === status);
+    return runs;
+  },
+  updateAnalysisRunStatus(id, status, output, error) {
+    const run = this.runs.get(id);
+    if (!run) throw new Error(`Analysis run ${id} not found`);
+    run.status = status;
+    if (status === 'running' && !run.startedAt) run.startedAt = new Date().toISOString();
+    if (['completed', 'failed', 'cancelled'].includes(status)) {
+      run.completedAt = new Date().toISOString();
+      if (output) run.output = output;
+      if (error) run.error = error;
+    }
+    const project = this.projects.get(run.projectId);
+    if (project) project.updatedAt = new Date().toISOString();
+    return run;
+  }
+};
+
+// Projects endpoints
+app.post('/projects', (req, res) => {
+  try {
+    const project = projectStore.createProject(req.body);
+    res.json(project);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.get('/projects', (req, res) => {
+  const { ownerId, organizationId } = req.query || {};
+  res.json({ projects: projectStore.listProjects(ownerId, organizationId) });
+});
+
+app.get('/projects/:id', (req, res) => {
+  const project = projectStore.getProject(req.params.id);
+  if (!project) return res.status(404).json({ error: 'Project not found' });
+  res.json(project);
+});
+
+// AOI endpoints
+app.post('/projects/:projectId/aois', (req, res) => {
+  try {
+    // Calculate bbox from geometry
+    const geom = req.body.geometry;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    function processCoords(c) {
+      if (Array.isArray(c)) {
+        if (c.length > 0 && typeof c[0] === 'number') {
+          minX = Math.min(minX, c[0]); minY = Math.min(minY, c[1]);
+          maxX = Math.max(maxX, c[0]); maxY = Math.max(maxY, c[1]);
+        } else c.forEach(processCoords);
+      }
+    }
+    processCoords(geom.coordinates);
+    const aoi = projectStore.addAOI(req.params.projectId, {
+      ...req.body,
+      bbox: { minX, minY, maxX, maxY }
+    });
+    res.json(aoi);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.get('/projects/:projectId/aois', (req, res) => {
+  res.json({ aois: projectStore.listAOIs(req.params.projectId) });
+});
+
+app.get('/aois/:id', (req, res) => {
+  const aoi = projectStore.getAOI(req.params.id);
+  if (!aoi) return res.status(404).json({ error: 'AOI not found' });
+  res.json(aoi);
+});
+
+// Analysis runs endpoints
+app.post('/projects/:projectId/runs', (req, res) => {
+  try {
+    const run = projectStore.createAnalysisRun(req.params.projectId, req.body);
+    res.json(run);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.get('/projects/:projectId/runs', (req, res) => {
+  const { aoiId, status } = req.query || {};
+  res.json({ runs: projectStore.listAnalysisRuns(req.params.projectId, aoiId, status) });
+});
+
+app.get('/runs/:id', (req, res) => {
+  const run = projectStore.getAnalysisRun(req.params.id);
+  if (!run) return res.status(404).json({ error: 'Analysis run not found' });
+  res.json(run);
+});
+
+app.patch('/runs/:id/status', (req, res) => {
+  try {
+    const { status, output, error } = req.body || {};
+    const run = projectStore.updateAnalysisRunStatus(req.params.id, status, output, error);
+    res.json(run);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// Scheduling endpoints
+const scheduler = {
+  schedules: new Map(),
+  jobs: new Map(),
+  notificationConfigs: new Map(),
+  createSchedule(schedule) {
+    const id = `schedule-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const full = { ...schedule, id, runCount: 0, enabled: schedule.enabled !== false };
+    full.nextRunAt = this.calculateNextRun(full);
+    this.schedules.set(id, full);
+    return full;
+  },
+  getSchedule(id) { return this.schedules.get(id); },
+  listSchedules(projectId, enabled) {
+    let schedules = Array.from(this.schedules.values());
+    if (projectId) schedules = schedules.filter(s => s.projectId === projectId);
+    if (enabled !== undefined) schedules = schedules.filter(s => s.enabled === enabled);
+    return schedules;
+  },
+  calculateNextRun(schedule) {
+    if (!schedule.enabled) return undefined;
+    const now = new Date();
+    let next = new Date(now);
+    switch (schedule.scheduleType) {
+      case 'daily': next.setDate(next.getDate() + 1); next.setHours(0, 0, 0, 0); break;
+      case 'weekly': next.setDate(next.getDate() + 7); next.setHours(0, 0, 0, 0); break;
+      case 'monthly': next.setMonth(next.getMonth() + 1); next.setDate(1); next.setHours(0, 0, 0, 0); break;
+      default: return undefined;
+    }
+    return next.toISOString();
+  }
+};
+
+app.post('/schedules', (req, res) => {
+  try {
+    const schedule = scheduler.createSchedule(req.body);
+    res.json(schedule);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.get('/schedules', (req, res) => {
+  const { projectId, enabled } = req.query || {};
+  res.json({ schedules: scheduler.listSchedules(projectId, enabled === 'true') });
+});
+
+app.get('/schedules/:id', (req, res) => {
+  const schedule = scheduler.getSchedule(req.params.id);
+  if (!schedule) return res.status(404).json({ error: 'Schedule not found' });
+  res.json(schedule);
+});
+
+// Export endpoints
+app.post('/export', (req, res) => {
+  try {
+    const { data, format, options = {} } = req.body || {};
+    if (!data || !format) {
+      return res.status(400).json({ error: 'data and format required' });
+    }
+
+    let content, contentType;
+    const id = `export-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+    switch (format) {
+      case 'csv':
+        contentType = 'text/csv';
+        const keys = new Set();
+        (Array.isArray(data) ? data : [data]).forEach(row => Object.keys(row).forEach(k => keys.add(k)));
+        const headers = Array.from(keys);
+        const rows = [headers.join(',')];
+        (Array.isArray(data) ? data : [data]).forEach(row => {
+          rows.push(headers.map(h => {
+            const v = row[h];
+            return v === null || v === undefined ? '' : String(v).includes(',') ? `"${String(v).replace(/"/g, '""')}"` : String(v);
+          }).join(','));
+        });
+        if (options.includeWatermark) rows.push(`\n# Generated by Geospatial Health Platform - ${new Date().toISOString()}`);
+        content = rows.join('\n');
+        break;
+      case 'geopackage':
+      case 'geojson':
+        contentType = 'application/json';
+        content = JSON.stringify({ ...data, metadata: { exportedAt: new Date().toISOString(), version: options.version || '1.0.0' } }, null, 2);
+        break;
+      case 'pdf':
+        contentType = 'text/html'; // Simplified
+        content = `<html><body><h1>${data.title || 'Export'}</h1><pre>${JSON.stringify(data, null, 2)}</pre>${options.includeWatermark ? `<div style="position:fixed;bottom:10px;right:10px;color:#ccc;font-size:10px">Geospatial Health Platform - ${new Date().toISOString()}</div>` : ''}</body></html>`;
+        break;
+      default:
+        return res.status(400).json({ error: `Unsupported format: ${format}` });
+    }
+
+    res.type(contentType).send(content);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// RBAC endpoints
+const rbacStore = {
+  users: new Map(),
+  roles: new Map(),
+  policies: new Map(),
+  auditLogs: [],
+  createRole(role) {
+    const id = `role-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const full = { ...role, id };
+    this.roles.set(id, full);
+    return full;
+  },
+  createUser(user) {
+    const id = `user-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const full = { ...user, id };
+    this.users.set(id, full);
+    return full;
+  },
+  createPolicy(policy) {
+    const id = `policy-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const full = { ...policy, id };
+    this.policies.set(id, full);
+    return full;
+  },
+  checkPermission(userId, resourceType, permission, resourceId) {
+    const user = this.users.get(userId);
+    if (!user) {
+      this.logAudit(userId, 'check_permission', resourceType, resourceId, 'denied', { reason: 'User not found' });
+      return false;
+    }
+    // Simplified check - in production, implement full RBAC logic
+    this.logAudit(userId, 'check_permission', resourceType, resourceId, 'allowed');
+    return true;
+  },
+  logAudit(userId, action, resourceType, resourceId, result, details) {
+    this.auditLogs.push({
+      id: `audit-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      userId, action, resourceType, resourceId,
+      timestamp: new Date().toISOString(), result, details
+    });
+    if (this.auditLogs.length > 10000) this.auditLogs = this.auditLogs.slice(-10000);
+  },
+  getAuditLogs(userId, resourceType, startDate, endDate) {
+    let logs = [...this.auditLogs];
+    if (userId) logs = logs.filter(l => l.userId === userId);
+    if (resourceType) logs = logs.filter(l => l.resourceType === resourceType);
+    if (startDate) logs = logs.filter(l => l.timestamp >= startDate);
+    if (endDate) logs = logs.filter(l => l.timestamp <= endDate);
+    return logs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  }
+};
+
+app.post('/rbac/roles', (req, res) => {
+  try {
+    const role = rbacStore.createRole(req.body);
+    res.json(role);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.post('/rbac/users', (req, res) => {
+  try {
+    const user = rbacStore.createUser(req.body);
+    res.json(user);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.post('/rbac/policies', (req, res) => {
+  try {
+    const policy = rbacStore.createPolicy(req.body);
+    res.json(policy);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.get('/rbac/audit', (req, res) => {
+  const { userId, resourceType, startDate, endDate } = req.query || {};
+  res.json({ logs: rbacStore.getAuditLogs(userId, resourceType, startDate, endDate) });
+});
+
+// 404 handler - must be before static files
+app.use((req, res) => {
+  logger.warn('Route not found', {
+    method: req.method,
+    path: req.path,
+    ip: req.ip,
+  });
+  metrics.recordError('NotFound', req.path);
+  res.status(404).json({
+    error: 'Not found',
+    path: req.path,
+  });
+});
+
+// Error handler middleware (must be last, before static)
+app.use((err, req, res, next) => {
+  const path = req.route?.path || req.path;
+  const errorType = err.name || 'Error';
+  const statusCode = err.statusCode || err.status || 500;
+
+  metrics.recordError(errorType, path);
+  logger.error('Request error', err, {
+    method: req.method,
+    path,
+    statusCode,
+  });
+
+  res.status(statusCode).json({
+    error: err.message || 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+  });
+});
+
 // Static files should come last, after ALL API routes
 app.use('/', express.static(path.join(ROOT, 'public')));
 
 app.listen(PORT, () => {
+  logger.info('Catalog API started', {
+    port: PORT,
+    env: process.env.NODE_ENV || 'development',
+    logLevel: process.env.LOG_LEVEL || 'INFO',
+  });
   console.log(`Catalog API running on http://127.0.0.1:${PORT}`);
+  console.log(`Health: http://127.0.0.1:${PORT}/health`);
+  console.log(`Metrics: http://127.0.0.1:${PORT}/metrics`);
   console.log(`Tile endpoints: /tiles/raster/:z/:x/:y, /tiles/vector/:z/:x/:y, /tiles/info`);
 });

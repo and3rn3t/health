@@ -4,20 +4,236 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dataset Browser</title>
+  <script src="/test-data.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
-      h1 { margin: 0 0 1rem 0; }
+      * { box-sizing: border-box; }
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        margin: 0;
+        padding: 1.5rem;
+        background: #f5f5f5;
+        color: #333;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        gap: 1.5rem;
+        position: relative;
+      }
+      .main-content {
+        flex: 1;
+        min-width: 0;
+      }
+      h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 2rem;
+        color: #1a1a1a;
+        font-weight: 600;
+      }
+      h2 {
+        margin-top: 2rem;
+        margin-bottom: 0.75rem;
+        font-size: 1.5rem;
+        color: #2c3e50;
+        font-weight: 600;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e0e0e0;
+      }
+      h3 {
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 1.2rem;
+        color: #34495e;
+        font-weight: 600;
+      }
       .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-      pre { background: #f6f8fa; padding: 1rem; border-radius: 6px; overflow: auto; }
-      ul { padding-left: 1.2rem; }
+      section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+      }
+      pre {
+        background: #f6f8fa;
+        padding: 1rem;
+        border-radius: 6px;
+        overflow: auto;
+        border: 1px solid #e1e4e8;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+      ul { padding-left: 1.5rem; }
       a { color: #0969da; text-decoration: none; }
       a:hover { text-decoration: underline; }
-      .muted { color: #57606a; }
+      .muted { color: #57606a; font-size: 0.9rem; }
+      button {
+        background: #0969da;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+      button:hover {
+        background: #0851a3;
+      }
+      button:active {
+        transform: scale(0.98);
+      }
+      input[type="text"], input[type="number"], textarea, select {
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 0.5rem;
+        font-size: 0.9rem;
+        font-family: inherit;
+      }
+      input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
+        outline: none;
+        border-color: #0969da;
+        box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
+      }
+      textarea {
+        font-family: 'Courier New', monospace;
+        resize: vertical;
+      }
+      label {
+        display: block;
+        margin-bottom: 0.25rem;
+        font-weight: 500;
+        color: #374151;
+        font-size: 0.9rem;
+      }
+
+      /* Floating Preview Panel */
+      .preview-panel {
+        position: fixed;
+        top: 1.5rem;
+        right: 1.5rem;
+        width: 450px;
+        max-height: calc(100vh - 3rem);
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        flex-direction: column;
+        z-index: 1000;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+      }
+      .preview-panel.dragging {
+        transition: none;
+      }
+      .preview-panel.minimized {
+        transform: translateX(calc(100% - 60px)) !important;
+      }
+      .preview-panel.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .preview-header {
+        padding: 1rem;
+        background: #0969da;
+        color: white;
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: move;
+      }
+      .preview-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: white;
+        border: none;
+        padding: 0;
+      }
+      .preview-controls {
+        display: flex;
+        gap: 0.5rem;
+      }
+      .preview-controls button {
+        background: rgba(255,255,255,0.2);
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+        min-width: auto;
+      }
+      .preview-controls button:hover {
+        background: rgba(255,255,255,0.3);
+      }
+      .preview-content {
+        padding: 1rem;
+        overflow-y: auto;
+        flex: 1;
+        min-height: 0;
+      }
+      .preview-content pre {
+        margin: 0;
+        max-height: calc(100vh - 250px);
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      .preview-footer {
+        padding: 0.75rem 1rem;
+        border-top: 1px solid #e1e4e8;
+        display: flex;
+        gap: 0.5rem;
+      }
+      .preview-footer button {
+        flex: 1;
+      }
+
+      /* Info banner */
+      .info-banner {
+        margin-bottom: 1.5rem;
+        padding: 0.75rem 1rem;
+        background: #e8f5e9;
+        border-radius: 6px;
+        border-left: 4px solid #4caf50;
+      }
+      .info-banner code {
+        background: rgba(0,0,0,0.05);
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        font-size: 0.85rem;
+      }
+
+      /* Responsive */
+      @media (max-width: 1200px) {
+        .preview-panel {
+          width: 400px;
+        }
+      }
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+        }
+        .preview-panel {
+          position: relative;
+          top: auto;
+          right: auto;
+          width: 100%;
+          max-height: 400px;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   </head>
   <body>
-    <h1>Dataset Browser</h1>
-    <p class="muted">Served by /catalog endpoints. Start with: <code>npm run catalog:api</code></p>
+    <div class="container">
+      <div class="main-content">
+        <h1>Dataset Browser</h1>
+        <p class="muted">Served by /catalog endpoints. Start with: <code>npm run catalog:api</code></p>
+        <div class="info-banner">
+          <strong>💡 Quick Test:</strong> Each section has a "📋 Load Sample Data" button to populate fields with test values.
+          Use <code>window.TestData</code> in console to access all sample data programmatically.
+        </div>
     <div class="grid">
       <section>
         <h2>Items</h2>
@@ -63,6 +279,7 @@
     <section>
       <h2>NDWI from CSV</h2>
       <p class="muted">Paste comma/space/newline separated values for Green and NIR. NDWI = (Green - NIR) / (Green + NIR)</p>
+      <button id="loadNdwiCsvSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
       <div style="display:flex; gap:1rem; align-items:flex-start;">
         <div style="flex:1;">
           <label for="greenCsv"><strong>Green values</strong></label>
@@ -82,6 +299,7 @@
     <section>
       <h2>NDMI from CSV</h2>
       <p class="muted">Paste comma/space/newline separated values for NIR and SWIR. NDMI = (NIR - SWIR) / (NIR + SWIR)</p>
+      <button id="loadNdmiCsvSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
       <div style="display:flex; gap:1rem; align-items:flex-start;">
         <div style="flex:1;">
           <label for="nirNdmiCsv"><strong>NIR values</strong></label>
@@ -101,6 +319,7 @@
     <section>
       <h2>Cloud/Shadow Masking</h2>
       <p class="muted">Mask clouds (high brightness) and/or shadows (low brightness) from RGB imagery. Toggle mask type and adjust thresholds.</p>
+      <button id="loadMaskingSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
       <div style="display:flex; gap:1rem; align-items:flex-start;">
         <div style="flex:1;">
           <label for="blueMask"><strong>Blue values</strong></label>
@@ -160,6 +379,7 @@
       <div style="margin-bottom:1rem;">
         <h3>Spatial Join</h3>
         <p class="muted">Find features that intersect with a query bounding box.</p>
+        <button id="loadSpatialJoinSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
         <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
           <div>
             <label>Query BBox (minX, minY, maxX, maxY):</label>
@@ -172,6 +392,7 @@
       <div style="margin-bottom:1rem;">
         <h3>Buffer</h3>
         <p class="muted">Create a circular buffer around a point.</p>
+        <button id="loadBufferSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
         <div style="display:flex; gap:1rem; margin-bottom:0.5rem; flex-wrap:wrap;">
           <div>
             <label>Center (x, y):</label>
@@ -187,6 +408,7 @@
       <div>
         <h3>Proximity / Nearest Neighbor</h3>
         <p class="muted">Find nearest point features to a query point.</p>
+        <button id="loadProximitySample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
         <div style="display:flex; gap:1rem; margin-bottom:0.5rem; flex-wrap:wrap;">
           <div>
             <label>Query Point (x, y):</label>
@@ -211,6 +433,7 @@
       <div style="margin-bottom:1rem;">
         <h3>Ground/Non-Ground Classification</h3>
         <p class="muted">Classify LiDAR points as ground (2) or non-ground (1).</p>
+        <button id="loadLidarClassifySample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
         <div style="display:flex; gap:1rem; margin-bottom:0.5rem; flex-wrap:wrap;">
           <div>
             <label>Cell Size (m):</label>
@@ -231,6 +454,7 @@
       <div style="margin-bottom:1rem;">
         <h3>DTM Generation</h3>
         <p class="muted">Generate Digital Terrain Model from ground-classified points.</p>
+        <button id="loadDtmSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
         <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
           <div>
             <label>Cell Size (m):</label>
@@ -243,6 +467,7 @@
       <div>
         <h3>DSM Generation</h3>
         <p class="muted">Generate Digital Surface Model from all points (highest elevation per cell).</p>
+        <button id="loadDsmSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
         <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
           <div>
             <label>Cell Size (m):</label>
@@ -255,6 +480,7 @@
       <div style="margin-top:1rem;">
         <h3>Canopy Height Model (CHM)</h3>
         <p class="muted">Generate CHM from DSM and DTM (CHM = DSM - DTM). Paste DSM and DTM JSON results.</p>
+        <button id="loadChmSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
         <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
           <button id="runCHM">Generate CHM</button>
         </div>
@@ -272,6 +498,7 @@
       <div style="margin-top:1rem;">
         <h3>Terrain Derivatives (Slope/Aspect)</h3>
         <p class="muted">Calculate slope and aspect from DTM. Paste DTM JSON result.</p>
+        <button id="loadTerrainDerivSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
         <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
           <button id="runTerrainDeriv">Calculate Derivatives</button>
         </div>
@@ -280,6 +507,7 @@
       <div style="margin-top:1rem;">
         <h3>Feature Extraction (Buildings & Trees)</h3>
         <p class="muted">Extract buildings and trees from CHM using rule-based detection. Paste CHM JSON result.</p>
+        <button id="loadFeatureExtractSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
         <div style="display:flex; gap:1rem; margin-bottom:0.5rem; flex-wrap:wrap;">
           <div>
             <label>Extract:</label>
@@ -315,24 +543,34 @@
       <div style="margin-bottom:1rem;">
         <h3>Risk Scoring</h3>
         <p class="muted">Calculate weighted composite risk scores from multiple factors.</p>
-        <button id="runRiskScore">Calculate Risk Score</button>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+          <button id="loadRiskScoreSample" style="font-size:0.9em; padding:0.3rem 0.6rem;">📋 Load Sample Data</button>
+          <button id="runRiskScore">Calculate Risk Score</button>
+        </div>
         <textarea id="riskFactors" rows="6" style="width:100%; margin-top:0.5rem;" placeholder='[{"name":"elevation","weight":0.3,"values":[10,20,15,25],"normalize":"minmax"},{"name":"water_proximity","weight":0.4,"values":[0.1,0.3,0.2,0.4],"invert":true}]'></textarea>
       </div>
       <div style="margin-bottom:1rem;">
         <h3>Explainability - Uncertainty Map</h3>
         <p class="muted">Calculate confidence and uncertainty from predictions.</p>
-        <button id="runUncertainty">Calculate Uncertainty</button>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+          <button id="loadUncertaintySample" style="font-size:0.9em; padding:0.3rem 0.6rem;">📋 Load Sample Data</button>
+          <button id="runUncertainty">Calculate Uncertainty</button>
+        </div>
         <textarea id="uncertaintyPredictions" rows="3" style="width:100%; margin-top:0.5rem;" placeholder='{"predictions":[0.2,0.8,0.5,0.9,0.1],"confidence":[0.7,0.9,0.5,0.95,0.6]}'></textarea>
       </div>
       <div style="margin-bottom:1rem;">
         <h3>Explainability - Feature Importance</h3>
         <p class="muted">Calculate feature importance from multiple features.</p>
-        <button id="runFeatureImportance">Calculate Importance</button>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+          <button id="loadFeatureImportanceSample" style="font-size:0.9em; padding:0.3rem 0.6rem;">📋 Load Sample Data</button>
+          <button id="runFeatureImportance">Calculate Importance</button>
+        </div>
         <textarea id="importanceFeatures" rows="4" style="width:100%; margin-top:0.5rem;" placeholder='[{"name":"NDVI","values":[0.3,0.5,0.4,0.6]},{"name":"elevation","values":[100,200,150,250]}]'></textarea>
       </div>
       <div style="margin-bottom:1rem;">
         <h3>Change Detection</h3>
         <p class="muted">Detect changes between before/after imagery.</p>
+        <button id="loadChangeDetectionSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
         <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
           <div>
             <label>Threshold:</label>
@@ -354,7 +592,10 @@
       <div style="margin-bottom:1rem;">
         <h3>Object Detection/Segmentation</h3>
         <p class="muted">Detect and segment objects (buildings, roads, water, vegetation).</p>
-        <button id="runObjectDetection">Run Detection</button>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+          <button id="loadObjectDetectionSample" style="font-size:0.9em; padding:0.3rem 0.6rem;">📋 Load Sample Data</button>
+          <button id="runObjectDetection">Run Detection</button>
+        </div>
         <textarea id="objectImage" rows="3" style="width:100%; margin-top:0.5rem;" placeholder='Image values: [0.1,0.2,0.8,0.7,0.3,0.4,0.6,0.5]'></textarea>
       </div>
       <div style="margin-bottom:1rem;">
@@ -386,8 +627,72 @@
       </div>
     </section>
     <section>
+      <h2>Phase 5: Productization & Workflows</h2>
+      <div style="margin-bottom:1rem;">
+        <h3>Projects & AOIs</h3>
+        <p class="muted">Create projects, define Areas of Interest (AOIs), and run analyses.</p>
+        <div style="margin-bottom:0.5rem;">
+          <button id="loadProjectSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-right:0.5rem;">📋 Load Project Sample</button>
+          <button id="loadAoiSample" style="font-size:0.9em; padding:0.3rem 0.6rem;">📋 Load AOI Sample</button>
+        </div>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem; flex-wrap:wrap;">
+          <button id="listProjects">List Projects</button>
+          <button id="createProject">Create Project</button>
+          <button id="createAOI">Add AOI to Project</button>
+          <button id="createAnalysisRun">Create Analysis Run</button>
+        </div>
+        <textarea id="projectData" rows="4" style="width:100%;" placeholder='{"id":"project-1","name":"My Project","ownerId":"user-1","description":"Test project"}'></textarea>
+        <textarea id="aoiData" rows="3" style="width:100%; margin-top:0.5rem;" placeholder='{"name":"Test AOI","geometry":{"type":"Polygon","coordinates":[[[-122.5,37.7],[-122.4,37.7],[-122.4,37.8],[-122.5,37.8],[-122.5,37.7]]]}}'></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <h3>Scheduled Analyses</h3>
+        <p class="muted">Schedule recurring analyses with notifications.</p>
+        <button id="loadScheduleSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+          <button id="listSchedules">List Schedules</button>
+          <button id="createSchedule">Create Schedule</button>
+        </div>
+        <textarea id="scheduleData" rows="3" style="width:100%;" placeholder='{"projectId":"project-1","analysisType":"ndvi","scheduleType":"daily","enabled":true}'></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <h3>Export</h3>
+        <p class="muted">Export data to PDF, CSV, or GeoPackage format.</p>
+        <button id="loadExportSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem; flex-wrap:wrap;">
+          <div>
+            <label>Format:</label>
+            <select id="exportFormat">
+              <option value="csv">CSV</option>
+              <option value="geojson">GeoJSON</option>
+              <option value="pdf">PDF</option>
+            </select>
+          </div>
+          <div>
+            <label><input type="checkbox" id="exportWatermark" /> Include Watermark</label>
+          </div>
+          <button id="exportData">Export</button>
+        </div>
+        <textarea id="exportDataInput" rows="3" style="width:100%;" placeholder='[{"name":"Feature 1","value":0.5},{"name":"Feature 2","value":0.7}]'></textarea>
+      </div>
+      <div>
+        <h3>RBAC & Audit</h3>
+        <p class="muted">Manage roles, users, policies, and view audit logs.</p>
+        <button id="loadRbacSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem; flex-wrap:wrap;">
+          <button id="createRole">Create Role</button>
+          <button id="createUser">Create User</button>
+          <button id="createPolicy">Create Policy</button>
+          <button id="getAuditLogs">Get Audit Logs</button>
+        </div>
+        <textarea id="rbacData" rows="3" style="width:100%;" placeholder='{"name":"Analyst","permissions":["read","write"],"resourceTypes":["dataset","analysis"]}'></textarea>
+      </div>
+    </section>
+    <section>
       <h2>Zonal stats demo</h2>
       <p class="muted">Provide values and a matching list of zone IDs for each value.</p>
+      <div style="margin-bottom:0.5rem;">
+        <button id="loadZonalSample" style="font-size:0.9em; padding:0.3rem 0.6rem;">📋 Load Sample Data</button>
+      </div>
       <div style="display:flex; gap:1rem; align-items:flex-start;">
         <div style="flex:1;">
           <label for="zonalValues"><strong>Values</strong></label>
@@ -405,6 +710,7 @@
     <section>
       <h2>Slope/Aspect demo</h2>
       <p class="muted">Paste a grid of elevations (CSV or whitespace), and set width/height.</p>
+      <button id="loadTerrainSample" style="font-size:0.9em; padding:0.3rem 0.6rem; margin-bottom:0.5rem;">📋 Load Sample Data</button>
       <div style="display:flex; gap:1rem; align-items:flex-start;">
         <div style="flex:1;">
           <label for="elevCsv"><strong>Elevations</strong></label>
@@ -429,14 +735,144 @@
         <button id="runTerrain">Run Slope/Aspect</button>
       </div>
     </section>
-    <section>
-      <h2>Preview</h2>
-      <pre id="preview">Select an item or collection…</pre>
-      <div style="margin-top:0.5rem;">
-        <button id="downloadJson">Download JSON</button>
       </div>
-    </section>
+
+      <!-- Floating Preview Panel -->
+      <div class="preview-panel" id="previewPanel">
+        <div class="preview-header" id="previewHeader">
+          <h2>Preview</h2>
+          <div class="preview-controls">
+            <button id="minimizePreview" title="Minimize">−</button>
+            <button id="closePreview" title="Close">×</button>
+          </div>
+        </div>
+        <div class="preview-content">
+          <pre id="preview">Select an item or collection…</pre>
+        </div>
+        <div class="preview-footer">
+          <button id="downloadJson">Download JSON</button>
+        </div>
+      </div>
+    </div>
     <script>
+      // Preview panel controls
+      let previewMinimized = false;
+      let previewHidden = false;
+
+      document.getElementById('minimizePreview')?.addEventListener('click', () => {
+        previewMinimized = !previewMinimized;
+        const panel = document.getElementById('previewPanel');
+        if (previewMinimized) {
+          panel.classList.add('minimized');
+          document.getElementById('minimizePreview').textContent = '+';
+        } else {
+          panel.classList.remove('minimized');
+          document.getElementById('minimizePreview').textContent = '−';
+        }
+      });
+
+      document.getElementById('closePreview')?.addEventListener('click', () => {
+        previewHidden = !previewHidden;
+        const panel = document.getElementById('previewPanel');
+        if (previewHidden) {
+          panel.classList.add('hidden');
+        } else {
+          panel.classList.remove('hidden');
+          panel.classList.remove('minimized');
+          previewMinimized = false;
+          document.getElementById('minimizePreview').textContent = '−';
+        }
+      });
+
+      // Make preview panel draggable
+      let isDragging = false;
+      let currentX;
+      let currentY;
+      let initialX;
+      let initialY;
+      let xOffset = 0;
+      let yOffset = 0;
+
+      const previewHeader = document.getElementById('previewHeader');
+      const previewPanel = document.getElementById('previewPanel');
+
+      previewHeader.addEventListener('mousedown', dragStart);
+      document.addEventListener('mousemove', drag);
+      document.addEventListener('mouseup', dragEnd);
+
+      function dragStart(e) {
+        if (e.target.tagName === 'BUTTON') return;
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+
+        if (e.target === previewHeader || previewHeader.contains(e.target)) {
+          isDragging = true;
+          previewPanel.classList.add('dragging');
+        }
+      }
+
+      function drag(e) {
+        if (isDragging) {
+          e.preventDefault();
+          currentX = e.clientX - initialX;
+          currentY = e.clientY - initialY;
+
+          xOffset = currentX;
+          yOffset = currentY;
+
+          previewPanel.style.left = `${e.clientX - initialX}px`;
+          previewPanel.style.top = `${e.clientY - initialY}px`;
+          previewPanel.style.right = 'auto';
+        }
+      }
+
+      function dragEnd(e) {
+        if (isDragging) {
+          initialX = currentX;
+          initialY = currentY;
+          isDragging = false;
+          previewPanel.classList.remove('dragging');
+        }
+      }
+
+      // Show preview panel when content is updated
+      const originalSetPreview = (text) => {
+        const preview = document.getElementById('preview');
+        if (preview) {
+          preview.textContent = text;
+          // Auto-expand if minimized
+          if (previewMinimized) {
+            previewMinimized = false;
+            previewPanel.classList.remove('minimized');
+            document.getElementById('minimizePreview').textContent = '−';
+          }
+          // Show if hidden
+          if (previewHidden) {
+            previewHidden = false;
+            previewPanel.classList.remove('hidden');
+          }
+        }
+      };
+
+      // Intercept preview updates
+      const previewElement = document.getElementById('preview');
+      if (previewElement) {
+        const observer = new MutationObserver(() => {
+          if (previewElement.textContent && previewElement.textContent !== 'Select an item or collection…') {
+            if (previewHidden) {
+              previewHidden = false;
+              previewPanel.classList.remove('hidden');
+            }
+            if (previewMinimized) {
+              previewMinimized = false;
+              previewPanel.classList.remove('minimized');
+              document.getElementById('minimizePreview').textContent = '−';
+            }
+          }
+        });
+        observer.observe(previewElement, { childList: true, characterData: true, subtree: true });
+      }
+
       async function fetchJson(url) {
         const r = await fetch(url);
         if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -1075,6 +1511,371 @@
           document.getElementById('preview').textContent = `Error: ${e.message}`;
         }
       };
+      // Phase 5 handlers
+      document.getElementById('listProjects').onclick = async () => {
+        try {
+          const r = await fetch('/projects');
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('createProject').onclick = async () => {
+        const projectText = document.getElementById('projectData').value || '';
+        try {
+          const project = JSON.parse(projectText || '{}');
+          const r = await fetch('/projects', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(project)
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('createAOI').onclick = async () => {
+        const projectText = document.getElementById('projectData').value || '';
+        const aoiText = document.getElementById('aoiData').value || '';
+        try {
+          const project = JSON.parse(projectText || '{}');
+          const aoi = JSON.parse(aoiText || '{}');
+          if (!project.id) {
+            throw new Error('Project ID required. Create project first or provide project.id in projectData');
+          }
+          const r = await fetch(`/projects/${project.id}/aois`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(aoi)
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('createAnalysisRun').onclick = async () => {
+        const projectText = document.getElementById('projectData').value || '';
+        try {
+          const project = JSON.parse(projectText || '{}');
+          if (!project.id) {
+            throw new Error('Project ID required');
+          }
+          const r = await fetch(`/projects/${project.id}/runs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              analysisType: 'ndvi',
+              input: { nir: [0.5, 0.6], red: [0.3, 0.4] }
+            })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('listSchedules').onclick = async () => {
+        try {
+          const r = await fetch('/schedules');
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('createSchedule').onclick = async () => {
+        const scheduleText = document.getElementById('scheduleData').value || '';
+        try {
+          const schedule = JSON.parse(scheduleText || '{}');
+          const r = await fetch('/schedules', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(schedule)
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('exportData').onclick = async () => {
+        const dataText = document.getElementById('exportDataInput').value || '';
+        const format = document.getElementById('exportFormat').value || 'csv';
+        const includeWatermark = document.getElementById('exportWatermark').checked;
+        try {
+          const data = JSON.parse(dataText || '[]');
+          const r = await fetch('/export', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              data,
+              format,
+              options: { includeWatermark, version: '1.0.0' }
+            })
+          });
+          if (r.ok) {
+            const text = await r.text();
+            document.getElementById('preview').textContent = text;
+            // Offer download
+            const blob = new Blob([text], { type: r.headers.get('content-type') || 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `export.${format === 'geojson' ? 'json' : format}`;
+            a.click();
+            URL.revokeObjectURL(url);
+          } else {
+            const error = await r.json();
+            document.getElementById('preview').textContent = `Error: ${error.error || r.statusText}`;
+          }
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('createRole').onclick = async () => {
+        const rbacText = document.getElementById('rbacData').value || '';
+        try {
+          const role = JSON.parse(rbacText || '{}');
+          const r = await fetch('/rbac/roles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(role)
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('createUser').onclick = async () => {
+        const rbacText = document.getElementById('rbacData').value || '';
+        try {
+          const user = JSON.parse(rbacText || '{}');
+          const r = await fetch('/rbac/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: user.email || 'user@example.com', roles: user.roles || [], organizationId: user.organizationId })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('createPolicy').onclick = async () => {
+        const rbacText = document.getElementById('rbacData').value || '';
+        try {
+          const policy = JSON.parse(rbacText || '{}');
+          const r = await fetch('/rbac/policies', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              resourceType: policy.resourceType || 'dataset',
+              permissions: policy.permissions || ['read'],
+              userId: policy.userId,
+              organizationId: policy.organizationId
+            })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('getAuditLogs').onclick = async () => {
+        try {
+          const r = await fetch('/rbac/audit');
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      // Sample data loaders
+      function loadSampleData() {
+        if (typeof TestData === 'undefined') {
+          alert('Test data not loaded. Make sure test-data.js is available.');
+          return;
+        }
+        const td = TestData;
+
+        // NDVI
+        document.getElementById('loadNdviSample')?.addEventListener('click', () => {
+          document.getElementById('nir').value = td.ndvi.nir.join(' ');
+          document.getElementById('red').value = td.ndvi.red.join(' ');
+        });
+
+        // NDVI from CSV
+        document.getElementById('loadNdviCsvSample')?.addEventListener('click', () => {
+          document.getElementById('nirCsv').value = td.ndvi.nir.join(' ');
+          document.getElementById('redCsv').value = td.ndvi.red.join(' ');
+        });
+
+        // Zonal Stats
+        document.getElementById('loadZonalSample')?.addEventListener('click', () => {
+          document.getElementById('zonalValues').value = td.zonal.values.join(' ');
+          document.getElementById('zonalZones').value = td.zonal.zones.join(' ');
+        });
+
+        // Terrain
+        document.getElementById('loadTerrainSample')?.addEventListener('click', () => {
+          document.getElementById('elevCsv').value = td.terrain.elevations.join(' ');
+          document.getElementById('elevWidth').value = '5';
+          document.getElementById('elevHeight').value = '2';
+        });
+
+        // Cloud/Shadow Masking
+        document.getElementById('loadMaskingSample')?.addEventListener('click', () => {
+          document.getElementById('redMask').value = td.masking.rgb.r.join(' ');
+          document.getElementById('greenMask').value = td.masking.rgb.g.join(' ');
+          document.getElementById('blueMask').value = td.masking.rgb.b.join(' ');
+        });
+
+        // NDWI
+        document.getElementById('loadNdwiSample')?.addEventListener('click', () => {
+          document.getElementById('ndwiGreen').value = td.ndwi.green.join(' ');
+          document.getElementById('ndwiNir').value = td.ndwi.nir.join(' ');
+        });
+
+        // NDWI from CSV
+        document.getElementById('loadNdwiCsvSample')?.addEventListener('click', () => {
+          document.getElementById('greenCsv').value = td.ndwi.green.join(' ');
+          document.getElementById('nirNdwiCsv').value = td.ndwi.nir.join(' ');
+        });
+
+        // NDMI
+        document.getElementById('loadNdmiSample')?.addEventListener('click', () => {
+          document.getElementById('ndmiNir').value = td.ndmi.nir.join(' ');
+          document.getElementById('ndmiSwir').value = td.ndmi.swir.join(' ');
+        });
+
+        // NDMI from CSV
+        document.getElementById('loadNdmiCsvSample')?.addEventListener('click', () => {
+          document.getElementById('nirNdmiCsv').value = td.ndmi.nir.join(' ');
+          document.getElementById('swirCsv').value = td.ndmi.swir.join(' ');
+        });
+
+        // Vector Spatial - Spatial Join
+        document.getElementById('loadSpatialJoinSample')?.addEventListener('click', () => {
+          const bbox = td.vector.spatialJoin.queryBbox;
+          document.getElementById('joinBbox').value = `${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}`;
+          document.getElementById('joinFeatures').value = JSON.stringify(td.vector.spatialJoin.targetFeatures, null, 2);
+        });
+
+        // Vector Spatial - Buffer
+        document.getElementById('loadBufferSample')?.addEventListener('click', () => {
+          const center = td.vector.buffer.center;
+          document.getElementById('bufferCenter').value = `${center.x},${center.y}`;
+          document.getElementById('bufferRadius').value = td.vector.buffer.radiusMeters;
+        });
+
+        // Vector Spatial - Proximity
+        document.getElementById('loadProximitySample')?.addEventListener('click', () => {
+          const point = td.vector.proximity.queryPoint;
+          document.getElementById('proxPoint').value = `${point.x},${point.y}`;
+          document.getElementById('proxFeatures').value = JSON.stringify(td.vector.proximity.targetFeatures, null, 2);
+        });
+
+        // LiDAR - Classification
+        document.getElementById('loadLidarClassifySample')?.addEventListener('click', () => {
+          document.getElementById('lidarPoints').value = JSON.stringify(td.lidar.points, null, 2);
+        });
+
+        // LiDAR - DTM
+        document.getElementById('loadDtmSample')?.addEventListener('click', () => {
+          document.getElementById('dtmPoints').value = JSON.stringify(td.lidar.groundPoints, null, 2);
+        });
+
+        // LiDAR - DSM
+        document.getElementById('loadDsmSample')?.addEventListener('click', () => {
+          document.getElementById('dsmPoints').value = JSON.stringify(td.lidar.allPoints, null, 2);
+        });
+
+        // CHM
+        document.getElementById('loadChmSample')?.addEventListener('click', () => {
+          document.getElementById('chmDSM').value = JSON.stringify(td.chm.dsm, null, 2);
+          document.getElementById('chmDTM').value = JSON.stringify(td.chm.dtm, null, 2);
+        });
+
+        // Terrain Derivatives
+        document.getElementById('loadTerrainDerivSample')?.addEventListener('click', () => {
+          document.getElementById('terrainDTM').value = JSON.stringify(td.chm.dtm, null, 2);
+        });
+
+        // Feature Extraction
+        document.getElementById('loadFeatureExtractSample')?.addEventListener('click', () => {
+          document.getElementById('featureCHM').value = JSON.stringify(td.featureExtraction.chm, null, 2);
+        });
+
+        // Risk Scoring
+        document.getElementById('loadRiskScoreSample')?.addEventListener('click', () => {
+          document.getElementById('riskFactors').value = JSON.stringify(td.riskScoring.factors, null, 2);
+        });
+
+        // Explainability - Uncertainty
+        document.getElementById('loadUncertaintySample')?.addEventListener('click', () => {
+          document.getElementById('uncertaintyPredictions').value = JSON.stringify(td.explainability.uncertainty, null, 2);
+        });
+
+        // Explainability - Feature Importance
+        document.getElementById('loadFeatureImportanceSample')?.addEventListener('click', () => {
+          document.getElementById('importanceFeatures').value = JSON.stringify(td.explainability.featureImportance.features, null, 2);
+        });
+
+        // Change Detection
+        document.getElementById('loadChangeDetectionSample')?.addEventListener('click', () => {
+          document.getElementById('changeBefore').value = JSON.stringify(td.changeDetection.before);
+          document.getElementById('changeAfter').value = JSON.stringify(td.changeDetection.after);
+          document.getElementById('changeThreshold').value = td.changeDetection.threshold;
+          document.getElementById('changeMethod').value = td.changeDetection.method;
+        });
+
+        // Object Detection
+        document.getElementById('loadObjectDetectionSample')?.addEventListener('click', () => {
+          document.getElementById('objectImage').value = JSON.stringify(td.objectDetection.image);
+        });
+
+        // Projects
+        document.getElementById('loadProjectSample')?.addEventListener('click', () => {
+          document.getElementById('projectData').value = JSON.stringify(td.project, null, 2);
+        });
+
+        // AOI
+        document.getElementById('loadAoiSample')?.addEventListener('click', () => {
+          document.getElementById('aoiData').value = JSON.stringify(td.aoi, null, 2);
+        });
+
+        // Schedule
+        document.getElementById('loadScheduleSample')?.addEventListener('click', () => {
+          document.getElementById('scheduleData').value = JSON.stringify(td.schedule, null, 2);
+        });
+
+        // Export
+        document.getElementById('loadExportSample')?.addEventListener('click', () => {
+          const format = document.getElementById('exportFormat').value;
+          if (format === 'csv') {
+            document.getElementById('exportDataInput').value = JSON.stringify(td.export.csv, null, 2);
+          } else if (format === 'geojson') {
+            document.getElementById('exportDataInput').value = JSON.stringify(td.export.geojson, null, 2);
+          }
+        });
+
+        // RBAC
+        document.getElementById('loadRbacSample')?.addEventListener('click', () => {
+          document.getElementById('rbacData').value = JSON.stringify(td.rbac.role, null, 2);
+        });
+      }
+
+      // Initialize sample data loaders when page loads
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadSampleData);
+      } else {
+        loadSampleData();
+      }
+
       document.getElementById('downloadJson').onclick = () => {
         const text = document.getElementById('preview').textContent || '';
         try {
