@@ -35,7 +35,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { useOnceToast } from '@/hooks/useOnceToast';
 
 // Type aliases for union types
 type DeliveryStatus = 'pending' | 'sent' | 'failed';
@@ -124,6 +124,7 @@ interface SmartNotificationEngineProps {
 export default function SmartNotificationEngine({
   healthData,
 }: SmartNotificationEngineProps) {
+  const { showOnce } = useOnceToast();
   // Default preferences to avoid undefined issues
   const defaultPreferences: NotificationPreferences = {
     enabled: true,
@@ -405,7 +406,8 @@ export default function SmartNotificationEngine({
         setNotifications(updatedNotifications);
         setNotificationQueue(removeFromQueue(notification.id));
 
-        toast.success(`Notification delivered: ${notification.title}`);
+        // Guard against repeated toasts if delivery processing re-runs
+        showOnce(`delivered-${notification.id}`, 'success', `Notification delivered: ${notification.title}`);
       }
     });
   }, [
@@ -581,10 +583,10 @@ export default function SmartNotificationEngine({
       // Add to queue for delivery
       setNotificationQueue((current) => [...current, ...newNotifications]);
 
-      toast.success(`Generated ${newNotifications.length} smart notifications`);
+      showOnce('generated-smart-notifications', 'success', `Generated ${newNotifications.length} smart notifications`);
     } catch (error) {
       console.error('Failed to generate notifications:', error);
-      toast.error('Failed to generate notifications');
+      showOnce('generate-notifications-error', 'error', 'Failed to generate notifications');
     } finally {
       setIsGenerating(false);
     }
@@ -727,7 +729,7 @@ export default function SmartNotificationEngine({
         : n
     );
     setNotifications(updatedNotifications);
-    toast.success('Notification acknowledged');
+    showOnce(`ack-${notificationId}`, 'success', 'Notification acknowledged');
   };
 
   return (
