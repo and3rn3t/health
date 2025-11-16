@@ -21,10 +21,12 @@
     <div class="grid">
       <section>
         <h2>Items</h2>
+        <input id="itemsFilter" placeholder="Filter items..." style="width:100%; margin-bottom:0.5rem;" />
         <ul id="items"></ul>
       </section>
       <section>
         <h2>Collections</h2>
+        <input id="collectionsFilter" placeholder="Filter collections..." style="width:100%; margin-bottom:0.5rem;" />
         <ul id="collections"></ul>
       </section>
     </div>
@@ -32,6 +34,12 @@
       <h2>NDVI demo</h2>
       <p class="muted">Runs <code>POST /analysis/ndvi</code> on a small in-page sample.</p>
       <button id="runNdvi">Run NDVI sample</button>
+    </section>
+    <section>
+      <h2>Upload JSON</h2>
+      <p class="muted">Upload a small JSON file; it will be stored temporarily and retrievable by id.</p>
+      <input id="uploadFile" type="file" accept="application/json" />
+      <button id="uploadJsonBtn">Upload</button>
     </section>
     <section>
       <h2>NDVI from CSV</h2>
@@ -53,6 +61,331 @@
       </div>
     </section>
     <section>
+      <h2>NDWI from CSV</h2>
+      <p class="muted">Paste comma/space/newline separated values for Green and NIR. NDWI = (Green - NIR) / (Green + NIR)</p>
+      <div style="display:flex; gap:1rem; align-items:flex-start;">
+        <div style="flex:1;">
+          <label for="greenCsv"><strong>Green values</strong></label>
+          <textarea id="greenCsv" rows="6" style="width:100%;" placeholder="e.g. 0.25, 0.28, 0.30 0.27&#10;0.26"></textarea>
+        </div>
+        <div style="flex:1;">
+          <label for="nirNdwiCsv"><strong>NIR values</strong></label>
+          <textarea id="nirNdwiCsv" rows="6" style="width:100%;" placeholder="e.g. 0.80, 0.75, 0.70 0.78&#10;0.82"></textarea>
+        </div>
+      </div>
+      <div style="margin-top:0.5rem;">
+        <label for="ndwiBins">Bins:</label>
+        <input id="ndwiBins" type="number" min="5" max="100" value="10" />
+        <button id="runNdwiCsv">Run NDWI from CSV</button>
+      </div>
+    </section>
+    <section>
+      <h2>NDMI from CSV</h2>
+      <p class="muted">Paste comma/space/newline separated values for NIR and SWIR. NDMI = (NIR - SWIR) / (NIR + SWIR)</p>
+      <div style="display:flex; gap:1rem; align-items:flex-start;">
+        <div style="flex:1;">
+          <label for="nirNdmiCsv"><strong>NIR values</strong></label>
+          <textarea id="nirNdmiCsv" rows="6" style="width:100%;" placeholder="e.g. 0.80, 0.75, 0.70 0.78&#10;0.82"></textarea>
+        </div>
+        <div style="flex:1;">
+          <label for="swirCsv"><strong>SWIR values</strong></label>
+          <textarea id="swirCsv" rows="6" style="width:100%;" placeholder="e.g. 0.15, 0.18, 0.20 0.17&#10;0.16"></textarea>
+        </div>
+      </div>
+      <div style="margin-top:0.5rem;">
+        <label for="ndmiBins">Bins:</label>
+        <input id="ndmiBins" type="number" min="5" max="100" value="10" />
+        <button id="runNdmiCsv">Run NDMI from CSV</button>
+      </div>
+    </section>
+    <section>
+      <h2>Cloud/Shadow Masking</h2>
+      <p class="muted">Mask clouds (high brightness) and/or shadows (low brightness) from RGB imagery. Toggle mask type and adjust thresholds.</p>
+      <div style="display:flex; gap:1rem; align-items:flex-start;">
+        <div style="flex:1;">
+          <label for="blueMask"><strong>Blue values</strong></label>
+          <textarea id="blueMask" rows="4" style="width:100%;" placeholder="e.g. 0.1, 0.2, 0.15 0.18"></textarea>
+        </div>
+        <div style="flex:1;">
+          <label for="greenMask"><strong>Green values</strong></label>
+          <textarea id="greenMask" rows="4" style="width:100%;" placeholder="e.g. 0.2, 0.25, 0.22 0.24"></textarea>
+        </div>
+        <div style="flex:1;">
+          <label for="redMask"><strong>Red values</strong></label>
+          <textarea id="redMask" rows="4" style="width:100%;" placeholder="e.g. 0.18, 0.22, 0.20 0.21"></textarea>
+        </div>
+      </div>
+      <div style="margin-top:0.5rem; display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+        <div>
+          <label for="maskType">Mask type:</label>
+          <select id="maskType">
+            <option value="both">Both (clouds + shadows)</option>
+            <option value="cloud">Clouds only</option>
+            <option value="shadow">Shadows only</option>
+          </select>
+        </div>
+        <div>
+          <label for="cloudThreshold">Cloud threshold:</label>
+          <input id="cloudThreshold" type="number" min="0" max="1" step="0.05" value="0.6" />
+        </div>
+        <div>
+          <label for="shadowThreshold">Shadow threshold:</label>
+          <input id="shadowThreshold" type="number" min="0" max="1" step="0.05" value="0.15" />
+        </div>
+        <button id="runMask">Run Masking</button>
+      </div>
+    </section>
+    <section>
+      <h2>Tile Viewer</h2>
+      <p class="muted">View raster tiles with different style presets. Tiles are cached for performance.</p>
+      <div style="margin-bottom:0.5rem;">
+        <label for="tileStyle">Style:</label>
+        <select id="tileStyle">
+          <option value="default">Default</option>
+          <option value="satellite">Satellite</option>
+          <option value="terrain">Terrain</option>
+          <option value="ndvi">NDVI</option>
+          <option value="ndwi">NDWI</option>
+        </select>
+        <button id="loadTileInfo">Load Tile Info</button>
+        <button id="testTile">Test Tile (5/16/12)</button>
+      </div>
+      <div id="tileViewer" style="border:1px solid #ccc; width:100%; height:400px; background:#f0f0f0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:1rem;">
+        <p class="muted">Click "Test Tile" to load a sample tile</p>
+      </div>
+    </section>
+    <section>
+      <h2>Vector Spatial Operations</h2>
+      <p class="muted">Spatial joins, buffers, and proximity queries on vector features.</p>
+      <div style="margin-bottom:1rem;">
+        <h3>Spatial Join</h3>
+        <p class="muted">Find features that intersect with a query bounding box.</p>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+          <div>
+            <label>Query BBox (minX, minY, maxX, maxY):</label>
+            <input id="joinBbox" type="text" placeholder="-122.5,37.7,-122.4,37.8" style="width:200px;" />
+          </div>
+          <button id="runSpatialJoin">Run Spatial Join</button>
+        </div>
+        <textarea id="joinFeatures" rows="4" style="width:100%;" placeholder='[{"geometry":{"type":"Point","coordinates":[-122.45,37.75]},"properties":{"name":"Feature 1"}}]'></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <h3>Buffer</h3>
+        <p class="muted">Create a circular buffer around a point.</p>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem; flex-wrap:wrap;">
+          <div>
+            <label>Center (x, y):</label>
+            <input id="bufferCenter" type="text" placeholder="-122.45,37.75" style="width:150px;" />
+          </div>
+          <div>
+            <label>Radius (meters):</label>
+            <input id="bufferRadius" type="number" value="1000" min="1" style="width:100px;" />
+          </div>
+          <button id="runBuffer">Create Buffer</button>
+        </div>
+      </div>
+      <div>
+        <h3>Proximity / Nearest Neighbor</h3>
+        <p class="muted">Find nearest point features to a query point.</p>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem; flex-wrap:wrap;">
+          <div>
+            <label>Query Point (x, y):</label>
+            <input id="proxPoint" type="text" placeholder="-122.45,37.75" style="width:150px;" />
+          </div>
+          <div>
+            <label>Max Results:</label>
+            <input id="proxMaxResults" type="number" value="5" min="1" max="50" style="width:80px;" />
+          </div>
+          <div>
+            <label>Max Distance (m, optional):</label>
+            <input id="proxMaxDist" type="number" placeholder="5000" min="1" style="width:100px;" />
+          </div>
+          <button id="runProximity">Find Nearest</button>
+        </div>
+        <textarea id="proxFeatures" rows="4" style="width:100%;" placeholder='[{"geometry":{"type":"Point","coordinates":[-122.46,37.76]},"properties":{"name":"Point 1"}}]'></textarea>
+      </div>
+    </section>
+    <section>
+      <h2>LiDAR Processing</h2>
+      <p class="muted">Ground classification, DTM/DSM generation from point cloud data.</p>
+      <div style="margin-bottom:1rem;">
+        <h3>Ground/Non-Ground Classification</h3>
+        <p class="muted">Classify LiDAR points as ground (2) or non-ground (1).</p>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem; flex-wrap:wrap;">
+          <div>
+            <label>Cell Size (m):</label>
+            <input id="classifyCellSize" type="number" value="1.0" min="0.1" step="0.1" style="width:80px;" />
+          </div>
+          <div>
+            <label>Initial Height (m):</label>
+            <input id="classifyInitHeight" type="number" value="0.5" min="0.1" step="0.1" style="width:80px;" />
+          </div>
+          <div>
+            <label>Max Height (m):</label>
+            <input id="classifyMaxHeight" type="number" value="3.0" min="0.1" step="0.1" style="width:80px;" />
+          </div>
+          <button id="runClassify">Classify Points</button>
+        </div>
+        <textarea id="lidarPoints" rows="4" style="width:100%;" placeholder='[{"x":100,"y":200,"z":50},{"x":101,"y":201,"z":52}]'></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <h3>DTM Generation</h3>
+        <p class="muted">Generate Digital Terrain Model from ground-classified points.</p>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+          <div>
+            <label>Cell Size (m):</label>
+            <input id="dtmCellSize" type="number" value="1.0" min="0.1" step="0.1" style="width:80px;" />
+          </div>
+          <button id="runDTM">Generate DTM</button>
+        </div>
+        <textarea id="dtmPoints" rows="3" style="width:100%;" placeholder='[{"x":100,"y":200,"z":50}]'></textarea>
+      </div>
+      <div>
+        <h3>DSM Generation</h3>
+        <p class="muted">Generate Digital Surface Model from all points (highest elevation per cell).</p>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+          <div>
+            <label>Cell Size (m):</label>
+            <input id="dsmCellSize" type="number" value="1.0" min="0.1" step="0.1" style="width:80px;" />
+          </div>
+          <button id="runDSM">Generate DSM</button>
+        </div>
+        <textarea id="dsmPoints" rows="3" style="width:100%;" placeholder='[{"x":100,"y":200,"z":50}]'></textarea>
+      </div>
+      <div style="margin-top:1rem;">
+        <h3>Canopy Height Model (CHM)</h3>
+        <p class="muted">Generate CHM from DSM and DTM (CHM = DSM - DTM). Paste DSM and DTM JSON results.</p>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+          <button id="runCHM">Generate CHM</button>
+        </div>
+        <div style="display:flex; gap:1rem;">
+          <div style="flex:1;">
+            <label>DSM JSON:</label>
+            <textarea id="chmDSM" rows="3" style="width:100%;" placeholder='{"grid":[[...]],"bbox":{...},"cellSize":1.0,"width":10,"height":10}'></textarea>
+          </div>
+          <div style="flex:1;">
+            <label>DTM JSON:</label>
+            <textarea id="chmDTM" rows="3" style="width:100%;" placeholder='{"grid":[[...]],"bbox":{...},"cellSize":1.0,"width":10,"height":10}'></textarea>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:1rem;">
+        <h3>Terrain Derivatives (Slope/Aspect)</h3>
+        <p class="muted">Calculate slope and aspect from DTM. Paste DTM JSON result.</p>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+          <button id="runTerrainDeriv">Calculate Derivatives</button>
+        </div>
+        <textarea id="terrainDTM" rows="3" style="width:100%;" placeholder='{"grid":[[...]],"bbox":{...},"cellSize":1.0,"width":10,"height":10}'></textarea>
+      </div>
+      <div style="margin-top:1rem;">
+        <h3>Feature Extraction (Buildings & Trees)</h3>
+        <p class="muted">Extract buildings and trees from CHM using rule-based detection. Paste CHM JSON result.</p>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem; flex-wrap:wrap;">
+          <div>
+            <label>Extract:</label>
+            <select id="featureType">
+              <option value="both">Both (buildings + trees)</option>
+              <option value="buildings">Buildings only</option>
+              <option value="trees">Trees only</option>
+            </select>
+          </div>
+          <button id="runFeatureExtract">Extract Features</button>
+        </div>
+        <textarea id="featureCHM" rows="3" style="width:100%;" placeholder='{"grid":[[...]],"bbox":{...},"cellSize":1.0,"width":10,"height":10}'></textarea>
+      </div>
+    </section>
+    <section>
+      <h2>3D Tiles Viewer</h2>
+      <p class="muted">View 3D point cloud tiles. Simple JSON-based format for visualization.</p>
+      <div style="margin-bottom:0.5rem;">
+        <label for="tile3dFormat">Format:</label>
+        <select id="tile3dFormat">
+          <option value="json">JSON</option>
+          <option value="pcd">PCD</option>
+        </select>
+        <button id="load3dTileInfo">Load 3D Tile Info</button>
+        <button id="test3dTile">Test 3D Tile (5/16/12)</button>
+      </div>
+      <div id="tile3dViewer" style="border:1px solid #ccc; width:100%; height:300px; background:#f0f0f0; padding:1rem; overflow:auto;">
+        <p class="muted">Click "Test 3D Tile" to load a sample 3D tile</p>
+      </div>
+    </section>
+    <section>
+      <h2>Phase 4: Advanced AI & Explainability</h2>
+      <div style="margin-bottom:1rem;">
+        <h3>Risk Scoring</h3>
+        <p class="muted">Calculate weighted composite risk scores from multiple factors.</p>
+        <button id="runRiskScore">Calculate Risk Score</button>
+        <textarea id="riskFactors" rows="6" style="width:100%; margin-top:0.5rem;" placeholder='[{"name":"elevation","weight":0.3,"values":[10,20,15,25],"normalize":"minmax"},{"name":"water_proximity","weight":0.4,"values":[0.1,0.3,0.2,0.4],"invert":true}]'></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <h3>Explainability - Uncertainty Map</h3>
+        <p class="muted">Calculate confidence and uncertainty from predictions.</p>
+        <button id="runUncertainty">Calculate Uncertainty</button>
+        <textarea id="uncertaintyPredictions" rows="3" style="width:100%; margin-top:0.5rem;" placeholder='{"predictions":[0.2,0.8,0.5,0.9,0.1],"confidence":[0.7,0.9,0.5,0.95,0.6]}'></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <h3>Explainability - Feature Importance</h3>
+        <p class="muted">Calculate feature importance from multiple features.</p>
+        <button id="runFeatureImportance">Calculate Importance</button>
+        <textarea id="importanceFeatures" rows="4" style="width:100%; margin-top:0.5rem;" placeholder='[{"name":"NDVI","values":[0.3,0.5,0.4,0.6]},{"name":"elevation","values":[100,200,150,250]}]'></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <h3>Change Detection</h3>
+        <p class="muted">Detect changes between before/after imagery.</p>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+          <div>
+            <label>Threshold:</label>
+            <input id="changeThreshold" type="number" value="0.1" min="0" max="1" step="0.01" style="width:80px;" />
+          </div>
+          <div>
+            <label>Method:</label>
+            <select id="changeMethod">
+              <option value="absolute">Absolute</option>
+              <option value="relative">Relative</option>
+              <option value="normalized">Normalized</option>
+            </select>
+          </div>
+          <button id="runChangeDetection">Detect Changes</button>
+        </div>
+        <textarea id="changeBefore" rows="2" style="width:100%;" placeholder='Before: [0.2,0.3,0.4,0.5,0.6]'></textarea>
+        <textarea id="changeAfter" rows="2" style="width:100%; margin-top:0.5rem;" placeholder='After: [0.3,0.4,0.5,0.6,0.7]'></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <h3>Object Detection/Segmentation</h3>
+        <p class="muted">Detect and segment objects (buildings, roads, water, vegetation).</p>
+        <button id="runObjectDetection">Run Detection</button>
+        <textarea id="objectImage" rows="3" style="width:100%; margin-top:0.5rem;" placeholder='Image values: [0.1,0.2,0.8,0.7,0.3,0.4,0.6,0.5]'></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <h3>Model Registry</h3>
+        <p class="muted">Register and manage ML models.</p>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+          <button id="listModels">List Models</button>
+          <button id="registerModel">Register Model</button>
+        </div>
+        <textarea id="modelData" rows="4" style="width:100%;" placeholder='{"id":"model-1","name":"Building Segmentation","type":"segmentation","versions":[]}'></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <h3>Inference Jobs</h3>
+        <p class="muted">Create and track inference jobs.</p>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+          <button id="listJobs">List Jobs</button>
+          <button id="createJob">Create Job</button>
+        </div>
+        <textarea id="jobData" rows="3" style="width:100%;" placeholder='{"modelId":"model-1","input":{"image":[0.1,0.2,0.3]}}'></textarea>
+      </div>
+      <div>
+        <h3>Review Queue (Human-in-the-Loop)</h3>
+        <p class="muted">Review and correct AI predictions.</p>
+        <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+          <button id="listReviews">List Reviews</button>
+          <button id="createReview">Create Review</button>
+        </div>
+        <textarea id="reviewData" rows="3" style="width:100%;" placeholder='{"resultId":"result-1","result":{"predictions":[0.8,0.9,0.7]}}'></textarea>
+      </div>
+    </section>
+    <section>
       <h2>Zonal stats demo</h2>
       <p class="muted">Provide values and a matching list of zone IDs for each value.</p>
       <div style="display:flex; gap:1rem; align-items:flex-start;">
@@ -70,6 +403,33 @@
       </div>
     </section>
     <section>
+      <h2>Slope/Aspect demo</h2>
+      <p class="muted">Paste a grid of elevations (CSV or whitespace), and set width/height.</p>
+      <div style="display:flex; gap:1rem; align-items:flex-start;">
+        <div style="flex:1;">
+          <label for="elevCsv"><strong>Elevations</strong></label>
+          <textarea id="elevCsv" rows="6" style="width:100%;" placeholder="e.g. 80 81 82 83&#10;84 85 86 87"></textarea>
+        </div>
+        <div style="flex:1;">
+          <div>
+            <label for="elevWidth">Width:</label>
+            <input id="elevWidth" type="number" min="2" value="4" />
+          </div>
+          <div>
+            <label for="elevHeight">Height:</label>
+            <input id="elevHeight" type="number" min="2" value="2" />
+          </div>
+          <div>
+            <label for="cellSize">Cell size (m):</label>
+            <input id="cellSize" type="number" min="0.01" step="0.01" value="1" />
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:0.5rem;">
+        <button id="runTerrain">Run Slope/Aspect</button>
+      </div>
+    </section>
+    <section>
       <h2>Preview</h2>
       <pre id="preview">Select an item or collection…</pre>
       <div style="margin-top:0.5rem;">
@@ -82,45 +442,67 @@
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
       }
+      let allItems = [];
+      let allCollections = [];
+      function renderList(containerId, ids, type) {
+        const list = document.getElementById(containerId);
+        list.innerHTML = '';
+        ids.forEach(id => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = '#';
+          a.textContent = id;
+          a.style.marginRight = '0.5rem';
+          a.onclick = async (e) => {
+            e.preventDefault();
+            const data = await fetchJson(`/catalog/${type}/` + encodeURIComponent(id));
+            document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+          };
+          const dl = document.createElement('a');
+          dl.href = '#';
+          dl.title = 'Download JSON';
+          dl.textContent = '⬇';
+          dl.onclick = async (e) => {
+            e.preventDefault();
+            const data = await fetchJson(`/catalog/${type}/` + encodeURIComponent(id));
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${type.slice(0, -1)}-${id}.json`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+          };
+          li.appendChild(a);
+          li.appendChild(dl);
+          list.appendChild(li);
+        });
+      }
       async function load() {
         try {
-          const { items } = await fetchJson('/catalog/items');
-          const list = document.getElementById('items');
-          list.innerHTML = '';
-          items.forEach(id => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = '#';
-            a.textContent = id;
-            a.onclick = async (e) => {
-              e.preventDefault();
-              const data = await fetchJson('/catalog/items/' + encodeURIComponent(id));
-              document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
-            };
-            li.appendChild(a);
-            list.appendChild(li);
-          });
+          const res = await fetchJson('/catalog/items');
+          allItems = res.items || [];
+          renderList('items', allItems, 'items');
         } catch {}
         try {
-          const { collections } = await fetchJson('/catalog/collections');
-          const list = document.getElementById('collections');
-          list.innerHTML = '';
-          collections.forEach(id => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = '#';
-            a.textContent = id;
-            a.onclick = async (e) => {
-              e.preventDefault();
-              const data = await fetchJson('/catalog/collections/' + encodeURIComponent(id));
-              document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
-            };
-            li.appendChild(a);
-            list.appendChild(li);
-          });
+          const res = await fetchJson('/catalog/collections');
+          allCollections = res.collections || [];
+          renderList('collections', allCollections, 'collections');
         } catch {}
       }
       load();
+      document.getElementById('itemsFilter').addEventListener('input', (e) => {
+        const q = (e.target.value || '').toLowerCase();
+        const filtered = allItems.filter(id => id.toLowerCase().includes(q));
+        renderList('items', filtered, 'items');
+      });
+      document.getElementById('collectionsFilter').addEventListener('input', (e) => {
+        const q = (e.target.value || '').toLowerCase();
+        const filtered = allCollections.filter(id => id.toLowerCase().includes(q));
+        renderList('collections', filtered, 'collections');
+      });
 
       document.getElementById('runNdvi').onclick = async () => {
         // Sample values mirror fixtures/sample/ndvi_nir_red.json
@@ -136,6 +518,27 @@
           document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
         } catch (e) {
           document.getElementById('preview').textContent = 'Error running NDVI sample';
+        }
+      };
+      document.getElementById('uploadJsonBtn').onclick = async () => {
+        const input = document.getElementById('uploadFile');
+        const file = input.files && input.files[0];
+        if (!file) {
+          document.getElementById('preview').textContent = 'Choose a JSON file first.';
+          return;
+        }
+        try {
+          const text = await file.text();
+          const json = JSON.parse(text);
+          const r = await fetch('/upload/json', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(json)
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify({ uploaded: data, sampleGet: `/upload/${data.id}` }, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = 'Upload failed or invalid JSON.';
         }
       };
       function parseCsvNumbers(text) {
@@ -170,6 +573,506 @@
           document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
         } catch {
           document.getElementById('preview').textContent = 'Error running NDVI from CSV.';
+        }
+      };
+      document.getElementById('runNdwiCsv').onclick = async () => {
+        const greenText = document.getElementById('greenCsv').value || '';
+        const nirText = document.getElementById('nirNdwiCsv').value || '';
+        const bins = Number(document.getElementById('ndwiBins').value) || 10;
+        const green = parseCsvNumbers(greenText);
+        const nir = parseCsvNumbers(nirText);
+        if (green.length === 0 || nir.length === 0) {
+          document.getElementById('preview').textContent = 'Provide Green and NIR CSV values.';
+          return;
+        }
+        if (green.length !== nir.length) {
+          document.getElementById('preview').textContent = `Lengths differ: Green=${green.length}, NIR=${nir.length}`;
+          return;
+        }
+        try {
+          const r = await fetch('/analysis/ndwi', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ green, nir, bins })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch {
+          document.getElementById('preview').textContent = 'Error running NDWI from CSV.';
+        }
+      };
+      document.getElementById('runNdmiCsv').onclick = async () => {
+        const nirText = document.getElementById('nirNdmiCsv').value || '';
+        const swirText = document.getElementById('swirCsv').value || '';
+        const bins = Number(document.getElementById('ndmiBins').value) || 10;
+        const nir = parseCsvNumbers(nirText);
+        const swir = parseCsvNumbers(swirText);
+        if (nir.length === 0 || swir.length === 0) {
+          document.getElementById('preview').textContent = 'Provide NIR and SWIR CSV values.';
+          return;
+        }
+        if (nir.length !== swir.length) {
+          document.getElementById('preview').textContent = `Lengths differ: NIR=${nir.length}, SWIR=${swir.length}`;
+          return;
+        }
+        try {
+          const r = await fetch('/analysis/ndmi', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nir, swir, bins })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch {
+          document.getElementById('preview').textContent = 'Error running NDMI from CSV.';
+        }
+      };
+      document.getElementById('runMask').onclick = async () => {
+        const blueText = document.getElementById('blueMask').value || '';
+        const greenText = document.getElementById('greenMask').value || '';
+        const redText = document.getElementById('redMask').value || '';
+        const maskType = document.getElementById('maskType').value || 'both';
+        const cloudThreshold = Number(document.getElementById('cloudThreshold').value) || 0.6;
+        const shadowThreshold = Number(document.getElementById('shadowThreshold').value) || 0.15;
+        const blue = parseCsvNumbers(blueText);
+        const green = parseCsvNumbers(greenText);
+        const red = parseCsvNumbers(redText);
+        if (blue.length === 0 || green.length === 0 || red.length === 0) {
+          document.getElementById('preview').textContent = 'Provide Blue, Green, and Red CSV values.';
+          return;
+        }
+        if (blue.length !== green.length || green.length !== red.length) {
+          document.getElementById('preview').textContent = `Lengths differ: Blue=${blue.length}, Green=${green.length}, Red=${red.length}`;
+          return;
+        }
+        try {
+          const r = await fetch('/analysis/mask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ blue, green, red, maskType, cloudThreshold, shadowThreshold })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch {
+          document.getElementById('preview').textContent = 'Error running cloud/shadow masking.';
+        }
+      };
+      document.getElementById('loadTileInfo').onclick = async () => {
+        try {
+          const r = await fetch('/tiles/info');
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch {
+          document.getElementById('preview').textContent = 'Error loading tile info.';
+        }
+      };
+      document.getElementById('testTile').onclick = async () => {
+        const style = document.getElementById('tileStyle').value || 'default';
+        const z = 5, x = 16, y = 12;
+        const viewer = document.getElementById('tileViewer');
+        viewer.innerHTML = '<p>Loading tile...</p>';
+        try {
+          const start = Date.now();
+          const url = `/tiles/raster/${z}/${x}/${y}?style=${style}`;
+          const r = await fetch(url);
+          if (!r.ok) {
+            const errorText = await r.text();
+            throw new Error(`HTTP ${r.status}: ${errorText}`);
+          }
+          const data = await r.json();
+          const elapsed = Date.now() - start;
+
+          viewer.innerHTML = `
+            <div style="text-align:center;">
+              <img src="${data.imageData}" alt="Tile ${z}/${x}/${y}" style="max-width:256px; max-height:256px; border:1px solid #000;" />
+              <div style="margin-top:0.5rem; font-size:0.9em;">
+                <div>Tile: ${z}/${x}/${y}</div>
+                <div>Style: ${style}</div>
+                <div>Bounds: [${data.bounds.minX.toFixed(4)}, ${data.bounds.minY.toFixed(4)}, ${data.bounds.maxX.toFixed(4)}, ${data.bounds.maxY.toFixed(4)}]</div>
+                <div>Color: ${data.color}</div>
+                <div>${data.cached ? '✅ Cached' : '🔄 Generated'} | ${elapsed}ms</div>
+              </div>
+            </div>
+          `;
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          const errorMsg = e.message || 'Unknown error';
+          viewer.innerHTML = `<p style="color:red;">Error loading tile: ${errorMsg}</p>`;
+          console.error('Tile loading error:', e);
+        }
+      };
+      document.getElementById('runSpatialJoin').onclick = async () => {
+        const bboxText = document.getElementById('joinBbox').value || '';
+        const featuresText = document.getElementById('joinFeatures').value || '';
+        try {
+          const [minX, minY, maxX, maxY] = bboxText.split(',').map(Number);
+          if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)) {
+            throw new Error('Invalid bbox format. Use: minX,minY,maxX,maxY');
+          }
+          const targetFeatures = JSON.parse(featuresText || '[]');
+          const r = await fetch('/analysis/spatial-join', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ queryBbox: { minX, minY, maxX, maxY }, targetFeatures })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('runBuffer').onclick = async () => {
+        const centerText = document.getElementById('bufferCenter').value || '';
+        const radius = Number(document.getElementById('bufferRadius').value) || 1000;
+        try {
+          const [x, y] = centerText.split(',').map(Number);
+          if (!Number.isFinite(x) || !Number.isFinite(y)) {
+            throw new Error('Invalid center format. Use: x,y');
+          }
+          const r = await fetch('/analysis/buffer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ center: { x, y }, radiusMeters: radius })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('runProximity').onclick = async () => {
+        const pointText = document.getElementById('proxPoint').value || '';
+        const maxResults = Number(document.getElementById('proxMaxResults').value) || 5;
+        const maxDistText = document.getElementById('proxMaxDist').value || '';
+        const featuresText = document.getElementById('proxFeatures').value || '';
+        try {
+          const [x, y] = pointText.split(',').map(Number);
+          if (!Number.isFinite(x) || !Number.isFinite(y)) {
+            throw new Error('Invalid point format. Use: x,y');
+          }
+          const targetFeatures = JSON.parse(featuresText || '[]');
+          const body = { queryPoint: { x, y }, targetFeatures, maxResults };
+          if (maxDistText) {
+            body.maxDistanceMeters = Number(maxDistText);
+          }
+          const r = await fetch('/analysis/proximity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('runClassify').onclick = async () => {
+        const pointsText = document.getElementById('lidarPoints').value || '';
+        const cellSize = Number(document.getElementById('classifyCellSize').value) || 1.0;
+        const initialHeight = Number(document.getElementById('classifyInitHeight').value) || 0.5;
+        const maxHeight = Number(document.getElementById('classifyMaxHeight').value) || 3.0;
+        try {
+          const points = JSON.parse(pointsText || '[]');
+          if (!Array.isArray(points) || points.length === 0) {
+            throw new Error('Provide an array of points with x, y, z');
+          }
+          const r = await fetch('/analysis/lidar/classify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ points, cellSize, initialHeight, maxHeight })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('runDTM').onclick = async () => {
+        const pointsText = document.getElementById('dtmPoints').value || '';
+        const cellSize = Number(document.getElementById('dtmCellSize').value) || 1.0;
+        try {
+          const groundPoints = JSON.parse(pointsText || '[]');
+          if (!Array.isArray(groundPoints) || groundPoints.length === 0) {
+            throw new Error('Provide an array of ground points with x, y, z');
+          }
+          const r = await fetch('/analysis/lidar/dtm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ groundPoints, cellSize })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('runDSM').onclick = async () => {
+        const pointsText = document.getElementById('dsmPoints').value || '';
+        const cellSize = Number(document.getElementById('dsmCellSize').value) || 1.0;
+        try {
+          const allPoints = JSON.parse(pointsText || '[]');
+          if (!Array.isArray(allPoints) || allPoints.length === 0) {
+            throw new Error('Provide an array of points with x, y, z');
+          }
+          const r = await fetch('/analysis/lidar/dsm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ allPoints, cellSize })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('runCHM').onclick = async () => {
+        const dsmText = document.getElementById('chmDSM').value || '';
+        const dtmText = document.getElementById('chmDTM').value || '';
+        try {
+          const dsm = JSON.parse(dsmText || '{}');
+          const dtm = JSON.parse(dtmText || '{}');
+          if (!dsm.grid || !dtm.grid) {
+            throw new Error('Provide valid DSM and DTM JSON with grid arrays');
+          }
+          const r = await fetch('/analysis/lidar/chm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dsm, dtm })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('runTerrainDeriv').onclick = async () => {
+        const dtmText = document.getElementById('terrainDTM').value || '';
+        try {
+          const dtm = JSON.parse(dtmText || '{}');
+          if (!dtm.grid) {
+            throw new Error('Provide valid DTM JSON with grid array');
+          }
+          const r = await fetch('/analysis/lidar/terrain-derivatives', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dtm })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('runFeatureExtract').onclick = async () => {
+        const chmText = document.getElementById('featureCHM').value || '';
+        const type = document.getElementById('featureType').value || 'both';
+        try {
+          const chm = JSON.parse(chmText || '{}');
+          if (!chm.grid) {
+            throw new Error('Provide valid CHM JSON with grid array');
+          }
+          const r = await fetch('/analysis/lidar/extract-features', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chm, type })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('load3dTileInfo').onclick = async () => {
+        try {
+          const r = await fetch('/tiles/3d/info');
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch {
+          document.getElementById('preview').textContent = 'Error loading 3D tile info.';
+        }
+      };
+      document.getElementById('test3dTile').onclick = async () => {
+        const format = document.getElementById('tile3dFormat').value || 'json';
+        const z = 5, x = 16, y = 12;
+        const viewer = document.getElementById('tile3dViewer');
+        viewer.innerHTML = '<p>Loading 3D tile...</p>';
+        try {
+          const r = await fetch(`/tiles/3d/${z}/${x}/${y}?format=${format}`);
+          if (!r.ok) {
+            throw new Error(`HTTP ${r.status}`);
+          }
+          if (format === 'pcd') {
+            const text = await r.text();
+            viewer.innerHTML = `<pre style="font-size:0.8em; white-space:pre-wrap;">${text.substring(0, 2000)}${text.length > 2000 ? '\n... (truncated)' : ''}</pre>`;
+            document.getElementById('preview').textContent = text;
+          } else {
+            const data = await r.json();
+            viewer.innerHTML = `
+              <div>
+                <div><strong>Tile:</strong> ${z}/${x}/${y}</div>
+                <div><strong>Format:</strong> ${data.format}</div>
+                <div><strong>Point Count:</strong> ${data.count}</div>
+                <div><strong>Bounds:</strong> [${data.bounds.minX.toFixed(4)}, ${data.bounds.minY.toFixed(4)}, ${data.bounds.maxX.toFixed(4)}, ${data.bounds.maxY.toFixed(4)}]</div>
+                <div style="margin-top:0.5rem;"><strong>Sample Points (first 5):</strong></div>
+                <pre style="font-size:0.8em; background:#fff; padding:0.5rem; border:1px solid #ddd; max-height:200px; overflow:auto;">${JSON.stringify(data.points.slice(0, 5), null, 2)}</pre>
+              </div>
+            `;
+            document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+          }
+        } catch (e) {
+          viewer.innerHTML = `<p style="color:red;">Error loading 3D tile: ${e.message}</p>`;
+        }
+      };
+      // Phase 4 handlers
+      document.getElementById('runRiskScore').onclick = async () => {
+        const factorsText = document.getElementById('riskFactors').value || '';
+        try {
+          const factors = JSON.parse(factorsText || '[]');
+          const r = await fetch('/analysis/risk-score', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ factors })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('runUncertainty').onclick = async () => {
+        const predText = document.getElementById('uncertaintyPredictions').value || '';
+        try {
+          const input = JSON.parse(predText || '{}');
+          const r = await fetch('/analysis/explainability/uncertainty', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(input)
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('runFeatureImportance').onclick = async () => {
+        const featuresText = document.getElementById('importanceFeatures').value || '';
+        try {
+          const features = JSON.parse(featuresText || '[]');
+          const r = await fetch('/analysis/explainability/feature-importance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ features })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('runChangeDetection').onclick = async () => {
+        const beforeText = document.getElementById('changeBefore').value || '';
+        const afterText = document.getElementById('changeAfter').value || '';
+        const threshold = Number(document.getElementById('changeThreshold').value) || 0.1;
+        const method = document.getElementById('changeMethod').value || 'absolute';
+        try {
+          const before = JSON.parse(beforeText || '[]');
+          const after = JSON.parse(afterText || '[]');
+          const r = await fetch('/analysis/change-detection', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ before, after, threshold, method })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('runObjectDetection').onclick = async () => {
+        const imageText = document.getElementById('objectImage').value || '';
+        try {
+          const image = JSON.parse(imageText || '[]');
+          const r = await fetch('/analysis/object-detection', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('listModels').onclick = async () => {
+        try {
+          const r = await fetch('/models');
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('registerModel').onclick = async () => {
+        const modelText = document.getElementById('modelData').value || '';
+        try {
+          const model = JSON.parse(modelText || '{}');
+          const r = await fetch('/models/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(model)
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('listJobs').onclick = async () => {
+        try {
+          const r = await fetch('/jobs');
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('createJob').onclick = async () => {
+        const jobText = document.getElementById('jobData').value || '';
+        try {
+          const job = JSON.parse(jobText || '{}');
+          const r = await fetch('/jobs/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(job)
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('listReviews').onclick = async () => {
+        try {
+          const r = await fetch('/reviews');
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
+        }
+      };
+      document.getElementById('createReview').onclick = async () => {
+        const reviewText = document.getElementById('reviewData').value || '';
+        try {
+          const review = JSON.parse(reviewText || '{}');
+          const r = await fetch('/reviews/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(review)
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = `Error: ${e.message}`;
         }
       };
       document.getElementById('downloadJson').onclick = () => {
@@ -213,6 +1116,32 @@
           document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
         } catch {
           document.getElementById('preview').textContent = 'Error running zonal stats.';
+        }
+      };
+      document.getElementById('runTerrain').onclick = async () => {
+        const elevText = document.getElementById('elevCsv').value || '';
+        const width = Number(document.getElementById('elevWidth').value) || 0;
+        const height = Number(document.getElementById('elevHeight').value) || 0;
+        const cell = Number(document.getElementById('cellSize').value) || 1;
+        const values = parseCsvNumbers(elevText);
+        if (width <= 1 || height <= 1) {
+          document.getElementById('preview').textContent = 'Width and height must be >= 2.';
+          return;
+        }
+        if (values.length !== width * height) {
+          document.getElementById('preview').textContent = `Grid size mismatch: got ${values.length} values but width*height=${width*height}`;
+          return;
+        }
+        try {
+          const r = await fetch('/analysis/terrain', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ elevations: values, width, height, cellSize: cell })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch {
+          document.getElementById('preview').textContent = 'Error running slope/aspect.';
         }
       };
     </script>

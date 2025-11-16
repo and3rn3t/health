@@ -2,10 +2,10 @@
   "aoiId": "sample-aoi",
   "rasterId": "sample-dtm",
   "stats": {
-    "minElevationM": 12.4,
-    "maxElevationM": 256.8,
-    "meanElevationM": 84.2,
-    "stdElevationM": 15.7
+    "minElevationM": 242.0,
+    "maxElevationM": 265.0,
+    "meanElevationM": 251.7,
+    "stdElevationM": 5.5
   },
   "derivatives": {
     "slope": {

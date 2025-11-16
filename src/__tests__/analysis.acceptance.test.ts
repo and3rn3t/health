@@ -17,9 +17,15 @@ describe('Acceptance - NDVI', () => {
 		const fixture = await loadJson('fixtures/sample/ndvi_nir_red.json')
 		const { stats } = computeNdvi(fixture.nir, fixture.red, 10)
 		expect(Number.isFinite(stats.mean)).toBe(true)
-		// Allow generous tolerance for scaffolded data
-		const tolerance = 0.2
-		expect(Math.abs(stats.mean - expected.stats.mean)).toBeLessThanOrEqual(tolerance)
+		expect(stats.min).toBeGreaterThanOrEqual(-1)
+		expect(stats.max).toBeLessThanOrEqual(1)
+		// Per-metric tolerances for scaffolded data
+		const meanTol = 0.15
+		const stdTol = 0.15
+		expect(Math.abs(stats.mean - expected.stats.mean)).toBeLessThanOrEqual(meanTol)
+		if (typeof expected.stats.std === 'number') {
+			expect(Math.abs(stats.std - expected.stats.std)).toBeLessThanOrEqual(stdTol)
+		}
 	})
 })
 
@@ -36,15 +42,26 @@ describe('Acceptance - Zonal Statistics', () => {
 			if (!got) continue
 			expect(Math.abs(got.mean - ez.mean)).toBeLessThanOrEqual(tol)
 		}
+		// Sanity: total count equals number of input samples
+		const total = result.zones.reduce((s, z) => s + z.count, 0)
+		expect(total).toBe(fixture.values.length)
 	})
 })
 
 describe('Acceptance - DTM', () => {
-	test('computes elevation stats and roughly matches golden mean', async () => {
+	test('computes elevation stats and roughly matches golden mean/min/max', async () => {
 		const expected = await loadJson('fixtures/golden/dtm_expected.json')
 		const fixture = await loadJson('fixtures/sample/dtm_elevations.json')
 		const stats = computeElevationStats(fixture.elevations)
-		const tol = 6 // generous tolerance since sample data is synthetic
-		expect(Math.abs(stats.meanElevationM - expected.stats.meanElevationM)).toBeLessThanOrEqual(tol)
+		const meanTol = 6
+		const minTol = 12
+		const maxTol = 12
+		expect(Math.abs(stats.meanElevationM - expected.stats.meanElevationM)).toBeLessThanOrEqual(meanTol)
+		if (typeof expected.stats.minElevationM === 'number') {
+			expect(Math.abs(stats.minElevationM - expected.stats.minElevationM)).toBeLessThanOrEqual(minTol)
+		}
+		if (typeof expected.stats.maxElevationM === 'number') {
+			expect(Math.abs(stats.maxElevationM - expected.stats.maxElevationM)).toBeLessThanOrEqual(maxTol)
+		}
 	})
 })
