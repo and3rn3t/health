@@ -18,6 +18,13 @@ window.__VITALSENSE_CONFIG__ = {
     baseUrl: typeof window !== 'undefined' ? window.location.origin : '',
     timeout: 10000,
   },
+  // Optional explicit WebSocket base URL. If not set, frontend will use /api/ws-url.
+  wsBaseUrl:
+    typeof window !== 'undefined'
+      ? (window.location.protocol === 'https:' ? 'wss://' : 'ws://') +
+        window.location.host +
+        '/ws'
+      : '',
   features: {
     enableAuth: false, // Disable auth for development to prevent blank screens
     enableWebSocket: true,

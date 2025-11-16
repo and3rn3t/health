@@ -52,7 +52,15 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
   useEffect(() => {
     let cancelled = false;
     const connect = async () => {
+      const cfg =
+        (typeof window !== 'undefined'
+          ? (window as any).__VITALSENSE_CONFIG__
+          : null) || null;
+      const wsUrl: string | undefined =
+        (cfg && typeof cfg.wsBaseUrl === 'string' && cfg.wsBaseUrl) || undefined;
+
       const c = new WebSocketClient({
+        url: wsUrl, // Fallback to /api/ws-url if undefined
         onOpen: () => {
           /* noop */
         },
