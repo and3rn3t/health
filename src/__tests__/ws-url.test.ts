@@ -29,6 +29,7 @@ describe('WebSocketClient', () => {
     for (const h of wsOpenHandlers) h();
     await p;
     // The client may call /api/ws-telemetry first, then /api/ws-url
+    // Check all fetch calls, not just the first one
     const fetchCalls = (fetch as any).mock.calls.map((call: any[]) => call[0]);
     const hasWsUrl = fetchCalls.some((url: string) => url && url.includes('/api/ws-url'));
     expect(hasWsUrl).toBe(true);

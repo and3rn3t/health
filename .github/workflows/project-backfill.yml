@@ -6,7 +6,6 @@ on:
 permissions:
   contents: read
   issues: read
-  projects: write
 
 jobs:
   backfill:

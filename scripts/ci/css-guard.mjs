@@ -7,7 +7,7 @@ const args = process.argv.slice(2);
 const verbose = args.includes('--verbose');
 
 // Run local guard (re-uses existing logic). If it fails, exit 1 so CI gates.
-const run = spawnSync('node', ['scripts/node/analysis/css/guard-main-css.js'], { stdio: 'inherit', env: process.env });
+const run = spawnSync('node', ['scripts/analysis/css/guard-main-css.js'], { stdio: 'inherit', env: process.env });
 if (run.status !== 0) {
 	process.exit(run.status === null ? 1 : run.status);
 }

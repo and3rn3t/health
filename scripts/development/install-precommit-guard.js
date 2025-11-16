@@ -15,7 +15,7 @@ const hookPath = path.join(hooksDir, 'pre-commit');
 const hookScript = `#!/usr/bin/env bash
 # Auto-generated VitalSense pre-commit guard
 echo "🔍 Running VitalSense CSS guard..." >&2
-node scripts/node/analysis/css/guard-main-css.js || exit 1
+node scripts/analysis/css/guard-main-css.js || exit 1
 echo "✅ CSS guard passed" >&2
 `;
 fs.writeFileSync(hookPath, hookScript, { mode: 0o755 });

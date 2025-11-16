@@ -23,10 +23,17 @@ jobs:
         uses: ./.github/actions/setup-pnpm
       - name: Install Dependencies (frozen or fallback)
         run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
-      - name: Type Check
-        run: pnpm run build:worker || echo "Worker build optional"
+      - name: Build Worker
+        run: pnpm run build:worker
+      - name: Verify Worker Build
+        run: |
+          if [ ! -f dist-worker/index.js ]; then
+            echo "❌ Worker build failed - dist-worker/index.js not found";
+            exit 1;
+          fi
+          echo "✅ Worker build verified: dist-worker/index.js exists";
       - name: Build App
-        run: pnpm run build || echo "App build attempted"
+        run: pnpm run build
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -193,7 +200,15 @@ jobs:
       - name: Ensure Build Assets (fallback)
         run: |
           if [ ! -d dist ]; then echo "dist missing – rebuilding"; pnpm run build; fi
-          if [ ! -d dist-worker ]; then echo "dist-worker missing – attempting worker build"; pnpm run build:worker || echo "Worker build optional"; fi
+          if [ ! -d dist-worker ] || [ ! -f dist-worker/index.js ]; then
+            echo "dist-worker missing – building worker";
+            pnpm run build:worker;
+            if [ ! -f dist-worker/index.js ]; then
+              echo "❌ Worker build failed - dist-worker/index.js still missing";
+              exit 1;
+            fi
+            echo "✅ Worker build successful";
+          fi
       - name: Smoke
         run: pnpm run ci:smoke
       - name: Branding Audit (local)
@@ -388,6 +403,8 @@ jobs:
             reports/test-count.json
           if-no-files-found: warn
       - name: CSS Guard
+        env:
+          CSS_GUARD_MAX_LINES: 350
         run: pnpm run ci:css-guard
       - name: Upload Contrast Artifact
         if: always()
@@ -1260,11 +1277,6 @@ jobs:
             echo "(scorecard artifact missing)" >> FINAL_SUMMARY.md
           fi
           printf '\n## Deployment Readiness\n' >> FINAL_SUMMARY.md
-          if [ -f "$READINESS" ]; then
-            printf '```json\n' >> FINAL_SUMMARY.md
-            cat "$READINESS" | jq '. | {ready,reason,coverage,generated}' >> FINAL_SUMMARY.md || cat "$READINESS" >> FINAL_SUMMARY.md
-            printf '```\n' >> FINAL_SUMMARY.md
-          else
           if [ -f "$READINESS" ]; then
             printf '```json\n' >> FINAL_SUMMARY.md
             cat "$READINESS" | jq '. | {ready,reason,coverage,generated}' >> FINAL_SUMMARY.md || cat "$READINESS" >> FINAL_SUMMARY.md
