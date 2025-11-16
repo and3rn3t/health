@@ -361,7 +361,7 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
-  next();
+  return next();
 });
 
 // Increased limit for large array processing (50MB)
@@ -2364,7 +2364,7 @@ app.use((req, res) => {
 });
 
 // Error handler middleware (must be last, before static)
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   const path = req.route?.path || req.path;
   const errorType = err.name || 'Error';
   const statusCode = err.statusCode || err.status || 500;

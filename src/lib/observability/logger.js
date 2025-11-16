@@ -10,7 +10,6 @@ const LOG_LEVELS = {
   ERROR: 3,
 };
 
-const LOG_LEVEL_NAMES = Object.keys(LOG_LEVELS);
 const DEFAULT_LEVEL = process.env.LOG_LEVEL || 'INFO';
 const CURRENT_LEVEL = LOG_LEVELS[DEFAULT_LEVEL] ?? LOG_LEVELS.INFO;
 

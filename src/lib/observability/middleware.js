@@ -36,7 +36,8 @@ export function observabilityMiddleware(req, res, next) {
 /**
  * Error handling middleware
  */
-export function errorHandler(err, req, res, next) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function errorHandler(err, req, res, _next) {
   const path = req.route?.path || req.path;
   const errorType = err.name || 'Error';
   const statusCode = err.statusCode || err.status || 500;
