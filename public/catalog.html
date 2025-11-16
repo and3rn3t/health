@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dataset Browser</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
+      h1 { margin: 0 0 1rem 0; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+      pre { background: #f6f8fa; padding: 1rem; border-radius: 6px; overflow: auto; }
+      ul { padding-left: 1.2rem; }
+      a { color: #0969da; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .muted { color: #57606a; }
+    </style>
+  </head>
+  <body>
+    <h1>Dataset Browser</h1>
+    <p class="muted">Served by /catalog endpoints. Start with: <code>npm run catalog:api</code></p>
+    <div class="grid">
+      <section>
+        <h2>Items</h2>
+        <ul id="items"></ul>
+      </section>
+      <section>
+        <h2>Collections</h2>
+        <ul id="collections"></ul>
+      </section>
+    </div>
+    <section>
+      <h2>NDVI demo</h2>
+      <p class="muted">Runs <code>POST /analysis/ndvi</code> on a small in-page sample.</p>
+      <button id="runNdvi">Run NDVI sample</button>
+    </section>
+    <section>
+      <h2>NDVI from CSV</h2>
+      <p class="muted">Paste comma/space/newline separated values for NIR and RED. Then run.</p>
+      <div style="display:flex; gap:1rem; align-items:flex-start;">
+        <div style="flex:1;">
+          <label for="nirCsv"><strong>NIR values</strong></label>
+          <textarea id="nirCsv" rows="6" style="width:100%;" placeholder="e.g. 0.81, 0.77, 0.69 0.72&#10;0.80"></textarea>
+        </div>
+        <div style="flex:1;">
+          <label for="redCsv"><strong>RED values</strong></label>
+          <textarea id="redCsv" rows="6" style="width:100%;" placeholder="e.g. 0.22, 0.25, 0.28 0.27&#10;0.21"></textarea>
+        </div>
+      </div>
+      <div style="margin-top:0.5rem;">
+        <label for="csvBins">Bins:</label>
+        <input id="csvBins" type="number" min="5" max="100" value="10" />
+        <button id="runNdviCsv">Run NDVI from CSV</button>
+      </div>
+    </section>
+    <section>
+      <h2>Zonal stats demo</h2>
+      <p class="muted">Provide values and a matching list of zone IDs for each value.</p>
+      <div style="display:flex; gap:1rem; align-items:flex-start;">
+        <div style="flex:1;">
+          <label for="zonalValues"><strong>Values</strong></label>
+          <textarea id="zonalValues" rows="6" style="width:100%;" placeholder="e.g. 0.1 0.3 0.5 0.2 0.7"></textarea>
+        </div>
+        <div style="flex:1;">
+          <label for="zonalZones"><strong>Zone IDs</strong></label>
+          <textarea id="zonalZones" rows="6" style="width:100%;" placeholder="e.g. A A B B B"></textarea>
+        </div>
+      </div>
+      <div style="margin-top:0.5rem;">
+        <button id="runZonal">Run Zonal Stats</button>
+      </div>
+    </section>
+    <section>
+      <h2>Preview</h2>
+      <pre id="preview">Select an item or collection…</pre>
+      <div style="margin-top:0.5rem;">
+        <button id="downloadJson">Download JSON</button>
+      </div>
+    </section>
+    <script>
+      async function fetchJson(url) {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      }
+      async function load() {
+        try {
+          const { items } = await fetchJson('/catalog/items');
+          const list = document.getElementById('items');
+          list.innerHTML = '';
+          items.forEach(id => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = '#';
+            a.textContent = id;
+            a.onclick = async (e) => {
+              e.preventDefault();
+              const data = await fetchJson('/catalog/items/' + encodeURIComponent(id));
+              document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+            };
+            li.appendChild(a);
+            list.appendChild(li);
+          });
+        } catch {}
+        try {
+          const { collections } = await fetchJson('/catalog/collections');
+          const list = document.getElementById('collections');
+          list.innerHTML = '';
+          collections.forEach(id => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = '#';
+            a.textContent = id;
+            a.onclick = async (e) => {
+              e.preventDefault();
+              const data = await fetchJson('/catalog/collections/' + encodeURIComponent(id));
+              document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+            };
+            li.appendChild(a);
+            list.appendChild(li);
+          });
+        } catch {}
+      }
+      load();
+
+      document.getElementById('runNdvi').onclick = async () => {
+        // Sample values mirror fixtures/sample/ndvi_nir_red.json
+        const nir = [0.8,0.7,0.6,0.9,0.75,0.65,0.85,0.8,0.7,0.6,0.9,0.95,0.78,0.62,0.88,0.7,0.83,0.77,0.66,0.91,0.72,0.68,0.86,0.74,0.82,0.69,0.76,0.81,0.73,0.67,0.84,0.79,0.71,0.65,0.77,0.7,0.82,0.9,0.88,0.6,0.55,0.58,0.92,0.87,0.8,0.76,0.7,0.64,0.9,0.85];
+        const red = [0.2,0.25,0.3,0.28,0.22,0.27,0.24,0.21,0.26,0.31,0.29,0.2,0.23,0.28,0.25,0.27,0.22,0.26,0.3,0.24,0.29,0.33,0.21,0.32,0.23,0.28,0.27,0.22,0.26,0.31,0.24,0.25,0.29,0.34,0.3,0.27,0.23,0.2,0.22,0.33,0.35,0.32,0.21,0.24,0.26,0.28,0.3,0.31,0.2,0.23];
+        try {
+          const r = await fetch('/analysis/ndvi', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nir, red, bins: 10 })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById('preview').textContent = 'Error running NDVI sample';
+        }
+      };
+      function parseCsvNumbers(text) {
+        return text
+          .split(/[\s,;]+/g)
+          .map(s => s.trim())
+          .filter(Boolean)
+          .map(Number)
+          .filter(n => Number.isFinite(n));
+      }
+      document.getElementById('runNdviCsv').onclick = async () => {
+        const nirText = document.getElementById('nirCsv').value || '';
+        const redText = document.getElementById('redCsv').value || '';
+        const bins = Number(document.getElementById('csvBins').value) || 10;
+        const nir = parseCsvNumbers(nirText);
+        const red = parseCsvNumbers(redText);
+        if (nir.length === 0 || red.length === 0) {
+          document.getElementById('preview').textContent = 'Provide NIR and RED CSV values.';
+          return;
+        }
+        if (nir.length !== red.length) {
+          document.getElementById('preview').textContent = `Lengths differ: NIR=${nir.length}, RED=${red.length}`;
+          return;
+        }
+        try {
+          const r = await fetch('/analysis/ndvi', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nir, red, bins })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch {
+          document.getElementById('preview').textContent = 'Error running NDVI from CSV.';
+        }
+      };
+      document.getElementById('downloadJson').onclick = () => {
+        const text = document.getElementById('preview').textContent || '';
+        try {
+          const parsed = JSON.parse(text);
+          const blob = new Blob([JSON.stringify(parsed, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const ts = new Date().toISOString().replace(/[:.]/g, '-');
+          a.href = url;
+          a.download = `analysis-result-${ts}.json`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        } catch {
+          alert('Preview does not contain valid JSON to download.');
+        }
+      };
+      document.getElementById('runZonal').onclick = async () => {
+        const valuesText = document.getElementById('zonalValues').value || '';
+        const zonesText = document.getElementById('zonalZones').value || '';
+        const values = parseCsvNumbers(valuesText);
+        const zones = (zonesText.split(/[\s,;]+/g).map(s => s.trim()).filter(Boolean));
+        if (values.length === 0 || zones.length === 0) {
+          document.getElementById('preview').textContent = 'Provide values and zones.';
+          return;
+        }
+        if (values.length !== zones.length) {
+          document.getElementById('preview').textContent = `Lengths differ: values=${values.length}, zones=${zones.length}`;
+          return;
+        }
+        try {
+          const r = await fetch('/analysis/zonal-stats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ values, zones })
+          });
+          const data = await r.json();
+          document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
+        } catch {
+          document.getElementById('preview').textContent = 'Error running zonal stats.';
+        }
+      };
+    </script>
+  </body>
+</html>

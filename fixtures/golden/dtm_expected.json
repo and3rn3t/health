@@ -1,0 +1,23 @@
+{
+  "aoiId": "sample-aoi",
+  "rasterId": "sample-dtm",
+  "stats": {
+    "minElevationM": 12.4,
+    "maxElevationM": 256.8,
+    "meanElevationM": 84.2,
+    "stdElevationM": 15.7
+  },
+  "derivatives": {
+    "slope": {
+      "meanDeg": 5.2
+    },
+    "aspect": {
+      "modeDeg": 180
+    }
+  },
+  "metadata": {
+    "source": "LiDAR LAZ",
+    "resolutionM": 1,
+    "crs": 32633
+  }
+}

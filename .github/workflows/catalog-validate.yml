@@ -1,0 +1,42 @@
+name: Catalog Schema Validation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'schemas/**'
+      - 'catalog/**'
+      - 'scripts/ci/catalog-validate.js'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+  pull_request:
+    paths:
+      - 'schemas/**'
+      - 'catalog/**'
+      - 'scripts/ci/catalog-validate.js'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate catalog schemas
+        run: pnpm run ci:catalog

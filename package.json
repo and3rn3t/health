@@ -6,6 +6,10 @@
   "scripts": {
     "preinstall": "node scripts/ci/ensure-node-version.mjs",
     "onboarding": "node scripts/development/onboarding-wizard.js",
+		"catalog:api": "node scripts/catalog/catalog-api.js",
+    "ingest:file": "node scripts/ingestion/ingest.js",
+    "ingest:validate:item": "node scripts/ingestion/ingest.js --validate --schema item",
+    "ingest:validate:collection": "node scripts/ingestion/ingest.js --validate --schema collection",
     "dev": "node scripts/build/dev-esbuild.js",
     "kill": "fuser -k 5000/tcp",
     "build": "vite build",
@@ -88,6 +92,7 @@
     "ci:ws-schema": "node scripts/ci/websocket-schema-drift.mjs",
     "ci:css-guard": "node scripts/ci/css-guard.mjs",
     "ci:css-contrast-drift": "node scripts/ci/css-contrast-drift.mjs",
+		"ci:catalog": "node scripts/ci/catalog-validate.js",
     "ci:localization": "node ios/scripts/localization-audit.js",
     "ci:perf-slo": "node scripts/ci/performance-slo-probe.mjs",
     "perf:sample": "node scripts/analysis/perf-slo-sampler.js",
@@ -251,6 +256,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "ajv": "^8.17.1",
     "@cloudflare/workers-types": "4.20250906.0",
     "@eslint/js": "^9.21.0",
     "@tailwindcss/cli": "4.1.13",

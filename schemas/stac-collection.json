@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/stac-collection.json",
+  "title": "STAC Collection (simplified)",
+  "type": "object",
+  "required": ["type", "id", "extent", "links", "description", "license"],
+  "properties": {
+    "type": { "const": "Collection" },
+    "stac_version": { "type": "string" },
+    "stac_extensions": { "type": "array", "items": { "type": "string" } },
+    "id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "license": { "type": "string" },
+    "keywords": { "type": "array", "items": { "type": "string" } },
+    "providers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "roles": { "type": "array", "items": { "type": "string" } },
+          "url": { "type": "string", "format": "uri" }
+        }
+      }
+    },
+    "extent": {
+      "type": "object",
+      "required": ["spatial", "temporal"],
+      "properties": {
+        "spatial": {
+          "type": "object",
+          "required": ["bbox"],
+          "properties": {
+            "bbox": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 6,
+                "items": { "type": "number" }
+              }
+            }
+          }
+        },
+        "temporal": {
+          "type": "object",
+          "required": ["interval"],
+          "properties": {
+            "interval": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": [
+                  { "type": ["string", "null"], "format": "date-time" },
+                  { "type": ["string", "null"], "format": "date-time" }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["rel", "href"],
+        "properties": {
+          "rel": { "type": "string" },
+          "href": { "type": "string", "format": "uri" },
+          "type": { "type": "string" },
+          "title": { "type": "string" }
+        }
+      }
+    },
+    "summaries": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": true
+}

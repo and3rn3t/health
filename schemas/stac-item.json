@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/stac-item.json",
+  "title": "STAC Item (simplified)",
+  "type": "object",
+  "required": ["type", "id", "bbox", "geometry", "properties", "assets"],
+  "properties": {
+    "type": { "const": "Feature" },
+    "stac_version": { "type": "string" },
+    "stac_extensions": { "type": "array", "items": { "type": "string" } },
+    "id": { "type": "string", "minLength": 1 },
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 6,
+      "items": { "type": "number" },
+      "description": "West, South, East, North (optionally minZ, maxZ)"
+    },
+    "geometry": {
+      "type": "object",
+      "required": ["type", "coordinates"],
+      "properties": {
+        "type": { "type": "string" },
+        "coordinates": {}
+      }
+    },
+    "properties": {
+      "type": "object",
+      "required": ["datetime"],
+      "properties": {
+        "datetime": { "type": "string", "format": "date-time" },
+        "start_datetime": { "type": "string", "format": "date-time" },
+        "end_datetime": { "type": "string", "format": "date-time" },
+        "proj:epsg": { "type": ["integer", "null"] },
+        "gsd": { "type": ["number", "null"] },
+        "platform": { "type": ["string", "null"] },
+        "instruments": {
+          "type": ["array", "null"],
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["rel", "href"],
+        "properties": {
+          "rel": { "type": "string" },
+          "href": { "type": "string", "format": "uri" },
+          "type": { "type": "string" },
+          "title": { "type": "string" }
+        }
+      }
+    },
+    "assets": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["href"],
+        "properties": {
+          "href": { "type": "string" },
+          "type": { "type": "string" },
+          "roles": { "type": "array", "items": { "type": "string" } },
+          "title": { "type": "string" },
+          "bands": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "center_wavelength": { "type": "number" },
+                "full_width_half_max": { "type": "number" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "collection": { "type": "string" }
+  },
+  "additionalProperties": true
+}

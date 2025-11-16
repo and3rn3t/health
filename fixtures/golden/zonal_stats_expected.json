@@ -1,0 +1,26 @@
+{
+  "aoiId": "sample-aoi",
+  "target": "sample-raster",
+  "zones": [
+    {
+      "zoneId": "zone-1",
+      "areaSqM": 100000,
+      "mean": 0.35,
+      "min": 0.1,
+      "max": 0.8,
+      "count": 5000
+    },
+    {
+      "zoneId": "zone-2",
+      "areaSqM": 75000,
+      "mean": 0.52,
+      "min": 0.2,
+      "max": 0.9,
+      "count": 3800
+    }
+  ],
+  "metadata": {
+    "nodata": null,
+    "crs": 4326
+  }
+}
