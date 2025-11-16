@@ -24,7 +24,7 @@ import {
   WifiOff,
 } from 'lucide-react';
 import { useCallback, useEffect } from 'react';
-import { toast } from 'sonner';
+import { useOnceToast } from '@/hooks/useOnceToast';
 
 interface AppleWatchStatus {
   connected: boolean;
@@ -119,6 +119,7 @@ const DEFAULT_HEALTH_SCORE: HealthScoreBreakdown = {
 };
 
 export default function AdvancedAppleWatchIntegration() {
+  const { showOnce } = useOnceToast();
   const [watchStatus, setWatchStatus] = useKV<AppleWatchStatus>(
     'Watch-status',
     DEFAULT_WATCH_STATUS
@@ -257,7 +258,7 @@ export default function AdvancedAppleWatchIntegration() {
   // Toggle Apple Watch connection
   const toggleWatchConnection = async () => {
     if (!safeWatchStatus.connected) {
-      toast.loading('Connecting to Apple Watch...');
+      showOnce('aw-connecting', 'info', 'Connecting to Apple Watch...');
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       setWatchStatus((current) => {
@@ -269,7 +270,7 @@ export default function AdvancedAppleWatchIntegration() {
         };
       });
 
-      toast.success('Apple Watch connected successfully');
+      showOnce('aw-connected', 'success', 'Apple Watch connected successfully');
 
       // Start real-time monitoring
       setIsMonitoring(true);
@@ -282,7 +283,7 @@ export default function AdvancedAppleWatchIntegration() {
         };
       });
       setIsMonitoring(false);
-      toast.info('Apple Watch disconnected');
+      showOnce('aw-disconnected', 'info', 'Apple Watch disconnected');
     }
   };
 

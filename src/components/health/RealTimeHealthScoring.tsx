@@ -24,7 +24,7 @@ import {
   WifiOff,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo } from 'react';
-import { toast } from 'sonner';
+import { useOnceToast } from '@/hooks/useOnceToast';
 
 interface HealthMetric {
   name: string;
@@ -45,6 +45,7 @@ interface HealthScoreData {
 }
 
 export default function RealTimeHealthScoring() {
+  const { showOnce } = useOnceToast();
   const DEFAULT_SCORE = useMemo<HealthScoreData>(
     () => ({
       overall: 75,
@@ -81,10 +82,10 @@ export default function RealTimeHealthScoring() {
   // Simulate Apple Watch connection
   const toggleConnection = async () => {
     if (isConnected !== 'true') {
-      toast.loading('Connecting to Apple Watch...');
+      showOnce('rths-connecting', 'info', 'Connecting to Apple Watch...');
       await new Promise((resolve) => setTimeout(resolve, 2000));
       setIsConnected('true');
-      toast.success('Connected to Apple Watch');
+      showOnce('rths-connected', 'success', 'Connected to Apple Watch');
 
       // Initialize with current metrics
       const initialMetrics: HealthMetric[] = [
@@ -133,23 +134,21 @@ export default function RealTimeHealthScoring() {
     } else {
       setIsConnected('false');
       setIsMonitoring('false');
-      toast.info('Disconnected from Apple Watch');
+      showOnce('rths-disconnected', 'info', 'Disconnected from Apple Watch');
       setRealtimeMetrics([]);
     }
   };
 
   const toggleMonitoring = () => {
     if (isConnected !== 'true') {
-      toast.error('Please connect to Apple Watch first');
+      showOnce('rths-connect-first', 'error', 'Please connect to Apple Watch first');
       return;
     }
 
     setIsMonitoring((current) => (current === 'true' ? 'false' : 'true'));
-    if (isMonitoring !== 'true') {
-      toast.success('Started real-time health monitoring');
-    } else {
-      toast.info('Paused real-time health monitoring');
-    }
+    if (isMonitoring !== 'true')
+      showOnce('rths-started', 'success', 'Started real-time health monitoring');
+    else showOnce('rths-paused', 'info', 'Paused real-time health monitoring');
   };
 
   // Calculate weighted health score

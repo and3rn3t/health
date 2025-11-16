@@ -33,7 +33,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { useOnceToast } from '@/hooks/useOnceToast';
 
 interface MonitoringStatus {
   isActive: boolean;
@@ -376,6 +376,7 @@ function EmergencyResponseCard({
 export default function RealTimeMonitoringHub({
   healthData: _healthData,
 }: Readonly<RealTimeMonitoringHubProps>) {
+  const { showOnce } = useOnceToast();
   const [monitoringActive, setMonitoringActive] = useKV<string>(
     'monitoring-active',
     'false'
@@ -467,10 +468,10 @@ export default function RealTimeMonitoringHub({
 
     if (newStatus === 'true') {
       await live.connectToHealthData();
-      toast.success('Real-time monitoring activated');
+      showOnce('rtmh-activated', 'success', 'Real-time monitoring activated');
     } else {
       live.disconnectFromHealthData();
-      toast.info('Real-time monitoring paused');
+      showOnce('rtmh-paused', 'info', 'Real-time monitoring paused');
     }
   };
 
@@ -486,7 +487,7 @@ export default function RealTimeMonitoringHub({
     };
 
     setAlerts((currentAlerts = []) => [newAlert, ...currentAlerts]);
-    toast.warning('New alert generated for testing');
+    showOnce('rtmh-test-alert', 'warning', 'New alert generated for testing');
   };
 
   const resolveAlert = (alertId: string) => {
@@ -497,7 +498,7 @@ export default function RealTimeMonitoringHub({
           : alert
       )
     );
-    toast.success('Alert resolved');
+    showOnce('rtmh-alert-resolved', 'success', 'Alert resolved');
   };
 
   const getDeviceIcon = (type: string) => {

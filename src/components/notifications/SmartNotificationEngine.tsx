@@ -237,7 +237,7 @@ export default function SmartNotificationEngine({
       setEngagementPatterns(patterns);
     };
 
-    const interval = setInterval(simulateEngagementLearning, 30000); // Update every 30 seconds
+    const interval = setInterval(simulateEngagementLearning, 45000); // Update every 45 seconds
     simulateEngagementLearning(); // Initial call
 
     return () => clearInterval(interval);
@@ -421,7 +421,7 @@ export default function SmartNotificationEngine({
 
   // Notification delivery simulation
   useEffect(() => {
-    const interval = setInterval(processNotificationQueue, 5000); // Check every 5 seconds
+    const interval = setInterval(processNotificationQueue, 8000); // Check every 8 seconds
     return () => clearInterval(interval);
   }, [processNotificationQueue]);
 
