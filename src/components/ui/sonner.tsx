@@ -50,6 +50,10 @@ export function AppToaster(props: ToasterProps) {
   useEffect(() => {
     setMounted(true);
   }, []);
+  // Allow runtime disabling of toasts to isolate update loops
   if (!mounted) return null;
+  if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__DISABLE_TOASTS) {
+    return null;
+  }
   return <Toaster {...props} />;
 }
