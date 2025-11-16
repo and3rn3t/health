@@ -211,21 +211,27 @@ initClientErrorReporter();
 
 console.log('🎯 main.tsx: About to render React app...');
 try {
-  root.render(
-    <StrictMode>
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <QueryClientProvider client={queryClient}>
-          <Suspense fallback={<LoadingFallback />}>
-            <AppWebSocketProvider>
-              <AppWrapper />
-              <CoachingControlPanel />
-            </AppWebSocketProvider>
-          </Suspense>
-          <AppToaster position="top-right" richColors />
-        </QueryClientProvider>
-      </ErrorBoundary>
-    </StrictMode>
+  const AppTree = (
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <QueryClientProvider client={queryClient}>
+        <Suspense fallback={<LoadingFallback />}>
+          <AppWebSocketProvider>
+            <AppWrapper />
+            <CoachingControlPanel />
+          </AppWebSocketProvider>
+        </Suspense>
+        {/* Disable toasts in development to avoid StrictMode effect loops */}
+        {!import.meta.env.DEV && <AppToaster position="top-right" richColors />}
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
+
+  if (import.meta.env.DEV) {
+    // Render without StrictMode in development to avoid double-invocation of effects
+    root.render(AppTree);
+  } else {
+    root.render(<StrictMode>{AppTree}</StrictMode>);
+  }
   console.log('✅ main.tsx: React app rendered successfully!');
 } catch (error) {
   console.error('❌ main.tsx: React render failed:', error);
