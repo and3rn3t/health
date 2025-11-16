@@ -14,8 +14,7 @@ $ErrorActionPreference = 'Continue'
 $global:VitalSenseWorkspaceRoot = $WorkspaceRoot
 
 # VS Code Terminal Shell Integration
-# When launched without -NoProfile, VS Code automatically loads shell integration
-# We just need to verify it's present and configure output rendering
+# Manually load shell integration since we use -NoProfile
 if ($env:TERM_PROGRAM -eq 'vscode') {
   # Enable ANSI rendering for better VS Code integration
   $env:PSStyle_OutputRendering = 'Ansi'
@@ -23,9 +22,21 @@ if ($env:TERM_PROGRAM -eq 'vscode') {
     $PSStyle.OutputRendering = 'Ansi'
   }
 
-  # Verify shell integration is loaded (it should be by VS Code)
-  if ($Verbose -and (Test-Path function:__vsc_prompt_cmd_original)) {
-    Write-Host '✓ VS Code shell integration active' -ForegroundColor Green
+  # Locate and load VS Code shell integration
+  try {
+    $shellIntegrationPath = & code --locate-shell-integration-path pwsh 2>$null
+    if ($shellIntegrationPath -and (Test-Path $shellIntegrationPath)) {
+      . $shellIntegrationPath
+      if ($Verbose) {
+        Write-Host '✓ VS Code shell integration loaded' -ForegroundColor Green
+      }
+    } elseif ($Verbose) {
+      Write-Host '⚠ Shell integration not found' -ForegroundColor Yellow
+    }
+  } catch {
+    if ($Verbose) {
+      Write-Host "⚠ Could not load shell integration: $_" -ForegroundColor Yellow
+    }
   }
 }
 
