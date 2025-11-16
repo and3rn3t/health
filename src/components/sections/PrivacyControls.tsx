@@ -3,6 +3,7 @@
  * Manage privacy settings and data permissions
  */
 import { Database, Eye, Lock, Shield, Users } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function PrivacyControls() {
   const privacySettings = [
@@ -42,70 +43,75 @@ export default function PrivacyControls() {
   };
 
   return (
-    <div className="p-8">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-8 text-center">
-          <Shield className="h-12 w-12 text-teal-600 mx-auto mb-4" />
-          <h1 className="text-foreground mb-2 text-3xl font-bold">
-            Privacy Controls
-          </h1>
-          <p className="text-muted-foreground">
+    <div className="px-6 py-8">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <Card className="my-0">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-vitalsense-teal/10">
+              <Shield className="h-6 w-6 text-teal-600" />
+            </div>
+            <CardTitle className="text-3xl">Privacy Controls</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 text-center text-muted-foreground">
             Manage your privacy settings and control how your health data is
             used
-          </p>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {privacySettings.map((setting) => {
             const Icon = setting.icon;
             return (
-              <div
-                key={setting.id}
-                className="bg-card border-border rounded-lg border p-6 shadow-md"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <Icon className="text-teal-600 h-8 w-8" />
-                    <div>
-                      <h3 className="text-foreground text-lg font-semibold">
-                        {setting.title}
-                      </h3>
-                      <p className="text-muted-foreground mt-1">
-                        {setting.description}
-                      </p>
+              <Card key={setting.id} className="my-0">
+                <CardContent className="py-4 md:py-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-vitalsense-teal/10">
+                        <Icon className="h-6 w-6 text-teal-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold leading-tight">
+                          {setting.title}
+                        </h3>
+                        <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                          {setting.description}
+                        </p>
+                      </div>
                     </div>
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        checked={setting.enabled}
+                        onChange={() => toggleSetting(setting.id)}
+                        className="peer sr-only"
+                        aria-label={`Toggle ${setting.title}`}
+                      />
+                      <div className="peer h-6 w-11 rounded-full bg-muted transition-colors peer-checked:bg-vitalsense-teal peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-vitalsense-teal/30 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-card after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-card" />
+                    </label>
                   </div>
-                  <label className="relative inline-flex cursor-pointer items-center">
-                    <input
-                      type="checkbox"
-                      checked={setting.enabled}
-                      onChange={() => toggleSetting(setting.id)}
-                      className="sr-only peer"
-                      aria-label={`Toggle ${setting.title}`}
-                    />
-                    <div className="w-11 bg-muted peer-focus:ring-vitalsense-teal/40 after:h-5 after:w-5 peer-checked:bg-vitalsense-teal after:bg-card peer-checked:after:border-card peer h-6 rounded-full after:absolute after:left-[2px] after:top-[2px] after:rounded-full after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-focus:outline-none peer-focus:ring-4"></div>
-                  </label>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
 
-        <div className="bg-card border-border mt-8 rounded-lg border p-6">
-          <div className="space-x-3 flex items-center">
-            <Shield className="text-yellow-600 h-6 w-6" />
-            <div>
-              <h3 className="text-foreground text-lg font-semibold">
-                Data Protection Notice
-              </h3>
-              <p className="text-muted-foreground mt-1">
-                Your health data is protected by HIPAA compliance standards.
-                Changes to privacy settings may affect the functionality of
-                certain features.
-              </p>
+        <Card className="my-0">
+          <CardContent className="py-5">
+            <div className="flex items-start gap-3">
+              <Shield className="h-6 w-6 text-yellow-600" />
+              <div>
+                <h3 className="text-lg font-semibold leading-tight">
+                  Data Protection Notice
+                </h3>
+                <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                  Your health data is protected by HIPAA compliance standards.
+                  Changes to privacy settings may affect the functionality of
+                  certain features.
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
