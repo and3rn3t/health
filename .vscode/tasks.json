@@ -1222,6 +1222,27 @@
       }
     },
     {
+      "label": "🔍 Test Shell Integration",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "scripts/powershell-tools/test-shell-integration.ps1"
+      ],
+      "group": "test",
+      "icon": { "id": "debug-console", "color": "terminal.ansiCyan" },
+      "detail": "Diagnose VS Code shell integration for Copilot terminal output capture",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated"
+      }
+    },
+    {
       "label": "🔄 Open VitalSense Terminal",
       "type": "shell",
       "command": "pwsh",

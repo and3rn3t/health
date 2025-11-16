@@ -98,12 +98,11 @@
       "color": "terminal.ansiBlue",
       "args": [
         "-NoLogo",
-        "-NoProfile",
         "-NoExit",
         "-ExecutionPolicy",
         "Bypass",
         "-Command",
-        ". '${workspaceFolder}\\scripts\\powershell-tools\\fast-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}'"
+        "$env:VITALSENSE_WORKSPACE_ROOT='${workspaceFolder}'; . '${workspaceFolder}\\scripts\\powershell-tools\\fast-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}'"
       ]
     },
     "Swift Development": {
@@ -112,12 +111,11 @@
       "color": "terminal.ansiMagenta",
       "args": [
         "-NoLogo",
-        "-NoProfile",
         "-NoExit",
         "-ExecutionPolicy",
         "Bypass",
         "-Command",
-        ". '${workspaceFolder}\\scripts\\powershell-tools\\enhanced-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}' -SwiftMode"
+        "$env:VITALSENSE_WORKSPACE_ROOT='${workspaceFolder}'; . '${workspaceFolder}\\scripts\\powershell-tools\\enhanced-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}' -SwiftMode"
       ]
     },
     "Legacy VitalSense": {
@@ -125,12 +123,11 @@
       "icon": "terminal",
       "args": [
         "-NoLogo",
-        "-NoProfile",
         "-NoExit",
         "-ExecutionPolicy",
         "Bypass",
         "-Command",
-        ". '${workspaceFolder}\\scripts\\powershell-tools\\terminal-init.ps1' -WorkspaceRoot '${workspaceFolder}' -Verbose"
+        "$env:VITALSENSE_WORKSPACE_ROOT='${workspaceFolder}'; . '${workspaceFolder}\\scripts\\powershell-tools\\terminal-init.ps1' -WorkspaceRoot '${workspaceFolder}' -Verbose"
       ]
     },
     "PowerShell 7": {
@@ -158,6 +155,7 @@
   "terminal.integrated.shellIntegration.enabled": true,
   "terminal.integrated.shellIntegration.decorationsEnabled": "both",
   "terminal.integrated.shellIntegration.showCommandGuide": true,
+  "terminal.integrated.shellIntegration.suggestEnabled": true,
   "terminal.integrated.stickyScroll.enabled": true,
   "terminal.integrated.suggest.enabled": true,
   "terminal.integrated.suggest.inlineSuggestion": "alwaysOnTop",
@@ -195,10 +193,17 @@
   "powershell.debugging.createTemporaryIntegratedConsole": true,
   "powershell.scriptAnalysis.enable": true,
   "powershell.scriptAnalysis.settingsPath": ".vscode/PSScriptAnalyzerSettings.psd1",
-  "powershell.powerShellAdditionalExePaths": {
-    "PowerShell-7": "C:/Program Files/PowerShell/7/pwsh.exe"
-  },
-  "powershell.powerShellDefaultVersion": "PowerShell-7",
+  "powershell.powerShellAdditionalExePaths": [
+    {
+      "versionName": "PowerShell 7",
+      "exePath": "C:\\Program Files\\PowerShell\\7\\pwsh.exe"
+    },
+    {
+      "versionName": "PowerShell (Store)",
+      "exePath": "C:\\Users\\and3r\\AppData\\Local\\Microsoft\\WindowsApps\\Microsoft.PowerShell_8wekyb3d8bbwe\\pwsh.exe"
+    }
+  ],
+  "powershell.powerShellDefaultVersion": "PowerShell (Store)",
   "powershell.codeFormatting.alignPropertyValuePairs": true,
   "task.verboseLogging": true,
   "task.allowAutomaticTasks": "on",

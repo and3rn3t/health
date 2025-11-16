@@ -11,19 +11,20 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Continue'  # Use Continue instead of Stop for profile loading
 
-# VS Code Terminal Shell Integration (optimized)
-try {
-  if ($env:TERM_PROGRAM -eq 'vscode' -and (Get-Command code -ErrorAction SilentlyContinue)) {
-    # Only try VS Code integration if code command is available
-    $integrationPath = code --locate-shell-integration-path pwsh 2>$null
-    if ($integrationPath -and (Test-Path $integrationPath)) {
-      . $integrationPath
-    }
-    $env:PSStyle_OutputRendering = 'Ansi'
+# VS Code Terminal Shell Integration
+# When launched without -NoProfile, VS Code automatically loads shell integration
+# We just need to verify it's present and configure output rendering
+if ($env:TERM_PROGRAM -eq 'vscode') {
+  # Enable ANSI rendering for better VS Code integration
+  $env:PSStyle_OutputRendering = 'Ansi'
+  if ($PSStyle) {
     $PSStyle.OutputRendering = 'Ansi'
   }
-} catch {
-  # Continue without VS Code integration if unavailable
+
+  # Verify shell integration is loaded (it should be by VS Code)
+  if ($Verbose -and (Test-Path function:__vsc_prompt_cmd_original)) {
+    Write-Host "✓ VS Code shell integration active" -ForegroundColor Green
+  }
 }
 
 # Import PSReadLine for enhanced command line experience
