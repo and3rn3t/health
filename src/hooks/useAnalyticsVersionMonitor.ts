@@ -1,7 +1,7 @@
 import { FALL_RISK_ANALYTICS_VERSION } from '@/lib/fallRiskConfig';
 import { GAIT_ANALYTICS_VERSION } from '@/lib/gaitConfig';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { useOnceToast } from './useOnceToast';
 
 export interface AnalyticsVersionInfo {
   gait: { local: string; remote: string | null; inSync: boolean };
@@ -28,6 +28,7 @@ export interface UseAnalyticsVersionMonitorOptions {
 export function useAnalyticsVersionMonitor(
   opts: UseAnalyticsVersionMonitorOptions = {}
 ): AnalyticsVersionInfo {
+  const { showOnce } = useOnceToast();
   const {
     intervalMs = 300_000,
     fetchImpl = fetch,
@@ -175,11 +176,16 @@ export function useAnalyticsVersionMonitor(
           ((av.gait && av.gait !== GAIT_ANALYTICS_VERSION) ||
             (av.fallRisk && av.fallRisk !== FALL_RISK_ANALYTICS_VERSION))
       );
-      if (mismatch && !notifiedRef.current) {
-        notifiedRef.current = true;
-        toast.warning(
-          'Analytics config mismatch detected. Refresh recommended.'
-        );
+      if (mismatch) {
+        // Double-guard: instance ref + global once guard to avoid any loop
+        if (!notifiedRef.current) {
+          notifiedRef.current = true;
+          showOnce(
+            'analytics-config-mismatch',
+            'warning',
+            'Analytics config mismatch detected. Refresh recommended.'
+          );
+        }
         // Sampling + cap logic
         if (
           ingestCountRef.current < maxIngestEventsPerSession &&

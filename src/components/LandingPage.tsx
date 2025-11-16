@@ -398,7 +398,7 @@ export default function LandingPage({
 
         {/* Timeframe Toggle + Refresh */}
         {healthData && (
-          <div className="flex items-center justify-end gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-3">
             {(['today', '7d', '30d', '90d'] as const).map((tf) => (
               <Button
                 key={tf}
@@ -650,7 +650,7 @@ export default function LandingPage({
                 className="group overflow-hidden"
               >
                 <div className={`h-2 ${feature.color}`} data-allow-motion />
-                <CardHeader className="pb-4">
+                <CardHeader className="pt-3 pb-4">
                   <div className="flex items-center justify-between">
                     <div className={`p-3 rounded-lg ${feature.color}`}>
                       <IconComponent className="h-6 w-6 text-white" />
@@ -740,7 +740,7 @@ export default function LandingPage({
               Explore our setup guides and integration tutorials
             </p>
           </div>
-          <div className="flex gap-2">
+              <div className="flex flex-wrap gap-3">
             <IOS26Button
               variant="tinted"
               size="medium"
