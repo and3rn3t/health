@@ -9,9 +9,12 @@ import React, {
   useTransition,
 } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
+import { SafeLogger } from '@/lib/errorHandling';
 
-// Debug logging
-console.log('🚀 App.tsx: Starting to load...');
+// Debug logging (only in development)
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+  SafeLogger.debug('App.tsx: Starting to load');
+}
 
 // Core components
 import { AnalyticsVersionBadge } from '@/components/analytics/AnalyticsVersionBadge';
@@ -43,6 +46,8 @@ import { useThemeMode } from '@/hooks/useThemeMode';
 import { HealthDataProcessor } from '@/lib/healthDataProcessor';
 import type { AllSettings } from '@/lib/settingsTypes';
 import { cn } from '@/lib/utils';
+import { createLazyComponent, createLazyNamedComponent } from '@/lib/lazyLoading';
+import { createNavigationItems, type NavigationItem } from '@/lib/navigationHelpers';
 import type { ProcessedHealthData } from '@/types';
 import {
   Activity,
@@ -69,24 +74,14 @@ const OnboardingFlow = lazy(
   () => import('@/components/onboarding/OnboardingFlow')
 );
 
-const LiveHealthMonitoring = lazy(() =>
-  import('@/components/health/VitalSenseEnhancedDashboard')
-    .then((module) => ({
-      default: module.VitalSenseEnhancedDashboard,
-    }))
-    .catch(() => ({
-      default: () => (
-        <div className="p-8 text-center">
-          <Activity className="mx-auto mb-4 h-12 w-12 text-vitalsense-teal" />
-          <h2 className="mb-2 text-2xl font-bold text-foreground">
-            VitalSense Live Monitoring
-          </h2>
-          <p className="text-muted-foreground">
-            Real-time health monitoring dashboard loading...
-          </p>
-        </div>
-      ),
-    }))
+const LiveHealthMonitoring = createLazyNamedComponent(
+  () => import('@/components/health/VitalSenseEnhancedDashboard'),
+  'VitalSenseEnhancedDashboard',
+  {
+    title: 'VitalSense Live Monitoring',
+    message: 'Real-time health monitoring dashboard loading...',
+    icon: Activity,
+  }
 );
 
 const FallDetection = lazy(() => import('@/components/health/FallDetection'));
@@ -110,10 +105,14 @@ const CognitiveHealth = lazy(
 );
 
 // LiDAR AR / Gait Dashboard (named export -> default wrapper)
-const GaitDashboard = lazy(() =>
-  import('@/components/health/GaitDashboardClean').then((m) => ({
-    default: m.GaitDashboard,
-  }))
+const GaitDashboard = createLazyNamedComponent(
+  () => import('@/components/health/GaitDashboardClean'),
+  'GaitDashboard',
+  {
+    title: 'Gait Dashboard',
+    message: 'Gait analysis dashboard loading...',
+    icon: Scan,
+  }
 );
 
 // Enhanced LiDAR Performance Integration
@@ -126,34 +125,22 @@ const CompleteLiDARIntegration = lazy(
   () => import('@/components/health/lidar/CompleteLiDARIntegration')
 );
 
-const NotificationCenter = lazy(() =>
-  import('@/components/sections/NotificationCenter').catch(() => ({
-    default: () => (
-      <div className="p-8 text-center">
-        <Bell className="mx-auto mb-4 h-12 w-12 text-vitalsense-teal" />
-        <h2 className="mb-2 text-2xl font-bold text-foreground">
-          Notification Center
-        </h2>
-        <p className="text-muted-foreground">
-          Notification management coming soon.
-        </p>
-      </div>
-    ),
-  }))
+const NotificationCenter = createLazyComponent(
+  () => import('@/components/sections/NotificationCenter'),
+  {
+    title: 'Notification Center',
+    message: 'Notification management coming soon.',
+    icon: Bell,
+  }
 );
 
-const CaregiverDashboard = lazy(() =>
-  import('@/components/sections/CaregiverDashboard').catch(() => ({
-    default: () => (
-      <div className="p-8 text-center">
-        <Users className="mx-auto mb-4 h-12 w-12 text-vitalsense-teal" />
-        <h2 className="mb-2 text-2xl font-bold text-foreground">
-          Caregiver Dashboard
-        </h2>
-        <p className="text-muted-foreground">Caregiver portal coming soon.</p>
-      </div>
-    ),
-  }))
+const CaregiverDashboard = createLazyComponent(
+  () => import('@/components/sections/CaregiverDashboard'),
+  {
+    title: 'Caregiver Dashboard',
+    message: 'Caregiver portal coming soon.',
+    icon: Users,
+  }
 );
 
 const SettingsPanel = lazy(() => import('@/components/sections/SettingsPanel'));
@@ -167,22 +154,17 @@ const DevDiagnostics = lazy(
   () => import('@/components/sections/DevDiagnostics')
 );
 
-const PrivacyControls = lazy(() =>
-  import('@/components/sections/PrivacyControls').catch(() => ({
-    default: () => (
-      <div className="p-8 text-center">
-        <Shield className="mx-auto mb-4 h-12 w-12 text-vitalsense-teal" />
-        <h2 className="mb-2 text-2xl font-bold text-foreground">
-          Privacy Controls
-        </h2>
-        <p className="text-muted-foreground">Privacy settings coming soon.</p>
-      </div>
-    ),
-  }))
+const PrivacyControls = createLazyComponent(
+  () => import('@/components/sections/PrivacyControls'),
+  {
+    title: 'Privacy Controls',
+    message: 'Privacy settings coming soon.',
+    icon: Shield,
+  }
 );
 
 // Navigation structure with priority levels
-const navigationItems = [
+const navigationItems: NavigationItem[] = createNavigationItems([
   // PRIMARY - Always visible in tabs (top 5)
   {
     id: 'dashboard',
@@ -321,7 +303,7 @@ const navigationItems = [
     component: DevDiagnostics,
     priority: 3,
   },
-];
+]);
 
 // Main VitalSense App Component (Inner content inside SidebarProvider)
 function AppContent() {
@@ -357,7 +339,10 @@ function AppContent() {
 
   // TEMPORARY: Force mobile mode for testing
   const _isMobileForced = true;
-  console.log('🔧 Mobile forced mode:', _isMobileForced);
+  // NOSONAR: Development mode logging
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    SafeLogger.debug('Mobile forced mode', { isMobileForced: _isMobileForced });
+  }
   // Respect default sidebar behavior; do not force-open on mount.
   const { recordUse, sortByUsage, hasAnyUsage } = useNavUsage();
   const announce = useLiveRegion();

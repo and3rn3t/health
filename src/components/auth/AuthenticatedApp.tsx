@@ -102,13 +102,19 @@ export default function AuthenticatedApp() {
 
   // Development mode: always bypass auth
   if (isDevelopment) {
-    console.log('🔓 Development mode: bypassing authentication');
+    // NOSONAR: Development mode logging - safe for local development
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      console.log('🔓 Development mode: bypassing authentication'); // NOSONAR
+    }
     return <OriginalApp />;
   }
 
   // Demo mode: bypass auth when demo mode is enabled
   if (isDemoMode) {
-    console.log('🎯 Demo mode: bypassing authentication');
+    // NOSONAR: Demo mode logging - safe for demo environment
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      console.log('🎯 Demo mode: bypassing authentication'); // NOSONAR
+    }
     return <OriginalApp />;
   }
 

@@ -1,0 +1,159 @@
+{
+  "generatedAt": "2025-11-17T00:25:47.674Z",
+  "totalFiles": 559,
+  "totalIssues": 2269,
+  "byPattern": [
+    {
+      "pattern": "Hardcoded Secrets",
+      "severity": "critical",
+      "count": 10,
+      "fix": "Move to environment variables or secrets manager"
+    },
+    {
+      "pattern": "dangerouslySetInnerHTML (XSS Risk)",
+      "severity": "high",
+      "count": 3,
+      "fix": "Sanitize HTML or use React components"
+    },
+    {
+      "pattern": "console.log (Information Disclosure)",
+      "severity": "medium",
+      "count": 2255,
+      "fix": "Use SafeLogger or remove in production"
+    },
+    {
+      "pattern": "Unsafe Regex",
+      "severity": "medium",
+      "count": 1,
+      "fix": "Validate and sanitize regex inputs"
+    }
+  ],
+  "topIssues": [
+    {
+      "file": "src\\worker.ts",
+      "line": 926,
+      "column": 21,
+      "pattern": "Hardcoded Secrets",
+      "severity": "critical",
+      "fix": "Move to environment variables or secrets manager",
+      "snippet": "return c.json({ token: 'demo-device-token' }); // NOSONAR"
+    },
+    {
+      "file": "src\\worker.ts",
+      "line": 929,
+      "column": 19,
+      "pattern": "Hardcoded Secrets",
+      "severity": "critical",
+      "fix": "Move to environment variables or secrets manager",
+      "snippet": "return c.json({ token: 'device-token-placeholder' }); // NOSONAR"
+    },
+    {
+      "file": "src\\__tests__\\derive-key-and-live-flush.test.ts",
+      "line": 32,
+      "column": 11,
+      "pattern": "Hardcoded Secrets",
+      "severity": "critical",
+      "fix": "Move to environment variables or secrets manager",
+      "snippet": "const token = `x.${payload}.y`;"
+    },
+    {
+      "file": "src\\__tests__\\device-auth.test.ts",
+      "line": 9,
+      "column": 16,
+      "pattern": "Hardcoded Secrets",
+      "severity": "critical",
+      "fix": "Move to environment variables or secrets manager",
+      "snippet": "DEVICE_JWT_SECRET: 'dev-secret',"
+    },
+    {
+      "file": "src\\__tests__\\device-auth.test.ts",
+      "line": 44,
+      "column": 48,
+      "pattern": "Hardcoded Secrets",
+      "severity": "critical",
+      "fix": "Move to environment variables or secrets manager",
+      "snippet": "{ ENVIRONMENT: 'development', DEVICE_JWT_SECRET: 'dev-secret' }"
+    },
+    {
+      "file": "src\\components\\ui\\chart.tsx",
+      "line": 115,
+      "column": 31,
+      "pattern": "dangerouslySetInnerHTML (XSS Risk)",
+      "severity": "high",
+      "fix": "Sanitize HTML or use React components",
+      "snippet": "// Build CSS safely without dangerouslySetInnerHTML"
+    },
+    {
+      "file": "src\\components\\ui\\chart.tsx",
+      "line": 146,
+      "column": 10,
+      "pattern": "dangerouslySetInnerHTML (XSS Risk)",
+      "severity": "high",
+      "fix": "Sanitize HTML or use React components",
+      "snippet": "// Use dangerouslySetInnerHTML with sanitized content"
+    },
+    {
+      "file": "src\\components\\ui\\chart.tsx",
+      "line": 150,
+      "column": 7,
+      "pattern": "dangerouslySetInnerHTML (XSS Risk)",
+      "severity": "high",
+      "fix": "Sanitize HTML or use React components",
+      "snippet": "dangerouslySetInnerHTML={{ // NOSONAR"
+    },
+    {
+      "file": "src\\components\\analytics\\AIUsagePredictions.tsx",
+      "line": 258,
+      "column": 7,
+      "pattern": "console.log (Information Disclosure)",
+      "severity": "medium",
+      "fix": "Use SafeLogger or remove in production",
+      "snippet": "console.error('Error generating predictions:', error);"
+    },
+    {
+      "file": "src\\components\\auth\\AuthenticatedApp.tsx",
+      "line": 107,
+      "column": 7,
+      "pattern": "console.log (Information Disclosure)",
+      "severity": "medium",
+      "fix": "Use SafeLogger or remove in production",
+      "snippet": "console.log('🔓 Development mode: bypassing authentication'); // NOSONAR"
+    },
+    {
+      "file": "src\\components\\auth\\AuthenticatedApp.tsx",
+      "line": 116,
+      "column": 7,
+      "pattern": "console.log (Information Disclosure)",
+      "severity": "medium",
+      "fix": "Use SafeLogger or remove in production",
+      "snippet": "console.log('🎯 Demo mode: bypassing authentication'); // NOSONAR"
+    },
+    {
+      "file": "src\\components\\auth\\LoginPage.tsx",
+      "line": 39,
+      "column": 7,
+      "pattern": "console.log (Information Disclosure)",
+      "severity": "medium",
+      "fix": "Use SafeLogger or remove in production",
+      "snippet": "console.error('Auth0 configuration is missing');"
+    },
+    {
+      "file": "src\\components\\health\\AIInsights.tsx",
+      "line": 124,
+      "column": 7,
+      "pattern": "console.log (Information Disclosure)",
+      "severity": "medium",
+      "fix": "Use SafeLogger or remove in production",
+      "snippet": "console.error('Error generating insights:', error);"
+    },
+    {
+      "file": "scripts\\test-advanced-websocket-config.js",
+      "line": 37,
+      "column": 24,
+      "pattern": "Unsafe Regex",
+      "severity": "medium",
+      "fix": "Validate and sanitize regex inputs",
+      "snippet": "const keyPattern = new RegExp(`${sanitizedKey}\\\\s*=\\\\s*\"([^\"]+)\"`);"
+    }
+  ]
+}

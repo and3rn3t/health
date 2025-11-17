@@ -8,6 +8,7 @@ import {
   type Permission,
   type UserRole,
 } from '@/lib/auth0Config';
+import { SafeLogger } from '@/lib/errorHandling';
 
 export interface UserProfile {
   id: string;
@@ -54,29 +55,19 @@ export const logAuthOperation = (
   operation: string,
   meta: Record<string, unknown> = {}
 ) => {
-  // Use console.log with structured format for auth operations
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    level: 'info',
-    operation: `auth_${operation}`,
-    ...meta,
-  };
-  console.log(JSON.stringify(logEntry));
+  // Use SafeLogger for auth operations
+  SafeLogger.info(`auth_${operation}`, meta);
 };
 
 export const logAuthError = (
   error: Error,
   meta: Record<string, unknown> = {}
 ) => {
-  // Use console.error with structured format for auth errors
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    level: 'error',
-    operation: 'auth_error',
+  // Use SafeLogger for auth errors
+  SafeLogger.error('auth_error', {
     message: error.message,
     ...meta,
-  };
-  console.error(JSON.stringify(logEntry));
+  });
 };
 
 export { PERMISSIONS, USER_ROLES, type Permission, type UserRole };

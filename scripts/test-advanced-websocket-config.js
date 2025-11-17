@@ -32,7 +32,9 @@ async function readTomlValue(filePath, section, key) {
     const sectionMatch = content.match(sectionPattern);
     if (!sectionMatch) return null;
 
-    const keyPattern = new RegExp(`${key}\\s*=\\s*"([^"]+)"`);
+    // Sanitize key to prevent regex injection
+    const sanitizedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const keyPattern = new RegExp(`${sanitizedKey}\\s*=\\s*"([^"]+)"`);
     const keyMatch = sectionMatch[1].match(keyPattern);
     return keyMatch ? keyMatch[1] : null;
   } catch (error) {

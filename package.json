@@ -100,6 +100,8 @@
     "ci:catalog": "node scripts/ci/catalog-validate.js",
     "ci:localization": "node ios/scripts/localization-audit.js",
     "ci:perf-slo": "node scripts/ci/performance-slo-probe.mjs",
+    "ci:sonar-security": "node scripts/ci/sonar-security-analysis.mjs",
+    "ci:sonar-duplication": "node scripts/ci/sonar-duplication-analysis.mjs",
     "perf:sample": "node scripts/analysis/perf-slo-sampler.js",
     "pre:release:gate": "node scripts/development/pre-release-gate.js",
     "audit:localization:ios": "node ios/scripts/localization-audit.js",

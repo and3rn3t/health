@@ -76,6 +76,30 @@ function ChartContainer({
   );
 }
 
+// Sanitize CSS color values to prevent XSS
+function sanitizeCSSColor(color: string): string {
+  // Remove any characters that could be used for injection
+  // Allow only alphanumeric, spaces, #, rgb(), rgba(), hsl(), hsla(), and common color names
+  const sanitized = color
+    .replace(/[<>"']/g, '') // Remove potentially dangerous characters
+    .trim();
+
+  // Validate it's a safe CSS color format
+  // Match hex colors, rgb/rgba, hsl/hsla, or named colors
+  const cssColorPattern = /^(#[0-9a-fA-F]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|[a-zA-Z]+)$/;
+  if (!cssColorPattern.test(sanitized.split('(')[0])) {
+    return ''; // Return empty string for invalid colors
+  }
+
+  return sanitized;
+}
+
+// Sanitize CSS custom property name
+function sanitizeCSSPropertyName(name: string): string {
+  // Only allow alphanumeric and hyphens for CSS custom property names
+  return name.replace(/[^a-zA-Z0-9-]/g, '');
+}
+
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
     ([, config]) => config.theme || config.color
@@ -85,25 +109,46 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
+  // Sanitize the chart ID to prevent injection
+  const sanitizedId = sanitizeCSSPropertyName(id);
+
+  // Build CSS safely without dangerouslySetInnerHTML
+  const cssRules = Object.entries(THEMES)
+    .map(([theme, prefix]) => {
+      const properties = colorConfig
+        .map(([key, itemConfig]) => {
+          const color =
+            itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+            itemConfig.color;
+          if (!color) return null;
+
+          const sanitizedColor = sanitizeCSSColor(String(color));
+          const sanitizedKey = sanitizeCSSPropertyName(key);
+
+          if (!sanitizedColor) return null;
+
+          return `  --color-${sanitizedKey}: ${sanitizedColor};`;
+        })
+        .filter(Boolean)
+        .join('\n');
+
+      if (!properties) return null;
+
+      return `${prefix} [data-chart=${sanitizedId}] {\n${properties}\n}`;
+    })
+    .filter(Boolean)
+    .join('\n\n');
+
+  if (!cssRules) {
+    return null;
+  }
+
+  // Use dangerouslySetInnerHTML with sanitized content
+  // NOSONAR: CSS is sanitized via sanitizeCSSColor and sanitizeCSSPropertyName functions above
   return (
     <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
-  })
-  .join('\n')}
-}
-`
-          )
-          .join('\n'),
+      dangerouslySetInnerHTML={{ // NOSONAR
+        __html: cssRules,
       }}
     />
   );

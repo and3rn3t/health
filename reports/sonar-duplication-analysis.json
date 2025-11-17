@@ -1,0 +1,230 @@
+{
+  "generatedAt": "2025-11-17T00:14:54.021Z",
+  "totalFiles": 335,
+  "totalLines": 105231,
+  "duplicatedLines": 91613,
+  "duplicationPercent": "87.06",
+  "targetPercent": 3,
+  "status": "FAIL",
+  "duplicateBlocks": 5667,
+  "topDuplicates": [
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx",
+        "src\\components\\nav\\AppleSidebarDemo.tsx"
+      ],
+      "occurrences": 2,
+      "sample": "AppleSidebarHeader, | AppleSidebarItem, | AppleSidebarList,"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx",
+        "src\\components\\nav\\AppleSidebarDemo.tsx"
+      ],
+      "occurrences": 2,
+      "sample": "AppleSidebarItem, | AppleSidebarList, | AppleSidebarMain,"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx",
+        "src\\components\\nav\\AppleSidebarDemo.tsx"
+      ],
+      "occurrences": 2,
+      "sample": "AppleSidebarList, | AppleSidebarMain, | AppleSidebarPanel,"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx"
+      ],
+      "occurrences": 2,
+      "sample": "</p> | </div> | ),"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx"
+      ],
+      "occurrences": 4,
+      "sample": "</div> | ), | }))"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx"
+      ],
+      "occurrences": 2,
+      "sample": "component: LiveHealthMonitoring, | priority: 1, | },"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx"
+      ],
+      "occurrences": 5,
+      "sample": "priority: 1, | }, | {"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx"
+      ],
+      "occurrences": 2,
+      "sample": "}, | { | id: \"\","
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx"
+      ],
+      "occurrences": 2,
+      "sample": "}, | { | id: \"\","
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx"
+      ],
+      "occurrences": 6,
+      "sample": "priority: 2, | }, | {"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx"
+      ],
+      "occurrences": 2,
+      "sample": "}, | { | id: \"\","
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx",
+        "src\\components\\nav\\FloatingActionButton.tsx"
+      ],
+      "occurrences": 2,
+      "sample": "}, | { | id: \"\","
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx"
+      ],
+      "occurrences": 5,
+      "sample": "priority: 3, | }, | {"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx"
+      ],
+      "occurrences": 2,
+      "sample": "case \"\": | handleTabChange(\"\"); | announce(\"\");"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx"
+      ],
+      "occurrences": 16,
+      "sample": "case \"\": | return import(\"\"); | case \"\":"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx"
+      ],
+      "occurrences": 16,
+      "sample": "return import(\"\"); | case \"\": | return import(\"\");"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx",
+        "src\\components\\health\\EnhancedVitalSenseDashboard.tsx"
+      ],
+      "occurrences": 2,
+      "sample": "className=\"\" | > | <X className=\"\" />"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx",
+        "src\\components\\nav\\AppleSidebarDemo.tsx"
+      ],
+      "occurrences": 2,
+      "sample": "<AppleSidebarSection> | <div className=\"\"> | Quick Access"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx"
+      ],
+      "occurrences": 4,
+      "sample": ".map((item) => { | const Icon = item.icon; | const isActive = activeTab === item.id;"
+    },
+    {
+      "lines": 5,
+      "files": [
+        "src\\App.tsx"
+      ],
+      "occurrences": 4,
+      "sample": "active={isActive} | aria-current={isActive ? \"\" : undefined} | data-id={item.id}"
+    }
+  ],
+  "byFilePair": [
+    {
+      "files": "src\\components\\health\\EnhancedVitalSenseDashboard.tsx <-> src\\components\\health\\VitalSenseEnhancedDashboard.tsx",
+      "count": 294,
+      "totalLines": 1470
+    },
+    {
+      "files": "src\\components\\error\\ErrorBoundary.tsx <-> src\\components\\error\\ErrorBoundaryComponents.tsx",
+      "count": 288,
+      "totalLines": 1440
+    },
+    {
+      "files": "src\\components\\health\\LiDARGaitAnalyzerClean.tsx <-> src\\components\\health\\SimpleLiDARGaitAnalyzer.tsx",
+      "count": 185,
+      "totalLines": 925
+    },
+    {
+      "files": "src\\contexts\\AuthContext.tsx <-> src\\contexts\\AuthProvider.tsx",
+      "count": 154,
+      "totalLines": 770
+    },
+    {
+      "files": "src\\lib\\ios26-icon-mapping-fixed.ts <-> src\\lib\\ios26-icon-mapping.ts",
+      "count": 132,
+      "totalLines": 660
+    },
+    {
+      "files": "src\\components\\ui\\ios26-advanced-navigation-simple.tsx <-> src\\components\\ui\\ios26-advanced-navigation.tsx",
+      "count": 121,
+      "totalLines": 605
+    },
+    {
+      "files": "src\\worker.ts",
+      "count": 119,
+      "totalLines": 595
+    },
+    {
+      "files": "src\\workers\\vitalsense-websocket-advanced.ts <-> src\\workers\\vitalsense-websocket-clean.ts <-> src\\workers\\vitalsense-websocket-ml.ts",
+      "count": 97,
+      "totalLines": 485
+    },
+    {
+      "files": "src\\components\\health\\lidar\\CleanLiDARComponents.tsx <-> src\\components\\health\\lidar\\SimpleLiDARComponents.tsx <-> src\\components\\health\\lidar\\VirtualizedLiDARComponents.tsx",
+      "count": 90,
+      "totalLines": 450
+    },
+    {
+      "files": "src\\components\\health\\ComprehensiveAppleHealthKitGuide.tsx <-> src\\components\\health\\WebSocketArchitectureGuide.tsx",
+      "count": 85,
+      "totalLines": 425
+    }
+  ]
+}

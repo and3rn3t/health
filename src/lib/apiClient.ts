@@ -1,4 +1,5 @@
 import { httpClient } from './httpClient';
+import { SafeLogger } from '@/lib/errorHandling';
 import { z } from 'zod';
 import {
   processedHealthDataSchema,
@@ -33,7 +34,9 @@ export const apiClient = {
         : [];
     const parsed = listSchema.safeParse(payload);
     if (!parsed.success) {
-      console.warn('Health data schema validation failed:', parsed.error);
+      SafeLogger.warn('Health data schema validation failed', {
+        error: parsed.error.flatten(),
+      });
       return [];
     }
     return parsed.data;
