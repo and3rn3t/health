@@ -48,7 +48,7 @@ class Scheduler {
   private notificationConfigs: Map<string, NotificationConfig> = new Map()
 
   createSchedule(schedule: Omit<Schedule, 'id' | 'runCount'>): Schedule {
-    const id = `schedule-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+    const id = `schedule-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`
     const fullSchedule: Schedule = {
       ...schedule,
       id,
@@ -109,7 +109,7 @@ class Scheduler {
       throw new Error(`Schedule ${scheduleId} not found`)
     }
 
-    const id = `job-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+    const id = `job-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`
     const job: ScheduledJob = {
       id,
       scheduleId,

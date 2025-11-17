@@ -70,6 +70,27 @@ const SECURITY_PATTERNS = [
     exclude: []
   },
   {
+    name: 'Weak Crypto (Math.random)',
+    pattern: /Math\.random\s*\(/g,
+    severity: 'medium',
+    fix: 'Use crypto.getRandomValues() or secureRandom() for security-sensitive operations',
+    exclude: [
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/*.spec.ts',
+      '**/*.spec.tsx',
+      '**/_archive/**',
+      '**/src/_archive/**',
+      // Exclude demo/test data generation
+      '**/sampleHealthData.ts',
+      '**/generateDemoHealthData',
+      // Exclude UI-only randomization (colors, positions)
+      '**/components/**/*.tsx',
+      '**/lib/vitalsense-colors.ts',
+      '**/lib/spacing.ts',
+    ]
+  },
+  {
     name: 'SQL Injection Risk',
     pattern: /(query|execute|exec)\s*\(\s*['"`][^'"`]*\+/gi,
     severity: 'high',

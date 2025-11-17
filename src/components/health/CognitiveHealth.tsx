@@ -296,7 +296,7 @@ function AttentionGoNoGoTest({
     const delay = 600 + Math.floor(Math.random() * 900); // 0.6s - 1.5s
     timerRef.current = window.setTimeout(() => {
       // 70% GO, 30% NOGO
-      const isGo = Math.random() < 0.7;
+      const isGo = (crypto.getRandomValues(new Uint32Array(1))[0] / (0xffffffff + 1)) < 0.7;
       setStimulus(isGo ? 'go' : 'nogo');
       setAcceptedInput(false);
 

@@ -53,7 +53,11 @@ class RBACStore {
   private auditLogs: AuditLog[] = []
 
   createRole(role: Omit<Role, 'id'>): Role {
-    const id = `role-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+    // Use cryptographically secure random for role IDs
+    const randomBytes = new Uint8Array(6);
+    crypto.getRandomValues(randomBytes);
+    const randomSuffix = Array.from(randomBytes, b => b.toString(36)).join('').slice(0, 7);
+    const id = `role-${Date.now()}-${randomSuffix}`
     const fullRole: Role = { ...role, id }
     this.roles.set(id, fullRole)
     return fullRole
@@ -64,7 +68,11 @@ class RBACStore {
   }
 
   createUser(user: Omit<User, 'id'>): User {
-    const id = `user-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+    // Use cryptographically secure random for user IDs
+    const randomBytes = new Uint8Array(6);
+    crypto.getRandomValues(randomBytes);
+    const randomSuffix = Array.from(randomBytes, b => b.toString(36)).join('').slice(0, 7);
+    const id = `user-${Date.now()}-${randomSuffix}`
     const fullUser: User = { ...user, id }
     this.users.set(id, fullUser)
     return fullUser
@@ -75,7 +83,11 @@ class RBACStore {
   }
 
   createPolicy(policy: Omit<Policy, 'id'>): Policy {
-    const id = `policy-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+    // Use cryptographically secure random for policy IDs
+    const randomBytes = new Uint8Array(6);
+    crypto.getRandomValues(randomBytes);
+    const randomSuffix = Array.from(randomBytes, b => b.toString(36)).join('').slice(0, 7);
+    const id = `policy-${Date.now()}-${randomSuffix}`
     const fullPolicy: Policy = { ...policy, id }
     this.policies.set(id, fullPolicy)
     return fullPolicy
@@ -139,8 +151,12 @@ class RBACStore {
     result: 'allowed' | 'denied',
     details?: Record<string, any>
   ): void {
+    // Use cryptographically secure random for audit log IDs
+    const randomBytes = new Uint8Array(6);
+    crypto.getRandomValues(randomBytes);
+    const randomSuffix = Array.from(randomBytes, b => b.toString(36)).join('').slice(0, 7);
     const log: AuditLog = {
-      id: `audit-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      id: `audit-${Date.now()}-${randomSuffix}`,
       userId,
       action,
       resourceType,

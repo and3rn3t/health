@@ -189,7 +189,7 @@ export function useAnalyticsVersionMonitor(
         // Sampling + cap logic
         if (
           ingestCountRef.current < maxIngestEventsPerSession &&
-          Math.random() < effectiveSampleRate
+          (crypto.getRandomValues(new Uint32Array(1))[0] / (0xffffffff + 1)) < effectiveSampleRate
         ) {
           ingestCountRef.current += 1;
           try {

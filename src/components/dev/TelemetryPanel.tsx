@@ -93,7 +93,7 @@ export const TelemetryPanel: React.FC<TelemetryPanelProps> = ({
             .map((evt) => (
               <li
                 key={
-                  evt.timestamp + evt.name + Math.random().toString(36).slice(2)
+                  evt.timestamp + evt.name + Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)
                 }
                 className="bg-muted rounded px-2 py-1"
               >

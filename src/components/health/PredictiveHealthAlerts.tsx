@@ -171,7 +171,7 @@ export default function PredictiveHealthAlerts({
           if (decline > 25) severity = 'critical';
           else if (decline > 20) severity = 'high';
           newAlerts.push({
-            id: `alert-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+            id: `alert-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(14)), b => b.toString(36)).join('').slice(0, 9)}`,
             type: 'decline',
             severity,
             title: `Predicted Decline in ${trend.metric}`,

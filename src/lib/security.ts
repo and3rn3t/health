@@ -268,7 +268,7 @@ export async function writeAudit(
     if (env.HEALTH_STORAGE) {
       // Append-like behavior: R2 doesn't support append, so we can write separate objects per event in production.
       // For demo, we store one object per event.
-      const eventKey = `audit/events/${at}_${Math.random().toString(36).slice(2)}.json`;
+      const eventKey = `audit/events/${at}_${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}.json`;
       await env.HEALTH_STORAGE.put(eventKey, line, {
         httpMetadata: { contentType: 'application/json' },
       });

@@ -177,7 +177,7 @@ export function LiDAREnvironmentalHazardDetector({
 
       // Add random variations and additional hazards
       const additionalHazards = [];
-      if (Math.random() < 0.6) {
+      if ((crypto.getRandomValues(new Uint32Array(1))[0] / (0xffffffff + 1)) < 0.6) {
         additionalHazards.push({
           id: 'threshold-step',
           type: 'height_change' as const,
@@ -195,7 +195,7 @@ export function LiDAREnvironmentalHazardDetector({
         });
       }
 
-      if (Math.random() < 0.4) {
+      if ((crypto.getRandomValues(new Uint32Array(1))[0] / (0xffffffff + 1)) < 0.4) {
         additionalHazards.push({
           id: 'poor-lighting',
           type: 'lighting' as const,
@@ -242,9 +242,13 @@ export function LiDAREnvironmentalHazardDetector({
         glareSpots: Math.floor(Math.random() * 3),
       },
       accessibility: {
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
         clearPathways: 70 + Math.random() * 25,
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
         doorwayWidths: [0.8, 0.85, 0.9].map((w) => w + Math.random() * 0.1),
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
         stepHeights: [0.18, 0.2].map((h) => h + Math.random() * 0.04),
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
         reachableObjects: 80 + Math.random() * 15,
       },
       navigationPaths: [

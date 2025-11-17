@@ -851,6 +851,9 @@ export class VitalSenseWebSocketDO {
             this.sendMessage(ws, {
               type: 'vitalsense_live_health_update',
               data: {
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
                 metrics: demoMetrics.slice(0, Math.ceil(Math.random() * 3)),
                 source: 'demo_generator',
               },

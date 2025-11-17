@@ -303,7 +303,7 @@ export function LiDARPostureAnalyzer({
           description: 'Forward head posture increases cervical spine stress',
           impact:
             'May lead to neck pain, headaches, and cervical disc degeneration',
-          progression: Math.random() < 0.3 ? 'worsening' : 'stable',
+          progression: (crypto.getRandomValues(new Uint32Array(1))[0] / (0xffffffff + 1)) < 0.3 ? 'worsening' : 'stable',
           confidence: 90,
         });
       }
@@ -315,7 +315,7 @@ export function LiDARPostureAnalyzer({
           severity: metrics.shoulderAlignment.forward > 6 ? 'high' : 'moderate',
           description: 'Rounded shoulder posture affects thoracic mobility',
           impact: 'Can cause shoulder impingement and upper back pain',
-          progression: Math.random() < 0.4 ? 'worsening' : 'stable',
+          progression: (crypto.getRandomValues(new Uint32Array(1))[0] / (0xffffffff + 1)) < 0.4 ? 'worsening' : 'stable',
           confidence: 85,
         });
       }

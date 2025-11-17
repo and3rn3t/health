@@ -170,7 +170,7 @@ export function createExport(
   format: ExportOptions['format'],
   options: ExportOptions = {}
 ): ExportResult {
-  const id = `export-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+  const id = `export-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`
   let content: string
 
   switch (format) {

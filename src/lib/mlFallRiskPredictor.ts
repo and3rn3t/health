@@ -1151,10 +1151,15 @@ export class MLFallRiskPredictor {
   private getNeuralNetworkWeights(): number[][] {
     // Simplified weights for demo - would be trained matrices
     return [
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
       Array.from({ length: 32 }, () => Math.random() * 0.1 - 0.05),
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
       Array.from({ length: 24 }, () => Math.random() * 0.1 - 0.05),
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
       Array.from({ length: 16 }, () => Math.random() * 0.1 - 0.05),
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
       Array.from({ length: 8 }, () => Math.random() * 0.1 - 0.05),
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
       [Math.random() * 0.1 - 0.05],
     ];
   }

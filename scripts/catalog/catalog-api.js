@@ -656,7 +656,7 @@ app.post('/upload/json', async (req, res) => {
       return res.status(400).json({ error: 'JSON body required' })
     }
     await ensureDir(UPLOAD_DIR)
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2,8)}`
+    const id = `${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(9)), b => b.toString(36)).join('').slice(0, 6)}`
     const fp = path.join(UPLOAD_DIR, `${id}.json`)
     await fs.writeFile(fp, JSON.stringify(req.body, null, 2), 'utf8')
     const stat = await fs.stat(fp)
@@ -1865,7 +1865,7 @@ const jobQueue = {
   jobs: new Map(),
   processing: new Set(),
   createJob(modelId, input, opts = {}) {
-    const id = `job-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const id = `job-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`;
     const job = {
       id, modelId, modelVersion: opts.modelVersion, input,
       status: 'pending', createdAt: new Date().toISOString(),
@@ -1946,7 +1946,7 @@ app.get('/jobs/:id', (req, res) => {
 const reviewQueue = {
   reviews: new Map(),
   createReview(resultId, result, metadata = {}) {
-    const id = `review-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const id = `review-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`;
     const review = {
       id, resultId, result, metadata,
       status: 'pending', createdAt: new Date().toISOString(),
@@ -2030,7 +2030,7 @@ const projectStore = {
   addAOI(projectId, aoi) {
     const project = this.projects.get(projectId);
     if (!project) throw new Error(`Project ${projectId} not found`);
-    const id = `aoi-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const id = `aoi-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`;
     const now = new Date().toISOString();
     const full = { ...aoi, id, projectId, createdAt: now, updatedAt: now };
     this.aois.set(id, full);
@@ -2046,7 +2046,7 @@ const projectStore = {
   createAnalysisRun(projectId, run) {
     const project = this.projects.get(projectId);
     if (!project) throw new Error(`Project ${projectId} not found`);
-    const id = `run-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const id = `run-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`;
     const now = new Date().toISOString();
     const full = { ...run, id, projectId, status: 'pending', createdAt: now };
     this.runs.set(id, full);
@@ -2172,7 +2172,7 @@ const scheduler = {
   jobs: new Map(),
   notificationConfigs: new Map(),
   createSchedule(schedule) {
-    const id = `schedule-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const id = `schedule-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`;
     const full = { ...schedule, id, runCount: 0, enabled: schedule.enabled !== false };
     full.nextRunAt = this.calculateNextRun(full);
     this.schedules.set(id, full);
@@ -2228,7 +2228,7 @@ app.post('/export', (req, res) => {
     }
 
     let content, contentType;
-    const id = `export-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const id = `export-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`;
 
     switch (format) {
       case 'csv':
@@ -2272,19 +2272,19 @@ const rbacStore = {
   policies: new Map(),
   auditLogs: [],
   createRole(role) {
-    const id = `role-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const id = `role-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`;
     const full = { ...role, id };
     this.roles.set(id, full);
     return full;
   },
   createUser(user) {
-    const id = `user-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const id = `user-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`;
     const full = { ...user, id };
     this.users.set(id, full);
     return full;
   },
   createPolicy(policy) {
-    const id = `policy-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const id = `policy-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`;
     const full = { ...policy, id };
     this.policies.set(id, full);
     return full;
@@ -2301,7 +2301,7 @@ const rbacStore = {
   },
   logAudit(userId, action, resourceType, resourceId, result, details) {
     this.auditLogs.push({
-      id: `audit-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      id: `audit-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`,
       userId, action, resourceType, resourceId,
       timestamp: new Date().toISOString(), result, details
     });

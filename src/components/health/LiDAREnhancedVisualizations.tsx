@@ -155,6 +155,7 @@ const generateMockTrajectories = (): MovementTrajectory[] => [
       timestamp: Date.now() + i * 100,
     })),
     color: '#ff6b6b',
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
     velocity: Array.from({ length: 50 }, () => Math.random() * 2),
     confidence: 0.95,
   },
@@ -168,6 +169,7 @@ const generateMockTrajectories = (): MovementTrajectory[] => [
       timestamp: Date.now() + i * 100,
     })),
     color: '#4ecdc4',
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
     velocity: Array.from({ length: 50 }, () => Math.random() * 2),
     confidence: 0.92,
   },

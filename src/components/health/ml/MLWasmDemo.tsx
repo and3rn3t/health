@@ -85,18 +85,21 @@ export const MLWasmDemo: React.FC<MLWasmDemoProps> = ({
       name: 'Small Dataset',
       points: 1000,
       description: 'Basic gait analysis - 1K points',
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
       data: Array.from({ length: 3000 }, () => Math.random() * 2 - 1), // 1000 3D points
     },
     {
       name: 'Medium Dataset',
       points: 10000,
       description: 'Full room scan - 10K points',
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
       data: Array.from({ length: 30000 }, () => Math.random() * 5 - 2.5), // 10000 3D points
     },
     {
       name: 'Large Dataset',
       points: 100000,
       description: 'High-resolution scan - 100K points',
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
       data: Array.from({ length: 300000 }, () => Math.random() * 10 - 5), // 100000 3D points
     },
   ];
@@ -108,6 +111,7 @@ export const MLWasmDemo: React.FC<MLWasmDemoProps> = ({
         ? scanData.flatMap((scan) =>
             scan.points.flatMap((p) => [p.x, p.y, p.z])
           )
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
         : Array.from({ length: 3000 }, () => Math.random() * 2 - 1);
 
     const timestamps =
@@ -115,6 +119,7 @@ export const MLWasmDemo: React.FC<MLWasmDemoProps> = ({
         ? scanData.map((scan) => scan.timestamp)
         : Array.from({ length: 1000 }, (_, i) => Date.now() - i * 100);
 
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
     const keyPoints = Array.from({ length: 54 }, () => Math.random() * 2 - 1); // 18 body keypoints
 
     const environmentalFactors = [

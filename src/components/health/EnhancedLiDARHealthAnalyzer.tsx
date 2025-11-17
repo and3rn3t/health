@@ -145,10 +145,24 @@ export function EnhancedLiDARHealthAnalyzer({
       contributingSensors: string[];
     } {
       return {
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
         combinedStability: 70 + Math.random() * 25,
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
         coordinationScore: 75 + Math.random() * 20,
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
         symmetryIndex: 80 + Math.random() * 15,
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
         fluidityRating: 72 + Math.random() * 23,
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
         overallRiskScore: Math.random() * 40,
         contributingSensors: ['smartphone', 'lidar', 'camera'],
       };
@@ -306,6 +320,7 @@ export function EnhancedLiDARHealthAnalyzer({
 
         // Simulate sensor data for ML input
         const sensorData = Array.from({ length: 100 }, () =>
+      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
           Array.from({ length: 6 }, () => Math.random() * 2 - 1)
         );
 

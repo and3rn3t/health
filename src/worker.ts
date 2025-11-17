@@ -260,7 +260,11 @@ function shouldSample(c: Context<{ Bindings: Env }>): boolean {
   } else if (env === 'production') {
     rate = 0.1;
   }
-  return Math.random() < rate;
+  // Use cryptographically secure random for sampling decisions
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  const randomValue = array[0] / (0xffffffff + 1);
+  return randomValue < rate;
 }
 
 // Best-effort broadcast to a user's active WebSocket sessions via Durable Object namespace if available
@@ -302,7 +306,11 @@ function shouldSampleWithKey(
     if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 1) rate = parsed;
   }
   rate ??= env === 'production' ? fallbackProd : fallbackDev;
-  return Math.random() < rate;
+  // Use cryptographically secure random for sampling decisions
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  const randomValue = array[0] / (0xffffffff + 1);
+  return randomValue < rate;
 }
 
 async function pushAnalytics(
@@ -2456,7 +2464,8 @@ function generateDemoHealthData() {
     demoData.push({
       id: `demo-heart-rate-${i}`,
       type: 'heart_rate',
-      value: 70 + Math.floor(Math.random() * 10),
+      // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
+      value: 70 + Math.floor(Math.random() * 10), // NOSONAR
       unit: 'bpm',
       timestamp: date.toISOString(),
       processedAt: date.toISOString(),
@@ -2465,9 +2474,10 @@ function generateDemoHealthData() {
         deviceId: 'demo-device',
         appVersion: '1.0.0-demo',
       },
-      healthScore: 85 + Math.floor(Math.random() * 10),
+      // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
+      healthScore: 85 + Math.floor(Math.random() * 10), // NOSONAR
       fallRisk: 'low',
-      anomalyScore: 0.1 + Math.random() * 0.2,
+      anomalyScore: 0.1 + Math.random() * 0.2, // NOSONAR
       dataQuality: {
         completeness: 0.95,
         accuracy: 0.98,
@@ -2479,7 +2489,8 @@ function generateDemoHealthData() {
     demoData.push({
       id: `demo-steps-${i}`,
       type: 'steps',
-      value: 8000 + Math.floor(Math.random() * 3000),
+      // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
+      value: 8000 + Math.floor(Math.random() * 3000), // NOSONAR
       unit: 'count',
       timestamp: date.toISOString(),
       processedAt: date.toISOString(),
@@ -2488,9 +2499,10 @@ function generateDemoHealthData() {
         deviceId: 'demo-device',
         appVersion: '1.0.0-demo',
       },
-      healthScore: 88 + Math.floor(Math.random() * 8),
+      // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
+      healthScore: 88 + Math.floor(Math.random() * 8), // NOSONAR
       fallRisk: 'low',
-      anomalyScore: 0.05 + Math.random() * 0.15,
+      anomalyScore: 0.05 + Math.random() * 0.15, // NOSONAR
       dataQuality: {
         completeness: 0.98,
         accuracy: 0.95,
@@ -3185,7 +3197,8 @@ app.get('/demo-static', async (c) => {
         setInterval(() => {
             const heartRate = document.querySelector('.demo-metric .demo-value');
             if (heartRate && heartRate.textContent.includes('BPM')) {
-                const rate = 70 + Math.floor(Math.random() * 6);
+                // NOSONAR: UI demo animation - Math.random() is acceptable for non-security use
+                const rate = 70 + Math.floor(Math.random() * 6); // NOSONAR
                 heartRate.textContent = rate + ' BPM';
             }
         }, 5000);

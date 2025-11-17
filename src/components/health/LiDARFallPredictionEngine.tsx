@@ -562,7 +562,7 @@ export function LiDARFallPredictionEngine({
       // Generate alerts if risk exceeds threshold
       if (
         currentRisk > realTimeMonitoring.triggerThreshold &&
-        Math.random() < 0.1
+        (crypto.getRandomValues(new Uint32Array(1))[0] / (0xffffffff + 1)) < 0.1
       ) {
         // 10% chance of alert
         const alert: FallAlert = {

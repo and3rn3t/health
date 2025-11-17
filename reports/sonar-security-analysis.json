@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2025-11-17T00:25:47.674Z",
-  "totalFiles": 559,
-  "totalIssues": 2269,
+  "generatedAt": "2025-11-17T00:47:20.658Z",
+  "totalFiles": 561,
+  "totalIssues": 2781,
   "byPattern": [
     {
       "pattern": "Hardcoded Secrets",
@@ -18,8 +18,14 @@
     {
       "pattern": "console.log (Information Disclosure)",
       "severity": "medium",
-      "count": 2255,
+      "count": 2263,
       "fix": "Use SafeLogger or remove in production"
+    },
+    {
+      "pattern": "Weak Crypto (Math.random)",
+      "severity": "medium",
+      "count": 504,
+      "fix": "Use crypto.getRandomValues() or secureRandom() for security-sensitive operations"
     },
     {
       "pattern": "Unsafe Regex",
@@ -31,7 +37,7 @@
   "topIssues": [
     {
       "file": "src\\worker.ts",
-      "line": 926,
+      "line": 934,
       "column": 21,
       "pattern": "Hardcoded Secrets",
       "severity": "critical",
@@ -40,7 +46,7 @@
     },
     {
       "file": "src\\worker.ts",
-      "line": 929,
+      "line": 937,
       "column": 19,
       "pattern": "Hardcoded Secrets",
       "severity": "critical",
@@ -145,6 +151,51 @@
       "severity": "medium",
       "fix": "Use SafeLogger or remove in production",
       "snippet": "console.error('Error generating insights:', error);"
+    },
+    {
+      "file": "src\\components\\gamification\\FamilyGameification.tsx",
+      "line": 324,
+      "column": 39,
+      "pattern": "Weak Crypto (Math.random)",
+      "severity": "medium",
+      "fix": "Use crypto.getRandomValues() or secureRandom() for security-sensitive operations",
+      "snippet": "{Math.floor(Math.random() * 1000 + 500)} pts"
+    },
+    {
+      "file": "src\\components\\gamification\\FamilyGameification.tsx",
+      "line": 328,
+      "column": 39,
+      "pattern": "Weak Crypto (Math.random)",
+      "severity": "medium",
+      "fix": "Use crypto.getRandomValues() or secureRandom() for security-sensitive operations",
+      "snippet": "{Math.floor(Math.random() * 50 + 10)}%"
+    },
+    {
+      "file": "src\\components\\gamification\\FamilyGameification.tsx",
+      "line": 433,
+      "column": 39,
+      "pattern": "Weak Crypto (Math.random)",
+      "severity": "medium",
+      "fix": "Use crypto.getRandomValues() or secureRandom() for security-sensitive operations",
+      "snippet": "{Math.floor(Math.random() * 500 + 200)}"
+    },
+    {
+      "file": "src\\components\\gamification\\FamilyGameification.tsx",
+      "line": 439,
+      "column": 39,
+      "pattern": "Weak Crypto (Math.random)",
+      "severity": "medium",
+      "fix": "Use crypto.getRandomValues() or secureRandom() for security-sensitive operations",
+      "snippet": "{Math.floor(Math.random() * 10 + 1)} days"
+    },
+    {
+      "file": "src\\components\\health\\AdvancedAppleWatchIntegration.tsx",
+      "line": 303,
+      "column": 45,
+      "pattern": "Weak Crypto (Math.random)",
+      "severity": "medium",
+      "fix": "Use crypto.getRandomValues() or secureRandom() for security-sensitive operations",
+      "snippet": "Math.min(100, prev.heartRate + (Math.random() - 0.5) * 4)"
     },
     {
       "file": "scripts\\test-advanced-websocket-config.js",

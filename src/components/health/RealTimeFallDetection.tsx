@@ -280,7 +280,7 @@ export default function RealTimeFallDetection() {
 
     sensorIntervalRef.current = setInterval(() => {
       // Randomly simulate a fall (very low probability for demo)
-      const shouldSimulateFall = Math.random() < 0.001; // 0.1% chance
+      const shouldSimulateFall = (crypto.getRandomValues(new Uint32Array(1))[0] / (0xffffffff + 1)) < 0.001; // 0.1% chance
       const sensorData = shouldSimulateFall
         ? simulateFallEvent()
         : generateMockSensorData();
