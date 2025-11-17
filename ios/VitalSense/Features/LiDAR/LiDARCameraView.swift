@@ -19,6 +19,18 @@ struct LiDARCameraView: UIViewRepresentable {
             config.sceneReconstruction = .meshWithClassification
         } else if ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh) {
             config.sceneReconstruction = .mesh
+        } else {
+            // No LiDAR support - report error
+            ErrorHandler.shared.handle(
+                AppError(
+                    error: NSError(domain: "ARKit", code: -1, userInfo: [NSLocalizedDescriptionKey: "Scene reconstruction not supported"]),
+                    context: "AR configuration",
+                    category: .arkit,
+                    severity: .high,
+                    recovery: .none
+                )
+            )
+            return arView
         }
 
         // Enable plane detection
@@ -29,8 +41,29 @@ struct LiDARCameraView: UIViewRepresentable {
             config.frameSemantics.insert(.personSegmentationWithDepth)
         }
 
-        // Start AR session
-        arView.session.run(config)
+        // Enable body tracking for gait analysis
+        if ARWorldTrackingConfiguration.supportsFrameSemantics(.bodyDetection) {
+            config.frameSemantics.insert(.bodyDetection)
+        }
+
+        // Start AR session with error handling
+        do {
+            arView.session.run(config)
+
+            // Log analytics event
+            AnalyticsManager.shared.logEvent("lidar_ar_session_started", parameters: [
+                "scan_type": scanType.rawValue,
+                "scene_reconstruction": config.sceneReconstruction == .meshWithClassification ? "meshWithClassification" : "mesh"
+            ])
+        } catch {
+            ErrorHandler.shared.handle(
+                error,
+                context: "Starting AR session",
+                category: .arkit,
+                severity: .critical,
+                recovery: .retry(maxAttempts: 2)
+            )
+        }
 
         // Set up session delegate
         arView.session.delegate = context.coordinator
@@ -77,6 +110,22 @@ class LiDARCameraCoordinator: NSObject, ARSessionDelegate {
     private var meshNodes: [SCNNode] = []
     private var gaitTrackingPoints: [simd_float3] = []
 
+    // Gait analysis tracking
+    private var stepTimestamps: [TimeInterval] = []
+    private var leftFootPositions: [(timestamp: TimeInterval, position: simd_float3)] = []
+    private var rightFootPositions: [(timestamp: TimeInterval, position: simd_float3)] = []
+    private var lastLeftStrike: TimeInterval?
+    private var lastRightStrike: TimeInterval?
+
+    // Environmental analysis
+    private var detectedPlanes: [ARPlaneAnchor] = []
+    private var detectedObstacles: [simd_float3] = []
+    private var floorPlanes: [ARPlaneAnchor] = []
+
+    // Balance analysis
+    private var centerOfMassHistory: [simd_float3] = []
+    private var posturalSwayData: [simd_float2] = []
+
     init(lidarManager: LiDARScanningManager) {
         self.lidarManager = lidarManager
         super.init()
@@ -91,7 +140,18 @@ class LiDARCameraCoordinator: NSObject, ARSessionDelegate {
     // MARK: - ARSessionDelegate
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         // Process LiDAR depth data
-        guard let depthData = frame.sceneDepth else { return }
+        guard let depthData = frame.sceneDepth else {
+            ErrorHandler.shared.handle(
+                AppError(
+                    error: NSError(domain: "ARKit", code: -1, userInfo: [NSLocalizedDescriptionKey: "No scene depth data available"]),
+                    context: "AR frame processing",
+                    category: .arkit,
+                    severity: .low,
+                    recovery: .none
+                )
+            )
+            return
+        }
 
         // Update point count for UI
         let depthMap = depthData.depthMap
@@ -104,15 +164,110 @@ class LiDARCameraCoordinator: NSObject, ARSessionDelegate {
         }
 
         // Process based on scan type
-        switch currentScanType {
-        case .fallRiskAssessment:
-            processFallRiskFrame(frame)
-        case .gaitAnalysis:
-            processGaitAnalysisFrame(frame)
-        case .environmentalScan:
-            processEnvironmentalFrame(frame)
-        case .balanceTest:
-            processBalanceTestFrame(frame)
+        do {
+            switch currentScanType {
+            case .fallRiskAssessment:
+                processFallRiskFrame(frame)
+            case .gaitAnalysis:
+                processGaitAnalysisFrame(frame)
+                // Stream real-time gait metrics
+                streamGaitMetricsIfNeeded()
+            case .environmentalScan:
+                processEnvironmentalFrame(frame)
+                // Stream environmental data
+                streamEnvironmentalDataIfNeeded()
+            case .balanceTest:
+                processBalanceTestFrame(frame)
+                // Stream balance data
+                streamBalanceDataIfNeeded()
+            }
+        } catch {
+            ErrorHandler.shared.handle(
+                error,
+                context: "Processing AR frame for \(currentScanType.rawValue)",
+                category: .arkit,
+                severity: .medium,
+                recovery: .retry(maxAttempts: 1)
+            )
+        }
+
+        // Send frame to manager for processing
+        lidarManager.processFrame(frame)
+    }
+
+    // MARK: - Real-time Streaming
+
+    private var lastStreamTime: TimeInterval = 0
+    private let streamThrottleInterval: TimeInterval = 1.0 // Stream every second
+
+    private func streamGaitMetricsIfNeeded() {
+        let now = Date().timeIntervalSince1970
+        guard now - lastStreamTime >= streamThrottleInterval else { return }
+        lastStreamTime = now
+
+        // Calculate metrics if we have enough data
+        guard stepTimestamps.count >= 2, !leftFootPositions.isEmpty else { return }
+
+        let cadence = calculateCadence()
+        let strideLength = calculateStrideLength()
+        let walkingSpeed = strideLength * cadence / 60.0
+
+        // Calculate step symmetry from accelerometer if available
+        // This is a simplified version - full implementation would use more data
+        let stepSymmetry = 0.75 // Placeholder - would calculate from actual data
+
+        Task {
+            await WebSocketManager.shared.sendLiDARGaitMetrics(
+                cadence: cadence,
+                strideLength: strideLength,
+                walkingSpeed: walkingSpeed,
+                stepSymmetry: stepSymmetry,
+                scanType: currentScanType.rawValue
+            )
+        }
+    }
+
+    private func streamEnvironmentalDataIfNeeded() {
+        let now = Date().timeIntervalSince1970
+        guard now - lastStreamTime >= streamThrottleInterval else { return }
+        lastStreamTime = now
+
+        // Calculate floor stability from detected planes
+        let floorStability = floorPlanes.first.map { plane -> Double in
+            let extent = plane.planeExtent
+            let area = extent.width * extent.height
+            return min(1.0, area / 10.0)
+        }
+
+        Task {
+            await WebSocketManager.shared.sendLiDAREnvironmentalData(
+                obstacles: detectedObstacles,
+                floorStability: floorStability,
+                hazards: detectedObstacles.count
+            )
+        }
+    }
+
+    private func streamBalanceDataIfNeeded() {
+        let now = Date().timeIntervalSince1970
+        guard now - lastStreamTime >= streamThrottleInterval else { return }
+        lastStreamTime = now
+
+        // Calculate stability score from postural sway
+        let stabilityScore = posturalSwayData.isEmpty ? nil : {
+            let swayVariances = posturalSwayData.map { sqrt(Double($0.x * $0.x + $0.y * $0.y)) }
+            let avgSway = swayVariances.reduce(0, +) / Double(swayVariances.count)
+            return max(0, min(1, 1.0 - avgSway / 2.0))
+        }()
+
+        let centerOfMass = centerOfMassHistory.last
+
+        Task {
+            await WebSocketManager.shared.sendLiDARBalanceData(
+                centerOfMass: centerOfMass,
+                posturalSway: posturalSwayData.isEmpty ? nil : Double(posturalSwayData.last!.x + posturalSwayData.last!.y),
+                stabilityScore: stabilityScore
+            )
         }
     }
 
@@ -122,6 +277,10 @@ class LiDARCameraCoordinator: NSObject, ARSessionDelegate {
                 processMeshAnchor(meshAnchor)
             } else if let planeAnchor = anchor as? ARPlaneAnchor {
                 processPlaneAnchor(planeAnchor)
+                // Track detected planes
+                if !detectedPlanes.contains(where: { $0.identifier == planeAnchor.identifier }) {
+                    detectedPlanes.append(planeAnchor)
+                }
             }
         }
     }
@@ -184,24 +343,161 @@ class LiDARCameraCoordinator: NSObject, ARSessionDelegate {
     // MARK: - Analysis Methods
     private func analyzeFloorStability(frame: ARFrame) {
         // Check for level flooring and potential trip hazards
-        // Implementation would analyze horizontal planes and their stability
+        // Analyze detected horizontal planes for stability
+        let horizontalPlanes = detectedPlanes.filter { $0.alignment == .horizontal }
+
+        guard !horizontalPlanes.isEmpty else { return }
+
+        // Find the lowest horizontal plane (likely the floor)
+        let floorPlane = horizontalPlanes.min { $0.transform.columns.3.y < $1.transform.columns.3.y }
+
+        guard let floor = floorPlane else { return }
+
+        // Check floor levelness by analyzing plane extent
+        let extent = floor.planeExtent
+        let area = extent.width * extent.height
+
+        // Larger area = more stable floor detection
+        let stabilityScore = min(1.0, area / 10.0) // Normalize to 0-1
+
+        // Store floor planes for hazard detection
+        if !floorPlanes.contains(where: { $0.identifier == floor.identifier }) {
+            floorPlanes.append(floor)
+        }
+
+        // Analyze for irregularities (would use mesh analysis in full implementation)
+        // For now, just check if floor plane has reasonable extent
     }
 
     private func detectObstacles(frame: ARFrame, depthData: ARDepthData) {
-        // Identify obstacles in the walking path
+        // Identify obstacles in the walking path using depth data
         let depthMap = depthData.depthMap
+        let width = CVPixelBufferGetWidth(depthMap)
+        let height = CVPixelBufferGetHeight(depthMap)
 
-        // Process depth map to find obstacles
+        guard let baseAddress = CVPixelBufferGetBaseAddress(depthMap) else { return }
+
         CVPixelBufferLockBaseAddress(depthMap, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthMap, .readOnly) }
 
-        // Analyze depth variations to identify obstacles
-        // Implementation would use computer vision to detect objects
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(depthMap)
+        let baseBuffer = baseAddress.assumingMemoryBound(to: Float32.self)
+
+        // Sample depth values to detect obstacles
+        // Obstacles are points significantly closer than expected floor distance
+        var obstaclePoints: [simd_float3] = []
+
+        // Sample every 10th pixel for performance
+        for y in stride(from: 0, to: height, by: 10) {
+            for x in stride(from: 0, to: width, by: 10) {
+                let pixelIndex = y * (bytesPerRow / MemoryLayout<Float32>.size) + x
+                let depth = baseBuffer[pixelIndex]
+
+                // Convert depth to world position using camera intrinsics
+                // Simple approximation: use depth and pixel coordinates
+                // Note: Full implementation would use proper camera matrix projection
+                let normalizedX = (Float(x) / Float(width)) * 2.0 - 1.0
+                let normalizedY = 1.0 - (Float(y) / Float(height)) * 2.0
+
+                // Approximate world position from depth
+                // This is a simplified version - full implementation would use camera intrinsics
+                let cameraTransform = frame.camera.transform
+                let cameraForward = simd_make_float3(cameraTransform.columns.2)
+                let cameraRight = simd_make_float3(cameraTransform.columns.0)
+                let cameraUp = simd_make_float3(cameraTransform.columns.1)
+                let cameraPos = simd_make_float3(cameraTransform.columns.3)
+
+                // Approximate world position
+                let worldPos = cameraPos + cameraForward * depth +
+                              cameraRight * normalizedX * depth * 0.5 +
+                              cameraUp * normalizedY * depth * 0.5
+
+                // Check if this point is significantly above the floor
+                if let floor = floorPlanes.first {
+                    let floorY = floor.transform.columns.3.y
+                    let obstacleHeight = worldPos.y - floorY
+
+                    // Detect obstacles between 0.1m and 1.5m height
+                    if obstacleHeight > 0.1 && obstacleHeight < 1.5 {
+                        obstaclePoints.append(worldPos)
+                    }
+                } else {
+                    // If no floor detected, still detect obstacles based on depth
+                    // Objects closer than 2m might be obstacles
+                    if depth > 0.1 && depth < 2.0 {
+                        obstaclePoints.append(worldPos)
+                    }
+                }
+            }
+        }
+
+        // Cluster obstacle points and store significant obstacles
+        if obstaclePoints.count > 10 {
+            // Simple clustering - group nearby points
+            var clusteredObstacles: [simd_float3] = []
+            var processed = Set<Int>()
+
+            for (index, point) in obstaclePoints.enumerated() {
+                if processed.contains(index) { continue }
+
+                // Find nearby points (within 0.3m)
+                var cluster = [point]
+                for (otherIndex, otherPoint) in obstaclePoints.enumerated() where otherIndex != index {
+                    if simd_distance(point, otherPoint) < 0.3 {
+                        cluster.append(otherPoint)
+                        processed.insert(otherIndex)
+                    }
+                }
+
+                // If cluster is significant, add its center
+                if cluster.count >= 5 {
+                    let center = cluster.reduce(simd_float3(0, 0, 0), +) / Float(cluster.count)
+                    clusteredObstacles.append(center)
+                    processed.insert(index)
+                }
+            }
+
+            detectedObstacles = clusteredObstacles
+        }
     }
 
     private func analyzeWalkingPattern(frame: ARFrame) {
-        // Analyze walking biomechanics
-        // Track foot placement, stride length, walking speed
+        // Analyze walking biomechanics from body tracking
+        guard let bodyAnchor = frame.detectedBody else { return }
+
+        let skeleton = bodyAnchor.skeleton
+        guard let leftFoot = skeleton.joint(.leftFoot)?.anchorFromJointTransform,
+              let rightFoot = skeleton.joint(.rightFoot)?.anchorFromJointTransform,
+              let leftHip = skeleton.joint(.leftLegRoot)?.anchorFromJointTransform,
+              let rightHip = skeleton.joint(.rightLegRoot)?.anchorFromJointTransform else {
+            return
+        }
+
+        let bodyTransform = bodyAnchor.transform
+        let leftFootWorld = simd_make_float3((bodyTransform * leftFoot).columns.3)
+        let rightFootWorld = simd_make_float3((bodyTransform * rightFoot).columns.3)
+        let leftHipWorld = simd_make_float3((bodyTransform * leftHip).columns.3)
+        let rightHipWorld = simd_make_float3((bodyTransform * rightHip).columns.3)
+
+        // Calculate step width (lateral distance between feet)
+        let stepWidth = abs(leftFootWorld.x - rightFootWorld.x)
+
+        // Calculate hip height difference (asymmetry indicator)
+        let hipHeightDiff = abs(leftHipWorld.y - rightHipWorld.y)
+
+        // Analyze step symmetry
+        if let lastLeft = leftFootPositions.last, let lastRight = rightFootPositions.last {
+            let leftStepLength = simd_distance(leftFootWorld, lastLeft.position)
+            let rightStepLength = simd_distance(rightFootWorld, lastRight.position)
+
+            // Store for later analysis
+            gaitTrackingPoints.append(leftFootWorld)
+            gaitTrackingPoints.append(rightFootWorld)
+
+            if gaitTrackingPoints.count > 100 {
+                analyzeGaitPattern()
+            }
+        }
     }
 
     private func trackJointMovement(bodyAnchor: ARBodyAnchor) {
@@ -230,8 +526,121 @@ class LiDARCameraCoordinator: NSObject, ARSessionDelegate {
     }
 
     private func calculateGaitMetrics(bodyAnchor: ARBodyAnchor) {
-        // Calculate stride length, cadence, walking speed
-        // Implementation would analyze the tracked joint positions
+        // Calculate stride length, cadence, walking speed from joint positions
+        let skeleton = bodyAnchor.skeleton
+        let timestamp = Date().timeIntervalSince1970
+
+        guard let leftFootTransform = skeleton.joint(.leftFoot)?.anchorFromJointTransform,
+              let rightFootTransform = skeleton.joint(.rightFoot)?.anchorFromJointTransform else {
+            return
+        }
+
+        // Get world positions
+        let bodyTransform = bodyAnchor.transform
+        let leftFootWorld = simd_make_float3((bodyTransform * leftFootTransform).columns.3)
+        let rightFootWorld = simd_make_float3((bodyTransform * rightFootTransform).columns.3)
+
+        // Track foot positions
+        leftFootPositions.append((timestamp: timestamp, position: leftFootWorld))
+        rightFootPositions.append((timestamp: timestamp, position: rightFootWorld))
+
+        // Keep only recent data (last 5 seconds at ~30fps = 150 frames)
+        if leftFootPositions.count > 150 {
+            leftFootPositions.removeFirst(leftFootPositions.count - 150)
+            rightFootPositions.removeFirst(rightFootPositions.count - 150)
+        }
+
+        // Detect step events (foot moving upward then downward)
+        detectStepEvents(leftFoot: leftFootWorld, rightFoot: rightFootWorld, timestamp: timestamp)
+
+        // Calculate metrics if we have enough data
+        if stepTimestamps.count >= 2 {
+            let cadence = calculateCadence()
+            let strideLength = calculateStrideLength()
+            let walkingSpeed = strideLength * cadence / 60.0 // m/s
+
+            // Update step count in manager
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                // Step count will be used when processing scan results
+            }
+        }
+    }
+
+    private func detectStepEvents(leftFoot: simd_float3, rightFoot: simd_float3, timestamp: TimeInterval) {
+        // Simple step detection based on vertical movement
+        // A step occurs when a foot reaches its lowest point after being raised
+
+        if leftFootPositions.count >= 3 {
+            let prevLeft = leftFootPositions[leftFootPositions.count - 2].position
+            let prevPrevLeft = leftFootPositions[leftFootPositions.count - 3].position
+
+            // Detect local minimum (heel strike)
+            if prevLeft.y < leftFoot.y && prevLeft.y < prevPrevLeft.y {
+                if let lastRight = lastRightStrike, timestamp - lastRight > 0.3 {
+                    // Valid step detected
+                    stepTimestamps.append(timestamp)
+                    lastLeftStrike = timestamp
+                } else if lastRightStrike == nil {
+                    // First step
+                    stepTimestamps.append(timestamp)
+                    lastLeftStrike = timestamp
+                }
+            }
+        }
+
+        if rightFootPositions.count >= 3 {
+            let prevRight = rightFootPositions[rightFootPositions.count - 2].position
+            let prevPrevRight = rightFootPositions[rightFootPositions.count - 3].position
+
+            // Detect local minimum (heel strike)
+            if prevRight.y < rightFoot.y && prevRight.y < prevPrevRight.y {
+                if let lastLeft = lastLeftStrike, timestamp - lastLeft > 0.3 {
+                    // Valid step detected
+                    stepTimestamps.append(timestamp)
+                    lastRightStrike = timestamp
+                } else if lastLeftStrike == nil {
+                    // First step
+                    stepTimestamps.append(timestamp)
+                    lastRightStrike = timestamp
+                }
+            }
+        }
+
+        // Keep only recent step timestamps
+        if stepTimestamps.count > 100 {
+            stepTimestamps.removeFirst(stepTimestamps.count - 100)
+        }
+    }
+
+    private func calculateCadence() -> Double {
+        // Cadence = steps per minute
+        guard stepTimestamps.count >= 2 else { return 0 }
+
+        let timeSpan = stepTimestamps.last! - stepTimestamps.first!
+        guard timeSpan > 0 else { return 0 }
+
+        let stepsPerSecond = Double(stepTimestamps.count - 1) / timeSpan
+        return stepsPerSecond * 60.0
+    }
+
+    private func calculateStrideLength() -> Double {
+        // Average stride length from foot positions
+        guard leftFootPositions.count >= 2 && rightFootPositions.count >= 2 else { return 0 }
+
+        var totalDistance: Double = 0
+        var count = 0
+
+        // Calculate distance between consecutive left foot positions
+        for i in 1..<leftFootPositions.count {
+            let prev = leftFootPositions[i-1].position
+            let curr = leftFootPositions[i].position
+            let distance = simd_distance(prev, curr)
+            totalDistance += Double(distance * 2) // Stride = 2 steps
+            count += 1
+        }
+
+        return count > 0 ? totalDistance / Double(count) : 0
     }
 
     private func detectStairs(frame: ARFrame, depthData: ARDepthData) {
@@ -252,14 +661,87 @@ class LiDARCameraCoordinator: NSObject, ARSessionDelegate {
     private func analyzeCenterOfMass(bodyAnchor: ARBodyAnchor) {
         // Calculate and track center of mass for balance analysis
         let skeleton = bodyAnchor.skeleton
+        let bodyTransform = bodyAnchor.transform
 
-        // Use multiple joint positions to estimate center of mass
-        // Implementation would weight different body segments
+        // Get key joint positions for COM estimation
+        var weightedPositions: [(position: simd_float3, weight: Float)] = []
+
+        // Head (7% of body weight)
+        if let head = skeleton.joint(.head)?.anchorFromJointTransform {
+            let headWorld = simd_make_float3((bodyTransform * head).columns.3)
+            weightedPositions.append((headWorld, 0.07))
+        }
+
+        // Torso/Spine (50% of body weight - approximate)
+        if let spine = skeleton.joint(.spineLower)?.anchorFromJointTransform {
+            let spineWorld = simd_make_float3((bodyTransform * spine).columns.3)
+            weightedPositions.append((spineWorld, 0.50))
+        }
+
+        // Hips (15% of body weight)
+        if let leftHip = skeleton.joint(.leftLegRoot)?.anchorFromJointTransform,
+           let rightHip = skeleton.joint(.rightLegRoot)?.anchorFromJointTransform {
+            let leftHipWorld = simd_make_float3((bodyTransform * leftHip).columns.3)
+            let rightHipWorld = simd_make_float3((bodyTransform * rightHip).columns.3)
+            let hipCenter = (leftHipWorld + rightHipWorld) / 2.0
+            weightedPositions.append((hipCenter, 0.15))
+        }
+
+        // Calculate weighted center of mass
+        guard !weightedPositions.isEmpty else { return }
+
+        var totalWeight: Float = 0
+        var weightedSum = simd_float3(0, 0, 0)
+
+        for (position, weight) in weightedPositions {
+            weightedSum += position * weight
+            totalWeight += weight
+        }
+
+        guard totalWeight > 0 else { return }
+        let centerOfMass = weightedSum / totalWeight
+
+        // Track COM history for sway analysis
+        centerOfMassHistory.append(centerOfMass)
+        if centerOfMassHistory.count > 100 {
+            centerOfMassHistory.removeFirst(centerOfMassHistory.count - 100)
+        }
     }
 
     private func measurePosturalSway(bodyAnchor: ARBodyAnchor) {
         // Measure how much the person sways while standing
-        // Implementation would track small movements over time
+        guard centerOfMassHistory.count >= 2 else { return }
+
+        // Calculate sway as deviation from average position
+        let avgCOM = centerOfMassHistory.reduce(simd_float3(0, 0, 0), +) / Float(centerOfMassHistory.count)
+
+        // Calculate lateral (x) and anteroposterior (z) sway
+        var lateralSway: [Float] = []
+        var anteroposteriorSway: [Float] = []
+
+        for com in centerOfMassHistory {
+            let deviation = com - avgCOM
+            lateralSway.append(deviation.x)
+            anteroposteriorSway.append(deviation.z)
+        }
+
+        // Calculate sway magnitude (standard deviation)
+        let lateralVariance = calculateVariance(lateralSway.map { Double($0) })
+        let apVariance = calculateVariance(anteroposteriorSway.map { Double($0) })
+        let totalSway = sqrt(lateralVariance + apVariance)
+
+        // Store for analysis
+        posturalSwayData.append(simd_float2(Float(lateralVariance), Float(apVariance)))
+        if posturalSwayData.count > 100 {
+            posturalSwayData.removeFirst(posturalSwayData.count - 100)
+        }
+    }
+
+    private func calculateVariance(_ values: [Double]) -> Double {
+        guard !values.isEmpty else { return 0 }
+        let mean = values.reduce(0, +) / Double(values.count)
+        let variance = values.map { pow($0 - mean, 2) }.reduce(0, +) / Double(values.count)
+        return variance
     }
 
     private func analyzeGaitPattern() {

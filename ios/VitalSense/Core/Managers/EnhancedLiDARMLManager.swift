@@ -5,6 +5,7 @@ import Vision
 import CoreMotion
 import ARKit
 import HealthKit
+import UIKit
 
 /// Enhanced LiDAR ML Integration Manager for iOS
 /// Integrates TensorFlow.js-style ML models with iOS CoreML for comprehensive health analysis
@@ -87,29 +88,108 @@ final class EnhancedLiDARMLManager: ObservableObject {
             do {
                 systemStatus = .loadingModels
 
-                // Load CoreML models asynchronously
+                // Load CoreML models asynchronously with fallback
                 async let gaitModel = loadGaitAnalysisModel()
                 async let fallModel = loadFallPredictionModel()
                 async let postureModel = loadPostureClassificationModel()
                 async let movementModel = loadMovementPatternModel()
 
-                // Wait for all models to load
-                let models = try await (gaitModel, fallModel, postureModel, movementModel)
+                // Wait for all models to load (allow partial failures)
+                // Use withTaskGroup to handle errors individually
+                let gaitResult: Result<MLModel, Error> = await withCheckedContinuation { continuation in
+                    Task {
+                        do {
+                            let model = try await gaitModel
+                            continuation.resume(returning: .success(model))
+                        } catch {
+                            continuation.resume(returning: .failure(error))
+                        }
+                    }
+                }
 
-                gaitAnalysisModel = models.0
-                fallPredictionModel = models.1
-                postureClassificationModel = models.2
-                movementPatternModel = models.3
+                let fallResult: Result<MLModel, Error> = await withCheckedContinuation { continuation in
+                    Task {
+                        do {
+                            let model = try await fallModel
+                            continuation.resume(returning: .success(model))
+                        } catch {
+                            continuation.resume(returning: .failure(error))
+                        }
+                    }
+                }
 
+                let postureResult: Result<MLModel, Error> = await withCheckedContinuation { continuation in
+                    Task {
+                        do {
+                            let model = try await postureModel
+                            continuation.resume(returning: .success(model))
+                        } catch {
+                            continuation.resume(returning: .failure(error))
+                        }
+                    }
+                }
+
+                let movementResult: Result<MLModel, Error> = await withCheckedContinuation { continuation in
+                    Task {
+                        do {
+                            let model = try await movementModel
+                            continuation.resume(returning: .success(model))
+                        } catch {
+                            continuation.resume(returning: .failure(error))
+                        }
+                    }
+                }
+
+                // Set models that loaded successfully
+                if case .success(let model) = gaitResult {
+                    gaitAnalysisModel = model
+                } else {
+                    logger.warning("Gait analysis model not found - using fallback")
+                }
+
+                if case .success(let model) = fallResult {
+                    fallPredictionModel = model
+                } else {
+                    logger.warning("Fall prediction model not found - using fallback")
+                }
+
+                if case .success(let model) = postureResult {
+                    postureClassificationModel = model
+                } else {
+                    logger.warning("Posture classification model not found - using fallback")
+                }
+
+                if case .success(let model) = movementResult {
+                    movementPatternModel = model
+                } else {
+                    logger.warning("Movement pattern model not found - using fallback")
+                }
+
+                // Mark as ready even if some models are missing (we have fallbacks)
                 mlModelsLoaded = true
                 systemStatus = .ready
                 isInitialized = true
 
-                logger.info("All ML models loaded successfully")
+                if gaitAnalysisModel != nil || fallPredictionModel != nil || postureClassificationModel != nil {
+                    logger.info("ML models loaded successfully (some may use fallback)")
+                } else {
+                    logger.info("No ML models found - all predictions will use rule-based fallbacks")
+                }
 
             } catch {
                 logger.error("Failed to load ML models: \(error.localizedDescription)")
-                systemStatus = .error(error.localizedDescription)
+                ErrorHandler.shared.handle(
+                    error,
+                    context: "Loading ML models",
+                    category: .ml,
+                    severity: .medium,
+                    recovery: .fallback
+                )
+
+                // Still mark as initialized with fallback mode
+                mlModelsLoaded = true
+                systemStatus = .ready
+                isInitialized = true
             }
         }
     }
@@ -123,37 +203,70 @@ final class EnhancedLiDARMLManager: ObservableObject {
     // MARK: - Model Loading
 
     private func loadGaitAnalysisModel() async throws -> MLModel {
-        guard let modelURL = Bundle.main.url(forResource: "GaitAnalysisV2_1", withExtension: "mlmodelc") else {
-            throw MLModelError.modelNotFound("GaitAnalysisV2_1.mlmodelc")
+        // Try to load from bundle
+        if let modelURL = Bundle.main.url(forResource: "GaitAnalysisV2_1", withExtension: "mlmodelc") {
+            return try MLModel(contentsOf: modelURL)
         }
-        return try MLModel(contentsOf: modelURL)
+
+        // Try alternative names
+        if let modelURL = Bundle.main.url(forResource: "GaitAnalysis", withExtension: "mlmodelc") {
+            return try MLModel(contentsOf: modelURL)
+        }
+
+        // Try downloading from server (future implementation)
+        // For now, throw error to trigger fallback
+        throw MLModelError.modelNotFound("GaitAnalysisV2_1.mlmodelc")
     }
 
     private func loadFallPredictionModel() async throws -> MLModel {
-        guard let modelURL = Bundle.main.url(forResource: "FallPredictionV3_0", withExtension: "mlmodelc") else {
-            throw MLModelError.modelNotFound("FallPredictionV3_0.mlmodelc")
+        if let modelURL = Bundle.main.url(forResource: "FallPredictionV3_0", withExtension: "mlmodelc") {
+            return try MLModel(contentsOf: modelURL)
         }
-        return try MLModel(contentsOf: modelURL)
+
+        if let modelURL = Bundle.main.url(forResource: "FallPrediction", withExtension: "mlmodelc") {
+            return try MLModel(contentsOf: modelURL)
+        }
+
+        throw MLModelError.modelNotFound("FallPredictionV3_0.mlmodelc")
     }
 
     private func loadPostureClassificationModel() async throws -> MLModel {
-        guard let modelURL = Bundle.main.url(forResource: "PostureClassificationV1_2", withExtension: "mlmodelc") else {
-            throw MLModelError.modelNotFound("PostureClassificationV1_2.mlmodelc")
+        if let modelURL = Bundle.main.url(forResource: "PostureClassificationV1_2", withExtension: "mlmodelc") {
+            return try MLModel(contentsOf: modelURL)
         }
-        return try MLModel(contentsOf: modelURL)
+
+        if let modelURL = Bundle.main.url(forResource: "PostureClassification", withExtension: "mlmodelc") {
+            return try MLModel(contentsOf: modelURL)
+        }
+
+        throw MLModelError.modelNotFound("PostureClassificationV1_2.mlmodelc")
     }
 
     private func loadMovementPatternModel() async throws -> MLModel {
-        guard let modelURL = Bundle.main.url(forResource: "MovementPatternV2_3", withExtension: "mlmodelc") else {
-            throw MLModelError.modelNotFound("MovementPatternV2_3.mlmodelc")
+        if let modelURL = Bundle.main.url(forResource: "MovementPatternV2_3", withExtension: "mlmodelc") {
+            return try MLModel(contentsOf: modelURL)
         }
-        return try MLModel(contentsOf: modelURL)
+
+        if let modelURL = Bundle.main.url(forResource: "MovementPattern", withExtension: "mlmodelc") {
+            return try MLModel(contentsOf: modelURL)
+        }
+
+        throw MLModelError.modelNotFound("MovementPatternV2_3.mlmodelc")
     }
 
     // MARK: - Enhanced Analysis
 
     func performEnhancedAnalysis() async -> Result<EnhancedAnalysisResult, AnalysisError> {
         guard isInitialized && mlModelsLoaded else {
+            ErrorHandler.shared.handle(
+                AppError(
+                    error: NSError(domain: "EnhancedLiDARMLManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "System not ready"]),
+                    context: "Enhanced analysis",
+                    category: .ml,
+                    severity: .medium,
+                    recovery: .retry(maxAttempts: 2)
+                )
+            )
             return .failure(.systemNotReady)
         }
 
@@ -171,7 +284,7 @@ final class EnhancedLiDARMLManager: ObservableObject {
             // Step 2: Apply sensor fusion
             let fusedData = try await applySensorFusion(sensorData)
 
-            // Step 3: Run ML predictions
+            // Step 3: Run ML predictions (with fallback)
             let mlPredictions = try await runMLPredictions(fusedData)
 
             // Step 4: Generate insights
@@ -200,12 +313,28 @@ final class EnhancedLiDARMLManager: ObservableObject {
             // Stream to web platform
             try await streamResultToWeb(result)
 
+            // Log analytics
+            AnalyticsManager.shared.logEvent("enhanced_ml_analysis_completed", parameters: [
+                "processing_time": String(format: "%.2f", processingTime),
+                "quality_score": String(format: "%.2f", qualityScore),
+                "models_used": gaitAnalysisModel != nil ? "gait" : "fallback"
+            ])
+
             analysisInProgress = false
             return .success(result)
 
         } catch {
             analysisInProgress = false
             logger.error("Enhanced analysis failed: \(error.localizedDescription)")
+
+            ErrorHandler.shared.handle(
+                error,
+                context: "Enhanced ML analysis",
+                category: .ml,
+                severity: .medium,
+                recovery: .retry(maxAttempts: 1)
+            )
+
             return .failure(.processingFailed(error.localizedDescription))
         }
     }
@@ -356,47 +485,186 @@ final class EnhancedLiDARMLManager: ObservableObject {
     }
 
     private func predictGaitPattern(_ data: SensorFusionResult) async throws -> GaitPrediction {
-        guard let model = gaitAnalysisModel else {
-            throw MLModelError.modelNotLoaded("Gait Analysis")
+        // Try ML model first, fallback to rule-based if unavailable
+        if let model = gaitAnalysisModel {
+            do {
+                let inputFeatures = createGaitFeatureVector(data)
+                let prediction = try model.prediction(from: inputFeatures)
+
+                return GaitPrediction(
+                    classification: extractGaitClassification(prediction),
+                    confidence: extractConfidenceScore(prediction),
+                    riskScore: extractRiskScore(prediction)
+                )
+            } catch {
+                logger.warning("ML gait prediction failed: \(error.localizedDescription), using fallback")
+                ErrorHandler.shared.handle(
+                    error,
+                    context: "Gait pattern prediction",
+                    category: .ml,
+                    severity: .low,
+                    recovery: .fallback
+                )
+                // Fall through to rule-based fallback
+            }
         }
 
-        let inputFeatures = createGaitFeatureVector(data)
-        let prediction = try model.prediction(from: inputFeatures)
-
-        return GaitPrediction(
-            classification: extractGaitClassification(prediction),
-            confidence: extractConfidenceScore(prediction),
-            riskScore: extractRiskScore(prediction)
-        )
+        // Rule-based fallback
+        return predictGaitPatternFallback(data)
     }
 
     private func predictFallRisk(_ data: SensorFusionResult) async throws -> FallRiskPrediction {
-        guard let model = fallPredictionModel else {
-            throw MLModelError.modelNotLoaded("Fall Prediction")
+        // Try ML model first, fallback to rule-based if unavailable
+        if let model = fallPredictionModel {
+            do {
+                let inputFeatures = createFallRiskFeatureVector(data)
+                let prediction = try model.prediction(from: inputFeatures)
+
+                return FallRiskPrediction(
+                    level: extractRiskLevel(prediction),
+                    probability: extractProbability(prediction),
+                    timeToRisk: extractTimeHorizon(prediction)
+                )
+            } catch {
+                logger.warning("ML fall risk prediction failed: \(error.localizedDescription), using fallback")
+                ErrorHandler.shared.handle(
+                    error,
+                    context: "Fall risk prediction",
+                    category: .ml,
+                    severity: .low,
+                    recovery: .fallback
+                )
+                // Fall through to rule-based fallback
+            }
         }
 
-        let inputFeatures = createFallRiskFeatureVector(data)
-        let prediction = try model.prediction(from: inputFeatures)
-
-        return FallRiskPrediction(
-            level: extractRiskLevel(prediction),
-            probability: extractProbability(prediction),
-            timeToRisk: extractTimeHorizon(prediction)
-        )
+        // Rule-based fallback
+        return predictFallRiskFallback(data)
     }
 
     private func classifyPosture(_ data: SensorFusionResult) async throws -> PosturePrediction {
-        guard let model = postureClassificationModel else {
-            throw MLModelError.modelNotLoaded("Posture Classification")
+        // Try ML model first, fallback to rule-based if unavailable
+        if let model = postureClassificationModel {
+            do {
+                let inputFeatures = createPostureFeatureVector(data)
+                let prediction = try model.prediction(from: inputFeatures)
+
+                return PosturePrediction(
+                    alignment: extractPostureAlignment(prediction),
+                    compensations: extractCompensations(prediction),
+                    recommendations: generatePostureRecommendations(prediction)
+                )
+            } catch {
+                logger.warning("ML posture classification failed: \(error.localizedDescription), using fallback")
+                ErrorHandler.shared.handle(
+                    error,
+                    context: "Posture classification",
+                    category: .ml,
+                    severity: .low,
+                    recovery: .fallback
+                )
+                // Fall through to rule-based fallback
+            }
         }
 
-        let inputFeatures = createPostureFeatureVector(data)
-        let prediction = try model.prediction(from: inputFeatures)
+        // Rule-based fallback
+        return classifyPostureFallback(data)
+    }
+
+    // MARK: - Fallback Predictions (Rule-Based)
+
+    private func predictGaitPatternFallback(_ data: SensorFusionResult) -> GaitPrediction {
+        // Rule-based gait pattern classification
+        var classification = "normal"
+        var confidence = 0.7
+        var riskScore = 20.0
+
+        // Classify based on stability and symmetry
+        if data.combinedStability < 60 {
+            classification = "unstable"
+            confidence = 0.8
+            riskScore = 45.0
+        } else if data.symmetryIndex < 70 {
+            classification = "asymmetric"
+            confidence = 0.75
+            riskScore = 35.0
+        } else if data.combinedStability >= 85 && data.symmetryIndex >= 85 {
+            classification = "excellent"
+            confidence = 0.85
+            riskScore = 10.0
+        }
+
+        // Adjust risk score based on overall risk
+        riskScore += data.overallRiskScore
+
+        return GaitPrediction(
+            classification: classification,
+            confidence: confidence,
+            riskScore: min(100.0, riskScore)
+        )
+    }
+
+    private func predictFallRiskFallback(_ data: SensorFusionResult) -> FallRiskPrediction {
+        // Rule-based fall risk assessment
+        let riskScore = data.overallRiskScore
+        var level = "low"
+        var probability = 0.1
+        var timeToRisk = 168.0 // 7 days default
+
+        if riskScore >= 60 {
+            level = "high"
+            probability = 0.6 + (riskScore - 60) / 100.0
+            timeToRisk = 24.0 // 24 hours
+        } else if riskScore >= 40 {
+            level = "moderate"
+            probability = 0.3 + (riskScore - 40) / 100.0
+            timeToRisk = 72.0 // 3 days
+        } else if riskScore >= 20 {
+            level = "low"
+            probability = 0.1 + (riskScore - 20) / 100.0
+            timeToRisk = 168.0 // 7 days
+        }
+
+        probability = min(0.95, probability)
+
+        return FallRiskPrediction(
+            level: level,
+            probability: probability,
+            timeToRisk: timeToRisk
+        )
+    }
+
+    private func classifyPostureFallback(_ data: SensorFusionResult) -> PosturePrediction {
+        // Rule-based posture classification
+        var alignment = "good"
+        var compensations: [String] = []
+        var recommendations: [String] = []
+
+        // Assess alignment based on stability and symmetry
+        if data.combinedStability < 70 {
+            alignment = "poor"
+            compensations.append("Reduced core stability")
+            recommendations.append("Focus on core strengthening exercises")
+        } else if data.symmetryIndex < 75 {
+            alignment = "fair"
+            compensations.append("Asymmetric posture detected")
+            recommendations.append("Work on bilateral strength and flexibility")
+        }
+
+        // Additional recommendations based on fluidity
+        if data.fluidityRating < 70 {
+            compensations.append("Reduced movement fluidity")
+            recommendations.append("Consider stretching and mobility work")
+        }
+
+        if compensations.isEmpty {
+            recommendations.append("Maintain current posture and activity level")
+        }
 
         return PosturePrediction(
-            alignment: extractPostureAlignment(prediction),
-            compensations: extractCompensations(prediction),
-            recommendations: generatePostureRecommendations(prediction)
+            alignment: alignment,
+            compensations: compensations,
+            recommendations: recommendations
         )
     }
 
@@ -481,60 +749,374 @@ final class EnhancedLiDARMLManager: ObservableObject {
         return UserProfile.default
     }
 
-    // Additional helper methods for ML feature extraction...
+    // MARK: - Feature Vector Creation
+
     private func createGaitFeatureVector(_ data: SensorFusionResult) -> MLFeatureProvider {
         // Create feature vector for gait analysis
-        // Implementation depends on your specific model input requirements
-        fatalError("Implement based on your trained model's input specification")
+        // Standard features: stability, symmetry, coordination, fluidity, risk score
+        // This is a generic implementation - adjust based on your specific model requirements
+
+        guard let featureArray = try? MLMultiArray(
+            shape: [1, 5],
+            dataType: .double
+        ) else {
+            // Fallback to dictionary if array creation fails
+            return createGaitFeatureDictionary(data)
+        }
+
+        // Normalize features to 0-1 range
+        featureArray[0] = NSNumber(value: data.combinedStability / 100.0)
+        featureArray[1] = NSNumber(value: data.symmetryIndex / 100.0)
+        featureArray[2] = NSNumber(value: data.coordinationScore / 100.0)
+        featureArray[3] = NSNumber(value: data.fluidityRating / 100.0)
+        featureArray[4] = NSNumber(value: data.overallRiskScore / 100.0)
+
+        do {
+            return try MLDictionaryFeatureProvider(
+                dictionary: ["features": MLFeatureValue(multiArray: featureArray)]
+            )
+        } catch {
+            // Fallback to dictionary format
+            return createGaitFeatureDictionary(data)
+        }
+    }
+
+    private func createGaitFeatureDictionary(_ data: SensorFusionResult) -> MLFeatureProvider {
+        // Dictionary-based feature vector (more flexible)
+        do {
+            return try MLDictionaryFeatureProvider(dictionary: [
+                "stability": MLFeatureValue(double: data.combinedStability),
+                "symmetry": MLFeatureValue(double: data.symmetryIndex),
+                "coordination": MLFeatureValue(double: data.coordinationScore),
+                "fluidity": MLFeatureValue(double: data.fluidityRating),
+                "risk_score": MLFeatureValue(double: data.overallRiskScore)
+            ])
+        } catch {
+            logger.error("Failed to create gait feature dictionary: \(error.localizedDescription)")
+            // Return minimal feature vector
+            return try! MLDictionaryFeatureProvider(dictionary: [
+                "stability": MLFeatureValue(double: data.combinedStability)
+            ])
+        }
     }
 
     private func createFallRiskFeatureVector(_ data: SensorFusionResult) -> MLFeatureProvider {
         // Create feature vector for fall risk prediction
-        fatalError("Implement based on your trained model's input specification")
+        // Features: stability, risk score, symmetry, coordination
+        do {
+            guard let featureArray = try? MLMultiArray(
+                shape: [1, 6],
+                dataType: .double
+            ) else {
+                return try MLDictionaryFeatureProvider(dictionary: [
+                    "stability": MLFeatureValue(double: data.combinedStability),
+                    "risk_score": MLFeatureValue(double: data.overallRiskScore),
+                    "symmetry": MLFeatureValue(double: data.symmetryIndex),
+                    "coordination": MLFeatureValue(double: data.coordinationScore),
+                    "fluidity": MLFeatureValue(double: data.fluidityRating),
+                    "confidence": MLFeatureValue(double: data.confidence)
+                ])
+            }
+
+            featureArray[0] = NSNumber(value: data.combinedStability / 100.0)
+            featureArray[1] = NSNumber(value: data.overallRiskScore / 100.0)
+            featureArray[2] = NSNumber(value: data.symmetryIndex / 100.0)
+            featureArray[3] = NSNumber(value: data.coordinationScore / 100.0)
+            featureArray[4] = NSNumber(value: data.fluidityRating / 100.0)
+            featureArray[5] = NSNumber(value: data.confidence)
+
+            return try MLDictionaryFeatureProvider(
+                dictionary: ["features": MLFeatureValue(multiArray: featureArray)]
+            )
+        } catch {
+            logger.error("Failed to create fall risk feature vector: \(error.localizedDescription)")
+            return try! MLDictionaryFeatureProvider(dictionary: [
+                "risk_score": MLFeatureValue(double: data.overallRiskScore)
+            ])
+        }
     }
 
     private func createPostureFeatureVector(_ data: SensorFusionResult) -> MLFeatureProvider {
         // Create feature vector for posture classification
-        fatalError("Implement based on your trained model's input specification")
+        // Features: stability, symmetry, coordination, risk
+        do {
+            return try MLDictionaryFeatureProvider(dictionary: [
+                "stability": MLFeatureValue(double: data.combinedStability),
+                "symmetry": MLFeatureValue(double: data.symmetryIndex),
+                "coordination": MLFeatureValue(double: data.coordinationScore),
+                "fluidity": MLFeatureValue(double: data.fluidityRating),
+                "risk_score": MLFeatureValue(double: data.overallRiskScore),
+                "confidence": MLFeatureValue(double: data.confidence)
+            ])
+        } catch {
+            logger.error("Failed to create posture feature vector: \(error.localizedDescription)")
+            return try! MLDictionaryFeatureProvider(dictionary: [
+                "stability": MLFeatureValue(double: data.combinedStability)
+            ])
+        }
     }
 
+    // MARK: - Prediction Extraction
+
     private func extractGaitClassification(_ prediction: MLFeatureProvider) -> String {
-        // Extract classification from model output
-        return "normal" // Placeholder
+        // Try to extract classification from model output
+        // Common output formats: "classification", "class", "label", "prediction"
+
+        if let classification = try? prediction.featureValue(for: "classification")?.stringValue {
+            return classification
+        }
+
+        if let classification = try? prediction.featureValue(for: "class")?.stringValue {
+            return classification
+        }
+
+        if let classification = try? prediction.featureValue(for: "label")?.stringValue {
+            return classification
+        }
+
+        if let classification = try? prediction.featureValue(for: "prediction")?.stringValue {
+            return classification
+        }
+
+        // If no classification found, derive from confidence scores
+        if let scores = try? prediction.featureValue(for: "classLabelProbs")?.dictionaryValue {
+            // Find highest probability class
+            let maxProb = scores.values.max { first, second in
+                (try? first.doubleValue ?? 0) < (try? second.doubleValue ?? 0)
+            }
+
+            if let maxProb = maxProb, let classLabel = scores.first(where: { $0.value == maxProb })?.key {
+                return classLabel
+            }
+        }
+
+        // Fallback: derive from numeric outputs
+        let riskScore = extractRiskScore(prediction)
+        if riskScore > 40 {
+            return "unstable"
+        } else if riskScore > 20 {
+            return "at_risk"
+        } else {
+            return "normal"
+        }
     }
 
     private func extractConfidenceScore(_ prediction: MLFeatureProvider) -> Double {
-        // Extract confidence score from model output
-        return 0.95 // Placeholder
+        // Try common confidence field names
+        if let confidence = try? prediction.featureValue(for: "confidence")?.doubleValue {
+            return confidence
+        }
+
+        if let confidence = try? prediction.featureValue(for: "confidenceScore")?.doubleValue {
+            return confidence
+        }
+
+        if let confidence = try? prediction.featureValue(for: "prob")?.doubleValue {
+            return confidence
+        }
+
+        // Calculate from class probabilities if available
+        if let scores = try? prediction.featureValue(for: "classLabelProbs")?.dictionaryValue {
+            let maxProb = scores.values.compactMap { try? $0.doubleValue }.max() ?? 0.0
+            return maxProb
+        }
+
+        // Default confidence
+        return 0.85
     }
 
     private func extractRiskScore(_ prediction: MLFeatureProvider) -> Double {
-        // Extract risk score from model output
-        return 15.0 // Placeholder
+        // Try common risk score field names
+        if let riskScore = try? prediction.featureValue(for: "riskScore")?.doubleValue {
+            return riskScore * 100.0 // Normalize to 0-100 if model outputs 0-1
+        }
+
+        if let riskScore = try? prediction.featureValue(for: "risk")?.doubleValue {
+            return riskScore * 100.0
+        }
+
+        if let riskScore = try? prediction.featureValue(for: "score")?.doubleValue {
+            return riskScore * 100.0
+        }
+
+        // Try multi-array output
+        if let array = try? prediction.featureValue(for: "output")?.multiArrayValue {
+            if array.count > 0 {
+                return array[0].doubleValue * 100.0
+            }
+        }
+
+        // Fallback: derive from classification
+        let classification = extractGaitClassification(prediction)
+        switch classification.lowercased() {
+        case "unstable", "poor", "critical":
+            return 50.0
+        case "at_risk", "fair":
+            return 30.0
+        default:
+            return 15.0
+        }
     }
 
     private func extractRiskLevel(_ prediction: MLFeatureProvider) -> String {
-        return "low" // Placeholder
+        // Try direct risk level extraction
+        if let level = try? prediction.featureValue(for: "riskLevel")?.stringValue {
+            return level
+        }
+
+        if let level = try? prediction.featureValue(for: "level")?.stringValue {
+            return level
+        }
+
+        // Derive from probability
+        let probability = extractProbability(prediction)
+        if probability >= 0.6 {
+            return "high"
+        } else if probability >= 0.3 {
+            return "moderate"
+        } else {
+            return "low"
+        }
     }
 
     private func extractProbability(_ prediction: MLFeatureProvider) -> Double {
-        return 0.1 // Placeholder
+        // Try common probability field names
+        if let prob = try? prediction.featureValue(for: "probability")?.doubleValue {
+            return prob
+        }
+
+        if let prob = try? prediction.featureValue(for: "prob")?.doubleValue {
+            return prob
+        }
+
+        if let prob = try? prediction.featureValue(for: "fallRisk")?.doubleValue {
+            return prob
+        }
+
+        // Derive from risk level
+        let level = extractRiskLevel(prediction)
+        switch level.lowercased() {
+        case "high":
+            return 0.7
+        case "moderate":
+            return 0.4
+        default:
+            return 0.1
+        }
     }
 
     private func extractTimeHorizon(_ prediction: MLFeatureProvider) -> Double {
-        return 72.0 // Placeholder - hours
+        // Try to extract time horizon
+        if let hours = try? prediction.featureValue(for: "timeHorizon")?.doubleValue {
+            return hours
+        }
+
+        if let hours = try? prediction.featureValue(for: "timeToRisk")?.doubleValue {
+            return hours
+        }
+
+        if let days = try? prediction.featureValue(for: "daysToRisk")?.doubleValue {
+            return days * 24.0
+        }
+
+        // Default based on risk level
+        let level = extractRiskLevel(prediction)
+        switch level.lowercased() {
+        case "high":
+            return 24.0 // 24 hours
+        case "moderate":
+            return 72.0 // 3 days
+        default:
+            return 168.0 // 7 days
+        }
     }
 
     private func extractPostureAlignment(_ prediction: MLFeatureProvider) -> String {
-        return "good" // Placeholder
+        // Try direct alignment extraction
+        if let alignment = try? prediction.featureValue(for: "alignment")?.stringValue {
+            return alignment
+        }
+
+        if let alignment = try? prediction.featureValue(for: "postureAlignment")?.stringValue {
+            return alignment
+        }
+
+        if let alignment = try? prediction.featureValue(for: "classification")?.stringValue {
+            return alignment
+        }
+
+        // Derive from numeric scores if available
+        if let score = try? prediction.featureValue(for: "alignmentScore")?.doubleValue {
+            if score >= 80 {
+                return "excellent"
+            } else if score >= 60 {
+                return "good"
+            } else if score >= 40 {
+                return "fair"
+            } else {
+                return "poor"
+            }
+        }
+
+        // Default
+        return "good"
     }
 
     private func extractCompensations(_ prediction: MLFeatureProvider) -> [String] {
-        return [] // Placeholder
+        // Try to extract compensations array
+        if let compensations = try? prediction.featureValue(for: "compensations")?.multiArrayValue {
+            var result: [String] = []
+            for i in 0..<compensations.count {
+                let value = compensations[i].doubleValue
+                if value > 0.5 { // Threshold
+                    result.append("Compensation \(i + 1)")
+                }
+            }
+            return result
+        }
+
+        // Try string array
+        if let compensations = try? prediction.featureValue(for: "compensations")?.stringValue {
+            return compensations.split(separator: ",").map(String.init)
+        }
+
+        // Derive from alignment
+        let alignment = extractPostureAlignment(prediction)
+        if alignment == "poor" || alignment == "fair" {
+            return ["Postural compensation detected"]
+        }
+
+        return []
     }
 
     private func generatePostureRecommendations(_ prediction: MLFeatureProvider) -> [String] {
-        return ["Maintain current posture"] // Placeholder
+        // Try to extract recommendations
+        if let recommendations = try? prediction.featureValue(for: "recommendations")?.stringValue {
+            return recommendations.split(separator: ",").map(String.init)
+        }
+
+        // Generate based on alignment and compensations
+        let alignment = extractPostureAlignment(prediction)
+        let compensations = extractCompensations(prediction)
+        var recommendations: [String] = []
+
+        if alignment == "poor" {
+            recommendations.append("Consider consulting a physical therapist")
+            recommendations.append("Focus on core strengthening exercises")
+        } else if alignment == "fair" {
+            recommendations.append("Work on postural awareness")
+            recommendations.append("Include stretching in daily routine")
+        }
+
+        if !compensations.isEmpty {
+            recommendations.append("Address movement compensations with targeted exercises")
+        }
+
+        if recommendations.isEmpty {
+            recommendations.append("Maintain current posture and activity level")
+        }
+
+        return recommendations
     }
 
     private func calculateOverallConfidence(_ predictions: (GaitPrediction, FallRiskPrediction, PosturePrediction)) -> Double {
@@ -783,28 +1365,403 @@ struct UserProfile {
     static let `default` = UserProfile(userId: "default", age: nil, conditions: [])
 }
 
-// Placeholder classes for sensor fusion components
+// MARK: - Sensor Fusion Processors
+
+/// Multi-modal sensor fusion processor combining LiDAR, motion, and health data
 class MultiModalSensorProcessor {
-    init(configuration: SensorFusionConfiguration) {}
+    private let configuration: SensorFusionConfiguration
+    private var sensorWeights: [String: Double] = [:]
+
+    init(configuration: SensorFusionConfiguration) {
+        self.configuration = configuration
+        setupSensorWeights()
+    }
+
+    private func setupSensorWeights() {
+        // Weight sensors based on availability and reliability
+        sensorWeights["lidar"] = configuration.enableLiDARProcessing ? 0.4 : 0.0
+        sensorWeights["motion"] = configuration.enableSmartphoneMotion ? 0.3 : 0.0
+        sensorWeights["healthkit"] = configuration.enableAppleWatchIntegration ? 0.2 : 0.0
+        sensorWeights["camera"] = configuration.enableCameraTracking ? 0.1 : 0.0
+
+        // Normalize weights
+        let total = sensorWeights.values.reduce(0, +)
+        if total > 0 {
+            for key in sensorWeights.keys {
+                sensorWeights[key] = sensorWeights[key]! / total
+            }
+        }
+    }
 
     func fuseSensorData(_ data: MultiModalSensorData) async throws -> SensorFusionProcessedResult {
-        return SensorFusionProcessedResult(
-            stabilityScore: 85.0,
-            coordinationMetrics: 78.0,
-            movementSymmetry: 82.0,
-            movementFluidity: 80.0,
-            riskAssessment: 15.0,
-            activeSensors: ["lidar", "motion", "healthkit"],
-            fusionConfidence: 0.9
+        // Calculate stability from multiple sources
+        let stabilityScores: [Double] = [
+            calculateLiDARStability(data.lidarPoints),
+            calculateMotionStability(data.motionMetrics),
+            calculateHealthKitStability(data.healthMetrics)
+        ].compactMap { $0 }
+
+        let combinedStability = weightedAverage(stabilityScores, weights: [0.4, 0.3, 0.3])
+
+        // Calculate coordination from motion and LiDAR
+        let coordinationScores: [Double] = [
+            calculateMotionCoordination(data.motionMetrics),
+            calculateLiDARCoordination(data.lidarPoints)
+        ].compactMap { $0 }
+
+        let coordinationMetrics = weightedAverage(coordinationScores, weights: [0.6, 0.4])
+
+        // Calculate symmetry from motion data
+        let movementSymmetry = calculateMovementSymmetry(data.motionMetrics)
+
+        // Calculate fluidity from motion patterns
+        let movementFluidity = calculateMovementFluidity(data.motionMetrics)
+
+        // Calculate risk assessment
+        let riskFactors: [Double] = [
+            (100.0 - combinedStability) / 100.0,
+            (100.0 - movementSymmetry) / 100.0,
+            (100.0 - coordinationMetrics) / 100.0
+        ]
+
+        let riskAssessment = min(100.0, riskFactors.reduce(0, +) * 33.33)
+
+        // Determine active sensors
+        var activeSensors: [String] = []
+        if !data.lidarPoints.points.isEmpty {
+            activeSensors.append("lidar")
+        }
+        activeSensors.append("motion")
+        if data.healthMetrics.walkingSteadiness != nil {
+            activeSensors.append("healthkit")
+        }
+
+        // Calculate fusion confidence
+        let fusionConfidence = calculateFusionConfidence(
+            lidarConfidence: data.lidarPoints.confidence,
+            sensorCount: activeSensors.count
         )
+
+        return SensorFusionProcessedResult(
+            stabilityScore: combinedStability,
+            coordinationMetrics: coordinationMetrics,
+            movementSymmetry: movementSymmetry,
+            movementFluidity: movementFluidity,
+            riskAssessment: riskAssessment,
+            activeSensors: activeSensors,
+            fusionConfidence: fusionConfidence
+        )
+    }
+
+    private func calculateLiDARStability(_ cloud: LiDARPointCloud) -> Double? {
+        guard !cloud.points.isEmpty else { return nil }
+
+        // Analyze point cloud density and distribution
+        let pointCount = cloud.points.count
+        let confidence = Double(cloud.confidence)
+
+        // Higher point count and confidence = better stability estimate
+        let stabilityEstimate = min(100.0, (Double(pointCount) / 1000.0) * 50.0 + (confidence / 100.0) * 50.0)
+
+        return stabilityEstimate
+    }
+
+    private func calculateMotionStability(_ motion: MotionMetrics) -> Double? {
+        // Calculate stability from motion metrics
+        let accelMagnitude = sqrt(
+            motion.acceleration.x * motion.acceleration.x +
+            motion.acceleration.y * motion.acceleration.y +
+            motion.acceleration.z * motion.acceleration.z
+        )
+
+        // Lower acceleration = more stability
+        let stability = max(0.0, min(100.0, 100.0 - accelMagnitude * 10.0))
+
+        return stability
+    }
+
+    private func calculateHealthKitStability(_ health: HealthMetrics) -> Double? {
+        guard let steadiness = health.walkingSteadiness else { return nil }
+        return steadiness * 100.0 // Convert to 0-100 scale
+    }
+
+    private func calculateMotionCoordination(_ motion: MotionMetrics) -> Double? {
+        // Calculate coordination from rotation and acceleration correlation
+        let rotationMagnitude = sqrt(
+            motion.rotation.x * motion.rotation.x +
+            motion.rotation.y * motion.rotation.y +
+            motion.rotation.z * motion.rotation.z
+        )
+
+        // Coordinated movement has balanced rotation and acceleration
+        let accelMagnitude = sqrt(
+            motion.acceleration.x * motion.acceleration.x +
+            motion.acceleration.y * motion.acceleration.y +
+            motion.acceleration.z * motion.acceleration.z
+        )
+
+        // Lower variance between rotation and acceleration = better coordination
+        let difference = abs(rotationMagnitude - accelMagnitude)
+        let coordination = max(0.0, min(100.0, 100.0 - difference * 20.0))
+
+        return coordination
+    }
+
+    private func calculateLiDARCoordination(_ cloud: LiDARPointCloud) -> Double? {
+        guard !cloud.points.isEmpty else { return nil }
+
+        // Analyze point cloud regularity (coordinated movement = regular patterns)
+        let frameRate = cloud.frameRate
+        let pointDensity = Double(cloud.points.count) / frameRate
+
+        // Higher frame rate and consistent density = better coordination
+        let coordination = min(100.0, (frameRate / 30.0) * 50.0 + (pointDensity / 100.0) * 50.0)
+
+        return coordination
+    }
+
+    private func calculateMovementSymmetry(_ motion: MotionMetrics) -> Double {
+        // Analyze symmetry from rotation patterns
+        // Symmetric movement has balanced left/right rotation
+        let xRotation = abs(motion.rotation.x)
+        let zRotation = abs(motion.rotation.z)
+
+        // Calculate symmetry as 1 - (difference / average)
+        let avg = (xRotation + zRotation) / 2.0
+        guard avg > 0 else { return 80.0 } // Default
+
+        let difference = abs(xRotation - zRotation)
+        let symmetry = max(0.0, min(100.0, (1.0 - difference / avg) * 100.0))
+
+        return symmetry
+    }
+
+    private func calculateMovementFluidity(_ motion: MotionMetrics) -> Double {
+        // Analyze fluidity from smooth motion patterns
+        // Fluid movement has gradual changes, not abrupt stops/starts
+
+        // Use attitude changes to assess fluidity
+        let attitudeChange = sqrt(
+            motion.attitude.pitch * motion.attitude.pitch +
+            motion.attitude.roll * motion.attitude.roll +
+            motion.attitude.yaw * motion.attitude.yaw
+        )
+
+        // Lower attitude change = more fluid (simplified)
+        let fluidity = max(0.0, min(100.0, 100.0 - attitudeChange * 50.0))
+
+        return fluidity
+    }
+
+    private func calculateFusionConfidence(lidarConfidence: Int, sensorCount: Int) -> Double {
+        // Confidence increases with more sensors and higher LiDAR quality
+        let sensorFactor = min(1.0, Double(sensorCount) / 4.0)
+        let qualityFactor = Double(lidarConfidence) / 100.0
+
+        return (sensorFactor * 0.6 + qualityFactor * 0.4)
+    }
+
+    private func weightedAverage(_ values: [Double], weights: [Double]) -> Double {
+        guard !values.isEmpty, values.count == weights.count else {
+            return values.isEmpty ? 50.0 : values.reduce(0, +) / Double(values.count)
+        }
+
+        let weightedSum = zip(values, weights).map { $0 * $1 }.reduce(0, +)
+        let totalWeight = weights.reduce(0, +)
+
+        return totalWeight > 0 ? weightedSum / totalWeight : 50.0
     }
 }
 
+/// Kalman filter processor for sensor data smoothing
 class KalmanFilterProcessor {
-    init(stateTransitionModel: [[Double]], observationModel: [[Double]], processNoise: Double, measurementNoise: Double) {}
+    private let stateTransitionModel: [[Double]]
+    private let observationModel: [[Double]]
+    private let processNoise: Double
+    private let measurementNoise: Double
+
+    private var state: [Double] = [0, 0, 0, 0, 0, 0] // Position (3) + Velocity (3)
+    private var covariance: [[Double]] = []
+
+    init(
+        stateTransitionModel: [[Double]],
+        observationModel: [[Double]],
+        processNoise: Double,
+        measurementNoise: Double
+    ) {
+        self.stateTransitionModel = stateTransitionModel
+        self.observationModel = observationModel
+        self.processNoise = processNoise
+        self.measurementNoise = measurementNoise
+
+        // Initialize covariance matrix (6x6 identity)
+        self.covariance = Array(repeating: Array(repeating: 0.0, count: 6), count: 6)
+        for i in 0..<6 {
+            covariance[i][i] = 1.0
+        }
+    }
 
     func process(_ data: MultiModalSensorData) async throws -> MultiModalSensorData {
-        return data // Placeholder - return filtered data
+        // Extract position from motion data (simplified - using acceleration)
+        let observation: [Double] = [
+            Double(data.motionMetrics.acceleration.x),
+            Double(data.motionMetrics.acceleration.y),
+            Double(data.motionMetrics.acceleration.z)
+        ]
+
+        // Kalman filter prediction step
+        let predictedState = predictState()
+        let predictedCovariance = predictCovariance()
+
+        // Kalman filter update step
+        let (updatedState, updatedCovariance) = update(
+            predictedState: predictedState,
+            predictedCovariance: predictedCovariance,
+            observation: observation
+        )
+
+        state = updatedState
+        covariance = updatedCovariance
+
+        // Create filtered motion data
+        let filteredAcceleration = CMAcceleration(
+            x: state[0],
+            y: state[1],
+            z: state[2]
+        )
+
+        let filteredMotion = MotionMetrics(
+            acceleration: filteredAcceleration,
+            rotation: data.motionMetrics.rotation,
+            attitude: data.motionMetrics.attitude,
+            gravity: data.motionMetrics.gravity,
+            timestamp: data.motionMetrics.timestamp
+        )
+
+        return MultiModalSensorData(
+            lidarPoints: data.lidarPoints,
+            motionMetrics: filteredMotion,
+            healthMetrics: data.healthMetrics,
+            environmentalContext: data.environmentalContext,
+            collectionDuration: data.collectionDuration,
+            timestamp: data.timestamp
+        )
+    }
+
+    private func predictState() -> [Double] {
+        // x_k|k-1 = F * x_k-1|k-1
+        var predicted: [Double] = Array(repeating: 0.0, count: 6)
+        for i in 0..<6 {
+            for j in 0..<6 {
+                predicted[i] += stateTransitionModel[i][j] * state[j]
+            }
+        }
+        return predicted
+    }
+
+    private func predictCovariance() -> [[Double]] {
+        // P_k|k-1 = F * P_k-1|k-1 * F^T + Q
+        var predicted: [[Double]] = Array(repeating: Array(repeating: 0.0, count: 6), count: 6)
+
+        // F * P
+        for i in 0..<6 {
+            for j in 0..<6 {
+                for k in 0..<6 {
+                    predicted[i][j] += stateTransitionModel[i][k] * covariance[k][j]
+                }
+            }
+        }
+
+        // (F * P) * F^T
+        var temp: [[Double]] = Array(repeating: Array(repeating: 0.0, count: 6), count: 6)
+        for i in 0..<6 {
+            for j in 0..<6 {
+                for k in 0..<6 {
+                    temp[i][j] += predicted[i][k] * stateTransitionModel[j][k]
+                }
+            }
+        }
+
+        // Add process noise Q
+        for i in 0..<6 {
+            temp[i][i] += processNoise
+        }
+
+        return temp
+    }
+
+    private func update(
+        predictedState: [Double],
+        predictedCovariance: [[Double]],
+        observation: [Double]
+    ) -> ([Double], [[Double]]) {
+        // Kalman gain: K = P * H^T * (H * P * H^T + R)^-1
+        // Innovation: y = z - H * x
+        // Update: x = x + K * y
+        // Covariance: P = (I - K * H) * P
+
+        // H * P (3x6)
+        var hp: [[Double]] = Array(repeating: Array(repeating: 0.0, count: 6), count: 3)
+        for i in 0..<3 {
+            for j in 0..<6 {
+                for k in 0..<3 {
+                    hp[i][j] += observationModel[i][k] * predictedCovariance[k][j]
+                }
+            }
+        }
+
+        // H * P * H^T + R (3x3)
+        var s: [[Double]] = Array(repeating: Array(repeating: 0.0, count: 3), count: 3)
+        for i in 0..<3 {
+            for j in 0..<3 {
+                for k in 0..<6 {
+                    s[i][j] += hp[i][k] * observationModel[j][k]
+                }
+                if i == j {
+                    s[i][j] += measurementNoise
+                }
+            }
+        }
+
+        // Kalman gain: K = P * H^T * S^-1 (simplified - assume S is diagonal)
+        var gain: [[Double]] = Array(repeating: Array(repeating: 0.0, count: 3), count: 6)
+        for i in 0..<6 {
+            for j in 0..<3 {
+                for k in 0..<3 {
+                    gain[i][j] += predictedCovariance[i][k] * observationModel[j][k] / max(s[j][j], 0.001)
+                }
+            }
+        }
+
+        // Innovation
+        var innovation: [Double] = Array(repeating: 0.0, count: 3)
+        for i in 0..<3 {
+            var hx = 0.0
+            for j in 0..<6 {
+                hx += observationModel[i][j] * predictedState[j]
+            }
+            innovation[i] = observation[i] - hx
+        }
+
+        // Updated state
+        var updatedState = predictedState
+        for i in 0..<6 {
+            for j in 0..<3 {
+                updatedState[i] += gain[i][j] * innovation[j]
+            }
+        }
+
+        // Updated covariance (simplified)
+        var updatedCovariance = predictedCovariance
+        for i in 0..<6 {
+            for j in 0..<6 {
+                for k in 0..<3 {
+                    updatedCovariance[i][j] -= gain[i][k] * observationModel[k][j]
+                }
+            }
+        }
+
+        return (updatedState, updatedCovariance)
     }
 }
 

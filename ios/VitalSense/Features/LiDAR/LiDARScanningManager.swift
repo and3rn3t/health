@@ -95,28 +95,52 @@ class LiDARScanningManager: ObservableObject {
     // MARK: - Scan Management
     func startScan(type: LiDARScanningView.ScanType, progressCallback: @escaping (Double) -> Void) {
         guard isLiDARAvailable else {
-            print("LiDAR not available on this device")
+            ErrorHandler.shared.handle(
+                AppError(
+                    error: NSError(domain: "LiDARScanningManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "LiDAR not available on this device"]),
+                    context: "LiDAR scan start",
+                    category: .lidar,
+                    severity: .high,
+                    recovery: .none
+                )
+            )
             return
         }
 
-        currentScanType = type
-        scanDuration = type.scanDuration
-        self.progressCallback = progressCallback
+        do {
+            currentScanType = type
+            scanDuration = type.scanDuration
+            self.progressCallback = progressCallback
 
-        isCollectingData = true
-        isPaused = false
-        scanStartTime = Date()
-        collectedFrames.removeAll()
+            isCollectingData = true
+            isPaused = false
+            scanStartTime = Date()
+            collectedFrames.removeAll()
+            accelerometerData.removeAll()
+            gyroscopeData.removeAll()
 
-        // Start motion tracking
-        startMotionTracking()
+            // Start motion tracking
+            startMotionTracking()
 
-        // Start scan timer
-        scanTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            self?.updateScanProgress()
+            // Start scan timer
+            scanTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+                self?.updateScanProgress()
+            }
+
+            // Log analytics event
+            AnalyticsManager.shared.logEvent("lidar_scan_started", parameters: [
+                "scan_type": type.rawValue,
+                "duration": String(scanDuration)
+            ])
+
+            print("✅ Started \(type.rawValue) scan")
+        } catch {
+            ErrorHandler.shared.handle(
+                error,
+                context: "Starting LiDAR scan",
+                recovery: .retry(maxAttempts: 2)
+            )
         }
-
-        print("Started \(type.rawValue) scan")
     }
 
     func pauseScan() {
@@ -157,6 +181,22 @@ class LiDARScanningManager: ObservableObject {
 
         progressCallback?(progress)
 
+        // Stream progress to web platform (throttled)
+        if Int(elapsed * 10) % 5 == 0 { // Every 0.5 seconds
+            Task {
+                await WebSocketManager.shared.sendLiDARScanProgress(
+                    scanType: currentScanType.rawValue,
+                    progress: progress,
+                    pointCount: currentPointCount,
+                    quality: scanQuality,
+                    metrics: [
+                        "frames_collected": collectedFrames.count,
+                        "motion_samples": accelerometerData.count
+                    ]
+                )
+            }
+        }
+
         if progress >= 1.0 {
             // Scan completed
             completeScan()
@@ -183,6 +223,17 @@ class LiDARScanningManager: ObservableObject {
         // Start accelerometer
         if motionManager.isAccelerometerAvailable {
             motionManager.startAccelerometerUpdates(to: .main) { [weak self] data, error in
+                if let error = error {
+                    ErrorHandler.shared.handle(
+                        error,
+                        context: "Accelerometer tracking",
+                        category: .data,
+                        severity: .low,
+                        recovery: .fallback
+                    )
+                    return
+                }
+
                 if let data = data {
                     self?.accelerometerData.append(data)
 
@@ -192,11 +243,32 @@ class LiDARScanningManager: ObservableObject {
                     }
                 }
             }
+        } else {
+            ErrorHandler.shared.handle(
+                AppError(
+                    error: NSError(domain: "CMMotionManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Accelerometer not available"]),
+                    context: "Motion tracking setup",
+                    category: .data,
+                    severity: .medium,
+                    recovery: .fallback
+                )
+            )
         }
 
         // Start gyroscope
         if motionManager.isGyroAvailable {
             motionManager.startGyroUpdates(to: .main) { [weak self] data, error in
+                if let error = error {
+                    ErrorHandler.shared.handle(
+                        error,
+                        context: "Gyroscope tracking",
+                        category: .data,
+                        severity: .low,
+                        recovery: .fallback
+                    )
+                    return
+                }
+
                 if let data = data {
                     self?.gyroscopeData.append(data)
 
@@ -206,6 +278,16 @@ class LiDARScanningManager: ObservableObject {
                     }
                 }
             }
+        } else {
+            ErrorHandler.shared.handle(
+                AppError(
+                    error: NSError(domain: "CMMotionManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Gyroscope not available"]),
+                    context: "Motion tracking setup",
+                    category: .data,
+                    severity: .low,
+                    recovery: .fallback
+                )
+            )
         }
     }
 
@@ -218,15 +300,26 @@ class LiDARScanningManager: ObservableObject {
     func processFrame(_ frame: ARFrame) {
         guard isCollectingData && !isPaused else { return }
 
-        collectedFrames.append(frame)
+        do {
+            collectedFrames.append(frame)
 
-        // Keep memory usage reasonable
-        if collectedFrames.count > 300 {
-            collectedFrames.removeFirst(150)
+            // Keep memory usage reasonable
+            if collectedFrames.count > 300 {
+                collectedFrames.removeFirst(150)
+            }
+
+            // Update real-time metrics
+            updateRealTimeMetrics(frame)
+
+        } catch {
+            ErrorHandler.shared.handle(
+                error,
+                context: "Processing AR frame",
+                category: .arkit,
+                severity: .medium,
+                recovery: .retry(maxAttempts: 1)
+            )
         }
-
-        // Update real-time metrics
-        updateRealTimeMetrics(frame)
     }
 
     private func updateRealTimeMetrics(_ frame: ARFrame) {
@@ -269,38 +362,74 @@ class LiDARScanningManager: ObservableObject {
     }
 
     private func processScanData() {
-        guard !collectedFrames.isEmpty else { return }
-
-        let result = LiDARScanResult(
-            id: UUID(),
-            type: currentScanType,
-            date: Date(),
-            duration: scanDuration,
-            frameCount: collectedFrames.count,
-            averageQuality: scanAnalytics.calculateAverageQuality(from: collectedFrames),
-            score: calculateScanScore(),
-            insights: generateInsights(),
-            rawData: LiDARRawData(
-                frames: collectedFrames,
-                accelerometerData: accelerometerData,
-                gyroscopeData: gyroscopeData
+        guard !collectedFrames.isEmpty else {
+            ErrorHandler.shared.handle(
+                AppError(
+                    error: NSError(domain: "LiDARScanningManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No frames collected"]),
+                    context: "LiDAR scan processing",
+                    category: .lidar,
+                    severity: .medium,
+                    recovery: .none
+                )
             )
-        )
-
-        // Save the result
-        lastScanResults = result
-        recentScans.insert(result, at: 0)
-
-        // Keep only recent scans
-        if recentScans.count > 20 {
-            recentScans.removeLast()
+            return
         }
 
-        // Update average score
-        updateAverageScore()
+        do {
+            let result = LiDARScanResult(
+                id: UUID(),
+                type: currentScanType,
+                date: Date(),
+                duration: scanDuration,
+                frameCount: collectedFrames.count,
+                averageQuality: scanAnalytics.calculateAverageQuality(from: collectedFrames),
+                score: calculateScanScore(),
+                insights: generateInsights(),
+                rawData: LiDARRawData(
+                    frames: collectedFrames,
+                    accelerometerData: accelerometerData,
+                    gyroscopeData: gyroscopeData
+                )
+            )
 
-        // Save to persistent storage
-        saveScanResult(result)
+            // Save the result
+            lastScanResults = result
+            recentScans.insert(result, at: 0)
+
+            // Keep only recent scans
+            if recentScans.count > 20 {
+                recentScans.removeLast()
+            }
+
+            // Update average score
+            updateAverageScore()
+
+            // Save to persistent storage
+            saveScanResult(result)
+
+            // Stream to web platform via WebSocket
+            Task {
+                let success = await WebSocketManager.shared.sendLiDARScanResult(result)
+                if !success {
+                    ErrorHandler.shared.handle(
+                        AppError(
+                            error: NSError(domain: "WebSocketManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to send LiDAR scan result"]),
+                            context: "LiDAR scan result streaming",
+                            category: .websocket,
+                            severity: .low,
+                            recovery: .reconnect
+                        )
+                    )
+                }
+            }
+
+        } catch {
+            ErrorHandler.shared.handle(
+                error,
+                context: "LiDAR scan data processing",
+                recovery: .retry(maxAttempts: 3)
+            )
+        }
     }
 
     private func calculateScanScore() -> Double {
@@ -444,30 +573,145 @@ class LiDARScanningManager: ObservableObject {
     }
 
     private func analyzeWalkingSpeedConsistency() -> Double {
-        // Analyze walking speed consistency
-        // This would analyze the change in position over time from AR tracking
-        return 0.8 // Placeholder
+        // Analyze walking speed consistency from accelerometer data
+        guard accelerometerData.count > 20 else { return 0.5 }
+
+        // Calculate speed estimates from acceleration patterns
+        var speedEstimates: [Double] = []
+
+        // Use sliding window to estimate speed
+        let windowSize = 10
+        for i in windowSize..<accelerometerData.count {
+            let window = accelerometerData[(i-windowSize)..<i]
+            let yAccels = window.map { $0.acceleration.y }
+            let variance = calculateVariance(yAccels.map { Double($0) })
+            let estimatedSpeed = sqrt(variance) * 0.5
+            speedEstimates.append(estimatedSpeed)
+        }
+
+        // Calculate coefficient of variation
+        guard !speedEstimates.isEmpty else { return 0.5 }
+        let avgSpeed = speedEstimates.reduce(0, +) / Double(speedEstimates.count)
+        guard avgSpeed > 0 else { return 0.5 }
+
+        let speedVariance = calculateVariance(speedEstimates)
+        let cv = sqrt(speedVariance) / avgSpeed
+
+        // Lower CV = more consistent speed = better score
+        return max(0, min(1, 1.0 - cv / 0.3))
     }
 
     private func analyzeStepSymmetry() -> Double {
         // Analyze symmetry between left and right steps
-        return 0.75 // Placeholder
+        guard accelerometerData.count > 50 else { return 0.5 }
+
+        // Detect steps from accelerometer
+        let steps = detectStepsFromAccelerometer()
+        guard steps.count > 5 else { return 0.5 }
+
+        // Separate left and right steps (alternating)
+        var leftStepTimes: [Double] = []
+        var rightStepTimes: [Double] = []
+
+        for (index, stepTime) in steps.enumerated() {
+            if index % 2 == 0 {
+                leftStepTimes.append(stepTime)
+            } else {
+                rightStepTimes.append(stepTime)
+            }
+        }
+
+        // Calculate stride times for each foot
+        var leftStrideTimes: [Double] = []
+        var rightStrideTimes: [Double] = []
+
+        for i in 1..<leftStepTimes.count {
+            leftStrideTimes.append(leftStepTimes[i] - leftStepTimes[i-1])
+        }
+        for i in 1..<rightStepTimes.count {
+            rightStrideTimes.append(rightStepTimes[i] - rightStepTimes[i-1])
+        }
+
+        guard !leftStrideTimes.isEmpty && !rightStrideTimes.isEmpty else { return 0.5 }
+
+        // Calculate symmetry: 1 - (difference / average)
+        let avgLeftStride = leftStrideTimes.reduce(0, +) / Double(leftStrideTimes.count)
+        let avgRightStride = rightStrideTimes.reduce(0, +) / Double(rightStrideTimes.count)
+
+        guard avgLeftStride > 0 && avgRightStride > 0 else { return 0.5 }
+
+        let avgStride = (avgLeftStride + avgRightStride) / 2.0
+        let difference = abs(avgLeftStride - avgRightStride)
+        let symmetry = 1.0 - (difference / avgStride)
+
+        return max(0, min(1, symmetry))
     }
 
     private func detectObstacles() -> Int {
-        // Detect obstacles from LiDAR data
-        // This would use computer vision on the collected frames
-        return Int.random(in: 0...3) // Placeholder
+        // Detect obstacles from accelerometer data patterns
+        // Sudden decelerations or changes in acceleration may indicate obstacles
+        guard accelerometerData.count > 20 else { return 0 }
+
+        var obstacleIndicators = 0
+
+        // Look for sudden acceleration changes
+        for i in 1..<accelerometerData.count {
+            let prev = accelerometerData[i-1].acceleration
+            let curr = accelerometerData[i].acceleration
+
+            let prevMagnitude = sqrt(prev.x * prev.x + prev.y * prev.y + prev.z * prev.z)
+            let currMagnitude = sqrt(curr.x * curr.x + curr.y * curr.y + curr.z * curr.z)
+
+            let change = abs(currMagnitude - prevMagnitude)
+
+            // Sudden large change might indicate obstacle avoidance
+            if change > 2.0 {
+                obstacleIndicators += 1
+            }
+        }
+
+        // Normalize to expected count (rough heuristic)
+        return min(5, obstacleIndicators / 10)
     }
 
     private func detectUnsafeStairs() -> Int {
-        // Detect stairs without proper railings
-        return Int.random(in: 0...1) // Placeholder
+        // Detect stairs from acceleration patterns
+        // Stairs typically show rhythmic vertical acceleration
+        guard accelerometerData.count > 30 else { return 0 }
+
+        var stairPatterns = 0
+
+        // Look for rhythmic vertical acceleration (Y axis)
+        let yAccels = accelerometerData.map { $0.acceleration.y }
+        var peaks = 0
+
+        for i in 1..<(yAccels.count - 1) {
+            if yAccels[i] > yAccels[i-1] && yAccels[i] > yAccels[i+1] && yAccels[i] > 1.5 {
+                peaks += 1
+            }
+        }
+
+        // Multiple peaks in a short time might indicate stairs
+        if peaks > 5 && peaks < 20 {
+            stairPatterns = 1
+        }
+
+        return stairPatterns
     }
 
     private func analyzeFloorLevelness() -> Double {
-        // Analyze floor levelness from LiDAR data
-        return 0.9 // Placeholder
+        // Analyze floor levelness from accelerometer data
+        // Level floor should have consistent Z-axis (gravity) component
+        guard !accelerometerData.isEmpty else { return 0.5 }
+
+        // When stationary or walking on level floor, Z acceleration should be stable
+        let zAccels = accelerometerData.map { $0.acceleration.z }
+        let zVariance = calculateVariance(zAccels.map { Double($0) })
+
+        // Lower variance = more level floor
+        let levelness = max(0, min(1, 1.0 - zVariance / 0.5))
+
+        return levelness
     }
 
     private func analyzePosturalSway() -> Double {
@@ -488,8 +732,28 @@ class LiDARScanningManager: ObservableObject {
     }
 
     private func analyzeMovementStability() -> Double {
-        // Analyze stability during movement
-        return 0.7 // Placeholder
+        // Analyze stability during movement from accelerometer and gyroscope
+        guard !accelerometerData.isEmpty && !gyroscopeData.isEmpty else { return 0.5 }
+
+        // Combine accelerometer and gyroscope data for stability assessment
+        let accelVariance = calculateVariance(
+            accelerometerData.map { Double(sqrt($0.acceleration.x * $0.acceleration.x +
+                                                $0.acceleration.y * $0.acceleration.y +
+                                                $0.acceleration.z * $0.acceleration.z)) }
+        )
+
+        let gyroVariance = calculateVariance(
+            gyroscopeData.map { Double(sqrt($0.rotationRate.x * $0.rotationRate.x +
+                                            $0.rotationRate.y * $0.rotationRate.y +
+                                            $0.rotationRate.z * $0.rotationRate.z)) }
+        )
+
+        // Lower variance = more stability
+        let accelStability = max(0, min(1, 1.0 - accelVariance / 2.0))
+        let gyroStability = max(0, min(1, 1.0 - gyroVariance / 3.0))
+
+        // Combined stability score
+        return (accelStability * 0.6 + gyroStability * 0.4)
     }
 
     // MARK: - Helper Methods
@@ -628,24 +892,205 @@ class LiDARScanningManager: ObservableObject {
 
     // MARK: - Data Persistence
     private func loadScanHistory() {
-        // Load scan history from UserDefaults or Core Data
-        // For now, generate some sample data
-        totalScans = UserDefaults.standard.integer(forKey: "lidar_total_scans")
-        scansThisWeek = UserDefaults.standard.integer(forKey: "lidar_scans_this_week")
-        averageScore = UserDefaults.standard.double(forKey: "lidar_average_score")
+        // Load scan history from Core Data
+        let dataManager = LiDARScanDataManager.shared
+        recentScans = dataManager.fetchScans(limit: 20)
 
-        if averageScore == 0 {
-            averageScore = 75.0 // Default average
-        }
+        // Update statistics
+        let stats = dataManager.getScanStatistics()
+        totalScans = stats.totalScans
+        scansThisWeek = stats.scansThisWeek
+        averageScore = stats.averageScore
+
+        // Also update recent scans count (this week)
+        updateAverageScore()
     }
 
     private func saveScanResult(_ result: LiDARScanResult) {
-        // Save to persistent storage
-        UserDefaults.standard.set(totalScans, forKey: "lidar_total_scans")
-        UserDefaults.standard.set(scansThisWeek, forKey: "lidar_scans_this_week")
-        UserDefaults.standard.set(averageScore, forKey: "lidar_average_score")
+        // Save to Core Data
+        let dataManager = LiDARScanDataManager.shared
+        dataManager.saveScan(result)
 
-        // In a real app, you would save the full result to Core Data or similar
+        // Update statistics
+        let stats = dataManager.getScanStatistics()
+        totalScans = stats.totalScans
+        scansThisWeek = stats.scansThisWeek
+        averageScore = stats.averageScore
+
+        // Save to HealthKit
+        Task {
+            await saveToHealthKit(result)
+        }
+    }
+
+    private func saveToHealthKit(_ result: LiDARScanResult) async {
+        let healthKitManager = HealthKitManager.shared
+
+        // Ensure HealthKit is authorized
+        guard healthKitManager.isAuthorized else {
+            ErrorHandler.shared.handle(
+                AppError(
+                    error: NSError(domain: "HealthKit", code: 4, userInfo: [NSLocalizedDescriptionKey: "HealthKit not authorized"]),
+                    context: "Saving LiDAR scan to HealthKit",
+                    category: .healthKit,
+                    severity: .medium,
+                    recovery: .userAction
+                )
+            )
+            return
+        }
+
+        do {
+            switch result.type {
+            case .gaitAnalysis:
+                // Save gait metrics to HealthKit
+                await saveGaitMetricsToHealthKit(result)
+            case .fallRiskAssessment:
+                // Save fall risk assessment
+                await saveFallRiskToHealthKit(result)
+            case .balanceTest:
+                // Balance test results could be saved as walking steadiness event
+                await saveBalanceMetricsToHealthKit(result)
+            case .environmentalScan:
+                // Environmental scan results don't directly map to HealthKit
+                break
+            }
+        } catch {
+            ErrorHandler.shared.handle(
+                error,
+                context: "Saving LiDAR scan to HealthKit",
+                category: .healthKit,
+                severity: .medium,
+                recovery: .retry(maxAttempts: 2)
+            )
+        }
+    }
+
+    private func saveGaitMetricsToHealthKit(_ result: LiDARScanResult) async {
+        let healthKitManager = HealthKitManager.shared
+
+        // Extract gait metrics from accelerometer and AR data
+        guard let gaitScore = extractGaitMetrics(from: result) else {
+            ErrorHandler.shared.handle(
+                AppError(
+                    error: NSError(domain: "LiDARScanningManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to extract gait metrics"]),
+                    context: "Saving gait metrics to HealthKit",
+                    category: .lidar,
+                    severity: .low,
+                    recovery: .none
+                )
+            )
+            return
+        }
+
+        // Save walking speed if available
+        if let walkingSpeed = gaitScore.walkingSpeed {
+            do {
+                await healthKitManager.saveWalkingSpeed(
+                    speed: walkingSpeed,
+                    date: result.date,
+                    metadata: ["source": "LiDAR", "scan_id": result.id.uuidString]
+                )
+            } catch {
+                ErrorHandler.shared.handle(
+                    error,
+                    context: "Saving walking speed to HealthKit",
+                    category: .healthKit,
+                    severity: .low,
+                    recovery: .retry(maxAttempts: 1)
+                )
+            }
+        }
+
+        // Save step length if available
+        if let stepLength = gaitScore.stepLength {
+            do {
+                await healthKitManager.saveWalkingStepLength(
+                    stepLength: stepLength,
+                    date: result.date,
+                    metadata: ["source": "LiDAR", "scan_id": result.id.uuidString]
+                )
+            } catch {
+                ErrorHandler.shared.handle(
+                    error,
+                    context: "Saving step length to HealthKit",
+                    category: .healthKit,
+                    severity: .low,
+                    recovery: .retry(maxAttempts: 1)
+                )
+            }
+        }
+    }
+
+    private func saveFallRiskToHealthKit(_ result: LiDARScanResult) async {
+        // Save fall risk as walking steadiness event
+        let healthKitManager = HealthKitManager.shared
+
+        // Map score to walking steadiness event
+        // Lower score = higher risk = lower steadiness
+        let steadinessScore = max(0.0, min(1.0, result.score / 100.0))
+
+        // Save as walking steadiness category event
+        // Note: This would need a custom implementation if HKCategoryType doesn't support it
+        // For now, save as metadata in walking speed sample
+        if let gaitMetrics = extractGaitMetrics(from: result) {
+            if let speed = gaitMetrics.walkingSpeed {
+                await healthKitManager.saveWalkingSpeed(
+                    speed: speed,
+                    date: result.date,
+                    metadata: [
+                        "source": "LiDAR",
+                        "scan_id": result.id.uuidString,
+                        "fall_risk_score": String(format: "%.2f", result.score),
+                        "steadiness": String(format: "%.2f", steadinessScore)
+                    ]
+                )
+            }
+        }
+    }
+
+    private func saveBalanceMetricsToHealthKit(_ result: LiDARScanResult) async {
+        // Balance test results can inform walking steadiness
+        let healthKitManager = HealthKitManager.shared
+
+        // Calculate steadiness from balance score
+        let steadinessScore = max(0.0, min(1.0, result.score / 100.0))
+
+        // Save as metadata in a health sample
+        if let gaitMetrics = extractGaitMetrics(from: result), let speed = gaitMetrics.walkingSpeed {
+            await healthKitManager.saveWalkingSpeed(
+                speed: speed,
+                date: result.date,
+                metadata: [
+                    "source": "LiDAR_Balance",
+                    "scan_id": result.id.uuidString,
+                    "balance_score": String(format: "%.2f", result.score),
+                    "steadiness": String(format: "%.2f", steadinessScore)
+                ]
+            )
+        }
+    }
+
+    private func extractGaitMetrics(from result: LiDARScanResult) -> (walkingSpeed: Double?, stepLength: Double?)? {
+        // Extract gait metrics from raw data
+        // Calculate average walking speed from accelerometer data
+        guard !accelerometerData.isEmpty else { return nil }
+
+        // Estimate walking speed from accelerometer variance
+        // Higher variance in Y direction suggests more walking activity
+        let yAccelerations = accelerometerData.map { $0.acceleration.y }
+        let variance = calculateVariance(yAccelerations.map { Double($0) })
+
+        // Estimate speed based on acceleration patterns (simplified)
+        // In a full implementation, this would use proper biomechanical models
+        let estimatedSpeed = sqrt(variance) * 0.5 // Rough approximation in m/s
+
+        // Estimate step length from stride regularity
+        let strideRegularity = analyzeStrideRegularity()
+        let estimatedStepLength = 0.65 + (strideRegularity - 0.5) * 0.2 // 0.55-0.75m range
+
+        return (walkingSpeed: estimatedSpeed > 0 ? estimatedSpeed : nil,
+                stepLength: estimatedStepLength)
     }
 
     private func updateWeeklyStats() {
@@ -680,8 +1125,8 @@ struct LiDARScanResult: Identifiable {
     let rawData: LiDARRawData
 }
 
-struct LiDARInsight {
-    enum InsightType {
+struct LiDARInsight: Codable {
+    enum InsightType: String, Codable {
         case info, warning, alert, success
 
         var color: Color {

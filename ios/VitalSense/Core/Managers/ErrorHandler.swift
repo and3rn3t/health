@@ -257,6 +257,9 @@ enum ErrorCategory: String, Codable {
     case ui
     case background
     case websocket
+    case lidar
+    case arkit
+    case ml
     case unknown
 
     static func from(_ error: Error) -> ErrorCategory {
@@ -270,6 +273,12 @@ enum ErrorCategory: String, Codable {
             return .permission
         } else if nsError.domain.contains("WebSocket") || nsError.domain.contains("ws") {
             return .websocket
+        } else if nsError.domain.contains("ARKit") || nsError.domain.contains("AR") {
+            return .arkit
+        } else if nsError.domain.contains("LiDAR") || nsError.domain.contains("lidar") {
+            return .lidar
+        } else if nsError.domain.contains("ML") || nsError.domain.contains("CoreML") {
+            return .ml
         }
 
         return .unknown

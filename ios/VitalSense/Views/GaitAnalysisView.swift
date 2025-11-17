@@ -652,6 +652,7 @@ struct InsightRow: View {
 // MARK: - Action Buttons Card
 struct ActionButtonsCard: View {
     @State private var showingARView = false
+    @State private var showingLiDARView = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -663,12 +664,21 @@ struct ActionButtonsCard: View {
                     action: { showingARView = true }
                 )
 
-                ActionButton(
-                    title: "Calibrate",
-                    icon: "slider.horizontal.3",
-                    color: .orange,
-                    action: { }
-                )
+                if #available(iOS 16.0, *) {
+                    ActionButton(
+                        title: "LiDAR Scan",
+                        icon: "viewfinder",
+                        color: .teal,
+                        action: { showingLiDARView = true }
+                    )
+                } else {
+                    ActionButton(
+                        title: "Calibrate",
+                        icon: "slider.horizontal.3",
+                        color: .orange,
+                        action: { }
+                    )
+                }
             }
 
             HStack(spacing: 12) {
@@ -689,6 +699,11 @@ struct ActionButtonsCard: View {
         }
         .sheet(isPresented: $showingARView) {
             GaitARView()
+        }
+        .fullScreenCover(isPresented: $showingLiDARView) {
+            if #available(iOS 16.0, *) {
+                LiDARScanningView()
+            }
         }
     }
 }

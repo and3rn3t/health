@@ -14,6 +14,7 @@ struct LiDARScanningView: View {
     @State private var scanProgress: Double = 0.0
     @State private var showingPermissionSheet = false
     @State private var showingInstructions = false
+    @State private var showingHistory = false
 
     enum ScanType: String, CaseIterable {
         case fallRiskAssessment = "Fall Risk Assessment"
@@ -79,7 +80,14 @@ struct LiDARScanningView: View {
             .navigationTitle("LiDAR Health Scan")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showingHistory = true
+                    }) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .foregroundColor(.blue)
+                    }
+
                     Button(action: {
                         showingInstructions = true
                     }) {
@@ -95,10 +103,14 @@ struct LiDARScanningView: View {
                 LiDARInstructionsView()
             }
             .sheet(isPresented: $showingResults) {
-                LiDARResultsView(
-                    scanType: selectedScanType,
-                    results: lidarManager.lastScanResults
-                )
+                if let results = lidarManager.lastScanResults {
+                    LiDARResultsView(scanResult: results)
+                }
+            }
+            .sheet(isPresented: $showingHistory) {
+                if #available(iOS 16.0, *) {
+                    LiDARScanHistoryView()
+                }
             }
             .onAppear {
                 checkLiDARAvailability()
@@ -301,7 +313,7 @@ struct LiDARScanningView: View {
                 Spacer()
 
                 Button("View All") {
-                    // Navigate to scan history
+                    showingHistory = true
                 }
                 .font(.caption)
                 .foregroundColor(.blue)

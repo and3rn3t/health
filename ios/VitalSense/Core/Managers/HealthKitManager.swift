@@ -1783,6 +1783,82 @@ extension HealthKitManager {
         // Send trend data to analytics
         await webSocketManager.sendAnalyticsUpdate(trendData)
     }
+
+    // MARK: - HealthKit Save Methods
+
+    func saveWalkingSpeed(speed: Double, date: Date = Date(), metadata: [String: String] = [:]) async {
+        guard let walkingSpeedType = HKQuantityType.quantityType(forIdentifier: .walkingSpeed) else {
+            print("⚠️ Walking speed type not available")
+            return
+        }
+
+        // Request write authorization if needed
+        do {
+            try await healthStore.requestAuthorization(toShare: [walkingSpeedType], read: [])
+        } catch {
+            print("❌ Failed to request HealthKit authorization: \(error)")
+            return
+        }
+
+        let speedUnit = HKUnit.meter().unitDivided(by: .second())
+        let quantity = HKQuantity(unit: speedUnit, doubleValue: speed)
+
+        let metadataDict = metadata.reduce(into: [String: Any]()) { result, pair in
+            result[pair.key] = pair.value
+        }
+
+        let sample = HKQuantitySample(
+            type: walkingSpeedType,
+            quantity: quantity,
+            start: date,
+            end: date,
+            metadata: metadataDict.isEmpty ? nil : metadataDict
+        )
+
+        do {
+            try await healthStore.save(sample)
+            print("✅ Saved walking speed to HealthKit: \(speed) m/s")
+        } catch {
+            print("❌ Failed to save walking speed to HealthKit: \(error)")
+        }
+    }
+
+    func saveWalkingStepLength(stepLength: Double, date: Date = Date(), metadata: [String: String] = [:]) async {
+        guard let stepLengthType = HKQuantityType.quantityType(forIdentifier: .walkingStepLength) else {
+            print("⚠️ Walking step length type not available")
+            return
+        }
+
+        // Request write authorization if needed
+        do {
+            try await healthStore.requestAuthorization(toShare: [stepLengthType], read: [])
+        } catch {
+            print("❌ Failed to request HealthKit authorization: \(error)")
+            return
+        }
+
+        let lengthUnit = HKUnit.meter()
+        let quantity = HKQuantity(unit: lengthUnit, doubleValue: stepLength)
+
+        let metadataDict = metadata.reduce(into: [String: Any]()) { result, pair in
+            result[pair.key] = pair.value
+        }
+
+        let sample = HKQuantitySample(
+            type: stepLengthType,
+            quantity: quantity,
+            start: date,
+            end: date,
+            metadata: metadataDict.isEmpty ? nil : metadataDict
+        )
+
+        do {
+            try await healthStore.save(sample)
+            print("✅ Saved walking step length to HealthKit: \(stepLength) m")
+        } catch {
+            print("❌ Failed to save walking step length to HealthKit: \(error)")
+        }
+    }
 }
 
 // MARK: - HealthKit Errors

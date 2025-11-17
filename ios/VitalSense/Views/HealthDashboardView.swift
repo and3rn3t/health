@@ -38,6 +38,11 @@ struct HealthDashboardView: View {
 
                     // Recent Alerts
                     RecentAlertsCard()
+
+                    // LiDAR Quick Access
+                    if #available(iOS 16.0, *) {
+                        LiDARQuickAccessCard()
+                    }
                 }
                 .padding(.horizontal)
             }
