@@ -1,8 +1,9 @@
 import Foundation
+import SwiftUI
 
 /// Central configuration loader that merges Config.plist values with sensible defaults
 /// and applies test-environment overrides expected by the unit tests.
-final class AppConfig {
+final class AppConfig: ObservableObject {
     static let shared = AppConfig()
 
     // Raw stored string values
@@ -14,11 +15,33 @@ final class AppConfig {
     let useMLGaitRiskScorer: Bool
     let useWatchCadenceFusion: Bool
 
+    // User preferences
+    @Published var hasCompletedOnboarding: Bool
+    @Published var gaitMonitoringEnabled: Bool
+
+    // Network configuration
+    struct NetworkConfiguration {
+        let apiBaseURL: URL
+        let webSocketURL: URL
+        let connectionTimeout: TimeInterval
+        let maxRetryAttempts: Int
+    }
+
     // Public conveniences (tests depend on these names / types)
     var apiBaseURL: URL { URL(string: apiBaseURLString)! }
     var wsURL: URL { URL(string: webSocketURLString)! }          // legacy tests reference wsURL
     var webSocketURL: String { webSocketURLString }              // string form (some code paths expect String)
     var baseAPIUrl: String { apiBaseURLString }                  // backward‐compat alias
+
+    // Network configuration for ApiClient
+    var networkConfiguration: NetworkConfiguration {
+        NetworkConfiguration(
+            apiBaseURL: apiBaseURL,
+            webSocketURL: wsURL,
+            connectionTimeout: 10.0,
+            maxRetryAttempts: 3
+        )
+    }
 
     private init() {
         let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
@@ -72,7 +95,45 @@ final class AppConfig {
         precondition(URL(string: webSocketURLString) != nil, "Invalid WebSocket URL: \(webSocketURLString)")
         #endif
 
+        // Load user preferences
+        let defaults = UserDefaults.standard
+        hasCompletedOnboarding = defaults.bool(forKey: "hasCompletedOnboarding")
+
+        if defaults.object(forKey: "gaitMonitoringEnabled") == nil {
+            // Default to enabled if not set
+            gaitMonitoringEnabled = true
+            defaults.set(true, forKey: "gaitMonitoringEnabled")
+        } else {
+            gaitMonitoringEnabled = defaults.bool(forKey: "gaitMonitoringEnabled")
+        }
+
         print("📋 AppConfig loaded -> userId=\(userId) apiBase=\(apiBaseURLString) ws=\(webSocketURLString) mlRisk=\(useMLGaitRiskScorer) watchFusion=\(useWatchCadenceFusion)" + (isRunningTests ? " [TEST MODE]" : ""))
+    }
+
+    // MARK: - Initialization
+    func initialize() async throws {
+        // Configuration is loaded in init, this method exists for async initialization if needed
+        // Can be extended for async setup tasks like checking server connectivity, etc.
+
+        // Mark onboarding as completed if this is not first launch
+        if !hasCompletedOnboarding {
+            // Check if we've run before (by checking for any user data)
+            let defaults = UserDefaults.standard
+            if defaults.object(forKey: "appHasLaunchedBefore") != nil {
+                hasCompletedOnboarding = true
+                defaults.set(true, forKey: "hasCompletedOnboarding")
+            } else {
+                defaults.set(true, forKey: "appHasLaunchedBefore")
+            }
+        }
+
+        print("✅ AppConfig initialized")
+    }
+
+    // MARK: - Configuration Management
+    func markOnboardingComplete() {
+        hasCompletedOnboarding = true
+        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
     }
 }
 

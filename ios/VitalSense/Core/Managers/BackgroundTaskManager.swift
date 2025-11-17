@@ -48,13 +48,21 @@ class BackgroundTaskManager: ObservableObject {
         }
     }
 
+    private var backgroundRefreshObserver: NSObjectProtocol?
+
     private func checkBackgroundRefreshStatus() {
         backgroundRefreshStatus = UIApplication.shared.backgroundRefreshStatus
 
-        NotificationCenter.default.addObserver(
+        backgroundRefreshObserver = NotificationCenter.default.addObserver(
             forName: UIApplication.backgroundRefreshStatusDidChangeNotification, object: nil, queue: .main
-        ) { _ in
-            self.backgroundRefreshStatus = UIApplication.shared.backgroundRefreshStatus
+        ) { [weak self] _ in
+            self?.backgroundRefreshStatus = UIApplication.shared.backgroundRefreshStatus
+        }
+    }
+
+    deinit {
+        if let observer = backgroundRefreshObserver {
+            NotificationCenter.default.removeObserver(observer)
         }
     }
 
@@ -161,20 +169,23 @@ extension BackgroundTaskManager {
         queue.maxConcurrentOperationCount = 1
 
         let gaitOperation = BlockOperation {
-            Task {
+            Task { @MainActor in
+                guard !Task.isCancelled else { return }
+
                 // Fetch recent gait data
                 await FallRiskGaitManager.shared.fetchGaitMetrics()
+                guard !Task.isCancelled else { return }
 
                 // Perform fall risk assessment
                 await FallRiskGaitManager.shared.assessFallRisk()
+                guard !Task.isCancelled else { return }
 
                 // Update daily mobility trends
                 await FallRiskGaitManager.shared.updateDailyMobilityTrends()
+                guard !Task.isCancelled else { return }
 
-                await MainActor.run {
-                    self.lastBackgroundUpdate = Date()
-                    self.backgroundTasksExecuted += 1
-                }
+                self.lastBackgroundUpdate = Date()
+                self.backgroundTasksExecuted += 1
             }
         }
 
@@ -203,12 +214,17 @@ class HealthDataSyncOperation: Operation {
         Task {
             defer { semaphore.signal() }
 
-            // Fetch latest health data
+            guard !Task.isCancelled else { return }
+
+            // Fetch latest health data (off main thread)
             let healthManager = HealthKitManager.shared
             await healthManager.fetchAllHealthData()
+            guard !Task.isCancelled else { return }
 
             // Safely read main-actor isolated connectivity state
             let isConnected = await MainActor.run { WebSocketManager.shared.isConnected }
+            guard !Task.isCancelled else { return }
+
             if isConnected {
                 await healthManager.sendAllHealthData()
             } else {
@@ -230,9 +246,12 @@ class AnalyticsProcessingOperation: Operation {
         Task {
             defer { semaphore.signal() }
 
-            // Process analytics in background
+            guard !Task.isCancelled else { return }
+
+            // Process analytics in background (off main thread)
             let analytics = AdvancedHealthAnalytics.shared
             await analytics.generateComprehensiveAnalysis()
+            guard !Task.isCancelled else { return }
 
             // Update cache
             let cacheManager = DataCacheManager.shared

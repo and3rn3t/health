@@ -301,21 +301,30 @@ public class EnhancedLiDARIntegrationCoordinator {
 
     // MARK: - Coordination Setup
 
+    private var configurationObserver: NSObjectProtocol?
+
     private func setupCoordination() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(configurationReady),
-            name: .enhancedLiDARConfigurationReady,
-            object: nil
-        )
+        configurationObserver = NotificationCenter.default.addObserver(
+            forName: .enhancedLiDARConfigurationReady,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.configurationReady()
+        }
     }
 
-    @objc private func configurationReady() {
+    private func configurationReady() {
         guard config.isConfigured else { return }
 
         initializeComponents()
         setupDataFlow()
         startIntegration()
+    }
+
+    deinit {
+        if let observer = configurationObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     private func initializeComponents() {

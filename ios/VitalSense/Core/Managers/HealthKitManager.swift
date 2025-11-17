@@ -15,163 +15,56 @@ class HealthKitManager: NSObject, ObservableObject {
     private let config = EnhancedAppConfig.shared
 
     // Health data types we want to read - enhanced for comprehensive movement analysis
-    private lazy var healthDataTypes: Set<HKObjectType> = {
-        var types: Set<HKObjectType> = []
-
+    // Optimized: Use static helper to build types more efficiently
+    private static let _healthDataTypeIdentifiers: [HKQuantityTypeIdentifier] = [
         // Core metrics
-        if let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate) {
-            types.insert(heartRateType)
-        }
-        if let stepCountType = HKQuantityType.quantityType(forIdentifier: .stepCount) {
-            types.insert(stepCountType)
-        }
-        if let distanceType = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning) {
-            types.insert(distanceType)
-        }
-        if let activeEnergyType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned) {
-            types.insert(activeEnergyType)
-        }
+        .heartRate, .stepCount, .distanceWalkingRunning, .activeEnergyBurned,
+        // Critical fall risk indicators
+        .appleWalkingSteadiness, .sixMinuteWalkTestDistance,
+        .stairAscentSpeed, .stairDescentSpeed, .walkingSpeed,
+        .walkingStepLength, .walkingAsymmetryPercentage, .walkingDoubleSupportPercentage,
+        // Additional Movement & Balance Metrics
+        .flightsClimbed, .appleExerciseTime, .appleStandTime,
+        // Postural & Balance Metrics
+        .headphoneAudioExposure, .environmentalAudioExposure,
+        // Movement Quality Indicators
+        .cyclingSpeed, .cyclingPower, .cyclingCadence,
+        // Sleep & Recovery Metrics
+        .timeInDaylight,
+        // Cardiovascular Metrics
+        .walkingHeartRateAverage, .bloodPressureSystolic, .bloodPressureDiastolic,
+        // Swimming
+        .swimmingStrokeCount, .distanceSwimming,
+        // Running Biomechanics
+        .runningPower, .runningGroundContactTime, .runningVerticalOscillation,
+        .runningStrideLength, .runningSpeed,
+        // Physical Fitness Indicators
+        .vo2Max, .restingHeartRate, .heartRateVariabilitySDNN,
+        // Wheelchair Movement
+        .distanceWheelchair, .pushCount,
+        // Environmental & Health Factors
+        .respiratoryRate, .oxygenSaturation, .bodyTemperature,
+        // Activity tracking
+        .appleMoveTime
+    ]
 
-        // EXISTING Critical fall risk indicators
-        if let walkingSteadiness = HKQuantityType.quantityType(forIdentifier: .appleWalkingSteadiness) {
-            types.insert(walkingSteadiness)
-        }
-        if let sixMinuteWalkTest = HKQuantityType.quantityType(forIdentifier: .sixMinuteWalkTestDistance) {
-            types.insert(sixMinuteWalkTest)
-        }
-        if let stairAscentSpeed = HKQuantityType.quantityType(forIdentifier: .stairAscentSpeed) {
-            types.insert(stairAscentSpeed)
-        }
-        if let stairDescentSpeed = HKQuantityType.quantityType(forIdentifier: .stairDescentSpeed) {
-            types.insert(stairDescentSpeed)
-        }
-        if let walkingSpeed = HKQuantityType.quantityType(forIdentifier: .walkingSpeed) {
-            types.insert(walkingSpeed)
-        }
-        if let walkingStepLength = HKQuantityType.quantityType(forIdentifier: .walkingStepLength) {
-            types.insert(walkingStepLength)
-        }
-        if let walkingAsymmetry = HKQuantityType.quantityType(forIdentifier: .walkingAsymmetryPercentage) {
-            types.insert(walkingAsymmetry)
-        }
-        if let walkingDoubleSupportPercentage = HKQuantityType.quantityType(forIdentifier: .walkingDoubleSupportPercentage) {
-            types.insert(walkingDoubleSupportPercentage)
-        }
+    private static let _healthCategoryTypeIdentifiers: [HKCategoryTypeIdentifier] = [
+        .appleStandHour, .sleepAnalysis
+    ]
 
-        // NEW: Additional Critical Movement & Balance Metrics
-        if let flightsClimbed = HKQuantityType.quantityType(forIdentifier: .flightsClimbed) {
-            types.insert(flightsClimbed)
-        }
-        if let standHours = HKCategoryType.categoryType(forIdentifier: .appleStandHour) {
-            types.insert(standHours)
-        }
-        if let exerciseTime = HKQuantityType.quantityType(forIdentifier: .appleExerciseTime) {
-            types.insert(exerciseTime)
-        }
-        if let standTime = HKQuantityType.quantityType(forIdentifier: .appleStandTime) {
-            types.insert(standTime)
-        }
+    private lazy var healthDataTypes: Set<HKObjectType> = {
+        var types = Set<HKObjectType>(minimumCapacity: 50)
 
-        // NEW: Critical Postural & Balance Metrics
-        if let headphoneAudioExposure = HKQuantityType.quantityType(forIdentifier: .headphoneAudioExposure) {
-            types.insert(headphoneAudioExposure) // Can affect balance/spatial awareness
+        // Use compactMap for more efficient optional handling
+        let quantityTypes = Self._healthDataTypeIdentifiers.compactMap {
+            HKQuantityType.quantityType(forIdentifier: $0)
         }
-        if let environmentalAudioExposure = HKQuantityType.quantityType(forIdentifier: .environmentalAudioExposure) {
-            types.insert(environmentalAudioExposure)
-        }
+        types.formUnion(quantityTypes)
 
-        // NEW: Advanced Movement Quality Indicators
-        if let cyclingSpeed = HKQuantityType.quantityType(forIdentifier: .cyclingSpeed) {
-            types.insert(cyclingSpeed) // Balance and coordination indicator
+        let categoryTypes = Self._healthCategoryTypeIdentifiers.compactMap {
+            HKCategoryType.categoryType(forIdentifier: $0)
         }
-        if let cyclingPower = HKQuantityType.quantityType(forIdentifier: .cyclingPower) {
-            types.insert(cyclingPower) // Lower body strength
-        }
-        if let cyclingCadence = HKQuantityType.quantityType(forIdentifier: .cyclingCadence) {
-            types.insert(cyclingCadence) // Coordination and rhythm
-        }
-
-        // NEW: Critical Sleep & Recovery Metrics (affect balance)
-        if let sleepAnalysis = HKCategoryType.categoryType(forIdentifier: .sleepAnalysis) {
-            types.insert(sleepAnalysis) // Sleep quality affects balance and cognition
-        }
-        if let timeInDaylight = HKQuantityType.quantityType(forIdentifier: .timeInDaylight) {
-            types.insert(timeInDaylight) // Circadian rhythm affects stability
-        }
-
-        // NEW: Advanced Cardiovascular Metrics (critical for fall risk)
-        if let walkingHeartRateAverage = HKQuantityType.quantityType(forIdentifier: .walkingHeartRateAverage) {
-            types.insert(walkingHeartRateAverage) // Cardiovascular response to movement
-        }
-        if let bloodPressureSystolic = HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic) {
-            types.insert(bloodPressureSystolic) // Orthostatic hypotension risk
-        }
-        if let bloodPressureDiastolic = HKQuantityType.quantityType(forIdentifier: .bloodPressureDiastolic) {
-            types.insert(bloodPressureDiastolic)
-        }
-
-        // NEW: Swimming & Water Movement (balance in different environments)
-        if let swimmingStrokeCount = HKQuantityType.quantityType(forIdentifier: .swimmingStrokeCount) {
-            types.insert(swimmingStrokeCount) // Coordination and strength
-        }
-        if let distanceSwimming = HKQuantityType.quantityType(forIdentifier: .distanceSwimming) {
-            types.insert(distanceSwimming)
-        }
-
-        // NEW: Advanced Running Biomechanics (critical gait indicators)
-        if let runningCadence = HKQuantityType.quantityType(forIdentifier: .runningPower) {
-            types.insert(runningCadence) // Using runningPower instead of runningCadence which isn't available
-        }
-        if let runningGroundContactTime = HKQuantityType.quantityType(forIdentifier: .runningGroundContactTime) {
-            types.insert(runningGroundContactTime) // Balance stability during movement
-        }
-        if let runningVerticalOscillation = HKQuantityType.quantityType(forIdentifier: .runningVerticalOscillation) {
-            types.insert(runningVerticalOscillation) // Movement efficiency
-        }
-        if let runningStrideLength = HKQuantityType.quantityType(forIdentifier: .runningStrideLength) {
-            types.insert(runningStrideLength)
-        }
-        if let runningSpeed = HKQuantityType.quantityType(forIdentifier: .runningSpeed) {
-            types.insert(runningSpeed)
-        }
-        if let runningPower = HKQuantityType.quantityType(forIdentifier: .runningPower) {
-            types.insert(runningPower)
-        }
-
-        // NEW: Physical Fitness Indicators
-        if let vo2Max = HKQuantityType.quantityType(forIdentifier: .vo2Max) {
-            types.insert(vo2Max)
-        }
-        if let restingHeartRate = HKQuantityType.quantityType(forIdentifier: .restingHeartRate) {
-            types.insert(restingHeartRate)
-        }
-        if let heartRateVariability = HKQuantityType.quantityType(forIdentifier: .heartRateVariabilitySDNN) {
-            types.insert(heartRateVariability)
-        }
-
-        // NEW: Wheelchair Movement (for accessibility)
-        if let wheelchairUse = HKQuantityType.quantityType(forIdentifier: .distanceWheelchair) {
-            types.insert(wheelchairUse)
-        }
-        if let wheelchairPushes = HKQuantityType.quantityType(forIdentifier: .pushCount) {
-            types.insert(wheelchairPushes)
-        }
-
-        // NEW: Critical Environmental & Health Factors
-        if let respiratoryRate = HKQuantityType.quantityType(forIdentifier: .respiratoryRate) {
-            types.insert(respiratoryRate) // Can indicate physical stress affecting balance
-        }
-        if let oxygenSaturation = HKQuantityType.quantityType(forIdentifier: .oxygenSaturation) {
-            types.insert(oxygenSaturation) // Low oxygen affects cognitive function and balance
-        }
-        if let bodyTemperature = HKQuantityType.quantityType(forIdentifier: .bodyTemperature) {
-            types.insert(bodyTemperature) // Fever/illness affects stability
-        }
-
-        // Enhanced activity tracking
-        if let appleMoveTime = HKQuantityType.quantityType(forIdentifier: .appleMoveTime) {
-            types.insert(appleMoveTime)
-        }
+        types.formUnion(categoryTypes)
 
         return types
     }()
@@ -258,7 +151,7 @@ class HealthKitManager: NSObject, ObservableObject {
 
         // Initialize performance monitoring if enabled
         if config.enablePerformanceMonitoring {
-            performanceMonitor = PerformanceMonitor()
+            performanceMonitor = PerformanceMonitor.shared
         }
 
         // Ensure initial state is properly set
@@ -287,8 +180,16 @@ class HealthKitManager: NSObject, ObservableObject {
         let now = Date()
         let oneMinuteAgo = now.addingTimeInterval(-60)
 
-        // Remove data points older than 1 minute
-        lastMinuteDataPoints = lastMinuteDataPoints.filter { $0 > oneMinuteAgo }
+        // Remove data points older than 1 minute (optimized: reverse iteration)
+        // Since dataPoints are chronological, find first valid point
+        if let firstValidIndex = lastMinuteDataPoints.firstIndex(where: { $0 > oneMinuteAgo }) {
+            if firstValidIndex > 0 {
+                lastMinuteDataPoints.removeFirst(firstValidIndex)
+            }
+        } else {
+            // All points are old
+            lastMinuteDataPoints.removeAll()
+        }
 
         // Update rate
         dataPointsPerMinute = Double(lastMinuteDataPoints.count)

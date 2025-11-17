@@ -867,6 +867,12 @@ class GaitAnalysisManager: ObservableObject {
             statusColor: .green
         )
     }
+
+    deinit {
+        // Ensure timers are invalidated when object is deallocated
+        sessionTimer?.invalidate()
+        analysisTimer?.invalidate()
+    }
 }
 
 #Preview {

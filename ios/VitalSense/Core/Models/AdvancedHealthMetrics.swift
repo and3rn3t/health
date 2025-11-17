@@ -45,21 +45,64 @@ class AdvancedHealthMetrics: ObservableObject {
     }
 
     func fetchAdvancedMetrics() async {
+        // Run health data fetching off main thread - only UI updates happen on main thread
         await withTaskGroup(of: Void.self) { group in
-            group.addTask { await self.fetchVO2Max() } 
-            group.addTask { await self.fetchRestingHeartRate() } 
-            group.addTask { await self.fetchHeartRateVariability() } 
-            group.addTask { await self.fetchSleepData() } 
-            group.addTask { await self.fetchRecentWorkouts() } 
-            group.addTask { await self.fetchNutritionData() } 
-            group.addTask { await self.fetchRespiratoryRate() } 
-            group.addTask { await self.fetchBodyTemperature() } 
-            group.addTask { await self.fetchBloodPressure() } 
-            group.addTask { await self.fetchOxygenSaturation() } 
-            group.addTask { await self.fetchEnvironmentalAudio() } 
-            group.addTask { await self.fetchMenstrualHealth() } 
-            group.addTask { await self.fetchMindfulnessData() } 
-            group.addTask { await self.calculateHealthScore() } 
+            group.addTask {
+                guard !Task.isCancelled else { return }
+                await self.fetchVO2Max()
+            }
+            group.addTask {
+                guard !Task.isCancelled else { return }
+                await self.fetchRestingHeartRate()
+            }
+            group.addTask {
+                guard !Task.isCancelled else { return }
+                await self.fetchHeartRateVariability()
+            }
+            group.addTask {
+                guard !Task.isCancelled else { return }
+                await self.fetchSleepData()
+            }
+            group.addTask {
+                guard !Task.isCancelled else { return }
+                await self.fetchRecentWorkouts()
+            }
+            group.addTask {
+                guard !Task.isCancelled else { return }
+                await self.fetchNutritionData()
+            }
+            group.addTask {
+                guard !Task.isCancelled else { return }
+                await self.fetchRespiratoryRate()
+            }
+            group.addTask {
+                guard !Task.isCancelled else { return }
+                await self.fetchBodyTemperature()
+            }
+            group.addTask {
+                guard !Task.isCancelled else { return }
+                await self.fetchBloodPressure()
+            }
+            group.addTask {
+                guard !Task.isCancelled else { return }
+                await self.fetchOxygenSaturation()
+            }
+            group.addTask {
+                guard !Task.isCancelled else { return }
+                await self.fetchEnvironmentalAudio()
+            }
+            group.addTask {
+                guard !Task.isCancelled else { return }
+                await self.fetchMenstrualHealth()
+            }
+            group.addTask {
+                guard !Task.isCancelled else { return }
+                await self.fetchMindfulnessData()
+            }
+            group.addTask {
+                guard !Task.isCancelled else { return }
+                await self.calculateHealthScore()
+            }
         }
     }
 
@@ -579,25 +622,25 @@ class AdvancedHealthMetrics: ObservableObject {
 
                 DispatchQueue.main.async {
                     switch type.identifier {
-                    case HKQuantityTypeIdentifier.dietaryEnergyConsumed.rawValue: 
+                    case HKQuantityTypeIdentifier.dietaryEnergyConsumed.rawValue:
                         nutritionData.calories = sum.doubleValue(for: .kilocalorie())
-                    case HKQuantityTypeIdentifier.dietaryProtein.rawValue: 
+                    case HKQuantityTypeIdentifier.dietaryProtein.rawValue:
                         nutritionData.protein = sum.doubleValue(for: .gram())
-                    case HKQuantityTypeIdentifier.dietaryCarbohydrates.rawValue: 
+                    case HKQuantityTypeIdentifier.dietaryCarbohydrates.rawValue:
                         nutritionData.carbs = sum.doubleValue(for: .gram())
-                    case HKQuantityTypeIdentifier.dietaryFatTotal.rawValue: 
+                    case HKQuantityTypeIdentifier.dietaryFatTotal.rawValue:
                         nutritionData.fat = sum.doubleValue(for: .gram())
-                    case HKQuantityTypeIdentifier.dietaryFiber.rawValue: 
+                    case HKQuantityTypeIdentifier.dietaryFiber.rawValue:
                         nutritionData.fiber = sum.doubleValue(for: .gram())
-                    case HKQuantityTypeIdentifier.dietarySugar.rawValue: 
+                    case HKQuantityTypeIdentifier.dietarySugar.rawValue:
                         nutritionData.sugar = sum.doubleValue(for: .gram())
-                    case HKQuantityTypeIdentifier.dietarySodium.rawValue: 
+                    case HKQuantityTypeIdentifier.dietarySodium.rawValue:
                         nutritionData.sodium = sum.doubleValue(for: .gram())
-                    case HKQuantityTypeIdentifier.dietaryWater.rawValue: 
+                    case HKQuantityTypeIdentifier.dietaryWater.rawValue:
                         nutritionData.water = sum.doubleValue(
                             for: .literUnit(with: .milli)
                         )
-                    default: 
+                    default:
                         break
                     }
 
@@ -620,7 +663,7 @@ struct WorkoutSummary {
 
     init(workouts: [HKWorkout]) {
         totalWorkouts = workouts.count
-        totalDuration = workouts.reduce(0) { $0 + $1.duration } 
+        totalDuration = workouts.reduce(0) { $0 + $1.duration }
         totalEnergyBurned = workouts.compactMap {
             $0.totalEnergyBurned?.doubleValue(for: .kilocalorie())
         }.reduce(0, +)
@@ -734,7 +777,7 @@ struct MenstrualHealthData {
 
         // Calculate average cycle length (simplified)
         if flowSamples.count > 1 {
-            let periods = flowSamples.compactMap { $0.startDate } 
+            let periods = flowSamples.compactMap { $0.startDate }
             let intervals = zip(periods, periods.dropFirst()).map {
                 $1.timeIntervalSince($0)
             }
@@ -768,30 +811,30 @@ struct HealthScore {
         overallScore = heartRateScore + activityScore + sleepScore + nutritionScore
 
         switch overallScore {
-        case 90...100: 
+        case 90...100:
             grade = "A+"
-        case 80..<90: 
+        case 80..<90:
             grade = "A"
-        case 70..<80: 
+        case 70..<80:
             grade = "B"
-        case 60..<70: 
+        case 60..<70:
             grade = "C"
-        case 50..<60: 
+        case 50..<60:
             grade = "D"
-        default: 
+        default:
             grade = "F"
         }
     }
 
     var scoreColor: Color {
         switch overallScore {
-        case 80...100: 
+        case 80...100:
             return .green
-        case 60..<80: 
+        case 60..<80:
             return .yellow
-        case 40..<60: 
+        case 40..<60:
             return .orange
-        default: 
+        default:
             return .red
         }
     }

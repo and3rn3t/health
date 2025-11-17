@@ -262,6 +262,21 @@ struct EnhancedSettingsView: View {
 
     private var notificationsSection: some View {
         Section {
+            NavigationLink(destination: NotificationCenterView()) {
+                HStack {
+                    Image(systemName: "bell.badge.fill")
+                        .foregroundStyle(.orange)
+                        .frame(width: 24)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Notification Center")
+                        Text("View all notifications")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
             NavigationLink(destination: NotificationSettingsView()) {
                 HStack {
                     Image(systemName: "bell.fill")
@@ -338,6 +353,48 @@ struct EnhancedSettingsView: View {
                         .frame(width: 24)
 
                     Text("Export Health Data")
+                }
+            }
+
+            NavigationLink(destination: CaregiverDashboardView()) {
+                HStack {
+                    Image(systemName: "person.2.fill")
+                        .foregroundStyle(.teal)
+                        .frame(width: 24)
+
+                    Text("Caregiver Dashboard")
+                }
+            }
+
+            if #available(iOS 16.0, *) {
+                NavigationLink(destination: AdvancedAnalyticsView()) {
+                    HStack {
+                        Image(systemName: "chart.bar.xaxis")
+                            .foregroundStyle(.blue)
+                            .frame(width: 24)
+
+                        Text("Advanced Analytics")
+                    }
+                }
+
+                NavigationLink(destination: PerformanceAnalyticsView()) {
+                    HStack {
+                        Image(systemName: "gauge.high")
+                            .foregroundStyle(.purple)
+                            .frame(width: 24)
+
+                        Text("Performance Analytics")
+                    }
+                }
+            }
+
+            NavigationLink(destination: CognitiveHealthView()) {
+                HStack {
+                    Image(systemName: "brain")
+                        .foregroundStyle(.purple)
+                        .frame(width: 24)
+
+                    Text("Cognitive Health")
                 }
             }
 
@@ -581,10 +638,165 @@ struct AdvancedSettingsView: View {
 }
 
 struct DataExportView: View {
+    @EnvironmentObject var healthKitManager: HealthKitManager
+    @StateObject private var exportManager = DataExportManager.shared
+    @State private var selectedFormat: ExportFormat = .json
+    @State private var dateRange: DateRange = .last30Days
+    @State private var customStartDate = Date().addingTimeInterval(-30 * 24 * 60 * 60)
+    @State private var customEndDate = Date()
+    @State private var isExporting = false
+    @State private var showingShareSheet = false
+    @State private var exportURL: URL?
+    @State private var exportError: String?
+
+    enum ExportFormat: String, CaseIterable {
+        case json = "JSON"
+        case csv = "CSV"
+        case pdf = "PDF"
+
+        var fileExtension: String {
+            switch self {
+            case .json: return "json"
+            case .csv: return "csv"
+            case .pdf: return "pdf"
+            }
+        }
+
+        var mimeType: String {
+            switch self {
+            case .json: return "application/json"
+            case .csv: return "text/csv"
+            case .pdf: return "application/pdf"
+            }
+        }
+    }
+
+    enum DateRange: String, CaseIterable {
+        case last7Days = "Last 7 Days"
+        case last30Days = "Last 30 Days"
+        case last90Days = "Last 90 Days"
+        case lastYear = "Last Year"
+        case custom = "Custom Range"
+
+        var days: Int {
+            switch self {
+            case .last7Days: return 7
+            case .last30Days: return 30
+            case .last90Days: return 90
+            case .lastYear: return 365
+            case .custom: return 0
+            }
+        }
+    }
+
     var body: some View {
-        Text("Data Export Options")
-            .navigationTitle("Export Data")
-            .navigationBarTitleDisplayMode(.inline)
+        Form {
+            Section {
+                Picker("Export Format", selection: $selectedFormat) {
+                    ForEach(ExportFormat.allCases, id: \.self) { format in
+                        Text(format.rawValue).tag(format)
+                    }
+                }
+
+                Picker("Date Range", selection: $dateRange) {
+                    ForEach(DateRange.allCases, id: \.self) { range in
+                        Text(range.rawValue).tag(range)
+                    }
+                }
+
+                if dateRange == .custom {
+                    DatePicker("Start Date", selection: $customStartDate, displayedComponents: .date)
+                    DatePicker("End Date", selection: $customEndDate, displayedComponents: .date)
+                }
+            } header: {
+                Text("Export Settings")
+            } footer: {
+                Text("Select the format and date range for your health data export. All data will be anonymized by default.")
+            }
+
+            Section {
+                Button(action: {
+                    Task {
+                        await exportData()
+                    }
+                }) {
+                    HStack {
+                        if isExporting {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        } else {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                        Text(isExporting ? "Exporting..." : "Export Health Data")
+                    }
+                }
+                .disabled(isExporting)
+            }
+
+            if let error = exportError {
+                Section {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.caption)
+                }
+            }
+
+            Section {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Export Options")
+                        .font(.headline)
+
+                    Text("• JSON: Raw data for developers")
+                    Text("• CSV: Spreadsheet-compatible format")
+                    Text("• PDF: Formatted health summary report")
+                }
+                .font(.caption)
+                .foregroundColor(.secondary)
+            }
+        }
+        .navigationTitle("Export Data")
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingShareSheet) {
+            if let url = exportURL {
+                ShareSheet(activityItems: [url])
+            }
+        }
+    }
+
+    private func exportData() async {
+        isExporting = true
+        exportError = nil
+
+        defer {
+            isExporting = false
+        }
+
+        let startDate: Date
+        let endDate = Date()
+
+        if dateRange == .custom {
+            startDate = customStartDate
+        } else {
+            startDate = Calendar.current.date(byAdding: .day, value: -dateRange.days, to: endDate) ?? endDate
+        }
+
+        do {
+            let url = try await exportManager.exportHealthData(
+                format: selectedFormat,
+                from: startDate,
+                to: endDate,
+                healthKitManager: healthKitManager
+            )
+
+            await MainActor.run {
+                exportURL = url
+                showingShareSheet = true
+            }
+        } catch {
+            await MainActor.run {
+                exportError = "Export failed: \(error.localizedDescription)"
+            }
+        }
     }
 }
 

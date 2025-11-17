@@ -225,13 +225,23 @@ class EnhancedLiDARViewController: UIViewController {
             .store(in: &cancellables)
     }
 
+    private var applicationObserver: NSObjectProtocol?
+
     private func configureNotifications() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(applicationDidBecomeActive),
-            name: UIApplication.didBecomeActiveNotification,
-            object: nil
-        )
+        applicationObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.applicationDidBecomeActive()
+        }
+    }
+
+    deinit {
+        if let observer = applicationObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        cancellables.removeAll()
     }
 
     // MARK: - Actions
@@ -256,7 +266,7 @@ class EnhancedLiDARViewController: UIViewController {
         }
     }
 
-    @objc private func applicationDidBecomeActive() {
+    private func applicationDidBecomeActive() {
         updateSystemStatus()
     }
 

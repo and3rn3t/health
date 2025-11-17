@@ -17,6 +17,9 @@ struct VitalSenseApp: App {
     @StateObject private var healthKitManager = HealthKitManager.shared
     @StateObject private var webSocketManager = WebSocketManager.shared
     @StateObject private var notificationManager = SmartNotificationManager.shared
+    @StateObject private var errorHandler = ErrorHandler.shared
+    @StateObject private var analyticsManager = AnalyticsManager.shared
+    @StateObject private var offlineSupportManager = OfflineSupportManager.shared
 
     // MARK: - App State
     @State private var isInitialized = false
@@ -32,6 +35,10 @@ struct VitalSenseApp: App {
                         .environmentObject(healthKitManager)
                         .environmentObject(webSocketManager)
                         .environmentObject(notificationManager)
+                        .environmentObject(errorHandler)
+                        .environmentObject(analyticsManager)
+                        .environmentObject(offlineSupportManager)
+                        .errorAlert(errorHandler: errorHandler)
                 } else {
                     LaunchScreen()
                 }
@@ -53,6 +60,22 @@ struct VitalSenseApp: App {
 
     // MARK: - App Initialization
     private func initializeApp() {
+        // Initialize crash reporting first
+        CrashReportingManager.shared.initialize()
+
+        // Set user for crash reporting
+        CrashReportingManager.shared.setUser(
+            userId: appConfig.userId,
+            email: nil,
+            username: nil
+        )
+
+        // Start analytics session
+        analyticsManager.startSession()
+
+        // Start performance monitoring
+        let initTimer = analyticsManager.startTiming("app_initialization")
+
         Task {
             do {
                 // Initialize core managers
@@ -60,6 +83,9 @@ struct VitalSenseApp: App {
                 try await setupHealthKit()
                 try await setupNetworking()
                 try await setupNotifications()
+
+                // Initialize offline support
+                await setupOfflineSupport()
 
                 // Check if onboarding needed
                 await checkOnboardingStatus()
@@ -69,10 +95,33 @@ struct VitalSenseApp: App {
                     isInitialized = true
                 }
 
+                // Record initialization time
+                _ = initTimer.stop()
+
+                analyticsManager.logEvent("app_initialized", parameters: [
+                    "has_onboarding": String(!appConfig.hasCompletedOnboarding)
+                ])
+
                 print("✅ VitalSense app initialized successfully")
 
             } catch {
+                // Record initialization error
+                _ = initTimer.stop()
+
+                errorHandler.handle(
+                    error,
+                    context: "App initialization",
+                    recovery: .userAction
+                )
+
+                CrashReportingManager.shared.reportError(
+                    error,
+                    context: "App initialization failed",
+                    level: .fatal
+                )
+
                 print("❌ App initialization failed: \(error)")
+
                 // Handle initialization failure gracefully
                 await MainActor.run {
                     isInitialized = true // Show app even with errors
@@ -119,6 +168,12 @@ struct VitalSenseApp: App {
         await notificationManager.setupHealthAlerts()
     }
 
+    private func setupOfflineSupport() async {
+        // Offline support manager initializes itself
+        // Update queue status
+        offlineSupportManager.updateQueueStatus()
+    }
+
     private func checkOnboardingStatus() async {
         let needsOnboarding = !appConfig.hasCompletedOnboarding
 
@@ -129,7 +184,8 @@ struct VitalSenseApp: App {
 
     // MARK: - Background Tasks
     private func performBackgroundSync() async {
-        print("🔄 Performing background health data sync...")
+        let timer = analyticsManager.startTiming("background_sync")
+        analyticsManager.logEvent("background_sync_started")
 
         do {
             // Sync health data with server
@@ -138,15 +194,34 @@ struct VitalSenseApp: App {
             // Process any pending analytics
             await processHealthAnalytics()
 
+            // Update offline queue status
+            offlineSupportManager.updateQueueStatus()
+
+            _ = timer.stop()
+            analyticsManager.logEvent("background_sync_completed")
             print("✅ Background sync completed")
 
         } catch {
+            _ = timer.stop()
+            errorHandler.handle(
+                error,
+                context: "Background sync",
+                recovery: .retry(maxAttempts: 3)
+            )
+
+            CrashReportingManager.shared.addBreadcrumb(
+                "Background sync failed: \(error.localizedDescription)",
+                category: "background_tasks",
+                level: .error
+            )
+
             print("❌ Background sync failed: \(error)")
         }
     }
 
     private func syncHealthData() async {
-        print("💓 Performing HealthKit background sync...")
+        let timer = analyticsManager.startTiming("healthkit_sync")
+        analyticsManager.logEvent("healthkit_sync_started")
 
         do {
             // Fetch latest health metrics
@@ -158,9 +233,28 @@ struct VitalSenseApp: App {
             // Check for health alerts
             await notificationManager.processHealthAlerts(metrics)
 
+            // Record memory usage periodically
+            analyticsManager.recordMemoryUsage()
+            analyticsManager.recordBatteryUsage()
+
+            _ = timer.stop()
+            analyticsManager.logEvent("healthkit_sync_completed")
             print("✅ HealthKit sync completed")
 
         } catch {
+            _ = timer.stop()
+            errorHandler.handle(
+                error,
+                context: "HealthKit sync",
+                recovery: .retry(maxAttempts: 3)
+            )
+
+            CrashReportingManager.shared.reportError(
+                error,
+                context: "HealthKit background sync failed",
+                level: .error
+            )
+
             print("❌ HealthKit sync failed: \(error)")
         }
     }
@@ -187,6 +281,15 @@ struct VitalSenseApp: App {
         #if DEBUG
         PerformanceMonitor.shared.startMonitoring()
         #endif
+
+        // Start periodic memory and battery monitoring
+        Task {
+            while true {
+                try? await Task.sleep(nanoseconds: 60_000_000_000) // Every 60 seconds
+                analyticsManager.recordMemoryUsage()
+                analyticsManager.recordBatteryUsage()
+            }
+        }
     }
 }
 
@@ -271,22 +374,18 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Placeholder Views (to be implemented)
+// MARK: - Onboarding View
 struct OnboardingView: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var appConfig: AppConfig
+
     var body: some View {
-        VStack {
-            Text("Welcome to VitalSense")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-
-            Text("Your personal health monitoring companion")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-
-            // Onboarding content will be implemented
-            Spacer()
-        }
-        .padding()
+        EnhancedOnboardingView()
+            .environmentObject(appConfig)
+            .interactiveDismissDisabled()
+            .onAppear {
+                // Onboarding will handle completion and dismiss itself
+            }
     }
 }
 

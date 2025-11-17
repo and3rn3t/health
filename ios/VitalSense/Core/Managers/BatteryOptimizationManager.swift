@@ -6,48 +6,48 @@ import UIKit
 
 class BatteryOptimizationManager: ObservableObject {
     static let shared = BatteryOptimizationManager()
-    
+
     @Published var batteryLevel: Float = 1.0
     @Published var batteryState: UIDevice.BatteryState = .unknown
     @Published var isLowPowerModeEnabled: Bool = false
     @Published var optimizedSyncInterval: TimeInterval = 5.0
-    
+
     private let normalSyncInterval: TimeInterval = 5.0
     private let batterySavingSyncInterval: TimeInterval = 15.0
     private let lowPowerSyncInterval: TimeInterval = 30.0
-    
+
     private init() {
         UIDevice.current.isBatteryMonitoringEnabled = true
         updateBatteryInfo()
         setupBatteryNotifications()
     }
-    
+
     private func setupBatteryNotifications() {
         NotificationCenter.default.addObserver(
             self, selector: #selector(batteryLevelChanged), name: UIDevice.batteryLevelDidChangeNotification, object: nil
         )
-        
+
         NotificationCenter.default.addObserver(
             self, selector: #selector(batteryStateChanged), name: UIDevice.batteryStateDidChangeNotification, object: nil
         )
-        
+
         NotificationCenter.default.addObserver(
             self, selector: #selector(powerModeChanged), name: .NSProcessInfoPowerStateDidChange, object: nil
         )
     }
-    
+
     @objc private func batteryLevelChanged() {
         updateBatteryInfo()
     }
-    
+
     @objc private func batteryStateChanged() {
         updateBatteryInfo()
     }
-    
+
     @objc private func powerModeChanged() {
         updateBatteryInfo()
     }
-    
+
     private func updateBatteryInfo() {
         DispatchQueue.main.async {
             self.batteryLevel = UIDevice.current.batteryLevel
@@ -56,7 +56,7 @@ class BatteryOptimizationManager: ObservableObject {
             self.calculateOptimalSyncInterval()
         }
     }
-    
+
     private func calculateOptimalSyncInterval() {
         if isLowPowerModeEnabled {
             optimizedSyncInterval = lowPowerSyncInterval
@@ -67,24 +67,28 @@ class BatteryOptimizationManager: ObservableObject {
         } else {
             optimizedSyncInterval = normalSyncInterval
         }
-        
+
         print("🔋 Battery: \(Int(batteryLevel * 100))%, LPM: \(isLowPowerModeEnabled), Sync: \(optimizedSyncInterval)s")
     }
-    
+
     func shouldReduceMonitoring() -> Bool {
         isLowPowerModeEnabled || batteryLevel < 0.15
     }
-    
+
     func getOptimalUpdateFrequency() -> TimeInterval {
         optimizedSyncInterval
     }
-    
+
     func getBatteryStatusSummary() -> String {
         let percentage = Int(batteryLevel * 100)
-        let state = batteryState == .charging ? " (Charging)" : 
+        let state = batteryState == .charging ? " (Charging)" :
                    batteryState == .full ? " (Full)" : ""
         let lpMode = isLowPowerModeEnabled ? " - Low Power Mode" : ""
-        
+
         return "\(percentage)%\(state)\(lpMode)"
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }

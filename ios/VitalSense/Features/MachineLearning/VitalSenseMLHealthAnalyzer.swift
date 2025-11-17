@@ -66,6 +66,8 @@ class VitalSenseMLHealthAnalyzer: ObservableObject {
     }
 
     func performComprehensiveAnalysis() async {
+        guard !Task.isCancelled else { return }
+
         isAnalyzing = true
         logger.info("Starting comprehensive ML health analysis")
 
@@ -73,22 +75,49 @@ class VitalSenseMLHealthAnalyzer: ObservableObject {
             // Collect recent health data
             let healthData = try await healthDataProcessor.collectRecentHealthData()
 
-            // Perform various ML analyses
-            async let insights = generateHealthInsights(from: healthData)
-            async let predictions = generateHealthPredictions(from: healthData)
-            async let anomalies = detectHealthAnomalies(from: healthData)
-            async let recommendations = generatePersonalizedRecommendations(from: healthData)
+            guard !Task.isCancelled else {
+                isAnalyzing = false
+                return
+            }
 
-            // Update UI with results
-            currentInsights = try await insights
-            healthPredictions = try await predictions
-            anomalyDetections = try await anomalies
-            personalizedRecommendations = try await recommendations
+            // Perform various ML analyses
+            async let insightsTask = generateHealthInsights(from: healthData)
+            async let predictionsTask = generateHealthPredictions(from: healthData)
+            async let anomaliesTask = detectHealthAnomalies(from: healthData)
+            async let recommendationsTask = generatePersonalizedRecommendations(from: healthData)
+
+            // Update UI with results (only if not cancelled)
+            guard !Task.isCancelled else {
+                isAnalyzing = false
+                return
+            }
+
+            currentInsights = try await insightsTask
+            guard !Task.isCancelled else {
+                isAnalyzing = false
+                return
+            }
+
+            healthPredictions = try await predictionsTask
+            guard !Task.isCancelled else {
+                isAnalyzing = false
+                return
+            }
+
+            anomalyDetections = try await anomaliesTask
+            guard !Task.isCancelled else {
+                isAnalyzing = false
+                return
+            }
+
+            personalizedRecommendations = try await recommendationsTask
 
             logger.info("ML analysis completed - \(currentInsights.count) insights, \(anomalyDetections.count) anomalies")
 
         } catch {
-            logger.error("ML analysis failed: \(error.localizedDescription)")
+            if !Task.isCancelled {
+                logger.error("ML analysis failed: \(error.localizedDescription)")
+            }
         }
 
         isAnalyzing = false

@@ -18,6 +18,7 @@ class SmartNotificationManager: NSObject, ObservableObject {
     @Published var reminderNotificationsEnabled = true
     @Published var criticalAlertsEnabled = true
     @Published var lastNotificationTime: Date?
+    @Published var notificationHistory: [NotificationItem] = []
 
     // MARK: - Configuration
     struct NotificationConfig {
@@ -340,6 +341,54 @@ class SmartNotificationManager: NSObject, ObservableObject {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         pendingNotifications.removeAll()
     }
+
+    // MARK: - Notification History Management
+
+    func loadNotificationHistory() {
+        if let data = UserDefaults.standard.data(forKey: "NotificationHistory"),
+           let history = try? JSONDecoder().decode([NotificationItem].self, from: data) {
+            notificationHistory = history
+        }
+    }
+
+    func markAsRead(_ id: UUID) {
+        if let index = notificationHistory.firstIndex(where: { $0.id == id }) {
+            notificationHistory[index].isRead = true
+            saveNotificationHistory()
+        }
+    }
+
+    func markAllAsRead() {
+        for index in notificationHistory.indices {
+            notificationHistory[index].isRead = true
+        }
+        saveNotificationHistory()
+    }
+
+    func deleteNotifications(ids: [UUID]) {
+        notificationHistory.removeAll { ids.contains($0.id) }
+        saveNotificationHistory()
+    }
+
+    func clearAllNotifications() {
+        notificationHistory.removeAll()
+        saveNotificationHistory()
+    }
+
+    func addNotification(_ notification: NotificationItem) {
+        notificationHistory.insert(notification, at: 0)
+        // Keep only last 500 notifications
+        if notificationHistory.count > 500 {
+            notificationHistory = Array(notificationHistory.prefix(500))
+        }
+        saveNotificationHistory()
+    }
+
+    private func saveNotificationHistory() {
+        if let data = try? JSONEncoder().encode(notificationHistory) {
+            UserDefaults.standard.set(data, forKey: "NotificationHistory")
+        }
+    }
 }
 
 // MARK: - UNUserNotificationCenterDelegate
@@ -380,6 +429,36 @@ struct HealthMetrics {
     let timestamp: Date
 }
 
+// MARK: - Notification Item Model
+struct NotificationItem: Identifiable, Codable, Equatable {
+    let id = UUID()
+    let title: String
+    let message: String
+    let type: NotificationType
+    let timestamp: Date
+    var isRead: Bool
+
+    var iconName: String {
+        switch type {
+        case .alert:
+            return "exclamationmark.triangle.fill"
+        case .reminder:
+            return "bell.fill"
+        case .achievement:
+            return "checkmark.circle.fill"
+        case .info:
+            return "info.circle.fill"
+        }
+    }
+
+    enum NotificationType: String, Codable {
+        case alert
+        case reminder
+        case achievement
+        case info
+    }
+}
+
 // MARK: - Notification Errors
 enum NotificationError: LocalizedError {
     case permissionDenied
@@ -396,5 +475,4 @@ enum NotificationError: LocalizedError {
             return "Invalid notification configuration"
         }
     }
-}
 }
