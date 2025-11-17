@@ -1,20 +1,35 @@
 name: Pre-Release Gate
 
 on:
-  pull_request:
-    branches: [main, develop]
-  push:
-    branches: [main]
+  workflow_call:
+    inputs:
+      full:
+        description: 'Run full test suite'
+        required: false
+        default: 'false'
+        type: boolean
+      strict:
+        description: 'Treat soft-fail steps as hard failures'
+        required: false
+        default: 'false'
+        type: boolean
   workflow_dispatch:
     inputs:
       full:
         description: 'Run full test suite'
         required: false
         default: 'false'
+        type: boolean
       strict:
         description: 'Treat soft-fail steps as hard failures'
         required: false
         default: 'false'
+        type: boolean
+  # Keep direct triggers for backward compatibility
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
 
 permissions:
   contents: read
@@ -36,8 +51,11 @@ jobs:
           CI: true
         run: |
           ARGS=()
-          if [ "${{ github.event.inputs.full }}" = 'true' ]; then ARGS+=(--full); fi
-            if [ "${{ github.event.inputs.strict }}" = 'true' ]; then ARGS+=(--strict); fi
+          # Support both workflow_call inputs and workflow_dispatch inputs
+          FULL_INPUT="${{ inputs.full || github.event.inputs.full }}"
+          STRICT_INPUT="${{ inputs.strict || github.event.inputs.strict }}"
+          if [ "$FULL_INPUT" = 'true' ] || [ "$FULL_INPUT" = 'True' ]; then ARGS+=(--full); fi
+          if [ "$STRICT_INPUT" = 'true' ] || [ "$STRICT_INPUT" = 'True' ]; then ARGS+=(--strict); fi
           echo "[gate] args: ${ARGS[*]}"
           pnpm run pre:release:gate -- "${ARGS[@]}" || echo "GATE_EXIT=$?" >> $GITHUB_OUTPUT
       - name: Upload Gate JSON

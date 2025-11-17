@@ -43,6 +43,7 @@ dist-worker/
 
 # Build outputs
 build/
+!scripts/build/
 .next/
 out/
 

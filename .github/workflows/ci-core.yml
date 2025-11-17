@@ -12,6 +12,14 @@ on:
         description: 'Set to true to force production deploy (if readiness passes)'
         required: false
         default: 'false'
+      skip_pre_release_gate:
+        description: 'Skip pre-release gate (for testing)'
+        required: false
+        default: 'false'
+
+concurrency:
+  group: ci-core-${{ github.ref }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -730,6 +738,18 @@ jobs:
           if [ "${{ needs.ws_schema_drift.result }}" = 'failure' ]; then echo "(soft) WS schema drift failed – not counted toward gating"; fi
           if [ $failures -gt 0 ]; then echo "Gating failures: $failures"; exit 1; fi
 
+  pre_release_gate:
+    name: Pre-Release Gate
+    needs: [summary]
+    if: |
+      (github.event_name == 'pull_request' || github.ref == 'refs/heads/main') &&
+      github.event.inputs.skip_pre_release_gate != 'true'
+    uses: ./.github/workflows/pre-release-gate.yml
+    with:
+      full: 'false'
+      strict: 'false'
+    secrets: inherit
+
   coverage_delta:
     runs-on: ubuntu-latest
     needs: code_quality
@@ -951,7 +971,8 @@ jobs:
     needs:
       - summary
       - coverage_delta
-    if: always()
+      - pre_release_gate
+    if: always() && (needs.summary.result == 'success' || needs.summary.result == 'failure')
     outputs:
       ready: ${{ steps.assess.outputs.ready }}
       reason: ${{ steps.assess.outputs.reason }}
