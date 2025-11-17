@@ -14,8 +14,13 @@ function excludeClientFiles(): Plugin {
   ];
 
   function shouldExclude(id: string): boolean {
+    // Handle both relative and absolute paths
     const normalizedId = id.replace(/\\/g, '/');
-    return excludedPatterns.some(pattern => pattern.test(normalizedId));
+    // Check if it's an absolute path and extract the relevant part
+    const pathPart = normalizedId.includes('/src/')
+      ? normalizedId.substring(normalizedId.indexOf('/src/'))
+      : normalizedId;
+    return excludedPatterns.some(pattern => pattern.test(pathPart));
   }
 
   return {
@@ -55,20 +60,19 @@ function excludeClientFiles(): Plugin {
 export default defineConfig({
   plugins: [
     excludeClientFiles(),
-    react({
-      // Only transform JSX, don't include React runtime in worker
-      jsxRuntime: 'classic',
-      jsxImportSource: 'react',
-      // Exclude client-side files that shouldn't be in worker
-      exclude: [
-        /src\/App\.tsx/,
-        /src\/main\.tsx/,
-        /src\/lib\/lazyLoading\.ts/,
-        /src\/lib\/navigationHelpers\.ts/,
-        /src\/components\//,
-        /src\/hooks\//,
-      ],
-    }),
+    // Don't use React plugin for worker - worker shouldn't have JSX
+    // react({
+    //   jsxRuntime: 'classic',
+    //   jsxImportSource: 'react',
+    //   exclude: [
+    //     /src\/App\.tsx/,
+    //     /src\/main\.tsx/,
+    //     /src\/lib\/lazyLoading\.ts/,
+    //     /src\/lib\/navigationHelpers\.ts/,
+    //     /src\/components\//,
+    //     /src\/hooks\//,
+    //   ],
+    // }),
   ],
   build: {
     lib: {
@@ -113,22 +117,11 @@ export default defineConfig({
     },
   },
   esbuild: {
-    // Disable JSX transformation - worker shouldn't have JSX
-    // If JSX is found, it means client-side files are being included (which is an error)
-    jsx: 'preserve', // Don't transform JSX - this will cause an error if JSX is present
-    // Exclude client-side files from esbuild processing
-    exclude: [
-      '**/App.tsx',
-      '**/main.tsx',
-      '**/lazyLoading.ts',
-      '**/navigationHelpers.ts',
-      '**/components/**',
-      '**/hooks/**',
-    ],
-    // Use loader to skip JSX files entirely
-    loader: {
-      '.tsx': 'ts', // Treat .tsx as .ts to skip JSX processing
-    },
+    // Worker shouldn't have JSX - completely disable JSX processing
+    // This will cause an error if JSX is found, which helps catch issues early
+    jsx: 'preserve',
+    // Note: exclude patterns in esbuild config don't work reliably
+    // We rely on the plugin to intercept files before esbuild sees them
   },
   // Use esbuild for faster builds, but configure it properly
   optimizeDeps: {
