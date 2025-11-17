@@ -78,8 +78,8 @@ class VitalSenseAdvancedDeployer {
     console.log('🔨 Building advanced WebSocket worker...');
 
     try {
-      // Build the worker using spawnSync to prevent injection
-      const result = spawnSync('npx', ['vite', 'build', '--config', 'vite.worker.config.ts'], {
+      // Build the worker using the dedicated vite config for advanced websocket
+      const result = spawnSync('npx', ['vite', 'build', '--config', 'vite.advanced-websocket.config.ts'], {
         stdio: 'pipe',
         cwd: this.projectRoot,
         shell: false, // Disable shell to prevent injection
@@ -90,42 +90,25 @@ class VitalSenseAdvancedDeployer {
       }
 
       if (result.status !== 0) {
-        throw new Error(`Build failed with exit code ${result.status}: ${result.stderr?.toString() || 'Unknown error'}`);
+        const errorOutput = result.stderr?.toString() || result.stdout?.toString() || 'Unknown error';
+        throw new Error(`Build failed with exit code ${result.status}: ${errorOutput}`);
       }
 
-      // Copy the advanced worker to the build output
-      const workerContent = readFileSync(
-        join(this.projectRoot, this.workerPath),
-        'utf8'
-      );
-
-      // Create the built version
+      // Verify the built file exists
       const builtWorkerPath = join(
         this.projectRoot,
         'dist-worker',
-        'vitalsense-websocket-advanced.js'
+        'vitalsense-websocket-advanced-clean.js'
       );
 
-      // Compile TypeScript to JavaScript (simplified)
-      const compiledContent = this.compileWorker(workerContent);
-      writeFileSync(builtWorkerPath, compiledContent);
+      if (!readFileSync(builtWorkerPath, 'utf8').includes('VitalSenseAdvancedWebSocketDO')) {
+        throw new Error('Built worker does not contain VitalSenseAdvancedWebSocketDO class');
+      }
 
       console.log('✅ Advanced WebSocket worker built successfully');
     } catch (error) {
       throw new Error(`Build failed: ${error.message}`);
     }
-  }
-
-  compileWorker(content) {
-    // Simple TypeScript to JavaScript conversion for demo
-    // In production, use proper TypeScript compiler
-    return content
-      .replace(/interface\s+\w+\s*{[^}]*}/g, '') // Remove interfaces
-      .replace(/:\s*\w+(\[\])?/g, '') // Remove type annotations
-      .replace(/private\s+/g, '') // Remove private modifiers
-      .replace(/async\s+/g, 'async ') // Preserve async
-      .replace(/Promise<[^>]*>/g, 'Promise') // Simplify Promise types
-      .replace(/Record<string,\s*unknown>/g, 'Object'); // Simplify Record types
   }
 
   async deployToCloudflare() {
