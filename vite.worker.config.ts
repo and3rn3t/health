@@ -1,16 +1,18 @@
 import { defineConfig, type Plugin } from 'vite';
 import { resolve } from 'path';
 import react from '@vitejs/plugin-react';
+import { readFileSync } from 'fs';
 
 // Plugin to exclude client-side files from worker build
 function excludeClientFiles(): Plugin {
   const excludedPatterns = [
     /[\/\\]App\.tsx$/,
     /[\/\\]main\.tsx$/,
-    /[\/\\]lazyLoading\.ts$/,
-    /[\/\\]navigationHelpers\.ts$/,
+    /[\/\\]lazyLoading\.(ts|tsx)$/,
+    /[\/\\]navigationHelpers\.(ts|tsx)$/,
     /[\/\\]components[\/\\]/,
     /[\/\\]hooks[\/\\]/,
+    /\.tsx$/, // Exclude all .tsx files - worker should only use .ts
   ];
 
   function shouldExclude(id: string): boolean {
@@ -26,8 +28,17 @@ function excludeClientFiles(): Plugin {
   return {
     name: 'exclude-client-files',
     enforce: 'pre', // Run before other plugins, especially before esbuild
+    buildStart() {
+      // Early interception - mark excluded files
+      this.addWatchFile = () => {}; // Prevent watching excluded files
+    },
     resolveId(id, importer) {
-      if (shouldExclude(id)) {
+      // Handle both relative imports and absolute paths
+      const resolvedId = id.startsWith('.') && importer
+        ? resolve(importer, '..', id).replace(/\\/g, '/')
+        : id;
+
+      if (shouldExclude(resolvedId) || shouldExclude(id)) {
         // Return a virtual empty module to prevent processing
         return { id: '\0virtual:empty', external: false };
       }
@@ -37,12 +48,28 @@ function excludeClientFiles(): Plugin {
       if (id === '\0virtual:empty') {
         return 'export {};';
       }
+      // Intercept file loading - return empty for excluded files
+      // This prevents the file from being read from disk
+      if (shouldExclude(id)) {
+        return 'export {};';
+      }
+      return null;
+    },
+    // Intercept before load - this runs even earlier
+    resolveDynamicImport(specifier, importer) {
+      if (typeof specifier === 'string' && shouldExclude(specifier)) {
+        return '\0virtual:empty';
+      }
       return null;
     },
     // Intercept transform to prevent esbuild from processing these files
+    // This MUST run before esbuild processes the file
     transform(code, id) {
-      if (shouldExclude(id)) {
+      // Check both the id and try to resolve it
+      const normalizedId = id.replace(/\\/g, '/');
+      if (shouldExclude(normalizedId) || shouldExclude(id)) {
         // Return empty module to prevent processing
+        // This should prevent esbuild from seeing the JSX
         return { code: 'export {};', map: null };
       }
       return null;
@@ -81,6 +108,15 @@ export default defineConfig({
       fileName: 'index',
       formats: ['es'],
     },
+    // Exclude client-side files from being scanned
+    commonjsOptions: {
+      exclude: [
+        '**/lazyLoading.ts',
+        '**/navigationHelpers.ts',
+        '**/components/**',
+        '**/hooks/**',
+      ],
+    },
     rollupOptions: {
       external: (id) => {
         // Externalize React and Cloudflare Workers
@@ -91,10 +127,11 @@ export default defineConfig({
         if (
           id.includes('/App.tsx') ||
           id.includes('/main.tsx') ||
-          id.includes('/lazyLoading.ts') ||
-          id.includes('/navigationHelpers.ts') ||
+          id.includes('/lazyLoading.') ||
+          id.includes('/navigationHelpers.') ||
           id.includes('/components/') ||
-          id.includes('/hooks/')
+          id.includes('/hooks/') ||
+          id.endsWith('.tsx') // Exclude all .tsx files
         ) {
           return true;
         }
@@ -120,8 +157,10 @@ export default defineConfig({
     // Worker shouldn't have JSX - completely disable JSX processing
     // This will cause an error if JSX is found, which helps catch issues early
     jsx: 'preserve',
-    // Note: exclude patterns in esbuild config don't work reliably
-    // We rely on the plugin to intercept files before esbuild sees them
+    // Exclude all .tsx files - worker should only use .ts
+    exclude: [
+      '**/*.tsx', // Exclude all .tsx files
+    ],
   },
   // Use esbuild for faster builds, but configure it properly
   optimizeDeps: {
