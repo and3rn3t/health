@@ -744,7 +744,7 @@ jobs:
     if: |
       (github.event_name == 'pull_request' || github.ref == 'refs/heads/main') &&
       github.event.inputs.skip_pre_release_gate != 'true'
-    uses: ./.github/workflows/pre-release-gate.yml
+    uses: ${{ github.repository }}/.github/workflows/pre-release-gate.yml@main
     with:
       full: 'false'
       strict: 'false'
