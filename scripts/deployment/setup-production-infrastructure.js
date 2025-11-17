@@ -4,7 +4,7 @@
  */
 
 import { setTimeout } from 'node:timers/promises';
-import { execSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import axios from 'axios';
 import chalk from 'chalk';
 import { config } from 'dotenv';
@@ -58,10 +58,26 @@ class ProductionInfrastructureManager {
         this.log(`Executing: ${command}`, 'gray');
       }
 
-      const output = execSync(command, {
+      // Parse command into executable and arguments to prevent injection
+      const parts = command.trim().split(/\s+/);
+      const executable = parts[0];
+      const args = parts.slice(1);
+
+      const result = spawnSync(executable, args, {
         encoding: 'utf8',
         stdio: this.verbose ? 'inherit' : 'pipe',
+        shell: false, // Disable shell to prevent injection
       });
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      if (result.status !== 0) {
+        throw new Error(`Command failed with exit code ${result.status}: ${result.stderr || 'Unknown error'}`);
+      }
+
+      const output = result.stdout?.toString() || '';
 
       this.log(`✅ ${description} completed`, 'green');
       return { success: true, output };

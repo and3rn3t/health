@@ -4,7 +4,7 @@
  * Builds the worker using vite CLI command
  */
 
-import { execSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -16,11 +16,20 @@ async function buildWorker() {
   console.log('🔨 Building Cloudflare Worker...');
 
   try {
-    // Use Vite CLI to build the worker
-    execSync('npx vite build --config vite.worker.config.ts', {
+    // Use Vite CLI to build the worker using spawnSync to prevent injection
+    const result = spawnSync('npx', ['vite', 'build', '--config', 'vite.worker.config.ts'], {
       cwd: projectRoot,
       stdio: 'inherit',
+      shell: false, // Disable shell to prevent injection
     });
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    if (result.status !== 0) {
+      throw new Error(`Build failed with exit code ${result.status}`);
+    }
 
     console.log('✅ Worker build completed successfully');
   } catch (error) {

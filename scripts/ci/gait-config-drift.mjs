@@ -8,7 +8,7 @@
  * 3. Check git diff for those artifacts; if changed -> fail with guidance
  * Pass if no changes.
  */
-import { execSync, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 
 const artifacts = [
@@ -17,7 +17,18 @@ const artifacts = [
 ];
 
 function git(args){
-  return execSync(['git', ...args].join(' '), { encoding: 'utf8' }).trim();
+  // Use spawnSync with argument array to prevent injection
+  const result = spawnSync('git', args, {
+    encoding: 'utf8',
+    stdio: 'pipe',
+    shell: false, // Disable shell to prevent injection
+  });
+
+  if (result.error || result.status !== 0) {
+    throw new Error(`Git command failed: ${result.stderr?.toString() || 'Unknown error'}`);
+  }
+
+  return result.stdout?.toString().trim() || '';
 }
 
 function ensureCleanIndex(){

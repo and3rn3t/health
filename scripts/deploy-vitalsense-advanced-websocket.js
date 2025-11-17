@@ -5,7 +5,7 @@
  * Builds and deploys the enhanced WebSocket worker with ML capabilities
  */
 
-import { execSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
@@ -78,11 +78,20 @@ class VitalSenseAdvancedDeployer {
     console.log('🔨 Building advanced WebSocket worker...');
 
     try {
-      // Build the worker
-      execSync('npx vite build --config vite.worker.config.ts', {
+      // Build the worker using spawnSync to prevent injection
+      const result = spawnSync('npx', ['vite', 'build', '--config', 'vite.worker.config.ts'], {
         stdio: 'pipe',
         cwd: this.projectRoot,
+        shell: false, // Disable shell to prevent injection
       });
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      if (result.status !== 0) {
+        throw new Error(`Build failed with exit code ${result.status}: ${result.stderr?.toString() || 'Unknown error'}`);
+      }
 
       // Copy the advanced worker to the build output
       const workerContent = readFileSync(
@@ -125,25 +134,45 @@ class VitalSenseAdvancedDeployer {
     try {
       // Deploy to development environment first
       console.log('   🚀 Deploying to development...');
-      execSync(
-        `npx wrangler deploy --config ${this.configPath} --env development`,
+      const devResult = spawnSync(
+        'npx',
+        ['wrangler', 'deploy', '--config', this.configPath, '--env', 'development'],
         {
           stdio: 'inherit',
           cwd: this.projectRoot,
+          shell: false, // Disable shell to prevent injection
         }
       );
+
+      if (devResult.error) {
+        throw devResult.error;
+      }
+
+      if (devResult.status !== 0) {
+        throw new Error(`Development deployment failed with exit code ${devResult.status}`);
+      }
 
       console.log('✅ Development deployment successful');
 
       // Ask for production deployment
       console.log('   🚀 Deploying to production...');
-      execSync(
-        `npx wrangler deploy --config ${this.configPath} --env production`,
+      const prodResult = spawnSync(
+        'npx',
+        ['wrangler', 'deploy', '--config', this.configPath, '--env', 'production'],
         {
           stdio: 'inherit',
           cwd: this.projectRoot,
+          shell: false, // Disable shell to prevent injection
         }
       );
+
+      if (prodResult.error) {
+        throw prodResult.error;
+      }
+
+      if (prodResult.status !== 0) {
+        throw new Error(`Production deployment failed with exit code ${prodResult.status}`);
+      }
 
       console.log('✅ Production deployment successful');
     } catch (error) {

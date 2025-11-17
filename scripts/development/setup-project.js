@@ -4,7 +4,7 @@
  * Node.js version of setup.ps1
  */
 
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const fs = require('fs').promises;
 const path = require('path');
 const { program } = require('commander');
@@ -24,18 +24,33 @@ function runCommand(command, cwd = process.cwd(), description = '') {
   if (description) {
     console.log(`📦 ${description}...`);
   }
-  
+
   try {
-    const output = execSync(command, { 
-      cwd, 
+    // Parse command into executable and arguments to prevent injection
+    const parts = command.trim().split(/\s+/);
+    const executable = parts[0];
+    const args = parts.slice(1);
+
+    const result = spawnSync(executable, args, {
+      cwd,
       stdio: options.verbose ? 'inherit' : 'pipe',
-      encoding: 'utf8'
+      encoding: 'utf8',
+      shell: false, // Disable shell to prevent injection
     });
-    
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    if (result.status !== 0) {
+      throw new Error(`Command failed with exit code ${result.status}: ${result.stderr?.toString() || 'Unknown error'}`);
+    }
+
+    const output = result.stdout?.toString() || '';
     if (!options.verbose && output) {
       console.log(output.trim());
     }
-    
+
     return true;
   } catch (error) {
     console.error(`❌ Failed: ${error.message}`);
@@ -45,7 +60,18 @@ function runCommand(command, cwd = process.cwd(), description = '') {
 
 function checkTool(command, name, installHint = '') {
   try {
-    const version = execSync(`${command} --version`, { encoding: 'utf8', stdio: 'pipe' }).trim();
+    // Use spawnSync with argument array to prevent injection
+    const result = spawnSync(command, ['--version'], {
+      encoding: 'utf8',
+      stdio: 'pipe',
+      shell: false, // Disable shell to prevent injection
+    });
+
+    if (result.error || result.status !== 0) {
+      throw new Error('Command failed');
+    }
+
+    const version = result.stdout?.toString().trim() || '';
     console.log(`✅ ${name} found: ${version}`);
     return true;
   } catch (error) {
@@ -60,10 +86,10 @@ async function setupProject() {
 
   // Check prerequisites
   console.log('📋 Checking prerequisites...');
-  
+
   const nodeOk = checkTool('node', 'Node.js', 'Please install Node.js from https://nodejs.org/');
   const npmOk = checkTool('npm', 'npm');
-  
+
   if (!nodeOk || !npmOk) {
     console.error('❌ Missing required tools. Please install them and try again.');
     process.exit(1);
@@ -72,7 +98,7 @@ async function setupProject() {
   // Check for package managers
   const hasYarn = checkTool('yarn', 'Yarn', '(optional)');
   const hasPnpm = checkTool('pnpm', 'pnpm', '(optional)');
-  
+
   // Determine which package manager to use
   let packageManager = 'npm';
   try {
@@ -97,11 +123,11 @@ async function setupProject() {
   if (!options.skipServer) {
     console.log('\\n📦 Installing WebSocket server dependencies...');
     const serverDir = path.join(process.cwd(), 'server');
-    
+
     try {
       await fs.access(serverDir);
       const installCmd = options.force ? `${packageManager} install --force` : `${packageManager} install`;
-      
+
       if (runCommand(installCmd, serverDir, 'Installing server dependencies')) {
         console.log('✅ Server dependencies installed');
       } else {
@@ -116,7 +142,7 @@ async function setupProject() {
   if (!options.skipMain) {
     console.log('\\n📦 Installing main project dependencies...');
     const installCmd = options.force ? `${packageManager} install --force` : `${packageManager} install`;
-    
+
     if (runCommand(installCmd, process.cwd(), 'Installing main project dependencies')) {
       console.log('✅ Main project dependencies installed');
     } else {
@@ -127,25 +153,25 @@ async function setupProject() {
 
   // Install WebSocket client dependencies (if needed)
   console.log('\\n📦 Checking WebSocket client dependencies...');
-  
+
   try {
     const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
     const missingDeps = [];
-    
+
     // Check for common WebSocket dependencies
     const requiredDeps = ['ws', 'socket.io-client'];
     const allDeps = { ...packageJson.dependencies, ...packageJson.devDependencies };
-    
+
     for (const dep of requiredDeps) {
       if (!allDeps[dep]) {
         missingDeps.push(dep);
       }
     }
-    
+
     if (missingDeps.length > 0) {
       console.log('📦 Adding missing WebSocket dependencies...');
       const addCmd = `${packageManager} ${packageManager === 'npm' ? 'install' : 'add'} ${missingDeps.join(' ')}`;
-      
+
       if (runCommand(addCmd, process.cwd(), 'Adding WebSocket dependencies')) {
         console.log('✅ WebSocket dependencies added');
       }

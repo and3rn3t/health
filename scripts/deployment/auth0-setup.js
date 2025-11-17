@@ -326,23 +326,32 @@ compatibility_date = "2024-01-01"
     }
 
     try {
-      const { execSync } = await import('node:child_process');
+      const { spawnSync } = await import('node:child_process');
 
-      // Set client secret as Wrangler secret
-      const secretCommand = `echo "${this.config.clientSecret}" | wrangler secret put AUTH0_CLIENT_SECRET`;
-
+      // Set client secret as Wrangler secret using spawnSync to prevent injection
+      // Use stdin to pass the secret securely instead of command concatenation
       if (this.verbose) {
         this.log(`Executing: wrangler secret put AUTH0_CLIENT_SECRET`, 'gray');
       }
 
-      execSync(
-        'echo "' +
-          this.config.clientSecret +
-          '" | wrangler secret put AUTH0_CLIENT_SECRET',
+      // Use spawnSync with stdin to pass secret securely
+      const result = spawnSync(
+        'wrangler',
+        ['secret', 'put', 'AUTH0_CLIENT_SECRET'],
         {
-          stdio: this.verbose ? 'inherit' : 'pipe',
+          input: this.config.clientSecret,
+          stdio: this.verbose ? ['pipe', 'inherit', 'inherit'] : ['pipe', 'pipe', 'pipe'],
+          encoding: 'utf8',
         }
       );
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      if (result.status !== 0) {
+        throw new Error(`Command failed with exit code ${result.status}: ${result.stderr || 'Unknown error'}`);
+      }
 
       this.log('✅ Auth0 Client Secret configured in Wrangler', 'green');
     } catch (error) {

@@ -12,7 +12,7 @@
  * Usage:
  *  node scripts/ci/generate-changelog.mjs --output reports/release-notes.md [--range prev|auto|<git-range>] [--append CHANGELOG.md]
  */
-import { execSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -30,7 +30,22 @@ const rangeArg = getFlag('range', 'auto');
 const appendFile = getFlag('append', null);
 
 function sh(cmd) {
-  return execSync(cmd, { encoding: 'utf8' }).trim();
+  // Parse command into executable and arguments to prevent injection
+  const parts = cmd.trim().split(/\s+/);
+  const executable = parts[0];
+  const args = parts.slice(1);
+
+  const result = spawnSync(executable, args, {
+    encoding: 'utf8',
+    stdio: 'pipe',
+    shell: false, // Disable shell to prevent injection
+  });
+
+  if (result.error || result.status !== 0) {
+    throw new Error(`Command failed: ${result.stderr?.toString() || 'Unknown error'}`);
+  }
+
+  return result.stdout?.toString().trim() || '';
 }
 
 function safeSh(cmd) {
