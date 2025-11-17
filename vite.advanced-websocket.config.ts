@@ -14,15 +14,17 @@ export default defineConfig({
       output: {
         format: 'es',
         // Preserve both named and default exports
-        exports: 'auto',
-        // Ensure the class is exported
-        preserveModules: false,
+        exports: 'named',
+        // Ensure the class name is preserved
+        generatedCode: {
+          constBindings: false,
+        },
       },
     },
     outDir: 'dist-worker',
     sourcemap: true,
-    // Ensure all exports are preserved
-    minify: false, // Don't minify to preserve exports
+    // Don't minify to preserve exports and class names
+    minify: false,
   },
   resolve: {
     alias: {
@@ -32,7 +34,13 @@ export default defineConfig({
   esbuild: {
     // No JSX in this worker - it's pure TypeScript
     jsx: 'preserve',
-    // Keep class names and exports
+    // Keep class names and exports - critical for Cloudflare Durable Objects
     keepNames: true,
+    // Target ES2022 for Cloudflare Workers
+    target: 'es2022',
+    // Don't add name helpers that might confuse Cloudflare
+    minifyIdentifiers: false,
+    minifySyntax: false,
+    minifyWhitespace: false,
   },
 });

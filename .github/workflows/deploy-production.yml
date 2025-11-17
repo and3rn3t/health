@@ -152,10 +152,7 @@ jobs:
         run: |
           set -e
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo 'Missing CLOUDFLARE_API_TOKEN secret'; exit 1; fi
-          if [ ! -f dist-worker/vitalsense-websocket-advanced-clean.js ]; then
-            echo "Building advanced websocket worker..."
-            pnpm run build:worker:advanced
-          fi
+          # Wrangler will compile TypeScript directly, no need to pre-build
           npx wrangler deploy --config wrangler.advanced-websocket.toml --env development || { echo 'Advanced websocket worker deploy failed'; exit 1; }
           npx wrangler deploy --config wrangler.advanced-websocket.toml --env production || { echo 'Advanced websocket worker deploy failed'; exit 1; }
       - name: Post-deploy canary

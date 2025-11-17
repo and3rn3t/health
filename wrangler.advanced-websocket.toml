@@ -1,5 +1,5 @@
 name = "vitalsense-websocket-advanced"
-main = "dist-worker/vitalsense-websocket-advanced-clean.js"
+main = "src/workers/vitalsense-websocket-advanced.ts"
 compatibility_date = "2024-01-15"
 compatibility_flags = ["nodejs_compat"]
 
