@@ -4,19 +4,25 @@ import react from '@vitejs/plugin-react';
 
 // Plugin to exclude client-side files from worker build
 function excludeClientFiles(): Plugin {
+  const excludedPatterns = [
+    /[\/\\]App\.tsx$/,
+    /[\/\\]main\.tsx$/,
+    /[\/\\]lazyLoading\.ts$/,
+    /[\/\\]navigationHelpers\.ts$/,
+    /[\/\\]components[\/\\]/,
+    /[\/\\]hooks[\/\\]/,
+  ];
+
+  function shouldExclude(id: string): boolean {
+    const normalizedId = id.replace(/\\/g, '/');
+    return excludedPatterns.some(pattern => pattern.test(normalizedId));
+  }
+
   return {
     name: 'exclude-client-files',
-    enforce: 'pre', // Run before other plugins
+    enforce: 'pre', // Run before other plugins, especially before esbuild
     resolveId(id, importer) {
-      // Exclude client-side files that shouldn't be in worker
-      if (
-        id.includes('/App.tsx') ||
-        id.includes('/main.tsx') ||
-        id.includes('/lazyLoading.ts') ||
-        id.includes('/navigationHelpers.ts') ||
-        id.includes('/components/') ||
-        id.includes('/hooks/')
-      ) {
+      if (shouldExclude(id)) {
         // Return a virtual empty module to prevent processing
         return { id: '\0virtual:empty', external: false };
       }
@@ -27,6 +33,21 @@ function excludeClientFiles(): Plugin {
         return 'export {};';
       }
       return null;
+    },
+    // Intercept transform to prevent esbuild from processing these files
+    transform(code, id) {
+      if (shouldExclude(id)) {
+        // Return empty module to prevent processing
+        return { code: 'export {};', map: null };
+      }
+      return null;
+    },
+    // Intercept module resolution to prevent these files from being loaded
+    shouldTransformCachedModule({ id }) {
+      if (shouldExclude(id)) {
+        return false; // Don't transform excluded files
+      }
+      return undefined; // Let other plugins decide
     },
   };
 }
@@ -92,9 +113,36 @@ export default defineConfig({
     },
   },
   esbuild: {
-    // Configure JSX for esbuild (classic mode for worker compatibility)
-    jsx: 'transform',
-    jsxFactory: 'React.createElement',
-    jsxFragment: 'React.Fragment',
+    // Disable JSX transformation - worker shouldn't have JSX
+    // If JSX is found, it means client-side files are being included (which is an error)
+    jsx: 'preserve', // Don't transform JSX - this will cause an error if JSX is present
+    // Exclude client-side files from esbuild processing
+    exclude: [
+      '**/App.tsx',
+      '**/main.tsx',
+      '**/lazyLoading.ts',
+      '**/navigationHelpers.ts',
+      '**/components/**',
+      '**/hooks/**',
+    ],
+    // Use loader to skip JSX files entirely
+    loader: {
+      '.tsx': 'ts', // Treat .tsx as .ts to skip JSX processing
+    },
+  },
+  // Use esbuild for faster builds, but configure it properly
+  optimizeDeps: {
+    exclude: ['react', 'react-dom'],
+    esbuildOptions: {
+      // Exclude client-side files from optimization
+      exclude: [
+        'src/App.tsx',
+        'src/main.tsx',
+        'src/lib/lazyLoading.ts',
+        'src/lib/navigationHelpers.ts',
+        'src/components/**',
+        'src/hooks/**',
+      ],
+    },
   },
 });
