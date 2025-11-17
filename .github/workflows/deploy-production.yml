@@ -76,6 +76,8 @@ jobs:
         run: pnpm run build
       - name: Build worker
         run: pnpm run build:worker || echo 'Worker build optional'
+      - name: Build advanced websocket worker
+        run: pnpm run build:worker:advanced || echo 'Advanced websocket worker build optional'
       - name: Generate integrity manifest
         run: |
           set -e
@@ -137,13 +139,25 @@ jobs:
           else
             echo "No integrity manifest present (skipping check)."
           fi
-      - name: Deploy (wrangler)
+      - name: Deploy main worker (wrangler)
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -e
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo 'Missing CLOUDFLARE_API_TOKEN secret'; exit 1; fi
           npx wrangler deploy --env production || { echo 'Wrangler deploy failed'; exit 1; }
+      - name: Deploy advanced websocket worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -e
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo 'Missing CLOUDFLARE_API_TOKEN secret'; exit 1; fi
+          if [ ! -f dist-worker/vitalsense-websocket-advanced-clean.js ]; then
+            echo "Building advanced websocket worker..."
+            pnpm run build:worker:advanced
+          fi
+          npx wrangler deploy --config wrangler.advanced-websocket.toml --env development || { echo 'Advanced websocket worker deploy failed'; exit 1; }
+          npx wrangler deploy --config wrangler.advanced-websocket.toml --env production || { echo 'Advanced websocket worker deploy failed'; exit 1; }
       - name: Post-deploy canary
         run: |
           set -e

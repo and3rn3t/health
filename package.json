@@ -16,6 +16,7 @@
     "build": "vite build",
     "build:app": "tsc --noEmit && vite build",
     "build:worker": "node scripts/build/build-worker.js",
+    "build:worker:advanced": "vite build --config vite.advanced-websocket.config.ts",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "lint:strict": "eslint src --max-warnings=0",
