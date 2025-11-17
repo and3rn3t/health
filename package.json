@@ -45,6 +45,8 @@
     "wrangler": "wrangler",
     "deploy:dev": "npm run build && wrangler deploy --env development",
     "deploy:prod": "npm run build && wrangler deploy --env production",
+    "deploy:advanced-websocket:dev": "wrangler deploy --config wrangler.advanced-websocket.toml --env development",
+    "deploy:advanced-websocket:prod": "wrangler deploy --config wrangler.advanced-websocket.toml --env production",
     "dns:setup": "node scripts/deployment/dns-setup.js",
     "dns:phase1": "node scripts/deployment/dns-setup.js --phase 1",
     "dns:phase2": "node scripts/deployment/dns-setup.js --phase 2",

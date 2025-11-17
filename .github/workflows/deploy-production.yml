@@ -114,8 +114,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup Node & pnpm
         uses: ./.github/actions/setup-pnpm
-      - name: Install deps (minimal)
-        run: pnpm install --frozen-lockfile --prod || pnpm install --prod --no-frozen-lockfile
+      - name: Install deps (including dev dependencies for wrangler)
+        run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
