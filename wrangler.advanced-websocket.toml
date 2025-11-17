@@ -24,9 +24,15 @@ class_name = "VitalSenseAdvancedWebSocketDO"
 name = "VITALSENSE_WEBSOCKET"
 class_name = "VitalSenseAdvancedWebSocketDO"
 
+# Migration: Keep existing Durable Object class
+# The class already exists in Cloudflare, we're just updating the code
+# Note: We don't need to declare it as "new" if it already exists
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["VitalSenseAdvancedWebSocketDO"]
+
+# If the class already exists, we might need to tell Cloudflare we're keeping it
+# Try removing the migration above and see if that helps, or use renamed_classes
 
 # Analytics and monitoring
 [observability]
