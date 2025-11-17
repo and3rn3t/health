@@ -1,3 +1,5 @@
+/// <reference types="@cloudflare/workers-types" />
+
 /**
  * VitalSense Enhanced WebSocket Worker with Advanced ML Analytics
  * Core enhanced features: Real-time health processing, predictive analytics, anomaly detection
@@ -51,7 +53,7 @@ export class VitalSenseAdvancedWebSocketDO {
   private clients: Map<WebSocket, VitalSenseClient> = new Map();
   private storage: DurableObjectStorage;
 
-  constructor(ctx: DurableObjectState, _env: Env) {
+  constructor(ctx: DurableObjectState, env: Env) {
     this.storage = ctx.storage;
     this.startHeartbeatCheck();
   }
