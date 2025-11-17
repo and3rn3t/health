@@ -8,7 +8,7 @@ var VitalSenseAdvancedWebSocketDO = class {
   }
   clients = /* @__PURE__ */ new Map();
   storage;
-  constructor(ctx, _env) {
+  constructor(ctx, env) {
     this.storage = ctx.storage;
     this.startHeartbeatCheck();
   }
