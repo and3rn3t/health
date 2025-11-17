@@ -14,8 +14,14 @@ const EXPECTED_URL =
 async function readPlistValue(filePath, key) {
   try {
     const content = await fs.readFile(filePath, 'utf8');
+    // Sanitize key to prevent regex injection and ReDoS
+    const sanitizedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Limit key length to prevent ReDoS
+    if (sanitizedKey.length > 100) {
+      throw new Error('Key name too long');
+    }
     const keyPattern = new RegExp(
-      `<key>${key}</key>\\s*<string>([^<]+)</string>`
+      `<key>${sanitizedKey}</key>\\s*<string>([^<]+)</string>`
     );
     const match = content.match(keyPattern);
     return match ? match[1] : null;
@@ -28,13 +34,25 @@ async function readPlistValue(filePath, key) {
 async function readTomlValue(filePath, section, key) {
   try {
     const content = await fs.readFile(filePath, 'utf8');
-    const sectionPattern = new RegExp(`\\[${section}\\]([\\s\\S]*?)(?=\\[|$)`);
+    // Sanitize section to prevent regex injection and ReDoS
+    const sanitizedSection = section.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Limit section length to prevent ReDoS
+    if (sanitizedSection.length > 100) {
+      throw new Error('Section name too long');
+    }
+    // NOSONAR: sanitizedSection is sanitized and length-limited above
+    const sectionPattern = new RegExp(`\\[${sanitizedSection}\\]([\\s\\S]*?)(?=\\[|$)`); // NOSONAR
     const sectionMatch = content.match(sectionPattern);
     if (!sectionMatch) return null;
 
-    // Sanitize key to prevent regex injection
+    // Sanitize key to prevent regex injection and ReDoS
     const sanitizedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const keyPattern = new RegExp(`${sanitizedKey}\\s*=\\s*"([^"]+)"`);
+    // Limit key length to prevent ReDoS
+    if (sanitizedKey.length > 100) {
+      throw new Error('Key name too long');
+    }
+    // NOSONAR: sanitizedKey is sanitized and length-limited above
+    const keyPattern = new RegExp(`${sanitizedKey}\\s*=\\s*"([^"]+)"`); // NOSONAR
     const keyMatch = sectionMatch[1].match(keyPattern);
     return keyMatch ? keyMatch[1] : null;
   } catch (error) {

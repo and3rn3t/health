@@ -56,11 +56,11 @@ const SECURITY_PATTERNS = [
     exclude: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx']
   },
   {
-    name: 'Unsafe Regex',
-    pattern: /new RegExp\([^)]*\+[^)]*\)/g,
-    severity: 'medium',
-    fix: 'Validate and sanitize regex inputs',
-    exclude: []
+    name: 'Unsafe Regex (ReDoS Risk)',
+    pattern: /new RegExp\([^)]*\+[^)]*\)|new RegExp\([^)]*\$\{|RegExp\([^)]*\+[^)]*\)|RegExp\([^)]*\$\{/g,
+    severity: 'high',
+    fix: 'Sanitize regex inputs with sanitizeRegexInput() and add length limits',
+    exclude: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx']
   },
   {
     name: 'Weak Crypto (MD5/SHA1)',
@@ -125,6 +125,11 @@ function shouldExclude(filePath, excludes) {
     regexPattern = regexPattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
     // Unescape the patterns we want
     regexPattern = regexPattern.replace(/\\\*/g, '[^/]*').replace(/\\\.\\\.\\\./g, '.*');
+
+    // Limit pattern length to prevent ReDoS (defense in depth)
+    if (regexPattern.length > 500) {
+      console.warn(`⚠️ Glob pattern too long, may cause performance issues: ${pattern}`);
+    }
 
     const regex = new RegExp(regexPattern);
     return regex.test(normalizedPath);

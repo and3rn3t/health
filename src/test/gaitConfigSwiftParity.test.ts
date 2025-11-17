@@ -7,8 +7,15 @@ import { describe, expect, it } from 'vitest';
 // Simple regex helpers to extract assigned Double literals
 function extractSwiftValue(swift: string, name: string): number | null {
   // Match static let <name>: Double = <number>, allowing indentation and optional sign
+  // NOSONAR: Test file - name is from hardcoded test data, not user input
+  // Sanitize name to prevent regex injection (defense in depth)
+  const sanitizedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // Limit name length to prevent ReDoS
+  if (sanitizedName.length > 100) {
+    throw new Error('Variable name too long');
+  }
   const re = new RegExp(
-    `static\\s+let\\s+${name}\\s*:\\s*Double\\s*=\\s*([+-]?[0-9]*\\.?[0-9]+)`,
+    `static\\s+let\\s+${sanitizedName}\\s*:\\s*Double\\s*=\\s*([+-]?[0-9]*\\.?[0-9]+)`,
     'm'
   );
   const m = re.exec(swift);

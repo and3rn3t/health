@@ -211,7 +211,15 @@ compatibility_date = "2024-01-01"
 
         auth0Vars.forEach((varLine) => {
           const varName = varLine.split(' = ')[0];
-          const regex = new RegExp(`^${varName}\\s*=.*$`, 'm');
+          // Sanitize varName to prevent regex injection and ReDoS
+          const sanitizedVarName = varName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          // Limit varName length to prevent ReDoS
+          if (sanitizedVarName.length > 100) {
+            this.log(`⚠️ Variable name too long, skipping: ${varName}`, 'yellow');
+            return;
+          }
+          // NOSONAR: sanitizedVarName is sanitized and length-limited above
+          const regex = new RegExp(`^${sanitizedVarName}\\s*=.*$`, 'm'); // NOSONAR
 
           if (regex.test(updatedContent)) {
             updatedContent = updatedContent.replace(regex, varLine);
@@ -267,7 +275,15 @@ compatibility_date = "2024-01-01"
 
       envVars.forEach((envVar) => {
         const varName = envVar.split('=')[0];
-        const regex = new RegExp(`^${varName}=.*$`, 'm');
+        // Sanitize varName to prevent regex injection and ReDoS
+        const sanitizedVarName = varName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        // Limit varName length to prevent ReDoS
+        if (sanitizedVarName.length > 100) {
+          this.log(`⚠️ Variable name too long, skipping: ${varName}`, 'yellow');
+          return;
+        }
+        // NOSONAR: sanitizedVarName is sanitized and length-limited above
+        const regex = new RegExp(`^${sanitizedVarName}=.*$`, 'm'); // NOSONAR
 
         if (regex.test(updatedContent)) {
           updatedContent = updatedContent.replace(regex, envVar);

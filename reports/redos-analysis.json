@@ -1,0 +1,44 @@
+{
+  "generatedAt": "2025-11-17T00:52:23.996Z",
+  "totalFiles": 488,
+  "vulnerableCount": 6,
+  "vulnerable": [
+    {
+      "file": "src\\worker.ts",
+      "line": 590,
+      "pattern": "/\\.(m?js)(?:\\?.*)?$/",
+      "isConstructor": false
+    },
+    {
+      "file": "src\\worker.ts",
+      "line": 591,
+      "pattern": "/\\.(css)(?:\\?.*)?$/",
+      "isConstructor": false
+    },
+    {
+      "file": "src\\worker.ts",
+      "line": 592,
+      "pattern": "/\\.(woff2?|ttf|otf)(?:\\?.*)?$/",
+      "isConstructor": false
+    },
+    {
+      "file": "src\\worker.ts",
+      "line": 593,
+      "pattern": "/\\.(png|svg|jpg|jpeg|gif|webp|ico)(?:\\?.*)?$/",
+      "isConstructor": false
+    },
+    {
+      "file": "scripts\\analysis\\analyze-js-bundle.js",
+      "line": 47,
+      "pattern": "/import\\s+(?:[\\w\\s{},*]+\\s+from\\s+)?['\"]([^'\"]+)['\"]/g",
+      "isConstructor": false
+    },
+    {
+      "file": "scripts\\analysis\\css\\guard-main-css.js",
+      "line": 21,
+      "pattern": "/\\.(?:p[trblxy]?|m[trblxy]?|pt|pb|pl|pr|px|py|my|mx|text|bg|gap|space|w|h|min-w|min-h|max-w|max-h|leading|tracking|rounded)(?:-[0-9]{1,2}|-\\[[^\\]]+\\])?\\s*\\{/g",
+      "isConstructor": false
+    }
+  ],
+  "fixes": []
+}

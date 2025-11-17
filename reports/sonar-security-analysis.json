@@ -1,13 +1,19 @@
 {
-  "generatedAt": "2025-11-17T00:47:20.658Z",
-  "totalFiles": 561,
-  "totalIssues": 2781,
+  "generatedAt": "2025-11-17T00:56:11.901Z",
+  "totalFiles": 564,
+  "totalIssues": 2806,
   "byPattern": [
     {
       "pattern": "Hardcoded Secrets",
       "severity": "critical",
       "count": 10,
       "fix": "Move to environment variables or secrets manager"
+    },
+    {
+      "pattern": "Unsafe Regex (ReDoS Risk)",
+      "severity": "high",
+      "count": 6,
+      "fix": "Sanitize regex inputs with sanitizeRegexInput() and add length limits"
     },
     {
       "pattern": "dangerouslySetInnerHTML (XSS Risk)",
@@ -18,7 +24,7 @@
     {
       "pattern": "console.log (Information Disclosure)",
       "severity": "medium",
-      "count": 2263,
+      "count": 2283,
       "fix": "Use SafeLogger or remove in production"
     },
     {
@@ -26,12 +32,6 @@
       "severity": "medium",
       "count": 504,
       "fix": "Use crypto.getRandomValues() or secureRandom() for security-sensitive operations"
-    },
-    {
-      "pattern": "Unsafe Regex",
-      "severity": "medium",
-      "count": 1,
-      "fix": "Validate and sanitize regex inputs"
     }
   ],
   "topIssues": [
@@ -79,6 +79,51 @@
       "severity": "critical",
       "fix": "Move to environment variables or secrets manager",
       "snippet": "{ ENVIRONMENT: 'development', DEVICE_JWT_SECRET: 'dev-secret' }"
+    },
+    {
+      "file": "src\\lib\\regexUtils.ts",
+      "line": 39,
+      "column": 31,
+      "pattern": "Unsafe Regex (ReDoS Risk)",
+      "severity": "high",
+      "fix": "Sanitize regex inputs with sanitizeRegexInput() and add length limits",
+      "snippet": "pattern = pattern.replace(new RegExp(`\\\\$\\\\{${key}\\\\}`, 'g'), sanitized); // NOSONAR"
+    },
+    {
+      "file": "scripts\\branding\\convert-phosphor-to-lucide.js",
+      "line": 229,
+      "column": 30,
+      "pattern": "Unsafe Regex (ReDoS Risk)",
+      "severity": "high",
+      "fix": "Sanitize regex inputs with sanitizeRegexInput() and add length limits",
+      "snippet": "const jsxPattern = new RegExp(`<${sanitizedFrom}([^>]*)/>`, 'g'); // NOSONAR"
+    },
+    {
+      "file": "scripts\\deployment\\auth0-setup.js",
+      "line": 222,
+      "column": 25,
+      "pattern": "Unsafe Regex (ReDoS Risk)",
+      "severity": "high",
+      "fix": "Sanitize regex inputs with sanitizeRegexInput() and add length limits",
+      "snippet": "const regex = new RegExp(`^${sanitizedVarName}\\\\s*=.*$`, 'm'); // NOSONAR"
+    },
+    {
+      "file": "scripts\\deployment\\auth0-setup.js",
+      "line": 286,
+      "column": 23,
+      "pattern": "Unsafe Regex (ReDoS Risk)",
+      "severity": "high",
+      "fix": "Sanitize regex inputs with sanitizeRegexInput() and add length limits",
+      "snippet": "const regex = new RegExp(`^${sanitizedVarName}=.*$`, 'm'); // NOSONAR"
+    },
+    {
+      "file": "scripts\\test-advanced-websocket-config.js",
+      "line": 44,
+      "column": 28,
+      "pattern": "Unsafe Regex (ReDoS Risk)",
+      "severity": "high",
+      "fix": "Sanitize regex inputs with sanitizeRegexInput() and add length limits",
+      "snippet": "const sectionPattern = new RegExp(`\\\\[${sanitizedSection}\\\\]([\\\\s\\\\S]*?)(?=\\\\[|$)`); // NOSONAR"
     },
     {
       "file": "src\\components\\ui\\chart.tsx",
@@ -196,15 +241,6 @@
       "severity": "medium",
       "fix": "Use crypto.getRandomValues() or secureRandom() for security-sensitive operations",
       "snippet": "Math.min(100, prev.heartRate + (Math.random() - 0.5) * 4)"
-    },
-    {
-      "file": "scripts\\test-advanced-websocket-config.js",
-      "line": 37,
-      "column": 24,
-      "pattern": "Unsafe Regex",
-      "severity": "medium",
-      "fix": "Validate and sanitize regex inputs",
-      "snippet": "const keyPattern = new RegExp(`${sanitizedKey}\\\\s*=\\\\s*\"([^\"]+)\"`);"
     }
   ]
 }

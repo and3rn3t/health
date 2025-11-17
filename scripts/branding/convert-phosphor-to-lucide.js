@@ -33,7 +33,7 @@ const PHOSPHOR_TO_LUCIDE_MAP = {
   'Copy': 'Copy',
   'Download': 'Download',
   'Upload': 'Upload',
-  
+
   // Navigation
   'ArrowRight': 'ArrowRight',
   'ArrowLeft': 'ArrowLeft',
@@ -43,7 +43,7 @@ const PHOSPHOR_TO_LUCIDE_MAP = {
   'CaretLeft': 'ChevronLeft',
   'CaretUp': 'ChevronUp',
   'CaretDown': 'ChevronDown',
-  
+
   // Interface
   'House': 'Home',
   'Gear': 'Settings',
@@ -59,7 +59,7 @@ const PHOSPHOR_TO_LUCIDE_MAP = {
   'Share': 'Share',
   'DotsThree': 'MoreHorizontal',
   'DotsThreeVertical': 'MoreVertical',
-  
+
   // Health & Medical
   'Activity': 'Activity',
   'PulseIcon': 'Activity', // Custom mapping for pulse
@@ -71,47 +71,47 @@ const PHOSPHOR_TO_LUCIDE_MAP = {
   'Warning': 'AlertTriangle',
   'Info': 'Info',
   'Question': 'HelpCircle',
-  
+
   // Time & Calendar
   'Clock': 'Clock',
   'Calendar': 'Calendar',
   'CalendarBlank': 'CalendarDays',
   'Timer': 'Timer',
-  
+
   // Charts & Analytics
   'ChartLine': 'LineChart',
   'ChartBar': 'BarChart',
   'TrendUp': 'TrendingUp',
   'TrendDown': 'TrendingDown',
   'ChartPie': 'PieChart',
-  
+
   // Files & Documents
   'File': 'File',
   'FileText': 'FileText',
   'Folder': 'Folder',
   'FolderOpen': 'FolderOpen',
   'Note': 'StickyNote',
-  
+
   // Communication
   'ChatCircle': 'MessageCircle',
   'Envelope': 'Mail',
   'Phone': 'Phone',
   'VideoCamera': 'Video',
-  
+
   // Technology
   'DeviceMobile': 'Smartphone',
   'Desktop': 'Monitor',
   'Wifi': 'Wifi',
   'Battery': 'Battery',
   'Bluetooth': 'Bluetooth',
-  
+
   // Status & Indicators
   'CheckCircle': 'CheckCircle',
   'XCircle': 'XCircle',
   'WarningCircle': 'AlertCircle',
   'InfoIcon': 'Info',
   'Spinner': 'Loader',
-  
+
   // VitalSense specific health icons
   'HeartRate': 'Activity',
   'BloodPressure': 'Activity',
@@ -129,7 +129,7 @@ const CUSTOM_REPLACEMENTS = {
     note: 'Phosphor Pulse → Lucide Activity (pulse line pattern)'
   },
   'Heartbeat': {
-    lucideIcon: 'Activity', 
+    lucideIcon: 'Activity',
     note: 'Phosphor Heartbeat → Lucide Activity (ECG pattern)'
   },
   'MedicalCross': {
@@ -150,9 +150,9 @@ class PhosphorToLucideConverter {
 
   async findFiles() {
     const pattern = path.join(this.options.directory, this.extensionPattern);
-    return await glob(pattern, { 
+    return await glob(pattern, {
       ignore: ['**/node_modules/**', '**/dist/**', '**/build/**'],
-      absolute: true 
+      absolute: true
     });
   }
 
@@ -175,7 +175,7 @@ class PhosphorToLucideConverter {
 
         for (const phosphorIcon of phosphorIcons) {
           const lucideIcon = PHOSPHOR_TO_LUCIDE_MAP[phosphorIcon];
-          
+
           if (lucideIcon) {
             convertedIcons.push(lucideIcon);
             fileConversions.push({
@@ -200,11 +200,11 @@ class PhosphorToLucideConverter {
 
         if (convertedIcons.length > 0) {
           let replacement = '';
-          
+
           if (convertedIcons.length > 0) {
             replacement = `import { ${convertedIcons.join(', ')} } from 'lucide-react'`;
           }
-          
+
           if (unconvertedIcons.length > 0) {
             const phosphorImport = `import { ${unconvertedIcons.join(', ')} } from '@phosphor-icons/react'`;
             replacement = replacement ? `${replacement}\\n${phosphorImport}` : phosphorImport;
@@ -218,9 +218,17 @@ class PhosphorToLucideConverter {
       // Convert icon usage in JSX (handle renamed icons)
       for (const conversion of fileConversions) {
         if (conversion.from !== conversion.to) {
-          const jsxPattern = new RegExp(`<${conversion.from}([^>]*)/>`, 'g');
+          // Sanitize icon name to prevent regex injection and ReDoS
+          const sanitizedFrom = conversion.from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          // Limit icon name length to prevent ReDoS
+          if (sanitizedFrom.length > 100) {
+            console.warn(`⚠️ Icon name too long, skipping: ${conversion.from}`);
+            continue;
+          }
+          // NOSONAR: sanitizedFrom is sanitized and length-limited above
+          const jsxPattern = new RegExp(`<${sanitizedFrom}([^>]*)/>`, 'g'); // NOSONAR
           const jsxMatches = modifiedContent.match(jsxPattern);
-          
+
           if (jsxMatches) {
             modifiedContent = modifiedContent.replace(jsxPattern, `<${conversion.to}$1/>`);
             conversion.jsxUpdated = jsxMatches.length;
@@ -230,7 +238,7 @@ class PhosphorToLucideConverter {
 
       if (fileChanged) {
         this.conversionsApplied++;
-        
+
         if (this.options.verbose) {
           console.log(`🔄 Converted icons in: ${path.relative(process.cwd(), filePath)}`);
           fileConversions.forEach(conv => {
@@ -245,7 +253,7 @@ class PhosphorToLucideConverter {
             conversions: fileConversions
           });
         }
-        
+
         if (this.options.dryRun) {
           console.log(`🔍 Would convert: ${path.relative(process.cwd(), filePath)}`);
         } else {
@@ -289,7 +297,7 @@ class PhosphorToLucideConverter {
     console.log(`📄 Extensions: ${this.options.extensions}`);
 
     const files = await this.findFiles();
-    
+
     if (files.length === 0) {
       console.log('❌ No files found matching the criteria');
       return;
@@ -299,7 +307,7 @@ class PhosphorToLucideConverter {
     console.log(`🗺️  Mapping ${Object.keys(PHOSPHOR_TO_LUCIDE_MAP).length} icons`);
 
     const startTime = Date.now();
-    
+
     // Process files in parallel (but limit concurrency)
     const batchSize = 10;
     for (let i = 0; i < files.length; i += batchSize) {
