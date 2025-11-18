@@ -6,7 +6,7 @@ import SwiftUI
 // MARK: - Widget Preview Provider
 struct VitalSenseWidget_Previews: PreviewProvider {
     static var previews: some View {
-        SwiftUI.Group {
+        VStack {
             // Main widget previews
             SmallHealthWidget(entry: HealthEntry(
                 date: Date(),
