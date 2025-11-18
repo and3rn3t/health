@@ -346,13 +346,13 @@ struct HealthDataSnapshot {
     let sleepDuration: Double
     let sleepEfficiency: Double
     let restingEnergy: Double
-    let profile: UserProfile
+    let profile: FallRiskUserProfile
     let trends: HealthTrends
     let temporalSequence: [TemporalDataPoint]
     let contextualFeatures: [String: Double]
 }
 
-struct UserProfile {
+struct FallRiskUserProfile {
     let age: Double
     let medicationCount: Double
     let fallHistoryScore: Double

@@ -57,7 +57,7 @@ extension HealthKitManager {
 
     private func fetchLatestHeartRate() async throws {
         guard let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate) else {
-            throw HealthKitError.invalidDataType("Heart rate type not available")
+            throw HealthKitError.invalidQuantityType
         }
 
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
@@ -69,7 +69,7 @@ extension HealthKitManager {
 
                 if let error = error {
                     Log.error("Heart rate fetch error: \(error.localizedDescription)", category: "healthkit")
-                    continuation.resume(throwing: HealthKitError.queryFailed(error.localizedDescription))
+                    continuation.resume(throwing: HealthKitError.queryFailed(error))
                     return
                 }
 
@@ -149,7 +149,7 @@ extension HealthKitManager {
 
     private func fetchLatestStepCount() async throws {
         guard let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount) else {
-            throw HealthKitError.invalidDataType("Step count type not available")
+            throw HealthKitError.invalidQuantityType
         }
 
         let calendar = Calendar.current
@@ -164,7 +164,7 @@ extension HealthKitManager {
 
                 if let error = error {
                     Log.error("Step count fetch error: \(error.localizedDescription)", category: "healthkit")
-                    continuation.resume(throwing: HealthKitError.queryFailed(error.localizedDescription))
+                    continuation.resume(throwing: HealthKitError.queryFailed(error))
                     return
                 }
 
@@ -246,7 +246,7 @@ extension HealthKitManager {
 
     private func fetchLatestDistance() async throws {
         guard let distanceType = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning) else {
-            throw HealthKitError.invalidDataType("Distance type not available")
+            throw HealthKitError.invalidQuantityType
         }
 
         let calendar = Calendar.current
@@ -261,7 +261,7 @@ extension HealthKitManager {
 
                 if let error = error {
                     Log.error("Distance fetch error: \(error.localizedDescription)", category: "healthkit")
-                    continuation.resume(throwing: HealthKitError.queryFailed(error.localizedDescription))
+                    continuation.resume(throwing: HealthKitError.queryFailed(error))
                     return
                 }
 
@@ -297,25 +297,8 @@ extension HealthKitManager {
 }
 
 // MARK: - HealthKit Error Types
-enum HealthKitError: Error, LocalizedError {
-    case invalidDataType(String)
-    case queryFailed(String)
-    case noDataAvailable(String)
-    case authorizationDenied
-
-    var errorDescription: String? {
-        switch self {
-        case .invalidDataType(let message):
-            return "Invalid data type: \(message)"
-        case .queryFailed(let message):
-            return "Query failed: \(message)"
-        case .noDataAvailable(let message):
-            return "No data available: \(message)"
-        case .authorizationDenied:
-            return "HealthKit authorization denied"
-        }
-    }
-}
+// Note: HealthKitError is defined in HealthKitManager.swift
+// Use that enum instead of defining a duplicate here
 
 // MARK: - Gait Analysis Extensions
 extension HKQuantityType {

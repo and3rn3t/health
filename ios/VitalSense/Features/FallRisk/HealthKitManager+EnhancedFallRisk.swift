@@ -62,7 +62,7 @@ extension HealthKitManager {
         guard let walkingSteadinessType = HKQuantityType.quantityType(
             forIdentifier: .appleWalkingSteadiness
         ) else {
-            throw HealthKitError.typeNotAvailable
+            throw FallRiskHealthKitError.typeNotAvailable
         }
 
         return try await withCheckedThrowingContinuation { continuation in
@@ -126,11 +126,11 @@ extension HealthKitManager {
         )
     }
 
-    private func fetchHeartRateData() async throws -> HeartRateData {
+    private func fetchHeartRateData() async throws -> FallRiskHeartRateData {
         guard let heartRateType = HKQuantityType.quantityType(
             forIdentifier: .heartRate
         ) else {
-            throw HealthKitError.typeNotAvailable
+            throw FallRiskHealthKitError.typeNotAvailable
         }
 
         return try await withCheckedThrowingContinuation { continuation in
@@ -161,7 +161,7 @@ extension HealthKitManager {
 
                 guard let heartRateSamples = samples as? [HKQuantitySample],
                       !heartRateSamples.isEmpty else {
-                    continuation.resume(with: .success(HeartRateData(
+                    continuation.resume(with: .success(FallRiskHeartRateData(
                         resting: 68.0,
                         variability: 35.0,
                         average: 75.0,
@@ -181,7 +181,7 @@ extension HealthKitManager {
                 // Calculate HRV (simplified)
                 let hrv = calculateSimpleHRV(heartRates: heartRates)
 
-                continuation.resume(with: .success(HeartRateData(
+                continuation.resume(with: .success(FallRiskHeartRateData(
                     resting: restingHR,
                     variability: hrv,
                     average: avgHeartRate,
@@ -193,7 +193,7 @@ extension HealthKitManager {
         }
     }
 
-    private func fetchActivityData() async throws -> ActivityData {
+    private func fetchActivityData() async throws -> FallRiskActivityData {
         // Fetch comprehensive activity data
         async let steps = fetchStepCount()
         async let activeEnergy = fetchActiveEnergy()
@@ -205,7 +205,7 @@ extension HealthKitManager {
         let exercise = try await exerciseTime
         let stand = try await standHours
 
-        return ActivityData(
+        return FallRiskActivityData(
             steps: stepCount,
             activeEnergy: energy,
             exerciseMinutes: exercise,
@@ -228,11 +228,11 @@ extension HealthKitManager {
         )
     }
 
-    private func fetchSleepData() async throws -> SleepData {
+    private func fetchSleepData() async throws -> FallRiskSleepData {
         guard let sleepType = HKCategoryType.categoryType(
             forIdentifier: .sleepAnalysis
         ) else {
-            throw HealthKitError.typeNotAvailable
+            throw FallRiskHealthKitError.typeNotAvailable
         }
 
         return try await withCheckedThrowingContinuation { continuation in
@@ -262,7 +262,7 @@ extension HealthKitManager {
 
                 guard let sleepSamples = samples as? [HKCategorySample],
                       !sleepSamples.isEmpty else {
-                    continuation.resume(with: .success(SleepData(
+                    continuation.resume(with: .success(FallRiskSleepData(
                         duration: 7.5,
                         efficiency: 0.85,
                         deepSleepPercentage: 0.25,
@@ -288,7 +288,7 @@ extension HealthKitManager {
                 let avgSleepDuration = totalSleepTime / 3600.0 / 7.0 // hours per night over week
                 let sleepEfficiency = inBedTime > 0 ? totalSleepTime / inBedTime : 0.85
 
-                continuation.resume(with: .success(SleepData(
+                continuation.resume(with: .success(FallRiskSleepData(
                     duration: avgSleepDuration,
                     efficiency: sleepEfficiency,
                     deepSleepPercentage: 0.25, // Would need additional data
@@ -300,12 +300,12 @@ extension HealthKitManager {
         }
     }
 
-    private func getUserProfile() async throws -> UserProfile {
+    private func getUserProfile() async throws -> FallRiskUserProfile {
         // Get user demographic and medical information
         let age = try await fetchUserAge()
         let biologicalSex = try await fetchBiologicalSex()
 
-        return UserProfile(
+        return FallRiskUserProfile(
             age: Double(age),
             medicationCount: 2.0, // Would need to be tracked separately
             fallHistoryScore: 0.1  // Would need to be tracked separately
@@ -532,14 +532,14 @@ struct GaitMetricsData {
     let steadiness: Double // percentage
 }
 
-struct HeartRateData {
+struct FallRiskHeartRateData {
     let resting: Double
     let variability: Double
     let average: Double
     let maximum: Double
 }
 
-struct ActivityData {
+struct FallRiskActivityData {
     let steps: Double
     let activeEnergy: Double // kcal
     let exerciseMinutes: Double
@@ -555,7 +555,7 @@ struct BalanceMetricsData {
     let reactionTime: Double // milliseconds
 }
 
-struct SleepData {
+struct FallRiskSleepData {
     let duration: Double // hours
     let efficiency: Double // 0-1 scale
     let deepSleepPercentage: Double
@@ -563,7 +563,7 @@ struct SleepData {
 }
 
 // MARK: - Error Types
-enum HealthKitError: Error {
+enum FallRiskHealthKitError: Error {
     case typeNotAvailable
     case dataNotAvailable
     case permissionDenied
