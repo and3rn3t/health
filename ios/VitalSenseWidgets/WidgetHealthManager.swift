@@ -577,7 +577,7 @@ class WidgetPreferences: ObservableObject {
         }
 
         // Check if we have recent data (within last 4 hours)
-        guard let lastUpdate = getCachedDate(for: CacheKeys.lastUpdate) else {
+        guard let lastUpdate = self.getCachedDate(for: CacheKeys.lastUpdate) else {
             return .disconnected
         }
 
@@ -598,8 +598,8 @@ class WidgetPreferences: ObservableObject {
     /// Calculate heart rate trend based on recent data
     func calculateHeartRateTrend() -> HealthTrend {
         // Get current and previous heart rate values
-        let current = getCachedValue(for: CacheKeys.heartRate) ?? 0
-        let previous = getCachedValue(for: "previous_heart_rate") ?? current
+        let current = self.getCachedValue(for: CacheKeys.heartRate) ?? 0
+        let previous = self.getCachedValue(for: "previous_heart_rate") ?? current
 
         let difference = current - previous
 
