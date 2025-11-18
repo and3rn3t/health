@@ -420,7 +420,7 @@ struct VitalSenseWatchDashboard: View {
                 Toggle("Workout Reminders", isOn: .constant(false))
             }
 
-            Section("Connectivity") {
+            Section {
                 HStack {
                     Text("iPhone")
                     Spacer()
