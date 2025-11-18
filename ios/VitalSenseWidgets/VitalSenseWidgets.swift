@@ -8,6 +8,9 @@
 import WidgetKit
 import SwiftUI
 
+// Typealias to ensure we're using WidgetKit's protocol
+typealias WidgetConfig = WidgetKit.WidgetConfiguration
+
 // Simple timeline provider without AppIntents dependency
 struct Provider: TimelineProvider {
     typealias Entry = SimpleEntry
@@ -69,7 +72,7 @@ struct VitalSenseWidgetsEntryView : View {
 struct VitalSenseWidgets: Widget {
     let kind: String = "VitalSenseWidgets"
 
-    var body: some WidgetConfiguration {
+    var body: some WidgetConfig {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
             VitalSenseWidgetsEntryView(entry: entry)
         }
