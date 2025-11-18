@@ -347,13 +347,13 @@ struct ComprehensiveWatchGaitView: View {
     }
 
     private func syncToiPhone() {
-        let gaitDict = [
-            "walkingSpeed": gaitManager.currentGaitData.walkingSpeed,
-            "stepLength": gaitManager.currentGaitData.stepLength,
-            "cadence": gaitManager.currentGaitData.cadence,
-            "walkingAsymmetry": gaitManager.currentGaitData.walkingAsymmetry,
-            "doubleSupportPercentage": gaitManager.currentGaitData.doubleSupportPercentage
-        ] as [String: Any]
+        let gaitDict: [String: String] = [
+            "walkingSpeed": String(format: "%.2f", gaitManager.currentGaitData.walkingSpeed),
+            "stepLength": String(format: "%.2f", gaitManager.currentGaitData.stepLength),
+            "cadence": String(format: "%.2f", gaitManager.currentGaitData.cadence),
+            "walkingAsymmetry": String(format: "%.2f", gaitManager.currentGaitData.walkingAsymmetry),
+            "doubleSupportPercentage": String(format: "%.2f", gaitManager.currentGaitData.doubleSupportPercentage)
+        ]
         connectivityManager.sendQuickEvent(gaitDict)
 
         if hapticFeedbackEnabled {
@@ -363,7 +363,10 @@ struct ComprehensiveWatchGaitView: View {
 
     private func emergencyContact() {
         // Trigger emergency contact system
-        connectivityManager.sendQuickEvent(["emergencyAlert": true, "timestamp": Date().timeIntervalSince1970])
+        connectivityManager.sendQuickEvent([
+            "emergencyAlert": "true",
+            "timestamp": String(Date().timeIntervalSince1970)
+        ])
 
         if hapticFeedbackEnabled {
             WKInterfaceDevice.current().play(.failure)
