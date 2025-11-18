@@ -104,9 +104,9 @@ struct VitalSenseWidget_Previews: PreviewProvider {
 
             SmallHeartRateWidget(entry: HeartRateEntry(
                 date: Date(),
-                heartRate: nil,
+                heartRate: 0,
                 trend: .stable,
-                zone: .unknown
+                zone: .resting
             ))
             .previewContext(WidgetPreviewContext(family: .systemSmall))
             .previewDisplayName("Heart Rate Widget - No Data")
