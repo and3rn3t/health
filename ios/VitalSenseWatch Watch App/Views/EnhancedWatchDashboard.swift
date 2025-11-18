@@ -167,7 +167,7 @@ struct EnhancedWatchDashboard: View {
                 HStack(spacing: 8) {
                     WatchMetricCard(
                         title: "Active",
-                        value: "\(Int(healthManager.activeEnergyBurned))",
+                        value: "\(Int(healthManager.todayActiveEnergy))",
                         unit: "cal",
                         icon: "flame.fill",
                         color: .orange,
