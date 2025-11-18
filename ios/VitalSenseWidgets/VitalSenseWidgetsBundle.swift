@@ -18,7 +18,7 @@ struct VitalSenseWidgetsBundle: WidgetBundle {
         // Specialized widgets
         VitalSenseHeartRateWidget()
         VitalSenseActivityWidget()
-        VitalSenseStepsWidget()
+        // Note: VitalSenseStepsWidget not yet implemented
 
         // Legacy support (can be removed once migration is complete)
         VitalSenseWidgets()

@@ -18,48 +18,21 @@ struct VitalSenseWidgetsControl: ControlWidget {
             kind: Self.kind,
             provider: Provider()
         ) { value in
-            if #available(iOS 26.0, *) {
-                // iOS 26 Enhanced Control Widget with Variable Draw
-                ControlWidgetToggle(
-                    "Health Monitoring",
-                    isOn: value.isMonitoring,
-                    action: ToggleHealthMonitoringIntent()
-                ) { isMonitoring in
-                    Label {
-                        Text(isMonitoring ? "Monitoring" : "Paused")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                    } icon: {
-                        Image(systemName: "heart.fill")
-                            .foregroundStyle(
-                                isMonitoring ?
-                                iOS26Integration.gradientStyle(for: .cardiovascular) :
-                                .secondary
-                            )
-                            .symbolEffect(
-                                .variableColor.iterative.dimInactiveLayers.nonReversing,
-                                options: .speed(isMonitoring ? 1.0 : 0.0),
-                                value: isMonitoring
-                            )
-                            .symbolEffect(
-                                .pulse.byLayer,
-                                options: .repeat(.continuous).speed(0.8),
-                                value: isMonitoring
-                            )
-                    }
-                }
-                .controlWidgetActionHint("Toggle continuous health monitoring")
-            } else {
-                // Fallback for older iOS versions
-                ControlWidgetToggle(
-                    "Health Monitoring",
-                    isOn: value.isMonitoring,
-                    action: ToggleHealthMonitoringIntent()
-                ) { isMonitoring in
-                    Label(isMonitoring ? "On" : "Off", systemImage: "heart.fill")
-                        .foregroundColor(isMonitoring ? .red : .secondary)
+            ControlWidgetToggle(
+                "Health Monitoring",
+                isOn: value.isMonitoring,
+                action: ToggleHealthMonitoringIntent()
+            ) { isMonitoring in
+                Label {
+                    Text(isMonitoring ? "Monitoring" : "Paused")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                } icon: {
+                    Image(systemName: "heart.fill")
+                        .foregroundStyle(isMonitoring ? .red : .secondary)
                 }
             }
+            .controlWidgetActionHint("Toggle continuous health monitoring")
         }
         .displayName("VitalSense Health")
         .description("Control continuous health monitoring and real-time alerts.")
@@ -85,9 +58,10 @@ extension VitalSenseWidgetsControl {
         }
 
         func currentValue(configuration: HealthMonitoringConfiguration) async throws -> Value {
-            // Check current monitoring state from HealthKitManager
-            let isMonitoring = HealthKitManager.shared.isActivelyMonitoring
-            let lastHeartRate = await HealthKitManager.shared.getCurrentHeartRate()
+            // Check current monitoring state from WidgetHealthManager
+            // Note: Widget extensions have limited access to main app state
+            let isMonitoring = WidgetHealthManager.shared.isActivelyMonitoring
+            let lastHeartRate = await WidgetHealthManager.shared.getCurrentHeartRate()
 
             return VitalSenseWidgetsControl.Value(
                 isMonitoring: isMonitoring,
@@ -125,10 +99,12 @@ struct ToggleHealthMonitoringIntent: SetValueIntent {
 
     func perform() async throws -> some IntentResult {
         // Toggle health monitoring state
+        // Note: Widget extensions have limited access to main app state
+        // This would need to communicate with the main app via App Groups or similar
         if value {
-            await HealthKitManager.shared.startContinuousMonitoring()
+            await WidgetHealthManager.shared.startMonitoring()
         } else {
-            await HealthKitManager.shared.stopContinuousMonitoring()
+            await WidgetHealthManager.shared.stopMonitoring()
         }
 
         return .result()

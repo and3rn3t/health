@@ -465,6 +465,32 @@ class WidgetHealthManager: ObservableObject {
     func refreshWidget(kind: String) {
         WidgetCenter.shared.reloadTimelines(ofKind: kind)
     }
+    
+    // MARK: - Control Widget Support
+    var isActivelyMonitoring: Bool {
+        // Check if monitoring is active via UserDefaults shared container
+        return userDefaults?.bool(forKey: "is_monitoring_active") ?? false
+    }
+    
+    func getCurrentHeartRate() async -> Double {
+        return await withCheckedContinuation { continuation in
+            fetchHeartRateData { heartRate in
+                continuation.resume(returning: heartRate ?? 0.0)
+            }
+        }
+    }
+    
+    func startMonitoring() async {
+        userDefaults?.set(true, forKey: "is_monitoring_active")
+        // Trigger widget refresh
+        refreshAllWidgets()
+    }
+    
+    func stopMonitoring() async {
+        userDefaults?.set(false, forKey: "is_monitoring_active")
+        // Trigger widget refresh
+        refreshAllWidgets()
+    }
 }
 
 // MARK: - Widget Configuration
