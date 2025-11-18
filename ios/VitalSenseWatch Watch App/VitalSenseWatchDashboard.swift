@@ -430,7 +430,9 @@ struct VitalSenseWatchDashboard: View {
 
                 if !connectivityManager.isConnectedToPhone {
                     Button("Reconnect") {
-                        connectivityManager.startSession()
+                        // Session is automatically activated in init
+                        // Force reconnection by requesting live status
+                        connectivityManager.requestLiveStatus()
                     }
                 }
             } header: {
