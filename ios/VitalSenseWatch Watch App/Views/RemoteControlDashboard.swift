@@ -20,7 +20,9 @@ struct RemoteControlDashboard: View {
     }
 
     private var statusSection: some View {
-        GroupBox(label: Label("Status", systemImage: "waveform.path.ecg")) {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("Status", systemImage: "waveform.path.ecg")
+                .font(.headline)
             if let s = connectivity.latestStatus {
                 VStack(alignment: .leading, spacing: 4) {
                     Label(s.fallRiskLevel?.capitalized ?? "Unknown", systemImage: "shield")
@@ -28,7 +30,11 @@ struct RemoteControlDashboard: View {
                     if let spd = s.walkingSpeed { Text("Speed: \(String(format: "%.2f", spd)) m/s") }
                     if let freq = s.stepFrequency { Text("Steps/min: \(Int(freq))") }
                     if let asym = s.asymmetry { Text("Asym: \(String(format: "%.1f%%", asym * 100))") }
-                    if let prog = connectivity.balanceProgress { ProgressView(value: prog.percent, total: 100).progressViewStyle(.linear).tint(.blue) }
+                    if let prog = connectivity.balanceProgress {
+                        ProgressView(value: prog.progress, total: 1.0)
+                            .progressViewStyle(.linear)
+                            .tint(.blue)
+                    }
                     if let result = connectivity.balanceResult { Text("Balance Score: \(Int(result.overallScore))").font(.caption.bold()) }
                     Text(s.connectionStatus).font(.caption2).foregroundColor(.secondary)
                 }
@@ -36,10 +42,15 @@ struct RemoteControlDashboard: View {
                 Text("No data yet")
             }
         }
+        .padding()
+        .background(.regularMaterial)
+        .cornerRadius(8)
     }
 
     private var controlsSection: some View {
-        GroupBox(label: Label("Controls", systemImage: "playpause")) {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("Controls", systemImage: "playpause")
+                .font(.headline)
             VStack(spacing: 6) {
                 HStack {
                     Button("Refresh") { connectivity.requestLiveStatus() }
@@ -53,10 +64,15 @@ struct RemoteControlDashboard: View {
                 .buttonStyle(.borderedProminent)
             }
         }
+        .padding()
+        .background(.regularMaterial)
+        .cornerRadius(8)
     }
 
     private var riskSection: some View {
-        GroupBox(label: Label("Fall Risk", systemImage: "exclamationmark.triangle")) {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("Fall Risk", systemImage: "exclamationmark.triangle")
+                .font(.headline)
             if let summary = connectivity.latestRiskSummary {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(summary.riskLevel.capitalized)
@@ -72,6 +88,9 @@ struct RemoteControlDashboard: View {
                     .foregroundColor(.secondary)
             }
         }
+        .padding()
+        .background(.regularMaterial)
+        .cornerRadius(8)
     }
 
     private var riskDetailSheet: some View {
