@@ -73,9 +73,5 @@ extension VitalSenseWidgetsAttributes.ContentState {
      }
 }
 
-#Preview("Notification", as: .content, using: VitalSenseWidgetsAttributes.preview) {
-   VitalSenseWidgetsLiveActivity()
-} contentStates: {
-    VitalSenseWidgetsAttributes.ContentState.smiley
-    VitalSenseWidgetsAttributes.ContentState.starEyes
-}
+// Note: Live Activities are not Widgets, so they can't be previewed with Widget preview macros
+// Use Xcode's preview canvas or ActivityKit preview tools instead

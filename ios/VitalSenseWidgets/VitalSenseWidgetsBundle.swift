@@ -20,11 +20,10 @@ struct VitalSenseWidgetsBundle: WidgetBundle {
         VitalSenseActivityWidget()
         VitalSenseStepsWidget()
 
-        // Interactive and live activities
-        VitalSenseWidgetsControl()
-        VitalSenseWidgetsLiveActivity()
-
         // Legacy support (can be removed once migration is complete)
         VitalSenseWidgets()
+        
+        // Note: VitalSenseWidgetsControl requires iOS 18.0+ and is excluded
+        // from the bundle since deployment target is iOS 17.0
     }
 }

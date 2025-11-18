@@ -9,9 +9,11 @@ import AppIntents
 import SwiftUI
 import WidgetKit
 
+@available(iOS 18.0, *)
 struct VitalSenseWidgetsControl: ControlWidget {
     static let kind: String = "com.vitalsense.HealthMonitoringControl"
 
+    @available(iOS 18.0, *)
     var body: some ControlWidgetConfiguration {
         AppIntentControlConfiguration(
             kind: Self.kind,
@@ -72,6 +74,7 @@ extension VitalSenseWidgetsControl {
         var lastHeartRate: Double
     }
 
+    @available(iOS 17.0, *)
     struct Provider: AppIntentControlValueProvider {
         func previewValue(configuration: HealthMonitoringConfiguration) -> Value {
             VitalSenseWidgetsControl.Value(
@@ -95,6 +98,7 @@ extension VitalSenseWidgetsControl {
     }
 }
 
+@available(iOS 17.0, *)
 struct HealthMonitoringConfiguration: ControlConfigurationIntent {
     static let title: LocalizedStringResource = "Health Monitoring Configuration"
 
@@ -105,6 +109,7 @@ struct HealthMonitoringConfiguration: ControlConfigurationIntent {
     var emergencyContact: String
 }
 
+@available(iOS 17.0, *)
 struct ToggleHealthMonitoringIntent: SetValueIntent {
     static let title: LocalizedStringResource = "Toggle Health Monitoring"
 
