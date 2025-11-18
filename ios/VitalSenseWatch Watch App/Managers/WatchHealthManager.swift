@@ -12,6 +12,7 @@ class WatchHealthManager: NSObject, ObservableObject {
     @Published var currentHeartRate: Double = 0
     @Published var todaySteps: Double = 0
     @Published var todayActiveEnergy: Double = 0
+    @Published var exerciseMinutes: Double = 0
 
     // Real-time queries
     private var heartRateQuery: HKAnchoredObjectQuery?
