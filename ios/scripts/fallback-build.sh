@@ -31,6 +31,7 @@ echo ""
 echo "📦 Resolving Swift Package dependencies..."
 xcodebuild -resolvePackageDependencies \
     -workspace "$WORKSPACE" \
+    -scheme "$SCHEME" \
     2>&1 | tee -a "$LOG_PATH"
 
 # Step 2: Clean build folder

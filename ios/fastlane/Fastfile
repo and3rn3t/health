@@ -218,7 +218,9 @@ platform :ios do
     rescue => e
       UI.error("Could not get destinations: #{e.message}")
     end
-  end  desc 'Raw Xcode build test without gym wrapper'
+  end
+
+  desc 'Raw Xcode build test without gym wrapper'
   lane :test_raw_build do
     UI.message('🧪 Testing raw xcodebuild command...')
 
