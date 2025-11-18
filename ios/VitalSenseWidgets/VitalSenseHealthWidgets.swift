@@ -91,7 +91,8 @@ struct HealthTimelineProvider: TimelineProvider {
             activeEnergy: 420,
             gaitScore: 0.85,
             fallRisk: 0.15,
-            isDataAvailable: false
+            isDataAvailable: false,
+            connectionStatus: .disconnected
         )
     }
 
@@ -103,7 +104,8 @@ struct HealthTimelineProvider: TimelineProvider {
             activeEnergy: 485,
             gaitScore: 0.88,
             fallRisk: 0.12,
-            isDataAvailable: true
+            isDataAvailable: true,
+            connectionStatus: .connected
         )
         completion(entry)
     }
@@ -119,7 +121,8 @@ struct HealthTimelineProvider: TimelineProvider {
                     activeEnergy: healthData.activeEnergy,
                     gaitScore: healthData.gaitScore,
                     fallRisk: healthData.fallRisk,
-                    isDataAvailable: true
+                    isDataAvailable: true,
+                    connectionStatus: .connected
                 )
 
                 // Update every 15 minutes
@@ -516,6 +519,44 @@ struct HeartRateWidgetEntryView: View {
         default:
             SmallHeartRateWidget(entry: entry)
         }
+    }
+}
+
+struct ActivityWidgetEntryView: View {
+    var entry: ActivityEntry
+    @Environment(\.widgetFamily) var family
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text("\(entry.steps)")
+                .font(.title.bold())
+            Text("Steps")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text("\(Int(entry.activeEnergy)) cal")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .padding()
+    }
+}
+
+struct GaitWidgetEntryView: View {
+    var entry: GaitEntry
+    @Environment(\.widgetFamily) var family
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text("Gait Score")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text("\(Int(entry.gaitScore * 100))%")
+                .font(.title.bold())
+            Text("Fall Risk: \(Int(entry.fallRisk * 100))%")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .padding()
     }
 }
 

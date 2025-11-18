@@ -13,11 +13,10 @@ struct VitalSenseWidget_Previews: PreviewProvider {
                 heartRate: 75,
                 steps: 8432,
                 activeEnergy: 245,
-                exerciseMinutes: 32,
-                standHours: 8,
-                walkingSteadiness: 85,
-                steadinessStatus: "Excellent",
-                isConnected: true
+                gaitScore: 0.85,
+                fallRisk: 0.15,
+                isDataAvailable: true,
+                connectionStatus: .connected
             ))
             .previewContext(WidgetPreviewContext(family: .systemSmall))
             .previewDisplayName("Health Widget - Small")
@@ -27,11 +26,10 @@ struct VitalSenseWidget_Previews: PreviewProvider {
                 heartRate: 72,
                 steps: 6789,
                 activeEnergy: 189,
-                exerciseMinutes: 15,
-                standHours: 6,
-                walkingSteadiness: 75,
-                steadinessStatus: "Good",
-                isConnected: true
+                gaitScore: 0.75,
+                fallRisk: 0.25,
+                isDataAvailable: true,
+                connectionStatus: .connected
             ))
             .previewContext(WidgetPreviewContext(family: .systemMedium))
             .previewDisplayName("Health Widget - Medium")
@@ -41,11 +39,10 @@ struct VitalSenseWidget_Previews: PreviewProvider {
                 heartRate: 68,
                 steps: 12543,
                 activeEnergy: 387,
-                exerciseMinutes: 45,
-                standHours: 10,
-                walkingSteadiness: 92,
-                steadinessStatus: "Excellent",
-                isConnected: true
+                gaitScore: 0.92,
+                fallRisk: 0.08,
+                isDataAvailable: true,
+                connectionStatus: .connected
             ))
             .previewContext(WidgetPreviewContext(family: .systemLarge))
             .previewDisplayName("Health Widget - Large")
@@ -60,58 +57,9 @@ struct VitalSenseWidget_Previews: PreviewProvider {
             .previewContext(WidgetPreviewContext(family: .systemSmall))
             .previewDisplayName("Heart Rate Widget - Small")
 
-            CircularHeartRateWidget(entry: HeartRateEntry(
-                date: Date(),
-                heartRate: 82,
-                trend: .increasing,
-                zone: .cardio
-            ))
-            .previewContext(WidgetPreviewContext(family: .accessoryCircular))
-            .previewDisplayName("Heart Rate Widget - Circular")
-
-            // Activity widget previews
-            SmallActivityWidget(entry: ActivityEntry(
-                date: Date(),
-                steps: 8432,
-                activeEnergy: 245,
-                exerciseMinutes: 32,
-                standHours: 8,
-                stepsGoal: 10000,
-                energyGoal: 400
-            ))
-            .previewContext(WidgetPreviewContext(family: .systemSmall))
-            .previewDisplayName("Activity Widget - Small")
-
-            MediumActivityWidget(entry: ActivityEntry(
-                date: Date(),
-                steps: 6789,
-                activeEnergy: 189,
-                exerciseMinutes: 15,
-                standHours: 6,
-                stepsGoal: 10000,
-                energyGoal: 400
-            ))
-            .previewContext(WidgetPreviewContext(family: .systemMedium))
-            .previewDisplayName("Activity Widget - Medium")
-
-            // Steps widget previews
-            SmallStepsWidget(entry: StepsEntry(
-                date: Date(),
-                steps: 8432,
-                goal: 10000,
-                hourlySteps: [450, 380, 520, 290, 610, 340, 480, 390, 560, 420, 380, 290]
-            ))
-            .previewContext(WidgetPreviewContext(family: .systemSmall))
-            .previewDisplayName("Steps Widget - Small")
-
-            CircularStepsWidget(entry: StepsEntry(
-                date: Date(),
-                steps: 6789,
-                goal: 10000,
-                hourlySteps: []
-            ))
-            .previewContext(WidgetPreviewContext(family: .accessoryCircular))
-            .previewDisplayName("Steps Widget - Circular")
+            // Note: CircularHeartRateWidget, SmallActivityWidget, MediumActivityWidget,
+            // SmallStepsWidget, CircularStepsWidget, and StepsEntry are not yet implemented
+            // These previews are commented out until those widgets are created
 
             // Lock screen widgets
             CircularHealthWidget(entry: HealthEntry(
@@ -119,11 +67,10 @@ struct VitalSenseWidget_Previews: PreviewProvider {
                 heartRate: 75,
                 steps: 8432,
                 activeEnergy: 245,
-                exerciseMinutes: 32,
-                standHours: 8,
-                walkingSteadiness: 85,
-                steadinessStatus: "Excellent",
-                isConnected: true
+                gaitScore: 0.85,
+                fallRisk: 0.15,
+                isDataAvailable: true,
+                connectionStatus: .connected
             ))
             .previewContext(WidgetPreviewContext(family: .accessoryCircular))
             .previewDisplayName("Health Widget - Lock Screen Circular")
@@ -133,11 +80,10 @@ struct VitalSenseWidget_Previews: PreviewProvider {
                 heartRate: 72,
                 steps: 6789,
                 activeEnergy: 189,
-                exerciseMinutes: 15,
-                standHours: 6,
-                walkingSteadiness: 75,
-                steadinessStatus: "Good",
-                isConnected: true
+                gaitScore: 0.75,
+                fallRisk: 0.25,
+                isDataAvailable: true,
+                connectionStatus: .connected
             ))
             .previewContext(WidgetPreviewContext(family: .accessoryRectangular))
             .previewDisplayName("Health Widget - Lock Screen Rectangular")
@@ -145,14 +91,13 @@ struct VitalSenseWidget_Previews: PreviewProvider {
             // No data states
             SmallHealthWidget(entry: HealthEntry(
                 date: Date(),
-                heartRate: nil,
-                steps: nil,
-                activeEnergy: nil,
-                exerciseMinutes: nil,
-                standHours: nil,
-                walkingSteadiness: nil,
-                steadinessStatus: "Unknown",
-                isConnected: false
+                heartRate: 0,
+                steps: 0,
+                activeEnergy: 0,
+                gaitScore: 0,
+                fallRisk: 0,
+                isDataAvailable: false,
+                connectionStatus: .disconnected
             ))
             .previewContext(WidgetPreviewContext(family: .systemSmall))
             .previewDisplayName("Health Widget - No Data")
@@ -185,6 +130,8 @@ extension WidgetFamily {
             return "Lock Screen Rectangular"
         case .accessoryInline:
             return "Lock Screen Inline"
+        case .systemExtraLarge:
+            return "Extra Large"
         @unknown default:
             return "Unknown"
         }
