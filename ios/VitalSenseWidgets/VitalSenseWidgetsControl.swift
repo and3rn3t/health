@@ -66,6 +66,7 @@ struct VitalSenseWidgetsControl: ControlWidget {
     }
 }
 
+@available(iOS 18.0, *)
 extension VitalSenseWidgetsControl {
     struct Value {
         var isMonitoring: Bool
@@ -73,7 +74,7 @@ extension VitalSenseWidgetsControl {
         var lastHeartRate: Double
     }
 
-    @available(iOS 17.0, *)
+    @available(iOS 18.0, *)
     struct Provider: AppIntentControlValueProvider {
         func previewValue(configuration: HealthMonitoringConfiguration) -> Value {
             VitalSenseWidgetsControl.Value(

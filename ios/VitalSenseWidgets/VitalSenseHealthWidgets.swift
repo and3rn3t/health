@@ -12,8 +12,8 @@ import HealthKit
 import Intents
 import OSLog
 
-// Typealias to ensure we're using WidgetKit's protocol, not any local types
-typealias WidgetConfig = WidgetKit.WidgetConfiguration
+// Typealias to ensure we're using SwiftUI's protocol, not any local types
+typealias WidgetConfig = SwiftUI.WidgetConfiguration
 
 // MARK: - Main Widget Bundle (removed @main to avoid conflicts)
 // Note: Widget bundle is now defined in VitalSenseWidgetsBundle.swift

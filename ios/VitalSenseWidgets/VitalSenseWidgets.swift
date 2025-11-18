@@ -8,8 +8,8 @@
 import WidgetKit
 import SwiftUI
 
-// Typealias to ensure we're using WidgetKit's protocol
-typealias WidgetConfig = WidgetKit.WidgetConfiguration
+// Typealias to ensure we're using SwiftUI's protocol
+typealias WidgetConfig = SwiftUI.WidgetConfiguration
 
 // Simple timeline provider without AppIntents dependency
 struct Provider: TimelineProvider {
