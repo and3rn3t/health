@@ -35,7 +35,7 @@ struct RemoteControlDashboard: View {
                             .progressViewStyle(.linear)
                             .tint(.blue)
                     }
-                    if let result = connectivity.balanceResult { Text("Balance Score: \(Int(result.overallScore))").font(.caption.bold()) }
+                    if let result = connectivity.balanceResult { Text("Balance Score: \(Int(result.result))").font(.caption.bold()) }
                     Text(s.connectionStatus).font(.caption2).foregroundColor(.secondary)
                 }
             } else {
