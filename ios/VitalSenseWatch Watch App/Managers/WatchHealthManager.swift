@@ -10,6 +10,8 @@ class WatchHealthManager: NSObject, ObservableObject {
     @Published var isRealTimeMonitoringActive = false
     @Published var isAuthorized = false
     @Published var currentHeartRate: Double = 0
+    @Published var todaySteps: Double = 0
+    @Published var todayActiveEnergy: Double = 0
 
     // Real-time queries
     private var heartRateQuery: HKAnchoredObjectQuery?
@@ -65,6 +67,7 @@ class WatchHealthManager: NSObject, ObservableObject {
             for sample in samples {
                 let heartRate = sample.quantity.doubleValue(for: HKUnit.count().unitDivided(by: .minute()))
                 DispatchQueue.main.async {
+                    self.currentHeartRate = heartRate
                     completion(heartRate)
                 }
             }
@@ -76,6 +79,7 @@ class WatchHealthManager: NSObject, ObservableObject {
             for sample in samples {
                 let heartRate = sample.quantity.doubleValue(for: HKUnit.count().unitDivided(by: .minute()))
                 DispatchQueue.main.async {
+                    self.currentHeartRate = heartRate
                     completion(heartRate)
                 }
             }
@@ -116,6 +120,7 @@ class WatchHealthManager: NSObject, ObservableObject {
 
             let steps = sum.doubleValue(for: HKUnit.count())
             DispatchQueue.main.async {
+                self.todaySteps = steps
                 completion(steps)
             }
         }
@@ -145,6 +150,7 @@ class WatchHealthManager: NSObject, ObservableObject {
 
             let energy = sum.doubleValue(for: HKUnit.kilocalorie())
             DispatchQueue.main.async {
+                self.todayActiveEnergy = energy
                 completion(energy)
             }
         }
