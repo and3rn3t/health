@@ -9,6 +9,7 @@ class WatchHealthManager: NSObject, ObservableObject {
     private let healthStore = HKHealthStore()
     @Published var isRealTimeMonitoringActive = false
     @Published var isAuthorized = false
+    @Published var currentHeartRate: Double = 0
 
     // Real-time queries
     private var heartRateQuery: HKAnchoredObjectQuery?

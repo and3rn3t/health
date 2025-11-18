@@ -250,18 +250,18 @@ struct EnhancedWatchDashboard: View {
 
     private func startWorkout() {
         // Start workout logic
-        _ = WKInterfaceDevice.current().play(.click)
+        WKInterfaceDevice.current().play(.click)
     }
 
     private func triggerEmergency() {
         // Emergency logic
-        _ = WKInterfaceDevice.current().play(.failure)
+        WKInterfaceDevice.current().play(.failure)
     }
 
     private func syncWithiPhone() {
         // Sync logic - request latest status from iPhone
         connectivityManager.requestLiveStatus()
-        _ = WKInterfaceDevice.current().play(.success)
+        WKInterfaceDevice.current().play(.success)
     }
 }
 
