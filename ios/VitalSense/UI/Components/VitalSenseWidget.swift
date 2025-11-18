@@ -17,40 +17,24 @@ struct VitalSenseWidget: Widget {
     let kind: String = "VitalSenseWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(
-            kind: kind,
-            provider: LegacyProvider()
-        ) { entry in
+        StaticConfiguration(kind: kind, provider: PlaceholderProvider()) { _ in
             LegacyRedirectView()
         }
         .configurationDisplayName("VitalSense Health")
-        .description("Health monitoring widget - please use updated version")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .description("Legacy widget - please add the new VitalSense widget instead.")
     }
 }
 
-// MARK: - Legacy Timeline Provider
+// MARK: - Placeholder Provider
 
-struct LegacyProvider: TimelineProvider {
-    func placeholder(in context: Context) -> LegacyEntry {
-        LegacyEntry(date: Date())
+struct PlaceholderProvider: TimelineProvider {
+    struct Entry: TimelineEntry { let date = Date() }
+
+    func placeholder(in context: Context) -> Entry { Entry() }
+    func getSnapshot(in context: Context, completion: @escaping (Entry) -> Void) { completion(Entry()) }
+    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
+        completion(Timeline(entries: [Entry()], policy: .atEnd))
     }
-
-    func getSnapshot(in context: Context, completion: @escaping (LegacyEntry) -> Void) {
-        completion(LegacyEntry(date: Date()))
-    }
-
-    func getTimeline(in context: Context, completion: @escaping (Timeline<LegacyEntry>) -> Void) {
-        let entry = LegacyEntry(date: Date())
-        let timeline = Timeline(entries: [entry], policy: .never)
-        completion(timeline)
-    }
-}
-
-// MARK: - Legacy Entry Model
-
-struct LegacyEntry: TimelineEntry {
-    let date: Date
 }
 
 // MARK: - Legacy Redirect View

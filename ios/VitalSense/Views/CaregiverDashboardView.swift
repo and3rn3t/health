@@ -83,7 +83,7 @@ struct CaregiverDashboardView: View {
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: 16) {
-                StatusCard(
+                CaregiverStatusCard(
                     title: "Patient Status",
                     value: "Normal",
                     icon: "heart.fill",
@@ -91,7 +91,7 @@ struct CaregiverDashboardView: View {
                     description: "All vital signs within normal ranges"
                 )
 
-                StatusCard(
+                CaregiverStatusCard(
                     title: "Emergency Alerts",
                     value: emergencySystem.activeAlerts.isEmpty ? "None" : "\(emergencySystem.activeAlerts.count)",
                     icon: "shield.fill",
@@ -99,7 +99,7 @@ struct CaregiverDashboardView: View {
                     description: emergencySystem.activeAlerts.isEmpty ? "No active emergencies" : "Active emergency situations"
                 )
 
-                StatusCard(
+                CaregiverStatusCard(
                     title: "Emergency Contacts",
                     value: "\(emergencySystem.emergencyContacts.count)",
                     icon: "phone.fill",
@@ -107,7 +107,7 @@ struct CaregiverDashboardView: View {
                     description: "Contacts configured"
                 )
 
-                StatusCard(
+                CaregiverStatusCard(
                     title: "Last Sync",
                     value: formatLastSync(),
                     icon: "arrow.clockwise.circle.fill",
@@ -134,14 +134,14 @@ struct CaregiverDashboardView: View {
     private var alertsContent: some View {
         VStack(spacing: 16) {
             if emergencySystem.activeAlerts.isEmpty {
-                EmptyStateView(
+                CaregiverEmptyStateView(
                     icon: "checkmark.shield.fill",
                     title: "No Active Alerts",
                     message: "There are currently no emergency alerts."
                 )
             } else {
                 ForEach(emergencySystem.activeAlerts) { alert in
-                    AlertCard(alert: alert)
+                    CaregiverAlertCard(alert: alert)
                 }
                 .padding(.horizontal)
             }
@@ -167,7 +167,7 @@ struct CaregiverDashboardView: View {
     private var contactsContent: some View {
         VStack(spacing: 16) {
             if emergencySystem.emergencyContacts.isEmpty {
-                EmptyStateView(
+                CaregiverEmptyStateView(
                     icon: "person.badge.plus",
                     title: "No Emergency Contacts",
                     message: "Add emergency contacts to enable caregiver notifications."
@@ -194,7 +194,8 @@ struct CaregiverDashboardView: View {
 
 // MARK: - Supporting Views
 
-struct StatusCard: View {
+// Caregiver-specific status card; renamed from StatusCard.
+struct CaregiverStatusCard: View {
     let title: String
     let value: String
     let icon: String
@@ -267,7 +268,8 @@ struct RecentActivityList: View {
     }
 }
 
-struct AlertCard: View {
+// Caregiver-specific alert card; renamed from AlertCard.
+struct CaregiverAlertCard: View {
     let alert: EmergencyAlert
 
     var body: some View {
@@ -395,7 +397,8 @@ struct ContactCard: View {
     }
 }
 
-struct EmptyStateView: View {
+// Caregiver-specific empty state view; renamed from EmptyStateView.
+struct CaregiverEmptyStateView: View {
     let icon: String
     let title: String
     let message: String

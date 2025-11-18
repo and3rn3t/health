@@ -129,10 +129,9 @@ class RealTimeGaitMonitor: ObservableObject {
 
             let reading = SensorReading(
                 timestamp: Date(),
-                acceleration: motion.userAcceleration,
-                gravity: motion.gravity,
-                rotationRate: motion.rotationRate,
-                attitude: motion.attitude
+                accelerationX: motion.userAcceleration.x,
+                accelerationY: motion.userAcceleration.y,
+                accelerationZ: motion.userAcceleration.z
             )
 
             self.processSensorReading(reading)
@@ -189,7 +188,7 @@ class RealTimeGaitMonitor: ObservableObject {
         }
     }
 
-    private func extractGaitFeatures(from readings: [SensorReading]) -> GaitFeatures {
+    private func extractGaitFeatures(from readings: [SensorReading]) -> RealTimeGaitFeatures {
         let recentReadings = Array(readings.suffix(50)) // Last 1 second at 50Hz
 
         // Calculate step detection metrics
@@ -199,7 +198,7 @@ class RealTimeGaitMonitor: ObservableObject {
         let stabilityIndex = calculateStabilityIndex(readings: recentReadings)
         let rhythmicity = calculateRhythmicity(readings: recentReadings)
 
-        return GaitFeatures(
+        return RealTimeGaitFeatures(
             stepVariability: stepVariability,
             walkingSpeed: walkingSpeed,
             gaitAsymmetry: gaitAsymmetry,
@@ -209,7 +208,7 @@ class RealTimeGaitMonitor: ObservableObject {
         )
     }
 
-    private func runMLPrediction(features: GaitFeatures) async -> GaitPrediction? {
+    private func runMLPrediction(features: RealTimeGaitFeatures) async -> RealTimeGaitPrediction? {
         guard let mlModel = mlModel else { return nil }
 
         do {
@@ -229,7 +228,7 @@ class RealTimeGaitMonitor: ObservableObject {
 
             // Extract prediction results
             if let outputArray = prediction.featureValue(for: "output")?.multiArrayValue {
-                return GaitPrediction(
+                return RealTimeGaitPrediction(
                     fallRisk: outputArray[0].doubleValue,
                     gaitQuality: outputArray[1].doubleValue,
                     stabilityScore: outputArray[2].doubleValue,
@@ -243,7 +242,7 @@ class RealTimeGaitMonitor: ObservableObject {
         return nil
     }
 
-    private func updateGaitState(from prediction: GaitPrediction) {
+    private func updateGaitState(from prediction: RealTimeGaitPrediction) {
         let previousState = currentGaitState
 
         // Determine new gait state based on prediction
@@ -256,7 +255,7 @@ class RealTimeGaitMonitor: ObservableObject {
         }
     }
 
-    private func handleEmergencyDetection(prediction: GaitPrediction) async {
+    private func handleEmergencyDetection(prediction: RealTimeGaitPrediction) async {
         let alert = EmergencyAlert(
             id: UUID(),
             timestamp: Date(),
@@ -287,7 +286,7 @@ class RealTimeGaitMonitor: ObservableObject {
         // - Apple Watch emergency features
     }
 
-    private func updateRealTimeMetrics(from prediction: GaitPrediction, features: GaitFeatures) {
+    private func updateRealTimeMetrics(from prediction: RealTimeGaitPrediction, features: RealTimeGaitFeatures) {
         realTimeMetrics = RealTimeGaitMetrics(
             timestamp: Date(),
             walkingSpeed: features.walkingSpeed,
@@ -300,7 +299,7 @@ class RealTimeGaitMonitor: ObservableObject {
         )
     }
 
-    private func generateRecommendations(from prediction: GaitPrediction) -> [GaitRecommendation] {
+    private func generateRecommendations(from prediction: RealTimeGaitPrediction) -> [GaitRecommendation] {
         var recommendations: [GaitRecommendation] = []
 
         if prediction.fallRisk > 0.6 {
@@ -342,7 +341,7 @@ class RealTimeGaitMonitor: ObservableObject {
     // MARK: - Helper Methods
 
     private func calculateStepVariability(readings: [SensorReading]) -> Double {
-        let accelerations = readings.map { sqrt(pow($0.acceleration.x, 2) + pow($0.acceleration.y, 2) + pow($0.acceleration.z, 2)) }
+        let accelerations = readings.map { sqrt(pow($0.accelerationX, 2) + pow($0.accelerationY, 2) + pow($0.accelerationZ, 2)) }
         let mean = accelerations.reduce(0, +) / Double(accelerations.count)
         let variance = accelerations.map { pow($0 - mean, 2) }.reduce(0, +) / Double(accelerations.count)
         return sqrt(variance) / mean // Coefficient of variation
@@ -350,7 +349,7 @@ class RealTimeGaitMonitor: ObservableObject {
 
     private func estimateWalkingSpeed(readings: [SensorReading]) -> Double {
         // Simplified walking speed estimation from accelerometer data
-        let verticalAccelerations = readings.map { $0.acceleration.z }
+        let verticalAccelerations = readings.map { $0.accelerationZ }
         let peaks = detectPeaks(in: verticalAccelerations)
         let stepFrequency = Double(peaks.count) / 1.0 // steps per second
         let estimatedStepLength = 0.7 // meters (could be personalized)
@@ -359,7 +358,7 @@ class RealTimeGaitMonitor: ObservableObject {
 
     private func calculateGaitAsymmetry(readings: [SensorReading]) -> Double {
         // Analyze left-right asymmetry in gait pattern
-        let lateralAccelerations = readings.map { $0.acceleration.y }
+        let lateralAccelerations = readings.map { $0.accelerationY }
         let leftSteps = lateralAccelerations.filter { $0 > 0 }
         let rightSteps = lateralAccelerations.filter { $0 < 0 }
 
@@ -374,7 +373,7 @@ class RealTimeGaitMonitor: ObservableObject {
     private func calculateStabilityIndex(readings: [SensorReading]) -> Double {
         // Calculate overall stability based on motion variance
         let totalVariance = readings.map { reading in
-            pow(reading.acceleration.x, 2) + pow(reading.acceleration.y, 2) + pow(reading.acceleration.z, 2)
+            pow(reading.accelerationX, 2) + pow(reading.accelerationY, 2) + pow(reading.accelerationZ, 2)
         }.reduce(0, +) / Double(readings.count)
 
         return 1.0 / (1.0 + totalVariance) // Higher stability = lower variance
@@ -382,7 +381,7 @@ class RealTimeGaitMonitor: ObservableObject {
 
     private func calculateRhythmicity(readings: [SensorReading]) -> Double {
         // Analyze the rhythmicity of the gait pattern
-        let accelerations = readings.map { $0.acceleration.z }
+        let accelerations = readings.map { $0.accelerationZ }
         let peaks = detectPeaks(in: accelerations)
 
         guard peaks.count > 2 else { return 0 }
@@ -407,7 +406,7 @@ class RealTimeGaitMonitor: ObservableObject {
         return peaks
     }
 
-    private func determineGaitState(from prediction: GaitPrediction) -> GaitState {
+    private func determineGaitState(from prediction: RealTimeGaitPrediction) -> GaitState {
         if prediction.fallRisk > 0.7 {
             return .highRisk
         } else if prediction.gaitQuality < 0.3 {
@@ -419,7 +418,7 @@ class RealTimeGaitMonitor: ObservableObject {
         }
     }
 
-    private func determineFallRiskLevel(from prediction: GaitPrediction) -> FallRiskLevel {
+    private func determineFallRiskLevel(from prediction: RealTimeGaitPrediction) -> FallRiskLevel {
         if prediction.fallRisk > 0.8 {
             return .critical
         } else if prediction.fallRisk > 0.6 {
@@ -439,15 +438,10 @@ class RealTimeGaitMonitor: ObservableObject {
 
 // MARK: - Supporting Data Models
 
-struct SensorReading {
-    let timestamp: Date
-    let acceleration: CMAcceleration
-    let gravity: CMAcceleration
-    let rotationRate: CMRotationRate
-    let attitude: CMAttitude
-}
+// Use the canonical SensorReading model defined in Core/Models/GaitAnalysisModels.swift
+// struct SensorReading { ... }  // removed local duplicate
 
-struct GaitFeatures {
+struct RealTimeGaitFeatures {
     let stepVariability: Double
     let walkingSpeed: Double
     let gaitAsymmetry: Double
@@ -456,7 +450,7 @@ struct GaitFeatures {
     let timestamp: Date
 }
 
-struct GaitPrediction {
+struct RealTimeGaitPrediction {
     let fallRisk: Double
     let gaitQuality: Double
     let stabilityScore: Double
@@ -474,15 +468,7 @@ struct RealTimeGaitMetrics {
     let confidence: Double
 }
 
-struct EmergencyAlert {
-    let id: UUID
-    let timestamp: Date
-    let type: EmergencyType
-    let severity: EmergencySeverity
-    let message: String
-    let fallRisk: Double
-    let location: String?
-}
+typealias RealTimeEmergencyAlert = EmergencyAlert
 
 struct GaitRecommendation {
     let id: UUID
@@ -491,13 +477,6 @@ struct GaitRecommendation {
     let title: String
     let message: String
     let actionTitle: String
-}
-
-struct UserProfile {
-    let age: Int
-    let height: Double
-    let weight: Double
-    let medicalConditions: [String]
 }
 
 // MARK: - Enums

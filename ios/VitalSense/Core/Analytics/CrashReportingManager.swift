@@ -11,37 +11,18 @@ import OSLog
 // MARK: - Crash Reporting Manager
 
 @MainActor
-class CrashReportingManager {
+final class CrashReportingManager {
     static let shared = CrashReportingManager()
 
     private let logger = Logger(subsystem: "dev.andernet.VitalSense", category: "CrashReporting")
-    private var providers: [CrashReportingProvider] = []
-    private var isInitialized = false
+    private let providers: [CrashReportingProvider]
 
-    private init() {}
+    init(providers: [CrashReportingProvider] = [LocalCrashLogger()]) {
+        self.providers = providers
 
-    // MARK: - Initialization
-
-    func initialize() {
-        guard !isInitialized else { return }
-
-        // Check build configuration to determine which providers to use
-        #if FIREBASE_CRASHLYTICS_ENABLED
-        setupFirebaseCrashlytics()
-        #endif
-
-        #if SENTRY_ENABLED
-        setupSentry()
-        #endif
-
-        // Always add local crash logger
-        providers.append(LocalCrashLogger())
-
-        // Set up uncaught exception handlers
-        setupUncaughtExceptionHandlers()
-
-        isInitialized = true
-        logger.info("Crash reporting initialized with \(providers.count) providers")
+        Task { @MainActor in
+            self.logger.info("Crash reporting initialized with \(self.providers.count) providers")
+        }
     }
 
     // MARK: - Crash Reporting
@@ -92,15 +73,15 @@ class CrashReportingManager {
         }
     }
 
-    func setContext(_ key: String, value: Any) {
-        for provider in providers {
-            provider.setContext(key: key, value: value)
+    func setContext(key: String, value: Any) {
+        providers.forEach { provider in
+            provider.setContext(key, value: value)
         }
     }
 
-    func setTag(_ key: String, value: String) {
-        for provider in providers {
-            provider.setTag(key: key, value: value)
+    func setTag(key: String, value: String) {
+        providers.forEach { provider in
+            provider.setTag(key, value: value)
         }
     }
 
@@ -174,23 +155,25 @@ private func signalHandler(_ signal: Int32) {
     default: signalName = "UNKNOWN"
     }
 
-    CrashReportingManager.shared.reportMessage("Crash signal received: \(signalName)", level: .fatal)
+    Task { @MainActor in
+        CrashReportingManager.shared.reportMessage("Crash signal received: \(signalName)", level: CrashLevel.fatal)
+    }
 }
 
 // MARK: - Data Models
 
-struct CrashReport {
+struct CrashReport: Codable {
     let id = UUID()
-    let error: Error?
+    let errorDescription: String?
     let message: String?
     let context: String
     let level: CrashLevel
     let timestamp: Date
-    var userInfo: [String: Any] = [:]
+    var userInfo: [String: String] = [:]
     var breadcrumbs: [Breadcrumb] = []
 
     init(error: Error, context: String = "", level: CrashLevel = .error, timestamp: Date = Date()) {
-        self.error = error
+        self.errorDescription = error.localizedDescription
         self.message = nil
         self.context = context
         self.level = level
@@ -198,7 +181,7 @@ struct CrashReport {
     }
 
     init(message: String, level: CrashLevel = .info, timestamp: Date = Date()) {
-        self.error = nil
+        self.errorDescription = nil
         self.message = message
         self.context = ""
         self.level = level
@@ -206,7 +189,7 @@ struct CrashReport {
     }
 }
 
-struct Breadcrumb {
+struct Breadcrumb: Codable {
     let message: String
     let category: String
     let level: CrashLevel
@@ -249,7 +232,7 @@ class LocalCrashLogger: CrashReportingProvider {
 
         // Log to console in DEBUG
         #if DEBUG
-        let message = report.message ?? (report.error?.localizedDescription ?? "Unknown error")
+        let message = report.message ?? (report.errorDescription ?? "Unknown error")
         switch report.level {
         case .fatal, .error:
             logger.error("\(message, privacy: .public)")

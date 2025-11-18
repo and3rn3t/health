@@ -8,7 +8,7 @@ import Combine
 class FallRiskAssessmentManager: ObservableObject {
     static let shared = FallRiskAssessmentManager(gaitAnalysisManager: PlaceholderGaitAnalysisManager())
     // MARK: - Published Properties
-    @Published var currentRiskLevel: FallRiskLevel = .unknown
+    @Published var currentRiskLevel: CanonicalFallRiskLevel = .low
     @Published var riskFactors: [FallRiskFactor] = []
     @Published var assessmentHistory: [FallRiskAssessment] = []
     @Published var recommendations: [FallRiskRecommendation] = []
@@ -517,31 +517,6 @@ protocol GaitAnalysisManager {
 
 // MARK: - Supporting Types
 
-enum FallRiskLevel: String, Codable, CaseIterable {
-    case low
-    case medium
-    case high
-    case unknown
-
-    var color: Color {
-        switch self {
-        case .low: return .green
-        case .medium: return .yellow
-        case .high: return .red
-        case .unknown: return .gray
-        }
-    }
-
-    var description: String {
-        switch self {
-        case .low: return "Low fall risk"
-        case .medium: return "Moderate fall risk"
-        case .high: return "High fall risk"
-        case .unknown: return "Risk level unknown"
-        }
-    }
-}
-
 enum FallRiskFactorType: String, Codable, CaseIterable {
     case slowWalkingSpeed = "slow_walking_speed"
     case poorBalance = "poor_balance"
@@ -573,7 +548,7 @@ struct FallRiskFactor: Codable, Identifiable {
 struct FallRiskAssessment: Codable, Identifiable {
     let id: UUID
     let timestamp: Date
-    let riskLevel: FallRiskLevel
+    let riskLevel: CanonicalFallRiskLevel
     let riskFactors: [FallRiskFactor]
     let gaitMetrics: GaitMetrics?
     let balanceScore: Double

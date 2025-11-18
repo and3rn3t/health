@@ -21,7 +21,7 @@ class EmergencyResponseSystem: NSObject, ObservableObject {
     // MARK: - Published Properties
     @Published var isEmergencyActive = false
     @Published var emergencyContacts: [EmergencyContact] = []
-    @Published var activeAlerts: [EmergencyAlert] = []
+    @Published var activeAlerts: [EmergencyAlertMessage] = []
     @Published var responseHistory: [EmergencyResponse] = []
     @Published var sosCountdown: Int = 0
 
@@ -59,7 +59,7 @@ class EmergencyResponseSystem: NSObject, ObservableObject {
         saveEmergencyContacts()
     }
 
-    func triggerEmergencyResponse(alert: EmergencyAlert) async {
+    func triggerEmergencyResponse(alert: EmergencyAlertMessage) async {
         isEmergencyActive = true
         activeAlerts.append(alert)
 
@@ -203,7 +203,7 @@ class EmergencyResponseSystem: NSObject, ObservableObject {
         audioPlayer = nil
     }
 
-    private func sendEmergencyNotifications(alert: EmergencyAlert) async {
+    private func sendEmergencyNotifications(alert: EmergencyAlertMessage) async {
         let location = getCurrentLocation()
 
         for contact in emergencyContacts {
@@ -220,7 +220,7 @@ class EmergencyResponseSystem: NSObject, ObservableObject {
         }
     }
 
-    private func sendEmergencySMS(to contact: EmergencyContact, alert: EmergencyAlert, location: String?) async {
+    private func sendEmergencySMS(to contact: EmergencyContact, alert: EmergencyAlertMessage, location: String?) async {
         guard MFMessageComposeViewController.canSendText() else { return }
 
         let message = buildEmergencyMessage(alert: alert, location: location)
@@ -259,7 +259,7 @@ class EmergencyResponseSystem: NSObject, ObservableObject {
         }
     }
 
-    private func sendLocalNotification(for contact: EmergencyContact, alert: EmergencyAlert) async {
+    private func sendLocalNotification(for contact: EmergencyContact, alert: EmergencyAlertMessage) async {
         let content = UNMutableNotificationContent()
         content.title = "VitalSense Emergency Alert"
         content.body = buildEmergencyMessage(alert: alert, location: getCurrentLocation())
@@ -281,7 +281,7 @@ class EmergencyResponseSystem: NSObject, ObservableObject {
         }
     }
 
-    private func sendEmergencyEmail(to contact: EmergencyContact, alert: EmergencyAlert, location: String?) async {
+    private func sendEmergencyEmail(to contact: EmergencyContact, alert: EmergencyAlertMessage, location: String?) async {
         // Note: In a real app, you'd present the MFMailComposeViewController
         // For this implementation, we'll simulate the email sending
         let subject = "VitalSense Emergency Alert - \(alert.type)"
@@ -318,7 +318,7 @@ class EmergencyResponseSystem: NSObject, ObservableObject {
         }
     }
 
-    private func buildEmergencyMessage(alert: EmergencyAlert, location: String?) -> String {
+    private func buildEmergencyMessage(alert: EmergencyAlertMessage, location: String?) -> String {
         var message = "🚨 EMERGENCY ALERT from VitalSense\n\n"
         message += "Alert Type: \(alert.type)\n"
         message += "Time: \(alert.timestamp.formatted())\n"
@@ -333,7 +333,7 @@ class EmergencyResponseSystem: NSObject, ObservableObject {
         return message
     }
 
-    private func buildDetailedEmergencyMessage(alert: EmergencyAlert, location: String?) -> String {
+    private func buildDetailedEmergencyMessage(alert: EmergencyAlertMessage, location: String?) -> String {
         var message = buildEmergencyMessage(alert: alert, location: location)
         message += "\n\nAdditional Information:\n"
         message += "- Severity: \(alert.severity)\n"
@@ -358,7 +358,7 @@ class EmergencyResponseSystem: NSObject, ObservableObject {
         return "Lat: \(String(format: "%.6f", latitude)), Lon: \(String(format: "%.6f", longitude))"
     }
 
-    private func logEmergencyEvent(alert: EmergencyAlert) {
+    private func logEmergencyEvent(alert: EmergencyAlertMessage) {
         let response = EmergencyResponse(
             id: UUID(),
             timestamp: Date(),
@@ -389,7 +389,7 @@ class EmergencyResponseSystem: NSObject, ObservableObject {
 }
 
 // MARK: - CLLocationManagerDelegate
-
+@MainActor
 extension EmergencyResponseSystem: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // Handle location updates if needed
@@ -439,7 +439,7 @@ struct EmergencyResponse: Identifiable {
 
 // MARK: - Extensions
 
-extension EmergencyAlert.EmergencyType {
+extension EmergencyAlertMessage.EmergencyType {
     var displayName: String {
         switch self {
         case .fallRiskDetected:
@@ -463,7 +463,7 @@ extension EmergencyAlert.EmergencyType {
     }
 }
 
-extension EmergencyAlert.EmergencySeverity {
+extension EmergencyAlertMessage.EmergencySeverity {
     var color: Color {
         switch self {
         case .low:

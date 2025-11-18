@@ -14,7 +14,7 @@ class FallRiskAnalysisEngine: ObservableObject {
     @Published var riskFactors: [RiskFactor] = []
     @Published var recommendations: [Recommendation] = []
     @Published var gaitAnalysis: GaitAnalysis?
-    @Published var balanceMetrics: BalanceMetrics?
+    @Published var balanceMetrics: FallRiskBalanceMetrics?
     @Published var environmentalRisks: [EnvironmentalRisk] = []
     @Published var lastAssessment: Date?
     
@@ -109,7 +109,7 @@ class FallRiskAnalysisEngine: ObservableObject {
     }
     
     // MARK: - Balance Metrics
-    struct BalanceMetrics {
+    struct FallRiskBalanceMetrics {
         let staticBalance: Double // 0-1 scale
         let dynamicBalance: Double // 0-1 scale
         let posturaSwayArea: Double // cm²
@@ -567,7 +567,7 @@ class FallRiskAnalysisEngine: ObservableObject {
         // This would analyze accelerometer and gyroscope data
         // for balance and stability patterns
         
-        let balanceMetrics = BalanceMetrics(
+        let balanceMetrics = FallRiskBalanceMetrics(
             staticBalance: 0.8, dynamicBalance: 0.7, posturaSwayArea: 3.2, reactionTime: 350, timestamp: Date()
         )
         
@@ -652,7 +652,7 @@ class FallRiskAnalysisEngine: ObservableObject {
             ))
         }
         
-        return recommendations.sorted { $0.priority.rawValue > $1.priority.rawValue } 
+        return recommendations.sorted { $0.priority.rawValue > $1.priority.rawValue }
     }
     
     // MARK: - Motion Tracking Setup

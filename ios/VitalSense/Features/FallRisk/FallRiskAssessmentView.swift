@@ -4,7 +4,7 @@ import Charts
 // MARK: - VitalSense Fall Risk Assessment View
 struct FallRiskAssessmentView: View {
     @StateObject private var assessmentManager: FallRiskAssessmentManager
-    @State private var selectedTimeRange: TimeRange = .week
+    @State private var selectedTimeRange: FallRiskTimeRange = .week
     @State private var showingAssessmentDetail = false
     @State private var showingRecommendations = false
     @State private var isPerformingAssessment = false
@@ -365,7 +365,7 @@ struct VitalSenseRecommendationCard: View {
 // MARK: - VitalSense Assessment History
 struct VitalSenseAssessmentHistory: View {
     let assessments: [FallRiskAssessment]
-    @Binding var selectedTimeRange: TimeRange
+    @Binding var selectedTimeRange: FallRiskTimeRange
 
     var body: some View {
         VStack(alignment: .leading, spacing: VitalSenseBrand.Layout.medium) {
@@ -378,7 +378,7 @@ struct VitalSenseAssessmentHistory: View {
                 Spacer()
 
                 Picker("Range", selection: $selectedTimeRange) {
-                    ForEach(TimeRange.allCases, id: \.self) { range in
+                    ForEach(FallRiskTimeRange.allCases, id: \.self) { range in
                         Text(range.displayName)
                             .tag(range)
                     }
@@ -911,7 +911,7 @@ struct RecommendationRow: View {
 // MARK: - Assessment History Card
 struct AssessmentHistoryCard: View {
     let assessments: [FallRiskAssessment]
-    @Binding var selectedTimeRange: TimeRange
+    @Binding var selectedTimeRange: FallRiskTimeRange
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -923,7 +923,7 @@ struct AssessmentHistoryCard: View {
                 Spacer()
 
                 Picker("Time Range", selection: $selectedTimeRange) {
-                    ForEach(TimeRange.allCases, id: \.self) { range in
+                    ForEach(FallRiskTimeRange.allCases, id: \.self) { range in
                         Text(range.displayName)
                             .tag(range)
                     }
@@ -1132,7 +1132,7 @@ struct ActionButton: View {
 
 // MARK: - Supporting Types
 
-enum TimeRange: String, CaseIterable {
+enum FallRiskTimeRange: String, CaseIterable {
     case week = "week"
     case month = "month"
     case threeMonths = "3months"

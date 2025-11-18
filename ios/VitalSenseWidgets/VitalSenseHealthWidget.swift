@@ -9,6 +9,7 @@ import HealthKit
 // Note: HealthEntry is now defined in VitalSenseHealthWidgets.swift to avoid duplication
 
 // MARK: - Widget Timeline Provider
+@MainActor
 struct HealthProvider: TimelineProvider {
     typealias Entry = HealthEntry
 
@@ -17,7 +18,7 @@ struct HealthProvider: TimelineProvider {
             date: Date(),
             heartRate: 72,
             steps: 8432,
-            activeEnergy: 245.0,
+            activeEnergy: 245,
             gaitScore: 85.0,
             fallRisk: 15.0,
             isDataAvailable: true,
@@ -30,7 +31,7 @@ struct HealthProvider: TimelineProvider {
             date: Date(),
             heartRate: 75,
             steps: 6789,
-            activeEnergy: 189.0,
+            activeEnergy: 189,
             gaitScore: 82.0,
             fallRisk: 18.0,
             isDataAvailable: true,
@@ -39,13 +40,13 @@ struct HealthProvider: TimelineProvider {
         completion(entry)
     }
 
+    // Marked @MainActor so we can synchronously call the main-actor-isolated
+    // WidgetHealthManager.shared and its fetchAllHealthData(completion:) API.
+    @MainActor
     func getTimeline(in context: Context, completion: @escaping (Timeline<HealthEntry>) -> ()) {
         let healthManager = WidgetHealthManager.shared
 
         healthManager.fetchAllHealthData { entry in
-            // Use the entry from WidgetHealthManager
-
-            // Update every 15 minutes
             let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date()) ?? Date()
             let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
             completion(timeline)
@@ -126,25 +127,14 @@ struct SmallHealthWidget: View {
 
             // Heart Rate
             VStack(spacing: 4) {
-                if let heartRate = entry.heartRate {
-                    Text("\(Int(heartRate))")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.red)
+                Text("\(entry.heartRate)")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.red)
 
-                    Text("bpm")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                } else {
-                    Text("--")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.secondary)
-
-                    Text("No data")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                Text("bpm")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
 
             Spacer()
@@ -210,21 +200,14 @@ struct MediumHealthWidget: View {
                             .foregroundColor(.secondary)
                     }
 
-                    if let heartRate = entry.heartRate {
-                        Text("\(Int(heartRate))")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.red)
+                    Text("\(entry.heartRate)")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.red)
 
-                        Text("bpm")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    } else {
-                        Text("--")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.secondary)
-                    }
+                    Text("bpm")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                 }
                 .frame(maxWidth: .infinity)
 
@@ -242,21 +225,14 @@ struct MediumHealthWidget: View {
                             .foregroundColor(.secondary)
                     }
 
-                    if let steps = entry.steps {
-                        Text("\(Int(steps))")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.blue)
+                    Text("\(entry.steps)")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.blue)
 
-                        Text("today")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    } else {
-                        Text("--")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.secondary)
-                    }
+                    Text("today")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                 }
                 .frame(maxWidth: .infinity)
 
@@ -274,21 +250,14 @@ struct MediumHealthWidget: View {
                             .foregroundColor(.secondary)
                     }
 
-                    if let energy = entry.activeEnergy {
-                        Text("\(Int(energy))")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.orange)
+                    Text("\(entry.activeEnergy)")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.orange)
 
-                        Text("kcal")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    } else {
-                        Text("--")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.secondary)
-                    }
+                    Text("kcal")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -352,21 +321,21 @@ struct LargeHealthWidget: View {
                 // Heart Rate Card
                 WidgetMetricCard(
                     title: "Heart Rate",
-                    value: entry.heartRate.map { "\(Int($0))" } ?? "--",
+                    value: "\(entry.heartRate)",
                     unit: "bpm",
                     icon: "heart.fill",
                     color: .red,
-                    hasData: entry.heartRate != nil
+                    hasData: true
                 )
 
                 // Steps Card
                 WidgetMetricCard(
                     title: "Daily Steps",
-                    value: entry.steps.map { "\(Int($0))" } ?? "--",
+                    value: "\(entry.steps)",
                     unit: "steps",
                     icon: "figure.walk",
                     color: .blue,
-                    hasData: entry.steps != nil
+                    hasData: true
                 )
             }
 
@@ -375,46 +344,34 @@ struct LargeHealthWidget: View {
                 // Active Energy Card
                 WidgetMetricCard(
                     title: "Active Energy",
-                    value: entry.activeEnergy.map { "\(Int($0))" } ?? "--",
+                    value: "\(entry.activeEnergy)",
                     unit: "kcal",
                     icon: "flame.fill",
                     color: .orange,
-                    hasData: entry.activeEnergy != nil
+                    hasData: true
                 )
 
                 // Walking Steadiness Card
                 WidgetMetricCard(
                     title: "Steadiness",
-                    value: entry.walkingSteadiness.map { "\(Int($0 * 100))" } ?? "--",
+                    value: "\(Int(entry.walkingSteadiness * 100))",
                     unit: "%",
                     icon: "figure.walk.motion",
                     color: .green,
-                    hasData: entry.walkingSteadiness != nil
+                    hasData: true
                 )
             }
 
             // Quick Status
             HStack {
-                if entry.heartRate != nil || entry.steps != nil {
-                    HStack(spacing: 4) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                            .font(.caption)
+                HStack(spacing: 4) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.caption)
 
-                        Text("Health data is current")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                } else {
-                    HStack(spacing: 4) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
-                            .font(.caption)
-
-                        Text("Waiting for health data")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
+                    Text("Health data is current")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
 
                 Spacer()
@@ -442,29 +399,17 @@ struct CircularHealthWidget: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(.red.opacity(0.3), lineWidth: 3)
+                .stroke(Color.red.opacity(0.3), lineWidth: 3)
 
-            if let heartRate = entry.heartRate {
-                VStack(spacing: 1) {
-                    Text("\(Int(heartRate))")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundColor(.red)
+            VStack(spacing: 1) {
+                Text("\(entry.heartRate)")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundColor(.red)
 
-                    Text("bpm")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-            } else {
-                VStack(spacing: 1) {
-                    Image(systemName: "heart.fill")
-                        .font(.caption)
-                        .foregroundColor(.red)
-
-                    Text("--")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
+                Text("bpm")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             }
         }
     }
@@ -487,15 +432,9 @@ struct RectangularHealthWidget: View {
                     .foregroundColor(.red)
                     .font(.caption2)
 
-                if let heartRate = entry.heartRate {
-                    Text("\(Int(heartRate)) bpm")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                } else {
-                    Text("-- bpm")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                Text("\(entry.heartRate) bpm")
+                    .font(.caption)
+                    .fontWeight(.medium)
             }
 
             Spacer()
@@ -506,15 +445,9 @@ struct RectangularHealthWidget: View {
                     .foregroundColor(.blue)
                     .font(.caption2)
 
-                if let steps = entry.steps {
-                    Text("\(Int(steps))")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                } else {
-                    Text("--")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                Text("\(entry.steps)")
+                    .font(.caption)
+                    .fontWeight(.medium)
             }
         }
         .padding(.horizontal, 8)
@@ -579,71 +512,43 @@ struct iOS26SmallHealthWidget: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                // Variable Draw heart rate with live animation
-                if let heartRate = entry.heartRate {
-                    Image(systemName: "heart.fill")
-                        .symbolVariableValue(heartRate / 180.0)
-                        .symbolAnimation(.draw.continuous.speed(heartRate / 60.0))
-                        .foregroundStyle(.red.gradient(.radial))
-                        .font(.title2)
-                } else {
-                    Image(systemName: "heart")
-                        .foregroundColor(.red)
-                        .font(.title2)
-                }
+                Image(systemName: "heart.fill")
+                    .foregroundColor(.red)
+                    .font(.title2)
 
                 Spacer()
 
                 Text("VitalSense")
                     .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.secondary)
             }
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .lastTextBaseline) {
-                    if let heartRate = entry.heartRate {
-                        Text("\(Int(heartRate))")
-                            .font(.title.monospacedDigit().weight(.bold))
-                            .contentTransition(.numericText(value: heartRate))
-                    } else {
-                        Text("--")
-                            .font(.title.weight(.bold))
-                            .foregroundColor(.secondary)
-                    }
+                    Text("\(entry.heartRate)")
+                        .font(.title.monospacedDigit().weight(.bold))
 
                     Text("BPM")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundColor(.secondary)
                 }
 
                 HStack {
-                    // Variable Draw steps
-                    if let steps = entry.steps {
-                        Image(systemName: "figure.walk")
-                            .symbolVariableValue(steps / 20000.0)
-                            .foregroundStyle(.blue.gradient(.linear))
+                    Image(systemName: "figure.walk")
+                        .foregroundColor(.blue)
 
-                        Text("\(Int(steps)) steps")
-                            .font(.caption2)
-                            .contentTransition(.numericText(value: steps))
-                    } else {
-                        Image(systemName: "figure.walk")
-                            .foregroundColor(.blue)
-
-                        Text("-- steps")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
+                    Text("\(entry.steps) steps")
+                        .font(.caption2)
                 }
             }
         }
         .padding()
         .background {
             RoundedRectangle(cornerRadius: 16)
-                .fill(.liquidGlass.opacity(0.8))
+                .fill(Color(uiColor: .systemBackground).opacity(0.9))
                 .overlay {
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(.liquidGlassStroke.opacity(0.3), lineWidth: 1)
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
                 }
         }
     }
@@ -655,67 +560,38 @@ struct iOS26MediumHealthWidget: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            // Heart Rate Section
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    if let heartRate = entry.heartRate {
-                        Image(systemName: "heart.fill")
-                            .symbolVariableValue(heartRate / 180.0)
-                            .symbolAnimation(.draw.repeating.speed(heartRate / 60.0))
-                            .foregroundStyle(.red.gradient(.radial))
-                    } else {
-                        Image(systemName: "heart")
-                            .foregroundColor(.red)
-                    }
+                    Image(systemName: "heart.fill")
+                        .foregroundColor(.red)
 
                     Text("Heart Rate")
                         .font(.subheadline.weight(.medium))
                 }
 
                 HStack(alignment: .lastTextBaseline) {
-                    if let heartRate = entry.heartRate {
-                        Text("\(Int(heartRate))")
-                            .font(.title.monospacedDigit().weight(.bold))
-                            .contentTransition(.numericText(value: heartRate))
-                    } else {
-                        Text("--")
-                            .font(.title.weight(.bold))
-                            .foregroundColor(.secondary)
-                    }
+                    Text("\(entry.heartRate)")
+                        .font(.title.monospacedDigit().weight(.bold))
 
                     Text("BPM")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundColor(.secondary)
                 }
             }
 
             Divider()
 
-            // Steps Section
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    if let steps = entry.steps {
-                        Image(systemName: "figure.walk")
-                            .symbolVariableValue(steps / 20000.0)
-                            .foregroundStyle(.blue.gradient(.linear))
-                    } else {
-                        Image(systemName: "figure.walk")
-                            .foregroundColor(.blue)
-                    }
+                    Image(systemName: "figure.walk")
+                        .foregroundColor(.blue)
 
                     Text("Daily Steps")
                         .font(.subheadline.weight(.medium))
                 }
 
-                if let steps = entry.steps {
-                    Text("\(Int(steps))")
-                        .font(.title.monospacedDigit().weight(.bold))
-                        .contentTransition(.numericText(value: steps))
-                } else {
-                    Text("--")
-                        .font(.title.weight(.bold))
-                        .foregroundColor(.secondary)
-                }
+                Text("\(entry.steps)")
+                    .font(.title.monospacedDigit().weight(.bold))
             }
 
             Spacer()
@@ -723,10 +599,10 @@ struct iOS26MediumHealthWidget: View {
         .padding()
         .background {
             RoundedRectangle(cornerRadius: 16)
-                .fill(.liquidGlass.opacity(0.8))
+                .fill(Color(uiColor: .systemBackground).opacity(0.9))
                 .overlay {
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(.liquidGlassStroke.opacity(0.3), lineWidth: 1)
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
                 }
         }
     }
@@ -753,55 +629,50 @@ struct iOS26LargeHealthWidget: View {
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: 12) {
-
-                // Heart Rate
                 iOS26WidgetMetricCard(
                     icon: "heart.fill",
                     title: "Heart Rate",
-                    value: entry.heartRate.map { "\(Int($0))" } ?? "--",
+                    value: "\(entry.heartRate)",
                     unit: "BPM",
                     color: .red,
-                    variableValue: (entry.heartRate ?? 0) / 180.0
+                    variableValue: 0
                 )
 
-                // Steps
                 iOS26WidgetMetricCard(
                     icon: "figure.walk",
                     title: "Steps",
-                    value: entry.steps.map { "\(Int($0))" } ?? "--",
+                    value: "\(entry.steps)",
                     unit: "steps",
                     color: .blue,
-                    variableValue: (entry.steps ?? 0) / 20000.0
+                    variableValue: 0
                 )
 
-                // Active Energy
                 iOS26WidgetMetricCard(
                     icon: "flame.fill",
                     title: "Energy",
-                    value: entry.activeEnergy.map { "\(Int($0))" } ?? "--",
+                    value: "\(entry.activeEnergy)",
                     unit: "cal",
                     color: .orange,
-                    variableValue: (entry.activeEnergy ?? 0) / 1000.0
+                    variableValue: 0
                 )
 
-                // Walking Steadiness
                 iOS26WidgetMetricCard(
                     icon: "figure.walk.motion",
                     title: "Steadiness",
-                    value: entry.walkingSteadiness.map { "\(Int($0 * 100))" } ?? "--",
+                    value: "\(Int(entry.walkingSteadiness * 100))",
                     unit: "%",
                     color: .green,
-                    variableValue: entry.walkingSteadiness ?? 0
+                    variableValue: 0
                 )
             }
         }
         .padding()
         .background {
             RoundedRectangle(cornerRadius: 16)
-                .fill(.liquidGlass.opacity(0.8))
+                .fill(Color(uiColor: .systemBackground).opacity(0.9))
                 .overlay {
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(.liquidGlassStroke.opacity(0.3), lineWidth: 1)
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
                 }
         }
     }
@@ -813,24 +684,22 @@ struct iOS26CircularHealthWidget: View {
 
     var body: some View {
         ZStack {
-            if let heartRate = entry.heartRate {
-                iOS26ActivityRing(progress: heartRate / 180.0, color: .red)
+            let progress = min(max(Double(entry.heartRate) / 180.0, 0), 1)
 
-                VStack(spacing: 2) {
-                    Text("\(Int(heartRate))")
-                        .font(.caption.monospacedDigit().weight(.bold))
-                        .contentTransition(.numericText(value: heartRate))
+            Circle()
+                .stroke(Color.red.opacity(0.2), lineWidth: 4)
 
-                    Text("BPM")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-            } else {
-                Circle()
-                    .stroke(.red.opacity(0.3), lineWidth: 4)
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(Color.red, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .rotationEffect(.degrees(-90))
 
-                Text("--")
-                    .font(.caption.weight(.bold))
+            VStack(spacing: 2) {
+                Text("\(entry.heartRate)")
+                    .font(.caption.monospacedDigit().weight(.bold))
+
+                Text("BPM")
+                    .font(.caption2)
                     .foregroundColor(.secondary)
             }
         }
@@ -843,45 +712,23 @@ struct iOS26RectangularHealthWidget: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            if let heartRate = entry.heartRate {
-                Image(systemName: "heart.fill")
-                    .symbolVariableValue(heartRate / 180.0)
-                    .symbolAnimation(.draw.continuous.speed(heartRate / 60.0))
-                    .foregroundStyle(.red.gradient(.radial))
-                    .font(.title3)
-            } else {
-                Image(systemName: "heart")
-                    .foregroundColor(.red)
-                    .font(.title3)
-            }
+            Image(systemName: "heart.fill")
+                .foregroundColor(.red)
+                .font(.title3)
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .lastTextBaseline, spacing: 4) {
-                    if let heartRate = entry.heartRate {
-                        Text("\(Int(heartRate))")
-                            .font(.title3.monospacedDigit().weight(.bold))
-                            .contentTransition(.numericText(value: heartRate))
-                    } else {
-                        Text("--")
-                            .font(.title3.weight(.bold))
-                            .foregroundColor(.secondary)
-                    }
+                    Text("\(entry.heartRate)")
+                        .font(.title3.monospacedDigit().weight(.bold))
 
                     Text("BPM")
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-
-                if let steps = entry.steps {
-                    Text("\(Int(steps)) steps")
-                        .font(.caption2)
-                        .contentTransition(.numericText(value: steps))
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("-- steps")
-                        .font(.caption2)
                         .foregroundColor(.secondary)
                 }
+
+                Text("\(entry.steps) steps")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             }
 
             Spacer()
@@ -889,7 +736,7 @@ struct iOS26RectangularHealthWidget: View {
         .padding(8)
         .background {
             RoundedRectangle(cornerRadius: 12)
-                .fill(.liquidGlass.opacity(0.6))
+                .fill(Color(uiColor: .systemBackground).opacity(0.9))
         }
     }
 }
@@ -907,8 +754,7 @@ struct iOS26WidgetMetricCard: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: icon)
-                    .symbolVariableValue(variableValue)
-                    .foregroundStyle(color.gradient(.linear))
+                    .foregroundColor(color)
                     .font(.title3)
 
                 Spacer()
@@ -916,7 +762,7 @@ struct iOS26WidgetMetricCard: View {
 
             Text(title)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundColor(.secondary)
 
             HStack(alignment: .lastTextBaseline, spacing: 2) {
                 Text(value)
@@ -924,7 +770,7 @@ struct iOS26WidgetMetricCard: View {
 
                 Text(unit)
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.secondary)
             }
         }
         .padding(8)

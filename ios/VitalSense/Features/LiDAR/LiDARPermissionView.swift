@@ -36,7 +36,7 @@ struct LiDARPermissionView: View {
 
                 // Permission cards
                 VStack(spacing: 16) {
-                    PermissionCard(
+                    LiDARPermissionCard(
                         icon: "camera.fill",
                         title: loc("permission.camera.title"),
                         description: loc("permission.camera.message"),
@@ -48,7 +48,7 @@ struct LiDARPermissionView: View {
                     .accessibilityIdentifier("permission_card_camera")
                     .switchControlSupport()
 
-                    PermissionCard(
+                    LiDARPermissionCard(
                         icon: "gyroscope",
                         title: loc("permission.motion.title"),
                         description: loc("permission.motion.message"),
@@ -61,7 +61,7 @@ struct LiDARPermissionView: View {
                     .switchControlSupport()
 
                     if !permissionManager.isLiDARAvailable {
-                        PermissionCard(
+                        LiDARPermissionCard(
                             icon: "exclamationmark.triangle.fill",
                             title: loc("device.lidar.required"),
                             description: loc("device.lidar.required.message"),
@@ -146,7 +146,7 @@ struct LiDARPermissionView: View {
 }
 
 // MARK: - Permission Card
-struct PermissionCard: View {
+struct LiDARPermissionCard: View {
     let icon: String
     let title: String
     let description: String

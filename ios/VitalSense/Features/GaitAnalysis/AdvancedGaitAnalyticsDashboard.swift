@@ -115,7 +115,7 @@ struct AdvancedGaitAnalyticsDashboard: View {
 
     private var realTimeStatusCardsView: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-            StatusCard(
+            GaitStatusCard(
                 title: "Monitoring",
                 value: gaitMonitor.isMonitoring ? "Active" : "Inactive",
                 icon: "waveform.path.ecg",
@@ -123,7 +123,7 @@ struct AdvancedGaitAnalyticsDashboard: View {
                 action: { showingRealTimeMonitor = true }
             )
 
-            StatusCard(
+            GaitStatusCard(
                 title: "Fall Risk",
                 value: fallRiskLevelText(gaitMonitor.fallRiskLevel),
                 icon: "exclamationmark.shield.fill",
@@ -131,7 +131,7 @@ struct AdvancedGaitAnalyticsDashboard: View {
                 action: { showingRealTimeMonitor = true }
             )
 
-            StatusCard(
+            GaitStatusCard(
                 title: "Emergency",
                 value: emergencySystem.isEmergencyActive ? "Active" : "Ready",
                 icon: "phone.fill",
@@ -139,7 +139,7 @@ struct AdvancedGaitAnalyticsDashboard: View {
                 action: { showingEmergencySetup = true }
             )
 
-            StatusCard(
+            GaitStatusCard(
                 title: "ML Insights",
                 value: "\(analyticsEngine.mlInsights.count) insights",
                 icon: "brain.head.profile",
@@ -440,7 +440,7 @@ struct OverallHealthScoreView: View {
 
             Spacer()
 
-            CircularProgressView(progress: Double(score) / 100, color: colorForScore(score))
+            GaitCircularProgressView(progress: Double(score) / 100, color: colorForScore(score))
                 .frame(width: 60, height: 60)
         }
         .padding()
@@ -456,7 +456,7 @@ struct OverallHealthScoreView: View {
     }
 }
 
-struct StatusCard: View {
+struct GaitStatusCard: View {
     let title: String
     let value: String
     let icon: String
@@ -642,7 +642,7 @@ struct ActionItemCard: View {
     }
 }
 
-struct CircularProgressView: View {
+struct GaitCircularProgressView: View {
     let progress: Double
     let color: Color
 

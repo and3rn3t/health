@@ -787,7 +787,16 @@ struct RealTimeMetric: View {
                 .foregroundColor(.white.opacity(0.7))
                 .lidarDynamicType(size: .caption2)
         }
-        .metricCardAccessibility(name: title, value: value, unit: nil, subtitle: NSLocalizedString("accessibility.metric.realtime", value: "Real-time metric", comment: "")))
+        .metricCardAccessibility(
+            name: title,
+            value: value,
+            unit: nil,
+            subtitle: NSLocalizedString(
+                "accessibility.metric.realtime",
+                value: "Real-time metric",
+                comment: ""
+            )
+        )
         .accessibilityAddTraits(.updatesFrequently)
     }
 }

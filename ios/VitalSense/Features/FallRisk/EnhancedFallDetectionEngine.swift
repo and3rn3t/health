@@ -195,7 +195,7 @@ class EnhancedFallDetectionEngine: ObservableObject {
     }
 
     // MARK: - Real-time Processing
-    private var sensorDataBuffer: CircularBuffer<SensorReading> = CircularBuffer(capacity: 100)
+    private var sensorDataBuffer: CircularBuffer<FallDetectionSensorSample> = CircularBuffer(capacity: 100)
     private var mlProcessor: FallDetectionMLProcessor?
     private var detectionConfig: DetectionConfig
 
@@ -302,7 +302,7 @@ class EnhancedFallDetectionEngine: ObservableObject {
 
     private func processDeviceMotion(_ motion: CMDeviceMotion) {
         // Store comprehensive sensor reading
-        let reading = SensorReading(
+        let reading = FallDetectionSensorSample(
             timestamp: Date(),
             acceleration: motion.userAcceleration,
             rotationRate: motion.rotationRate,
@@ -351,7 +351,7 @@ class EnhancedFallDetectionEngine: ObservableObject {
         print("🌀 Significant rotation detected: \(magnitude)°/s")
     }
 
-    private func triggerFallDetection(confidence: Double, sensorData: SensorReading) {
+    private func triggerFallDetection(confidence: Double, sensorData: FallDetectionSensorSample) {
         let event = FallDetectionEvent(
             timestamp: Date(),
             severity: determineFallSeverity(confidence: confidence),
@@ -421,7 +421,7 @@ class EnhancedFallDetectionEngine: ObservableObject {
 }
 
 // MARK: - Supporting Data Structures
-struct SensorReading {
+struct FallDetectionSensorSample {
     let timestamp: Date
     let acceleration: CMAcceleration
     let rotationRate: CMRotationRate
@@ -471,7 +471,7 @@ class CircularBuffer<T> {
 
 // MARK: - ML Processor Placeholder
 class FallDetectionMLProcessor {
-    func analyzeFallProbability(recentReadings: [SensorReading]) -> Double {
+    func analyzeFallProbability(recentReadings: [FallDetectionSensorSample]) -> Double {
         // Placeholder for ML-based fall detection
         // In a real implementation, this would use Core ML models
         return Double.random(in: 0...1)

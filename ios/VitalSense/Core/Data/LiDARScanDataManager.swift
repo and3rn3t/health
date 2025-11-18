@@ -86,13 +86,7 @@ class LiDARScanDataManager: ObservableObject {
 
         container.loadPersistentStores { _, error in
             if let error = error {
-                ErrorHandler.shared.handle(
-                    error,
-                    context: "Loading Core Data store",
-                    category: .data,
-                    severity: .critical,
-                    recovery: .retry(maxAttempts: 3)
-                )
+                ErrorHandler.shared.handle(error, context: "Loading Core Data store")
             }
         }
 
@@ -120,13 +114,7 @@ class LiDARScanDataManager: ObservableObject {
             do {
                 try context.save()
             } catch {
-                ErrorHandler.shared.handle(
-                    error,
-                    context: "Saving Core Data context",
-                    category: .data,
-                    severity: .high,
-                    recovery: .retry(maxAttempts: 2)
-                )
+                ErrorHandler.shared.handle(error, context: "Saving Core Data context")
             }
         }
     }
@@ -216,13 +204,7 @@ class LiDARScanDataManager: ObservableObject {
                 convertEntityToScanResult(entity)
             }
         } catch {
-            ErrorHandler.shared.handle(
-                error,
-                context: "Fetching scan history",
-                category: .data,
-                severity: .medium,
-                recovery: .retry(maxAttempts: 1)
-            )
+            ErrorHandler.shared.handle(error, context: "Fetching scan history")
             return []
         }
     }
@@ -284,13 +266,7 @@ class LiDARScanDataManager: ObservableObject {
                 ])
             }
         } catch {
-            ErrorHandler.shared.handle(
-                error,
-                context: "Deleting scan",
-                category: .data,
-                severity: .medium,
-                recovery: .retry(maxAttempts: 1)
-            )
+            ErrorHandler.shared.handle(error, context: "Deleting scan")
         }
     }
 
@@ -306,13 +282,7 @@ class LiDARScanDataManager: ObservableObject {
 
             AnalyticsManager.shared.logEvent("lidar_all_scans_deleted")
         } catch {
-            ErrorHandler.shared.handle(
-                error,
-                context: "Deleting all scans",
-                category: .data,
-                severity: .high,
-                recovery: .none
-            )
+            ErrorHandler.shared.handle(error, context: "Deleting all scans")
         }
     }
 
@@ -352,24 +322,6 @@ class LiDARScanDataManager: ObservableObject {
             rawData: rawData
         )
     }
-}
-
-// MARK: - Core Data Entity
-
-extension LiDARScanEntity {
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<LiDARScanEntity> {
-        return NSFetchRequest<LiDARScanEntity>(entityName: "LiDARScanEntity")
-    }
-
-    @NSManaged public var id: UUID?
-    @NSManaged public var scanType: String?
-    @NSManaged public var date: Date?
-    @NSManaged public var duration: TimeInterval
-    @NSManaged public var frameCount: Int32
-    @NSManaged public var averageQuality: Double
-    @NSManaged public var score: Double
-    @NSManaged public var insightsData: Data?
-    @NSManaged public var rawDataMetadata: Data?
 }
 
 // MARK: - Supporting Types

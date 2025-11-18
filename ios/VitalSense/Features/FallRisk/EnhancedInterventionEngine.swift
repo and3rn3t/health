@@ -47,47 +47,6 @@ class EnhancedInterventionEngine: ObservableObject {
         }
     }
 
-    // MARK: - Intervention Program
-    struct InterventionProgram {
-        let id = UUID()
-        let template: InterventionTemplate
-        let startDate: Date
-        let duration: TimeInterval // in seconds
-        let personalizedParameters: [String: Any]
-        let progressMilestones: [ProgressMilestone]
-        let currentStatus: InterventionStatus
-        let adherenceScore: Double // 0-1 scale
-        let effectivenessScore: Double // 0-1 scale
-
-        enum InterventionStatus {
-            case notStarted
-            case active
-            case paused
-            case completed
-            case discontinued
-
-            var description: String {
-                switch self {
-                case .notStarted: return "Ready to start"
-                case .active: return "In progress"
-                case .paused: return "Temporarily paused"
-                case .completed: return "Successfully completed"
-                case .discontinued: return "Discontinued"
-                }
-            }
-        }
-
-        struct ProgressMilestone {
-            let id = UUID()
-            let title: String
-            let description: String
-            let targetDate: Date
-            let isCompleted: Bool
-            let completedDate: Date?
-            let metrics: [String: Double] // measurable outcomes
-        }
-    }
-
     // MARK: - Intervention Template
     struct InterventionTemplate {
         let id = UUID()
@@ -193,37 +152,6 @@ class EnhancedInterventionEngine: ObservableObject {
         let prioritizedGoals: [InterventionGoal]
         let schedule: InterventionSchedule
         let monitoringPlan: MonitoringPlan
-
-        struct UserProfile {
-            let age: Int
-            let fitnessLevel: FitnessLevel
-            let medicalConditions: [String]
-            let currentMedications: [String]
-            let mobilityAids: [String]
-            let livingSituation: LivingSituation
-            let caregiverSupport: CaregiverSupport
-
-            enum FitnessLevel {
-                case sedentary
-                case lightlyActive
-                case moderatelyActive
-                case veryActive
-            }
-
-            enum LivingSituation {
-                case independent
-                case assistedLiving
-                case withFamily
-                case nursingHome
-            }
-
-            enum CaregiverSupport {
-                case none
-                case occasional
-                case regular
-                case fullTime
-            }
-        }
 
         struct RiskAssessmentSummary {
             let overallRiskLevel: FallRiskLevel

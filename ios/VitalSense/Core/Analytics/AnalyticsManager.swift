@@ -116,7 +116,7 @@ class AnalyticsManager: ObservableObject {
     }
 
     func recordMemoryUsage() {
-        let info = mach_task_basic_info()
+        var info = mach_task_basic_info()
         var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
 
         let result: kern_return_t = withUnsafeMutablePointer(to: &info) {
@@ -266,6 +266,34 @@ struct BatteryUsage: Codable {
 
     var levelPercent: Int {
         Int(level * 100)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case level
+        case state
+        case timestamp
+    }
+
+    init(level: Double, state: UIDevice.BatteryState, timestamp: Date) {
+        self.level = level
+        self.state = state
+        self.timestamp = timestamp
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.level = try container.decode(Double.self, forKey: .level)
+        self.timestamp = try container.decode(Date.self, forKey: .timestamp)
+
+        let stateRaw = try container.decode(Int.self, forKey: .state)
+        self.state = UIDevice.BatteryState(rawValue: stateRaw) ?? .unknown
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(level, forKey: .level)
+        try container.encode(timestamp, forKey: .timestamp)
+        try container.encode(state.rawValue, forKey: .state)
     }
 }
 

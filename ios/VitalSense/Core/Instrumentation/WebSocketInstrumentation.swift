@@ -1,7 +1,7 @@
 import Foundation
 
 // MARK: - WebSocket Events
-public enum WebSocketEvent: String, CaseIterable, Hashable, Codable {
+public enum WebSocketEvent: String, CaseIterable, Hashable, Codable, Sendable {
     case connectionOpen = "connection_open"
     case connectionClose = "connection_close"
     case reconnectAttempt = "reconnect_attempt"

@@ -641,9 +641,3 @@ struct SleepSnippetView: View {
 }
 
 // MARK: - Supporting Data Types
-struct SleepData {
-    let duration: TimeInterval
-    let quality: Double
-    let bedtime: Date
-    let wakeTime: Date
-}

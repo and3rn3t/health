@@ -394,7 +394,7 @@ class iOS26HealthAnalytics: ObservableObject {
             enhancedHeartRate: heartRateData,
             improvedActivityAnalysis: ActivityAnalysisData(),
             advancedSleepMetrics: SleepMetricsData(),
-            enhancedGaitAnalysis: GaitAnalysisData()
+            enhancedGaitAnalysis: GaitAnalysisData.empty
         )
     }
 
@@ -489,7 +489,9 @@ struct HealthPredictions {
 // Mock data structures for compilation
 struct ActivityAnalysisData { }
 struct SleepMetricsData { }
-struct GaitAnalysisData { }
+struct GaitAnalysisData {
+    static let empty = GaitAnalysisData()
+}
 
 struct HealthMetricDetailView: View {
     let metric: HealthMetric

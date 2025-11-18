@@ -124,13 +124,13 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
 
         // Perform analysis based on type
         switch analysisType {
-        case .posture: 
+        case .posture:
             sessionData.postureAnalysis = analyzePosture()
-        case .gait: 
+        case .gait:
             sessionData.gaitAnalysis = analyzeGait()
-        case .balance: 
+        case .balance:
             sessionData.balanceAnalysis = analyzeBalance()
-        case .environment: 
+        case .environment:
             sessionData.environmentAnalysis = analyzeEnvironment()
         }
 
@@ -233,7 +233,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
         }
 
         // Calculate center of mass movement
-        let headPositions = poses.map { $0.head } 
+        let headPositions = poses.map { $0.head }
 
         // Calculate sway in different directions
         let anteriorPosterior = calculateSwayRange(positions: headPositions, axis: 2) * 1000 // Convert to mm
@@ -246,7 +246,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
     }
 
     private func calculateSwayRange(positions: [SIMD3<Float>], axis: Int) -> Float {
-        let values = positions.map { $0[axis] } 
+        let values = positions.map { $0[axis] }
         guard let min = values.min(), let max = values.max() else { return 0 }
         return max - min
     }
@@ -259,9 +259,9 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
         }
 
         // Calculate average spinal curvatures
-        let thoracicAngles = poses.map { calculateThoracicKyphosis(pose: $0) } 
-        let lumbarAngles = poses.map { calculateLumbarLordosis(pose: $0) } 
-        let headAngles = poses.map { calculateHeadForwardPosture(pose: $0) } 
+        let thoracicAngles = poses.map { calculateThoracicKyphosis(pose: $0) }
+        let lumbarAngles = poses.map { calculateLumbarLordosis(pose: $0) }
+        let headAngles = poses.map { calculateHeadForwardPosture(pose: $0) }
 
         return SpinalAlignmentMetrics(
             thoracicKyphosis: thoracicAngles.reduce(0, +) / Float(thoracicAngles.count), lumbarLordosis: lumbarAngles.reduce(0, +) / Float(lumbarAngles.count), headForwardPosture: headAngles.reduce(0, +) / Float(headAngles.count)
@@ -289,13 +289,13 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
         return abs(angle)
     }
 
-    private func calculateBalanceMetrics(from poses: [BodyPose]) -> BalanceMetrics {
+    private func calculateBalanceMetrics(from poses: [BodyPose]) -> PostureBalanceMetrics {
         // Calculate stability and weight distribution
         let stability = calculateStabilityIndex(from: poses)
         let weightDistribution = calculateWeightDistribution(from: poses)
         let reactionTime = calculateReactionTime(from: poses)
 
-        return BalanceMetrics(
+        return PostureBalanceMetrics(
             stabilityIndex: stability, weightDistribution: weightDistribution, reactionTime: reactionTime
         )
     }
@@ -327,7 +327,7 @@ class LiDARPostureAnalyzer: NSObject, ObservableObject {
     }
 
     private func identifyPostureRiskFactors(
-        sway: PosturalSwayMetrics, alignment: SpinalAlignmentMetrics, balance: BalanceMetrics
+        sway: PosturalSwayMetrics, alignment: SpinalAlignmentMetrics, balance: PostureBalanceMetrics
     ) -> [String] {
         var riskFactors: [String] = []
 
@@ -544,7 +544,7 @@ struct SpinalAlignmentMetrics {
     let headForwardPosture: Float
 }
 
-struct BalanceMetrics {
+struct PostureBalanceMetrics {
     let stabilityIndex: Float
     let weightDistribution: WeightDistribution
     let reactionTime: Float
@@ -558,7 +558,7 @@ struct WeightDistribution {
 struct PostureAnalysisResult {
     let posturalSway: PosturalSwayMetrics
     let spinalAlignment: SpinalAlignmentMetrics
-    let balanceMetrics: BalanceMetrics
+    let balanceMetrics: PostureBalanceMetrics
     let riskFactors: [String]
     let confidence: Float
     let timestamp: Date

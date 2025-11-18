@@ -319,28 +319,28 @@ struct EnhancedFallRiskDashboardView: View {
                 .fontWeight(.semibold)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                MetricCard(
+                FallRiskMetricCard(
                     title: "Walking Steadiness",
                     value: "85%",
                     trend: .improving,
                     color: .green
                 )
 
-                MetricCard(
+                FallRiskMetricCard(
                     title: "Balance Score",
                     value: "78/100",
                     trend: .stable,
                     color: .blue
                 )
 
-                MetricCard(
+                FallRiskMetricCard(
                     title: "Fall Confidence",
                     value: "\(Int(detectionEngine.fallConfidence * 100))%",
                     trend: .stable,
                     color: .orange
                 )
 
-                MetricCard(
+                FallRiskMetricCard(
                     title: "Active Programs",
                     value: "\(interventionEngine.activeInterventions.count)",
                     trend: .stable,
@@ -537,7 +537,7 @@ struct RiskLevelBadge: View {
     }
 }
 
-struct MetricCard: View {
+struct FallRiskMetricCard: View {
     let title: String
     let value: String
     let trend: TrendDirection

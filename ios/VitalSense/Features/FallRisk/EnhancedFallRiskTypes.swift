@@ -1,467 +1,653 @@
-import Foundation
+import SwiftUI
 import CoreMotion
+import HealthKit
+import Combine
 
-// MARK: - Enhanced Fall Risk Supporting Types
-// Common types and structures used across the enhanced fall risk system
+// MARK: - Fall Risk Assessment Manager
+@MainActor
+class FallRiskAssessmentManager: ObservableObject {
+    static let shared = FallRiskAssessmentManager(gaitAnalysisManager: PlaceholderGaitAnalysisManager())
+    // MARK: - Published Properties
+    @Published var currentRiskLevel: FallRiskLevel = .unknown
+    @Published var riskFactors: [FallRiskFactor] = []
+    @Published var assessmentHistory: [FallRiskAssessment] = []
+    @Published var recommendations: [FallRiskRecommendation] = []
+    @Published var isAssessing = false
+    @Published var balanceScore: Double = 0.0
+    @Published var stabilityMetrics: StabilityMetrics?
+    // Balance test streaming publishers
+    let balanceTestProgressPublisher = PassthroughSubject<BalanceTestProgress, Never>()
+    let balanceTestResultPublisher = PassthroughSubject<BalanceTestResultEvent, Never>()
 
-// MARK: - Machine Learning Model Abstractions
-protocol FallRiskMLModel {
-    func predict(features: FeatureVector) async throws -> ModelPrediction
+    // MARK: - Dependencies
+    private let gaitAnalysisManager: GaitAnalysisManager
+    private let healthStore = HKHealthStore()
+    private let motionManager = CMMotionManager()
+
+    // MARK: - Assessment State
+    private var assessmentTimer: Timer?
+    private var stabilityData: [StabilityDataPoint] = []
+    private var cancellables = Set<AnyCancellable>()
+
+    init(gaitAnalysisManager: GaitAnalysisManager) {
+        self.gaitAnalysisManager = gaitAnalysisManager
+        setupHealthKitObservation()
+        loadAssessmentHistory()
+    }
+
+    // Temporary placeholder until real GaitAnalysisManager exists in project.
+    // Provides minimal surface so we can create the singleton and wire watch connectivity.
+    struct PlaceholderGaitAnalysisManager: GaitAnalysisManager {
+        var latestGaitMetrics: GaitMetrics? { nil }
+    }
+
+
+// Protocol abstraction to minimize coupling (real manager can conform later)
+protocol GaitAnalysisManager {
+    var latestGaitMetrics: GaitMetrics? { get }
 }
+    // MARK: - Assessment Methods
 
-struct FeatureVector {
-    let features: [String: Double]
+    func performComprehensiveAssessment() async throws {
+        isAssessing = true
+        defer { isAssessing = false }
 
-    func normalized() -> FeatureVector {
-        // Implement feature normalization
-        let normalizedFeatures = features.mapValues { value in
-            // Simple min-max normalization (would be more sophisticated in production)
-            max(0.0, min(1.0, value / 100.0))
+        print("🔍 Starting comprehensive fall risk assessment...")
+
+        // Collect data from various sources
+        let gaitData = await collectGaitData()
+        let balanceData = await performBalanceTest()
+        let healthData = await collectHealthMetrics()
+        let environmentalData = await assessEnvironmentalFactors()
+
+        // Analyze risk factors
+        let riskFactors = analyzeRiskFactors(
+            gait: gaitData, balance: balanceData, health: healthData, environmental: environmentalData
+        )
+
+        // Calculate overall risk level
+        let riskLevel = calculateOverallRiskLevel(from: riskFactors)
+
+        // Generate recommendations
+        let recommendations = generateRecommendations(for: riskFactors)
+
+        // Create assessment record
+        let assessment = FallRiskAssessment(
+            id: UUID(), timestamp: Date(), riskLevel: riskLevel, riskFactors: riskFactors, gaitMetrics: gaitData, balanceScore: balanceData.overallScore, recommendations: recommendations
+        )
+
+        // Update state
+        self.currentRiskLevel = riskLevel
+        self.riskFactors = riskFactors
+        self.recommendations = recommendations
+        self.assessmentHistory.insert(assessment, at: 0)
+
+        // Save assessment
+        saveAssessment(assessment)
+
+        print("✅ Fall risk assessment completed. Risk level: \(riskLevel.rawValue)")
+    }
+
+    // MARK: - Public Balance Test (standalone) with progress streaming
+    func performBalanceTestStandalone(kind: BalanceTestType) {
+        Task { await runBalanceProgressSimulation(kind: kind) }
+    }
+
+    private func runBalanceProgressSimulation(kind: BalanceTestType) async {
+        // Placeholder simulation: emit progress every 0.5s up to 100%
+        let start = Date()
+        for step in 0...20 {
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            let percent = Double(step) / 20.0 * 100
+            let progress = BalanceTestProgress(
+                percent: percent,
+                instantaneousStability: Double.random(in: 0.0...0.005),
+                elapsed: Date().timeIntervalSince(start),
+                testKind: kind.rawValue
+            )
+            balanceTestProgressPublisher.send(progress)
         }
-        return FeatureVector(features: normalizedFeatures)
-    }
-}
-
-struct ModelPrediction {
-    let score: Double // 0-1 scale
-    let confidence: Double // 0-1 scale
-    let featureImportance: [String: Double]
-    let modelType: String
-}
-
-// MARK: - Concrete Model Implementations
-class RandomForestModel: FallRiskMLModel {
-    func predict(features: FeatureVector) async throws -> ModelPrediction {
-        // Simulate Random Forest prediction
-        // In production, this would use Core ML or TensorFlow Lite
-        let normalizedFeatures = features.normalized()
-        let score = calculateRandomForestScore(normalizedFeatures)
-
-        return ModelPrediction(
-            score: score,
-            confidence: 0.85,
-            featureImportance: [
-                "walking_steadiness": 0.3,
-                "balance_confidence": 0.25,
-                "gait_speed": 0.2,
-                "heart_rate_variability": 0.15,
-                "age": 0.1
-            ],
-            modelType: "RandomForest"
+        // Synthesize result
+        let result = BalanceTestResultEvent(
+            overallScore: Double.random(in: 60...95),
+            componentScores: ["stability": Double.random(in: 60...95), "dynamic": Double.random(in: 60...95)],
+            testKind: kind.rawValue
         )
+        balanceTestResultPublisher.send(result)
     }
 
-    private func calculateRandomForestScore(_ features: FeatureVector) -> Double {
-        // Simplified scoring based on key features
-        let walkingSteadiness = features.features["walking_steadiness"] ?? 0.5
-        let balanceConfidence = features.features["balance_confidence"] ?? 0.5
-        let gaitSpeed = features.features["gait_speed"] ?? 0.5
-        let age = features.features["age"] ?? 0.5
+    // MARK: - Balance Testing
 
-        let riskScore = (1.0 - walkingSteadiness) * 0.3 +
-                       (1.0 - balanceConfidence) * 0.25 +
-                       (1.0 - gaitSpeed) * 0.2 +
-                       age * 0.25
+    func performBalanceTest() async -> BalanceTestResult {
+        guard motionManager.isDeviceMotionAvailable else {
+            return BalanceTestResult(overallScore: 0, testResults: [:])
+        }
 
-        return max(0.0, min(1.0, riskScore))
-    }
-}
+        print("⚖️ Performing balance test...")
 
-class NeuralNetworkModel: FallRiskMLModel {
-    func predict(features: FeatureVector) async throws -> ModelPrediction {
-        // Simulate Neural Network prediction
-        let normalizedFeatures = features.normalized()
-        let score = calculateNeuralNetworkScore(normalizedFeatures)
+        var testResults: [BalanceTestType: Double] = [:]
+        stabilityData.removeAll()
 
-        return ModelPrediction(
-            score: score,
-            confidence: 0.88,
-            featureImportance: [
-                "walking_steadiness": 0.28,
-                "balance_confidence": 0.22,
-                "heart_rate_variability": 0.2,
-                "gait_speed": 0.18,
-                "medication_count": 0.12
-            ],
-            modelType: "NeuralNetwork"
-        )
-    }
+        // Single Leg Stand Test (30 seconds)
+        let singleLegScore = await performSingleLegStandTest()
+        testResults[.singleLegStand] = singleLegScore
 
-    private func calculateNeuralNetworkScore(_ features: FeatureVector) -> Double {
-        // Simplified neural network simulation with multiple layers
-        let layer1 = computeLayer(features.features, weights: [
-            "walking_steadiness": -0.8,
-            "balance_confidence": -0.6,
-            "gait_speed": -0.4,
-            "age": 0.5,
-            "medication_count": 0.3
-        ])
+        // Eyes Closed Balance Test (10 seconds)
+        let eyesClosedScore = await performEyesClosedBalanceTest()
+        testResults[.eyesClosed] = eyesClosedScore
 
-        let layer2 = computeLayer(["layer1_output": layer1], weights: ["layer1_output": 1.0])
+        // Dynamic Balance Test (step in place)
+        let dynamicScore = await performDynamicBalanceTest()
+        testResults[.dynamic] = dynamicScore
 
-        return sigmoid(layer2)
+        // Tandem Walk Test
+        let tandemScore = await performTandemWalkTest()
+        testResults[.tandemWalk] = tandemScore
+
+        // Calculate overall balance score
+        let overallScore = testResults.values.reduce(0, +) / Double(testResults.count)
+        self.balanceScore = overallScore
+
+        // Generate stability metrics
+        self.stabilityMetrics = calculateStabilityMetrics(from: stabilityData)
+
+        return BalanceTestResult(overallScore: overallScore, testResults: testResults)
     }
 
-    private func computeLayer(_ inputs: [String: Double], weights: [String: Double]) -> Double {
-        var output = 0.0
-        for (key, value) in inputs {
-            if let weight = weights[key] {
-                output += value * weight
+    private func performSingleLegStandTest() async -> Double {
+        await withCheckedContinuation { continuation in
+            var swayMeasurements: [Double] = []
+            var isStable = true
+            let testDuration: TimeInterval = 30.0
+            let startTime = Date()
+
+            motionManager.deviceMotionUpdateInterval = 0.1
+            motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
+                guard let motion = motion, let self = self else { return }
+
+                let elapsed = Date().timeIntervalSince(startTime)
+
+                if elapsed >= testDuration {
+                    self.motionManager.stopDeviceMotionUpdates()
+
+                    // Calculate stability score based on sway measurements
+                    let averageSway = swayMeasurements.isEmpty ? 0 : swayMeasurements.reduce(0, +) / Double(swayMeasurements.count)
+                    let stabilityScore = max(0, min(100, 100 - (averageSway * 1000)))
+
+                    continuation.resume(returning: stabilityScore)
+                    return
+                }
+
+                // Calculate body sway
+                let gravity = motion.gravity
+                let userAcceleration = motion.userAcceleration
+
+                let sway = sqrt(
+                    pow(userAcceleration.x, 2) +
+                    pow(userAcceleration.y, 2) +
+                    pow(userAcceleration.z, 2)
+                )
+
+                swayMeasurements.append(sway)
+
+                // Record stability data point
+                let dataPoint = StabilityDataPoint(
+                    timestamp: Date(), sway: sway, gravity: gravity, userAcceleration: userAcceleration
+                )
+                self.stabilityData.append(dataPoint)
             }
         }
-        return output
     }
 
-    private func sigmoid(_ x: Double) -> Double {
-        return 1.0 / (1.0 + exp(-x))
-    }
-}
-
-class LSTMModel: FallRiskMLModel {
-    func predict(features: FeatureVector) async throws -> ModelPrediction {
-        // Simulate LSTM prediction - would incorporate temporal data
-        return ModelPrediction(
-            score: 0.45,
-            confidence: 0.82,
-            featureImportance: [
-                "temporal_walking_trend": 0.35,
-                "temporal_balance_trend": 0.25,
-                "temporal_activity_trend": 0.2,
-                "recent_fall_events": 0.2
-            ],
-            modelType: "LSTM"
-        )
+    private func performEyesClosedBalanceTest() async -> Double {
+        // Similar implementation to single leg stand but with different scoring
+        await performStabilityTest(duration: 10.0, testType: .eyesClosed)
     }
 
-    func predict(
-        features: FeatureVector,
-        temporalData: [TemporalDataPoint]
-    ) async throws -> ModelPrediction {
-        // Enhanced LSTM prediction with temporal sequence
-        let temporalFeatures = processTemporalSequence(temporalData)
-        let combinedScore = calculateLSTMScore(features, temporal: temporalFeatures)
-
-        return ModelPrediction(
-            score: combinedScore,
-            confidence: 0.85,
-            featureImportance: [
-                "temporal_pattern": 0.4,
-                "current_state": 0.3,
-                "trend_direction": 0.3
-            ],
-            modelType: "LSTM"
-        )
+    private func performDynamicBalanceTest() async -> Double {
+        await performStabilityTest(duration: 15.0, testType: .dynamic)
     }
 
-    private func processTemporalSequence(_ data: [TemporalDataPoint]) -> [String: Double] {
-        // Process temporal data for trends and patterns
-        guard !data.isEmpty else { return [:] }
-
-        // Calculate trends over time
-        let walkingSteadinessValues = data.compactMap { $0.features["walking_steadiness"] }
-        let walkingTrend = calculateTrend(walkingSteadinessValues)
-
-        let balanceValues = data.compactMap { $0.features["balance_confidence"] }
-        let balanceTrend = calculateTrend(balanceValues)
-
-        return [
-            "walking_steadiness_trend": walkingTrend,
-            "balance_confidence_trend": balanceTrend,
-            "data_points": Double(data.count),
-            "time_span": data.last!.timestamp.timeIntervalSince(data.first!.timestamp) / 3600 // hours
-        ]
+    private func performTandemWalkTest() async -> Double {
+        await performStabilityTest(duration: 20.0, testType: .tandemWalk)
     }
 
-    private func calculateTrend(_ values: [Double]) -> Double {
-        guard values.count >= 2 else { return 0.0 }
+    private func performStabilityTest(duration: TimeInterval, testType: BalanceTestType) async -> Double {
+        await withCheckedContinuation { continuation in
+            var measurements: [Double] = []
+            let startTime = Date()
 
-        let n = Double(values.count)
-        let sumX = (0..<values.count).reduce(0.0) { $0 + Double($1) }
-        let sumY = values.reduce(0.0, +)
-        let sumXY = zip(0..<values.count, values).reduce(0.0) { $0 + Double($1.0) * $1.1 }
-        let sumXX = (0..<values.count).reduce(0.0) { $0 + Double($1) * Double($1) }
+            motionManager.deviceMotionUpdateInterval = 0.1
+            motionManager.startDeviceMotionUpdates(to: .main) { motion, _ in
+                guard let motion = motion else { return }
 
-        let slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
-        return slope
+                let elapsed = Date().timeIntervalSince(startTime)
+
+                if elapsed >= duration {
+                    self.motionManager.stopDeviceMotionUpdates()
+
+                    let score = self.calculateTestScore(measurements: measurements, testType: testType)
+                    continuation.resume(returning: score)
+                    return
+                }
+
+                let stability = self.calculateInstantaneousStability(from: motion)
+                measurements.append(stability)
+            }
+        }
     }
 
-    private func calculateLSTMScore(
-        _ currentFeatures: FeatureVector,
-        temporal: [String: Double]
-    ) -> Double {
-        let currentRisk = currentFeatures.features["walking_steadiness"] ?? 0.5
-        let temporalTrend = temporal["walking_steadiness_trend"] ?? 0.0
+    // MARK: - Data Collection
 
-        // Combine current state with temporal trends
-        let combinedScore = (1.0 - currentRisk) * 0.7 + abs(temporalTrend) * 0.3
-        return max(0.0, min(1.0, combinedScore))
-    }
-}
-
-class TransformerModel: FallRiskMLModel {
-    func predict(features: FeatureVector) async throws -> ModelPrediction {
-        // Simulate Transformer prediction
-        return ModelPrediction(
-            score: 0.52,
-            confidence: 0.79,
-            featureImportance: [
-                "contextual_relationships": 0.4,
-                "feature_interactions": 0.3,
-                "attention_weights": 0.3
-            ],
-            modelType: "Transformer"
-        )
+    private func collectGaitData() async -> GaitMetrics? {
+        // Get the latest gait analysis from the gait manager
+        gaitAnalysisManager.latestGaitMetrics
     }
 
-    func predict(
-        features: FeatureVector,
-        contextData: [String: Double]
-    ) async throws -> ModelPrediction {
-        // Enhanced Transformer prediction with contextual data
-        let attentionWeights = calculateAttentionWeights(features, context: contextData)
-        let contextualScore = calculateContextualScore(features, weights: attentionWeights)
+    private func collectHealthMetrics() async -> HealthRiskMetrics {
+        var metrics = HealthRiskMetrics()
 
-        return ModelPrediction(
-            score: contextualScore,
-            confidence: 0.81,
-            featureImportance: attentionWeights,
-            modelType: "Transformer"
-        )
-    }
-
-    private func calculateAttentionWeights(
-        _ features: FeatureVector,
-        context: [String: Double]
-    ) -> [String: Double] {
-        // Simulate attention mechanism
-        var weights: [String: Double] = [:]
-
-        for (key, value) in features.features {
-            // Calculate attention based on feature importance and context
-            let contextMultiplier = context[key + "_context"] ?? 1.0
-            let attention = value * contextMultiplier
-            weights[key] = softmax(attention, total: features.features.values.reduce(0, +))
+        // Age-related risk
+        if let dateOfBirth = try? await getDateOfBirth() {
+            let age = Calendar.current.dateComponents([.year], from: dateOfBirth, to: Date()).year ?? 0
+            metrics.age = age
         }
 
-        return weights
+        // Medication history (placeholder - would need specific implementation)
+        metrics.medicationRiskScore = await assessMedicationRisk()
+
+        // Previous falls (from HealthKit or user input)
+        metrics.previousFalls = await getPreviousFallCount()
+
+        // Chronic conditions
+        metrics.chronicConditions = await assessChronicConditions()
+
+        return metrics
     }
 
-    private func calculateContextualScore(
-        _ features: FeatureVector,
-        weights: [String: Double]
-    ) -> Double {
-        var score = 0.0
+    private func assessEnvironmentalFactors() async -> EnvironmentalRiskFactors {
+        // This would typically involve user input or smart home integration
+        EnvironmentalRiskFactors(
+            homeHazards: .medium, lightingQuality: .good, floorSurfaces: .mixed, stairSafety: .good
+        )
+    }
 
-        for (key, value) in features.features {
-            let weight = weights[key] ?? 0.0
-            score += (1.0 - value) * weight
+    // MARK: - Risk Analysis
+
+    private func analyzeRiskFactors(
+        gait: GaitMetrics?, balance: BalanceTestResult, health: HealthRiskMetrics, environmental: EnvironmentalRiskFactors
+    ) -> [FallRiskFactor] {
+        var factors: [FallRiskFactor] = []
+
+        // Gait-related risks
+        if let gait = gait {
+            if let walkingSpeed = gait.averageWalkingSpeed, walkingSpeed < 0.8 {
+                factors.append(FallRiskFactor(
+                    type: .slowWalkingSpeed, severity: walkingSpeed < 0.6 ? .high : .medium, description: "Walking speed below normal range", value: walkingSpeed
+                ))
+            }
+
+            if let asymmetry = gait.walkingAsymmetry, asymmetry > 0.1 {
+                factors.append(FallRiskFactor(
+                    type: .gaitAsymmetry, severity: asymmetry > 0.15 ? .high : .medium, description: "Significant gait asymmetry detected", value: asymmetry
+                ))
+            }
+
+            if let variability = gait.gaitVariability, variability > 0.1 {
+                factors.append(FallRiskFactor(
+                    type: .gaitVariability, severity: variability > 0.15 ? .high : .medium, description: "High gait variability indicating instability", value: variability
+                ))
+            }
         }
 
-        return max(0.0, min(1.0, score))
+        // Balance-related risks
+        if balance.overallScore < 70 {
+            factors.append(FallRiskFactor(
+                type: .poorBalance, severity: balance.overallScore < 50 ? .high : .medium, description: "Below-average balance performance", value: balance.overallScore
+            ))
+        }
+
+        // Age-related risk
+        if health.age > 65 {
+            let severity: RiskSeverity = health.age > 80 ? .high : .medium
+            factors.append(FallRiskFactor(
+                type: .advancedAge, severity: severity, description: "Increased fall risk due to age", value: Double(health.age)
+            ))
+        }
+
+        // Medication risk
+        if health.medicationRiskScore > 0.5 {
+            factors.append(FallRiskFactor(
+                type: .medicationEffects, severity: health.medicationRiskScore > 0.7 ? .high : .medium, description: "Medications that may affect balance or cognition", value: health.medicationRiskScore
+            ))
+        }
+
+        // Previous falls
+        if health.previousFalls > 0 {
+            factors.append(FallRiskFactor(
+                type: .fallHistory, severity: health.previousFalls > 2 ? .high : .medium, description: "History of previous falls", value: Double(health.previousFalls)
+            ))
+        }
+
+        // Environmental risks
+        if environmental.homeHazards != .low {
+            factors.append(FallRiskFactor(
+                type: .environmentalHazards, severity: environmental.homeHazards == .high ? .high : .medium, description: "Environmental hazards in living space", value: Double(environmental.homeHazards.rawValue)
+            ))
+        }
+
+        return factors
     }
 
-    private func softmax(_ value: Double, total: Double) -> Double {
-        guard total > 0 else { return 0.0 }
-        return exp(value) / exp(total)
+    private func calculateOverallRiskLevel(from factors: [FallRiskFactor]) -> FallRiskLevel {
+        let highRiskCount = factors.filter { $0.severity == .high }.count
+        let mediumRiskCount = factors.filter { $0.severity == .medium }.count
+        let totalRiskScore = Double(highRiskCount * 3 + mediumRiskCount * 2)
+
+        if highRiskCount >= 2 || totalRiskScore >= 8 {
+            return .high
+        } else if highRiskCount >= 1 || mediumRiskCount >= 2 || totalRiskScore >= 4 {
+            return .medium
+        } else if factors.isEmpty {
+            return .low
+        } else {
+            return .low
+        }
+    }
+
+    // MARK: - Recommendations
+
+    private func generateRecommendations(for riskFactors: [FallRiskFactor]) -> [FallRiskRecommendation] {
+        var recommendations: [FallRiskRecommendation] = []
+
+        for factor in riskFactors {
+            switch factor.type {
+            case .slowWalkingSpeed:
+                recommendations.append(FallRiskRecommendation(
+                    type: .exerciseProgram, priority: .high, title: "Improve Walking Speed", description: "Regular walking exercises and strength training can help improve walking speed and reduce fall risk.", actions: [
+                        "Start with 10-minute daily walks", "Gradually increase walking pace", "Add resistance training 2-3 times per week", "Consider physical therapy consultation"
+                    ]
+                ))
+
+            case .poorBalance:
+                recommendations.append(FallRiskRecommendation(
+                    type: .balanceTraining, priority: .high, title: "Balance Training Program", description: "Specific balance exercises can significantly improve stability and reduce fall risk.", actions: [
+                        "Practice single-leg stands daily", "Try tai chi or yoga classes", "Use balance training apps", "Consider professional balance assessment"
+                    ]
+                ))
+
+            case .gaitAsymmetry:
+                recommendations.append(FallRiskRecommendation(
+                    type: .medicalConsultation, priority: .medium, title: "Address Gait Asymmetry", description: "Gait asymmetry may indicate underlying issues that should be evaluated.", actions: [
+                        "Consult with a physical therapist", "Check for leg length differences", "Assess for muscle imbalances", "Consider gait training exercises"
+                    ]
+                ))
+
+            case .environmentalHazards:
+                recommendations.append(FallRiskRecommendation(
+                    type: .homeModification, priority: .medium, title: "Home Safety Improvements", description: "Making your home safer can prevent many falls from occurring.", actions: [
+                        "Remove loose rugs and clutter", "Install handrails on stairs", "Improve lighting in all areas", "Add grab bars in bathroom", "Secure electrical cords"
+                    ]
+                ))
+
+            case .medicationEffects:
+                recommendations.append(FallRiskRecommendation(
+                    type: .medicationReview, priority: .high, title: "Medication Review", description: "Some medications can increase fall risk. A review with your healthcare provider is recommended.", actions: [
+                        "Schedule medication review with doctor", "Discuss side effects that affect balance", "Consider timing of medication doses", "Ask about alternative medications"
+                    ]
+                ))
+
+            default:
+                break
+            }
+        }
+
+        // Add general recommendations
+        if riskFactors.contains(where: { $0.severity == .high }) {
+            recommendations.append(FallRiskRecommendation(
+                type: .medicalConsultation, priority: .high, title: "Healthcare Provider Consultation", description: "Given your elevated fall risk, consult with your healthcare provider for a comprehensive evaluation.", actions: [
+                    "Schedule appointment with primary care physician", "Bring fall risk assessment results", "Discuss any recent changes in balance or mobility", "Consider referral to fall prevention specialist"
+                ]
+            ))
+        }
+
+        return recommendations
+    }
+
+    // MARK: - Helper Methods
+
+    private func calculateStabilityMetrics(from data: [StabilityDataPoint]) -> StabilityMetrics {
+        guard !data.isEmpty else {
+            return StabilityMetrics(averageSway: 0, peakSway: 0, swayVariability: 0, stabilityIndex: 0)
+        }
+
+        let swayValues = data.map { $0.sway }
+        let averageSway = swayValues.reduce(0, +) / Double(swayValues.count)
+        let peakSway = swayValues.max() ?? 0
+
+        // Calculate variability (standard deviation)
+        let variance = swayValues.map { pow($0 - averageSway, 2) }.reduce(0, +) / Double(swayValues.count)
+        let swayVariability = sqrt(variance)
+
+        // Calculate stability index (lower is better)
+        let stabilityIndex = (averageSway * 0.6) + (swayVariability * 0.4)
+
+        return StabilityMetrics(
+            averageSway: averageSway, peakSway: peakSway, swayVariability: swayVariability, stabilityIndex: stabilityIndex
+        )
+    }
+
+    private func calculateTestScore(measurements: [Double], testType: BalanceTestType) -> Double {
+        guard !measurements.isEmpty else { return 0 }
+
+        let average = measurements.reduce(0, +) / Double(measurements.count)
+
+        // Different scoring for different test types
+        switch testType {
+        case .singleLegStand:
+            return max(0, min(100, 100 - (average * 1000)))
+        case .eyesClosed:
+            return max(0, min(100, 100 - (average * 800)))
+        case .dynamic:
+            return max(0, min(100, 100 - (average * 600)))
+        case .tandemWalk:
+            return max(0, min(100, 100 - (average * 700)))
+        }
+    }
+
+    private func calculateInstantaneousStability(from motion: CMDeviceMotion) -> Double {
+        let userAcceleration = motion.userAcceleration
+        return sqrt(
+            pow(userAcceleration.x, 2) +
+            pow(userAcceleration.y, 2) +
+            pow(userAcceleration.z, 2)
+        )
+    }
+
+    // MARK: - HealthKit Helpers
+
+    private func setupHealthKitObservation() {
+        // Setup observers for relevant health data changes
+    }
+
+    private func getDateOfBirth() async throws -> Date? {
+        try await withCheckedThrowingContinuation { continuation in
+            do {
+                let dateOfBirth = try healthStore.dateOfBirthComponents()
+                continuation.resume(returning: dateOfBirth.date)
+            } catch {
+                continuation.resume(throwing: error)
+            }
+        }
+    }
+
+    private func assessMedicationRisk() async -> Double {
+        // Placeholder - would need medication data from HealthKit or user input
+        0.3
+    }
+
+    private func getPreviousFallCount() async -> Int {
+        // Placeholder - would query HealthKit for fall incidents
+        0
+    }
+
+    private func assessChronicConditions() async -> [String] {
+        // Placeholder - would query HealthKit for relevant conditions
+        []
+    }
+
+    // MARK: - Persistence
+
+    private func loadAssessmentHistory() {
+        // Load from Core Data or UserDefaults
+        if let data = UserDefaults.standard.data(forKey: "FallRiskAssessmentHistory"), let history = try? JSONDecoder().decode([FallRiskAssessment].self, from: data) {
+            assessmentHistory = history
+        }
+    }
+
+    private func saveAssessment(_ assessment: FallRiskAssessment) {
+        do {
+            let data = try JSONEncoder().encode(assessmentHistory)
+            UserDefaults.standard.set(data, forKey: "FallRiskAssessmentHistory")
+        } catch {
+            print("❌ Failed to save assessment: \(error)")
+        }
     }
 }
 
-// MARK: - Sensor Data Processing
-struct SensorDataSnapshot {
-    let accelerometerVariance: Double
-    let gyroscopeStability: Double
-    let postureTransitions: Double
-    let activityConfidence: Double
-    let deviceOrientation: String
-    let timestamp: Date
-}
+// MARK: - Supporting Types
 
-struct EnvironmentalContext {
-    let lightingScore: Double // 0-1 scale (1 = optimal lighting)
-    let surfaceStabilityScore: Double // 0-1 scale (1 = stable surface)
-    let obstacleScore: Double // 0-1 scale (0 = many obstacles)
-    let noiseLevel: Double // decibels
-    let temperature: Double // celsius
-    let humidity: Double // percentage
-    let location: LocationContext
+enum FallRiskLevel: String, Codable, CaseIterable {
+    case low
+    case medium
+    case high
+    case unknown
 
-    enum LocationContext {
-        case indoor
-        case outdoor
-        case vehicle
-        case unknown
-    }
-}
-
-// MARK: - Risk Level Extensions
-enum FallRiskLevel: String, CaseIterable {
-    case low = "Low Risk"
-    case moderate = "Moderate Risk"
-    case high = "High Risk"
-    case critical = "Critical Risk"
-
-    var color: String {
+    var color: Color {
         switch self {
-        case .low: return "green"
-        case .moderate: return "yellow"
-        case .high: return "orange"
-        case .critical: return "red"
-        }
-    }
-
-    var emoji: String {
-        switch self {
-        case .low: return "✅"
-        case .moderate: return "⚠️"
-        case .high: return "🟠"
-        case .critical: return "🚨"
+        case .low: return .green
+        case .medium: return .yellow
+        case .high: return .red
+        case .unknown: return .gray
         }
     }
 
     var description: String {
         switch self {
-        case .low: return "Your fall risk is currently low. Continue with regular activities and maintain healthy habits."
-        case .moderate: return "You have a moderate fall risk. Consider implementing preventive measures and monitoring changes."
-        case .high: return "Your fall risk is high. Immediate intervention and lifestyle modifications are recommended."
-        case .critical: return "Critical fall risk detected. Seek immediate medical attention and implement all safety measures."
+        case .low: return "Low fall risk"
+        case .medium: return "Moderate fall risk"
+        case .high: return "High fall risk"
+        case .unknown: return "Risk level unknown"
         }
     }
 }
 
-// MARK: - Helper Extensions
-extension EnhancedFallRiskEngine {
-    // Additional helper methods that were referenced but not implemented
+enum FallRiskFactorType: String, Codable, CaseIterable {
+    case slowWalkingSpeed = "slow_walking_speed"
+    case poorBalance = "poor_balance"
+    case gaitAsymmetry = "gait_asymmetry"
+    case gaitVariability = "gait_variability"
+    case advancedAge = "advanced_age"
+    case medicationEffects = "medication_effects"
+    case fallHistory = "fall_history"
+    case environmentalHazards = "environmental_hazards"
+    case visionProblems = "vision_problems"
+    case cognitiveImpairment = "cognitive_impairment"
+}
 
-    func calculateGaitBalanceScore(healthData: HealthDataSnapshot) -> Double {
-        let walkingSteadiness = healthData.walkingSteadiness / 100.0
-        let gaitSpeed = healthData.gaitSpeed / 1.4 // normalize to average walking speed
-        let balance = (walkingSteadiness + min(gaitSpeed, 1.0)) / 2.0
-        return max(0.0, min(1.0, 1.0 - balance)) // invert for risk score
-    }
+enum RiskSeverity: String, Codable {
+    case low
+    case medium
+    case high
+}
 
-    func calculateEnvironmentalScore(healthData: HealthDataSnapshot) -> Double {
-        // Placeholder - would incorporate environmental assessment data
-        return 0.3 // moderate environmental risk
-    }
+struct FallRiskFactor: Codable, Identifiable {
+    let id = UUID()
+    let type: FallRiskFactorType
+    let severity: RiskSeverity
+    let description: String
+    let value: Double
+    let timestamp: Date = Date()
+}
 
-    func calculatePhysiologicalScore(healthData: HealthDataSnapshot) -> Double {
-        let heartRateRisk = (healthData.restingHeartRate - 60) / 40.0 // normalized
-        let bpSystolicRisk = (healthData.bloodPressureSystolic - 120) / 40.0
-        let physiologicalRisk = (heartRateRisk + max(0, bpSystolicRisk)) / 2.0
-        return max(0.0, min(1.0, physiologicalRisk))
-    }
+struct FallRiskAssessment: Codable, Identifiable {
+    let id: UUID
+    let timestamp: Date
+    let riskLevel: FallRiskLevel
+    let riskFactors: [FallRiskFactor]
+    let gaitMetrics: GaitMetrics?
+    let balanceScore: Double
+    let recommendations: [FallRiskRecommendation]
+}
 
-    func calculateBehavioralScore(healthData: HealthDataSnapshot) -> Double {
-        let activityLevel = healthData.dailySteps / 8000.0 // normalize to recommended steps
-        let sleepQuality = healthData.sleepDuration / 8.0 // normalize to 8 hours
-        let behavioralRisk = 1.0 - min(1.0, (activityLevel + sleepQuality) / 2.0)
-        return max(0.0, min(1.0, behavioralRisk))
-    }
+enum BalanceTestType: String, Codable, CaseIterable {
+    case singleLegStand = "single_leg_stand"
+    case eyesClosed = "eyes_closed"
+    case dynamic = "dynamic"
+    case tandemWalk = "tandem_walk"
+}
 
-    func calculateCognitiveScore(healthData: HealthDataSnapshot) -> Double {
-        // Placeholder - would incorporate cognitive assessment data
-        return 0.2 // low cognitive risk
-    }
+struct BalanceTestResult {
+    let overallScore: Double
+    let testResults: [BalanceTestType: Double]
+}
 
-    func calculateMedicalScore(healthData: HealthDataSnapshot) -> Double {
-        let medicationRisk = healthData.profile.medicationCount / 10.0 // risk increases with medication count
-        let fallHistoryRisk = healthData.profile.fallHistoryScore
-        let medicalRisk = (medicationRisk + fallHistoryRisk) / 2.0
-        return max(0.0, min(1.0, medicalRisk))
-    }
+struct StabilityMetrics: Codable {
+    let averageSway: Double
+    let peakSway: Double
+    let swayVariability: Double
+    let stabilityIndex: Double
+}
 
-    func identifyEnhancedRiskFactors(
-        healthData: HealthDataSnapshot,
-        dimensionalScores: RiskAssessment.DimensionalScores,
-        modelResults: EnsembleResults
-    ) -> [EnhancedRiskFactor] {
-        var factors: [EnhancedRiskFactor] = []
+struct StabilityDataPoint {
+    let timestamp: Date
+    let sway: Double
+    let gravity: CMAcceleration
+    let userAcceleration: CMAcceleration
+}
 
-        // Gait and balance factors
-        if dimensionalScores.gaitBalance > 0.5 {
-            factors.append(EnhancedRiskFactor(
-                category: .gaitInstability,
-                severity: .moderate,
-                impact: dimensionalScores.gaitBalance,
-                confidence: modelResults.consensus == .high ? 0.9 : 0.7,
-                description: "Walking steadiness below optimal levels",
-                recommendation: "Consider balance training exercises and physical therapy",
-                timeframe: .shortTerm
-            ))
-        }
+struct HealthRiskMetrics {
+    var age: Int = 0
+    var medicationRiskScore: Double = 0
+    var previousFalls: Int = 0
+    var chronicConditions: [String] = []
+}
 
-        // Environmental factors
-        if dimensionalScores.environmental > 0.4 {
-            factors.append(EnhancedRiskFactor(
-                category: .environmentalHazard,
-                severity: .moderate,
-                impact: dimensionalScores.environmental,
-                confidence: 0.8,
-                description: "Home environment may pose fall risks",
-                recommendation: "Conduct home safety assessment and remove hazards",
-                timeframe: .immediate
-            ))
-        }
+enum EnvironmentalRiskLevel: Int, Codable {
+    case low = 1
+    case medium = 2
+    case high = 3
+}
 
-        // Add more risk factors based on other dimensional scores...
+struct EnvironmentalRiskFactors {
+    let homeHazards: EnvironmentalRiskLevel
+    let lightingQuality: EnvironmentalRiskLevel
+    let floorSurfaces: EnvironmentalRiskLevel
+    let stairSafety: EnvironmentalRiskLevel
+}
 
-        return factors
-    }
+enum FallRiskRecommendationType: String, Codable {
+    case exerciseProgram = "exercise_program"
+    case balanceTraining = "balance_training"
+    case homeModification = "home_modification"
+    case medicationReview = "medication_review"
+    case medicalConsultation = "medical_consultation"
+    case visionCheck = "vision_check"
+}
 
-    func generateTemporalPredictions(
-        currentAssessment: EnsembleResults,
-        healthTrends: HealthTrends,
-        riskFactors: [EnhancedRiskFactor]
-    ) -> TemporalPredictions {
-        let baseRisk = currentAssessment.weightedAverage
+enum RecommendationPriority: String, Codable, CaseIterable {
+    case low
+    case medium
+    case high
+    case critical
+}
 
-        // Apply trend modifiers
-        let trendModifier = (healthTrends.walkingSteadinessSlope +
-                           healthTrends.activitySlope) / 2.0
-
-        return TemporalPredictions(
-            next24Hours: TemporalPredictions.PredictionWindow(
-                riskScore: baseRisk,
-                confidence: 0.85,
-                keyFactors: ["Current walking steadiness", "Recent activity level"],
-                recommendations: ["Continue current interventions", "Monitor for changes"]
-            ),
-            nextWeek: TemporalPredictions.PredictionWindow(
-                riskScore: baseRisk + (trendModifier * 0.1),
-                confidence: 0.75,
-                keyFactors: ["Walking steadiness trend", "Activity pattern changes"],
-                recommendations: ["Adjust intervention intensity if needed"]
-            ),
-            nextMonth: TemporalPredictions.PredictionWindow(
-                riskScore: baseRisk + (trendModifier * 0.3),
-                confidence: 0.65,
-                keyFactors: ["Long-term health trends", "Seasonal factors"],
-                recommendations: ["Plan long-term intervention strategies"]
-            ),
-            nextQuarter: TemporalPredictions.PredictionWindow(
-                riskScore: baseRisk + (trendModifier * 0.5),
-                confidence: 0.55,
-                keyFactors: ["Aging effects", "Chronic condition progression"],
-                recommendations: ["Regular health assessments", "Proactive interventions"]
-            )
-        )
-    }
-
-    func calculateOverallConfidence(ensembleResults: EnsembleResults) -> Double {
-        // Confidence based on model consensus
-        switch ensembleResults.consensus {
-        case .high: return 0.9
-        case .medium: return 0.75
-        case .low: return 0.6
-        }
-    }
-
-    func generatePersonalizedInterventions(
-        assessment: RiskAssessment,
-        healthProfile: UserProfile
-    ) -> [InterventionProgram] {
-        // This would generate personalized intervention programs
-        // based on the risk assessment and user profile
-        return []
-    }
+struct FallRiskRecommendation: Codable, Identifiable {
+    let id = UUID()
+    let type: FallRiskRecommendationType
+    let priority: RecommendationPriority
+    let title: String
+    let description: String
+    let actions: [String]
+    let timestamp: Date = Date()
 }

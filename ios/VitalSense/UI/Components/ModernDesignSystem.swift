@@ -333,6 +333,7 @@ struct HealthMetricDisplayView: View {
     }
 }
 
+/// Canonical trend indicator used throughout the app.
 struct TrendIndicator: View {
     let direction: ModernTrendDirection
 

@@ -310,6 +310,13 @@ extension AppleWatchGaitMonitor: WCSessionDelegate {
             }
         }
     }
+
+    func sessionDidBecomeInactive(_ session: WCSession) { }
+
+    func sessionDidDeactivate(_ session: WCSession) {
+        // Typically you would reactivate the session here if needed.
+        session.activate()
+    }
 }
 
 // MARK: - Supporting Data Models

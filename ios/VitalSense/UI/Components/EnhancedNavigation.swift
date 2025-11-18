@@ -265,51 +265,30 @@ struct EnhancedNavigationHeader: View {
 }
 
 /// Enhanced sheet presentation with custom styling
-struct EnhancedSheet<Content: View>: ViewModifier {
-    @Binding var isPresented: Bool
-    let content: Content
-    let detents: Set<PresentationDetent>
-    let dragIndicator: Visibility
+struct EnhancedSheet<SheetContent: View>: ViewModifier {
+    typealias Body = AnyView
 
-    init(
-        isPresented: Binding<Bool>,
-        detents: Set<PresentationDetent> = [.large],
-        dragIndicator: Visibility = .automatic,
-        @ViewBuilder content: () -> Content
-    ) {
-        self._isPresented = isPresented
-        self.content = content()
-        self.detents = detents
-        self.dragIndicator = dragIndicator
-    }
+    let isPresented: Binding<Bool>
+    @ViewBuilder let content: () -> SheetContent
 
-    func body(content: Content) -> some View {
-        content
-            .sheet(isPresented: $isPresented) {
-                NavigationView {
-                    self.content
-                        .navigationBarTitleDisplayMode(.inline)
-                }
-                .presentationDetents(detents)
-                .presentationDragIndicator(dragIndicator)
+    func body(content: Content) -> AnyView {
+        AnyView(
+            content.sheet(isPresented: isPresented) {
+                self.content()
             }
+        )
     }
 }
 
 // MARK: - View Extensions
 extension View {
-    func enhancedSheet<Content: View>(
+    func enhancedSheet<SheetContent: View>(
         isPresented: Binding<Bool>,
         detents: Set<PresentationDetent> = [.large],
         dragIndicator: Visibility = .automatic,
-        @ViewBuilder content: @escaping () -> Content
+        @ViewBuilder content: @escaping () -> SheetContent
     ) -> some View {
-        self.modifier(EnhancedSheet(
-            isPresented: isPresented,
-            detents: detents,
-            dragIndicator: dragIndicator,
-            content: content
-        ))
+        self.modifier(EnhancedSheet(isPresented: isPresented, content: content))
     }
 
     func enhancedPageTransition(type: EnhancedPageTransition<EmptyView>.TransitionType = .combined) -> some View {

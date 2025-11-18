@@ -214,14 +214,13 @@ extension View {
     }
 
     /// Respects reduced motion preference
-    func respectsReducedMotion<Animated: View, Static: View>(
+    func respectsReducedMotion<Animated: View, StaticContent: View>(
         @ViewBuilder animated: () -> Animated,
-        @ViewBuilder static: () -> Static
+        @ViewBuilder reducedMotion: () -> StaticContent
     ) -> some View {
         Group {
-            @Environment(\.accessibilityReduceMotion) var reduceMotion
-            if reduceMotion {
-                static()
+            if UIAccessibility.isReduceMotionEnabled {
+                reducedMotion()
             } else {
                 animated()
             }

@@ -141,21 +141,21 @@ struct LiDARScanHistoryView: View {
                 .accessibilityAddTraits(.isHeader)
 
             HStack(spacing: 16) {
-                StatisticCard(
+                LiDARStatisticCard(
                     title: loc("lidar.history.total_scans"),
                     value: "\(statistics.totalScans)",
                     icon: "viewfinder",
                     color: .blue
                 )
 
-                StatisticCard(
+                LiDARStatisticCard(
                     title: loc("lidar.history.average_score"),
                     value: formatNumber(statistics.averageScore, precision: 1),
                     icon: "chart.line.uptrend.xyaxis",
                     color: .green
                 )
 
-                StatisticCard(
+                LiDARStatisticCard(
                     title: loc("lidar.history.this_week"),
                     value: "\(statistics.scansThisWeek)",
                     icon: "calendar",
@@ -242,14 +242,14 @@ struct LiDARScanHistoryView: View {
             // Quick Filters
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    FilterChip(
+                    LiDARFilterChip(
                         title: "All Types",
                         isSelected: selectedScanType == nil,
                         action: { selectedScanType = nil }
                     )
 
                     ForEach(LiDARScanningView.ScanType.allCases, id: \.self) { scanType in
-                        FilterChip(
+                        LiDARFilterChip(
                             title: scanType.rawValue,
                             isSelected: selectedScanType == scanType,
                             action: { selectedScanType = scanType }
@@ -413,7 +413,7 @@ struct LiDARScanHistoryView: View {
 
 // MARK: - Supporting Views
 
-struct StatisticCard: View {
+struct LiDARStatisticCard: View {
     let title: String
     let value: String
     let icon: String
@@ -446,7 +446,7 @@ struct StatisticCard: View {
     }
 }
 
-struct FilterChip: View {
+struct LiDARFilterChip: View {
     let title: String
     let isSelected: Bool
     let action: () -> Void

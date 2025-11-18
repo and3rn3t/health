@@ -32,3 +32,9 @@ class ConnectionQualityMonitor: ObservableObject {
         reconnectCount += 1
     }
 }
+
+/// Errors specific to HealthKit operations in the app.
+public enum HealthKitError: Error {
+    case invalidQuantityType
+    case queryFailed(Error)
+}

@@ -138,7 +138,7 @@ struct AutoGradientHealthMetrics {
     
     // MARK: - Alert Severity Gradients
     
-    static func alertSeverityGradient(severity: AlertSeverity) -> LinearGradient {
+    static func alertSeverityGradient(severity: AutoGradientAlertSeverity) -> LinearGradient {
         switch severity {
         case .info:
             return LinearGradient(
@@ -187,7 +187,7 @@ struct AutoGradientHealthMetrics {
 }
 
 // MARK: - Supporting Alert Severity Enum
-enum AlertSeverity: CaseIterable {
+enum AutoGradientAlertSeverity: CaseIterable {
     case info, warning, critical, success
     
     var description: String {

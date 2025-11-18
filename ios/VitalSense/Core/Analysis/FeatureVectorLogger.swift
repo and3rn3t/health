@@ -33,18 +33,18 @@ final class FeatureVectorLogger {
         guard let m = metrics else { return }
         let vec = GaitFeatureVector(
             timestamp: Date(),
-            speed: m.averageWalkingSpeed,
-            stepLength: m.averageStepLength,
-            cadence: m.stepFrequency,
-            doubleSupport: m.doubleSupportTime,
+            speed: m.walkingSpeed,
+            stepLength: m.stepLength,
+            cadence: m.cadence,
+            doubleSupport: m.doubleSupport,
             speedCV: m.walkingSpeedVariability,
             stepLengthCV: m.stepLengthVariability,
             strideTimeCV: m.strideTimeVariability,
-            harmonicRatio: m.harmonicRatio,
-            swayProxy: m.mediolateralSwayProxy,
-            toeClearance: m.averageToeClearance,
-            nearTripEvents: m.nearTripEvents,
-            stabilityIndex: nil, // available in LiDARSessionManager meta; could be plumbed if needed
+            harmonicRatio: nil,           // not currently exposed on GaitMetrics
+            swayProxy: nil,              // not currently exposed on GaitMetrics
+            toeClearance: nil,           // not currently exposed on GaitMetrics
+            nearTripEvents: nil,         // not currently exposed on GaitMetrics
+            stabilityIndex: nil,         // available in LiDARSessionManager meta; could be plumbed if needed
             riskScore: risk?.score,
             riskLevel: risk?.level.rawValue,
             riskConfidence: risk?.confidence

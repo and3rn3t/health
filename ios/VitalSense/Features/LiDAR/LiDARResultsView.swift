@@ -114,7 +114,7 @@ struct LiDARResultsView: View {
 
                             // Quick action buttons
                             HStack(spacing: 12) {
-                                ActionButton(
+                                LiDARActionButton(
                                     title: loc("lidar.results.view_details"),
                                     icon: "info.circle.fill",
                                     color: .blue,
@@ -124,7 +124,7 @@ struct LiDARResultsView: View {
                                 .voiceControlSupport(identifier: "view_details_button")
                                 .switchControlSupport()
 
-                                ActionButton(
+                                LiDARActionButton(
                                     title: loc("lidar.results.export"),
                                     icon: "square.and.arrow.up.fill",
                                     color: .green,
@@ -1121,7 +1121,7 @@ struct LiDARResultsView: View {
 
 // MARK: - Supporting Views
 
-struct ActionButton: View {
+struct LiDARActionButton: View {
     let title: String
     let icon: String
     let color: Color

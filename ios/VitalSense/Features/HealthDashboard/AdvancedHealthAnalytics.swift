@@ -248,83 +248,12 @@ class AdvancedHealthAnalytics: ObservableObject {
 }
 
 // MARK: - Data Models
-struct HealthInsight: Identifiable {
-    let id = UUID()
-    let type: InsightType
-    let title: String
-    let description: String
-    let severity: Severity
-    let recommendations: [String]
-    let date: Date
-
-    enum InsightType {
-        case heartRate, activity, sleep, nutrition, pattern, consistency
-    }
-
-    enum Severity {
-        case low, medium, high
-
-        var color: Color {
-            switch self {
-            case .low: return .green
-            case .medium: return .orange
-            case .high: return .red
-            }
-        }
-    }
-}
-
-struct HealthTrend: Identifiable {
-    let id = UUID()
-    let type: TrendType
-    let direction: Direction
-    let consistency: Double // 0-1 scale
-    let significance: Double // 0-1 scale
-
-    enum TrendType {
-        case heartRate, activity, sleep, weight
-    }
-
-    enum Direction {
-        case improving, declining, stable
-    }
-}
-
-struct HealthPrediction: Identifiable {
-    let id = UUID()
-    let type: PredictionType
-    let timeframe: Timeframe
-    let prediction: String
-    let confidence: Confidence
-    let date: Date
-
-    enum PredictionType {
-        case heartRate, activity, sleep, weight
-    }
-
-    enum Timeframe {
-        case oneWeek, oneMonth, threeMonths
-    }
-
-    enum Confidence {
-        case low, medium, high
-    }
-}
-
-struct HealthCorrelation: Identifiable {
-    let id = UUID()
-    let metric1: String
-    let metric2: String
-    let correlation: Double // -1 to 1
-    let significance: Double // 0-1 scale
-}
-
-struct HeartRatePoint {
-    let value: Double
-    let date: Date
-}
-
-struct DailyStepData {
-    let date: Date
-    let steps: Int
-}
+// Remove any local HealthInsight or HealthPredictions structs; use MLHealthInsight
+// and HealthPredictions from MLHealthDataTypes.swift for core models, and map them
+// to the UI-level HealthInsight used by HealthMetricsView where needed.
+//
+// For example, where a local HealthInsight was previously defined, replace it with
+// a conversion factory:
+// extension HealthInsight {
+//     init(mlInsight: MLHealthInsight) { /* map fields */ }
+// }

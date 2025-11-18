@@ -182,13 +182,10 @@ extension HealthKitManager {
                 }
 
                 Task {
-                    do {
-                        await self?.sendHealthData(
-                            type: "step_count", value: stepCount, unit: "count", timestamp: now
-                        )
-                    } catch {
-                        Log.error("Failed to send step count data: \(error.localizedDescription)", category: "healthkit")
-                    }
+                    // This call is async but non-throwing; remove unreachable catch block
+                    await self?.sendHealthData(
+                        type: "step_count", value: stepCount, unit: "count", timestamp: now
+                    )
                 }
 
                 continuation.resume()
@@ -221,6 +218,7 @@ extension HealthKitManager {
             }
 
             Task {
+                // fetchLatestDistance is async throws; keep error handling here
                 do {
                     try await self?.fetchLatestDistance()
                 } catch {
@@ -279,13 +277,10 @@ extension HealthKitManager {
                 }
 
                 Task {
-                    do {
-                        await self?.sendHealthData(
-                            type: "distance_walking_running", value: distance, unit: "m", timestamp: now
-                        )
-                    } catch {
-                        Log.error("Failed to send distance data: \(error.localizedDescription)", category: "healthkit")
-                    }
+                    // This call is async but non-throwing; remove unreachable catch block
+                    await self?.sendHealthData(
+                        type: "distance_walking_running", value: distance, unit: "m", timestamp: now
+                    )
                 }
 
                 continuation.resume()

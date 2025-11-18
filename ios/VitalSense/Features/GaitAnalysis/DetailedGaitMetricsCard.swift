@@ -228,4 +228,17 @@ struct GaitAnalysisData {
         balanceScore: 0.82,
         timestamp: Date()
     )
+
+    static var empty: GaitAnalysisData {
+        GaitAnalysisData(
+            walkingSpeed: 0,
+            stepLength: 0,
+            cadence: 0,
+            asymmetry: 0,
+            stabilityScore: 0,
+            fallRiskScore: 0,
+            balanceScore: 0,
+            timestamp: Date.distantPast
+        )
+    }
 }

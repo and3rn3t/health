@@ -429,6 +429,7 @@ struct FeatureCard: View {
     }
 }
 
+// Canonical app-level permission explanation card.
 struct PermissionCard: View {
     let icon: String
     let iconColor: Color

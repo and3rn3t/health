@@ -10,6 +10,125 @@ import Foundation
 import HealthKit
 import CoreML
 
+// MARK: - Canonical domain-level TrendDirection
+
+enum TrendDirection: String, CaseIterable, Codable {
+    case increasing = "increasing"
+    case stable = "stable"
+    case decreasing = "decreasing"
+
+    var displayName: String {
+        switch self {
+        case .increasing: return "Increasing"
+        case .stable: return "Stable"
+        case .decreasing: return "Decreasing"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .increasing: return "arrow.up.right"
+        case .stable: return "arrow.right"
+        case .decreasing: return "arrow.down.right"
+        }
+    }
+}
+
+// MARK: - Canonical domain-level health predictions model
+
+struct HealthPredictions: Codable {
+    let nextWeekHeartRateTrend: HeartRateTrend
+    let activityPredictions: ActivityTrends
+    let fallRiskScore: Double // 0.0 to 1.0
+    let confidenceLevel: Double
+    let generatedAt: Date
+
+    var fallRiskLevel: FallRiskLevel {
+        switch fallRiskScore {
+        case 0.0..<0.2: return .low
+        case 0.2..<0.5: return .moderate
+        case 0.5..<0.8: return .high
+        default: return .veryHigh
+        }
+    }
+}
+
+struct HeartRateTrend: Codable {
+    let average: Double
+    let trend: TrendDirection
+    let confidence: Double
+    let predictedRange: ClosedRange<Double>?
+
+    init(average: Double, trend: TrendDirection, confidence: Double = 0.5, predictedRange: ClosedRange<Double>? = nil) {
+        self.average = average
+        self.trend = trend
+        self.confidence = confidence
+        self.predictedRange = predictedRange
+    }
+}
+
+struct ActivityTrends: Codable {
+    let expectedDailySteps: Int
+    let energyExpenditure: Double
+    let trend: TrendDirection
+    let confidence: Double
+    let weeklyPattern: [DayOfWeekActivity]
+
+    init() {
+        self.expectedDailySteps = 8000
+        self.energyExpenditure = 400.0
+        self.trend = .stable
+        self.confidence = 0.5
+        self.weeklyPattern = []
+    }
+}
+
+struct DayOfWeekActivity: Codable, Identifiable {
+    let id = UUID()
+    let dayOfWeek: Int // 1 = Sunday, 7 = Saturday
+    let expectedSteps: Int
+    let expectedActiveMinutes: Int
+    let confidence: Double
+}
+
+enum FallRiskLevel: String, CaseIterable, Codable {
+    case low = "low"
+    case moderate = "moderate"
+    case high = "high"
+    case veryHigh = "very_high"
+
+    var displayName: String {
+        switch self {
+        case .low: return "Low Risk"
+        case .moderate: return "Moderate Risk"
+        case .high: return "High Risk"
+        case .veryHigh: return "Very High Risk"
+        }
+    }
+
+    var color: String {
+        switch self {
+        case .low: return "green"
+        case .moderate: return "yellow"
+        case .high: return "orange"
+        case .veryHigh: return "red"
+        }
+    }
+
+    var recommendations: [String] {
+        switch self {
+        case .low:
+            return ["Continue regular exercise", "Maintain balance training"]
+        case .moderate:
+            return ["Increase balance exercises", "Consider strength training", "Regular vision checks"]
+        case .high:
+            return ["Consult healthcare provider", "Focus on fall prevention", "Home safety assessment"]
+        case .veryHigh:
+            return ["Immediate medical consultation", "Supervised exercise program", "Assistive devices consideration"]
+        }
+    }
+}
+
 // MARK: - ML Health Insight
 
 struct MLHealthInsight: Identifiable, Codable {
@@ -139,129 +258,6 @@ struct MLDataPoint: Identifiable, Codable {
         self.value = value
         self.label = label
         self.metadata = metadata
-    }
-}
-
-// MARK: - Health Predictions
-
-struct HealthPredictions: Codable {
-    let nextWeekHeartRateTrend: HeartRateTrend
-    let activityPredictions: ActivityTrends
-    let fallRiskScore: Double // 0.0 to 1.0
-    let confidenceLevel: Double
-    let generatedAt: Date
-
-    var fallRiskLevel: FallRiskLevel {
-        switch fallRiskScore {
-        case 0.0..<0.2: return .low
-        case 0.2..<0.5: return .moderate
-        case 0.5..<0.8: return .high
-        default: return .veryHigh
-        }
-    }
-}
-
-struct HeartRateTrend: Codable {
-    let average: Double
-    let trend: TrendDirection
-    let confidence: Double
-    let predictedRange: ClosedRange<Double>?
-
-    init(average: Double, trend: TrendDirection, confidence: Double = 0.5, predictedRange: ClosedRange<Double>? = nil) {
-        self.average = average
-        self.trend = trend
-        self.confidence = confidence
-        self.predictedRange = predictedRange
-    }
-}
-
-struct ActivityTrends: Codable {
-    let expectedDailySteps: Int
-    let energyExpenditure: Double
-    let trend: TrendDirection
-    let confidence: Double
-    let weeklyPattern: [DayOfWeekActivity]
-
-    init() {
-        self.expectedDailySteps = 8000
-        self.energyExpenditure = 400.0
-        self.trend = .stable
-        self.confidence = 0.5
-        self.weeklyPattern = []
-    }
-}
-
-struct DayOfWeekActivity: Codable, Identifiable {
-    let id = UUID()
-    let dayOfWeek: Int // 1 = Sunday, 7 = Saturday
-    let expectedSteps: Int
-    let expectedActiveMinutes: Int
-    let confidence: Double
-}
-
-enum TrendDirection: String, CaseIterable, Codable {
-    case increasing = "increasing"
-    case stable = "stable"
-    case decreasing = "decreasing"
-
-    var displayName: String {
-        switch self {
-        case .increasing: return "Increasing"
-        case .stable: return "Stable"
-        case .decreasing: return "Decreasing"
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .increasing: return "arrow.up.right"
-        case .stable: return "arrow.right"
-        case .decreasing: return "arrow.down.right"
-        }
-    }
-}
-
-enum ActivityTrendDirection: String, CaseIterable, Codable {
-    case increasing = "increasing"
-    case stable = "stable"
-    case decreasing = "decreasing"
-}
-
-enum FallRiskLevel: String, CaseIterable, Codable {
-    case low = "low"
-    case moderate = "moderate"
-    case high = "high"
-    case veryHigh = "very_high"
-
-    var displayName: String {
-        switch self {
-        case .low: return "Low Risk"
-        case .moderate: return "Moderate Risk"
-        case .high: return "High Risk"
-        case .veryHigh: return "Very High Risk"
-        }
-    }
-
-    var color: String {
-        switch self {
-        case .low: return "green"
-        case .moderate: return "yellow"
-        case .high: return "orange"
-        case .veryHigh: return "red"
-        }
-    }
-
-    var recommendations: [String] {
-        switch self {
-        case .low:
-            return ["Continue regular exercise", "Maintain balance training"]
-        case .moderate:
-            return ["Increase balance exercises", "Consider strength training", "Regular vision checks"]
-        case .high:
-            return ["Consult healthcare provider", "Focus on fall prevention", "Home safety assessment"]
-        case .veryHigh:
-            return ["Immediate medical consultation", "Supervised exercise program", "Assistive devices consideration"]
-        }
     }
 }
 

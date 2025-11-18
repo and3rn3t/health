@@ -9,7 +9,7 @@ struct AutoGradientGenerator {
     // MARK: - Health Metric Gradients
     
     /// Generates gradient based on health metric value and type
-    static func healthMetricGradient(value: Double, type: HealthMetricType) -> LinearGradient {
+    static func healthMetricGradient(value: Double, type: AutoGradientHealthMetricType) -> LinearGradient {
         switch type {
         case .heartRate:
             return heartRateGradient(heartRate: Int(value))
@@ -96,6 +96,6 @@ struct AutoGradientGenerator {
 }
 
 // MARK: - Supporting Types
-enum HealthMetricType {
+enum AutoGradientHealthMetricType {
     case heartRate, bloodPressure, oxygenSaturation, sleepScore, stepsCount
 }

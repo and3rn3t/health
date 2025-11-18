@@ -46,7 +46,7 @@ struct NotificationCenterView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
                         ForEach(NotificationFilter.allCases, id: \.self) { filter in
-                            FilterChip(
+                            NotificationFilterChip(
                                 title: filter.rawValue,
                                 count: countForFilter(filter),
                                 isSelected: selectedFilter == filter
@@ -231,7 +231,7 @@ struct NotificationRow: View {
 
 // MARK: - Filter Chip
 
-struct FilterChip: View {
+struct NotificationFilterChip: View {
     let title: String
     let count: Int
     let isSelected: Bool

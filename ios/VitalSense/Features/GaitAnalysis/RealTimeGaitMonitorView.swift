@@ -74,7 +74,7 @@ struct RealTimeGaitMonitorView: View {
             }
         }
         .sheet(isPresented: $showingCalibration) {
-            GaitCalibrationView()
+            RealTimeGaitCalibrationView()
         }
         .sheet(isPresented: $showingRecommendations) {
             GaitRecommendationsView(recommendations: gaitMonitor.gaitRecommendations)
@@ -157,28 +157,28 @@ struct RealTimeGaitMonitorView: View {
                 .font(.headline)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                MetricCard(
+                GaitMetricCard(
                     title: "Walking Speed",
                     value: String(format: "%.2f m/s", metrics.walkingSpeed),
                     icon: "speedometer",
                     color: speedColor(for: metrics.walkingSpeed)
                 )
 
-                MetricCard(
+                GaitMetricCard(
                     title: "Step Variability",
                     value: String(format: "%.1f%%", metrics.stepVariability * 100),
                     icon: "waveform.path.ecg",
                     color: variabilityColor(for: metrics.stepVariability)
                 )
 
-                MetricCard(
+                GaitMetricCard(
                     title: "Gait Asymmetry",
                     value: String(format: "%.1f%%", metrics.gaitAsymmetry * 100),
                     icon: "arrow.left.and.right.righttriangle.left.righttriangle.right",
                     color: asymmetryColor(for: metrics.gaitAsymmetry)
                 )
 
-                MetricCard(
+                GaitMetricCard(
                     title: "Stability Index",
                     value: String(format: "%.0f%%", metrics.stabilityIndex * 100),
                     icon: "gyroscope",
@@ -284,7 +284,7 @@ struct RealTimeGaitMonitorView: View {
             }
 
             ForEach(gaitMonitor.gaitRecommendations.prefix(3), id: \.id) { recommendation in
-                RecommendationRow(recommendation: recommendation)
+                GaitRecommendationRow(recommendation: recommendation)
             }
         }
         .padding()
@@ -405,7 +405,8 @@ struct RealTimeGaitMonitorView: View {
 
 // MARK: - Supporting Views
 
-struct MetricCard: View {
+// Rename feature-scoped metric card to avoid clashing with shared MetricCard.
+struct GaitMetricCard: View {
     let title: String
     let value: String
     let icon: String
@@ -437,7 +438,8 @@ struct MetricCard: View {
     }
 }
 
-struct RecommendationRow: View {
+// Rename recommendation row to be gait-specific to avoid conflict with fall-risk recommendation row.
+struct GaitRecommendationRow: View {
     let recommendation: GaitRecommendation
 
     var body: some View {
@@ -489,7 +491,8 @@ struct RecommendationRow: View {
 
 // MARK: - Supporting Views for Sheets
 
-struct GaitCalibrationView: View {
+// Rename calibration view to be gait-specific to avoid conflict with shared GaitCalibrationView.
+struct RealTimeGaitCalibrationView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var age = 50
     @State private var height = 170.0

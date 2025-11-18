@@ -9,13 +9,13 @@ class WalkingQualityCalculator: ObservableObject {
 
     func calculateComprehensiveScore(from gaitMetrics: GaitMetrics) -> WalkingQualityScore {
         var totalScore = 0.0
-        var components: [ScoreComponent] = []
+        var components: [WalkingScoreComponent] = []
 
         // Walking Speed Component (25 points)
         if let speed = gaitMetrics.averageWalkingSpeed {
             let speedScore = calculateSpeedScore(speed)
             totalScore += speedScore
-            components.append(ScoreComponent(
+            components.append(WalkingScoreComponent(
                 name: "Walking Speed",
                 score: speedScore,
                 maxScore: 25.0,
@@ -28,7 +28,7 @@ class WalkingQualityCalculator: ObservableObject {
         if let asymmetry = gaitMetrics.walkingAsymmetry {
             let symmetryScore = calculateSymmetryScore(asymmetry)
             totalScore += symmetryScore
-            components.append(ScoreComponent(
+            components.append(WalkingScoreComponent(
                 name: "Gait Symmetry",
                 score: symmetryScore,
                 maxScore: 25.0,
@@ -41,7 +41,7 @@ class WalkingQualityCalculator: ObservableObject {
         if let doubleSupportTime = gaitMetrics.doubleSupportTime {
             let stabilityScore = calculateStabilityScore(doubleSupportTime)
             totalScore += stabilityScore
-            components.append(ScoreComponent(
+            components.append(WalkingScoreComponent(
                 name: "Walking Stability",
                 score: stabilityScore,
                 maxScore: 25.0,
@@ -54,7 +54,7 @@ class WalkingQualityCalculator: ObservableObject {
         if let stepLength = gaitMetrics.averageStepLength {
             let stepScore = calculateStepLengthScore(stepLength)
             totalScore += stepScore
-            components.append(ScoreComponent(
+            components.append(WalkingScoreComponent(
                 name: "Step Length",
                 score: stepScore,
                 maxScore: 25.0,
@@ -177,7 +177,7 @@ class WalkingQualityCalculator: ObservableObject {
         }
     }
 
-    private func generateImprovements(from components: [ScoreComponent]) -> [WalkingImprovement] {
+    private func generateImprovements(from components: [WalkingScoreComponent]) -> [WalkingImprovement] {
         var improvements: [WalkingImprovement] = []
 
         for component in components {
@@ -233,12 +233,12 @@ class WalkingQualityCalculator: ObservableObject {
 struct WalkingQualityScore {
     let overallScore: Double
     let qualityLevel: WalkingQualityLevel
-    let components: [ScoreComponent]
+    let components: [WalkingScoreComponent]
     let improvements: [WalkingImprovement]
     let lastCalculated: Date
 }
 
-struct ScoreComponent {
+struct WalkingScoreComponent {
     let name: String
     let score: Double
     let maxScore: Double

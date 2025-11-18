@@ -683,6 +683,7 @@ class HealthMetricsViewModel: ObservableObject {
 
 // MARK: - Supporting Types
 
+/// Canonical time range selector for metrics views.
 enum TimeRange: CaseIterable {
     case day, week, month, year
 
@@ -755,4 +756,26 @@ struct HealthDataPoint: Identifiable {
     let id = UUID()
     let date: Date
     let value: Double
+}
+
+/// UI-level health insight view model derived from MLHealthInsight.
+struct HealthInsight: Identifiable {
+    let id: String
+    let title: String
+    let description: String
+    let priority: InsightPriority
+    let icon: String
+    let recommendation: String?
+
+    enum InsightPriority: String {
+        case high, medium, low
+
+        var color: Color {
+            switch self {
+            case .high: return .red
+            case .medium: return .orange
+            case .low: return .green
+            }
+        }
+    }
 }

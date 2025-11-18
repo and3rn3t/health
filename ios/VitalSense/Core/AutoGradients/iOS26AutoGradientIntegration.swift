@@ -193,7 +193,7 @@ struct iOS26AutoGradientIntegration {
     // MARK: - Auto Gradient Notification Banner
     
     struct AutoGradientNotificationBanner: View {
-        let alertSeverity: AlertSeverity
+        let alertSeverity: AutoGradientAlertSeverity
         let title: String
         let message: String
         

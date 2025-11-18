@@ -79,7 +79,7 @@ class AlertStorage: ObservableObject {
 
 // MARK: - Alert Message Types
 
-enum AlertType: String, CaseIterable {
+enum AlertType: String, CaseIterable, Codable {
     case fallRisk = "fall_risk"
     case heartRateAnomaly = "heart_rate_anomaly"
     case activityDecline = "activity_decline"

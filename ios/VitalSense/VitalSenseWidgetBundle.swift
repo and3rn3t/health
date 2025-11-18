@@ -1,7 +1,6 @@
 import WidgetKit
 import SwiftUI
 
-@main
 struct VitalSenseWidgetBundle: WidgetBundle {
     @WidgetBundleBuilder
     var body: some Widget {

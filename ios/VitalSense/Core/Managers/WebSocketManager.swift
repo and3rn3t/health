@@ -43,7 +43,7 @@ private struct RawEnvelope: Codable {
 }
 
 @MainActor
-class WebSocketManager: NSObject, ObservableObject {
+final class WebSocketManager: NSObject, ObservableObject, URLSessionDelegate {
     static let shared = WebSocketManager()
 
     private var task: URLSessionWebSocketTask?
@@ -446,15 +446,29 @@ class WebSocketManager: NSObject, ObservableObject {
         }
     }
 
-    private func sendJSON(_ object: [String: Any]) async throws {
-        do { let data = try JSONSerialization.data(withJSONObject: object); enqueueSend(data) } catch { Log.error("Failed to serialize JSON: \(error.localizedDescription)", category: "websocket"); throw WebSocketError.messageSerializationFailed }
+    // Consolidated JSON sending helper
+    private func sendJSON(_ payload: [String: Any]) async throws {
+        let jsonData = try JSONSerialization.data(withJSONObject: payload, options: [])
+        try await sendData(jsonData)
     }
 
-    private func send(message: String) async throws {
-        guard let adapter = taskAdapter, !isMockMode else {
-            if isMockMode { Log.debug("Mock mode: Would send message", category: "websocket"); return } else { Log.error("WebSocket not connected", category: "websocket"); throw WebSocketError.notConnected }
+    private func sendData(_ data: Data) async throws {
+        guard let adapter = taskAdapter, isConnected, !isMockMode else {
+            if sendBuffer.count < sendBufferMax {
+                sendBuffer.append(data)
+            }
+            return
         }
-        do { let msg = URLSessionWebSocketTask.Message.string(message); try await adapter.sendSync(msg); Log.info("WebSocket message sent successfully", category: "websocket") } catch { Log.error("Failed to send WebSocket message: \(error)", category: "websocket"); await handleConnectionLoss(); throw WebSocketError.sendFailed(error.localizedDescription) }
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            adapter.send(.data(data)) { error in
+                if let error = error {
+                    continuation.resume(throwing: WebSocketError.sendFailed(error.localizedDescription))
+                } else {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
     }
 
     private let decodeFailureRateLimiter = RateLimiter(limit: 5, interval: 60) // max 5 decode errors per minute logged
@@ -562,7 +576,7 @@ class WebSocketManager: NSObject, ObservableObject {
     private func startHeartbeat() {
         stopHeartbeat()
         missedHeartbeats = 0
-        heartbeatTimer = heartbeatScheduler.schedule(interval: heartbeatInterval) { [weak self] in
+        heartbeatTimer = Timer.scheduledTimer(withTimeInterval: heartbeatInterval, repeats: true) { [weak self] in
             guard let self else { return }
             guard let adapter = self.taskAdapter, !self.isMockMode else { return }
             WebSocketMetrics.record(.heartbeatPing)
@@ -740,6 +754,10 @@ class WebSocketManager: NSObject, ObservableObject {
                 }
             }
         }
+    }
+
+    private func debugLog(_ message: String) {
+        Log.debug(message, category: "websocket")
     }
 }
 

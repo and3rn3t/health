@@ -823,36 +823,3 @@ struct SupportView: View {
             .navigationBarTitleDisplayMode(.inline)
     }
 }
-
-// MARK: - Supporting Types
-
-struct UserProfile {
-    var name: String = ""
-    var email: String = ""
-    var dateOfBirth: Date?
-    var gender: Gender?
-    var height: Double?
-    var weight: Double?
-
-    enum Gender: String, CaseIterable {
-        case male = "Male"
-        case female = "Female"
-        case other = "Other"
-        case preferNotToSay = "Prefer not to say"
-    }
-}
-
-extension HKAuthorizationStatus {
-    var description: String {
-        switch self {
-        case .notDetermined:
-            return "Not configured"
-        case .sharingDenied:
-            return "Access denied"
-        case .sharingAuthorized:
-            return "Full access granted"
-        @unknown default:
-            return "Unknown status"
-        }
-    }
-}

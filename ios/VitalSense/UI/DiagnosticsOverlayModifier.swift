@@ -36,7 +36,7 @@ struct DiagnosticsOverlayModifier: ViewModifier {
     }
 
     private func installGesture() {
-        Log.debug("Installing diagnostics overlay gesture", category: .diagnostics)
+        Log.debug("Installing diagnostics overlay gesture", category: "diagnostics")
         let tapGesture = UITapGestureRecognizer(target: GestureProxy.shared, action: #selector(GestureProxy.shared.handleTap(_:)))
         tapGesture.numberOfTapsRequired = 3
         UIApplication.shared.connectedScenes.compactMap { ($0 as? UIWindowScene)?.windows.first }.first?.addGestureRecognizer(tapGesture)
@@ -47,7 +47,7 @@ struct DiagnosticsOverlayModifier: ViewModifier {
         static let shared = GestureProxy()
         var onTripleTap: (() -> Void)?
         @objc func handleTap(_ sender: UITapGestureRecognizer) {
-            Log.debug("Diagnostics overlay triple tap detected", category: .diagnostics)
+            Log.debug("Diagnostics overlay triple tap detected", category: "diagnostics")
             onTripleTap?()
         }
     }
