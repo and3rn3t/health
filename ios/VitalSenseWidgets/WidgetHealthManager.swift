@@ -468,7 +468,7 @@ class WidgetHealthManager: ObservableObject {
 }
 
 // MARK: - Widget Configuration
-struct WidgetConfiguration {
+struct WidgetSettings {
     let refreshInterval: TimeInterval
     let showTrends: Bool
     let compactMode: Bool
@@ -499,7 +499,7 @@ struct WidgetConfiguration {
         }
     }
 
-    static let `default` = WidgetConfiguration(
+    static let `default` = WidgetSettings(
         refreshInterval: 300, // 5 minutes
         showTrends: true,
         compactMode: false,
@@ -513,7 +513,7 @@ class WidgetPreferences: ObservableObject {
 
     private let userDefaults = UserDefaults(suiteName: "group.dev.andernet.VitalSense.shared")
 
-    @Published var configuration: WidgetConfiguration {
+    @Published var configuration: WidgetSettings {
         didSet {
             saveConfiguration()
         }
@@ -523,7 +523,7 @@ class WidgetPreferences: ObservableObject {
         self.configuration = WidgetPreferences.loadConfiguration()
     }
 
-    private static func loadConfiguration() -> WidgetConfiguration {
+    private static func loadConfiguration() -> WidgetSettings {
         guard let userDefaults = UserDefaults(suiteName: "group.dev.andernet.VitalSense.shared") else {
             return .default
         }
@@ -532,9 +532,9 @@ class WidgetPreferences: ObservableObject {
         let showTrends = userDefaults.bool(forKey: "show_trends")
         let compactMode = userDefaults.bool(forKey: "compact_mode")
         let primaryMetricRaw = userDefaults.string(forKey: "primary_metric") ?? "heart_rate"
-        let primaryMetric = WidgetConfiguration.PrimaryMetric(rawValue: primaryMetricRaw) ?? .heartRate
+        let primaryMetric = WidgetSettings.PrimaryMetric(rawValue: primaryMetricRaw) ?? .heartRate
 
-        return WidgetConfiguration(
+        return WidgetSettings(
             refreshInterval: refreshInterval > 0 ? refreshInterval : 300,
             showTrends: showTrends,
             compactMode: compactMode,

@@ -79,7 +79,7 @@ struct WidgetConfigurationView: View {
                     Picker("Primary Metric", selection: Binding(
                         get: { preferences.configuration.primaryMetric },
                         set: { newValue in
-                            preferences.configuration = WidgetConfiguration(
+                            preferences.configuration = WidgetSettings(
                                 refreshInterval: preferences.configuration.refreshInterval,
                                 showTrends: preferences.configuration.showTrends,
                                 compactMode: preferences.configuration.compactMode,
@@ -87,7 +87,7 @@ struct WidgetConfigurationView: View {
                             )
                         }
                     )) {
-                        ForEach(WidgetConfiguration.PrimaryMetric.allCases, id: \.rawValue) { metric in
+                        ForEach(WidgetSettings.PrimaryMetric.allCases, id: \.rawValue) { metric in
                             HStack {
                                 Image(systemName: metric.icon)
                                     .foregroundColor(.blue)
@@ -101,7 +101,7 @@ struct WidgetConfigurationView: View {
                     Toggle("Show Trends", isOn: Binding(
                         get: { preferences.configuration.showTrends },
                         set: { newValue in
-                            preferences.configuration = WidgetConfiguration(
+                            preferences.configuration = WidgetSettings(
                                 refreshInterval: preferences.configuration.refreshInterval,
                                 showTrends: newValue,
                                 compactMode: preferences.configuration.compactMode,
@@ -114,7 +114,7 @@ struct WidgetConfigurationView: View {
                     Toggle("Compact Mode", isOn: Binding(
                         get: { preferences.configuration.compactMode },
                         set: { newValue in
-                            preferences.configuration = WidgetConfiguration(
+                            preferences.configuration = WidgetSettings(
                                 refreshInterval: preferences.configuration.refreshInterval,
                                 showTrends: preferences.configuration.showTrends,
                                 compactMode: newValue,
@@ -127,7 +127,7 @@ struct WidgetConfigurationView: View {
                     Picker("Refresh Interval", selection: Binding(
                         get: { preferences.configuration.refreshInterval },
                         set: { newValue in
-                            preferences.configuration = WidgetConfiguration(
+                            preferences.configuration = WidgetSettings(
                                 refreshInterval: newValue,
                                 showTrends: preferences.configuration.showTrends,
                                 compactMode: preferences.configuration.compactMode,

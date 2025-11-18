@@ -13,7 +13,6 @@ import WidgetKit
 struct VitalSenseWidgetsControl: ControlWidget {
     static let kind: String = "com.vitalsense.HealthMonitoringControl"
 
-    @available(iOS 18.0, *)
     var body: some ControlWidgetConfiguration {
         AppIntentControlConfiguration(
             kind: Self.kind,
@@ -107,6 +106,11 @@ struct HealthMonitoringConfiguration: ControlConfigurationIntent {
 
     @Parameter(title: "Emergency Contact", default: "Primary")
     var emergencyContact: String
+    
+    func perform() async throws -> some IntentResult {
+        // Configuration intents don't perform actions, just return result
+        return .result()
+    }
 }
 
 @available(iOS 17.0, *)
