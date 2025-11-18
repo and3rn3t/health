@@ -9,7 +9,6 @@
 import Foundation
 import CoreML
 import HealthKit
-import CreateML
 import SwiftUI
 import Combine
 import OSLog
