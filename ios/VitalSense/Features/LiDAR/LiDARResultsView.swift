@@ -1,6 +1,8 @@
 import SwiftUI
 import Charts
 import simd
+import ARKit
+import CoreVideo
 
 struct LiDARResultsView: View {
     let scanResult: LiDARScanResult
@@ -90,10 +92,11 @@ struct LiDARResultsView: View {
                                     .foregroundColor(scoreColor)
                                     .contentTransition(.numericText())
 
-                                Text("SCORE")
+                                Text(loc("lidar.results.score"))
                                     .font(.caption)
                                     .fontWeight(.semibold)
                                     .foregroundColor(.secondary)
+                                    .lidarDynamicType(size: .caption)
 
                                 // Score trend indicator if available
                                 if let previousScan = getPreviousScan() {
@@ -112,18 +115,24 @@ struct LiDARResultsView: View {
                             // Quick action buttons
                             HStack(spacing: 12) {
                                 ActionButton(
-                                    title: "View Details",
+                                    title: loc("lidar.results.view_details"),
                                     icon: "info.circle.fill",
                                     color: .blue,
-                                    action: { selectedTab = 2 }
+                                    action: { selectedTab = 3 }
                                 )
+                                .accessibilityLabel(NSLocalizedString("accessibility.button.view_details", value: "View details", comment: ""))
+                                .voiceControlSupport(identifier: "view_details_button")
+                                .switchControlSupport()
 
                                 ActionButton(
-                                    title: "Export",
+                                    title: loc("lidar.results.export"),
                                     icon: "square.and.arrow.up.fill",
                                     color: .green,
                                     action: { showingExportOptions = true }
                                 )
+                                .accessibilityLabel(loc("accessibility.button.export"))
+                                .voiceControlSupport(identifier: "export_results_button")
+                                .switchControlSupport()
                             }
                         }
                     }
@@ -143,12 +152,16 @@ struct LiDARResultsView: View {
 
                     // Tab selector
                     Picker("Results", selection: $selectedTab) {
-                        Text("Insights").tag(0)
-                        Text("Metrics").tag(1)
-                        Text("Details").tag(2)
+                        Text(loc("lidar.results.tab.insights")).tag(0)
+                        Text(loc("lidar.results.tab.metrics")).tag(1)
+                        if #available(iOS 16.0, *) {
+                            Text(loc("lidar.results.tab.visualization")).tag(2)
+                        }
+                        Text(loc("lidar.results.tab.details")).tag(3)
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .padding(.horizontal)
+                    .accessibilityLabel(NSLocalizedString("accessibility.picker.results", value: "Results tabs", comment: ""))
 
                     // Tab content
                     Group {
@@ -158,6 +171,8 @@ struct LiDARResultsView: View {
                         case 1:
                             metricsView
                         case 2:
+                            visualizationView
+                        case 3:
                             detailsView
                         default:
                             insightsView
@@ -166,14 +181,18 @@ struct LiDARResultsView: View {
                     .animation(.easeInOut, value: selectedTab)
                 }
                 .padding()
+                .rtlAware()
             }
-            .navigationTitle("Scan Results")
+            .navigationTitle(loc("lidar.results.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") {
+                    Button(NSLocalizedString("button.done", value: "Done", comment: "")) {
                         dismiss()
                     }
+                    .accessibilityLabel(NSLocalizedString("accessibility.button.done", value: "Done", comment: ""))
+                    .voiceControlSupport(identifier: "done_button")
+                    .switchControlSupport()
                 }
 
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
@@ -182,34 +201,41 @@ struct LiDARResultsView: View {
                     }) {
                         Image(systemName: "square.and.arrow.up")
                     }
+                    .accessibilityLabel(loc("accessibility.button.export"))
+                    .accessibilityHint(NSLocalizedString("accessibility.button.export.hint", value: "Double tap to export scan results", comment: ""))
+                    .voiceControlSupport(identifier: "export_button")
+                    .switchControlSupport()
 
                     Menu {
                         Button(action: {
                             shareResults()
                         }) {
-                            Label("Share Results", systemImage: "square.and.arrow.up")
+                            Label(NSLocalizedString("menu.share_results", value: "Share Results", comment: ""), systemImage: "square.and.arrow.up")
                         }
 
                         Button(action: {
                             exportToPDF()
                         }) {
-                            Label("Export as PDF", systemImage: "doc.fill")
+                            Label(NSLocalizedString("menu.export_pdf", value: "Export as PDF", comment: ""), systemImage: "doc.fill")
                         }
 
                         Button(action: {
                             exportToHealthKit()
                         }) {
-                            Label("Save to HealthKit", systemImage: "heart.text.square.fill")
+                            Label(NSLocalizedString("menu.save_healthkit", value: "Save to HealthKit", comment: ""), systemImage: "heart.text.square.fill")
                         }
 
                         Button(action: {
                             saveToFavorites()
                         }) {
-                            Label("Save to Favorites", systemImage: "star.fill")
+                            Label(NSLocalizedString("menu.save_favorites", value: "Save to Favorites", comment: ""), systemImage: "star.fill")
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
+                    .accessibilityLabel(NSLocalizedString("accessibility.menu.options", value: "More options", comment: ""))
+                    .voiceControlSupport(identifier: "options_menu")
+                    .switchControlSupport()
                 }
             }
         }
@@ -228,13 +254,15 @@ struct LiDARResultsView: View {
                         .font(.system(size: 48))
                         .foregroundColor(.green)
 
-                    Text("All Clear!")
+                    Text(loc("lidar.results.all_clear"))
                         .font(.title3)
                         .fontWeight(.semibold)
+                        .lidarDynamicType(size: .title3)
 
-                    Text("No significant issues were detected in this scan.")
+                    Text(loc("lidar.results.no_issues"))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .lidarDynamicType(size: .subheadline)
                         .multilineTextAlignment(.center)
                 }
                 .padding(24)
@@ -250,27 +278,27 @@ struct LiDARResultsView: View {
         VStack(spacing: 16) {
             // Scan quality metrics
             MetricCard(
-                title: "Scan Quality",
+                title: loc("lidar.results.quality"),
                 value: "\(Int(scanResult.averageQuality * 100))%",
-                subtitle: "Data accuracy",
+                subtitle: loc("lidar.results.data_accuracy"),
                 icon: "camera.fill",
                 color: qualityColor
             )
 
             // Frame count
             MetricCard(
-                title: "Frames Captured",
+                title: loc("lidar.results.frames_captured"),
                 value: "\(scanResult.frameCount)",
-                subtitle: "LiDAR data points",
+                subtitle: NSLocalizedString("lidar.results.lidar_data_points", value: "LiDAR data points", comment: ""),
                 icon: "viewfinder",
                 color: .blue
             )
 
             // Duration
             MetricCard(
-                title: "Scan Duration",
+                title: NSLocalizedString("lidar.results.scan_duration", value: "Scan Duration", comment: ""),
                 value: formatDuration(scanResult.duration),
-                subtitle: "Recording time",
+                subtitle: NSLocalizedString("lidar.results.recording_time", value: "Recording time", comment: ""),
                 icon: "timer",
                 color: .orange
             )
@@ -312,6 +340,191 @@ struct LiDARResultsView: View {
                 DetailRow(label: "AR Frames", value: "\(scanResult.rawData.frames.count)")
             }
         }
+    }
+
+    // MARK: - Visualization View
+    @available(iOS 16.0, *)
+    private var visualizationView: some View {
+        VStack(spacing: 20) {
+            // Visualization selector
+            Picker("Visualization Type", selection: $selectedVisualization) {
+                Text("Point Cloud").tag(VisualizationType.pointCloud)
+                if scanResult.type == .environmentalScan {
+                    Text("Heat Map").tag(VisualizationType.heatMap)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+
+            // Visualization content
+            Group {
+                switch selectedVisualization {
+                case .pointCloud:
+                    pointCloudVisualization
+                case .heatMap:
+                    heatMapVisualization
+                }
+            }
+            .frame(height: 400)
+            .cornerRadius(16)
+            .shadow(radius: 2)
+        }
+    }
+
+    @State private var selectedVisualization: VisualizationType = .pointCloud
+
+    enum VisualizationType {
+        case pointCloud
+        case heatMap
+    }
+
+    @available(iOS 16.0, *)
+    private var pointCloudVisualization: some View {
+        let points = extractPointCloudFromFrames()
+        return LiDARPointCloudView(points: points, colors: nil)
+    }
+
+    @available(iOS 16.0, *)
+    private var heatMapVisualization: some View {
+        let hazards = extractHazardsFromInsights()
+        return LiDARHeatMapView(hazards: hazards, floorMap: extractFloorMap())
+    }
+
+    private func extractPointCloudFromFrames() -> [simd_float3] {
+        var points: [simd_float3] = []
+
+        // Sample points from depth frames (limit to avoid memory issues)
+        let sampleCount = min(scanResult.rawData.frames.count, 100)
+        let step = max(1, scanResult.rawData.frames.count / sampleCount)
+
+        for i in stride(from: 0, to: scanResult.rawData.frames.count, by: step) {
+            let frame = scanResult.rawData.frames[i]
+
+            guard let depthData = frame.sceneDepth else { continue }
+            let depthMap = depthData.depthMap
+
+            let width = CVPixelBufferGetWidth(depthMap)
+            let height = CVPixelBufferGetHeight(depthMap)
+
+            // Sample every Nth pixel to reduce point count
+            let sampleRate = 10
+            CVPixelBufferLockBaseAddress(depthMap, .readOnly)
+            defer { CVPixelBufferUnlockBaseAddress(depthMap, .readOnly) }
+
+            guard let baseAddress = CVPixelBufferGetBaseAddress(depthMap) else { continue }
+            let depthPointer = baseAddress.assumingMemoryBound(to: Float32.self)
+
+            for y in stride(from: 0, to: height, by: sampleRate) {
+                for x in stride(from: 0, to: width, by: sampleRate) {
+                    let index = y * width + x
+                    let depth = depthPointer[index]
+
+                    guard depth > 0 && depth < 5.0 else { continue } // Valid depth range
+
+                    // Convert depth pixel to world position (simplified)
+                    let camera = frame.camera
+
+                    // Simplified: project depth pixel to world space
+                    let fx = camera.intrinsics[0][0]
+                    let fy = camera.intrinsics[1][1]
+                    let cx = camera.intrinsics[2][0]
+                    let cy = camera.intrinsics[2][1]
+
+                    let xNormalized = (Float(x) - cx) / fx
+                    let yNormalized = (Float(y) - cy) / fy
+
+                    let worldPos = simd_float3(
+                        xNormalized * depth,
+                        yNormalized * depth,
+                        depth
+                    )
+
+                    // Transform by camera transform
+                    let cameraTransform = frame.camera.transform
+                    let transformedPos = cameraTransform * simd_float4(worldPos, 1.0)
+                    points.append(simd_float3(transformedPos.x, transformedPos.y, transformedPos.z))
+                }
+            }
+        }
+
+        return points
+    }
+
+    private func extractHazardsFromInsights() -> [HazardData] {
+        var hazards: [HazardData] = []
+
+        for insight in scanResult.insights {
+            if insight.type == .warning || insight.type == .alert {
+                // Extract hazard position from insight (if available)
+                // For now, use placeholder positions based on insight type
+                let position = simd_float3(
+                    Float.random(in: -2...2),
+                    0,
+                    Float.random(in: -2...0)
+                )
+
+                let hazardType: HazardData.HazardType
+                let riskLevel: HazardData.RiskLevel
+
+                if insight.title.lowercased().contains("obstacle") {
+                    hazardType = .obstacle
+                    riskLevel = insight.type == .alert ? .high : .medium
+                } else if insight.title.lowercased().contains("stair") {
+                    hazardType = .stair
+                    riskLevel = .high
+                } else if insight.title.lowercased().contains("floor") || insight.title.lowercased().contains("uneven") {
+                    hazardType = .unevenFloor
+                    riskLevel = .medium
+                } else {
+                    hazardType = .furniture
+                    riskLevel = .low
+                }
+
+                hazards.append(HazardData(
+                    position: position,
+                    type: hazardType,
+                    riskLevel: riskLevel,
+                    radius: 0.5
+                ))
+            }
+        }
+
+        return hazards
+    }
+
+    private func extractFloorMap() -> FloorMap? {
+        // Extract floor stability data if available from scan metrics
+        guard let floorStability = scanMetrics?.floorStability else { return nil }
+
+        // Create a simple floor map grid
+        let gridSize = 20
+        var stability: [[Double]] = []
+        var positions: [[simd_float3]] = []
+
+        for row in 0..<gridSize {
+            var rowStability: [Double] = []
+            var rowPositions: [simd_float3] = []
+
+            for col in 0..<gridSize {
+                // Use scan metrics floor stability with some variation
+                let cellStability = floorStability + Double.random(in: -0.1...0.1)
+                rowStability.append(max(0, min(1, cellStability)))
+
+                let x = Float(col) * 0.2 - 2.0
+                let z = Float(row) * 0.2 - 2.0
+                rowPositions.append(simd_float3(x, 0, z))
+            }
+
+            stability.append(rowStability)
+            positions.append(rowPositions)
+        }
+
+        return FloorMap(
+            gridSize: gridSize,
+            cellSize: 0.2,
+            stability: stability,
+            positions: positions
+        )
     }
 
     // MARK: - Type-specific Metrics
@@ -642,24 +855,30 @@ struct LiDARResultsView: View {
             Image(systemName: icon)
                 .font(.title2)
                 .foregroundColor(color)
+                .accessibilityHidden(true)
 
             Text(value)
                 .font(.title3)
                 .fontWeight(.bold)
+                .lidarDynamicType(size: .title3)
 
             Text(title)
                 .font(.caption)
                 .fontWeight(.medium)
+                .lidarDynamicType(size: .caption)
 
             Text(subtitle)
                 .font(.caption2)
                 .foregroundColor(.secondary)
+                .lidarDynamicType(size: .caption2)
         }
         .frame(maxWidth: .infinity)
         .padding()
         .background(Color(.systemBackground))
         .cornerRadius(12)
         .shadow(radius: 1)
+        .metricCardAccessibility(name: title, value: value, unit: nil, subtitle: subtitle)
+        .switchControlSupport()
     }
 
     private func DetailSection<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
@@ -750,14 +969,39 @@ struct LiDARResultsView: View {
     private func formatDuration(_ duration: TimeInterval) -> String {
         let minutes = Int(duration) / 60
         let seconds = Int(duration) % 60
-        return String(format: "%d:%02d", minutes, seconds)
+
+        // Use localized duration format
+        if minutes > 0 {
+            return String(format: NSLocalizedString("format.duration.minutes_seconds", value: "%d:%02d", comment: "Duration format MM:SS"), minutes, seconds)
+        } else {
+            return String(format: NSLocalizedString("format.duration.seconds_only", value: "%d seconds", comment: "Duration format in seconds"), seconds)
+        }
     }
 
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
+        formatter.locale = Locale.current // Use current locale
         return formatter.string(from: date)
+    }
+
+    private func formatNumber(_ value: Double, precision: Int = 2) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = precision
+        formatter.maximumFractionDigits = precision
+        formatter.locale = Locale.current
+        return formatter.string(from: NSNumber(value: value)) ?? String(format: "%.\(precision)f", value)
+    }
+
+    private func formatPercentage(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .percent
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 1
+        formatter.locale = Locale.current
+        return formatter.string(from: NSNumber(value: value)) ?? String(format: "%.0f%%", value * 100)
     }
 
     // MARK: - Action Methods
@@ -888,9 +1132,11 @@ struct ActionButton: View {
             HStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.caption)
+                    .accessibilityHidden(true)
                 Text(title)
                     .font(.caption)
                     .fontWeight(.medium)
+                    .lidarDynamicType(size: .caption)
             }
             .foregroundColor(color)
             .padding(.horizontal, 12)
@@ -898,6 +1144,9 @@ struct ActionButton: View {
             .background(color.opacity(0.1))
             .cornerRadius(8)
         }
+        .accessibilityLabel(title)
+        .accessibilityAddTraits(.isButton)
+        .switchControlSupport()
     }
 }
 

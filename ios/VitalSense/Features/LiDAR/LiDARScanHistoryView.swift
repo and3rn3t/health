@@ -1,5 +1,6 @@
 import SwiftUI
 import Charts
+import Foundation
 
 /// View displaying LiDAR scan history with timeline and trend analysis
 @available(iOS 16.0, *)
@@ -87,8 +88,9 @@ struct LiDARScanHistoryView: View {
                     scanListView
                 }
                 .padding()
+                .rtlAware()
             }
-            .navigationTitle("Scan History")
+            .navigationTitle(loc("lidar.history.title"))
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
@@ -97,6 +99,10 @@ struct LiDARScanHistoryView: View {
                     }) {
                         Image(systemName: "line.3.horizontal.decrease.circle")
                     }
+                    .accessibilityLabel(loc("lidar.history.filter"))
+                    .accessibilityHint(NSLocalizedString("accessibility.button.filter.hint", value: "Double tap to filter scan history", comment: ""))
+                    .voiceControlSupport(identifier: "filter_button")
+                    .switchControlSupport()
 
                     Menu {
                         Button(action: {
@@ -128,27 +134,29 @@ struct LiDARScanHistoryView: View {
 
     private var statisticsView: some View {
         VStack(spacing: 16) {
-            Text("Statistics")
+            Text(NSLocalizedString("lidar.history.statistics", value: "Statistics", comment: ""))
                 .font(.headline)
+                .lidarDynamicType(size: .headline)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityAddTraits(.isHeader)
 
             HStack(spacing: 16) {
                 StatisticCard(
-                    title: "Total Scans",
+                    title: loc("lidar.history.total_scans"),
                     value: "\(statistics.totalScans)",
                     icon: "viewfinder",
                     color: .blue
                 )
 
                 StatisticCard(
-                    title: "Average Score",
-                    value: String(format: "%.1f", statistics.averageScore),
+                    title: loc("lidar.history.average_score"),
+                    value: formatNumber(statistics.averageScore, precision: 1),
                     icon: "chart.line.uptrend.xyaxis",
                     color: .green
                 )
 
                 StatisticCard(
-                    title: "This Week",
+                    title: loc("lidar.history.this_week"),
                     value: "\(statistics.scansThisWeek)",
                     icon: "calendar",
                     color: .orange
@@ -161,8 +169,10 @@ struct LiDARScanHistoryView: View {
 
     private var trendChartView: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Score Trend")
+            Text(loc("lidar.history.score_trend"))
                 .font(.headline)
+                .lidarDynamicType(size: .headline)
+                .accessibilityAddTraits(.isHeader)
 
             Chart {
                 ForEach(filteredScans.prefix(50).sorted(by: { $0.date < $1.date }), id: \.id) { scan in
@@ -210,8 +220,11 @@ struct LiDARScanHistoryView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.secondary)
 
-                TextField("Search scans...", text: $searchText)
+                TextField(loc("lidar.history.search_placeholder"), text: $searchText)
                     .textFieldStyle(.plain)
+                    .lidarDynamicType(size: .body)
+                    .accessibilityLabel(NSLocalizedString("accessibility.search_field", value: "Search scans", comment: ""))
+                    .voiceControlSupport(identifier: "search_scans_field")
 
                 if !searchText.isEmpty {
                     Button(action: {
@@ -252,9 +265,11 @@ struct LiDARScanHistoryView: View {
 
     private var scanListView: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Scans (\(filteredScans.count))")
+            Text(locFormat("lidar.history.all_scans", filteredScans.count))
                 .font(.headline)
+                .lidarDynamicType(size: .headline)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityAddTraits(.isHeader)
 
             if filteredScans.isEmpty {
                 emptyStateView
@@ -375,6 +390,25 @@ struct LiDARScanHistoryView: View {
         dataManager.deleteAllScans()
         AnalyticsManager.shared.logEvent("lidar_history_deleted_all")
     }
+
+    // MARK: - Formatting Helpers
+
+    private func formatNumber(_ value: Double, precision: Int = 2) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = precision
+        formatter.maximumFractionDigits = precision
+        formatter.locale = Locale.current
+        return formatter.string(from: NSNumber(value: value)) ?? String(format: "%.\(precision)f", value)
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        formatter.locale = Locale.current
+        return formatter.string(from: date)
+    }
 }
 
 // MARK: - Supporting Views
@@ -390,20 +424,25 @@ struct StatisticCard: View {
             Image(systemName: icon)
                 .font(.title2)
                 .foregroundColor(color)
+                .accessibilityHidden(true)
 
             Text(value)
                 .font(.title3)
                 .fontWeight(.bold)
+                .lidarDynamicType(size: .title3)
 
             Text(title)
                 .font(.caption)
                 .foregroundColor(.secondary)
+                .lidarDynamicType(size: .caption)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
+        .metricCardAccessibility(name: title, value: value, unit: nil, subtitle: nil)
+        .switchControlSupport()
     }
 }
 
@@ -417,18 +456,32 @@ struct FilterChip: View {
             Text(title)
                 .font(.subheadline)
                 .fontWeight(.medium)
+                .lidarDynamicType(size: .subheadline)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(isSelected ? Color.blue : Color(.systemGray6))
                 .foregroundColor(isSelected ? .white : .primary)
                 .cornerRadius(20)
         }
+        .accessibilityLabel(title)
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : [.isButton])
+        .accessibilityHint(NSLocalizedString("accessibility.filter_chip.hint", value: "Double tap to filter by \(title)", comment: ""))
+        .voiceControlSupport(identifier: "filter_chip_\(title.lowercased().replacingOccurrences(of: " ", with: "_"))")
+        .switchControlSupport()
     }
 }
 
 struct ScanHistoryRow: View {
     let scan: LiDARScanResult
     let onTap: () -> Void
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        formatter.locale = Locale.current
+        return formatter.string(from: date)
+    }
 
     var body: some View {
         Button(action: onTap) {
@@ -440,23 +493,28 @@ struct ScanHistoryRow: View {
                     .frame(width: 44, height: 44)
                     .background(scanTypeColor(scan.type).opacity(0.1))
                     .cornerRadius(12)
+                    .accessibilityHidden(true)
 
                 // Details
                 VStack(alignment: .leading, spacing: 4) {
                     Text(scan.type.rawValue)
                         .font(.headline)
                         .foregroundColor(.primary)
+                        .lidarDynamicType(size: .headline)
 
                     Text(formatDate(scan.date))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .lidarDynamicType(size: .subheadline)
 
                     HStack(spacing: 8) {
-                        Label("\(scan.frameCount) frames", systemImage: "viewfinder")
-                        Label(String(format: "%.0fs", scan.duration), systemImage: "clock")
+                        Label(NSLocalizedString("lidar.scan.frames_label", value: "%d frames", comment: "").replacingOccurrences(of: "%d", with: "\(scan.frameCount)"),
+                              systemImage: "viewfinder")
+                        Label(formatDuration(scan.duration), systemImage: "clock")
                     }
                     .font(.caption)
                     .foregroundColor(.secondary)
+                    .lidarDynamicType(size: .caption)
                 }
 
                 Spacer()
@@ -467,10 +525,12 @@ struct ScanHistoryRow: View {
                         .font(.title3)
                         .fontWeight(.bold)
                         .foregroundColor(scoreColor(scan.score))
+                        .lidarDynamicType(size: .title3)
 
-                    Text("SCORE")
+                    Text(loc("lidar.results.score"))
                         .font(.caption2)
                         .foregroundColor(.secondary)
+                        .lidarDynamicType(size: .caption2)
                 }
             }
             .padding()
@@ -479,6 +539,21 @@ struct ScanHistoryRow: View {
             .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 1)
         }
         .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(NSLocalizedString("accessibility.scan_history_row", value: "\(scan.type.rawValue) scan, score \(Int(scan.score)), \(formatDate(scan.date))", comment: ""))
+        .accessibilityHint(NSLocalizedString("accessibility.scan_history_row.hint", value: "Double tap to view scan details", comment: ""))
+        .voiceControlSupport(identifier: "scan_row_\(scan.id.uuidString.prefix(8))")
+        .switchControlSupport()
+    }
+
+    private func formatDuration(_ duration: TimeInterval) -> String {
+        let minutes = Int(duration) / 60
+        let seconds = Int(duration) % 60
+        if minutes > 0 {
+            return String(format: NSLocalizedString("format.duration.minutes_seconds", value: "%d:%02d", comment: ""), minutes, seconds)
+        } else {
+            return String(format: NSLocalizedString("format.duration.seconds_only", value: "%d seconds", comment: ""), seconds)
+        }
     }
 
     private func scanTypeIcon(_ type: LiDARScanningView.ScanType) -> String {

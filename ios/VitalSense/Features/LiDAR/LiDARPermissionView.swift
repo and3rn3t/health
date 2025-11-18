@@ -1,6 +1,7 @@
 import SwiftUI
 import ARKit
 import AVFoundation
+import CoreMotion
 
 struct LiDARPermissionView: View {
     @StateObject private var permissionManager = LiDARPermissionManager()
@@ -18,14 +19,17 @@ struct LiDARPermissionView: View {
                         .font(.system(size: 64))
                         .foregroundColor(.blue)
 
-                    Text("LiDAR Scanning Permissions")
+                    Text(NSLocalizedString("permission.lidar.title", value: "LiDAR Scanning Permissions", comment: ""))
                         .font(.title)
                         .fontWeight(.bold)
+                        .lidarDynamicType(size: .title)
                         .multilineTextAlignment(.center)
+                        .accessibilityAddTraits(.isHeader)
 
-                    Text("VitalSense needs camera and motion access to perform LiDAR scanning for health analysis.")
+                    Text(NSLocalizedString("permission.lidar.message", value: "VitalSense needs camera and motion access to perform LiDAR scanning for health analysis.", comment: ""))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .lidarDynamicType(size: .subheadline)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
@@ -34,32 +38,37 @@ struct LiDARPermissionView: View {
                 VStack(spacing: 16) {
                     PermissionCard(
                         icon: "camera.fill",
-                        title: "Camera Access",
-                        description: "Required for AR scanning and depth sensing",
+                        title: loc("permission.camera.title"),
+                        description: loc("permission.camera.message"),
                         status: permissionManager.cameraPermission,
                         action: {
                             permissionManager.requestCameraPermission()
                         }
                     )
+                    .accessibilityIdentifier("permission_card_camera")
+                    .switchControlSupport()
 
                     PermissionCard(
                         icon: "gyroscope",
-                        title: "Motion & Orientation",
-                        description: "Used for balance analysis and fall risk assessment",
+                        title: loc("permission.motion.title"),
+                        description: loc("permission.motion.message"),
                         status: permissionManager.motionPermission,
                         action: {
                             permissionManager.requestMotionPermission()
                         }
                     )
+                    .accessibilityIdentifier("permission_card_motion")
+                    .switchControlSupport()
 
                     if !permissionManager.isLiDARAvailable {
                         PermissionCard(
                             icon: "exclamationmark.triangle.fill",
-                            title: "LiDAR Not Available",
-                            description: "This device doesn't support LiDAR scanning",
+                            title: loc("device.lidar.required"),
+                            description: loc("device.lidar.required.message"),
                             status: .unavailable,
                             action: {}
                         )
+                        .accessibilityIdentifier("permission_card_lidar_unavailable")
                     }
                 }
 
@@ -68,31 +77,46 @@ struct LiDARPermissionView: View {
                 // Action buttons
                 VStack(spacing: 12) {
                     if permissionManager.allPermissionsGranted && permissionManager.isLiDARAvailable {
-                        Button("Continue to LiDAR Scanning") {
+                        Button(NSLocalizedString("permission.button.continue", value: "Continue to LiDAR Scanning", comment: "")) {
                             dismiss()
                         }
                         .buttonStyle(PrimaryButtonStyle())
+                        .accessibilityLabel(NSLocalizedString("accessibility.button.continue", value: "Continue", comment: ""))
+                        .voiceControlSupport(identifier: "continue_button")
+                        .switchControlSupport()
                     } else if permissionManager.hasAnyDeniedPermissions {
-                        Button("Open Settings") {
+                        Button(NSLocalizedString("permission.button.open_settings", value: "Open Settings", comment: "")) {
                             showingSettings = true
                         }
                         .buttonStyle(PrimaryButtonStyle())
+                        .accessibilityLabel(NSLocalizedString("accessibility.button.open_settings", value: "Open Settings", comment: ""))
+                        .voiceControlSupport(identifier: "open_settings_button")
+                        .switchControlSupport()
 
-                        Button("Skip for Now") {
+                        Button(NSLocalizedString("permission.button.skip", value: "Skip for Now", comment: "")) {
                             dismiss()
                         }
                         .buttonStyle(SecondaryButtonStyle())
+                        .accessibilityLabel(NSLocalizedString("accessibility.button.skip", value: "Skip for now", comment: ""))
+                        .voiceControlSupport(identifier: "skip_button")
+                        .switchControlSupport()
                     } else {
-                        Button("Grant Permissions") {
+                        Button(NSLocalizedString("permission.button.grant", value: "Grant Permissions", comment: "")) {
                             permissionManager.requestAllPermissions()
                         }
                         .buttonStyle(PrimaryButtonStyle())
                         .disabled(!permissionManager.isLiDARAvailable)
+                        .accessibilityLabel(NSLocalizedString("accessibility.button.grant_permissions", value: "Grant permissions", comment: ""))
+                        .voiceControlSupport(identifier: "grant_permissions_button")
+                        .switchControlSupport()
 
-                        Button("Cancel") {
+                        Button(NSLocalizedString("permission.button.cancel", value: "Cancel", comment: "")) {
                             dismiss()
                         }
                         .buttonStyle(SecondaryButtonStyle())
+                        .accessibilityLabel(NSLocalizedString("accessibility.button.cancel", value: "Cancel", comment: ""))
+                        .voiceControlSupport(identifier: "cancel_button")
+                        .switchControlSupport()
                     }
                 }
                 .padding(.bottom, 32)
@@ -103,13 +127,14 @@ struct LiDARPermissionView: View {
                 permissionManager.checkPermissions()
             }
         }
-        .alert("Settings Required", isPresented: $showingSettings) {
-            Button("Settings") {
+        .alert(NSLocalizedString("permission.alert.settings_required", value: "Settings Required", comment: ""),
+               isPresented: $showingSettings) {
+            Button(NSLocalizedString("permission.alert.button.settings", value: "Settings", comment: "")) {
                 openSettings()
             }
-            Button("Cancel", role: .cancel) { }
+            Button(NSLocalizedString("permission.alert.button.cancel", value: "Cancel", comment: ""), role: .cancel) { }
         } message: {
-            Text("Please enable camera and motion permissions in Settings to use LiDAR scanning.")
+            Text(NSLocalizedString("permission.alert.message", value: "Please enable camera and motion permissions in Settings to use LiDAR scanning.", comment: ""))
         }
     }
 
@@ -141,10 +166,12 @@ struct PermissionCard: View {
                 Text(title)
                     .font(.headline)
                     .fontWeight(.semibold)
+                    .lidarDynamicType(size: .headline)
 
                 Text(description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
+                    .lidarDynamicType(size: .subheadline)
             }
 
             Spacer()
@@ -343,14 +370,12 @@ class LiDARPermissionManager: ObservableObject {
     }
 
     // MARK: - Motion Permission
+    /// Motion data doesn't require explicit permission on iOS, but we check availability
     private func checkMotionPermission() {
-        // CoreMotion doesn't require explicit permission for accelerometer/gyroscope
-        // But we check if the data is available
-        import CoreMotion
-
+        // Motion sensors (accelerometer, gyroscope) don't require permission
+        // They're always available if the device supports them
         let motionManager = CMMotionManager()
-
-        if motionManager.isAccelerometerAvailable && motionManager.isGyroAvailable {
+        if motionManager.isAccelerometerAvailable || motionManager.isGyroAvailable {
             motionPermission = .granted
         } else {
             motionPermission = .unavailable

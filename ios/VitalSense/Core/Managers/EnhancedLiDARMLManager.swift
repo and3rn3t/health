@@ -203,7 +203,7 @@ final class EnhancedLiDARMLManager: ObservableObject {
     // MARK: - Model Loading
 
     private func loadGaitAnalysisModel() async throws -> MLModel {
-        // Try to load from bundle
+        // Try to load from bundle first
         if let modelURL = Bundle.main.url(forResource: "GaitAnalysisV2_1", withExtension: "mlmodelc") {
             return try MLModel(contentsOf: modelURL)
         }
@@ -213,12 +213,35 @@ final class EnhancedLiDARMLManager: ObservableObject {
             return try MLModel(contentsOf: modelURL)
         }
 
-        // Try downloading from server (future implementation)
-        // For now, throw error to trigger fallback
+        // Try to load from downloaded models
+        let downloadManager = MLModelDownloadManager.shared
+        if let modelPath = downloadManager.getLocalModelPath(modelName: "GaitAnalysis", version: "2.1.0") {
+            return try MLModel(contentsOf: modelPath)
+        }
+
+        // Try alternative downloaded versions
+        for version in ["2.1", "2.0", "1.0"] {
+            if let modelPath = downloadManager.getLocalModelPath(modelName: "GaitAnalysis", version: version) {
+                return try MLModel(contentsOf: modelPath)
+            }
+        }
+
+        // Try downloading from server
+        do {
+            let availableModels = try await downloadManager.fetchAvailableModels()
+            if let gaitModel = availableModels.first(where: { $0.name.lowercased().contains("gait") }) {
+                let modelURL = try await downloadManager.downloadModel(gaitModel)
+                return try MLModel(contentsOf: modelURL)
+            }
+        } catch {
+            logger.warning("Failed to download gait model: \(error.localizedDescription)")
+        }
+
         throw MLModelError.modelNotFound("GaitAnalysisV2_1.mlmodelc")
     }
 
     private func loadFallPredictionModel() async throws -> MLModel {
+        // Try bundle first
         if let modelURL = Bundle.main.url(forResource: "FallPredictionV3_0", withExtension: "mlmodelc") {
             return try MLModel(contentsOf: modelURL)
         }
@@ -227,10 +250,28 @@ final class EnhancedLiDARMLManager: ObservableObject {
             return try MLModel(contentsOf: modelURL)
         }
 
+        // Try downloaded models
+        let downloadManager = MLModelDownloadManager.shared
+        if let modelPath = downloadManager.getLocalModelPath(modelName: "FallPrediction", version: "3.0.0") {
+            return try MLModel(contentsOf: modelPath)
+        }
+
+        // Try downloading
+        do {
+            let availableModels = try await downloadManager.fetchAvailableModels()
+            if let fallModel = availableModels.first(where: { $0.name.lowercased().contains("fall") }) {
+                let modelURL = try await downloadManager.downloadModel(fallModel)
+                return try MLModel(contentsOf: modelURL)
+            }
+        } catch {
+            logger.warning("Failed to download fall prediction model: \(error.localizedDescription)")
+        }
+
         throw MLModelError.modelNotFound("FallPredictionV3_0.mlmodelc")
     }
 
     private func loadPostureClassificationModel() async throws -> MLModel {
+        // Try bundle first
         if let modelURL = Bundle.main.url(forResource: "PostureClassificationV1_2", withExtension: "mlmodelc") {
             return try MLModel(contentsOf: modelURL)
         }
@@ -239,10 +280,28 @@ final class EnhancedLiDARMLManager: ObservableObject {
             return try MLModel(contentsOf: modelURL)
         }
 
+        // Try downloaded models
+        let downloadManager = MLModelDownloadManager.shared
+        if let modelPath = downloadManager.getLocalModelPath(modelName: "PostureClassification", version: "1.2.0") {
+            return try MLModel(contentsOf: modelPath)
+        }
+
+        // Try downloading
+        do {
+            let availableModels = try await downloadManager.fetchAvailableModels()
+            if let postureModel = availableModels.first(where: { $0.name.lowercased().contains("posture") }) {
+                let modelURL = try await downloadManager.downloadModel(postureModel)
+                return try MLModel(contentsOf: modelURL)
+            }
+        } catch {
+            logger.warning("Failed to download posture model: \(error.localizedDescription)")
+        }
+
         throw MLModelError.modelNotFound("PostureClassificationV1_2.mlmodelc")
     }
 
     private func loadMovementPatternModel() async throws -> MLModel {
+        // Try bundle first
         if let modelURL = Bundle.main.url(forResource: "MovementPatternV2_3", withExtension: "mlmodelc") {
             return try MLModel(contentsOf: modelURL)
         }
@@ -251,7 +310,54 @@ final class EnhancedLiDARMLManager: ObservableObject {
             return try MLModel(contentsOf: modelURL)
         }
 
+        // Try downloaded models
+        let downloadManager = MLModelDownloadManager.shared
+        if let modelPath = downloadManager.getLocalModelPath(modelName: "MovementPattern", version: "2.3.0") {
+            return try MLModel(contentsOf: modelPath)
+        }
+
+        // Try downloading
+        do {
+            let availableModels = try await downloadManager.fetchAvailableModels()
+            if let movementModel = availableModels.first(where: { $0.name.lowercased().contains("movement") }) {
+                let modelURL = try await downloadManager.downloadModel(movementModel)
+                return try MLModel(contentsOf: modelURL)
+            }
+        } catch {
+            logger.warning("Failed to download movement pattern model: \(error.localizedDescription)")
+        }
+
         throw MLModelError.modelNotFound("MovementPatternV2_3.mlmodelc")
+    }
+
+    // MARK: - Model Update Checking
+
+    /// Checks for model updates and downloads if available
+    func checkForModelUpdates() async {
+        let downloadManager = MLModelDownloadManager.shared
+
+        do {
+            let updates = await downloadManager.checkForUpdates()
+
+            if !updates.isEmpty {
+                logger.info("Found \(updates.count) model update(s)")
+
+                // Download updates in background
+                for update in updates {
+                    do {
+                        _ = try await downloadManager.downloadModel(update)
+                        logger.info("Successfully updated model: \(update.displayName)")
+                    } catch {
+                        logger.error("Failed to update model \(update.name): \(error.localizedDescription)")
+                    }
+                }
+
+                // Reload models after updates
+                await loadMLModels()
+            }
+        } catch {
+            logger.error("Failed to check for model updates: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - Enhanced Analysis

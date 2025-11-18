@@ -2,6 +2,7 @@ import SwiftUI
 import ARKit
 import RealityKit
 import Combine
+import AVFoundation
 
 // MARK: - LiDAR Scanning View
 @available(iOS 16.0, *)
@@ -77,7 +78,7 @@ struct LiDARScanningView: View {
                     setupInterface
                 }
             }
-            .navigationTitle("LiDAR Health Scan")
+            .navigationTitle(loc("lidar.scan.title"))
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
@@ -87,6 +88,9 @@ struct LiDARScanningView: View {
                         Image(systemName: "clock.arrow.circlepath")
                             .foregroundColor(.blue)
                     }
+                    .accessibilityLabel(loc("accessibility.button.view_history"))
+                    .accessibilityHint(NSLocalizedString("accessibility.button.view_history.hint", value: "Double tap to view scan history", comment: ""))
+                    .voiceControlSupport(identifier: "view_history_button")
 
                     Button(action: {
                         showingInstructions = true
@@ -94,6 +98,9 @@ struct LiDARScanningView: View {
                         Image(systemName: "questionmark.circle")
                             .foregroundColor(.blue)
                     }
+                    .accessibilityLabel(loc("accessibility.button.view_instructions"))
+                    .accessibilityHint(NSLocalizedString("accessibility.button.view_instructions.hint", value: "Double tap to view scan instructions", comment: ""))
+                    .voiceControlSupport(identifier: "view_instructions_button")
                 }
             }
             .sheet(isPresented: $showingPermissionSheet) {
@@ -138,6 +145,7 @@ struct LiDARScanningView: View {
                 startScanButton
             }
             .padding()
+            .rtlAware()
         }
     }
 
@@ -146,22 +154,37 @@ struct LiDARScanningView: View {
         VStack(spacing: 16) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("LiDAR Scanner Status")
+                    Text(NSLocalizedString("lidar.scan.status.title", value: "LiDAR Scanner Status", comment: ""))
                         .font(.headline)
                         .fontWeight(.bold)
+                        .lidarDynamicType(size: .headline)
 
                     HStack(spacing: 8) {
                         Circle()
                             .fill(lidarManager.isLiDARAvailable ? .green : .red)
                             .frame(width: 8, height: 8)
                             .scaleEffect(lidarManager.isLiDARAvailable ? 1.2 : 1.0)
-                            .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true),
+                            .animation(lidarManager.isLiDARAvailable ? .easeInOut(duration: 1.0).repeatForever(autoreverses: true) : .default,
                                      value: lidarManager.isLiDARAvailable)
+                            .accessibilityLabel(lidarManager.isLiDARAvailable ?
+                                              NSLocalizedString("accessibility.status.ready", value: "Ready", comment: "") :
+                                              NSLocalizedString("accessibility.status.unavailable", value: "Unavailable", comment: ""))
 
-                        Text(lidarManager.isLiDARAvailable ? "LiDAR Ready" : "LiDAR Unavailable")
+                        Text(loc("lidar.scan.status.ready"))
                             .font(.caption)
                             .foregroundColor(.secondary)
+                            .lidarDynamicType(size: .caption)
+                            .opacity(lidarManager.isLiDARAvailable ? 1 : 0)
+                            .overlay(
+                                Text(loc("lidar.scan.status.unavailable"))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .lidarDynamicType(size: .caption)
+                                    .opacity(lidarManager.isLiDARAvailable ? 0 : 1)
+                            )
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(lidarManager.isLiDARAvailable ? loc("lidar.scan.status.ready") : loc("lidar.scan.status.unavailable"))
                 }
 
                 Spacer()
@@ -183,16 +206,18 @@ struct LiDARScanningView: View {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundColor(.orange)
 
-                        Text("LiDAR scanner not available on this device")
+                        Text(loc("device.lidar.required"))
                             .font(.subheadline)
                             .foregroundColor(.secondary)
+                            .lidarDynamicType(size: .subheadline)
 
                         Spacer()
                     }
 
-                    Text("LiDAR scanning requires iPhone 12 Pro or newer, or iPad Pro with LiDAR scanner.")
+                    Text(loc("device.lidar.required.message"))
                         .font(.caption)
                         .foregroundColor(.secondary)
+                        .lidarDynamicType(size: .caption)
                         .multilineTextAlignment(.leading)
                 }
                 .padding()
@@ -210,9 +235,10 @@ struct LiDARScanningView: View {
     // MARK: - Scan Type Selection Card
     var scanTypeSelectionCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Select Scan Type")
+            Text(loc("lidar.scan.select_type"))
                 .font(.headline)
                 .fontWeight(.bold)
+                .lidarDynamicType(size: .headline)
 
             LazyVGrid(columns: [
                 GridItem(.flexible()),
@@ -226,27 +252,32 @@ struct LiDARScanningView: View {
                             selectedScanType = scanType
                         }
                     )
+                    .lidarScanButtonAccessibility(scanType: scanType, isEnabled: true)
+                    .switchControlSupport()
                 }
             }
 
             // Selected scan description
             VStack(alignment: .leading, spacing: 8) {
-                Text("About \(selectedScanType.rawValue)")
+                Text(locFormat("lidar.scan.about", selectedScanType.rawValue))
                     .font(.subheadline)
                     .fontWeight(.semibold)
+                    .lidarDynamicType(size: .subheadline)
 
                 Text(selectedScanType.description)
                     .font(.caption)
                     .foregroundColor(.secondary)
+                    .lidarDynamicType(size: .caption)
 
                 HStack {
                     Image(systemName: "clock")
                         .foregroundColor(.blue)
                         .font(.caption)
 
-                    Text("Duration: \(Int(selectedScanType.scanDuration))s")
+                    Text(locFormat("lidar.scan.duration", Int(selectedScanType.scanDuration)))
                         .font(.caption)
                         .foregroundColor(.secondary)
+                        .lidarDynamicType(size: .caption)
 
                     Spacer()
                 }
@@ -389,6 +420,9 @@ struct LiDARScanningView: View {
         }
         .disabled(!lidarManager.isLiDARAvailable)
         .opacity(lidarManager.isLiDARAvailable ? 1.0 : 0.6)
+        .lidarScanButtonAccessibility(scanType: selectedScanType, isEnabled: lidarManager.isLiDARAvailable)
+        .voiceControlSupport(identifier: "start_scan_button")
+        .switchControlSupport()
     }
 
     // MARK: - Scanning Interface
@@ -428,32 +462,48 @@ struct LiDARScanningView: View {
 
                     Spacer()
 
-                    Button("Cancel") {
+                    Button(loc("lidar.scan.cancel")) {
                         stopScan()
                     }
                     .font(.subheadline)
                     .foregroundColor(.white)
+                    .lidarDynamicType(size: .subheadline)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(Color.black.opacity(0.3))
                     .clipShape(Capsule())
+                    .accessibilityLabel(loc("accessibility.button.cancel_scan"))
+                    .accessibilityHint(NSLocalizedString("accessibility.button.cancel_scan.hint", value: "Double tap to cancel the current scan", comment: ""))
+                    .voiceControlSupport(identifier: "cancel_scan_button")
+                    .switchControlSupport()
                 }
 
                 // Progress Bar
                 ProgressView(value: scanProgress)
                     .progressViewStyle(LinearProgressViewStyle(tint: .white))
                     .scaleEffect(y: 2)
+                    .scanProgressAccessibility(
+                        progress: scanProgress,
+                        scanType: selectedScanType.rawValue,
+                        additionalInfo: String(format: "%d seconds of %d",
+                                              Int(scanProgress * selectedScanType.scanDuration),
+                                              Int(selectedScanType.scanDuration))
+                    )
 
                 HStack {
-                    Text("Scanning...")
+                    Text(NSLocalizedString("lidar.scan.progress.label", value: "Scanning...", comment: ""))
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.8))
+                        .lidarDynamicType(size: .subheadline)
 
                     Spacer()
 
-                    Text("\(Int(scanProgress * selectedScanType.scanDuration))s / \(Int(selectedScanType.scanDuration))s")
+                    Text(locFormat("lidar.scan.progress",
+                                  Int(scanProgress * selectedScanType.scanDuration),
+                                  Int(selectedScanType.scanDuration)))
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.8))
+                        .lidarDynamicType(size: .caption)
                 }
             }
             .padding()
@@ -724,16 +774,21 @@ struct RealTimeMetric: View {
             Image(systemName: icon)
                 .font(.caption)
                 .foregroundColor(color)
+                .accessibilityHidden(true)
 
             Text(value)
                 .font(.caption)
                 .fontWeight(.bold)
                 .foregroundColor(.white)
+                .lidarDynamicType(size: .caption)
 
             Text(title)
                 .font(.caption2)
                 .foregroundColor(.white.opacity(0.7))
+                .lidarDynamicType(size: .caption2)
         }
+        .metricCardAccessibility(name: title, value: value, unit: nil, subtitle: NSLocalizedString("accessibility.metric.realtime", value: "Real-time metric", comment: "")))
+        .accessibilityAddTraits(.updatesFrequently)
     }
 }
 
