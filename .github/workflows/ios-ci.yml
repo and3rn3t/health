@@ -96,14 +96,14 @@ jobs:
           key: dd-${{ runner.os }}-${{ env.XCODE_VERSION }}-${{ hashFiles('ios/Package.swift','ios/VitalSense/**/*.swift') }}
       - name: Resolve Dependencies
         run: |
-          xcodebuild -resolvePackageDependencies -project ${{ env.PROJECT }} -scheme ${{ env.SCHEME }}
+          xcodebuild -resolvePackageDependencies -workspace ${{ env.WORKSPACE }} -scheme ${{ env.SCHEME }}
       - name: Build for Testing (Debug)
         run: |
           set -e
           xcodebuild build-for-testing \
-            -project ${{ env.PROJECT }} \
+            -workspace ${{ env.WORKSPACE }} \
             -scheme ${{ env.SCHEME }} \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath ios/build \
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" ENABLE_BITCODE=NO ONLY_ACTIVE_ARCH=YES
@@ -111,9 +111,9 @@ jobs:
         run: |
           set -e
             xcodebuild test-without-building \
-              -project ${{ env.PROJECT }} \
+              -workspace ${{ env.WORKSPACE }} \
               -scheme ${{ env.SCHEME }} \
-              -destination 'platform=iOS Simulator,name=iPhone 16' \
+              -destination 'generic/platform=iOS Simulator' \
               -derivedDataPath ios/build \
               -only-testing VitalSenseTests \
               CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" ENABLE_BITCODE=NO || EXIT_CODE=$?
@@ -179,10 +179,11 @@ jobs:
         run: |
           set -e
           xcodebuild archive \
-            -project ${{ env.PROJECT }} \
+            -workspace ${{ env.WORKSPACE }} \
             -scheme ${{ env.SCHEME }} \
             -configuration Release \
             -archivePath ${{ env.ARCHIVE_PATH }} \
+            -destination 'generic/platform=iOS' \
             CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" SKIP_INSTALL=NO ENABLE_BITCODE=NO || EXIT_CODE=$?
           if [ ! -d "${{ env.ARCHIVE_PATH }}" ]; then echo 'Archive failed'; exit 1; fi
       - name: Export IPA (Ad-hoc Unsigned)
