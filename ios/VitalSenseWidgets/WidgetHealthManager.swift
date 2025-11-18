@@ -35,7 +35,7 @@ class WidgetHealthManager: ObservableObject {
             HKQuantityType.quantityType(forIdentifier: .stepCount)!,
             HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!,
             HKQuantityType.quantityType(forIdentifier: .appleExerciseTime)!,
-            HKQuantityType.quantityType(forIdentifier: .appleStandHour)!,
+            HKQuantityType.quantityType(forIdentifier: .appleStandTime)!,
             HKQuantityType.quantityType(forIdentifier: .walkingSpeed)!,
             HKQuantityType.quantityType(forIdentifier: .walkingStepLength)!
         ]
@@ -213,14 +213,13 @@ class WidgetHealthManager: ObservableObject {
         group.notify(queue: .main) {
             let entry = HealthEntry(
                 date: Date(),
-                heartRate: heartRate,
-                steps: steps,
-                activeEnergy: activeEnergy,
-                exerciseMinutes: exerciseMinutes,
-                standHours: standHours,
-                walkingSteadiness: walkingSteadiness,
-                steadinessStatus: steadinessStatus,
-                isConnected: true
+                heartRate: Int(heartRate ?? 0),
+                steps: Int(steps ?? 0),
+                activeEnergy: activeEnergy ?? 0,
+                gaitScore: 0.0,
+                fallRisk: 0.0,
+                isDataAvailable: (heartRate != nil || steps != nil || activeEnergy != nil),
+                connectionStatus: .connected
             )
 
             // Cache the entry
@@ -300,7 +299,7 @@ class WidgetHealthManager: ObservableObject {
     }
 
     private func fetchStandHoursForToday(completion: @escaping (Double?) -> Void) {
-        let standType = HKQuantityType.quantityType(forIdentifier: .appleStandHour)!
+        let standType = HKQuantityType.quantityType(forIdentifier: .appleStandTime)!
 
         let query = HKStatisticsQuery(
             quantityType: standType,
@@ -409,24 +408,10 @@ class WidgetHealthManager: ObservableObject {
     private func cacheHealthEntry(_ entry: HealthEntry) {
         guard let userDefaults = userDefaults else { return }
 
-        if let heartRate = entry.heartRate {
-            userDefaults.set(heartRate, forKey: CacheKeys.heartRate)
-        }
-        if let steps = entry.steps {
-            userDefaults.set(steps, forKey: CacheKeys.steps)
-        }
-        if let activeEnergy = entry.activeEnergy {
-            userDefaults.set(activeEnergy, forKey: CacheKeys.activeEnergy)
-        }
-        if let exerciseMinutes = entry.exerciseMinutes {
-            userDefaults.set(exerciseMinutes, forKey: CacheKeys.exerciseMinutes)
-        }
-        if let standHours = entry.standHours {
-            userDefaults.set(standHours, forKey: CacheKeys.standHours)
-        }
-        if let walkingSteadiness = entry.walkingSteadiness {
-            userDefaults.set(walkingSteadiness, forKey: CacheKeys.walkingSteadiness)
-        }
+        userDefaults.set(Double(entry.heartRate), forKey: CacheKeys.heartRate)
+        userDefaults.set(Double(entry.steps), forKey: CacheKeys.steps)
+        userDefaults.set(entry.activeEnergy, forKey: CacheKeys.activeEnergy)
+        userDefaults.set(entry.gaitScore, forKey: CacheKeys.walkingSteadiness)
 
         userDefaults.set(Date(), forKey: CacheKeys.lastUpdate)
     }
@@ -446,14 +431,13 @@ class WidgetHealthManager: ObservableObject {
 
         return HealthEntry(
             date: Date(),
-            heartRate: getCachedValue(for: CacheKeys.heartRate),
-            steps: getCachedValue(for: CacheKeys.steps),
-            activeEnergy: getCachedValue(for: CacheKeys.activeEnergy),
-            exerciseMinutes: getCachedValue(for: CacheKeys.exerciseMinutes),
-            standHours: getCachedValue(for: CacheKeys.standHours),
-            walkingSteadiness: getCachedValue(for: CacheKeys.walkingSteadiness),
-            steadinessStatus: steadinessStatus(for: getCachedValue(for: CacheKeys.walkingSteadiness) ?? 0),
-            isConnected: true
+            heartRate: Int(getCachedValue(for: CacheKeys.heartRate) ?? 0),
+            steps: Int(getCachedValue(for: CacheKeys.steps) ?? 0),
+            activeEnergy: getCachedValue(for: CacheKeys.activeEnergy) ?? 0,
+            gaitScore: getCachedValue(for: CacheKeys.walkingSteadiness) ?? 0,
+            fallRisk: 0.0,
+            isDataAvailable: true,
+            connectionStatus: .connected
         )
     }
 
@@ -468,8 +452,10 @@ class WidgetHealthManager: ObservableObject {
     
     // MARK: - Control Widget Support
     var isActivelyMonitoring: Bool {
-        // Check if monitoring is active via UserDefaults shared container
-        return userDefaults?.bool(forKey: "is_monitoring_active") ?? false
+        get async {
+            // Check if monitoring is active via UserDefaults shared container
+            return userDefaults?.bool(forKey: "is_monitoring_active") ?? false
+        }
     }
     
     func getCurrentHeartRate() async -> Double {
@@ -578,9 +564,13 @@ class WidgetPreferences: ObservableObject {
     }
 
     // MARK: - Connection Status
+    
+    enum WidgetConnectionStatus {
+        case connected, disconnected, unknown, noHealthData, stale
+    }
 
     /// Get current connection status for widgets
-    func getConnectionStatus() -> ConnectionStatus {
+    func getConnectionStatus() -> WidgetConnectionStatus {
         // Check HealthKit authorization
         guard HKHealthStore.isHealthDataAvailable() else {
             return .noHealthData

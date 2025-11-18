@@ -13,6 +13,11 @@ struct GaitSessionAttributes: ActivityAttributes {
         var emoji: String
         var sessionDuration: TimeInterval
         var status: String
+        var qualityScore: Int
+        var isConnected: Bool
+        var protocolName: String
+        var elapsed: TimeInterval
+        var remaining: TimeInterval
     }
 
     // Fixed non-changing properties about your activity go here!
@@ -49,6 +54,10 @@ struct GaitActivityWidget {
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     Image(systemName: "figure.walk")
+                }
+                DynamicIslandExpandedRegion(.bottom) {
+                    Text("Gait Analysis")
+                        .font(.caption)
                 }
             } compactLeading: {
                 QualityPill(qualityScore: context.state.qualityScore)

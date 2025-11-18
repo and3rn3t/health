@@ -32,7 +32,6 @@ struct VitalSenseWidgetsControl: ControlWidget {
                         .foregroundStyle(isMonitoring ? .red : .secondary)
                 }
             }
-            .controlWidgetActionHint("Toggle continuous health monitoring")
         }
         .displayName("VitalSense Health")
         .description("Control continuous health monitoring and real-time alerts.")
@@ -60,7 +59,7 @@ extension VitalSenseWidgetsControl {
         func currentValue(configuration: HealthMonitoringConfiguration) async throws -> Value {
             // Check current monitoring state from WidgetHealthManager
             // Note: Widget extensions have limited access to main app state
-            let isMonitoring = WidgetHealthManager.shared.isActivelyMonitoring
+            let isMonitoring = await WidgetHealthManager.shared.isActivelyMonitoring
             let lastHeartRate = await WidgetHealthManager.shared.getCurrentHeartRate()
 
             return VitalSenseWidgetsControl.Value(
