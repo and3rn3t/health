@@ -106,26 +106,26 @@ struct EnhancedWatchDashboard: View {
         .navigationTitle("Actions")
     }
 
-    // MARK: - Connection Status Card (iOS 26 Enhanced)
+    // MARK: - Connection Status Card
     private var connectionStatusCard: some View {
         VStack(spacing: 6) {
             HStack {
                 Circle()
-                    .fill(connectivityManager.isConnected ? .green : .red)
+                    .fill(connectivityManager.isConnectedToPhone ? .green : .red)
                     .frame(width: 6, height: 6)
-                    .scaleEffect(connectivityManager.isConnected && animateHeartRate ? 1.3 : 1.0)
+                    .scaleEffect(connectivityManager.isConnectedToPhone && animateHeartRate ? 1.3 : 1.0)
                     .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: animateHeartRate)
 
-                Text(connectivityManager.isConnected ? "iPhone Connected" : "Disconnected")
+                Text(connectivityManager.isConnectedToPhone ? "iPhone Connected" : "Disconnected")
                     .font(.caption2)
                     .foregroundColor(.secondary)
 
                 Spacer()
             }
 
-            if connectivityManager.isConnected {
+            if connectivityManager.isConnectedToPhone {
                 HStack {
-                    Text("Sync: \(connectivityManager.lastSyncTime, style: .relative) ago")
+                    Text("Connected")
                         .font(.caption2)
                         .foregroundColor(.secondary)
 
