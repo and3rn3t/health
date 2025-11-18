@@ -616,6 +616,7 @@ class WidgetPreferences: ObservableObject {
         userDefaults.set(configuration.compactMode, forKey: "compact_mode")
         userDefaults.set(configuration.primaryMetric.rawValue, forKey: "primary_metric")
     }
+}
 
 // MARK: - Widget Intent Configuration
 import Intents
