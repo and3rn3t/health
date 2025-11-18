@@ -82,6 +82,6 @@ struct VitalSenseWidgets: Widget {
 #Preview(as: .systemSmall) {
     VitalSenseWidgets()
 } timeline: {
-    SimpleEntry(date: Date(), configuration: ConfigurationAppIntent(favoriteEmoji: "😃"))
-    SimpleEntry(date: Date(), configuration: ConfigurationAppIntent(favoriteEmoji: "💓"))
+    SimpleEntry(date: Date(), emoji: "😃")
+    SimpleEntry(date: Date(), emoji: "💓")
 }
