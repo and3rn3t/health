@@ -58,9 +58,10 @@ describe('ErrorBoundary', () => {
       const error = new AppErrorHandler('Test error');
       const resetErrorBoundary = vi.fn();
 
-      // Mock non-production environment (but not localhost to avoid re-throw)
+      // Mock localhost environment to show technical details
+      // AppErrorHandler prevents re-throw even on localhost
       Object.defineProperty(window, 'location', {
-        value: { hostname: 'test.example.com' },
+        value: { hostname: 'localhost' },
         writable: true,
         configurable: true,
       });
@@ -85,9 +86,10 @@ describe('ErrorBoundary', () => {
       const error = new AppErrorHandler('Test error');
       const resetErrorBoundary = vi.fn();
 
-      // Mock non-production environment (but not localhost to avoid re-throw)
+      // Mock localhost environment
+      // AppErrorHandler prevents re-throw even on localhost
       Object.defineProperty(window, 'location', {
-        value: { hostname: 'test.example.com' },
+        value: { hostname: 'localhost' },
         writable: true,
         configurable: true,
       });
@@ -105,11 +107,9 @@ describe('ErrorBoundary', () => {
       const button = screen.getByText(/Try Again/i);
       button.click();
 
-      expect(resetErrorBoundary).toHaveBeenCalled();
+      expect(resetErrorBoundary).toHaveBeenCalledTimes(1);
 
       consoleError.mockRestore();
-
-      expect(resetErrorBoundary).toHaveBeenCalled();
     });
   });
 
