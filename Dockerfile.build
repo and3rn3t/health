@@ -12,29 +12,48 @@ RUN apk add --no-cache \
     git \
     python3 \
     make \
-    g++
+    g++ \
+    libc6-compat \
+    curl
 
-# Install pnpm
-RUN npm install -g pnpm@9
+# Install pnpm and configure for CI
+RUN npm install -g pnpm@9 && \
+    pnpm config set store-dir /root/.local/share/pnpm/store
 
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
 # Install all dependencies (including dev dependencies for building)
-RUN pnpm install --frozen-lockfile
+# Use cache mount for node_modules if available (BuildKit feature)
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # Copy source files
 COPY . .
 
-# Build the application
-RUN pnpm run build
+# Build the application with error handling
+RUN echo "🏗️ Building application..." && \
+    pnpm run build || (echo "❌ App build failed" && exit 1)
 
 # Build the worker
-RUN pnpm run build:worker || echo "Worker build optional"
+RUN echo "🔧 Building worker..." && \
+    pnpm run build:worker || echo "⚠️ Worker build optional"
 
-# Verify builds
-RUN test -d dist && echo "✅ App build successful" || (echo "❌ App build failed" && exit 1)
-RUN test -d dist-worker && echo "✅ Worker build successful" || echo "⚠️ Worker build skipped"
+# Verify builds and show sizes
+RUN echo "📊 Verifying builds..." && \
+    if [ -d dist ]; then \
+        echo "✅ App build successful ($(du -sh dist | cut -f1))"; \
+        ls -la dist | head -10; \
+    else \
+        echo "❌ App build failed - dist/ missing"; \
+        exit 1; \
+    fi && \
+    if [ -d dist-worker ]; then \
+        echo "✅ Worker build successful ($(du -sh dist-worker | cut -f1))"; \
+        ls -la dist-worker | head -10; \
+    else \
+        echo "⚠️ Worker build skipped"; \
+    fi
 
 # Output build artifacts to /build-output for easy extraction
 RUN mkdir -p /build-output && \

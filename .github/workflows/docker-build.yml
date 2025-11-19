@@ -7,6 +7,11 @@ on:
   pull_request:
     branches: [main, develop]
   workflow_dispatch:
+    inputs:
+      push:
+        description: 'Push to registry'
+        required: false
+        default: 'false'
 
 env:
   REGISTRY: ghcr.io
@@ -25,8 +30,13 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:latest
+            network=host
 
       - name: Log in to Container Registry
+        if: github.event_name != 'pull_request' || github.event.inputs.push == 'true'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -46,25 +56,68 @@ jobs:
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push Docker image
+      - name: Build Docker image (production)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.production
+          target: builder
+          push: false
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:production-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+
+      - name: Build Docker image (CI/CD)
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile.build
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ github.event_name != 'pull_request' && github.event.inputs.push != 'false' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
 
       - name: Extract build artifacts
         if: github.event_name != 'pull_request'
         run: |
-          docker create --name artifacts ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          docker cp artifacts:/build-output/dist ./dist || true
-          docker cp artifacts:/build-output/dist-worker ./dist-worker || true
+          echo "📦 Extracting build artifacts..."
+          # Try multiple tag formats
+          IMAGE_TAG=""
+          if docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-${{ github.sha }} >/dev/null 2>&1; then
+            IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-${{ github.sha }}"
+          elif docker image inspect $(echo "${{ steps.meta.outputs.tags }}" | head -1) >/dev/null 2>&1; then
+            IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -1)
+          else
+            echo "⚠️ Using local build image"
+            IMAGE_TAG="vitalsense:build"
+          fi
+          
+          echo "Using image: $IMAGE_TAG"
+          docker create --name artifacts $IMAGE_TAG
+          
+          # Extract artifacts
+          docker cp artifacts:/build-output/dist ./dist 2>/dev/null || echo "⚠️ dist/ not found"
+          docker cp artifacts:/build-output/dist-worker ./dist-worker 2>/dev/null || echo "⚠️ dist-worker/ not found"
+          
+          # Clean up
           docker rm artifacts
+          
+          # Verify artifacts
+          if [ -d dist ] && [ "$(ls -A dist)" ]; then
+            echo "✅ dist/ extracted ($(du -sh dist | cut -f1))"
+            ls -la dist | head -5
+          else
+            echo "❌ dist/ is empty or missing"
+            exit 1
+          fi
 
       - name: Upload build artifacts
         if: github.event_name != 'pull_request'
@@ -75,4 +128,20 @@ jobs:
             dist/**
             dist-worker/**
           retention-days: 7
+          if-no-files-found: error
 
+      - name: Build summary
+        run: |
+          echo "## Docker Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Docker build completed successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Images built:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Production: \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:production-${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Build: \`${{ steps.meta.outputs.tags }}\`" >> $GITHUB_STEP_SUMMARY
+          if [ -d dist ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Artifacts:**" >> $GITHUB_STEP_SUMMARY
+            echo "- dist/: $(du -sh dist | cut -f1)" >> $GITHUB_STEP_SUMMARY
+            [ -d dist-worker ] && echo "- dist-worker/: $(du -sh dist-worker | cut -f1)" >> $GITHUB_STEP_SUMMARY
+          fi

@@ -68,14 +68,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node & pnpm
-        uses: ./.github/actions/setup-pnpm
-      - name: Install deps (frozen or fallback)
-        run: pnpm install --frozen-lockfile || pnpm install
-      - name: Build web app
-        run: pnpm run build
-      - name: Build worker
-        run: pnpm run build:worker || echo 'Worker build optional'
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Check for Docker build artifacts
+        id: check-docker
+        run: |
+          # Check if we can use Docker build from previous workflow
+          if gh run list --workflow=docker-build.yml --limit=1 --json conclusion,headSha --jq '.[0] | select(.conclusion=="success" and .headSha=="${{ github.sha }}")' 2>/dev/null; then
+            echo "docker_available=true" >> $GITHUB_OUTPUT
+            echo "✅ Docker build artifacts available"
+          else
+            echo "docker_available=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Using traditional build (Docker build not available)"
+          fi
+        continue-on-error: true
+      
+      - name: Build with Docker (if available)
+        id: docker-build
+        if: steps.check-docker.outputs.docker_available == 'true'
+        run: |
+          echo "🐳 Building with Docker..."
+          docker build -f Dockerfile.build -t vitalsense:build .
+          docker create --name artifacts vitalsense:build
+          docker cp artifacts:/build-output/dist ./dist
+          docker cp artifacts:/build-output/dist-worker ./dist-worker
+          docker rm artifacts
+          echo "✅ Docker build complete"
+        continue-on-error: true
+      
+      - name: Fallback: Traditional build
+        if: steps.docker-build.outcome == 'failure' || steps.check-docker.outputs.docker_available != 'true'
+        run: |
+          echo "🔨 Using traditional build method..."
+          - name: Setup Node & pnpm
+            uses: ./.github/actions/setup-pnpm
+          - name: Install deps (frozen or fallback)
+            run: pnpm install --frozen-lockfile || pnpm install
+          - name: Build web app
+            run: pnpm run build
+          - name: Build worker
+            run: pnpm run build:worker || echo 'Worker build optional'
       - name: Verify advanced websocket worker source
         run: |
           set -e
