@@ -46,6 +46,15 @@ import {
   UserProfile,
 } from '@/lib/enhanced-intervention-engine';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import FallRiskHistoryChart, {
+  type FallRiskHistoryDataPoint,
+} from './FallRiskHistoryChart';
+import { RiskFactorDetailView } from './RiskFactorDetailView';
+import FallRiskReportExporter from './FallRiskReportExporter';
+import SensorDataVisualization from './SensorDataVisualization';
+import RiskComparisonBenchmark from './RiskComparisonBenchmark';
+import InterventionProgressAnalytics from './InterventionProgressAnalytics';
+import { useFallRiskHistory } from '@/hooks/useFallRiskHistory';
 
 interface EnhancedFallRiskDashboardProps {
   healthData: ProcessedHealthData;
@@ -70,6 +79,10 @@ export default function EnhancedFallRiskDashboard({
   >([]);
   const [realTimeMonitoring, setRealTimeMonitoring] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedRiskFactor, setSelectedRiskFactor] = useState<string | null>(null);
+
+  // Historical data management
+  const { history, addPrediction } = useFallRiskHistory();
 
   // Engine instances (useMemo would be better for performance in real app)
   const riskEngine = React.useMemo(() => new AdvancedFallRiskEngine(), []);
@@ -109,6 +122,9 @@ export default function EnhancedFallRiskDashboard({
         setLoading(true);
         const prediction = await riskEngine.predictFallRisk(healthData);
         setRiskPrediction(prediction);
+
+        // Save to history
+        addPrediction(prediction);
 
         // Generate intervention plan
         const plan = interventionEngine.generatePersonalizedPlan(
@@ -295,14 +311,26 @@ export default function EnhancedFallRiskDashboard({
         </Alert>
       )}
 
+      {/* Export Report Button */}
+      {riskPrediction && (
+        <div className="flex justify-end">
+          <FallRiskReportExporter
+            currentPrediction={riskPrediction}
+            historyData={history as FallRiskHistoryDataPoint[]}
+          />
+        </div>
+      )}
+
       {/* Main Dashboard Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="prediction">AI Prediction</TabsTrigger>
           <TabsTrigger value="interventions">Interventions</TabsTrigger>
           <TabsTrigger value="monitoring">Real-time</TabsTrigger>
           <TabsTrigger value="progress">Progress</TabsTrigger>
+          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="comparison">Comparison</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -404,30 +432,43 @@ export default function EnhancedFallRiskDashboard({
             <CardContent>
               <div className="md:grid-cols-2 grid grid-cols-1 gap-4">
                 {riskPrediction.primaryRiskFactors.map((riskFactor) => (
-                  <div key={riskFactor.id} className="rounded-lg border p-4">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="font-medium">
-                        {riskFactor.description}
-                      </span>
-                      <Badge
-                        variant={
-                          riskFactor.severity === 'high'
-                            ? 'destructive'
-                            : 'secondary'
-                        }
+                  <div key={riskFactor.id}>
+                    {selectedRiskFactor === riskFactor.id ? (
+                      <RiskFactorDetailView
+                        riskFactor={riskFactor}
+                        onInterventionClick={onInterventionStart}
+                        showInterventions={true}
+                      />
+                    ) : (
+                      <div
+                        className="cursor-pointer rounded-lg border p-4 transition-shadow hover:shadow-md"
+                        onClick={() => setSelectedRiskFactor(riskFactor.id)}
                       >
-                        {riskFactor.severity}
-                      </Badge>
-                    </div>
-                    <p className="text-gray-600 mb-2 text-sm">
-                      {riskFactor.explanation}
-                    </p>
-                    <div className="text-xs text-gray-500">
-                      Weight: {Math.round(riskFactor.weight * 100)}% |
-                      {riskFactor.modifiable
-                        ? ' Modifiable'
-                        : ' Non-modifiable'}
-                    </div>
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className="font-medium">
+                            {riskFactor.description}
+                          </span>
+                          <Badge
+                            variant={
+                              riskFactor.severity === 'high'
+                                ? 'destructive'
+                                : 'secondary'
+                            }
+                          >
+                            {riskFactor.severity}
+                          </Badge>
+                        </div>
+                        <p className="text-gray-600 mb-2 text-sm">
+                          {riskFactor.explanation}
+                        </p>
+                        <div className="text-xs text-gray-500">
+                          Weight: {Math.round(riskFactor.weight * 100)}% |
+                          {riskFactor.modifiable
+                            ? ' Modifiable'
+                            : ' Non-modifiable'} | Click for details
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -644,38 +685,11 @@ export default function EnhancedFallRiskDashboard({
                 </div>
 
                 {sensorData && (
-                  <div className="md:grid-cols-4 grid grid-cols-2 gap-4">
-                    <div className="p-3 rounded border text-center">
-                      <div className="text-lg font-semibold">
-                        {sensorData.accelerometer.magnitude.toFixed(1)}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Acceleration (g)
-                      </div>
-                    </div>
-                    <div className="p-3 rounded border text-center">
-                      <div className="text-lg font-semibold">
-                        {sensorData.gyroscope.magnitude.toFixed(1)}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Rotation (°/s)
-                      </div>
-                    </div>
-                    <div className="p-3 rounded border text-center">
-                      <div className="text-lg font-semibold">
-                        {sensorData.heartRate}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Heart Rate (bpm)
-                      </div>
-                    </div>
-                    <div className="p-3 rounded border text-center">
-                      <div className="text-lg font-semibold">
-                        {Math.round(sensorData.confidence * 100)}%
-                      </div>
-                      <div className="text-sm text-gray-500">Confidence</div>
-                    </div>
-                  </div>
+                  <SensorDataVisualization
+                    sensorData={sensorData}
+                    showHistory={realTimeMonitoring}
+                    historyLength={50}
+                  />
                 )}
 
                 {fallDetectionEvents.length > 0 && (
@@ -718,98 +732,35 @@ export default function EnhancedFallRiskDashboard({
 
         {/* Progress Tab */}
         <TabsContent value="progress" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingDown className="h-5 w-5" />
-                Risk Reduction Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="md:grid-cols-3 grid grid-cols-1 gap-6">
-                <div className="text-center">
-                  <div className="text-gray-800 text-2xl font-bold">
-                    {interventionPlan.baselineRisk}
-                  </div>
-                  <div className="text-sm text-gray-500">Baseline Risk</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-blue-600 text-2xl font-bold">
-                    {interventionPlan.currentRisk}
-                  </div>
-                  <div className="text-sm text-gray-500">Current Risk</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-green-600 text-2xl font-bold">
-                    {interventionPlan.targetRisk}
-                  </div>
-                  <div className="text-sm text-gray-500">Target Risk</div>
-                </div>
-              </div>
+          <InterventionProgressAnalytics interventionPlan={interventionPlan} />
+        </TabsContent>
 
-              <div className="mt-6">
-                <div className="mb-2 flex justify-between text-sm">
-                  <span>Progress to Target</span>
-                  <span>
-                    {Math.round(
-                      ((interventionPlan.baselineRisk -
-                        interventionPlan.currentRisk) /
-                        (interventionPlan.baselineRisk -
-                          interventionPlan.targetRisk)) *
-                        100
-                    )}
-                    %
-                  </span>
-                </div>
-                <Progress
-                  value={
-                    ((interventionPlan.baselineRisk -
-                      interventionPlan.currentRisk) /
-                      (interventionPlan.baselineRisk -
-                        interventionPlan.targetRisk)) *
-                    100
-                  }
-                />
-              </div>
-            </CardContent>
-          </Card>
+        {/* History Tab */}
+        <TabsContent value="history" className="space-y-6">
+          {history.length > 0 ? (
+            <FallRiskHistoryChart
+              historyData={history as FallRiskHistoryDataPoint[]}
+              showTrends={true}
+              showBreakdown={true}
+            />
+          ) : (
+            <Card>
+              <CardContent className="p-6 text-center text-gray-500">
+                No historical data available yet. Historical data will be collected
+                as you continue using the fall risk assessment.
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Intervention Progress</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {interventionPlan.progress.map((progress) => (
-                  <div
-                    key={progress.interventionId}
-                    className="rounded-lg border p-4"
-                  >
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="font-medium">
-                        {
-                          interventionPlan.activeInterventions.find(
-                            (i) => i.id === progress.interventionId
-                          )?.title
-                        }
-                      </span>
-                      <Badge variant="outline">
-                        {progress.completionRate}% complete
-                      </Badge>
-                    </div>
-                    <Progress
-                      value={progress.completionRate}
-                      className="mb-2"
-                    />
-                    <div className="flex justify-between text-sm text-gray-500">
-                      <span>Adherence: {progress.adherenceRate}%</span>
-                      <span>Effectiveness: {progress.effectiveness}%</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Comparison Tab */}
+        <TabsContent value="comparison" className="space-y-6">
+          {riskPrediction && (
+            <RiskComparisonBenchmark
+              prediction={riskPrediction}
+              userAge={userProfile.age}
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>

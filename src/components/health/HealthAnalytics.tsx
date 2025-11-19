@@ -1,36 +1,13 @@
-import AIInsights from '@/components/health/AIInsights';
-import {
-  CorrelationChart,
-  DataVisualization,
-} from '@/components/health/analytics-components';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProcessedHealthData } from '@/types';
-import {
-  Activity,
-  BarChart3,
-  Calendar,
-  Download,
-  Heart,
-  TrendingDown,
-  TrendingUp,
-} from 'lucide-react';
-import { toast } from 'sonner';
+import EnhancedAnalyticsDashboard from '@/components/analytics/EnhancedAnalyticsDashboard';
+import type { ProcessedHealthData } from '@/types';
 
 interface HealthAnalyticsProps {
   healthData: ProcessedHealthData | null;
 }
 
 export default function HealthAnalytics({ healthData }: HealthAnalyticsProps) {
+  // Use the enhanced analytics dashboard
+  return <EnhancedAnalyticsDashboard healthData={healthData} />;
   if (!healthData || !healthData.metrics) {
     return (
       <div className="py-8 text-center">
