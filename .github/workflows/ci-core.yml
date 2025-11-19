@@ -412,6 +412,63 @@ jobs:
           path: reports/*.json
           if-no-files-found: warn
 
+  coverage_delta:
+    runs-on: ubuntu-latest
+    needs: code_quality
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node & pnpm
+        uses: ./.github/actions/setup-pnpm
+      - name: Install Dependencies
+        run: |
+          if ! pnpm install --frozen-lockfile; then
+            echo "[lockfile] Drift detected → non-frozen install (baseline_metrics)";
+            pnpm install --no-frozen-lockfile;
+          fi
+      - name: Download Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: code-quality
+          path: coverage-artifacts
+      - name: Compute Coverage Delta
+        id: delta
+        run: |
+          set -e
+          BASE_FILE=coverage-baseline.json
+          CUR_SUM=coverage-artifacts/coverage/coverage-summary.json
+          if [ ! -f "$CUR_SUM" ]; then echo "No coverage summary"; exit 1; fi
+          if [ ! -f "$BASE_FILE" ]; then echo "No baseline found, using 0"; echo '{"linesPct":0}' > $BASE_FILE; fi
+          BASE=$(node -e "const f=require('./'+process.argv[1]);process.stdout.write(String(f.linesPct||0));" $BASE_FILE)
+          CUR=$(node -e "const f=require('./'+process.argv[1]);const t=f.total||f;process.stdout.write(String(t.lines.pct||0));" $CUR_SUM)
+          DELTA=$(node -e "const b=Number(process.argv[1]);const c=Number(process.argv[2]);process.stdout.write((c-b).toFixed(2));" $BASE $CUR)
+          echo "Base: $BASE% Current: $CUR% Delta: $DELTA%"
+          echo "base=$BASE" >> $GITHUB_OUTPUT
+          echo "current=$CUR" >> $GITHUB_OUTPUT
+          echo "delta=$DELTA" >> $GITHUB_OUTPUT
+          awk -v d=$DELTA 'BEGIN { if (d+0 < -2) { printf("Coverage regression %.2f%% > allowed -2%% window\n", d); exit 1 } }'
+      - name: Update Baseline (main branch only)
+        if: github.ref == 'refs/heads/main' && success()
+        run: |
+          NEW=$(echo "{\"generatedAt\":\"$(date -u +%FT%TZ)\",\"linesPct\":${{ steps.delta.outputs.current }},\"notes\":\"Auto-updated on successful main run\"}" )
+          echo "$NEW" > coverage-baseline.json
+          # Update test count baseline if available
+          if [ -f coverage-artifacts/reports/test-count.json ]; then
+            cp coverage-artifacts/reports/test-count.json test-count-baseline.json || true
+          fi
+      - name: Upload New Baseline Artifact
+        if: github.ref == 'refs/heads/main' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-baseline
+          path: coverage-baseline.json
+      - name: Upload Test Count Baseline Artifact
+        if: github.ref == 'refs/heads/main' && success() && hashFiles('test-count-baseline.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-count-baseline
+          path: test-count-baseline.json
+
   summary:
     runs-on: ubuntu-latest
     needs:
@@ -570,63 +627,6 @@ jobs:
       full: 'false'
       strict: 'false'
     secrets: inherit
-
-  coverage_delta:
-    runs-on: ubuntu-latest
-    needs: code_quality
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node & pnpm
-        uses: ./.github/actions/setup-pnpm
-      - name: Install Dependencies
-        run: |
-          if ! pnpm install --frozen-lockfile; then
-            echo "[lockfile] Drift detected → non-frozen install (baseline_metrics)";
-            pnpm install --no-frozen-lockfile;
-          fi
-      - name: Download Coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: code-quality
-          path: coverage-artifacts
-      - name: Compute Coverage Delta
-        id: delta
-        run: |
-          set -e
-          BASE_FILE=coverage-baseline.json
-          CUR_SUM=coverage-artifacts/coverage/coverage-summary.json
-          if [ ! -f "$CUR_SUM" ]; then echo "No coverage summary"; exit 1; fi
-          if [ ! -f "$BASE_FILE" ]; then echo "No baseline found, using 0"; echo '{"linesPct":0}' > $BASE_FILE; fi
-          BASE=$(node -e "const f=require('./'+process.argv[1]);process.stdout.write(String(f.linesPct||0));" $BASE_FILE)
-          CUR=$(node -e "const f=require('./'+process.argv[1]);const t=f.total||f;process.stdout.write(String(t.lines.pct||0));" $CUR_SUM)
-          DELTA=$(node -e "const b=Number(process.argv[1]);const c=Number(process.argv[2]);process.stdout.write((c-b).toFixed(2));" $BASE $CUR)
-          echo "Base: $BASE% Current: $CUR% Delta: $DELTA%"
-          echo "base=$BASE" >> $GITHUB_OUTPUT
-          echo "current=$CUR" >> $GITHUB_OUTPUT
-          echo "delta=$DELTA" >> $GITHUB_OUTPUT
-          awk -v d=$DELTA 'BEGIN { if (d+0 < -2) { printf("Coverage regression %.2f%% > allowed -2%% window\n", d); exit 1 } }'
-      - name: Update Baseline (main branch only)
-        if: github.ref == 'refs/heads/main' && success()
-        run: |
-          NEW=$(echo "{\"generatedAt\":\"$(date -u +%FT%TZ)\",\"linesPct\":${{ steps.delta.outputs.current }},\"notes\":\"Auto-updated on successful main run\"}" )
-          echo "$NEW" > coverage-baseline.json
-          # Update test count baseline if available
-          if [ -f coverage-artifacts/reports/test-count.json ]; then
-            cp coverage-artifacts/reports/test-count.json test-count-baseline.json || true
-          fi
-      - name: Upload New Baseline Artifact
-        if: github.ref == 'refs/heads/main' && success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-baseline
-          path: coverage-baseline.json
-      - name: Upload Test Count Baseline Artifact
-        if: github.ref == 'refs/heads/main' && success() && hashFiles('test-count-baseline.json') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-count-baseline
-          path: test-count-baseline.json
 
   baseline_metrics:
     runs-on: ubuntu-latest
