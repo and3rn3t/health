@@ -109,12 +109,8 @@ class ProductionInfrastructureManager {
   async deployToCloudflare() {
     this.log('🚀 Deploying to Cloudflare Workers', 'blue');
 
-    const wranglerConfig =
-      this.environment === 'production'
-        ? 'wrangler.production.toml'
-        : 'wrangler.toml';
-
-    const deployCmd = `wrangler deploy --config ${wranglerConfig} --env ${this.environment}`;
+    // Using consolidated wrangler.toml with --env flag
+    const deployCmd = `wrangler deploy --env ${this.environment}`;
     const result = await this.executeCommand(
       deployCmd,
       'Deploying to Cloudflare Workers'

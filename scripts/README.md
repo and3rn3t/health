@@ -15,7 +15,9 @@ scripts/
 ├── powershell-tools/   # PowerShell profiles and VS Code integration
 ├── ci/                 # CI/CD specific scripts
 ├── build/              # Build utilities and configuration
-└── _archive/           # Legacy scripts and migration artifacts
+├── catalog/            # Catalog API operations
+├── ingestion/          # Data ingestion scripts
+└── observability/      # Observability and monitoring
 ```
 
 ## Functional Categories
@@ -274,9 +276,11 @@ Windows-specific scripts for advanced development features:
 - `PowerShell-Profile.ps1` - Enhanced development profile
 - `terminal-init.ps1` - Terminal initialization
 
-## Migration Information
+## Archive Information
 
-**Legacy PowerShell scripts** have been moved to `_archive/legacy-powershell/`.
+**Legacy PowerShell scripts** have been moved to `../../_archive/scripts/legacy-powershell/` (consolidated in Phase 2).
+
+All project archives are now in the root `_archive/` directory. See `../../_archive/README.md` for details.
 
 **Benefits of Node.js migration:**
 
@@ -341,11 +345,18 @@ When adding new scripts:
 5. **Update package.json** with npm script shortcuts
 6. **Document in this README**
 
+## 📚 Additional Resources
+
+- **[Scripts Reference Guide](../../docs/development/SCRIPTS_REFERENCE.md)** - Complete reference for all npm scripts organized by category
+- **[Documentation Index](../../docs/DOCUMENTATION_INDEX.md)** - Full project documentation
+- **[Archive README](../../_archive/README.md)** - Information about archived scripts and files
+
 ## Support
 
 For issues with scripts:
 
-1. Check `_archive/README.md` for migration notes
-2. Use `--verbose` flag for detailed output
-3. Check VS Code tasks for common workflows
-4. Refer to `docs/develop/POWERSHELL_VSCODE_INTEGRATION.md` for PowerShell-specific help
+1. Check **[Scripts Reference Guide](../../docs/development/SCRIPTS_REFERENCE.md)** for script documentation
+2. Check `_archive/README.md` for migration notes (archives moved to `_archive/` in Phase 2)
+3. Use `--verbose` flag for detailed output
+4. Check VS Code tasks for common workflows
+5. Refer to `docs/develop/POWERSHELL_VSCODE_INTEGRATION.md` for PowerShell-specific help

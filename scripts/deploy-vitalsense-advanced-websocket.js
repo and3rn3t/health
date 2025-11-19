@@ -13,7 +13,8 @@ class VitalSenseAdvancedDeployer {
   constructor() {
     this.projectRoot = process.cwd();
     this.workerPath = 'src/workers/vitalsense-websocket-advanced.ts';
-    this.configPath = 'wrangler.advanced-websocket.toml';
+    // Using consolidated wrangler.toml with --env flag
+    this.configPath = 'wrangler.toml';
   }
 
   async deploy() {
@@ -119,7 +120,7 @@ class VitalSenseAdvancedDeployer {
       console.log('   🚀 Deploying to development...');
       const devResult = spawnSync(
         'npx',
-        ['wrangler', 'deploy', '--config', this.configPath, '--env', 'development'],
+        ['wrangler', 'deploy', '--env', 'advanced-websocket-dev'],
         {
           stdio: 'inherit',
           cwd: this.projectRoot,
@@ -141,7 +142,7 @@ class VitalSenseAdvancedDeployer {
       console.log('   🚀 Deploying to production...');
       const prodResult = spawnSync(
         'npx',
-        ['wrangler', 'deploy', '--config', this.configPath, '--env', 'production'],
+        ['wrangler', 'deploy', '--env', 'advanced-websocket-prod'],
         {
           stdio: 'inherit',
           cwd: this.projectRoot,

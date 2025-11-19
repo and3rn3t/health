@@ -82,14 +82,16 @@ This document provides a comprehensive index of all documentation in the project
   - [`NEXT_STEPS.md`](./project-management/NEXT_STEPS.md) - Development roadmap
   - [`IMPLEMENTATION_CHECKLIST.md`](./project-management/IMPLEMENTATION_CHECKLIST.md) - Implementation tracking
   - [`DOCUMENTATION_CLEANUP_2025.md`](./project-management/DOCUMENTATION_CLEANUP_2025.md) - Documentation cleanup and consolidation summary
+  - [`STRUCTURE_OPTIMIZATION_ANALYSIS.md`](./project-management/STRUCTURE_OPTIMIZATION_ANALYSIS.md) - Project structure optimization analysis
+  - [`PHASE1_CONSOLIDATION_COMPLETE.md`](./project-management/PHASE1_CONSOLIDATION_COMPLETE.md) - Phase 1 consolidation summary
+  - [`PHASE2_CONSOLIDATION_COMPLETE.md`](./project-management/PHASE2_CONSOLIDATION_COMPLETE.md) - Phase 2 consolidation summary
 
 ## 🗂️ Archived Documentation
 
-- [`_archive/`](./_archive/) - Completed projects and obsolete documentation
-  - All `*_COMPLETE.md` status files
-  - Obsolete setup guides
-  - Completed migration documentation
-  - Historical project phases
+- [`../_archive/`](../_archive/) - Consolidated project archives
+  - All archived components, scripts, docs, and configs
+  - See [`../_archive/README.md`](../_archive/README.md) for structure
+  - Historical project phases and completed migrations
 
 ## 🔍 Additional Navigation Aids
 
@@ -118,8 +120,11 @@ This document provides a comprehensive index of all documentation in the project
 
 ## ✨ Recent Updates
 
-### January 2025 - Documentation Consolidation
+### January 2025 - Structure Optimization (Phases 1-3)
 
+- **Phase 1**: Consolidated WebSocket servers (67% reduction), Wrangler configs (80% reduction)
+- **Phase 2**: Removed 15 duplicate scripts, consolidated 6 archive directories, archived 3 deployment configs
+- **Phase 3**: Documentation organization and script reference guides
 - **Moved root-level documentation** to appropriate sections (troubleshooting, architecture, deploy)
 - **Consolidated cleanup documentation** into single comprehensive summary
 - **Updated all README files** with accurate file locations

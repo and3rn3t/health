@@ -1,3 +1,7 @@
+# VitalSense Cloudflare Workers Configuration
+# This is the single source of truth for all Worker deployments
+# Use --env flag to select environment: development, production, websocket, advanced-websocket
+
 name = "health-app"
 main = "dist-worker/index.js"
 compatibility_date = "2024-08-30"
@@ -15,7 +19,9 @@ watch_dir = "src"
 directory = "./dist"
 binding = "ASSETS"
 
-# Development environment
+# ============================================================================
+# Development Environment
+# ============================================================================
 [env.development]
 name = "health-app-dev"
 
@@ -35,37 +41,58 @@ FALL_DETECTION_THRESHOLD = "0.75"
 EMERGENCY_RESPONSE_DELAY = "30"
 MAX_FILE_SIZE = "100MB"
 SESSION_TIMEOUT = "24h"
- # Auth0 (development)
- AUTH0_DOMAIN = "dev-qjdpc81dzr7xrnlu.us.auth0.com"
- AUTH0_CLIENT_ID = "YyCHkHZ11713YG7QsB518lHrCFE3bW1s"
- DEVICE_JWT_SECRET = "dev-local"
+# Auth0 (development)
+AUTH0_DOMAIN = "dev-qjdpc81dzr7xrnlu.us.auth0.com"
+AUTH0_CLIENT_ID = "YyCHkHZ11713YG7QsB518lHrCFE3bW1s"
+DEVICE_JWT_SECRET = "dev-local"
 
-# Development Durable Objects (mirror top-level bindings)
+# Development Durable Objects
 [[env.development.durable_objects.bindings]]
 name = "HEALTH_WEBSOCKET"
 class_name = "HealthWebSocket"
 
-# Production environment
+# ============================================================================
+# Production Environment
+# ============================================================================
 [env.production]
 name = "health-app-prod"
+workers_dev = false
+
+# Observability & Analytics Configuration
+# Health metrics analytics
+[[env.production.analytics_engine_datasets]]
+binding = "HEALTH_ANALYTICS"
+
+# Security events analytics
+[[env.production.analytics_engine_datasets]]
+binding = "SECURITY_ANALYTICS"
+
+# Performance metrics analytics
+[[env.production.analytics_engine_datasets]]
+binding = "PERFORMANCE_ANALYTICS"
+
+# Logpush configuration for enhanced logging
+env.production.logpush = false
 
 [env.production.vars]
 ENVIRONMENT = "production"
-ALLOWED_ORIGINS = "https://health.andernet.dev"
+ALLOWED_ORIGINS = "https://health.andernet.dev,https://vitalsense.andernet.dev"
 BASE_URL = "https://health.andernet.dev"
 API_BASE_URL = "https://health.andernet.dev/api"
-WEBSOCKET_URL = "wss://vitalsense-websocket-advanced-prod.andernet.workers.dev/ws"
+WEBSOCKET_URL = "wss://health.andernet.dev/ws"
 FILES_BASE_URL = "https://health.andernet.dev/files"
 LOG_LEVEL = "info"
 LOG_SAMPLE_RATE = "0.1"
 # Category-specific logging sample rates (production)
-# Tune as needed per traffic; these override the general LOG_SAMPLE_RATE for their categories
 LOG_WS_SAMPLE_RATE = "0.2"                  # 20% of WS telemetry
 LOG_CLIENT_ERROR_SAMPLE_RATE = "0.5"        # 50% of client errors
 FALL_DETECTION_THRESHOLD = "0.85"
 EMERGENCY_RESPONSE_DELAY = "30"
 MAX_FILE_SIZE = "500MB"
 SESSION_TIMEOUT = "12h"
+ENABLE_ANALYTICS = "true"
+ENABLE_SECURITY_LOGGING = "true"
+ENABLE_PERFORMANCE_MONITORING = "true"
 # Auth0 Configuration
 AUTH0_DOMAIN = "dev-qjdpc81dzr7xrnlu.us.auth0.com"
 AUTH0_CLIENT_ID = "YyCHkHZ11713YG7QsB518lHrCFE3bW1s"
@@ -75,22 +102,142 @@ AUTH0_CLIENT_ID = "YyCHkHZ11713YG7QsB518lHrCFE3bW1s"
 binding = "HEALTH_KV"
 id = "c3501957dd2540ccb6f624a78df59936"
 
+# Session storage KV
+[[env.production.kv_namespaces]]
+binding = "SESSION_KV"
+id = "92783e42b1f54805be49a882bc0ef525"
+
+[[env.production.kv_namespaces]]
+binding = "CACHE_KV"
+id = "327f94aec89b473db9a4d90baa9a2923"
+
+# Production R2 buckets for file storage
+[[env.production.r2_buckets]]
+binding = "HEALTH_FILES"
+bucket_name = "vitalsense-health-files"
+
+# Audit log storage with Object Lock
+[[env.production.r2_buckets]]
+binding = "AUDIT_LOGS"
+bucket_name = "vitalsense-audit-logs"
+
+# Production routes with zone configuration
+[[env.production.routes]]
+pattern = "health.andernet.dev/*"
+zone_name = "andernet.dev"
+
+[[env.production.routes]]
+pattern = "vitalsense.andernet.dev/*"
+zone_name = "andernet.dev"
+
 # Production Durable Objects
 [[env.production.durable_objects.bindings]]
 name = "HEALTH_WEBSOCKET"
 class_name = "HealthWebSocket"
 
-# Durable Objects
+[[env.production.durable_objects.bindings]]
+name = "RATE_LIMITER"
+class_name = "RateLimiter"
+
+# ============================================================================
+# WebSocket Service Environment (Basic)
+# ============================================================================
+[env.websocket]
+name = "vitalsense-websocket-test"
+
+[env.websocket.vars]
+ENVIRONMENT = "development"
+
+# WebSocket Durable Objects
+[[env.websocket.durable_objects.bindings]]
+name = "HEALTH_WEBSOCKET"
+class_name = "HealthWebSocket"
+
+# WebSocket routes (production)
+[[env.websocket.routes]]
+pattern = "ws.health.andernet.dev/*"
+zone_name = "andernet.dev"
+
+# ============================================================================
+# Advanced WebSocket Service Environment (Development)
+# ============================================================================
+[env.advanced-websocket-dev]
+name = "vitalsense-websocket-advanced-dev"
+main = "src/workers/vitalsense-websocket-advanced.ts"
+compatibility_date = "2024-01-15"
+
+[env.advanced-websocket-dev.vars]
+ENVIRONMENT = "development"
+# ML configuration
+ML_CONFIDENCE_THRESHOLD = "0.75"
+ANOMALY_DETECTION_SENSITIVITY = "2.5"
+PREDICTION_HORIZON_DAYS = "7"
+MAX_HISTORICAL_RECORDS = "1000"
+
+[[env.advanced-websocket-dev.durable_objects.bindings]]
+name = "VITALSENSE_WEBSOCKET"
+class_name = "VitalSenseAdvancedWebSocketDO"
+
+# ============================================================================
+# Advanced WebSocket Service Environment (Production)
+# ============================================================================
+[env.advanced-websocket-prod]
+name = "vitalsense-websocket-advanced-prod"
+main = "src/workers/vitalsense-websocket-advanced.ts"
+compatibility_date = "2024-01-15"
+
+[env.advanced-websocket-prod.vars]
+ENVIRONMENT = "production"
+# ML configuration
+ML_CONFIDENCE_THRESHOLD = "0.80"
+ANOMALY_DETECTION_SENSITIVITY = "2.0"
+PREDICTION_HORIZON_DAYS = "7"
+MAX_HISTORICAL_RECORDS = "1000"
+
+[[env.advanced-websocket-prod.durable_objects.bindings]]
+name = "VITALSENSE_WEBSOCKET"
+class_name = "VitalSenseAdvancedWebSocketDO"
+
+# ============================================================================
+# Enhanced WebSocket Service Environment (Development)
+# ============================================================================
+[env.enhanced-websocket-dev]
+name = "vitalsense-websocket-enhanced-dev"
+main = "src/workers/vitalsense-websocket-clean.ts"
+compatibility_date = "2024-03-08"
+
+[[env.enhanced-websocket-dev.durable_objects.bindings]]
+name = "VITALSENSE_WEBSOCKET"
+class_name = "VitalSenseWebSocketDO"
+
+# ============================================================================
+# Enhanced WebSocket Service Environment (Production)
+# ============================================================================
+[env.enhanced-websocket-prod]
+name = "vitalsense-websocket-enhanced-prod"
+main = "src/workers/vitalsense-websocket-clean.ts"
+compatibility_date = "2024-03-08"
+
+[[env.enhanced-websocket-prod.durable_objects.bindings]]
+name = "VITALSENSE_WEBSOCKET"
+class_name = "VitalSenseWebSocketDO"
+
+# ============================================================================
+# Global Durable Objects (default bindings)
+# ============================================================================
 [[durable_objects.bindings]]
 name = "HEALTH_WEBSOCKET"
 class_name = "HealthWebSocket"
 
+# ============================================================================
 # Migrations for Durable Objects
+# ============================================================================
 [[migrations]]
 tag = "v1"
-new_sqlite_classes = ["HealthWebSocket"]
+new_sqlite_classes = ["HealthWebSocket", "RateLimiter", "VitalSenseAdvancedWebSocketDO", "VitalSenseWebSocketDO"]
 
-# Production routes - using zone_name
-[[env.production.routes]]
-pattern = "health.andernet.dev/*"
-zone_name = "andernet.dev"
+# ============================================================================
+# Observability
+# ============================================================================
+[observability]
+enabled = true

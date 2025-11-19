@@ -303,7 +303,7 @@ npm run build
 wrangler deploy --env production
 
 # Deploy WebSocket services
-wrangler deploy --config wrangler.websocket.toml --env production
+wrangler deploy --env websocket
 \`\`\`
 
 ### 4. DNS Configuration
