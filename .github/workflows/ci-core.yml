@@ -42,75 +42,114 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  docker_build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      artifacts_available: ${{ steps.check-artifacts.outputs.available }}
+    steps:
+      - name: Check for Docker build artifacts
+        id: check-artifacts
+        run: |
+          # Check if docker-build workflow ran successfully for this commit
+          echo "Checking for Docker build artifacts..."
+          echo "available=false" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    needs: [docker_build]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Try Docker build (optimized)
-        id: docker-build
+      
+      - name: Download Docker build artifacts (if available)
+        id: download-docker
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-build-artifacts
+          path: .
+        continue-on-error: true
+      
+      - name: Check if Docker artifacts are available
+        id: check-docker-artifacts
         run: |
-          echo "🐳 Attempting optimized Docker build..."
+          if [ -d dist ] && [ "$(ls -A dist)" ]; then
+            echo "✅ Docker build artifacts found"
+            echo "available=true" >> $GITHUB_OUTPUT
+            echo "build_method=docker" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Docker artifacts not available, will build inline"
+            echo "available=false" >> $GITHUB_OUTPUT
+            echo "build_method=inline" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Set up Docker Buildx (for inline build)
+        if: steps.check-docker-artifacts.outputs.available != 'true'
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Try inline Docker build (if artifacts not available)
+        if: steps.check-docker-artifacts.outputs.available != 'true'
+        id: inline-docker-build
+        run: |
+          echo "🐳 Attempting inline Docker build..."
           if docker build \
             -f Dockerfile.build \
-            -t vitalsense:build \
+            -t vitalsense:build-local \
             --cache-from type=gha \
             --cache-to type=gha,mode=max \
+            --load \
             . 2>&1; then
-            echo "✅ Docker build successful"
-            docker create --name ci-artifacts vitalsense:build
+            echo "✅ Inline Docker build successful"
+            docker create --name ci-artifacts vitalsense:build-local
             docker cp ci-artifacts:/build-output/dist ./dist 2>/dev/null || true
             docker cp ci-artifacts:/build-output/dist-worker ./dist-worker 2>/dev/null || true
             docker rm ci-artifacts
             echo "build_method=docker" >> $GITHUB_OUTPUT
-            echo "✅ Artifacts extracted from Docker"
+            echo "✅ Artifacts extracted from inline Docker build"
           else
-            echo "⚠️ Docker build failed, will use traditional build"
+            echo "⚠️ Inline Docker build failed, will use traditional build"
             echo "build_method=traditional" >> $GITHUB_OUTPUT
           fi
         continue-on-error: true
-
+      
       - name: Traditional build (fallback)
-        if: steps.docker-build.outcome == 'failure' || steps.docker-build.outputs.build_method == 'traditional'
+        if: steps.check-docker-artifacts.outputs.available != 'true' && (steps.inline-docker-build.outcome == 'failure' || steps.inline-docker-build.outputs.build_method == 'traditional')
         run: |
           echo "🔨 Using traditional build method..."
-
+      
       - name: Setup Node & pnpm (traditional)
-        if: steps.docker-build.outcome == 'failure' || steps.docker-build.outputs.build_method == 'traditional'
+        if: steps.check-docker-artifacts.outputs.available != 'true' && (steps.inline-docker-build.outcome == 'failure' || steps.inline-docker-build.outputs.build_method == 'traditional')
         uses: ./.github/actions/setup-pnpm
-
+      
       - name: Install Dependencies (traditional)
-        if: steps.docker-build.outcome == 'failure' || steps.docker-build.outputs.build_method == 'traditional'
+        if: steps.check-docker-artifacts.outputs.available != 'true' && (steps.inline-docker-build.outcome == 'failure' || steps.inline-docker-build.outputs.build_method == 'traditional')
         run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
-
+      
       - name: Check Lockfile (traditional)
-        if: steps.docker-build.outcome == 'failure' || steps.docker-build.outputs.build_method == 'traditional'
+        if: steps.check-docker-artifacts.outputs.available != 'true' && (steps.inline-docker-build.outcome == 'failure' || steps.inline-docker-build.outputs.build_method == 'traditional')
         run: |
           set +e
           pnpm install --frozen-lockfile > /dev/null 2>&1
           if [ $? -ne 0 ]; then echo "⚠️ Lockfile drift detected (non-blocking)"; fi
-
+      
       - name: Build Worker (traditional)
-        if: steps.docker-build.outcome == 'failure' || steps.docker-build.outputs.build_method == 'traditional'
+        if: steps.check-docker-artifacts.outputs.available != 'true' && (steps.inline-docker-build.outcome == 'failure' || steps.inline-docker-build.outputs.build_method == 'traditional')
         run: pnpm run build:worker
-
+      
       - name: Verify Worker Build (traditional)
-        if: steps.docker-build.outcome == 'failure' || steps.docker-build.outputs.build_method == 'traditional'
+        if: steps.check-docker-artifacts.outputs.available != 'true' && (steps.inline-docker-build.outcome == 'failure' || steps.inline-docker-build.outputs.build_method == 'traditional')
         run: |
           if [ ! -f dist-worker/index.js ]; then
             echo "❌ Worker build failed - dist-worker/index.js not found";
             exit 1;
           fi
           echo "✅ Worker build verified: dist-worker/index.js exists";
-
+      
       - name: Build App (traditional)
-        if: steps.docker-build.outcome == 'failure' || steps.docker-build.outputs.build_method == 'traditional'
+        if: steps.check-docker-artifacts.outputs.available != 'true' && (steps.inline-docker-build.outcome == 'failure' || steps.inline-docker-build.outputs.build_method == 'traditional')
         run: pnpm run build
-
+      
       - name: Verify build outputs
         run: |
           if [ ! -d dist ] || [ -z "$(ls -A dist)" ]; then
@@ -120,7 +159,8 @@ jobs:
           echo "✅ Build verification passed"
           echo "dist size: $(du -sh dist | cut -f1)"
           [ -d dist-worker ] && echo "dist-worker size: $(du -sh dist-worker | cut -f1)"
-
+          echo "Build method: ${{ steps.check-docker-artifacts.outputs.build_method || steps.inline-docker-build.outputs.build_method || 'traditional' }}"
+      
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:

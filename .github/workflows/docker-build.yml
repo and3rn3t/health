@@ -4,8 +4,26 @@ on:
   push:
     branches: [main, develop]
     tags: ['v*']
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/workflows/**'
+      - 'LICENSE'
+      - 'renovate.json'
+      - 'ci-baselines/**'
+      - 'reports/**'
+      - 'ios/**'
   pull_request:
     branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/workflows/**'
+      - 'LICENSE'
+      - 'renovate.json'
+      - 'ci-baselines/**'
+      - 'reports/**'
+      - 'ios/**'
   workflow_dispatch:
     inputs:
       push:
@@ -105,16 +123,16 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           echo "📦 Extracting build artifacts..."
-          
+
           # Use the locally loaded image (with -local suffix to avoid Docker Hub)
           IMAGE_TAG="vitalsense:build-local"
-          
+
           if ! docker image inspect $IMAGE_TAG >/dev/null 2>&1; then
             echo "❌ Image $IMAGE_TAG not found. Available images:"
             docker images | grep -E "(vitalsense|health)" || docker images | head -10
             exit 1
           fi
-          
+
           echo "✅ Using local image: $IMAGE_TAG"
 
           # Create container and extract artifacts
