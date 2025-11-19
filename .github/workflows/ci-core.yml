@@ -232,9 +232,9 @@ jobs:
           fi
       - name: Smoke (basic)
         run: pnpm run ci:smoke
-            - name: Smoke (comprehensive)
-              run: pnpm run ci:smoke:comprehensive || echo "Comprehensive smoke test failed (non-blocking)"
-              continue-on-error: true
+      - name: Smoke (comprehensive)
+        run: pnpm run ci:smoke:comprehensive || echo "Comprehensive smoke test failed (non-blocking)"
+        continue-on-error: true
       - name: Branding Audit (local)
         run: node scripts/node/branding/branding-audit.js --local --url=http://127.0.0.1:8787 || true
       - name: Branding Audit (production)
