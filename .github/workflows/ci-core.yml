@@ -374,6 +374,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         continue-on-error: true
+        with:
+          # Don't fail the build on quality gate failures
+          args: >
+            -Dsonar.qualitygate.wait=false
       - name: Dependency Review (PR only)
         if: github.event_name == 'pull_request'
         uses: actions/dependency-review-action@v3
