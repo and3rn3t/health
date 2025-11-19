@@ -77,7 +77,16 @@ jobs:
       - name: Build worker
         run: pnpm run build:worker || echo 'Worker build optional'
       - name: Build advanced websocket worker
-        run: pnpm run build:worker:advanced || echo 'Advanced websocket worker build optional'
+        run: |
+          set -e
+          echo "Building advanced websocket worker..."
+          pnpm run build:worker:advanced || { echo 'Advanced websocket worker build failed'; exit 1; }
+          # Verify the class is exported in the built file
+          if ! grep -q "VitalSenseAdvancedWebSocketDO" dist-worker/vitalsense-websocket-advanced-clean.js 2>/dev/null; then
+            echo "Error: Built file does not contain VitalSenseAdvancedWebSocketDO class"
+            exit 1
+          fi
+          echo "✅ Advanced websocket worker built successfully"
       - name: Generate integrity manifest
         run: |
           set -e
