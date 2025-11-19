@@ -1,17 +1,23 @@
 name: iOS CI (Lint, Build, Test, Archive)
 
 on:
-  pull_request:
-    branches: [main, develop]
-    paths:
-      - 'ios/**'
-      - '.github/workflows/ios-ci.yml'
-  push:
-    branches: [main, develop]
-    paths:
-      - 'ios/**'
-      - '.github/workflows/ios-ci.yml'
   workflow_dispatch:
+    inputs:
+      skip_lint:
+        description: 'Skip linting step'
+        required: false
+        default: 'false'
+        type: boolean
+      skip_tests:
+        description: 'Skip tests'
+        required: false
+        default: 'false'
+        type: boolean
+      skip_archive:
+        description: 'Skip archive step'
+        required: false
+        default: 'false'
+        type: boolean
 
 env:
   XCODE_VERSION: '16.4'
@@ -32,6 +38,7 @@ jobs:
   lint:
     name: SwiftLint (strict)
     runs-on: macos-15
+    if: github.event.inputs.skip_lint != 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Setup Xcode
@@ -77,6 +84,7 @@ jobs:
     name: Build & Test (Debug)
     runs-on: macos-15
     needs: lint
+    if: always() && (needs.lint.result == 'success' || needs.lint.result == 'skipped') && github.event.inputs.skip_tests != 'true'
     outputs:
       coverage_percent: ${{ steps.coverage.outputs.coverage_percent }}
     steps:
@@ -160,6 +168,7 @@ jobs:
     name: Archive & Export (Release IPA)
     runs-on: macos-15
     needs: build-test
+    if: always() && (needs.build-test.result == 'success' || needs.build-test.result == 'skipped') && github.event.inputs.skip_archive != 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Setup Xcode
@@ -219,24 +228,61 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint, build-test, archive-release]
     if: always()
+    outputs:
+      lint_result: ${{ needs.lint.result }}
+      build_test_result: ${{ needs.build-test.result }}
+      archive_result: ${{ needs.archive-release.result }}
+      coverage: ${{ needs.build-test.outputs.coverage_percent || 'n/a' }}
     steps:
       - name: CI Summary
         run: |
           echo '## iOS CI Summary' >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
-          echo '- Lint: ${{ needs.lint.result }}' >> $GITHUB_STEP_SUMMARY
-          echo '- Build & Test: ${{ needs.build-test.result }}' >> $GITHUB_STEP_SUMMARY
-          echo '- Archive: ${{ needs.archive-release.result }}' >> $GITHUB_STEP_SUMMARY
-          echo '- Coverage: ${{ needs.build-test.outputs.coverage_percent || 'n/a' }}%' >> $GITHUB_STEP_SUMMARY
-          if [ "${{ needs.build-test.result }}" = "success" ] && [ -n "${{ needs.build-test.outputs.coverage_percent }}" ]; then
-            cov=${{ needs.build-test.outputs.coverage_percent }}
-            awk -v c=$cov -v m=40 'BEGIN { if (c+0 < m) { print "- Coverage Gate: ❌ (" c "% < " m "%)" } else { print "- Coverage Gate: ✅ (" c "% >= " m "%)" } }' >> $GITHUB_STEP_SUMMARY
+
+          # Lint status
+          if [ "${{ needs.lint.result }}" = "skipped" ]; then
+            echo '- Lint: ⏭️ Skipped' >> $GITHUB_STEP_SUMMARY
           else
-            echo '- Coverage Gate: Skipped' >> $GITHUB_STEP_SUMMARY
+            echo "- Lint: ${{ needs.lint.result == 'success' && '✅' || '❌' }} ${{ needs.lint.result }}" >> $GITHUB_STEP_SUMMARY
           fi
-          if [ '${{ needs.lint.result }}' != 'success' ] || [ '${{ needs.build-test.result }}' != 'success' ]; then
+
+          # Build & Test status
+          if [ "${{ needs.build-test.result }}" = "skipped" ]; then
+            echo '- Build & Test: ⏭️ Skipped' >> $GITHUB_STEP_SUMMARY
+            echo '- Coverage: N/A (tests skipped)' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Build & Test: ${{ needs.build-test.result == 'success' && '✅' || '❌' }} ${{ needs.build-test.result }}" >> $GITHUB_STEP_SUMMARY
+            if [ -n "${{ needs.build-test.outputs.coverage_percent }}" ] && [ "${{ needs.build-test.outputs.coverage_percent }}" != "n/a" ]; then
+              cov=${{ needs.build-test.outputs.coverage_percent }}
+              echo "- Coverage: ${cov}%" >> $GITHUB_STEP_SUMMARY
+              awk -v c=$cov -v m=40 'BEGIN { if (c+0 < m) { print "- Coverage Gate: ❌ (" c "% < " m "%)" } else { print "- Coverage Gate: ✅ (" c "% >= " m "%)" } }' >> $GITHUB_STEP_SUMMARY
+            else
+              echo '- Coverage: N/A' >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+          # Archive status
+          if [ "${{ needs.archive-release.result }}" = "skipped" ]; then
+            echo '- Archive: ⏭️ Skipped' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Archive: ${{ needs.archive-release.result == 'success' && '✅' || '❌' }} ${{ needs.archive-release.result }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Overall status
+          LINT_RESULT="${{ needs.lint.result }}"
+          BUILD_RESULT="${{ needs.build-test.result }}"
+          ARCHIVE_RESULT="${{ needs.archive-release.result }}"
+
+          FAILED=0
+          if [ "$LINT_RESULT" != "success" ] && [ "$LINT_RESULT" != "skipped" ]; then FAILED=1; fi
+          if [ "$BUILD_RESULT" != "success" ] && [ "$BUILD_RESULT" != "skipped" ]; then FAILED=1; fi
+          if [ "$ARCHIVE_RESULT" != "success" ] && [ "$ARCHIVE_RESULT" != "skipped" ]; then FAILED=1; fi
+
+          if [ $FAILED -eq 1 ]; then
+            echo '' >> $GITHUB_STEP_SUMMARY
             echo '### ❌ One or more critical stages failed' >> $GITHUB_STEP_SUMMARY
             exit 1
           else
-            echo '### ✅ All critical stages passed' >> $GITHUB_STEP_SUMMARY
+            echo '' >> $GITHUB_STEP_SUMMARY
+            echo '### ✅ All executed stages passed' >> $GITHUB_STEP_SUMMARY
           fi

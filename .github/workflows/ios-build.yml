@@ -1,16 +1,6 @@
 name: VitalSense iOS Build
 
 on:
-  push:
-    branches: [main, develop]
-    paths:
-      - 'ios/**'
-      - '.github/workflows/ios-build.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'ios/**'
-      - '.github/workflows/ios-build.yml'
   workflow_dispatch:
     inputs:
       build_type:

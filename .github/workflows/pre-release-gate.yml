@@ -25,11 +25,8 @@ on:
         required: false
         default: 'false'
         type: boolean
-  # Keep direct triggers for backward compatibility
-  pull_request:
-    branches: [main, develop]
-  push:
-    branches: [main]
+  # Note: This workflow is primarily called by ci-core.yml
+  # Direct triggers removed to prevent duplicate runs
 
 permissions:
   contents: read

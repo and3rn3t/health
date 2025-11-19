@@ -4,8 +4,26 @@ on:
   push:
     branches: [main, develop]
     tags: ['v*']
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/workflows/**'
+      - 'LICENSE'
+      - 'renovate.json'
+      - 'ci-baselines/**'
+      - 'reports/**'
+      - 'ios/**'
   pull_request:
     branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/workflows/**'
+      - 'LICENSE'
+      - 'renovate.json'
+      - 'ci-baselines/**'
+      - 'reports/**'
+      - 'ios/**'
   workflow_dispatch:
     inputs:
       deploy:
@@ -18,7 +36,7 @@ on:
         default: 'false'
 
 concurrency:
-  group: ci-core-${{ github.ref }}-${{ github.event.pull_request.number || github.sha }}
+  group: ci-core-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
