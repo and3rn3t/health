@@ -54,7 +54,7 @@ class EnhancedInterventionEngine: ObservableObject {
         let description: String
         let category: InterventionCategory
         let evidenceLevel: EvidenceLevel
-        let targetRiskFactors: [RiskFactorType]
+        let targetRiskFactors: [InterventionTemplate.RiskFactorType]
         let duration: TimeInterval
         let frequency: InterventionFrequency
         let difficulty: DifficultyLevel
@@ -155,8 +155,8 @@ class EnhancedInterventionEngine: ObservableObject {
 
         struct RiskAssessmentSummary {
             let overallRiskLevel: FallRiskLevel
-            let primaryRiskFactors: [RiskFactorType]
-            let modifiableFactors: [RiskFactorType]
+            let primaryRiskFactors: [InterventionTemplate.RiskFactorType]
+            let modifiableFactors: [InterventionTemplate.RiskFactorType]
             let urgentConcerns: [String]
         }
 
@@ -326,7 +326,7 @@ class EnhancedInterventionEngine: ObservableObject {
 
     // MARK: - Core Functions
     func generatePersonalizedPlan(
-        userProfile: PersonalizedInterventionPlan.UserProfile,
+        userProfile: UserProfile,
         riskAssessment: PersonalizedInterventionPlan.RiskAssessmentSummary
     ) async -> PersonalizedInterventionPlan {
 
@@ -498,7 +498,7 @@ class EnhancedInterventionEngine: ObservableObject {
 
     // MARK: - Private Helper Methods
     private func selectSuitableInterventions(
-        for userProfile: PersonalizedInterventionPlan.UserProfile,
+        for userProfile: UserProfile,
         addressing riskFactors: [InterventionTemplate.RiskFactorType]
     ) -> [InterventionTemplate] {
         return availableInterventions.filter { template in
@@ -519,9 +519,4 @@ class EnhancedInterventionEngine: ObservableObject {
 }
 
 // MARK: - Supporting Enums and Types
-enum FallRiskLevel {
-    case low
-    case moderate
-    case high
-    case critical
-}
+// Use canonical FallRiskLevel from EnhancedFallRiskTypes.swift

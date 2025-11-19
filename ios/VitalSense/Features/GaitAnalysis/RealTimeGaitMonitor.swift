@@ -506,28 +506,8 @@ enum GaitState {
     }
 }
 
-enum FallRiskLevel {
-    case low, moderate, high, critical
-
-    var color: Color {
-        switch self {
-        case .low: return .green
-        case .moderate: return .yellow
-        case .high: return .orange
-        case .critical: return .red
-        }
-    }
-}
-
-enum EmergencyType {
-    case fallRiskDetected
-    case fallDetected
-    case medicalEmergency
-}
-
-enum EmergencySeverity {
-    case low, medium, high, critical
-}
+// NOTE: FallRiskLevel is defined in EnhancedFallRiskTypes.swift to avoid duplication.
+// EmergencyType, EmergencySeverity are in InfrastructureModels.swift (as EmergencyAlert.EmergencyType, etc.)
 
 enum RecommendationType {
     case safety, improvement, exercise, medical

@@ -564,7 +564,7 @@ struct PostureAnalysisResult {
     let timestamp: Date
 }
 
-struct GaitAnalysisResult {
+struct LiDARGaitAnalysisResult {
     let spatialMetrics: SpatialGaitMetrics
     let temporalMetrics: TemporalGaitMetrics
     let kinematicChain: KinematicChainMetrics

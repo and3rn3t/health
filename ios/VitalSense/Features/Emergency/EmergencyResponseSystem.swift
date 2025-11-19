@@ -439,7 +439,7 @@ struct EmergencyResponse: Identifiable {
 
 // MARK: - Extensions
 
-extension EmergencyAlertMessage.EmergencyType {
+extension EmergencyAlert.EmergencyType {
     var displayName: String {
         switch self {
         case .fallRiskDetected:
@@ -463,7 +463,7 @@ extension EmergencyAlertMessage.EmergencyType {
     }
 }
 
-extension EmergencyAlertMessage.EmergencySeverity {
+extension EmergencyAlert.EmergencySeverity {
     var color: Color {
         switch self {
         case .low:

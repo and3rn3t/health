@@ -6,7 +6,7 @@ public struct GaitDataPayload: Codable {
     public let sessionId: UUID
     public let timestamp: Date
     public let gaitMetrics: GaitMetrics
-    public let riskLevel: RiskLevel?
+    public let riskLevel: FallRiskLevel?
 
     // Optional raw sensor/frame data for advanced analytics; kept simple for now.
     public let sensorSamples: [SensorReading]?
@@ -15,7 +15,7 @@ public struct GaitDataPayload: Codable {
         sessionId: UUID,
         timestamp: Date = Date(),
         gaitMetrics: GaitMetrics,
-        riskLevel: RiskLevel? = nil,
+        riskLevel: FallRiskLevel? = nil,
         sensorSamples: [SensorReading]? = nil
     ) {
         self.sessionId = sessionId

@@ -10,6 +10,16 @@ import SwiftUI
 import HealthKit
 
 struct DetailedGaitMetricsCard: View {
+    enum SwipeDirection {
+    enum SwipeDirection {
+        case left
+        case right
+    }
+    
+        case left
+        case right
+    }
+
     let gaitData: GaitAnalysisData
     @State private var isExpanded = false
 

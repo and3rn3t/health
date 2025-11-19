@@ -24,12 +24,12 @@ final class WatchConnectivityManager: NSObject, ObservableObject {
     private var balanceTestProgressCancellable: AnyCancellable?
 
     // Dependencies (lightweight abstractions to avoid direct tight coupling)
-    private weak var fallRiskManager: FallRiskAssessmentManager?
-    private weak var webSocketManager: WebSocketManager? = WebSocketManager.shared
+    nonisolated(unsafe) private weak var fallRiskManager: VitalSense.FallRiskAssessmentManager?
+    nonisolated(unsafe) private weak var webSocketManager: WebSocketManager? = WebSocketManager.shared
     private let gaitProvider = GaitLiveMetricsProvider.shared
 
     // Provide an external way to inject managers after their initialization.
-    func configure(fallRiskManager: FallRiskAssessmentManager?) {
+    func configure(fallRiskManager: VitalSense.FallRiskAssessmentManager?) {
         self.fallRiskManager = fallRiskManager
         subscribeToGait()
         subscribeToBalanceProgress()
@@ -106,7 +106,7 @@ final class WatchConnectivityManager: NSObject, ObservableObject {
         case .requestLiveStatus:
             sendLiveStatusUpdate(reason: "on-demand")
         case .startMonitoring:
-            Task { await fallRiskManager?.performComprehensiveAssessment(); sendLiveStatusUpdate(reason: "after start") }
+            Task { try? await fallRiskManager?.performComprehensiveAssessment(); sendLiveStatusUpdate(reason: "after start") }
         case .stopMonitoring:
             // No explicit stop in current manager – future hook.
             break
@@ -114,7 +114,9 @@ final class WatchConnectivityManager: NSObject, ObservableObject {
             Task { try? await fallRiskManager?.performComprehensiveAssessment(); sendLatestFallRiskSummary() }
         case .performBalanceTest:
             // Trigger a standalone dynamic balance test simulation for now.
-            fallRiskManager?.performBalanceTestStandalone(kind: .dynamic)
+            Task { @MainActor in
+                fallRiskManager?.performBalanceTestStandalone(kind: .dynamic)
+            }
         case .acknowledgeAlert:
             // Mark alert as acknowledged in local storage
             AlertStorage.shared.acknowledgeAlert(userInfo["alertId"] as? String ?? "")
@@ -188,20 +190,26 @@ final class WatchConnectivityManager: NSObject, ObservableObject {
 
 // MARK: - WCSessionDelegate (iPhone)
 extension WatchConnectivityManager: WCSessionDelegate {
-    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
-        isPaired = session.isPaired
-        isWatchAppInstalled = session.isWatchAppInstalled
-        if error != nil { print("[WatchConnectivity] Activation error: \(error!.localizedDescription)") }
-        // Flush any buffered commands if we stored some (currently we buffer only if not reachable; this hook ensures context push).
-        if session.isReachable {
-            for cmd in bufferedCommands { session.sendMessageData(cmd, replyHandler: nil, errorHandler: nil) }
-            bufferedCommands.removeAll()
+    nonisolated func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+        Task { @MainActor in
+            isPaired = session.isPaired
+            isWatchAppInstalled = session.isWatchAppInstalled
+            if error != nil { print("[WatchConnectivity] Activation error: \(error!.localizedDescription)") }
+            // Flush any buffered commands if we stored some (currently we buffer only if not reachable; this hook ensures context push).
+            if session.isReachable {
+                for cmd in bufferedCommands { session.sendMessageData(cmd, replyHandler: nil, errorHandler: nil) }
+                bufferedCommands.removeAll()
+            }
         }
     }
 
-    func sessionDidBecomeInactive(_ session: WCSession) {}
-    func sessionDidDeactivate(_ session: WCSession) { session.activate() }
+    nonisolated func sessionDidBecomeInactive(_ session: WCSession) {}
+    nonisolated func sessionDidDeactivate(_ session: WCSession) { session.activate() }
 
-    func session(_ session: WCSession, didReceiveMessageData messageData: Data) { handleCommand(messageData) }
+    nonisolated func session(_ session: WCSession, didReceiveMessageData messageData: Data) {
+        Task { @MainActor in
+            handleCommand(messageData)
+        }
+    }
 }
 #endif

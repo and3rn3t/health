@@ -3,6 +3,17 @@ import HealthKit
 import CoreMotion
 import Combine
 
+// MARK: - Placeholder ML Model Types
+// TODO: Replace with actual ML model implementations
+
+typealias RandomForestModel = Any
+typealias NeuralNetworkModel = Any
+typealias LSTMModel = Any
+typealias TransformerModel = Any
+typealias InterventionProgram = String
+typealias SensorDataSnapshot = [String: Any]
+typealias FeatureVector = [Double]
+
 // MARK: - Enhanced Fall Risk Engine
 // Advanced AI-powered fall risk assessment with multi-dimensional analysis
 
@@ -18,10 +29,10 @@ class EnhancedFallRiskEngine: ObservableObject {
     @Published var isAnalyzing: Bool = false
 
     // MARK: - Core Models
-    private var randomForestModel: RandomForestModel
-    private var neuralNetworkModel: NeuralNetworkModel
-    private var lstmModel: LSTMModel
-    private var transformerModel: TransformerModel
+    private var randomForestModel: RandomForestModel?
+    private var neuralNetworkModel: NeuralNetworkModel?
+    private var lstmModel: LSTMModel?
+    private var transformerModel: TransformerModel?
 
     // MARK: - Risk Assessment Structure
     struct RiskAssessment {

@@ -91,43 +91,7 @@ struct DayOfWeekActivity: Codable, Identifiable {
     let confidence: Double
 }
 
-enum FallRiskLevel: String, CaseIterable, Codable {
-    case low = "low"
-    case moderate = "moderate"
-    case high = "high"
-    case veryHigh = "very_high"
-
-    var displayName: String {
-        switch self {
-        case .low: return "Low Risk"
-        case .moderate: return "Moderate Risk"
-        case .high: return "High Risk"
-        case .veryHigh: return "Very High Risk"
-        }
-    }
-
-    var color: String {
-        switch self {
-        case .low: return "green"
-        case .moderate: return "yellow"
-        case .high: return "orange"
-        case .veryHigh: return "red"
-        }
-    }
-
-    var recommendations: [String] {
-        switch self {
-        case .low:
-            return ["Continue regular exercise", "Maintain balance training"]
-        case .moderate:
-            return ["Increase balance exercises", "Consider strength training", "Regular vision checks"]
-        case .high:
-            return ["Consult healthcare provider", "Focus on fall prevention", "Home safety assessment"]
-        case .veryHigh:
-            return ["Immediate medical consultation", "Supervised exercise program", "Assistive devices consideration"]
-        }
-    }
-}
+// Use canonical FallRiskLevel from EnhancedFallRiskTypes.swift
 
 // MARK: - ML Health Insight
 
@@ -408,7 +372,7 @@ enum RecommendationCategory: String, CaseIterable, Codable {
     }
 }
 
-enum RecommendationPriority: Int, CaseIterable, Codable {
+enum MLRecommendationPriority: Int, CaseIterable, Codable {
     case low = 1
     case medium = 2
     case high = 3
@@ -576,7 +540,7 @@ enum GaitContext: String, Codable {
 struct UserHealthProfile: Codable {
     let id: String
     let age: Int
-    let biologicalSex: HKBiologicalSex
+    let biologicalSexRawValue: Int
     let height: Double // meters
     let weight: Double // kg
     let activityLevel: ActivityLevel
@@ -744,3 +708,7 @@ struct DemographicFeatures {
     let activityLevel: Double
     let healthRiskScore: Double
 }
+
+// Activity trend direction
+typealias ActivityTrendDirection = TrendDirection
+

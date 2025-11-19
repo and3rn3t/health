@@ -33,33 +33,7 @@ class FallRiskAnalysisEngine: ObservableObject {
     }
     
     // MARK: - Risk Levels
-    enum FallRiskLevel: String, CaseIterable {
-        case low = "Low Risk"
-        case moderate = "Moderate Risk"
-        case high = "High Risk"
-        case critical = "Critical Risk"
-        case unknown = "Assessment Needed"
-        
-        var color: String {
-            switch self {
-            case .low: return "green"
-            case .moderate: return "yellow"
-            case .high: return "orange"
-            case .critical: return "red"
-            case .unknown: return "gray"
-            }
-        }
-        
-        var emoji: String {
-            switch self {
-            case .low: return "✅"
-            case .moderate: return "⚠️"
-            case .high: return "🟠"
-            case .critical: return "🚨"
-            case .unknown: return "❓"
-            }
-        }
-    }
+    // Use canonical FallRiskLevel from EnhancedFallRiskTypes.swift
     
     // MARK: - Risk Factors
     struct RiskFactor {

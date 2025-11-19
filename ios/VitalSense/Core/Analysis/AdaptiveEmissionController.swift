@@ -19,7 +19,7 @@ final class AdaptiveEmissionController {
         let speedCV = metrics.walkingSpeedVariability ?? 0
         let stable = strideCV < 0.02 && stepLenCV < 0.03 && speedCV < 0.04
         let highVariability = strideCV > 0.05 || stepLenCV > 0.07 || speedCV > 0.08
-        let highRisk = risk?.level == .high || risk?.level == .critical
+        let highRisk = risk?.level == .high
         let anyDrift = !driftFlags.isEmpty
         let shouldTighten = highVariability || highRisk || alertsActive || anyDrift
 

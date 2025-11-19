@@ -93,7 +93,7 @@ final class WebSocketManager: NSObject, ObservableObject, URLSessionDelegate {
     protocol WebSocketTasking: AnyObject {
         func resume()
         func send(_ message: URLSessionWebSocketTask.Message, completionHandler: (@Sendable (Error?) -> Void)?)
-        func sendPing(_ pingHandler: (@Sendable (Error?) -> Void)?)
+        func sendPing(_ pongReceiveHandler: (@Sendable (Error?) -> Void)?)
         func receive(completionHandler: @escaping (Result<URLSessionWebSocketTask.Message, Error>) -> Void)
         func cancel(with closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?)
     }
@@ -321,25 +321,26 @@ final class WebSocketManager: NSObject, ObservableObject, URLSessionDelegate {
             self?.connectionTimeoutTimer = timeoutTimer
             self?.task?.resume()
             self?.taskAdapter?.sendPing { [weak self] error in
-                self?.connectionTimeoutTimer?.invalidate()
-                self?.connectionTimeoutTimer = nil
-                if !hasResumed {
-                    hasResumed = true
-                    if let error = error {
-                        Log.error("Real connection failed: \(error.localizedDescription)", category: "websocket")
-                        DispatchQueue.main.async { self?.lastError = "WebSocket connection failed: \(error.localizedDescription)" }
-                        continuation.resume(returning: false)
-                    } else {
-                        Log.info("Real connection ping successful", category: "websocket")
-                        DispatchQueue.main.async {
-                            self?.isConnected = true
-                            self?.isMockMode = false
-                            self?.updateConnectionStatus("Connected (Real)")
-                            self?.lastError = nil
-                            self?.receive()
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    self.connectionTimeoutTimer?.invalidate()
+                    self.connectionTimeoutTimer = nil
+                    if !hasResumed {
+                        hasResumed = true
+                        if let error = error {
+                            Log.error("Real connection failed: \(error.localizedDescription)", category: "websocket")
+                            self.lastError = "WebSocket connection failed: \(error.localizedDescription)"
+                            continuation.resume(returning: false)
+                        } else {
+                            Log.info("Real connection ping successful", category: "websocket")
+                            self.isConnected = true
+                            self.isMockMode = false
+                            self.updateConnectionStatus("Connected (Real)")
+                            self.lastError = nil
+                            self.receive()
+                            self.startHeartbeat()
+                            continuation.resume(returning: true)
                         }
-                        self?.startHeartbeat()
-                        continuation.resume(returning: true)
                     }
                 }
             }
@@ -731,30 +732,7 @@ final class WebSocketManager: NSObject, ObservableObject, URLSessionDelegate {
     }
 
     // MARK: - Helper Methods
-    private func sendJSON(_ data: [String: Any]) async throws {
-        let jsonData = try JSONSerialization.data(withJSONObject: data, options: [])
-
-        guard isConnected else {
-            // Buffer the message if not connected
-            if sendBuffer.count < sendBufferMax {
-                sendBuffer.append(jsonData)
-                print("📦 Message buffered (not connected)")
-            } else {
-                print("⚠️ Send buffer full, dropping message")
-            }
-            return
-        }
-
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            taskAdapter?.send(.data(jsonData)) { error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume()
-                }
-            }
-        }
-    }
+    // Note: sendJSON is already defined above. Removed duplicate definition.
 
     private func debugLog(_ message: String) {
         Log.debug(message, category: "websocket")

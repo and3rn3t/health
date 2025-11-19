@@ -1,59 +1,3 @@
-import SwiftUI
-import CoreMotion
-import HealthKit
-import Combine
-
-// NOTE: FallRiskAssessmentManager class is defined in FallRiskAssessmentManager.swift
-// to avoid duplicate definitions. This file contains only supporting types.
-
-// MARK: - Protocol Definitions
-
-// Protocol abstraction to minimize coupling (real manager can conform later)
-protocol GaitAnalysisManagerProtocol {
-    var latestGaitMetrics: GaitMetrics? { get }
-}
-
-// MARK: - Supporting Types
-
-public enum FallRiskLevel: String, Codable, CaseIterable {
-    case low
-    case medium
-    case high
-    case unknown
-
-    var color: Color {
-        switch self {
-        case .low: return .green
-        case .medium: return .yellow
-        case .high: return .red
-        case .unknown: return .gray
-        }
-    }
-
-    var description: String {
-        switch self {
-        case .low: return "Low fall risk"
-        case .medium: return "Moderate fall risk"
-        case .high: return "High fall risk"
-        case .unknown: return "Risk level unknown"
-        }
-    }
-}
-
-enum FallRiskFactorType: String, Codable, CaseIterable {
-    case slowWalkingSpeed = "slow_walking_speed"
-    case poorBalance = "poor_balance"
-    case gaitAsymmetry = "gait_asymmetry"
-    case gaitVariability = "gait_variability"
-    case advancedAge = "advanced_age"
-    case medicationEffects = "medication_effects"
-    case fallHistory = "fall_history"
-    case environmentalHazards = "environmental_hazards"
-    case visionProblems = "vision_problems"
-    case cognitiveImpairment = "cognitive_impairment"
-}
-
-enum RiskSeverity: String, Codable {
     case low
     case medium
     case high
@@ -148,19 +92,4 @@ struct FallRiskRecommendation: Codable, Identifiable {
     let description: String
     let actions: [String]
     let timestamp: Date = Date()
-}
-
-// MARK: - Balance Test Progress Models
-
-struct BalanceTestProgress {
-    let percent: Double
-    let instantaneousStability: Double
-    let elapsed: TimeInterval
-    let testKind: String
-}
-
-struct BalanceTestResultEvent {
-    let overallScore: Double
-    let componentScores: [String: Double]
-    let testKind: String
 }

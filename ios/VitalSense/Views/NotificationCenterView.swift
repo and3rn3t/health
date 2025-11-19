@@ -153,10 +153,7 @@ struct NotificationCenterView: View {
         notificationManager.clearAllNotifications()
     }
 
-    private func deleteNotifications(at indexSet: IndexSet) {
-        let toDelete = indexSet.map { filteredNotifications[$0].id }
-        notificationManager.deleteNotifications(ids: toDelete)
-    }
+    // deleteNotifications is already defined above
 }
 
 // MARK: - Notification Row

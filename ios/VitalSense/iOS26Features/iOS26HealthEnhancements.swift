@@ -180,7 +180,7 @@ struct VariableDrawHealthCard: View {
 }
 
 @available(iOS 26.0, *)
-struct TrendIndicator: View {
+struct iOS26TrendIndicator: View {
     let trend: iOS26HealthEnhancements.HeartRateTrend
 
     var body: some View {
@@ -455,43 +455,13 @@ struct HealthMetric: Identifiable {
     let progress: Double
 }
 
-struct HealthInsight: Identifiable {
-    let id: String
-    let title: String
-    let description: String
-    let priority: Priority
-    let icon: String
-    let recommendation: String?
 
-    enum Priority: String, CaseIterable {
-        case low = "low"
-        case medium = "medium"
-        case high = "high"
-        case critical = "critical"
-
-        var color: Color {
-            switch self {
-            case .low: return .blue
-            case .medium: return .yellow
-            case .high: return .orange
-            case .critical: return .red
-            }
-        }
-    }
-}
-
-struct HealthPredictions {
-    let nextWeekTrends: [String: Double]
-    let riskFactors: [String]
-    let recommendations: [String]
-}
+// Use HealthPredictions from MLHealthDataTypes.swift
 
 // Mock data structures for compilation
 struct ActivityAnalysisData { }
 struct SleepMetricsData { }
-struct GaitAnalysisData {
-    static let empty = GaitAnalysisData()
-}
+// Use GaitAnalysisData from DetailedGaitMetricsCard.swift
 
 struct HealthMetricDetailView: View {
     let metric: HealthMetric

@@ -1,5 +1,6 @@
 import Foundation
 import ARKit
+import SwiftUI
 import Combine
 import CoreMotion
 
@@ -34,7 +35,7 @@ class LiDARScanningManager: ObservableObject {
     // Analytics data
     private var scanAnalytics = LiDARScanAnalytics()
 
-    private init() {
+    public init() {
         checkLiDARAvailability()
         loadScanHistory()
         setupMotionTracking()

@@ -63,29 +63,12 @@ extension GaitMetricType {
     }
 }
 
-enum TrendDirection {
-    case up, down, neutral
-
-    var vitalSenseIcon: String {
-        switch self {
-        case .up: return "arrow.up.right"
-        case .down: return "arrow.down.right"
-        case .neutral: return "minus"
-        }
-    }
-
-    var vitalSenseColor: Color {
-        switch self {
-        case .up: return VitalSenseBrand.Colors.success
-        case .down: return VitalSenseBrand.Colors.error
-        case .neutral: return VitalSenseBrand.Colors.textMuted
-        }
-    }
-}
+// Use TrendDirection from MLHealthDataTypes.swift
 
 enum GaitMetricType {
     case walkingSpeed
     case stepLength
+    case strideLength
     case cadence
     case symmetry
     case doubleSupportTime

@@ -77,7 +77,7 @@ final class LiveIngestionClient {
         setupLogWriter()
     }
 
-    func start(gaitProvider: GaitLiveMetricsProvider, fallRiskManager: FallRiskAssessmentManager) {
+    func start(gaitProvider: GaitLiveMetricsProvider, fallRiskManager: VitalSense.FallRiskAssessmentManager) {
         setupFlushTimer()
         // Kick off any restored retries
         retryQueue.async { [weak self] in

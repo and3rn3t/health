@@ -1,8 +1,8 @@
 //
-//  RealTimeGaitMonitor.swift
+//  GaitAnalysisModels.swift
 //  VitalSense
 //
-//  Real-time gait monitoring with ML-powered fall prevention and emergency detection
+//  Core gait analysis model types
 //  Created: 2025-11-01
 //
 
@@ -10,110 +10,9 @@ import Foundation
 import HealthKit
 import CoreMotion
 
-// MARK: - Supporting Data Models
-
-struct RealTimeGaitFeatures {
-    let stepVariability: Double
-    let walkingSpeed: Double
-    let gaitAsymmetry: Double
-    let stabilityIndex: Double
-    let rhythmicity: Double
-    let timestamp: Date
-}
-
-struct RealTimeGaitPrediction {
-    let fallRisk: Double
-    let gaitQuality: Double
-    let stabilityScore: Double
-    let confidence: Double
-}
-
-struct RealTimeGaitMetrics {
-    let timestamp: Date
-    let walkingSpeed: Double
-    let stepVariability: Double
-    let gaitAsymmetry: Double
-    let stabilityIndex: Double
-    let fallRisk: Double
-    let gaitQuality: Double
-    let confidence: Double
-}
-
-typealias RealTimeEmergencyAlert = EmergencyAlert
-
-struct GaitRecommendation {
-    let id: UUID
-    let type: RecommendationType
-    let priority: Priority
-    let title: String
-    let message: String
-    let actionTitle: String
-}
-
-// MARK: - Enums
-
-enum GaitState {
-    case normal
-    case cautious
-    case unsteady
-    case highRisk
-
-    var color: Color {
-        switch self {
-        case .normal: return .green
-        case .cautious: return .yellow
-        case .unsteady: return .orange
-        case .highRisk: return .red
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .normal: return "checkmark.circle.fill"
-        case .cautious: return "exclamationmark.triangle.fill"
-        case .unsteady: return "exclamationmark.circle.fill"
-        case .highRisk: return "exclamationmark.octagon.fill"
-        }
-    }
-}
-
-enum FallRiskLevel {
-    case low, moderate, high, critical
-
-    var color: Color {
-        switch self {
-        case .low: return .green
-        case .moderate: return .yellow
-        case .high: return .orange
-        case .critical: return .red
-        }
-    }
-}
-
-enum EmergencyType {
-    case fallRiskDetected
-    case fallDetected
-    case medicalEmergency
-}
-
-enum EmergencySeverity {
-    case low, medium, high, critical
-}
-
-enum RecommendationType {
-    case safety, improvement, exercise, medical
-}
-
-enum Priority {
-    case low, medium, high
-}
-
-struct UserProfile {
-    let age: Int
-    let height: Double
-    let weight: Double
-    let medicalConditions: [String]
-}
+// NOTE: Duplicate type definitions have been removed from this file.
+// Types like RealTimeGaitFeatures, GaitState, FallRiskLevel, etc. are now
+// defined in RealTimeGaitMonitor.swift to avoid ambiguity.
 
 // MARK: - Core Gait Models
 
@@ -127,6 +26,10 @@ public struct GaitMetrics: Codable {
     public var strideTimeVariability: Double?
     public var stepLengthVariability: Double?
     public var walkingSpeedVariability: Double?
+    
+    // Additional commonly used properties
+    public var averageWalkingSpeed: Double? { walkingSpeed }
+    public var gaitVariability: Double? { strideTimeVariability }
 
     public init(
         walkingSpeed: Double? = nil,
@@ -149,33 +52,56 @@ public struct GaitMetrics: Codable {
     }
 }
 
-public enum RiskLevel: String, CaseIterable, Codable {
-    case low
-    case moderate
-    case high
-    case critical
+// MARK: - Gait Analysis Results
+
+public struct GaitAnalysisResult: Codable {
+    public let timestamp: Date
+    public let metrics: GaitMetrics
+    public let quality: GaitQuality
+    public let recommendations: [String]
+    
+    public init(timestamp: Date, metrics: GaitMetrics, quality: GaitQuality, recommendations: [String]) {
+        self.timestamp = timestamp
+        self.metrics = metrics
+        self.quality = quality
+        self.recommendations = recommendations
+    }
 }
 
-/// Canonical sensor reading used across gait components.
+public enum GaitQuality: String, Codable {
+    case excellent
+    case good
+    case fair
+    case poor
+    case unknown
+}
+
+// MARK: - Sensor Data
+
 public struct SensorReading: Codable {
     public let timestamp: Date
     public let accelerationX: Double
     public let accelerationY: Double
     public let accelerationZ: Double
-
-    public init(timestamp: Date, accelerationX: Double, accelerationY: Double, accelerationZ: Double) {
+    public let rotationX: Double
+    public let rotationY: Double
+    public let rotationZ: Double
+    
+    public init(
+        timestamp: Date,
+        accelerationX: Double,
+        accelerationY: Double,
+        accelerationZ: Double,
+        rotationX: Double,
+        rotationY: Double,
+        rotationZ: Double
+    ) {
         self.timestamp = timestamp
         self.accelerationX = accelerationX
         self.accelerationY = accelerationY
         self.accelerationZ = accelerationZ
-    }
-
-    public init(timestamp: Date, acceleration: CMAcceleration) {
-        self.init(timestamp: timestamp,
-                  accelerationX: acceleration.x,
-                  accelerationY: acceleration.y,
-                  accelerationZ: acceleration.z)
+        self.rotationX = rotationX
+        self.rotationY = rotationY
+        self.rotationZ = rotationZ
     }
 }
-
-// GaitRiskAssessment is already defined by the LiDAR GaitRiskScorer; reuse it via import in those files.

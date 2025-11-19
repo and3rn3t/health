@@ -10,6 +10,21 @@
 import SwiftUI
 import HealthKit
 
+// MARK: - Placeholder Store Classes
+
+class HealthStore: ObservableObject {
+    @Published var healthData: [String: Any] = [:]
+    let healthKit = HKHealthStore()
+    
+    static let shared = HealthStore()
+}
+
+class SettingsStore: ObservableObject {
+    @Published var settings: [String: Any] = [:]
+    
+    static let shared = SettingsStore()
+}
+
 // MARK: - Health Dashboard View
 
 struct HealthDashboardView: View {

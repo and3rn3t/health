@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 // Use the canonical WebSocket message types from MessageTypes.swift:
 // - ConnectionEstablished
@@ -6,8 +7,29 @@ import Foundation
 // - HistoricalDataUpdate
 // - EmergencyAlertMessage
 
-// Remove any duplicate struct declarations of these types from this file.
-
-// ...rest of EnhancedLiDARMLManager implementation remains unchanged,
-// adjust any references from `EmergencyAlert` to `EmergencyAlertMessage`
-// to match the canonical naming in MessageTypes.swift.
+/// Enhanced LiDAR ML Manager for advanced processing
+@available(iOS 14.0, *)
+public class EnhancedLiDARMLManager: ObservableObject {
+    public static let shared = EnhancedLiDARMLManager()
+    
+    @Published public var isProcessing: Bool = false
+    @Published public var lastUpdate: Date?
+    
+    private init() {
+        // Initialize ML models and processing pipeline
+    }
+    
+    // Placeholder methods for LiDAR ML processing
+    public func startProcessing() {
+        isProcessing = true
+    }
+    
+    public func stopProcessing() {
+        isProcessing = false
+    }
+    
+    public func processLiDARData(_ data: Data) {
+        // Process LiDAR data with ML models
+        lastUpdate = Date()
+    }
+}

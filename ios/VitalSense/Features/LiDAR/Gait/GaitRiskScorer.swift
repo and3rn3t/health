@@ -3,7 +3,7 @@ import Foundation
 /// Represents a computed gait risk assessment.
 struct GaitRiskAssessment: Codable {
     let score: Double // 0-100
-    let level: RiskLevel
+    let level: FallRiskLevel
     let confidence: Double // 0-1
 }
 
@@ -61,7 +61,7 @@ struct GaitRiskScorer {
         // Confidence: proportion of provided evidence sources * simple penalty if few steps
         let confidence = min(1.0, Double(evidence) / 8.0)
 
-        let level: RiskLevel
+        let level: FallRiskLevel
         switch bounded {
         case 0..<25: level = .low
         case 25..<50: level = .moderate

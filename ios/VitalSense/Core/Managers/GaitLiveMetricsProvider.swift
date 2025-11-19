@@ -48,15 +48,4 @@ final class GaitLiveMetricsProvider: ObservableObject {
 }
 
 // MARK: - Balance Test Streaming Supporting Types
-struct BalanceTestProgress {
-    let percent: Double
-    let instantaneousStability: Double?
-    let elapsed: TimeInterval
-    let testKind: String?
-}
-
-struct BalanceTestResultEvent {
-    let overallScore: Double
-    let componentScores: [String: Double]
-    let testKind: String?
-}
+// BalanceTestProgress and BalanceTestResultEvent are defined in EnhancedFallRiskTypes.swift

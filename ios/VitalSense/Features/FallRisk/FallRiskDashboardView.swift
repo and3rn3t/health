@@ -254,7 +254,7 @@ struct FallRiskDashboardView: View {
         .cornerRadius(15)
     }
     
-    private func balanceMetricsCard(_ balance: FallRiskAnalysisEngine.BalanceMetrics) -> some View {
+    private func balanceMetricsCard(_ balance: BalanceMetrics) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "scale.3d")
