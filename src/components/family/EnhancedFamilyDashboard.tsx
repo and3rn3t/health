@@ -38,10 +38,23 @@ import {
   createDefaultNotificationPreferences,
   getDefaultPermissionsForRole,
 } from '@/lib/familyDashboard';
-import FamilyMemberManager from './FamilyMemberManager';
-import FamilyActivityTimeline from './FamilyActivityTimeline';
-import HealthDataSharing from './HealthDataSharing';
-import ProgressSharing from './ProgressSharing';
+// Lazy load family components to reduce initial bundle size
+import { lazy, Suspense } from 'react';
+
+const FamilyMemberManager = lazy(() => import('./FamilyMemberManager'));
+const FamilyActivityTimeline = lazy(() => import('./FamilyActivityTimeline'));
+const HealthDataSharing = lazy(() => import('./HealthDataSharing'));
+const ProgressSharing = lazy(() => import('./ProgressSharing'));
+
+// Loading fallback component
+const FamilyComponentLoader = () => (
+  <div className="flex items-center justify-center p-8">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2" />
+      <p className="text-sm text-gray-600">Loading...</p>
+    </div>
+  </div>
+);
 
 interface EnhancedFamilyDashboardProps {
   healthData: ProcessedHealthData | null;
@@ -251,7 +264,7 @@ export default function EnhancedFamilyDashboard({
     [setActivities]
   );
 
-  // Statistics
+  // Statistics - must be before early return to satisfy React Hooks rules
   const stats = useMemo(() => {
     const active = getActiveMembers(familyMembers || []);
     const totalReactions = (progressShares || []).reduce(
@@ -268,6 +281,7 @@ export default function EnhancedFamilyDashboard({
     };
   }, [familyMembers, progressShares, activities]);
 
+  // Early return check - must be after all hooks
   if (!healthData) {
     return (
       <div className="flex min-h-screen items-center justify-center p-6">
@@ -345,40 +359,48 @@ export default function EnhancedFamilyDashboard({
 
         {/* Members Tab */}
         <TabsContent value="members">
-          <FamilyMemberManager
-            members={familyMembers || []}
-            onAdd={handleAddMember}
-            onUpdate={handleUpdateMember}
-            onDelete={handleDeleteMember}
-          />
+          <Suspense fallback={<FamilyComponentLoader />}>
+            <FamilyMemberManager
+              members={familyMembers || []}
+              onAdd={handleAddMember}
+              onUpdate={handleUpdateMember}
+              onDelete={handleDeleteMember}
+            />
+          </Suspense>
         </TabsContent>
 
         {/* Sharing Tab */}
         <TabsContent value="sharing">
-          <HealthDataSharing
-            members={familyMembers || []}
-            shares={healthShares || []}
-            onUpdateShare={handleUpdateShare}
-          />
+          <Suspense fallback={<FamilyComponentLoader />}>
+            <HealthDataSharing
+              members={familyMembers || []}
+              shares={healthShares || []}
+              onUpdateShare={handleUpdateShare}
+            />
+          </Suspense>
         </TabsContent>
 
         {/* Progress Tab */}
         <TabsContent value="progress">
-          <ProgressSharing
-            shares={progressShares || []}
-            members={familyMembers || []}
-            onAdd={handleAddShare}
-            onAddReaction={handleAddReaction}
-          />
+          <Suspense fallback={<FamilyComponentLoader />}>
+            <ProgressSharing
+              shares={progressShares || []}
+              members={familyMembers || []}
+              onAdd={handleAddShare}
+              onAddReaction={handleAddReaction}
+            />
+          </Suspense>
         </TabsContent>
 
         {/* Activity Tab */}
         <TabsContent value="activity">
-          <FamilyActivityTimeline
-            activities={activities || []}
-            members={familyMembers || []}
-            onMarkRead={handleMarkRead}
-          />
+          <Suspense fallback={<FamilyComponentLoader />}>
+            <FamilyActivityTimeline
+              activities={activities || []}
+              members={familyMembers || []}
+              onMarkRead={handleMarkRead}
+            />
+          </Suspense>
         </TabsContent>
 
         {/* Emergency Tab */}

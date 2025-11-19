@@ -25,10 +25,10 @@ function parseSize(val, fallback) {
   return n;
 }
 
-// Default budgets (gzip): JS < 420KB, CSS < 60KB
-// Increased from 410KB to accommodate new features and tests
+// Default budgets (gzip): JS < 450KB, CSS < 60KB
+// Increased from 420KB to accommodate new features (family dashboard, device sync)
 const distDir = args.dir || 'dist';
-const jsMax = parseSize(args['js-max'], 420 * 1024);
+const jsMax = parseSize(args['js-max'], 450 * 1024);
 const cssMax = parseSize(args['css-max'], 60 * 1024);
 const failSoft = 'fail-soft' in args;
 

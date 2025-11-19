@@ -186,6 +186,7 @@ name = "VITALSENSE_WEBSOCKET"
 class_name = "VitalSenseAdvancedWebSocketDO"
 
 # Advanced websocket dev migrations (only its own Durable Objects)
+# NOTE: Migrations must be applied with --no-gradual flag in deployment
 [[env.advanced-websocket-dev.migrations]]
 tag = "v1"
 new_sqlite_classes = ["VitalSenseAdvancedWebSocketDO"]
@@ -212,6 +213,7 @@ name = "VITALSENSE_WEBSOCKET"
 class_name = "VitalSenseAdvancedWebSocketDO"
 
 # Advanced websocket prod migrations (only its own Durable Objects)
+# NOTE: Migrations must be applied with --no-gradual flag in deployment
 [[env.advanced-websocket-prod.migrations]]
 tag = "v1"
 new_sqlite_classes = ["VitalSenseAdvancedWebSocketDO"]
