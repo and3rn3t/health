@@ -1,164 +1,248 @@
-import { describe, test, expect } from 'vitest'
-import { exportToCSV, exportToGeoPackage, exportToPDF, createExport } from '../exports'
+import { describe, test, expect } from 'vitest';
+import {
+  exportToCSV,
+  exportToGeoPackage,
+  exportToPDF,
+  createExport,
+  type ExportOptions,
+} from '../exports';
 
-describe('Export Functionality', () => {
-  describe('CSV Export', () => {
-    test('exports simple array to CSV', () => {
+describe('exports', () => {
+  describe('exportToCSV', () => {
+    test('should export simple data to CSV', () => {
       const data = [
-        { name: 'Feature 1', value: 0.5, count: 10 },
-        { name: 'Feature 2', value: 0.7, count: 20 },
-      ]
+        { name: 'John', age: 30 },
+        { name: 'Jane', age: 25 },
+      ];
+      const csv = exportToCSV(data);
+      expect(csv).toContain('name,age');
+      expect(csv).toContain('John,30');
+      expect(csv).toContain('Jane,25');
+    });
 
-      const csv = exportToCSV(data)
-      expect(csv).toContain('name,value,count')
-      expect(csv).toContain('Feature 1')
-      expect(csv).toContain('0.5')
-      expect(csv).toContain('10')
-    })
+    test('should handle empty array', () => {
+      expect(exportToCSV([])).toBe('');
+    });
 
-    test('handles empty array', () => {
-      const csv = exportToCSV([])
-      expect(csv).toBe('')
-    })
+    test('should escape commas in values', () => {
+      const data = [{ name: 'John, Jr.', age: 30 }];
+      const csv = exportToCSV(data);
+      expect(csv).toContain('"John, Jr."');
+    });
 
-    test('includes metadata when requested', () => {
-      const data = [{ name: 'Test', value: 1 }]
-      const csv = exportToCSV(data, { format: 'csv', includeMetadata: true, version: '1.0.0' })
+    test('should escape quotes in values', () => {
+      const data = [{ name: 'John "Johnny" Doe', age: 30 }];
+      const csv = exportToCSV(data);
+      expect(csv).toContain('"John ""Johnny"" Doe"');
+    });
 
-      expect(csv).toContain('# Export generated:')
-      expect(csv).toContain('# Version: 1.0.0')
-    })
+    test('should handle newlines in values', () => {
+      const data = [{ name: 'John\nDoe', age: 30 }];
+      const csv = exportToCSV(data);
+      expect(csv).toContain('"John\nDoe"');
+    });
 
-    test('includes watermark when requested', () => {
-      const data = [{ name: 'Test', value: 1 }]
-      const csv = exportToCSV(data, { format: 'csv', includeWatermark: true })
+    test('should include metadata when requested', () => {
+      const data = [{ name: 'John', age: 30 }];
+      const csv = exportToCSV(data, {
+        format: 'csv',
+        includeMetadata: true,
+        version: '1.0.0',
+      });
+      expect(csv).toContain('# Export generated:');
+      expect(csv).toContain('# Version: 1.0.0');
+    });
 
-      expect(csv).toContain('Geospatial Health Platform')
-    })
+    test('should include watermark when requested', () => {
+      const data = [{ name: 'John', age: 30 }];
+      const csv = exportToCSV(data, {
+        format: 'csv',
+        includeWatermark: true,
+      });
+      expect(csv).toContain('Geospatial Health Platform');
+    });
 
-    test('escapes special characters in CSV', () => {
+    test('should handle null and undefined values', () => {
+      const data = [{ name: 'John', age: null, city: undefined }];
+      const csv = exportToCSV(data);
+      expect(csv).toContain('name,age,city');
+      expect(csv).toContain('John,,');
+    });
+
+    test('should handle object values', () => {
+      const data = [{ name: 'John', metadata: { id: 1 } }];
+      const csv = exportToCSV(data);
+      expect(csv).toContain(JSON.stringify({ id: 1 }));
+    });
+
+    test('should handle missing keys across rows', () => {
       const data = [
-        { name: 'Test, with comma', value: 'Quote "test"' },
-      ]
+        { name: 'John', age: 30 },
+        { name: 'Jane', city: 'NYC' },
+      ];
+      const csv = exportToCSV(data);
+      expect(csv).toContain('name,age,city');
+      expect(csv).toContain('John,30,');
+      expect(csv).toContain('Jane,,NYC');
+    });
+  });
 
-      const csv = exportToCSV(data)
-      expect(csv).toContain('"Test, with comma"')
-      expect(csv).toContain('"Quote ""test"""')
-    })
-  })
-
-  describe('GeoPackage Export', () => {
-    test('exports GeoJSON to GeoPackage format', () => {
+  describe('exportToGeoPackage', () => {
+    test('should export GeoJSON with metadata', () => {
       const geojson = {
-        type: 'FeatureCollection',
+        type: 'FeatureCollection' as const,
         features: [
           {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [-122.5, 37.7],
-            },
-            properties: { name: 'Test Point' },
+            type: 'Feature' as const,
+            geometry: { type: 'Point', coordinates: [0, 0] },
+            properties: { name: 'Test' },
           },
         ],
-      }
+      };
+      const result = exportToGeoPackage(geojson);
+      const parsed = JSON.parse(result);
+      expect(parsed.type).toBe('FeatureCollection');
+      expect(parsed.metadata).toBeDefined();
+      expect(parsed.metadata.exportedAt).toBeDefined();
+    });
 
-      const gpkg = exportToGeoPackage(geojson, { format: 'geopackage', version: '1.0.0' })
-      const parsed = JSON.parse(gpkg)
-
-      expect(parsed.type).toBe('FeatureCollection')
-      expect(parsed.features).toHaveLength(1)
-      expect(parsed.metadata).toBeDefined()
-      expect(parsed.metadata.version).toBe('1.0.0')
-      expect(parsed.metadata.exportedAt).toBeDefined()
-    })
-
-    test('includes watermark when requested', () => {
+    test('should include version in metadata', () => {
       const geojson = {
-        type: 'FeatureCollection',
+        type: 'FeatureCollection' as const,
         features: [],
-      }
+      };
+      const result = exportToGeoPackage(geojson, {
+        format: 'geopackage',
+        version: '2.0.0',
+      });
+      const parsed = JSON.parse(result);
+      expect(parsed.metadata.version).toBe('2.0.0');
+    });
 
-      const gpkg = exportToGeoPackage(geojson, {
+    test('should include watermark when requested', () => {
+      const geojson = {
+        type: 'FeatureCollection' as const,
+        features: [],
+      };
+      const result = exportToGeoPackage(geojson, {
         format: 'geopackage',
         includeWatermark: true,
-      })
-      const parsed = JSON.parse(gpkg)
+      });
+      const parsed = JSON.parse(result);
+      expect(parsed.metadata.watermark).toBeDefined();
+      expect(parsed.metadata.watermark).toContain('Geospatial Health Platform');
+    });
+  });
 
-      expect(parsed.metadata.watermark).toBeDefined()
-      expect(parsed.metadata.watermark).toContain('Geospatial Health Platform')
-    })
-  })
-
-  describe('PDF Export', () => {
-    test('generates PDF HTML content', () => {
+  describe('exportToPDF', () => {
+    test('should generate HTML representation', () => {
       const content = {
         title: 'Test Report',
         sections: [
-          { heading: 'Section 1', content: 'Test content' },
-          { heading: 'Section 2', content: { data: 'test' } },
+          { heading: 'Section 1', content: 'Content 1' },
         ],
-      }
+      };
+      const html = exportToPDF(content);
+      expect(html).toContain('Test Report');
+      expect(html).toContain('Section 1');
+      expect(html).toContain('Content 1');
+    });
 
-      const pdf = exportToPDF(content, { format: 'pdf' })
-      expect(pdf).toContain('Test Report')
-      expect(pdf).toContain('Section 1')
-      expect(pdf).toContain('Test content')
-    })
-
-    test('includes metadata when requested', () => {
+    test('should include metadata when requested', () => {
       const content = {
         title: 'Test',
         sections: [],
-        metadata: { version: '1.0.0' },
-      }
-
-      const pdf = exportToPDF(content, {
+        metadata: { author: 'John' },
+      };
+      const html = exportToPDF(content, {
         format: 'pdf',
         includeMetadata: true,
-      })
-      expect(pdf).toContain('metadata')
-    })
+      });
+      expect(html).toContain('metadata');
+      expect(html).toContain('author');
+    });
 
-    test('includes watermark when requested', () => {
+    test('should handle array content', () => {
+      const content = {
+        title: 'Test',
+        sections: [
+          { heading: 'Data', content: [{ id: 1 }, { id: 2 }] },
+        ],
+      };
+      const html = exportToPDF(content);
+      expect(html).toContain('Data');
+      expect(html).toContain('id');
+    });
+
+    test('should include watermark when requested', () => {
       const content = {
         title: 'Test',
         sections: [],
-      }
+      };
+      const html = exportToPDF(content, {
+        format: 'pdf',
+        includeWatermark: true,
+      });
+      expect(html).toContain('watermark');
+      expect(html).toContain('Geospatial Health Platform');
+    });
+  });
 
-      const pdf = exportToPDF(content, { format: 'pdf', includeWatermark: true })
-      expect(pdf).toContain('watermark')
-      expect(pdf).toContain('Geospatial Health Platform')
-    })
-  })
+  describe('createExport', () => {
+    test('should create CSV export', () => {
+      const data = [{ name: 'John', age: 30 }];
+      const result = createExport(data, 'csv');
+      expect(result.format).toBe('csv');
+      expect(result.id).toContain('export-');
+      expect(result.size).toBeGreaterThan(0);
+      expect(result.metadata.version).toBe('1.0.0');
+    });
 
-  describe('Create Export', () => {
-    test('creates CSV export record', () => {
-      const data = [{ name: 'Test', value: 1 }]
-      const result = createExport(data, 'csv', { version: '1.0.0' })
-
-      expect(result.id).toBeDefined()
-      expect(result.format).toBe('csv')
-      expect(result.size).toBeGreaterThan(0)
-      expect(result.metadata.version).toBe('1.0.0')
-    })
-
-    test('creates GeoPackage export record', () => {
+    test('should create GeoPackage export', () => {
       const geojson = {
-        type: 'FeatureCollection',
+        type: 'FeatureCollection' as const,
         features: [],
-      }
-      const result = createExport(geojson, 'geopackage')
+      };
+      const result = createExport(geojson, 'geopackage');
+      expect(result.format).toBe('geopackage');
+      expect(result.size).toBeGreaterThan(0);
+    });
 
-      expect(result.id).toBeDefined()
-      expect(result.format).toBe('geopackage')
-      expect(result.size).toBeGreaterThan(0)
-    })
+    test('should create PDF export', () => {
+      const content = {
+        title: 'Test',
+        sections: [],
+      };
+      const result = createExport(content, 'pdf');
+      expect(result.format).toBe('pdf');
+      expect(result.size).toBeGreaterThan(0);
+    });
 
-    test('throws error for unsupported format', () => {
-      expect(() => {
-        createExport({}, 'unsupported' as any)
-      }).toThrow('Unsupported format')
-    })
-  })
-})
+    test('should throw error for unsupported format', () => {
+      expect(() => createExport({}, 'invalid' as any)).toThrow(
+        'Unsupported format: invalid'
+      );
+    });
+
+    test('should include custom version', () => {
+      const data = [{ name: 'John' }];
+      const result = createExport(data, 'csv', { version: '2.0.0' });
+      expect(result.metadata.version).toBe('2.0.0');
+    });
+
+    test('should include watermark when requested', () => {
+      const data = [{ name: 'John' }];
+      const result = createExport(data, 'csv', {
+        includeWatermark: true,
+      });
+      expect(result.metadata.watermark).toBeDefined();
+    });
+
+    test('should generate unique IDs', () => {
+      const data = [{ name: 'John' }];
+      const result1 = createExport(data, 'csv');
+      const result2 = createExport(data, 'csv');
+      expect(result1.id).not.toBe(result2.id);
+    });
+  });
+});
