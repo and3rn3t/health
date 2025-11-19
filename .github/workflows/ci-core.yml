@@ -624,6 +624,9 @@ jobs:
     if: |
       (github.event_name == 'pull_request' || github.ref == 'refs/heads/main') &&
       (github.event.inputs.skip_pre_release_gate != 'true' || github.event.inputs.skip_pre_release_gate == '')
+    permissions:
+      contents: read
+      pull-requests: write
     uses: ./.github/workflows/pre-release-gate.yml
     with:
       full: false
