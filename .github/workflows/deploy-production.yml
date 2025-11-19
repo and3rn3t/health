@@ -76,17 +76,20 @@ jobs:
         run: pnpm run build
       - name: Build worker
         run: pnpm run build:worker || echo 'Worker build optional'
-      - name: Build advanced websocket worker
+      - name: Verify advanced websocket worker source
         run: |
           set -e
-          echo "Building advanced websocket worker..."
-          pnpm run build:worker:advanced || { echo 'Advanced websocket worker build failed'; exit 1; }
-          # Verify the class is exported in the built file
-          if ! grep -q "VitalSenseAdvancedWebSocketDO" dist-worker/vitalsense-websocket-advanced-clean.js 2>/dev/null; then
-            echo "Error: Built file does not contain VitalSenseAdvancedWebSocketDO class"
+          echo "Verifying advanced websocket worker source file..."
+          if [ ! -f "src/workers/vitalsense-websocket-advanced.ts" ]; then
+            echo "Error: Source file not found"
             exit 1
           fi
-          echo "✅ Advanced websocket worker built successfully"
+          # Verify the class export exists in source
+          if ! grep -q "export class VitalSenseAdvancedWebSocketDO" src/workers/vitalsense-websocket-advanced.ts; then
+            echo "Error: Source file does not contain VitalSenseAdvancedWebSocketDO export"
+            exit 1
+          fi
+          echo "✅ Advanced websocket worker source verified"
       - name: Generate integrity manifest
         run: |
           set -e
@@ -155,28 +158,13 @@ jobs:
           set -e
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo 'Missing CLOUDFLARE_API_TOKEN secret'; exit 1; fi
           npx wrangler deploy --env production || { echo 'Wrangler deploy failed'; exit 1; }
-      - name: Verify built file exports
-        run: |
-          set -e
-          if [ ! -f "dist-worker/vitalsense-websocket-advanced-clean.js" ]; then
-            echo "Error: Built file not found"
-            exit 1
-          fi
-          # Check for the class export in the built file
-          if ! grep -q "export.*VitalSenseAdvancedWebSocketDO\|export class VitalSenseAdvancedWebSocketDO" dist-worker/vitalsense-websocket-advanced-clean.js; then
-            echo "Error: Built file does not contain VitalSenseAdvancedWebSocketDO export"
-            echo "Checking file contents..."
-            head -50 dist-worker/vitalsense-websocket-advanced-clean.js
-            exit 1
-          fi
-          echo "✅ Built file contains VitalSenseAdvancedWebSocketDO export"
       - name: Deploy advanced websocket worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -e
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo 'Missing CLOUDFLARE_API_TOKEN secret'; exit 1; fi
-          # Deploy using the built file (wrangler.toml now points to it)
+          # Deploy using TypeScript source (Wrangler will compile and preserve exports)
           echo "Deploying advanced websocket worker (dev)..."
           npx wrangler deploy --env advanced-websocket-dev || { echo 'Advanced websocket worker deploy (dev) failed'; exit 1; }
           echo "Deploying advanced websocket worker (prod)..."
