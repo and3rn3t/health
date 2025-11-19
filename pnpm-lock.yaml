@@ -404,8 +404,8 @@ importers:
         specifier: 1.30.1
         version: 1.30.1
       lightningcss-win32-x64-msvc:
-        specifier: 1.30.1
-        version: 1.30.1
+        specifier: 1.30.2
+        version: 1.30.2
 
 packages:
 
@@ -4164,6 +4164,12 @@ packages:
 
   lightningcss-win32-x64-msvc@1.30.1:
     resolution: {integrity: sha512-PVqXh48wh4T53F/1CCu8PIPCxLzWyCnn/9T5W1Jpmdy5h9Cwd+0YQS6/LwhHXSafuc61/xg9Lv5OrCby6a++jg==}
+    engines: {node: '>= 12.0.0'}
+    cpu: [x64]
+    os: [win32]
+
+  lightningcss-win32-x64-msvc@1.30.2:
+    resolution: {integrity: sha512-5g1yc73p+iAkid5phb4oVFMB45417DkRevRbt/El/gKXJk4jid+vPFF/AXbxn05Aky8PapwzZrdJShv5C0avjw==}
     engines: {node: '>= 12.0.0'}
     cpu: [x64]
     os: [win32]
@@ -9521,6 +9527,9 @@ snapshots:
     optional: true
 
   lightningcss-win32-x64-msvc@1.30.1:
+    optional: true
+
+  lightningcss-win32-x64-msvc@1.30.2:
     optional: true
 
   lightningcss@1.30.1:
