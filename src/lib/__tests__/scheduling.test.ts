@@ -166,7 +166,7 @@ describe('Notifications', () => {
     } as Response)
 
     await expect(sendNotification(config, 'test', { data: 'test' })).resolves.not.toThrow()
-    
+
     // Verify fetch was called with correct parameters
     expect(global.fetch).toHaveBeenCalledWith(
       'https://httpbin.org/post',
