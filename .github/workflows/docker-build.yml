@@ -99,17 +99,17 @@ jobs:
             echo "⚠️ Using local build image"
             IMAGE_TAG="vitalsense:build"
           fi
-          
+
           echo "Using image: $IMAGE_TAG"
           docker create --name artifacts $IMAGE_TAG
-          
+
           # Extract artifacts
           docker cp artifacts:/build-output/dist ./dist 2>/dev/null || echo "⚠️ dist/ not found"
           docker cp artifacts:/build-output/dist-worker ./dist-worker 2>/dev/null || echo "⚠️ dist-worker/ not found"
-          
+
           # Clean up
           docker rm artifacts
-          
+
           # Verify artifacts
           if [ -d dist ] && [ "$(ls -A dist)" ]; then
             echo "✅ dist/ extracted ($(du -sh dist | cut -f1))"
