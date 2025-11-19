@@ -101,15 +101,15 @@ jobs:
       - name: Setup Node & pnpm (fallback)
         if: steps.docker-build.outcome == 'failure' || steps.check-docker.outputs.docker_available != 'true'
         uses: ./.github/actions/setup-pnpm
-      
+
       - name: Install deps (fallback)
         if: steps.docker-build.outcome == 'failure' || steps.check-docker.outputs.docker_available != 'true'
         run: pnpm install --frozen-lockfile || pnpm install
-      
+
       - name: Build web app (fallback)
         if: steps.docker-build.outcome == 'failure' || steps.check-docker.outputs.docker_available != 'true'
         run: pnpm run build
-      
+
       - name: Build worker (fallback)
         if: steps.docker-build.outcome == 'failure' || steps.check-docker.outputs.docker_available != 'true'
         run: pnpm run build:worker || echo 'Worker build optional'
