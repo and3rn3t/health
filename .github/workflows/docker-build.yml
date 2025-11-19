@@ -70,19 +70,39 @@ jobs:
           build-args: |
             BUILDKIT_INLINE_CACHE=1
 
-      - name: Build Docker image (CI/CD)
-        id: build
+      - name: Build Docker image (CI/CD) - Local
+        id: build-local
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile.build
-          push: ${{ github.event_name != 'pull_request' && github.event.inputs.push != 'false' }}
-          tags: ${{ steps.meta.outputs.tags }},vitalsense:build
+          push: false
+          tags: vitalsense:build
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+          outputs: type=docker,dest=/tmp/vitalsense-build.tar
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+
+      - name: Load Docker image locally
+        run: |
+          docker load -i /tmp/vitalsense-build.tar
+          docker tag vitalsense:build vitalsense:build-local
+
+      - name: Build Docker image (CI/CD) - Push to Registry
+        if: github.event_name != 'pull_request' && github.event.inputs.push != 'false'
+        id: build-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.build
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
-          load: true
           build-args: |
             BUILDKIT_INLINE_CACHE=1
 
@@ -91,37 +111,16 @@ jobs:
         run: |
           echo "📦 Extracting build artifacts..."
           
-          # Find the image that was just built
-          # The build step outputs the image, but we need to find it locally
-          IMAGE_TAG=""
+          # Use the locally loaded image
+          IMAGE_TAG="vitalsense:build"
           
-          # Try to find the image by checking what was built
-          # First, try the tags from metadata (if pushed)
-          if [ -n "${{ steps.meta.outputs.tags }}" ]; then
-            FIRST_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -1 | tr -d ' ')
-            if docker image inspect "$FIRST_TAG" >/dev/null 2>&1; then
-              IMAGE_TAG="$FIRST_TAG"
-              echo "✅ Found image: $IMAGE_TAG"
-            fi
-          fi
-          
-          # If not found, try to find any vitalsense:build image
-          if [ -z "$IMAGE_TAG" ]; then
-            if docker image inspect vitalsense:build >/dev/null 2>&1; then
-              IMAGE_TAG="vitalsense:build"
-              echo "✅ Found local image: $IMAGE_TAG"
-            fi
-          fi
-          
-          # If still not found, list available images to debug
-          if [ -z "$IMAGE_TAG" ]; then
-            echo "⚠️ Image not found. Available images:"
+          if ! docker image inspect $IMAGE_TAG >/dev/null 2>&1; then
+            echo "❌ Image $IMAGE_TAG not found. Available images:"
             docker images | grep -E "(vitalsense|health)" || docker images | head -10
-            echo "❌ Cannot extract artifacts - image not found"
             exit 1
           fi
           
-          echo "Using image: $IMAGE_TAG"
+          echo "✅ Using local image: $IMAGE_TAG"
           
           # Create container and extract artifacts
           CONTAINER_ID=$(docker create $IMAGE_TAG)
@@ -129,14 +128,21 @@ jobs:
           # Extract artifacts
           echo "Extracting dist/..."
           docker cp $CONTAINER_ID:/build-output/dist ./dist 2>/dev/null || {
-            echo "⚠️ dist/ not found in container, checking alternative locations..."
-            docker cp $CONTAINER_ID:/app/dist ./dist 2>/dev/null || true
+            echo "⚠️ dist/ not found in /build-output, checking /app/dist..."
+            docker cp $CONTAINER_ID:/app/dist ./dist 2>/dev/null || {
+              echo "❌ dist/ not found in container"
+              docker run --rm $IMAGE_TAG ls -la /build-output 2>/dev/null || true
+              docker run --rm $IMAGE_TAG ls -la /app 2>/dev/null || true
+              exit 1
+            }
           }
           
           echo "Extracting dist-worker/..."
           docker cp $CONTAINER_ID:/build-output/dist-worker ./dist-worker 2>/dev/null || {
-            echo "⚠️ dist-worker/ not found in container, checking alternative locations..."
-            docker cp $CONTAINER_ID:/app/dist-worker ./dist-worker 2>/dev/null || true
+            echo "⚠️ dist-worker/ not found in /build-output, checking /app/dist-worker..."
+            docker cp $CONTAINER_ID:/app/dist-worker ./dist-worker 2>/dev/null || {
+              echo "⚠️ dist-worker/ not found (optional)"
+            }
           }
           
           # Clean up container
@@ -148,9 +154,11 @@ jobs:
             ls -la dist | head -5
           else
             echo "❌ dist/ is empty or missing"
-            echo "Container contents:"
-            docker run --rm $IMAGE_TAG ls -la /build-output 2>/dev/null || docker run --rm $IMAGE_TAG ls -la /app 2>/dev/null || true
             exit 1
+          fi
+          
+          if [ -d dist-worker ] && [ "$(ls -A dist-worker)" ]; then
+            echo "✅ dist-worker/ extracted ($(du -sh dist-worker | cut -f1))"
           fi
 
       - name: Upload build artifacts
