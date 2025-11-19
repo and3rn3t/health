@@ -6,24 +6,24 @@ on:
       full:
         description: 'Run full test suite'
         required: false
-        default: 'false'
+        default: false
         type: boolean
       strict:
         description: 'Treat soft-fail steps as hard failures'
         required: false
-        default: 'false'
+        default: false
         type: boolean
   workflow_dispatch:
     inputs:
       full:
         description: 'Run full test suite'
         required: false
-        default: 'false'
+        default: false
         type: boolean
       strict:
         description: 'Treat soft-fail steps as hard failures'
         required: false
-        default: 'false'
+        default: false
         type: boolean
   # Note: This workflow is primarily called by ci-core.yml
   # Direct triggers removed to prevent duplicate runs

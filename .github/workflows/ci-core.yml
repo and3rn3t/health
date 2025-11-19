@@ -626,8 +626,8 @@ jobs:
       (github.event.inputs.skip_pre_release_gate != 'true' || github.event.inputs.skip_pre_release_gate == '')
     uses: ./.github/workflows/pre-release-gate.yml
     with:
-      full: 'false'
-      strict: 'false'
+      full: false
+      strict: false
     secrets: inherit
 
   baseline_metrics:
