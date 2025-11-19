@@ -33,6 +33,8 @@
     "test:observability": "vitest run src/lib/__tests__/observability.test.ts",
     "test:e2e": "vitest run -c vitest.config.e2e.ts",
     "test:e2e:ui": "vitest --ui -c vitest.config.e2e.ts",
+    "test:integration": "vitest run -c vitest.config.integration.ts",
+    "test:integration:ui": "vitest --ui -c vitest.config.integration.ts",
     "lint:all": "node scripts/development/lint-runner.js --all",
     "lint:all:fix": "node scripts/development/lint-runner.js --all --fix",
     "lint:swift": "pwsh -NoProfile -File ios/scripts/swift-lint-windows.ps1",
