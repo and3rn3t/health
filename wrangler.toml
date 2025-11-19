@@ -137,9 +137,10 @@ name = "RATE_LIMITER"
 class_name = "RateLimiter"
 
 # Production migrations (only for main worker)
+# NOTE: VitalSenseAdvancedWebSocketDO migration has been applied - removed to prevent re-application errors
 [[env.production.migrations]]
 tag = "v1"
-new_sqlite_classes = ["HealthWebSocket", "VitalSenseAdvancedWebSocketDO", "VitalSenseWebSocketDO"]
+new_sqlite_classes = ["HealthWebSocket", "VitalSenseWebSocketDO"]
 
 [[env.production.migrations]]
 tag = "v2"
@@ -260,11 +261,12 @@ class_name = "HealthWebSocket"
 # Migrations for Durable Objects
 # Note: Migrations are now environment-specific to avoid conflicts
 # Global migrations apply to default/main worker only
+# NOTE: VitalSenseAdvancedWebSocketDO migration has been applied - removed from global migrations
 # ============================================================================
 # Default/main worker migrations
 [[migrations]]
 tag = "v1"
-new_sqlite_classes = ["HealthWebSocket", "VitalSenseAdvancedWebSocketDO", "VitalSenseWebSocketDO"]
+new_sqlite_classes = ["HealthWebSocket", "VitalSenseWebSocketDO"]
 
 # Migration to add RateLimiter Durable Object (main worker only)
 [[migrations]]
