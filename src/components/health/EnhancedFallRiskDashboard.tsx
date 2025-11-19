@@ -123,7 +123,9 @@ export default function EnhancedFallRiskDashboard({
       }
     };
 
-    assessRisk();
+    if (healthData) {
+      assessRisk();
+    }
   }, [healthData, riskEngine, interventionEngine, userProfile]);
 
   // Real-time sensor data processing
