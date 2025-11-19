@@ -220,7 +220,7 @@ jobs:
         continue-on-error: true
       - name: Ensure Build Assets (fallback)
         run: |
-          if [ ! -d dist ]; then echo "dist missing – rebuilding"; pnpm run build; fi
+          if [ ! -d dist ]; then echo "dist missing - rebuilding"; pnpm run build; fi
           if [ ! -d dist-worker ] || [ ! -f "dist-worker/index.js" ]; then
             echo "dist-worker missing – building worker";
             pnpm run build:worker;
@@ -880,7 +880,7 @@ jobs:
         continue-on-error: true
       - name: Rebuild (if artifacts missing)
         run: |
-          if [ ! -d dist ]; then echo "[deploy] dist missing – rebuilding"; pnpm run build || exit 1; fi
+          if [ ! -d dist ]; then echo "[deploy] dist missing - rebuilding"; pnpm run build || exit 1; fi
       - name: Generate Changelog (release notes)
         run: |
           node scripts/ci/generate-changelog.mjs --output reports/release-notes.md || echo "[deploy] changelog generation failed"
