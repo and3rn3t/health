@@ -1,65 +1,14 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { useKV } from '@/hooks/useCloudflareKV';
-import { ProcessedHealthData } from '@/types';
-import {
-  Activity,
-  AlertTriangle,
-  Bell,
-  CheckCircle,
-  Heart,
-  MapPin,
-  MessageCircle,
-  Phone,
-  Shield,
-  Star,
-  TrendingUp,
-  Users,
-} from 'lucide-react';
-
-interface FamilyMember {
-  id: string;
-  name: string;
-  relationship: string;
-  avatar?: string;
-  lastSeen: Date;
-  permissions: string[];
-  notificationPreferences: {
-    emergencyAlerts: boolean;
-    weeklyReports: boolean;
-    milestones: boolean;
-  };
-}
-
-interface ProgressShare {
-  id: string;
-  type: 'milestone' | 'improvement' | 'concern' | 'achievement';
-  title: string;
-  description: string;
-  value?: number;
-  previousValue?: number;
-  unit?: string;
-  date: Date;
-  celebrateWith: string[];
-  reactions: { memberId: string; reaction: string }[];
-}
+import EnhancedFamilyDashboard from '@/components/family/EnhancedFamilyDashboard';
+import type { ProcessedHealthData } from '@/types';
 
 interface FamilyDashboardProps {
-  healthData: ProcessedHealthData;
+  healthData: ProcessedHealthData | null;
 }
 
 export default function FamilyDashboard({
   healthData,
 }: Readonly<FamilyDashboardProps>) {
+  return <EnhancedFamilyDashboard healthData={healthData} />;
   const [familyMembers, setFamilyMembers] = useKV<FamilyMember[]>(
     'family-members',
     [

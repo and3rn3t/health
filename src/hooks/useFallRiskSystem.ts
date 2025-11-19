@@ -5,6 +5,8 @@
 
 import { FallDetectionEvent } from '@/lib/enhanced-fall-detection-engine';
 import { useCallback } from 'react';
+import { useEmergencyContacts } from './useEmergencyContacts';
+import { EmergencyNotificationService, createFallDetectionEvent } from '@/lib/emergencyNotificationService';
 
 interface StoredIntervention {
   id: string;
@@ -17,30 +19,50 @@ interface StoredIntervention {
  * Hook for handling emergency alerts from the fall risk system
  */
 export function useEmergencyAlerts() {
-  const handleEmergencyAlert = useCallback((alert: FallDetectionEvent) => {
-    console.log('🚨 Emergency Alert:', alert);
+  const { contacts, settings, addEvent } = useEmergencyContacts();
 
-    // In a production app, this would:
-    // 1. Show immediate notification to user
-    // 2. Send alerts to emergency contacts
-    // 3. Potentially call emergency services based on severity
-    // 4. Log the event for analysis
-    // 5. Provide immediate guidance to the user
+  const handleEmergencyAlert = useCallback(
+    async (alert: FallDetectionEvent) => {
+      console.log('🚨 Emergency Alert:', alert);
 
-    // Show browser notification if permission granted
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('VitalSense Emergency Alert', {
-        body: `Fall detected with ${alert.severity} severity. Emergency contacts have been notified.`,
-        icon: '/favicon.ico',
-        tag: 'fall-alert',
-      });
-    }
+      // Show browser notification if permission granted
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('VitalSense Emergency Alert', {
+          body: `Fall detected with ${alert.severity} severity. Emergency contacts have been notified.`,
+          icon: '/favicon.ico',
+          tag: 'fall-alert',
+        });
+      }
 
-    // You could also dispatch to a global state management system here
-    // or trigger other app-wide responses
+      // Create emergency event
+      // Note: FallDetectionEvent.location is a string, not coordinates
+      // In production, you'd get actual coordinates from geolocation API
+      const event = createFallDetectionEvent(
+        alert.severity === 'critical' ? 'critical' :
+        alert.severity === 'severe' ? 'high' :
+        alert.severity === 'moderate' ? 'moderate' : 'low',
+        undefined // Location would be fetched from geolocation API in production
+      );
 
-    return alert;
-  }, []);
+      // Send notifications if enabled
+      if (settings.autoNotify && settings.notifyOnFallDetection) {
+        const notificationService = new EmergencyNotificationService(settings);
+        const notifications = await notificationService.sendEmergencyNotifications(
+          event,
+          contacts
+        );
+
+        event.notifications = notifications;
+        event.contactsNotified = notifications.map((n) => n.contactId);
+      }
+
+      // Save event to history
+      addEvent(event);
+
+      return alert;
+    },
+    [contacts, settings, addEvent]
+  );
 
   const requestNotificationPermission = useCallback(async () => {
     if ('Notification' in window && Notification.permission === 'default') {

@@ -137,9 +137,10 @@ name = "RATE_LIMITER"
 class_name = "RateLimiter"
 
 # Production migrations (only for main worker)
+# NOTE: VitalSenseAdvancedWebSocketDO migration has been applied - removed to prevent re-application errors
 [[env.production.migrations]]
 tag = "v1"
-new_sqlite_classes = ["HealthWebSocket", "VitalSenseAdvancedWebSocketDO", "VitalSenseWebSocketDO"]
+new_sqlite_classes = ["HealthWebSocket", "VitalSenseWebSocketDO"]
 
 [[env.production.migrations]]
 tag = "v2"
@@ -186,9 +187,11 @@ name = "VITALSENSE_WEBSOCKET"
 class_name = "VitalSenseAdvancedWebSocketDO"
 
 # Advanced websocket dev migrations (only its own Durable Objects)
-[[env.advanced-websocket-dev.migrations]]
-tag = "v1"
-new_sqlite_classes = ["VitalSenseAdvancedWebSocketDO"]
+# NOTE: Migration v1 has been applied - removed to prevent re-application errors
+# If you need to add a new migration, uncomment and add a new tag (e.g., v2)
+# [[env.advanced-websocket-dev.migrations]]
+# tag = "v2"
+# new_sqlite_classes = ["NewDurableObjectClass"]
 
 # ============================================================================
 # Advanced WebSocket Service Environment (Production)
@@ -212,9 +215,11 @@ name = "VITALSENSE_WEBSOCKET"
 class_name = "VitalSenseAdvancedWebSocketDO"
 
 # Advanced websocket prod migrations (only its own Durable Objects)
-[[env.advanced-websocket-prod.migrations]]
-tag = "v1"
-new_sqlite_classes = ["VitalSenseAdvancedWebSocketDO"]
+# NOTE: Migration v1 has been applied - removed to prevent re-application errors
+# If you need to add a new migration, uncomment and add a new tag (e.g., v2)
+# [[env.advanced-websocket-prod.migrations]]
+# tag = "v2"
+# new_sqlite_classes = ["NewDurableObjectClass"]
 
 # Advanced websocket prod routes - use ws.health.andernet.dev for WebSocket connections
 [[env.advanced-websocket-prod.routes]]
@@ -256,11 +261,12 @@ class_name = "HealthWebSocket"
 # Migrations for Durable Objects
 # Note: Migrations are now environment-specific to avoid conflicts
 # Global migrations apply to default/main worker only
+# NOTE: VitalSenseAdvancedWebSocketDO migration has been applied - removed from global migrations
 # ============================================================================
 # Default/main worker migrations
 [[migrations]]
 tag = "v1"
-new_sqlite_classes = ["HealthWebSocket", "VitalSenseAdvancedWebSocketDO", "VitalSenseWebSocketDO"]
+new_sqlite_classes = ["HealthWebSocket", "VitalSenseWebSocketDO"]
 
 # Migration to add RateLimiter Durable Object (main worker only)
 [[migrations]]

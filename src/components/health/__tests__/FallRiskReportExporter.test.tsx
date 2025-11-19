@@ -1,0 +1,285 @@
+/**
+ * Tests for FallRiskReportExporter component
+ */
+
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import FallRiskReportExporter from '../FallRiskReportExporter';
+import type { AdvancedFallRiskPrediction } from '@/lib/advanced-fall-risk-engine';
+
+// Mock window.print
+const mockPrint = vi.fn();
+Object.defineProperty(window, 'print', {
+  writable: true,
+  value: mockPrint,
+});
+
+// Mock URL.createObjectURL and revokeObjectURL
+global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+global.URL.revokeObjectURL = vi.fn();
+
+// Mock document.createElement and appendChild
+const mockClick = vi.fn();
+const mockCreateElement = vi.fn((tag: string) => {
+  if (tag === 'a') {
+    return {
+      href: '',
+      download: '',
+      click: mockClick,
+    } as any;
+  }
+  return document.createElement(tag);
+});
+
+const originalCreateElement = document.createElement;
+const originalAppendChild = document.body.appendChild;
+const originalRemoveChild = document.body.removeChild;
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  document.createElement = originalCreateElement;
+  document.body.appendChild = originalAppendChild;
+  document.body.removeChild = originalRemoveChild;
+});
+
+const createMockPrediction = (): AdvancedFallRiskPrediction => ({
+  riskScore: 45,
+  riskLevel: 'moderate',
+  confidence: 0.85,
+  shortTermRisk: 40,
+  mediumTermRisk: 42,
+  longTermRisk: 45,
+  gaitRisk: {
+    overallScore: 35,
+    walkingSteadiness: 50,
+    stepVariability: 20,
+    gaitAsymmetry: 15,
+    walkingSpeed: 1.2,
+    cadenceVariability: 10,
+    strideLengthVariability: 8,
+    doubleSupportTime: 0.2,
+    trends: { improving: [], declining: [], stable: [] },
+  },
+  balanceRisk: {
+    overallScore: 30,
+    staticBalance: 60,
+    dynamicBalance: 55,
+    posturalControl: 50,
+    reactionTime: 0.3,
+    stabilityIndex: 0.7,
+    fallHistory: {
+      totalFalls: 0,
+      recentFalls: 0,
+      fallFrequency: 0,
+      lastFallDate: null,
+    },
+  },
+  environmentalRisk: {
+    overallScore: 20,
+    homeHazards: 30,
+    weatherConditions: 20,
+    lightingConditions: 25,
+    terrainDifficulty: 15,
+    locationComplexity: 10,
+    timeOfDayRisk: 20,
+  },
+  physiologicalRisk: {
+    overallScore: 25,
+    cardiovascularHealth: 70,
+    muscleStrength: 65,
+    flexibility: 60,
+    visionHealth: 75,
+    medicationEffects: 30,
+    cognitiveFunction: 80,
+    sleepQuality: 70,
+  },
+  behavioralRisk: {
+    overallScore: 15,
+    activityLevel: 60,
+    riskTakingBehavior: 20,
+    adherenceToRecommendations: 70,
+    socialSupport: 75,
+    healthcareEngagement: 80,
+  },
+  primaryRiskFactors: [],
+  secondaryRiskFactors: [],
+  protectiveFactors: [],
+  interventions: [],
+  emergencyActions: [],
+  algorithmVersion: '2.1.0',
+  modelEnsemble: [],
+  lastUpdated: new Date('2024-01-15'),
+  nextAssessment: new Date('2024-01-22'),
+});
+
+describe('FallRiskReportExporter', () => {
+  it('renders export button', () => {
+    const prediction = createMockPrediction();
+    render(<FallRiskReportExporter currentPrediction={prediction} />);
+
+    expect(screen.getByText(/export report/i)).toBeInTheDocument();
+  });
+
+  it('opens dialog when button is clicked', () => {
+    const prediction = createMockPrediction();
+    render(<FallRiskReportExporter currentPrediction={prediction} />);
+
+    const button = screen.getByText(/export report/i);
+    fireEvent.click(button);
+
+    expect(screen.getByText(/export fall risk report/i)).toBeInTheDocument();
+  });
+
+  it('shows all export format options', () => {
+    const prediction = createMockPrediction();
+    render(<FallRiskReportExporter currentPrediction={prediction} />);
+
+    const button = screen.getByText(/export report/i);
+    fireEvent.click(button);
+
+    expect(screen.getByText(/export as pdf/i)).toBeInTheDocument();
+    expect(screen.getByText(/export as json/i)).toBeInTheDocument();
+    expect(screen.getByText(/export as csv/i)).toBeInTheDocument();
+  });
+
+  it('exports JSON format', () => {
+    const prediction = createMockPrediction();
+    const onExport = vi.fn();
+
+    // Mock createElement for anchor tag
+    const mockAnchor = {
+      href: '',
+      download: '',
+      click: vi.fn(),
+    };
+    vi.spyOn(document, 'createElement').mockReturnValue(mockAnchor as any);
+    vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockAnchor as any);
+    vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockAnchor as any);
+
+    render(
+      <FallRiskReportExporter
+        currentPrediction={prediction}
+        onExport={onExport}
+      />
+    );
+
+    const button = screen.getByText(/export report/i);
+    fireEvent.click(button);
+
+    const jsonButton = screen.getByText(/export as json/i);
+    fireEvent.click(jsonButton);
+
+    expect(mockAnchor.click).toHaveBeenCalled();
+  });
+
+  it('exports CSV format', () => {
+    const prediction = createMockPrediction();
+    const onExport = vi.fn();
+
+    const mockAnchor = {
+      href: '',
+      download: '',
+      click: vi.fn(),
+    };
+    vi.spyOn(document, 'createElement').mockReturnValue(mockAnchor as any);
+    vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockAnchor as any);
+    vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockAnchor as any);
+
+    render(
+      <FallRiskReportExporter
+        currentPrediction={prediction}
+        onExport={onExport}
+      />
+    );
+
+    const button = screen.getByText(/export report/i);
+    fireEvent.click(button);
+
+    const csvButton = screen.getByText(/export as csv/i);
+    fireEvent.click(csvButton);
+
+    expect(mockAnchor.click).toHaveBeenCalled();
+  });
+
+  it('exports PDF format (opens print dialog)', () => {
+    const prediction = createMockPrediction();
+    const mockWindow = {
+      document: {
+        write: vi.fn(),
+        close: vi.fn(),
+      },
+      onload: null as any,
+      print: mockPrint,
+    };
+    vi.spyOn(window, 'open').mockReturnValue(mockWindow as any);
+
+    render(<FallRiskReportExporter currentPrediction={prediction} />);
+
+    const button = screen.getByText(/export report/i);
+    fireEvent.click(button);
+
+    const pdfButton = screen.getByText(/export as pdf/i);
+    fireEvent.click(pdfButton);
+
+    expect(window.open).toHaveBeenCalled();
+    expect(mockWindow.document.write).toHaveBeenCalled();
+  });
+
+  it('calls onExport callback when provided', async () => {
+    const prediction = createMockPrediction();
+    const onExport = vi.fn();
+
+    const mockAnchor = {
+      href: '',
+      download: '',
+      click: vi.fn(),
+    };
+    vi.spyOn(document, 'createElement').mockReturnValue(mockAnchor as any);
+    vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockAnchor as any);
+    vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockAnchor as any);
+
+    render(
+      <FallRiskReportExporter
+        currentPrediction={prediction}
+        onExport={onExport}
+      />
+    );
+
+    const button = screen.getByText(/export report/i);
+    fireEvent.click(button);
+
+    const jsonButton = screen.getByText(/export as json/i);
+    fireEvent.click(jsonButton);
+
+    await waitFor(() => {
+      expect(onExport).toHaveBeenCalledWith('json', expect.any(Object));
+    });
+  });
+
+  it('includes history data in export when provided', () => {
+    const prediction = createMockPrediction();
+    const history = [
+      {
+        date: new Date('2024-01-01'),
+        riskScore: 40,
+        riskLevel: 'moderate' as const,
+        gaitRisk: 30,
+        balanceRisk: 25,
+        environmentalRisk: 20,
+        physiologicalRisk: 25,
+        behavioralRisk: 15,
+        prediction: createMockPrediction(),
+      },
+    ];
+
+    render(
+      <FallRiskReportExporter
+        currentPrediction={prediction}
+        historyData={history}
+      />
+    );
+
+    // Component should render with history
+    expect(screen.getByText(/export report/i)).toBeInTheDocument();
+  });
+});

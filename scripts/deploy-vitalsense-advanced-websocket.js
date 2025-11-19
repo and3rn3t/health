@@ -117,6 +117,7 @@ class VitalSenseAdvancedDeployer {
 
     try {
       // Deploy to development environment first
+      // Migration v1 has been applied, so normal deployment is fine
       console.log('   🚀 Deploying to development...');
       const devResult = spawnSync(
         'npx',
@@ -139,6 +140,7 @@ class VitalSenseAdvancedDeployer {
       console.log('✅ Development deployment successful');
 
       // Ask for production deployment
+      // Migration v1 has been applied, so normal deployment is fine
       console.log('   🚀 Deploying to production...');
       const prodResult = spawnSync(
         'npx',

@@ -195,17 +195,22 @@ jobs:
           set -e
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo 'Missing CLOUDFLARE_API_TOKEN secret'; exit 1; fi
           npx wrangler deploy --env production || { echo 'Wrangler deploy failed'; exit 1; }
-      - name: Deploy advanced websocket worker
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: |
-          set -e
-          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo 'Missing CLOUDFLARE_API_TOKEN secret'; exit 1; fi
-          # Deploy using TypeScript source (Wrangler will compile and preserve exports)
-          echo "Deploying advanced websocket worker (dev)..."
-          npx wrangler deploy --env advanced-websocket-dev || { echo 'Advanced websocket worker deploy (dev) failed'; exit 1; }
-          echo "Deploying advanced websocket worker (prod)..."
-          npx wrangler deploy --env advanced-websocket-prod || { echo 'Advanced websocket worker deploy (prod) failed'; exit 1; }
+      # DISABLED: Advanced websocket worker deployment
+      # Not currently using the development environment, so deployment is disabled to avoid migration errors
+      # To re-enable: Uncomment this step and ensure migrations are properly configured
+      # - name: Deploy advanced websocket worker
+      #   env:
+      #     CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      #   run: |
+      #     set -e
+      #     if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo 'Missing CLOUDFLARE_API_TOKEN secret'; exit 1; fi
+      #     # Deploy using TypeScript source (Wrangler will compile and preserve exports)
+      #     # NOTE: Migration v1 has been applied, but Cloudflare may have a stuck migration state.
+      #     # Use --no-gradual to force completion of any pending migration state.
+      #     echo "Deploying advanced websocket worker (dev)..."
+      #     npx wrangler deploy --env advanced-websocket-dev --no-gradual || { echo 'Advanced websocket worker deploy (dev) failed'; exit 1; }
+      #     echo "Deploying advanced websocket worker (prod)..."
+      #     npx wrangler deploy --env advanced-websocket-prod --no-gradual || { echo 'Advanced websocket worker deploy (prod) failed'; exit 1; }
       - name: Post-deploy canary
         run: |
           set -e
