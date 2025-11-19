@@ -76,7 +76,7 @@ WEBSOCKET_URL_ADVANCED = "wss://vitalsense-websocket-advanced-prod.andernet.work
 
 ### 3. Update Documentation References
 
-- `docs/VitalSense-Advanced-ML-WebSocket-Complete.md`
+- `docs/architecture/VitalSense-Advanced-ML-WebSocket-Complete.md`
 - `scripts/deploy-vitalsense-advanced-websocket.js`
 
 ## Testing Plan

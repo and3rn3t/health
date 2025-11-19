@@ -20,6 +20,14 @@ System architecture, API documentation, and design specifications.
 
 **📋 Product Requirements** - Features, goals, and user experience design.
 
+### [VitalSense-Advanced-ML-WebSocket-Complete.md](VitalSense-Advanced-ML-WebSocket-Complete.md)
+
+**🧠 Advanced ML WebSocket** - Complete guide to the ML-powered WebSocket service with predictive analytics and anomaly detection.
+
+### [VitalSense-Enhanced-WebSocket-Complete.md](VitalSense-Enhanced-WebSocket-Complete.md)
+
+**🌐 Enhanced WebSocket** - Complete implementation guide for the enhanced WebSocket server with VitalSense-specific health monitoring processes.
+
 ## 🔗 Related Documentation
 
 - **Getting Started**: [`../getting-started/`](../getting-started/) for quick setup

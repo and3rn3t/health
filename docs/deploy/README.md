@@ -16,6 +16,10 @@ Production deployment guides and infrastructure management.
 
 **📝 Release Notes** - Production rollback to stable build with verification details and references.
 
+### [DNS_RESOLUTION_PLAN.md](DNS_RESOLUTION_PLAN.md)
+
+**🌐 DNS Configuration** - DNS issues resolution plan and configuration strategies for WebSocket services.
+
 ## 🔗 Related Documentation
 
 - **Security**: [`../security/`](../security/) for security policies and baselines

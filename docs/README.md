@@ -6,7 +6,7 @@
 
 **➡️ [View Complete Documentation Index](DOCUMENTATION_INDEX.md)** - Comprehensive index of all documentation
 
-**🎉 Recently Reorganized**: Documentation cleaned up and consolidated (September 2025)
+**🎉 Recently Reorganized**: Documentation cleaned up and consolidated (September 2025, January 2025)
 
 ## 🏃‍♂️ Quick Navigation
 
@@ -80,8 +80,7 @@ Security implementation and privacy policies.
 - **[Security Baseline](security/SECURITY_BASELINE.md)** - Security implementation and best practices
 - **[Retention Policy](security/RETENTION_POLICY.md)** - Data lifecycle and privacy compliance
 
-- **[Development Guide](development/DEVELOPMENT.md)** - Development environment and workflow
-- **[Copilot Prompts](development/COPILOT_PROMPTS.md)** - AI-assisted development patterns
+- **[Development Guides](develop/)** - Development environment and workflow
 
 ### 📊 [Project Management](project-management/)
 
@@ -90,14 +89,14 @@ Project roadmap, lessons learned, and tracking.
 - **[Next Steps](project-management/NEXT_STEPS.md)** - Strategic roadmap and priorities
 - **[Lessons Learned](project-management/LESSONS_LEARNED.md)** - Project insights and best practices
 - **[Implementation Checklist](project-management/IMPLEMENTATION_CHECKLIST.md)** - Development task tracking
-- **[Project Cleanup Summary](project-management/PROJECT_CLEANUP_SUMMARY.md)** - Documentation organization summary
+- **[Documentation Cleanup 2025](project-management/DOCUMENTATION_CLEANUP_2025.md)** - Documentation cleanup and consolidation summary
 
 ## 🎯 Quick Access by User Type
 
 ### 👩‍💻 **New Developers**
 
-1. **[Getting Started](getting-started/)** → **[Quick Start Guide](getting-started/README_QUICK_START.md)**
-2. **[Development](development/)** → **[Development Guide](development/DEVELOPMENT.md)**
+1. **[Getting Started](getting-started/)** → **[Quick Start Guide](getting-started/README.md)**
+2. **[Development](develop/)** → Browse development guides
 3. **[Troubleshooting](troubleshooting/)** → **[Problem Solutions Database](troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md)**
 
 ### 📱 **iOS Developers**
@@ -110,13 +109,13 @@ Project roadmap, lessons learned, and tracking.
 
 1. **[Architecture](architecture/)** → **[Architecture Overview](architecture/ARCHITECTURE.md)**
 2. **[Security](security/)** → **[Security Baseline](security/SECURITY_BASELINE.md)**
-3. **[Deployment](deployment/)** → **[Infrastructure Hardening](deployment/INFRA_HARDENING.md)**
+3. **[Deployment](deploy/)** → **[Infrastructure Hardening](deploy/INFRA_HARDENING.md)**
 
 ### 🚀 **DevOps Engineers**
 
-1. **[Deployment](deployment/)** → **[Main App Deployment](deployment/MAIN_APP_DEPLOYMENT.md)**
+1. **[Deployment](deploy/)** → **[Main App Deployment](deploy/MAIN_APP_DEPLOYMENT.md)**
 2. **[Security](security/)** → Browse security and compliance guides
-3. **[iOS Development](ios/)** → **[iOS Deployment Guide](ios/IOS_DEPLOYMENT_GUIDE.md)**
+3. **[iOS Development](ios/)** → Browse iOS-specific guides
 
 ### 📊 **Project Managers**
 

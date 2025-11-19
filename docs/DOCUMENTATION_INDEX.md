@@ -21,6 +21,8 @@ This document provides a comprehensive index of all documentation in the project
   - [`ARCHITECTURE.md`](./architecture/ARCHITECTURE.md) - System architecture overview
   - [`PRD.md`](./architecture/PRD.md) - Product Requirements Document
   - [`WEBSOCKETS.md`](./architecture/WEBSOCKETS.md) - WebSocket protocol specification
+  - [`VitalSense-Advanced-ML-WebSocket-Complete.md`](./architecture/VitalSense-Advanced-ML-WebSocket-Complete.md) - Advanced ML WebSocket service guide
+  - [`VitalSense-Enhanced-WebSocket-Complete.md`](./architecture/VitalSense-Enhanced-WebSocket-Complete.md) - Enhanced WebSocket implementation guide
 
 ### 💻 Development
 
@@ -54,6 +56,7 @@ This document provides a comprehensive index of all documentation in the project
   - [`CLOUDFLARE_DNS_SETUP.md`](./deploy/CLOUDFLARE_DNS_SETUP.md) - DNS configuration
   - [`INFRA_HARDENING.md`](./deploy/INFRA_HARDENING.md) - Infrastructure security hardening
   - [`API_SUBDOMAIN_STRATEGY.md`](./deploy/API_SUBDOMAIN_STRATEGY.md) - API subdomain strategy
+  - [`DNS_RESOLUTION_PLAN.md`](./deploy/DNS_RESOLUTION_PLAN.md) - DNS issues resolution plan
   - Release Notes: [`RELEASE_NOTES__prod-rollback-2025-09-12.md`](./deploy/RELEASE_NOTES__prod-rollback-2025-09-12.md)
 
 ### 🛡️ Security
@@ -67,6 +70,8 @@ This document provides a comprehensive index of all documentation in the project
 - [`troubleshooting/`](./troubleshooting/) - Problem solutions and troubleshooting guides
   - [`PROBLEM_SOLUTIONS_DATABASE.md`](./troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md) - Comprehensive problem database for AI-assisted development
   - [`BUILD_TROUBLESHOOTING.md`](./troubleshooting/BUILD_TROUBLESHOOTING.md) - Build and compilation troubleshooting
+  - [`FIXES_SUMMARY.md`](./troubleshooting/FIXES_SUMMARY.md) - Compilation fixes summary
+  - [`TERMINAL_FIXES_SUMMARY.md`](./troubleshooting/TERMINAL_FIXES_SUMMARY.md) - Terminal enhancement fixes
   - [`VITALSENSE_BRANDING_LESSONS_LEARNED.md`](./troubleshooting/VITALSENSE_BRANDING_LESSONS_LEARNED.md) - Complete branding implementation guide
   - [`VITALSENSE_BRANDING_QUICK_REFERENCE.md`](./troubleshooting/VITALSENSE_BRANDING_QUICK_REFERENCE.md) - Quick branding fixes
 
@@ -76,6 +81,7 @@ This document provides a comprehensive index of all documentation in the project
   - [`LESSONS_LEARNED.md`](./project-management/LESSONS_LEARNED.md) - Project lessons learned
   - [`NEXT_STEPS.md`](./project-management/NEXT_STEPS.md) - Development roadmap
   - [`IMPLEMENTATION_CHECKLIST.md`](./project-management/IMPLEMENTATION_CHECKLIST.md) - Implementation tracking
+  - [`DOCUMENTATION_CLEANUP_2025.md`](./project-management/DOCUMENTATION_CLEANUP_2025.md) - Documentation cleanup and consolidation summary
 
 ## 🗂️ Archived Documentation
 
@@ -110,9 +116,17 @@ This document provides a comprehensive index of all documentation in the project
 - **Testing**: [`troubleshooting/`](./troubleshooting/), various test documentation
 - **Deployment**: [`deploy/`](./deploy/) folder
 
-## ✨ Recent Updates (September 2025)
+## ✨ Recent Updates
 
-### 🧹 Cleanup & Reorganization
+### January 2025 - Documentation Consolidation
+
+- **Moved root-level documentation** to appropriate sections (troubleshooting, architecture, deploy)
+- **Consolidated cleanup documentation** into single comprehensive summary
+- **Updated all README files** with accurate file locations
+- **Fixed cross-references** in moved documentation files
+- **Archived historical cleanup documents** for reference
+
+### September 2025 - Major Reorganization
 
 - **Archived 30+ completed documents** to reduce clutter
 - **Consolidated redundant Auth0 documentation** into primary guides
@@ -136,63 +150,28 @@ This document provides a comprehensive index of all documentation in the project
 
 ---
 
-**Last Updated**: September 6, 2025  
-**Documentation Health**: ✅ Excellent - Recently reorganized and consolidated  
+**Last Updated**: January 2025  
+**Documentation Health**: ✅ Excellent - Well organized and maintained  
 **Total Active Files**: ~50 focused, current documentation files
 
-## 📄 Root-Level Documentation (Consolidated)
+## 📄 Root-Level Documentation
 
-The following documents were moved from the project root to [`root-docs/`](./root-docs/) for better organization:
+The following important documentation files are located at the project root:
 
-### Project Status & Deployment
-
-- [`DEPLOYMENT_STATUS.md`](./root-docs/DEPLOYMENT_STATUS.md) - Current deployment status
-- [`iOS-PRODUCTION-READY.md`](./root-docs/iOS-PRODUCTION-READY.md) - iOS production readiness
-- [`iOS-WEBSOCKET-TESTING.md`](./root-docs/iOS-WEBSOCKET-TESTING.md) - iOS WebSocket testing
-- [`WEBSOCKET-DEPLOYMENT.md`](./root-docs/WEBSOCKET-DEPLOYMENT.md) - WebSocket deployment guide
-- [`WHATS_NEXT_ROADMAP.md`](./root-docs/WHATS_NEXT_ROADMAP.md) - Project roadmap
-
-### Authentication & Setup
-
-- [`AUTH0_SETUP_STATUS.md`](./root-docs/AUTH0_SETUP_STATUS.md) - Auth0 setup status
-- [`AUTH0-LOGIN-FIXED.md`](./root-docs/AUTH0-LOGIN-FIXED.md) - Auth0 login fixes
-- [`auth0-setup-guide.md`](./root-docs/auth0-setup-guide.md) - Auth0 setup guide
-
-### Project Policies
-
-- [`CONTRIBUTING.md`](./root-docs/CONTRIBUTING.md) - Contribution guidelines
-- [`SECURITY.md`](./root-docs/SECURITY.md) - Security policy
-- [`privacy-policy.md`](./root-docs/privacy-policy.md) - Privacy policy
-- [`terms-of-service.md`](./root-docs/terms-of-service.md) - Terms of service
-
-## 📄 Source Code Documentation (Consolidated)
-
-Documentation that was previously in the source code has been moved to [`src-docs/`](./src-docs/):
-
-- [`prd.md`](./src-docs/prd.md) - Product Requirements Document (alternative version)
-- [`Phase5-Progress.md`](./src-docs/Phase5-Progress.md) - Phase 5 development progress
-- [`AppleWatchHealthKitIntegration.md`](./src-docs/AppleWatchHealthKitIntegration.md) - Apple Watch integration
-
-## 📄 Additional Documentation
-
-### Branding & Features
-
-- [`VITALSENSE_BRANDING.md`](./VITALSENSE_BRANDING.md) - VitalSense branding guidelines
-- [`enhanced-health-data-features.md`](./enhanced-health-data-features.md) - Enhanced health data features
-- [`performance-optimizations.md`](./performance-optimizations.md) - Performance optimization guide
-
-### Repository Documentation
-
-- [`README.md`](./README.md) - Main project documentation index
+- [`README.md`](../README.md) - Main project overview and quick start
+- [`CONTRIBUTING.md`](../CONTRIBUTING.md) - Contribution guidelines
+- [`SECURITY.md`](../SECURITY.md) - Security policy
+- [`privacy-policy.md`](../privacy-policy.md) - Privacy policy
+- [`LICENSE`](../LICENSE) - Project license
 
 ## 🔍 Finding Documentation
 
 ### By Topic
 
 - **Getting Started**: Start with [`getting-started/`](./getting-started/)
-- **Development Setup**: See [`development/`](./development/) and [`ios/`](./ios/)
+- **Development Setup**: See [`develop/`](./develop/) and [`ios/`](./ios/)
 - **API Development**: Check [`architecture/API.md`](./architecture/API.md)
-- **Deployment**: Look in [`deployment/`](./deployment/)
+- **Deployment**: Look in [`deploy/`](./deploy/)
 - **Troubleshooting**: Visit [`troubleshooting/`](./troubleshooting/)
   - [`PROBLEM_SOLUTIONS_DATABASE.md`](./troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md) - Comprehensive problem database
   - [`VITALSENSE_BRANDING_LESSONS_LEARNED.md`](./troubleshooting/VITALSENSE_BRANDING_LESSONS_LEARNED.md) - Complete branding implementation guide
@@ -200,16 +179,16 @@ Documentation that was previously in the source code has been moved to [`src-doc
 
 ### By Platform
 
-- **Web/React**: [`architecture/`](./architecture/), [`development/`](./development/)
-- **iOS**: [`ios/`](./ios/), [`ios-documentation/`](./ios-documentation/)
-- **Infrastructure**: [`deployment/`](./deployment/), [`security/`](./security/)
+- **Web/React**: [`architecture/`](./architecture/), [`develop/`](./develop/)
+- **iOS**: [`ios/`](./ios/) - comprehensive iOS documentation
+- **Infrastructure**: [`deploy/`](./deploy/), [`security/`](./security/)
 
 ### By Development Phase
 
 - **Planning**: [`project-management/`](./project-management/), [`architecture/PRD.md`](./architecture/PRD.md)
-- **Development**: [`development/`](./development/), [`ios/`](./ios/)
+- **Development**: [`getting-started/`](./getting-started/), [`develop/`](./develop/), [`ios/`](./ios/)
 - **Testing**: [`troubleshooting/`](./troubleshooting/), various test documentation
-- **Deployment**: [`deployment/`](./deployment/), [`root-docs/DEPLOYMENT_STATUS.md`](./root-docs/DEPLOYMENT_STATUS.md)
+- **Deployment**: [`deploy/`](./deploy/) folder
 
 ## 📝 Documentation Standards
 
