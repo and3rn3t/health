@@ -10,7 +10,6 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['cloudflare:workers'],
       output: {
         format: 'es',
         // Preserve both named and default exports
@@ -20,11 +19,18 @@ export default defineConfig({
           constBindings: false,
         },
       },
+      // External dependencies
+      external: (id) => {
+        // Keep cloudflare:workers external
+        return id.startsWith('cloudflare:');
+      },
     },
     outDir: 'dist-worker',
     sourcemap: true,
     // Don't minify to preserve exports and class names
     minify: false,
+    // Target ES2022 for Cloudflare Workers
+    target: 'es2022',
   },
   resolve: {
     alias: {

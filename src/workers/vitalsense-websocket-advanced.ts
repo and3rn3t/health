@@ -51,6 +51,7 @@ interface PersonalizedInsight {
 
 // Export the class for Cloudflare Durable Objects
 // This must be a top-level export for Cloudflare's static analysis
+// IMPORTANT: This export must be preserved in the built file for Cloudflare to detect it
 export class VitalSenseAdvancedWebSocketDO {
   private clients: Map<WebSocket, VitalSenseClient> = new Map();
   private storage: DurableObjectStorage;

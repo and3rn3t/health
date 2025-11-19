@@ -155,17 +155,27 @@ jobs:
           set -e
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo 'Missing CLOUDFLARE_API_TOKEN secret'; exit 1; fi
           npx wrangler deploy --env production || { echo 'Wrangler deploy failed'; exit 1; }
+      - name: Verify built file exports
+        run: |
+          set -e
+          if [ ! -f "dist-worker/vitalsense-websocket-advanced-clean.js" ]; then
+            echo "Error: Built file not found"
+            exit 1
+          fi
+          # Check for the class export in the built file
+          if ! grep -q "export.*VitalSenseAdvancedWebSocketDO\|export class VitalSenseAdvancedWebSocketDO" dist-worker/vitalsense-websocket-advanced-clean.js; then
+            echo "Error: Built file does not contain VitalSenseAdvancedWebSocketDO export"
+            echo "Checking file contents..."
+            head -50 dist-worker/vitalsense-websocket-advanced-clean.js
+            exit 1
+          fi
+          echo "✅ Built file contains VitalSenseAdvancedWebSocketDO export"
       - name: Deploy advanced websocket worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -e
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo 'Missing CLOUDFLARE_API_TOKEN secret'; exit 1; fi
-          # Verify built file exists
-          if [ ! -f "dist-worker/vitalsense-websocket-advanced-clean.js" ]; then
-            echo "Error: Built file not found. Build step must have failed."
-            exit 1
-          fi
           # Deploy using the built file (wrangler.toml now points to it)
           echo "Deploying advanced websocket worker (dev)..."
           npx wrangler deploy --env advanced-websocket-dev || { echo 'Advanced websocket worker deploy (dev) failed'; exit 1; }
