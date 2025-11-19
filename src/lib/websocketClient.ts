@@ -261,13 +261,13 @@ export class WebSocketClient {
 
   private retry() {
     this.consecutiveFailures += 1;
-    
+
     // Stop retrying after max retries to prevent infinite loops
     if (this.consecutiveFailures > this.maxRetries) {
       // Silently stop retrying - connection is likely not available
       return;
     }
-    
+
     this.attempt += 1;
     const backoff = Math.min(
       this.opts.maxBackoffMs,
