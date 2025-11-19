@@ -844,6 +844,8 @@ app.get('/api/_debug/version-mismatch-events', (c) => {
 // Note: The custom /login page is defined later with full HTML and headers
 
 // Runtime config for SPA: exposes safe public variables
+// IMPORTANT: This route must be defined BEFORE the app.use('/*') middleware
+// that serves static assets, otherwise the static file takes precedence
 app.get('/app-config.js', (c) => {
   const domain = c.env.AUTH0_DOMAIN || '';
   const clientId = c.env.AUTH0_CLIENT_ID || '';
