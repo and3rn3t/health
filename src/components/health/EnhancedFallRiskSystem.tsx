@@ -11,10 +11,11 @@ import { generateSampleHealthData } from '@/lib/sampleHealthData';
 import React from 'react';
 import EnhancedFallRiskDashboard from './EnhancedFallRiskDashboard';
 
-// Re-export engines for use in other components
-export { AdvancedFallRiskEngine } from '@/lib/advanced-fall-risk-engine';
-export { EnhancedFallDetectionEngine } from '@/lib/enhanced-fall-detection-engine';
-export { EnhancedInterventionEngine } from '@/lib/enhanced-intervention-engine';
+// Note: Engine exports removed to prevent circular dependency issues
+// Import engines directly from their source modules:
+// - @/lib/advanced-fall-risk-engine
+// - @/lib/enhanced-fall-detection-engine
+// - @/lib/enhanced-intervention-engine
 
 interface FallRiskSystemProps {
   healthData?: ProcessedHealthData | null;
