@@ -441,7 +441,7 @@ app.use('*', async (c, next) => {
       "default-src 'self'",
       "img-src 'self' data: https:",
       "style-src 'self' 'unsafe-inline'",
-      "script-src 'self' 'unsafe-inline' https://cdn.auth0.com https://static.cloudflareinsights.com",
+      "script-src 'self' 'unsafe-inline' https://cdn.auth0.com",
       "connect-src 'self' https: wss:",
       "frame-ancestors 'none'",
     ].join('; ');
@@ -451,7 +451,7 @@ app.use('*', async (c, next) => {
       "img-src 'self' data: https:",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com",
+      "script-src 'self' 'unsafe-inline'",
       "connect-src 'self' https: wss:",
       "frame-ancestors 'none'",
     ].join('; ');

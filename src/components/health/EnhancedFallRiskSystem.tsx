@@ -44,19 +44,21 @@ export default function EnhancedFallRiskSystem({
   }, [requestNotificationPermission]);
 
   // Example sensor data (would come from real sensors in production)
-  const mockSensorData = React.useMemo(
-    () => ({
+  const mockSensorData = React.useMemo(() => {
+    const accelZ = 9.8 + Math.random() * 0.5;
+    const gyroZ = Math.random() * 0.5;
+    return {
       timestamp: Date.now(),
       accelerometer: {
         x: 0.1 + Math.random() * 0.2,
         y: 0.2 + Math.random() * 0.3,
-        z: 9.8 + Math.random() * 0.5,
+        z: accelZ,
         magnitude: 1.2 + Math.random() * 0.8,
       },
       gyroscope: {
         x: Math.random() * 0.5,
         y: Math.random() * 0.5,
-        z: Math.random() * 0.5,
+        z: gyroZ,
         magnitude: Math.random() * 1.0,
       },
       heartRate: 70 + Math.random() * 30,
@@ -64,9 +66,8 @@ export default function EnhancedFallRiskSystem({
       confidence: 0.85 + Math.random() * 0.15,
       postureOrientation: 'standing' as const,
       activityType: 'walking' as const,
-    }),
-    []
-  );
+    };
+  }, []);
 
   const handleEmergencyAlert = React.useCallback(
     (event: FallDetectionEvent) => {
