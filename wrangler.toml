@@ -139,6 +139,15 @@ class_name = "HealthWebSocket"
 name = "RATE_LIMITER"
 class_name = "RateLimiter"
 
+# Production migrations (only for main worker)
+[[env.production.migrations]]
+tag = "v1"
+new_sqlite_classes = ["HealthWebSocket", "VitalSenseAdvancedWebSocketDO", "VitalSenseWebSocketDO"]
+
+[[env.production.migrations]]
+tag = "v2"
+new_sqlite_classes = ["RateLimiter"]
+
 # ============================================================================
 # WebSocket Service Environment (Basic)
 # ============================================================================
@@ -178,6 +187,11 @@ MAX_HISTORICAL_RECORDS = "1000"
 name = "VITALSENSE_WEBSOCKET"
 class_name = "VitalSenseAdvancedWebSocketDO"
 
+# Advanced websocket dev migrations (only its own Durable Objects)
+[[env.advanced-websocket-dev.migrations]]
+tag = "v1"
+new_sqlite_classes = ["VitalSenseAdvancedWebSocketDO"]
+
 # ============================================================================
 # Advanced WebSocket Service Environment (Production)
 # ============================================================================
@@ -197,6 +211,11 @@ MAX_HISTORICAL_RECORDS = "1000"
 [[env.advanced-websocket-prod.durable_objects.bindings]]
 name = "VITALSENSE_WEBSOCKET"
 class_name = "VitalSenseAdvancedWebSocketDO"
+
+# Advanced websocket prod migrations (only its own Durable Objects)
+[[env.advanced-websocket-prod.migrations]]
+tag = "v1"
+new_sqlite_classes = ["VitalSenseAdvancedWebSocketDO"]
 
 # ============================================================================
 # Enhanced WebSocket Service Environment (Development)
@@ -231,12 +250,15 @@ class_name = "HealthWebSocket"
 
 # ============================================================================
 # Migrations for Durable Objects
+# Note: Migrations are now environment-specific to avoid conflicts
+# Global migrations apply to default/main worker only
 # ============================================================================
+# Default/main worker migrations
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["HealthWebSocket", "VitalSenseAdvancedWebSocketDO", "VitalSenseWebSocketDO"]
 
-# Migration to add RateLimiter Durable Object
+# Migration to add RateLimiter Durable Object (main worker only)
 [[migrations]]
 tag = "v2"
 new_sqlite_classes = ["RateLimiter"]
