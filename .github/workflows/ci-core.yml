@@ -47,26 +47,80 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node & pnpm
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Try Docker build (optimized)
+        id: docker-build
+        run: |
+          echo "🐳 Attempting optimized Docker build..."
+          if docker build \
+            -f Dockerfile.build \
+            -t vitalsense:build \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
+            . 2>&1; then
+            echo "✅ Docker build successful"
+            docker create --name ci-artifacts vitalsense:build
+            docker cp ci-artifacts:/build-output/dist ./dist 2>/dev/null || true
+            docker cp ci-artifacts:/build-output/dist-worker ./dist-worker 2>/dev/null || true
+            docker rm ci-artifacts
+            echo "build_method=docker" >> $GITHUB_OUTPUT
+            echo "✅ Artifacts extracted from Docker"
+          else
+            echo "⚠️ Docker build failed, will use traditional build"
+            echo "build_method=traditional" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+      
+      - name: Traditional build (fallback)
+        if: steps.docker-build.outcome == 'failure' || steps.docker-build.outputs.build_method == 'traditional'
+        run: |
+          echo "🔨 Using traditional build method..."
+      
+      - name: Setup Node & pnpm (traditional)
+        if: steps.docker-build.outcome == 'failure' || steps.docker-build.outputs.build_method == 'traditional'
         uses: ./.github/actions/setup-pnpm
-      - name: Install Dependencies (frozen or fallback)
+      
+      - name: Install Dependencies (traditional)
+        if: steps.docker-build.outcome == 'failure' || steps.docker-build.outputs.build_method == 'traditional'
         run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
-      - name: Check Lockfile (soft warning)
+      
+      - name: Check Lockfile (traditional)
+        if: steps.docker-build.outcome == 'failure' || steps.docker-build.outputs.build_method == 'traditional'
         run: |
           set +e
           pnpm install --frozen-lockfile > /dev/null 2>&1
           if [ $? -ne 0 ]; then echo "⚠️ Lockfile drift detected (non-blocking)"; fi
-      - name: Build Worker
+      
+      - name: Build Worker (traditional)
+        if: steps.docker-build.outcome == 'failure' || steps.docker-build.outputs.build_method == 'traditional'
         run: pnpm run build:worker
-      - name: Verify Worker Build
+      
+      - name: Verify Worker Build (traditional)
+        if: steps.docker-build.outcome == 'failure' || steps.docker-build.outputs.build_method == 'traditional'
         run: |
           if [ ! -f dist-worker/index.js ]; then
             echo "❌ Worker build failed - dist-worker/index.js not found";
             exit 1;
           fi
           echo "✅ Worker build verified: dist-worker/index.js exists";
-      - name: Build App
+      
+      - name: Build App (traditional)
+        if: steps.docker-build.outcome == 'failure' || steps.docker-build.outputs.build_method == 'traditional'
         run: pnpm run build
+      
+      - name: Verify build outputs
+        run: |
+          if [ ! -d dist ] || [ -z "$(ls -A dist)" ]; then
+            echo "❌ dist/ is missing or empty"
+            exit 1
+          fi
+          echo "✅ Build verification passed"
+          echo "dist size: $(du -sh dist | cut -f1)"
+          [ -d dist-worker ] && echo "dist-worker size: $(du -sh dist-worker | cut -f1)"
+      
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -74,7 +128,7 @@ jobs:
           path: |
             dist/**
             dist-worker/**
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 3
 
   bundle_check:

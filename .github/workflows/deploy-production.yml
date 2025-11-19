@@ -68,10 +68,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Check for Docker build artifacts
         id: check-docker
         run: |
@@ -84,7 +84,7 @@ jobs:
             echo "⚠️ Using traditional build (Docker build not available)"
           fi
         continue-on-error: true
-      
+
       - name: Build with Docker (if available)
         id: docker-build
         if: steps.check-docker.outputs.docker_available == 'true'
@@ -97,19 +97,22 @@ jobs:
           docker rm artifacts
           echo "✅ Docker build complete"
         continue-on-error: true
-      
-      - name: Fallback: Traditional build
+
+      - name: Setup Node & pnpm (fallback)
         if: steps.docker-build.outcome == 'failure' || steps.check-docker.outputs.docker_available != 'true'
-        run: |
-          echo "🔨 Using traditional build method..."
-          - name: Setup Node & pnpm
-            uses: ./.github/actions/setup-pnpm
-          - name: Install deps (frozen or fallback)
-            run: pnpm install --frozen-lockfile || pnpm install
-          - name: Build web app
-            run: pnpm run build
-          - name: Build worker
-            run: pnpm run build:worker || echo 'Worker build optional'
+        uses: ./.github/actions/setup-pnpm
+      
+      - name: Install deps (fallback)
+        if: steps.docker-build.outcome == 'failure' || steps.check-docker.outputs.docker_available != 'true'
+        run: pnpm install --frozen-lockfile || pnpm install
+      
+      - name: Build web app (fallback)
+        if: steps.docker-build.outcome == 'failure' || steps.check-docker.outputs.docker_available != 'true'
+        run: pnpm run build
+      
+      - name: Build worker (fallback)
+        if: steps.docker-build.outcome == 'failure' || steps.check-docker.outputs.docker_available != 'true'
+        run: pnpm run build:worker || echo 'Worker build optional'
       - name: Verify advanced websocket worker source
         run: |
           set -e
