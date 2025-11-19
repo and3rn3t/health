@@ -5,16 +5,16 @@
 
 import { Button } from '@/components/ui/button';
 import { useFallRiskSystem } from '@/hooks/useFallRiskSystem';
-import { AdvancedFallRiskEngine } from '@/lib/advanced-fall-risk-engine';
-import {
-  EnhancedFallDetectionEngine,
-  FallDetectionEvent,
-} from '@/lib/enhanced-fall-detection-engine';
-import { EnhancedInterventionEngine } from '@/lib/enhanced-intervention-engine';
+import type { FallDetectionEvent } from '@/lib/enhanced-fall-detection-engine';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { generateSampleHealthData } from '@/lib/sampleHealthData';
 import React from 'react';
 import EnhancedFallRiskDashboard from './EnhancedFallRiskDashboard';
+
+// Re-export engines for use in other components
+export { AdvancedFallRiskEngine } from '@/lib/advanced-fall-risk-engine';
+export { EnhancedFallDetectionEngine } from '@/lib/enhanced-fall-detection-engine';
+export { EnhancedInterventionEngine } from '@/lib/enhanced-intervention-engine';
 
 interface FallRiskSystemProps {
   healthData?: ProcessedHealthData | null;
@@ -150,9 +150,3 @@ export default function EnhancedFallRiskSystem({
   );
 }
 
-// Export the main engines for use in other components
-export {
-  AdvancedFallRiskEngine,
-  EnhancedFallDetectionEngine,
-  EnhancedInterventionEngine,
-};

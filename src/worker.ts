@@ -495,6 +495,8 @@ app.use('*', async (c, next) => {
       'geolocation=(), microphone=(), camera=()'
     );
     newHeaders.set('Content-Security-Policy', csp);
+    // Block Cloudflare Insights beacon injection
+    newHeaders.set('X-Content-Security-Policy', csp.replace(/script-src[^;]*/, "script-src 'self'"));
     if (!newHeaders.has('X-Correlation-Id')) {
       newHeaders.set('X-Correlation-Id', correlationId);
     }
