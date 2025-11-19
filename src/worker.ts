@@ -854,6 +854,7 @@ app.get('/app-config.js', (c) => {
   const js = `// Runtime app config (loaded before app bundle)
 window.__VITALSENSE_CONFIG__ = ${JSON.stringify({
     environment: c.env.ENVIRONMENT || 'unknown',
+    version: '1.0.0',
     auth0: {
       domain,
       clientId,
@@ -861,6 +862,17 @@ window.__VITALSENSE_CONFIG__ = ${JSON.stringify({
       audience: 'https://vitalsense-health-api',
       scope:
         'openid profile email read:health_data write:health_data manage:emergency_contacts',
+    },
+    api: {
+      baseUrl: baseUrl,
+      timeout: 10000,
+    },
+    wsBaseUrl: c.env.WEBSOCKET_URL || (baseUrl.replace('https://', 'wss://').replace('http://', 'ws://') + '/ws'),
+    features: {
+      enableAuth: (c.env.ENVIRONMENT || 'development') === 'production',
+      enableWebSocket: true,
+      enableOfflineMode: true,
+      enableAnalytics: (c.env.ENVIRONMENT || 'development') === 'production',
     },
   })};
 
