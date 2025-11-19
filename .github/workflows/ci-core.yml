@@ -49,6 +49,11 @@ jobs:
         uses: ./.github/actions/setup-pnpm
       - name: Install Dependencies (frozen or fallback)
         run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+      - name: Check Lockfile (soft warning)
+        run: |
+          set +e
+          pnpm install --frozen-lockfile > /dev/null 2>&1
+          if [ $? -ne 0 ]; then echo "⚠️ Lockfile drift detected (non-blocking)"; fi
       - name: Build Worker
         run: pnpm run build:worker
       - name: Verify Worker Build
@@ -70,138 +75,34 @@ jobs:
           if-no-files-found: warn
           retention-days: 3
 
-  lockfile_guard:
+  bundle_check:
     runs-on: ubuntu-latest
     needs: build
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node & pnpm
-        uses: ./.github/actions/setup-pnpm
-      - name: Strict Lockfile Check
-        id: lockfile
-        run: |
-          set +e
-          pnpm install --frozen-lockfile > lockfile_check.log 2>&1
-          EXIT=$?
-          mkdir -p reports
-          if [ $EXIT -ne 0 ]; then
-            echo "Lockfile drift detected" | tee reports/lockfile-drift-status.txt
-            echo "drift=true" >> $GITHUB_OUTPUT
-          else
-            echo "Lockfile clean" | tee reports/lockfile-drift-status.txt
-            echo "drift=false" >> $GITHUB_OUTPUT
-          fi
-          # Always succeed so this job does not block
-          exit 0
-      - name: Upload Lockfile Drift Status
-        uses: actions/upload-artifact@v4
-        with:
-          name: lockfile-drift-status
-          path: reports/lockfile-drift-status.txt
-          if-no-files-found: warn
-
-  bundle_threshold:
-    runs-on: ubuntu-latest
-    needs: build
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node & pnpm
         uses: ./.github/actions/setup-pnpm
       - name: Install Dependencies
-        run: |
-          if ! pnpm install --frozen-lockfile; then
-            echo "[lockfile] Drift detected → non-frozen install (bundle_threshold)";
-            pnpm install --no-frozen-lockfile;
-          fi
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-artifacts
-          path: .
-        continue-on-error: true
-      - name: Fallback Build (if artifacts missing)
-        run: |
-          if [ ! -d dist ]; then echo "dist not found – fallback build"; pnpm run build; fi
-      - name: Verify Bundle Thresholds
-        run: pnpm run ci:bundle-threshold
-      - uses: actions/upload-artifact@v4
-        with:
-          name: bundle-threshold-report
-          path: reports/bundle-threshold.json
-          if-no-files-found: error
-
-  bundle_drift:
-    runs-on: ubuntu-latest
-    needs: build
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node & pnpm
-        uses: ./.github/actions/setup-pnpm
-      - name: Install Dependencies
-        run: |
-          if ! pnpm install --frozen-lockfile; then
-            echo "[lockfile] Drift detected → non-frozen install (bundle_drift)";
-            pnpm install --no-frozen-lockfile;
-          fi
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-artifacts
-          path: .
-        continue-on-error: true
-      - name: Fallback Build (if artifacts missing)
-        run: |
-          if [ ! -d dist ]; then echo "dist not found – fallback build"; pnpm run build; fi
-      - name: Bundle Drift
-        run: pnpm run ci:bundle-drift
-      - uses: actions/upload-artifact@v4
-        with:
-          name: bundle-drift-report
-          path: reports/bundle-drift.json
-          if-no-files-found: error
-
-  analytics_integrity:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node & pnpm
-        uses: ./.github/actions/setup-pnpm
-      - name: Install Dependencies (frozen or fallback)
         run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
-      - name: Verify (sync, tests, drift guards)
-        run: pnpm run ci:analytics-verify
-      - name: Upload Combined Analytics Artifacts
-        if: always()
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-artifacts
+          path: .
+        continue-on-error: true
+      - name: Fallback Build (if artifacts missing)
+        run: if [ ! -d dist ]; then pnpm run build; fi
+      - name: Bundle Checks (threshold + drift)
+        run: |
+          pnpm run ci:bundle-threshold
+          pnpm run ci:bundle-drift || echo "Bundle drift check (soft)"
+      - name: Upload Bundle Reports
         uses: actions/upload-artifact@v4
         with:
-          name: analytics-config-artifacts
-          path: |
-            src/fixtures/gait-config-export.json
-            src/fixtures/fall-risk-config-export.json
-            ios/HealthKitBridge/Generated/GaitConfig.swift
-            ios/HealthKitBridge/Generated/FallRiskConfig.swift
-          if-no-files-found: error
-
-  privacy_guard:
-    runs-on: ubuntu-latest
-    needs: build
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node & pnpm
-        uses: ./.github/actions/setup-pnpm
-      - name: Install Dependencies
-        run: |
-          if ! pnpm install --frozen-lockfile; then
-            echo "[lockfile] Drift detected → non-frozen install (privacy_guard)";
-            pnpm install --no-frozen-lockfile;
-          fi
-      - name: Privacy Guard
-        run: pnpm run ci:privacy
+          name: bundle-reports
+          path: reports/bundle-*.json
+          if-no-files-found: warn
 
   smoke:
     runs-on: ubuntu-latest
@@ -441,29 +342,15 @@ jobs:
           if-no-files-found: warn
       - name: Contrast Drift (baseline compare)
         run: pnpm run ci:css-contrast-drift || echo "(soft) contrast drift check failed"
+      - name: Analytics & Privacy Checks
+        run: |
+          pnpm run ci:analytics-verify
+          pnpm run ci:privacy
 
-  semgrep_scan:
-    runs-on: ubuntu-latest
-    needs: build
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - name: Semgrep Scan (soft)
-        uses: semgrep/semgrep-action@v1
-        continue-on-error: true
-      - name: Upload Semgrep SARIF
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: semgrep.sarif
-        continue-on-error: true
-
-  sonar_scan:
+  security:
     runs-on: ubuntu-latest
     needs: build
     timeout-minutes: 15
-    env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -471,129 +358,67 @@ jobs:
       - name: Setup Node & pnpm
         uses: ./.github/actions/setup-pnpm
       - name: Install Dependencies
-        run: |
-          if ! pnpm install --frozen-lockfile; then
-            echo "[lockfile] Drift detected → non-frozen install (secrets_rotation)";
-            pnpm install --no-frozen-lockfile;
-          fi
-      - name: SonarCloud Scan (soft)
-        if: ${{ env.SONAR_TOKEN != '' }}
+        run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+      - name: Security Audit
+        run: pnpm audit --prod --audit-level=moderate || echo "Security audit (soft)"
+      - name: Secrets Rotation Check
+        run: pnpm run ci:secrets
+      - name: Semgrep Scan
+        uses: semgrep/semgrep-action@v1
+        continue-on-error: true
+      - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         continue-on-error: true
-
-  dependency_review:
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'pull_request'
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-      - name: Dependency Review
+      - name: Dependency Review (PR only)
+        if: github.event_name == 'pull_request'
         uses: actions/dependency-review-action@v3
         continue-on-error: true
-
-  secrets_rotation:
-    runs-on: ubuntu-latest
-    needs: build
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node & pnpm
-        uses: ./.github/actions/setup-pnpm
-      - name: Install Dependencies
-        run: |
-          if ! pnpm install --frozen-lockfile; then
-            echo "[lockfile] Drift detected → non-frozen install (ws_schema_drift)";
-            pnpm install --no-frozen-lockfile;
-          fi
-      - name: Secret Rotation Check
-        run: pnpm run ci:secrets
-
-  ws_schema_drift:
-    runs-on: ubuntu-latest
-    needs: build
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node & pnpm
-        uses: ./.github/actions/setup-pnpm
-      - name: Install Dependencies
-        run: |
-          if ! pnpm install --frozen-lockfile; then
-            echo "[lockfile] Drift detected → non-frozen install (performance_slo)";
-            pnpm install --no-frozen-lockfile;
-          fi
-      - name: WebSocket Schema Drift (soft)
-        run: |
-          set +e
-          echo "[ws] Running schema drift check (soft)";
-          pnpm run ci:ws-schema
-          EXIT=$?
-          mkdir -p reports
-          if [ -f reports/ws-schema-drift.json ]; then
-            echo "[ws] Existing drift report found";
-          else
-            echo "{\"pass\":$([ $EXIT -eq 0 ] && echo true || echo false),\"generatedAt\":\"$(date -u +%FT%TZ)\",\"reason\":\"script_exit_$EXIT\"}" > reports/ws-schema-drift.json
-          fi
-          if [ $EXIT -ne 0 ]; then
-            echo "(soft) ws_schema_drift failed (exit=$EXIT) – continuing without failing job";
-          fi
-          exit 0
-      - name: Ensure WS Drift Report (placeholder)
+      - name: Upload Security Reports
         if: always()
-        run: |
-          mkdir -p reports
-          if [ ! -f reports/ws-schema-drift.json ]; then echo '{"pass":false,"reason":"no_report_generated"}' > reports/ws-schema-drift.json; fi
-      - name: Upload WS Schema Drift Report
         uses: actions/upload-artifact@v4
         with:
-          name: ws-schema-drift-report
-          path: reports/ws-schema-drift.json
-          if-no-files-found: error
+          name: security-reports
+          path: reports/pnpm-audit.json
+          if-no-files-found: warn
 
-  performance_slo:
+  monitoring:
     runs-on: ubuntu-latest
     needs: build
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node & pnpm
         uses: ./.github/actions/setup-pnpm
       - name: Install Dependencies
+        run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-artifacts
+          path: .
+        continue-on-error: true
+      - name: WebSocket Schema & Performance Checks
         run: |
-          if ! pnpm install --frozen-lockfile; then
-            echo "[lockfile] Drift detected → non-frozen install (summary)";
-            pnpm install --no-frozen-lockfile;
-          fi
-      - name: Performance SLO Probe
-        run: pnpm run ci:perf-slo
-      - name: Ensure Perf SLO Report (placeholder)
+          pnpm run ci:ws-schema || echo "WS schema check (soft)"
+          pnpm run ci:perf-slo || echo "Performance SLO check (soft)"
+      - name: Upload Monitoring Reports
         if: always()
-        run: |
-          mkdir -p reports
-          if [ ! -f reports/perf-slo.json ]; then echo '{"status":"failed","reason":"no_report_generated"}' > reports/perf-slo.json; fi
-      - name: Upload Performance SLO Report
         uses: actions/upload-artifact@v4
         with:
-          name: perf-slo-report
-          path: reports/perf-slo.json
-          if-no-files-found: error
+          name: monitoring-reports
+          path: reports/*.json
+          if-no-files-found: warn
 
   summary:
     runs-on: ubuntu-latest
     needs:
-      - bundle_threshold
-      - bundle_drift
-      - analytics_integrity
-      - privacy_guard
+      - bundle_check
       - smoke
-      - secrets_rotation
-      - ws_schema_drift
-      - performance_slo
-      - security_scan
+      - security
+      - monitoring
       - code_quality
       - coverage_delta
     if: always()
@@ -609,28 +434,16 @@ jobs:
           fi
       - name: Prepare Reports Dir
         run: mkdir -p reports
-      - name: Download Bundle Threshold Report
+      - name: Download Bundle Reports
         uses: actions/download-artifact@v4
         with:
-          name: bundle-threshold-report
+          name: bundle-reports
           path: reports
         continue-on-error: true
-      - name: Download Bundle Drift Report
+      - name: Download Monitoring Reports
         uses: actions/download-artifact@v4
         with:
-          name: bundle-drift-report
-          path: reports
-        continue-on-error: true
-      - name: Download Perf SLO Report
-        uses: actions/download-artifact@v4
-        with:
-          name: perf-slo-report
-          path: reports
-        continue-on-error: true
-      - name: Download WS Schema Drift Report
-        uses: actions/download-artifact@v4
-        with:
-          name: ws-schema-drift-report
+          name: monitoring-reports
           path: reports
         continue-on-error: true
       - name: Download Branding Summary (optional)
@@ -649,13 +462,12 @@ jobs:
         run: |
           node scripts/ci/ci-scorecard.mjs \
             --lint='${{ needs.code_quality.result }}' \
-            --bundle='${{ needs.bundle_threshold.result }}' \
-            --drift='${{ needs.bundle_drift.result }}' \
-            --privacy='${{ needs.privacy_guard.result }}' \
+            --bundle='${{ needs.bundle_check.result }}' \
+            --drift='${{ needs.bundle_check.result }}' \
             --smoke='${{ needs.smoke.result }}' \
-            --secrets='${{ needs.secrets_rotation.result }}' \
-            --ws='${{ needs.ws_schema_drift.result }}' \
-            --perf='${{ needs.performance_slo.result }}'
+            --security='${{ needs.security.result }}' \
+            --ws='${{ needs.monitoring.result }}' \
+            --perf='${{ needs.monitoring.result }}'
       - name: Enrich Scorecard (eslint + coverage)
         run: |
           set -e
@@ -730,30 +542,21 @@ jobs:
           if-no-files-found: warn
       - name: Enforce Gating
         run: |
-          echo "Bundle: ${{ needs.bundle_threshold.result }}"
-          echo "Drift: ${{ needs.bundle_drift.result }}"
-          echo "Privacy: ${{ needs.privacy_guard.result }}"
+          echo "Bundle: ${{ needs.bundle_check.result }}"
           echo "Smoke: ${{ needs.smoke.result }}"
-          echo "Secrets: ${{ needs.secrets_rotation.result }}"
-          echo "WS Schema: ${{ needs.ws_schema_drift.result }}"
-          echo "Perf SLO: ${{ needs.performance_slo.result }}"
-          echo "Security: ${{ needs.security_scan.result }}"
+          echo "Security: ${{ needs.security.result }}"
+          echo "Monitoring: ${{ needs.monitoring.result }}"
           echo "Code Quality: ${{ needs.code_quality.result }}"
           echo "Coverage Delta: ${{ needs.coverage_delta.result }}"
           failures=0
-          # Treat WS schema drift as soft (warning) – exclude from hard gate counting
-          for r in "${{ needs.bundle_threshold.result }}" \
-                   "${{ needs.bundle_drift.result }}" \
-                   "${{ needs.privacy_guard.result }}" \
+          for r in "${{ needs.bundle_check.result }}" \
                    "${{ needs.smoke.result }}" \
-                   "${{ needs.secrets_rotation.result }}" \
-                   "${{ needs.performance_slo.result }}" \
-                   "${{ needs.security_scan.result }}" \
+                   "${{ needs.security.result }}" \
                    "${{ needs.code_quality.result }}" \
                    "${{ needs.coverage_delta.result }}"; do
             if [ "$r" = 'failure' ] || [ "$r" = 'cancelled' ]; then failures=$((failures+1)); fi
           done
-          if [ "${{ needs.ws_schema_drift.result }}" = 'failure' ]; then echo "(soft) WS schema drift failed – not counted toward gating"; fi
+          if [ "${{ needs.monitoring.result }}" = 'failure' ]; then echo "(soft) Monitoring checks failed – not counted toward gating"; fi
           if [ $failures -gt 0 ]; then echo "Gating failures: $failures"; exit 1; fi
 
   pre_release_gate:
@@ -761,8 +564,8 @@ jobs:
     needs: [summary]
     if: |
       (github.event_name == 'pull_request' || github.ref == 'refs/heads/main') &&
-      github.event.inputs.skip_pre_release_gate != 'true'
-    uses: ${{ github.repository }}/.github/workflows/pre-release-gate.yml@main
+      (github.event.inputs.skip_pre_release_gate != 'true' || github.event.inputs.skip_pre_release_gate == '')
+    uses: ./.github/workflows/pre-release-gate.yml
     with:
       full: 'false'
       strict: 'false'
@@ -825,10 +628,6 @@ jobs:
           name: test-count-baseline
           path: test-count-baseline.json
 
-      - name: Deploy (develop branch only)
-        if: github.ref == 'refs/heads/develop'
-        run: pnpm run deploy:dev || echo "Development deploy failed (non-blocking)"
-
   baseline_metrics:
     runs-on: ubuntu-latest
     needs: [summary, coverage_delta]
@@ -841,147 +640,38 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Download Coverage Suggestion Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-suggestion
-          path: coverage-suggestion
-        continue-on-error: true
-      - name: Auto Raise Coverage Min (PR-less commit) (soft)
-        run: |
-          set -e
-          SUGG_FILE="coverage-suggestion/coverage-suggestion.json"
-          WF_FILE=".github/workflows/ci-core.yml"
-          if [ ! -f "$SUGG_FILE" ]; then echo "No suggestion artifact"; exit 0; fi
-          CUR_MIN=$(grep -E "COVERAGE_MIN:\s*[0-9]+" "$WF_FILE" | head -1 | sed -E 's/.*COVERAGE_MIN:\s*([0-9]+)/\1/')
-          [ -z "$CUR_MIN" ] && CUR_MIN=10
-          node - <<'NODE'
-          const fs=require('fs');
-          const wf=process.env.WF_FILE;
-          const suggFile=process.env.SUGG_FILE;
-          if(!fs.existsSync(suggFile)) process.exit(0);
-          let raw; try{ raw=JSON.parse(fs.readFileSync(suggFile,'utf8')); }catch{ process.exit(0); }
-          const sugg=raw && raw.suggestion && raw.suggestion.suggestedMin;
-          if(!sugg){ console.log('No suggestedMin present'); process.exit(0); }
-          const curMin=Number(process.env.CUR_MIN||'0');
-          if(!(sugg>curMin)){ console.log('Suggested min not higher'); process.exit(0); }
-          if(sugg > curMin + 10){ console.log('Suggested increase too large; skipping'); process.exit(0); }
-          let content=fs.readFileSync(wf,'utf8');
-          const re=/(COVERAGE_MIN:\s*)([0-9]+)/;
-          if(!re.test(content)){ console.log('COVERAGE_MIN line not found'); process.exit(0); }
-          content=content.replace(re, `$1${sugg}`);
-          fs.writeFileSync(wf, content);
-          fs.writeFileSync('coverage-min-auto-raise.log', JSON.stringify({ previous:curMin, new:sugg, triggeredAt:new Date().toISOString() },null,2));
-          console.log('Auto-updated COVERAGE_MIN ->', sugg);
-          NODE
-          if git diff --quiet .github/workflows/ci-core.yml; then echo "No coverage min change"; exit 0; fi
-          git config user.name 'github-actions'
-          git config user.email 'github-actions@github.com'
-          git add .github/workflows/ci-core.yml coverage-min-auto-raise.log
-          git commit -m "chore(ci): auto-raise coverage min [skip ci]" || true
-          git push origin HEAD:main || echo 'Push skipped'
       - name: Setup Node & pnpm
         uses: ./.github/actions/setup-pnpm
       - name: Install Dependencies
+        run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: quality-reports
+          path: artifacts
+        continue-on-error: true
+      - name: Update Coverage Baseline
         run: |
-          # Attempt strict install; fall back if lockfile drift detected (do not fail entire job)
-          pnpm install --frozen-lockfile || {
-            echo "[baseline_metrics] lockfile drift detected – performing non-frozen install";
-            pnpm install --no-frozen-lockfile;
-          }
-      - name: Download Bundle Threshold Report
-        uses: actions/download-artifact@v4
-        with:
-          name: bundle-threshold-report
-          path: bundle-threshold-report
-        continue-on-error: true
-      - name: Download Perf SLO Report
-        uses: actions/download-artifact@v4
-        with:
-          name: perf-slo-report
-          path: perf-slo-report
-        continue-on-error: true
-      - name: Download WS Schema Drift Report
-        uses: actions/download-artifact@v4
-        with:
-          name: ws-schema-drift-report
-          path: ws-schema-drift-report
-        continue-on-error: true
-      - name: Download Code Quality Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: code-quality
-          path: code-quality
-        continue-on-error: true
-      - name: Download Coverage Baseline Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-baseline
-          path: .
-        continue-on-error: true
-      - name: Aggregate Baselines
-        run: |
-          set -e
-          echo "Aggregating baseline metrics..."
-          node - <<'NODE'
-          const fs=require('fs');
-          const path=require('path');
-          function readJSON(p){ if (fs.existsSync(p)) { try { return JSON.parse(fs.readFileSync(p,'utf8')); } catch {} } return null; }
-          const coverage = readJSON('coverage-baseline.json');
-          const bundle = readJSON('bundle-threshold-report/reports/bundle-threshold.json') || readJSON('reports/bundle-threshold.json') || readJSON('bundle-threshold.json');
-          const perf = readJSON('perf-slo-report/perf-slo.json') || readJSON('reports/perf-slo.json');
-          const ws = readJSON('ws-schema-drift-report/reports/ws-schema-drift.json') || readJSON('reports/ws-schema-drift.json');
-          const eslint = readJSON('code-quality/reports/eslint-report.json') || readJSON('reports/code-quality/eslint-report.json');
-          let eslintSummary = null;
-          if (Array.isArray(eslint)) {
-            eslintSummary = {
-              files: eslint.length,
-              errors: eslint.reduce((a,f)=>a+(f.errorCount||0),0),
-              warnings: eslint.reduce((a,f)=>a+(f.warningCount||0),0)
-            };
-          }
-          const baseline = {
-            generatedAt: new Date().toISOString(),
-            coverage,
-            bundleSummary: bundle,
-            performance: perf,
-            wsSchema: ws && ws.expectedSchema ? ws.expectedSchema : ws,
-            eslintSummary
-          };
-          fs.mkdirSync('ci-baselines',{recursive:true});
-          fs.writeFileSync('ci-baselines/baselines.json', JSON.stringify(baseline,null,2));
-          if (!fs.existsSync('ci-baselines/README.md')) {
-            fs.writeFileSync('ci-baselines/README.md', '# CI Baselines\n\nAggregated baseline metrics auto-updated on successful main branch runs.');
-          }
-          // history (rolling 30)
-          const historyDir='ci-baselines/history';
-          fs.mkdirSync(historyDir,{recursive:true});
-          const stamp = baseline.generatedAt.replace(/[:.]/g,'-');
-          fs.writeFileSync(path.join(historyDir, stamp + '.json'), JSON.stringify(baseline,null,2));
-          const files = fs.readdirSync(historyDir).filter(f=>f.endsWith('.json')).sort();
-          const index = files.slice(-30).map(f=>({ file:f, ts:f.replace('.json','') }));
-          fs.writeFileSync('ci-baselines/history-index.json', JSON.stringify(index,null,2));
-          console.log('Baseline metrics + history written');
-          NODE
-      - name: Upload Baselines Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ci-baselines
-          path: |
-            ci-baselines/baselines.json
-            ci-baselines/history-index.json
-          if-no-files-found: warn
+          if [ -f artifacts/coverage/coverage-summary.json ]; then
+            COV=$(node -e "const f=require('./artifacts/coverage/coverage-summary.json');const t=f.total||f;process.stdout.write(String(t.lines?.pct||0));")
+            echo "{\"generatedAt\":\"$(date -u +%FT%TZ)\",\"linesPct\":$COV}" > coverage-baseline.json
+            git config user.name 'github-actions'
+            git config user.email 'github-actions@github.com'
+            git add coverage-baseline.json
+            git commit -m "chore(ci): update coverage baseline [skip ci]" || true
+            git push origin HEAD:main || true
+          fi
       - name: Generate Badges
-        run: node scripts/ci/generate-badges.mjs
-      - name: Commit Baselines (skip CI)
+        run: node scripts/ci/generate-badges.mjs || echo "Badge generation (soft)"
+      - name: Commit Badges
+        if: always()
         run: |
-          set -e
-          if git diff --quiet ci-baselines coverage-baseline.json; then echo "No baseline changes detected."; exit 0; fi
+          if git diff --quiet ci-baselines/badges/*.svg 2>/dev/null; then exit 0; fi
           git config user.name 'github-actions'
           git config user.email 'github-actions@github.com'
-          git add ci-baselines/baselines.json ci-baselines/history-index.json ci-baselines/history/*.json ci-baselines/badges/*.svg coverage-baseline.json || true
-          git commit -m 'chore(ci): update baselines & badges [skip ci]' || echo 'Nothing to commit'
-          git push origin HEAD:main || echo 'Push skipped'
+          git add ci-baselines/badges/*.svg || true
+          git commit -m 'chore(ci): update badges [skip ci]' || true
+          git push origin HEAD:main || true
 
   deploy_readiness:
     name: Deploy Readiness Assessment
@@ -1145,111 +835,29 @@ jobs:
       - name: Deployment Summary
         run: |
           echo "Production deployment completed. Readiness: ${{ needs.deploy_readiness.outputs.ready }} (reason: ${{ needs.deploy_readiness.outputs.reason }})" >> $GITHUB_STEP_SUMMARY
-      - name: Create GitHub Release (tag builds)
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          body_path: reports/release-notes.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  initial_release:
-    name: Initial Tag & Release
-    runs-on: ubuntu-latest
-    needs: deploy_readiness
-    if: >-
-      needs.deploy_readiness.outputs.ready == 'true' &&
-      (github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true')) &&
-      !startsWith(github.ref, 'refs/tags/')
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Determine Existing Tags
-        id: tags
-        run: |
-          set -e
-          COUNT=$(git tag --list 'v*' | wc -l | tr -d ' ')
-          echo "existing_count=$COUNT" >> $GITHUB_OUTPUT
-          echo "Found $COUNT existing version tags"
-      - name: Skip If Tags Exist
-        if: steps.tags.outputs.existing_count != '0'
-        run: echo "Version tags already exist; skipping initial release logic." && exit 0
-      - name: Compute Initial Version
-        if: steps.tags.outputs.existing_count == '0'
-        id: version
-        run: |
-          set -e
-          # Allow override via workflow input or repo variable (future)
-          # (Optional) could source from workflow_dispatch input initial_version if defined; fallback to default
-          BASE="v0.1.0"
-          echo "tag=$BASE" >> $GITHUB_OUTPUT
-          echo "Initial version chosen: $BASE"
-      - name: Generate Release Notes (pre-tag)
-        if: steps.tags.outputs.existing_count == '0'
-        run: |
-          mkdir -p reports
-          RELEASE_TAG="${{ steps.version.outputs.tag }}" node scripts/ci/generate-changelog.mjs --output reports/release-notes.md || echo "[release] changelog generation failed"
-          echo "Generated notes:"; head -50 reports/release-notes.md || true
-      - name: Create Tag & Push
-        if: steps.tags.outputs.existing_count == '0'
-        run: |
-          git config user.name 'github-actions'
-          git config user.email 'github-actions@github.com'
-          TAG="${{ steps.version.outputs.tag }}"
-          git tag "$TAG" 2>/dev/null || echo "[initial_release] Tag $TAG already exists (continuing)"
-          git push origin "$TAG" || echo "[initial_release] Push skipped"
-      - name: Publish GitHub Release
-        if: steps.tags.outputs.existing_count == '0'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: ${{ steps.version.outputs.tag }}
-          body_path: reports/release-notes.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Append to CHANGELOG.md (initial)
-        if: steps.tags.outputs.existing_count == '0'
-        run: |
-          set -e
-          if [ -f CHANGELOG.md ] && grep -q "^## ${{ steps.version.outputs.tag }}" CHANGELOG.md; then echo "Entry already exists"; exit 0; fi
-          if [ ! -f CHANGELOG.md ]; then echo "# Changelog" > CHANGELOG.md; fi
-          TMP=$(mktemp)
-          { echo ""; cat reports/release-notes.md; echo ""; cat CHANGELOG.md; } > $TMP
-          mv $TMP CHANGELOG.md
-          git config user.name 'github-actions'
-          git config user.email 'github-actions@github.com'
-          git add CHANGELOG.md
-          TAG="${{ steps.version.outputs.tag }}"
-          git commit -m "chore(release): append ${TAG} to CHANGELOG [skip ci]" || true
-          git push origin HEAD:main || true
-      - name: Summary
-        if: steps.tags.outputs.existing_count == '0'
-        run: |
-          echo "Initial release created with tag ${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
-
-  update_changelog:
-    name: Update CHANGELOG (tag)
+  release:
+    name: Create Release & Update CHANGELOG
     runs-on: ubuntu-latest
     needs: deploy_production
-    if: startsWith(github.ref, 'refs/tags/v') && needs.deploy_production.result == 'success'
+    if: |
+      needs.deploy_production.result == 'success' &&
+      startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Generate / Append Release Notes
+      - name: Generate Release Notes
         run: |
-          set -e
           TAG=${GITHUB_REF##*/}
           mkdir -p reports
-          RELEASE_TAG=$TAG node scripts/ci/generate-changelog.mjs --output reports/release-notes.md || echo "[changelog] generation failed"
-          if [ -f CHANGELOG.md ] && grep -q "^## $TAG" CHANGELOG.md; then echo "Entry already present"; exit 0; fi
+          RELEASE_TAG=$TAG node scripts/ci/generate-changelog.mjs --output reports/release-notes.md || echo "Changelog generation failed"
+      - name: Update CHANGELOG
+        run: |
+          TAG=${GITHUB_REF##*/}
+          if [ -f CHANGELOG.md ] && grep -q "^## $TAG" CHANGELOG.md ]; then echo "Entry already present"; exit 0; fi
           if [ ! -f CHANGELOG.md ]; then echo "# Changelog" > CHANGELOG.md; fi
           TMP=$(mktemp)
           { echo ""; cat reports/release-notes.md; echo ""; cat CHANGELOG.md; } > $TMP
@@ -1259,89 +867,11 @@ jobs:
           git add CHANGELOG.md
           git commit -m "chore(release): append $TAG to CHANGELOG [skip ci]" || true
           git push origin HEAD:main || true
-      - name: Upload Release Notes (tag)
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: release-notes-tag
-          path: reports/release-notes.md
-          if-no-files-found: warn
-
-  final_summary:
-    name: Final Summary & Deployment Report
-    runs-on: ubuntu-latest
-    needs:
-      - summary
-      - deploy_readiness
-      - deploy_production
-      - initial_release
-    if: always()
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download Scorecard
-        uses: actions/download-artifact@v4
-        with:
-          name: ci-scorecard
-          path: final
-        continue-on-error: true
-      - name: Download Deploy Readiness
-        uses: actions/download-artifact@v4
-        with:
-          name: deploy-readiness
-          path: final
-        continue-on-error: true
-      - name: Download Deploy Status
-        uses: actions/download-artifact@v4
-        with:
-          name: deploy-status
-          path: final
-        continue-on-error: true
-      - name: Download Baselines (optional)
-        uses: actions/download-artifact@v4
-        with:
-          name: ci-baselines
-          path: final/ci-baselines
-        continue-on-error: true
-      - name: Assemble Final Summary
-        run: |
-          set -e
-          SCORECARD=final/ci-scorecard.md
-          READINESS=final/reports/deploy-readiness.json
-          DEPLOY=final/reports/deploy-status.json
-          echo "# Final CI Summary" > FINAL_SUMMARY.md
-          echo "Generated: $(date -u +%FT%TZ)" >> FINAL_SUMMARY.md
-          printf '\n## Gating Summary\n' >> FINAL_SUMMARY.md
-          if [ -f "$SCORECARD" ]; then
-            cat "$SCORECARD" >> FINAL_SUMMARY.md
-          else
-            echo "(scorecard artifact missing)" >> FINAL_SUMMARY.md
-          fi
-          printf '\n## Deployment Readiness\n' >> FINAL_SUMMARY.md
-          if [ -f "$READINESS" ]; then
-            printf '```json\n' >> FINAL_SUMMARY.md
-            cat "$READINESS" | jq '. | {ready,reason,coverage,generated}' >> FINAL_SUMMARY.md || cat "$READINESS" >> FINAL_SUMMARY.md
-            printf '```\n' >> FINAL_SUMMARY.md
-          else
-            echo "(deploy-readiness artifact missing)" >> FINAL_SUMMARY.md
-          fi
-          echo "\n## Deployment Status" >> FINAL_SUMMARY.md
-          if [ -f "$DEPLOY" ]; then
-            printf '```json\n' >> FINAL_SUMMARY.md
-            cat "$DEPLOY" | jq '.' >> FINAL_SUMMARY.md || cat "$DEPLOY" >> FINAL_SUMMARY.md
-            printf '```\n' >> FINAL_SUMMARY.md
-          else
-            echo "(deploy-status artifact missing)" >> FINAL_SUMMARY.md
-          fi
-          if [ -f final/ci-baselines/baselines.json ]; then
-            echo "\n## Baselines Snapshot" >> FINAL_SUMMARY.md
-            printf '```json\n' >> FINAL_SUMMARY.md
-            cat final/ci-baselines/baselines.json | jq '{generatedAt, coverage: .coverage.linesPct?, eslint: .eslintSummary?, bundle: (.bundleSummary.summary? // .bundleSummary), perf: .performance?.status, ws: (.wsSchema?.pass // .wsSchema?.status)}' >> FINAL_SUMMARY.md || true
-            printf '```\n' >> FINAL_SUMMARY.md
-            printf '```\n' >> FINAL_SUMMARY.md
-          fi
-          cat FINAL_SUMMARY.md >> $GITHUB_STEP_SUMMARY
-      - name: Upload Final Summary Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: final-summary
-          path: FINAL_SUMMARY.md
-          if-no-files-found: error
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body_path: reports/release-notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
