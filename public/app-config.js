@@ -4,17 +4,17 @@
 
 (function() {
   // Detect environment based on hostname
-  const isProduction = typeof window !== 'undefined' && 
+  const isProduction = typeof window !== 'undefined' &&
     window.location.hostname === 'health.andernet.dev';
-  
+
   const environment = isProduction ? 'production' : 'development';
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  
+
   window.__VITALSENSE_CONFIG__ = {
     environment: environment,
     version: '1.0.0',
     auth0: {
-      domain: isProduction 
+      domain: isProduction
         ? 'dev-qjdpc81dzr7xrnlu.us.auth0.com'  // Production Auth0 domain
         : 'vitalsense-dev.auth0.com',          // Development Auth0 domain
       clientId: isProduction
