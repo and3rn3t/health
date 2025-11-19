@@ -1,5 +1,7 @@
 name: Core CI Pipeline
 
+# Workflow updated to fix job ordering
+
 on:
   push:
     branches: [main, develop]
