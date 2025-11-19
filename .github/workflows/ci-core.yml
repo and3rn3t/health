@@ -222,7 +222,7 @@ jobs:
         run: |
           if [ ! -d dist ]; then echo "dist missing - rebuilding"; pnpm run build; fi
           if [ ! -d dist-worker ] || [ ! -f "dist-worker/index.js" ]; then
-            echo "dist-worker missing – building worker";
+            echo "dist-worker missing - building worker";
             pnpm run build:worker;
             if [ ! -f dist-worker/index.js ]; then
               echo "❌ Worker build failed - dist-worker/index.js still missing";
@@ -714,7 +714,7 @@ jobs:
                    "${{ needs.coverage_delta.result }}"; do
             if [ "$r" = 'failure' ] || [ "$r" = 'cancelled' ]; then failures=$((failures+1)); fi
           done
-          if [ "${{ needs.monitoring.result }}" = 'failure' ]; then echo "(soft) Monitoring checks failed – not counted toward gating"; fi
+          if [ "${{ needs.monitoring.result }}" = 'failure' ]; then echo "(soft) Monitoring checks failed - not counted toward gating"; fi
           if [ $failures -gt 0 ]; then echo "Gating failures: $failures"; exit 1; fi
 
   pre_release_gate:
@@ -902,7 +902,7 @@ jobs:
           mkdir -p reports
           TS=$(date -u +%FT%TZ)
           if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "[deploy] CLOUDFLARE_API_TOKEN missing – skipping publish (status=skipped_missing_token)";
+            echo "[deploy] CLOUDFLARE_API_TOKEN missing - skipping publish (status=skipped_missing_token)";
             printf '{"status":"skipped_missing_token","reason":"no_token","timestamp":"%s","ref":"%s","sha":"%s"}' "$TS" "${GITHUB_REF}" "${GITHUB_SHA}" > reports/deploy-status.json
             exit 0;
           fi
