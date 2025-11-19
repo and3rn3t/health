@@ -9,6 +9,7 @@ import React, {
   useTransition,
 } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
+import { ComponentErrorBoundary } from '@/components/error/ErrorBoundary';
 import { SafeLogger } from '@/lib/errorHandling';
 
 // Debug logging (only in development)
@@ -759,10 +760,32 @@ function AppContent() {
                       const ActiveComponent = activeComponent as unknown as
                         | React.ComponentType<WithOptionalHealthData>
                         | undefined;
-                      return ActiveComponent ? (
+                      if (!ActiveComponent) return null;
+                      
+                      // Wrap EnhancedFallRiskSystem with error boundary to prevent blank screen
+                      const isEnhancedFallRisk = activeTab === 'enhanced-fall-risk';
+                      
+                      const component = (
                         // Provide shared healthData to components that can consume it.
                         <ActiveComponent healthData={healthData} />
-                      ) : null;
+                      );
+                      
+                      return isEnhancedFallRisk ? (
+                        <ComponentErrorBoundary
+                          onError={(error, errorInfo) => {
+                            SafeLogger.error('EnhancedFallRiskSystem error', {
+                              errorName: error.name,
+                              errorMessage: error.message,
+                              hasStack: !!error.stack,
+                              componentStack: errorInfo.componentStack,
+                            });
+                          }}
+                        >
+                          {component}
+                        </ComponentErrorBoundary>
+                      ) : (
+                        component
+                      );
                     })()
                   )}
                 </div>
