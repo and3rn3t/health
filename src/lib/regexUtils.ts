@@ -60,10 +60,10 @@ export function isRegexSafe(pattern: string): boolean {
   if (/\([^)]*\*[^)]*\)\+/.test(pattern)) return false; // (a*)+
 
   // Check for complex alternation with quantifiers
-  if (/\([^|]+\|[^|]+\|.*\)[\*\+]/.test(pattern)) return false;
+  if (/\([^|]+\|[^|]+\|.*\)[*+]/.test(pattern)) return false;
 
   // Check for unbounded repetition
-  if (/\[[^\]]*\][\*\+]{2,}/.test(pattern)) return false;
+  if (/\[[^\]]*\][*+]{2,}/.test(pattern)) return false;
 
   return true;
 }
