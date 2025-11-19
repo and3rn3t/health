@@ -70,25 +70,20 @@ jobs:
           build-args: |
             BUILDKIT_INLINE_CACHE=1
 
-      - name: Build Docker image (CI/CD) - Local
+      - name: Build Docker image (CI/CD) - Local Only
         id: build-local
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile.build
           push: false
-          tags: vitalsense:build
+          tags: vitalsense:build-local
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
-          outputs: type=docker,dest=/tmp/vitalsense-build.tar
+          load: true
           build-args: |
             BUILDKIT_INLINE_CACHE=1
-
-      - name: Load Docker image locally
-        run: |
-          docker load -i /tmp/vitalsense-build.tar
-          docker tag vitalsense:build vitalsense:build-local
 
       - name: Build Docker image (CI/CD) - Push to Registry
         if: github.event_name != 'pull_request' && github.event.inputs.push != 'false'
@@ -111,8 +106,8 @@ jobs:
         run: |
           echo "📦 Extracting build artifacts..."
           
-          # Use the locally loaded image
-          IMAGE_TAG="vitalsense:build"
+          # Use the locally loaded image (with -local suffix to avoid Docker Hub)
+          IMAGE_TAG="vitalsense:build-local"
           
           if ! docker image inspect $IMAGE_TAG >/dev/null 2>&1; then
             echo "❌ Image $IMAGE_TAG not found. Available images:"
@@ -121,10 +116,10 @@ jobs:
           fi
           
           echo "✅ Using local image: $IMAGE_TAG"
-          
+
           # Create container and extract artifacts
           CONTAINER_ID=$(docker create $IMAGE_TAG)
-          
+
           # Extract artifacts
           echo "Extracting dist/..."
           docker cp $CONTAINER_ID:/build-output/dist ./dist 2>/dev/null || {
@@ -136,7 +131,7 @@ jobs:
               exit 1
             }
           }
-          
+
           echo "Extracting dist-worker/..."
           docker cp $CONTAINER_ID:/build-output/dist-worker ./dist-worker 2>/dev/null || {
             echo "⚠️ dist-worker/ not found in /build-output, checking /app/dist-worker..."
@@ -144,10 +139,10 @@ jobs:
               echo "⚠️ dist-worker/ not found (optional)"
             }
           }
-          
+
           # Clean up container
           docker rm $CONTAINER_ID
-          
+
           # Verify artifacts
           if [ -d dist ] && [ "$(ls -A dist)" ]; then
             echo "✅ dist/ extracted ($(du -sh dist | cut -f1))"
@@ -156,7 +151,7 @@ jobs:
             echo "❌ dist/ is empty or missing"
             exit 1
           fi
-          
+
           if [ -d dist-worker ] && [ "$(ls -A dist-worker)" ]; then
             echo "✅ dist-worker/ extracted ($(du -sh dist-worker | cut -f1))"
           fi
