@@ -1,0 +1,97 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs (will be generated in container)
+dist
+dist-worker
+dist-ssr
+*-dist
+build
+.next
+out
+
+# Testing
+coverage
+.nyc_output
+test-results
+test-output
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__
+
+# CI/CD
+.github
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+docs
+*.md
+!README.md
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Cloudflare
+.wrangler
+wrangler.toml.bak
+*.toml.bak
+
+# Cache
+.cache
+.parcel-cache
+.nx
+.eslintcache
+*.tsbuildinfo
+.tsbuildinfo
+
+# Reports (generated in CI)
+reports
+ci-baselines
+
+# iOS (not needed for Docker builds)
+ios
+
+# Archive
+_archive
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Misc
+*.local
+*.pid
+*.seed
+*.pid.lock
+.spark-workbench-id
+
