@@ -90,13 +90,14 @@ describe('env', () => {
 
     test('should return false for production hostname', () => {
       // Mock import.meta.env to return false for DEV
-      vi.stubGlobal('import', {
+      const originalImport = (globalThis as any).import;
+      (globalThis as any).import = {
         meta: {
           env: {
             DEV: false,
           },
         },
-      });
+      };
 
       Object.defineProperty(globalThis, 'window', {
         value: {
@@ -109,25 +110,45 @@ describe('env', () => {
         configurable: true,
       });
 
-      expect(isDev()).toBe(false);
+      // The function reads from import.meta which is module-level, so we need to test differently
+      // Since we can't easily mock import.meta at runtime, we test the window.location fallback
+      // For production hostname without dev ports, it should return false
+      const result = isDev();
+      // If import.meta.env.DEV is not set, it falls back to window.location check
+      // health.andernet.dev is not localhost/127.0.0.1 and has no dev port, so should be false
+      expect(result).toBe(false);
+
+      if (originalImport) {
+        (globalThis as any).import = originalImport;
+      } else {
+        delete (globalThis as any).import;
+      }
     });
 
     test('should return false when window is not available', () => {
       // Mock import.meta.env to return false for DEV
-      vi.stubGlobal('import', {
+      const originalImport = (globalThis as any).import;
+      (globalThis as any).import = {
         meta: {
           env: {
             DEV: false,
           },
         },
-      });
+      };
 
       const originalWindow = globalThis.window;
       delete (globalThis as any).window;
 
-      expect(isDev()).toBe(false);
+      // Without window, and with DEV=false, should return false
+      const result = isDev();
+      expect(result).toBe(false);
 
       globalThis.window = originalWindow;
+      if (originalImport) {
+        (globalThis as any).import = originalImport;
+      } else {
+        delete (globalThis as any).import;
+      }
     });
   });
 });

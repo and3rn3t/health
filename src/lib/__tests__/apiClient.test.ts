@@ -27,15 +27,15 @@ describe('apiClient', () => {
     test('should fetch and return health data array', async () => {
       const mockData = [
         {
-          id: '1',
+          id: '550e8400-e29b-41d4-a716-446655440000', // Valid UUID
           type: 'heart_rate' as const,
           value: 72,
-          timestamp: '2024-01-01T00:00:00Z',
-          processedAt: '2024-01-01T00:00:00Z',
+          timestamp: '2024-01-01T00:00:00.000Z', // ISO datetime format
+          processedAt: '2024-01-01T00:00:00.000Z',
           validated: true,
           source: {
             userId: 'user-1',
-            collectedAt: '2024-01-01T00:00:00Z',
+            collectedAt: '2024-01-01T00:00:00.000Z',
           },
         },
       ];
@@ -82,15 +82,15 @@ describe('apiClient', () => {
       const mockData = {
         data: [
           {
-            id: '1',
+            id: '550e8400-e29b-41d4-a716-446655440000', // Valid UUID
             type: 'heart_rate' as const,
             value: 72,
-            timestamp: '2024-01-01T00:00:00Z',
-            processedAt: '2024-01-01T00:00:00Z',
+            timestamp: '2024-01-01T00:00:00.000Z', // ISO datetime format
+            processedAt: '2024-01-01T00:00:00.000Z',
             validated: true,
             source: {
               userId: 'user-1',
-              collectedAt: '2024-01-01T00:00:00Z',
+              collectedAt: '2024-01-01T00:00:00.000Z',
             },
           },
         ],

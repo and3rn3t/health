@@ -54,12 +54,14 @@ describe('ErrorBoundary', () => {
     });
 
     test('should show technical details in non-production', () => {
-      const error = new Error('Test error');
+      // Use AppErrorHandler to avoid re-throw in localhost
+      const { AppErrorHandler } = require('@/lib/errorHandling');
+      const error = new AppErrorHandler('Test error');
       const resetErrorBoundary = vi.fn();
 
-      // Mock non-production environment
+      // Mock non-production environment (but not localhost to avoid re-throw)
       Object.defineProperty(window, 'location', {
-        value: { hostname: 'localhost' },
+        value: { hostname: 'test.example.com' },
         writable: true,
         configurable: true,
       });
@@ -80,8 +82,17 @@ describe('ErrorBoundary', () => {
     });
 
     test('should call resetErrorBoundary when button clicked', () => {
-      const error = new Error('Test error');
+      // Use AppErrorHandler to avoid re-throw in localhost
+      const { AppErrorHandler } = require('@/lib/errorHandling');
+      const error = new AppErrorHandler('Test error');
       const resetErrorBoundary = vi.fn();
+
+      // Mock non-production environment (but not localhost to avoid re-throw)
+      Object.defineProperty(window, 'location', {
+        value: { hostname: 'test.example.com' },
+        writable: true,
+        configurable: true,
+      });
 
       // Suppress console.error for this test
       const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -95,6 +106,8 @@ describe('ErrorBoundary', () => {
 
       const button = screen.getByText(/Try Again/i);
       button.click();
+
+      expect(resetErrorBoundary).toHaveBeenCalled();
 
       consoleError.mockRestore();
 

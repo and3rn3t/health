@@ -64,11 +64,11 @@ describe('useWebSocket', () => {
     });
     // Mock WebSocket
     global.WebSocket = MockWebSocket as any;
-    vi.useFakeTimers();
+    // Use real timers for WebSocket tests
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    // Cleanup
   });
 
   test('should initialize with disconnected state', () => {

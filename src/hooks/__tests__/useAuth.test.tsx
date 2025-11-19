@@ -39,12 +39,12 @@ describe('useAuth', () => {
     // Suppress console.error for this test
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: ({ children }) => <>{children}</>, // No provider
-    });
-
-    expect(result.error).toBeInstanceOf(Error);
-    expect(result.error?.message).toBe('useAuth must be used within an AuthProvider');
+    // Use expect().toThrow() pattern for testing error boundaries
+    expect(() => {
+      renderHook(() => useAuth(), {
+        wrapper: ({ children }) => <>{children}</>, // No provider
+      });
+    }).toThrow('useAuth must be used within an AuthProvider');
 
     consoleError.mockRestore();
   });
