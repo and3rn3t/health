@@ -221,7 +221,7 @@ jobs:
       - name: Ensure Build Assets (fallback)
         run: |
           if [ ! -d dist ]; then echo "dist missing – rebuilding"; pnpm run build; fi
-          if [ ! -d dist-worker ] || [ ! -f dist-worker/index.js ]; then
+          if [ ! -d dist-worker ] || [ ! -f "dist-worker/index.js" ]; then
             echo "dist-worker missing – building worker";
             pnpm run build:worker;
             if [ ! -f dist-worker/index.js ]; then

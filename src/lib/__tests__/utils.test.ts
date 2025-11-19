@@ -8,8 +8,10 @@ describe('utils', () => {
     });
 
     test('should handle conditional classes', () => {
-      expect(cn('foo', false && 'bar', 'baz')).toBe('foo baz');
-      expect(cn('foo', true && 'bar', 'baz')).toBe('foo bar baz');
+      const condition1 = false;
+      const condition2 = true;
+      expect(cn('foo', condition1 && 'bar', 'baz')).toBe('foo baz');
+      expect(cn('foo', condition2 && 'bar', 'baz')).toBe('foo bar baz');
     });
 
     test('should handle undefined and null', () => {
