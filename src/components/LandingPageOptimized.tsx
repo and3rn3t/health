@@ -421,7 +421,7 @@ export default function LandingPageOptimized({
                   className="group transform overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <div className={`h-2 ${action.color}`} />
-                  <CardHeader className="pb-4">
+                  <CardHeader className="pt-6 pb-4">
                     <div className="mb-3 flex items-center justify-between">
                       <div className={`rounded-xl p-3 ${action.color}`}>
                         <IconComponent className="h-6 w-6 text-white" />
