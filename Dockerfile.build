@@ -23,8 +23,12 @@ RUN npm install -g pnpm@9 && \
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
+# Copy scripts directory needed for preinstall hook
+COPY scripts/ci/ensure-node-version.mjs ./scripts/ci/ensure-node-version.mjs
+
 # Install all dependencies (including dev dependencies for building)
-# Use cache mount for node_modules if available (BuildKit feature)
+# Use cache mount for pnpm store (BuildKit feature)
+# Note: preinstall script will run and verify Node version (which matches the image)
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 

@@ -18,12 +18,16 @@ RUN npm install -g pnpm@9 && \
     g++ \
     libc6-compat
 
-# Copy package files for dependency installation
+# Copy package files
 COPY package.json pnpm-lock.yaml ./
+
+# Copy scripts directory needed for preinstall hook
+COPY scripts/ci/ensure-node-version.mjs ./scripts/ci/ensure-node-version.mjs
 
 # Install dependencies (this layer will be cached if package files don't change)
 # Use --frozen-lockfile for reproducible builds
 # Use cache mount for pnpm store (BuildKit feature)
+# Note: preinstall script will run and verify Node version (which matches the image)
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile --prod=false
 
