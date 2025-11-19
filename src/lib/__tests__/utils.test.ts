@@ -19,7 +19,12 @@ describe('utils', () => {
     });
 
     test('should merge Tailwind classes correctly', () => {
-      expect(cn('px-2 py-1', 'px-4')).toBe('px-4 py-1');
+      // tailwind-merge may order classes differently, so we check that both classes are present
+      const result = cn('px-2 py-1', 'px-4');
+      expect(result).toContain('px-4');
+      expect(result).toContain('py-1');
+      // px-2 should be removed since px-4 overrides it
+      expect(result).not.toContain('px-2');
     });
 
     test('should handle empty strings', () => {

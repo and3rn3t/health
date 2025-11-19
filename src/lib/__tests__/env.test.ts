@@ -89,6 +89,15 @@ describe('env', () => {
     });
 
     test('should return false for production hostname', () => {
+      // Mock import.meta.env to return false for DEV
+      vi.stubGlobal('import', {
+        meta: {
+          env: {
+            DEV: false,
+          },
+        },
+      });
+
       Object.defineProperty(globalThis, 'window', {
         value: {
           location: {
@@ -104,6 +113,15 @@ describe('env', () => {
     });
 
     test('should return false when window is not available', () => {
+      // Mock import.meta.env to return false for DEV
+      vi.stubGlobal('import', {
+        meta: {
+          env: {
+            DEV: false,
+          },
+        },
+      });
+
       const originalWindow = globalThis.window;
       delete (globalThis as any).window;
 

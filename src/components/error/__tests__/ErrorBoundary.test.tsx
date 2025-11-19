@@ -61,7 +61,11 @@ describe('ErrorBoundary', () => {
       Object.defineProperty(window, 'location', {
         value: { hostname: 'localhost' },
         writable: true,
+        configurable: true,
       });
+
+      // Suppress console.error for this test
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       render(
         <EnhancedErrorFallback
@@ -71,11 +75,16 @@ describe('ErrorBoundary', () => {
       );
 
       expect(screen.getByText(/Technical Details/i)).toBeInTheDocument();
+
+      consoleError.mockRestore();
     });
 
     test('should call resetErrorBoundary when button clicked', () => {
       const error = new Error('Test error');
       const resetErrorBoundary = vi.fn();
+
+      // Suppress console.error for this test
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       render(
         <EnhancedErrorFallback
@@ -86,6 +95,8 @@ describe('ErrorBoundary', () => {
 
       const button = screen.getByText(/Try Again/i);
       button.click();
+
+      consoleError.mockRestore();
 
       expect(resetErrorBoundary).toHaveBeenCalled();
     });

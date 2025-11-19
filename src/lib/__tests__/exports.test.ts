@@ -72,7 +72,8 @@ describe('exports', () => {
     test('should handle object values', () => {
       const data = [{ name: 'John', metadata: { id: 1 } }];
       const csv = exportToCSV(data);
-      expect(csv).toContain(JSON.stringify({ id: 1 }));
+      // CSV escapes quotes, so we check for the escaped version
+      expect(csv).toContain('"{""id"":1}"');
     });
 
     test('should handle missing keys across rows', () => {

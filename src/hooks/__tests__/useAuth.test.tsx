@@ -36,10 +36,17 @@ describe('useAuth', () => {
     // Clear window config
     delete (window as any).__VITALSENSE_CONFIG__;
 
-    const { result } = renderHook(() => useAuth());
+    // Suppress console.error for this test
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: ({ children }) => <>{children}</>, // No provider
+    });
 
     expect(result.error).toBeInstanceOf(Error);
     expect(result.error?.message).toBe('useAuth must be used within an AuthProvider');
+
+    consoleError.mockRestore();
   });
 
   test('should return mock values when auth is disabled', () => {

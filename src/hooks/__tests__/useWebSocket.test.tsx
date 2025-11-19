@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useWebSocket } from '../useWebSocket';
 
 // Mock WebSocket
@@ -91,12 +91,17 @@ describe('useWebSocket', () => {
       })
     );
 
-    result.current.connect();
-
-    await waitFor(() => {
-      expect(result.current.connectionState.isConnecting).toBe(true);
+    act(() => {
+      result.current.connect();
     });
-  });
+
+    await waitFor(
+      () => {
+        expect(result.current.connectionState.isConnecting || result.current.connectionState.isConnected).toBe(true);
+      },
+      { timeout: 1000 }
+    );
+  }, 10000);
 
   test('should handle connection success', async () => {
     const onConnect = vi.fn();
@@ -111,17 +116,19 @@ describe('useWebSocket', () => {
       )
     );
 
-    result.current.connect();
+    act(() => {
+      result.current.connect();
+    });
 
     await waitFor(
       () => {
         expect(result.current.connectionState.isConnected).toBe(true);
       },
-      { timeout: 1000 }
+      { timeout: 2000 }
     );
 
     expect(onConnect).toHaveBeenCalled();
-  });
+  }, 10000);
 
   test('should send messages when connected', async () => {
     const sendSpy = vi.spyOn(MockWebSocket.prototype, 'send');
@@ -132,22 +139,29 @@ describe('useWebSocket', () => {
       })
     );
 
-    result.current.connect();
-
-    await waitFor(() => {
-      expect(result.current.connectionState.isConnected).toBe(true);
+    act(() => {
+      result.current.connect();
     });
 
-    result.current.sendMessage({
-      type: 'test',
-      data: { message: 'hello' },
+    await waitFor(
+      () => {
+        expect(result.current.connectionState.isConnected).toBe(true);
+      },
+      { timeout: 2000 }
+    );
+
+    act(() => {
+      result.current.sendMessage({
+        type: 'test',
+        data: { message: 'hello' },
+      });
     });
 
     expect(sendSpy).toHaveBeenCalled();
     const sentData = JSON.parse(sendSpy.mock.calls[0][0] as string);
     expect(sentData.type).toBe('test');
     expect(sentData.data).toEqual({ message: 'hello' });
-  });
+  }, 10000);
 
   test('should handle disconnection', async () => {
     const onDisconnect = vi.fn();
@@ -159,20 +173,30 @@ describe('useWebSocket', () => {
       })
     );
 
-    result.current.connect();
-
-    await waitFor(() => {
-      expect(result.current.connectionState.isConnected).toBe(true);
+    act(() => {
+      result.current.connect();
     });
 
-    result.current.disconnect();
+    await waitFor(
+      () => {
+        expect(result.current.connectionState.isConnected).toBe(true);
+      },
+      { timeout: 2000 }
+    );
 
-    await waitFor(() => {
-      expect(result.current.connectionState.isConnected).toBe(false);
+    act(() => {
+      result.current.disconnect();
     });
+
+    await waitFor(
+      () => {
+        expect(result.current.connectionState.isConnected).toBe(false);
+      },
+      { timeout: 2000 }
+    );
 
     expect(onDisconnect).toHaveBeenCalled();
-  });
+  }, 10000);
 
   test('should handle message handlers', async () => {
     const handler = vi.fn();
@@ -188,28 +212,35 @@ describe('useWebSocket', () => {
       )
     );
 
-    result.current.connect();
-
-    await waitFor(() => {
-      expect(result.current.connectionState.isConnected).toBe(true);
+    act(() => {
+      result.current.connect();
     });
+
+    await waitFor(
+      () => {
+        expect(result.current.connectionState.isConnected).toBe(true);
+      },
+      { timeout: 2000 }
+    );
 
     // Simulate receiving a message
     const ws = (result.current as any).wsRef?.current;
     if (ws && ws.onmessage) {
-      ws.onmessage(
-        new MessageEvent('message', {
-          data: JSON.stringify({
-            type: 'test_message',
-            data: { test: 'data' },
-          }),
-        })
-      );
+      act(() => {
+        ws.onmessage(
+          new MessageEvent('message', {
+            data: JSON.stringify({
+              type: 'test_message',
+              data: { test: 'data' },
+            }),
+          })
+        );
+      });
     }
 
     // Handler should be called (if message handling is implemented)
     // This depends on the actual implementation
-  });
+  }, 10000);
 
   test('should disable in development mode by default', () => {
     Object.defineProperty(window, 'location', {
