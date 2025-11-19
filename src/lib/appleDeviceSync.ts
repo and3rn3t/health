@@ -361,8 +361,11 @@ export class AppleDeviceSyncService {
    * Add sync error
    */
   private addError(error: Omit<SyncError, 'id' | 'timestamp' | 'resolved'>): void {
+    // Use crypto.randomUUID() for secure ID generation
     const syncError: SyncError = {
-      id: `error-${Date.now()}-${Math.random()}`,
+      id: typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `error-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(36)).join('')}`,
       timestamp: new Date(),
       resolved: false,
       ...error,

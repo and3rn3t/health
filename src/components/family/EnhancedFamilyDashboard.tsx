@@ -26,6 +26,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useKV } from '@/hooks/useCloudflareKV';
 import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { generateSecureId } from '@/lib/idGenerator';
 import type {
   FamilyMember,
   ProgressShare,
@@ -83,9 +84,14 @@ export default function EnhancedFamilyDashboard({
   // Add family member
   const handleAddMember = useCallback(
     (memberData: Omit<FamilyMember, 'id' | 'createdAt' | 'updatedAt'>) => {
+      if (!memberData?.name || typeof memberData.name !== 'string') {
+        toast.error('Invalid member data: name is required');
+        return;
+      }
+
       const newMember: FamilyMember = {
         ...memberData,
-        id: `member-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: generateSecureId('member'),
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -143,6 +149,11 @@ export default function EnhancedFamilyDashboard({
   // Delete family member
   const handleDeleteMember = useCallback(
     (id: string) => {
+      if (!id || typeof id !== 'string') {
+        toast.error('Invalid member ID');
+        return;
+      }
+
       const member = familyMembers?.find((m) => m.id === id);
       setFamilyMembers((current) => (current || []).filter((m) => m.id !== id));
 
@@ -164,7 +175,7 @@ export default function EnhancedFamilyDashboard({
     (shareData: Omit<ProgressShare, 'id'>) => {
       const newShare: ProgressShare = {
         ...shareData,
-        id: `share-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: generateSecureId('share'),
       };
 
       setProgressShares((current) => [newShare, ...(current || [])]);
@@ -244,7 +255,7 @@ export default function EnhancedFamilyDashboard({
     (activity: Omit<FamilyActivity, 'id'>) => {
       const newActivity: FamilyActivity = {
         ...activity,
-        id: `activity-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: generateSecureId('activity'),
       };
 
       setActivities((current) => [newActivity, ...(current || [])].slice(0, 50)); // Keep last 50

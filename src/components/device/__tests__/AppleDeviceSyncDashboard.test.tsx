@@ -5,6 +5,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import AppleDeviceSyncDashboard from '../AppleDeviceSyncDashboard';
+import { useAppleDeviceSync } from '@/hooks/useAppleDeviceSync';
 
 // Mock the hook
 vi.mock('@/hooks/useAppleDeviceSync', () => ({
@@ -71,11 +72,10 @@ describe('AppleDeviceSyncDashboard', () => {
   });
 
   it('handles start/stop sync buttons', () => {
-    const { useAppleDeviceSync } = require('@/hooks/useAppleDeviceSync');
     const mockStartSync = vi.fn();
     const mockStopSync = vi.fn();
 
-    useAppleDeviceSync.mockReturnValue({
+    vi.mocked(useAppleDeviceSync).mockReturnValue({
       devices: [],
       syncStatus: { isActive: false, syncProgress: 0, metricsSynced: 0, errors: [] },
       isConnected: false,
@@ -109,8 +109,7 @@ describe('AppleDeviceSyncDashboard', () => {
   });
 
   it('shows no devices message when empty', () => {
-    const { useAppleDeviceSync } = require('@/hooks/useAppleDeviceSync');
-    useAppleDeviceSync.mockReturnValue({
+    vi.mocked(useAppleDeviceSync).mockReturnValue({
       devices: [],
       syncStatus: { isActive: false, syncProgress: 0, metricsSynced: 0, errors: [] },
       isConnected: false,

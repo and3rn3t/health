@@ -34,6 +34,7 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 import type { FamilyMember, HealthDataShare } from '@/lib/familyDashboard';
 import { hasPermission } from '@/lib/familyDashboard';
+import { generateSecureId } from '@/lib/idGenerator';
 
 interface HealthDataSharingProps {
   members: FamilyMember[];
@@ -68,7 +69,7 @@ export default function HealthDataSharing({
     } else {
       // Create new share
       onUpdateShare(memberId, {
-        id: `share-${Date.now()}`,
+        id: generateSecureId('share'),
         memberId,
         sharedMetrics: [],
         lastShared: new Date(),

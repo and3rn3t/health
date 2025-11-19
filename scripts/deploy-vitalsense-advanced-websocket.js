@@ -117,11 +117,11 @@ class VitalSenseAdvancedDeployer {
 
     try {
       // Deploy to development environment first
-      // Use --no-gradual to apply Durable Object migrations
+      // Migration v1 has been applied, so normal deployment is fine
       console.log('   🚀 Deploying to development...');
       const devResult = spawnSync(
         'npx',
-        ['wrangler', 'deploy', '--env', 'advanced-websocket-dev', '--no-gradual'],
+        ['wrangler', 'deploy', '--env', 'advanced-websocket-dev'],
         {
           stdio: 'inherit',
           cwd: this.projectRoot,
@@ -140,11 +140,11 @@ class VitalSenseAdvancedDeployer {
       console.log('✅ Development deployment successful');
 
       // Ask for production deployment
-      // Use --no-gradual to apply Durable Object migrations
+      // Migration v1 has been applied, so normal deployment is fine
       console.log('   🚀 Deploying to production...');
       const prodResult = spawnSync(
         'npx',
-        ['wrangler', 'deploy', '--env', 'advanced-websocket-prod', '--no-gradual'],
+        ['wrangler', 'deploy', '--env', 'advanced-websocket-prod'],
         {
           stdio: 'inherit',
           cwd: this.projectRoot,

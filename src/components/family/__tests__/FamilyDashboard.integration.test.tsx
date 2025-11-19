@@ -9,6 +9,7 @@ import EnhancedFamilyDashboard from '../EnhancedFamilyDashboard';
 import FamilyMemberManager from '../FamilyMemberManager';
 import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import type { FamilyMember } from '@/lib/familyDashboard';
+import { useKV } from '@/hooks/useCloudflareKV';
 
 // Mock useKV hook with state
 const createMockUseKV = () => {
@@ -107,7 +108,7 @@ describe('Family Dashboard Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     const mockUseKV = createMockUseKV();
-    vi.mocked(require('@/hooks/useCloudflareKV').useKV).mockImplementation(mockUseKV);
+    vi.mocked(useKV).mockImplementation(mockUseKV);
   });
 
   it('adds member and updates statistics', async () => {

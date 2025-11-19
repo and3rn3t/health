@@ -55,6 +55,26 @@ export default function EnhancedAnalyticsDashboard({
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
   const [selectedMetric, setSelectedMetric] = useState<string>('steps');
 
+  // Statistics - must be before early return to satisfy React Hooks rules
+  const analyticsSummary = useMemo(() => {
+    if (!healthData) {
+      return {
+        timeRange,
+        totalDataPoints: 0,
+        metricsAnalyzed: [],
+        overallHealthScore: 0,
+        healthScoreTrend: 'stable' as const,
+        keyInsights: [],
+        anomalies: 0,
+        correlations: [],
+        patterns: [],
+      };
+    }
+    const allData = historicalData.length > 0 ? [...historicalData, healthData] : [healthData];
+    return generateAnalyticsSummary(allData, timeRange);
+  }, [healthData, historicalData, timeRange]);
+
+  // Early return check - must be after all hooks
   if (!healthData) {
     return (
       <div className="flex min-h-screen items-center justify-center p-6">
@@ -68,11 +88,6 @@ export default function EnhancedAnalyticsDashboard({
       </div>
     );
   }
-
-  const analyticsSummary = useMemo(() => {
-    const allData = historicalData.length > 0 ? [...historicalData, healthData] : [healthData];
-    return generateAnalyticsSummary(allData, timeRange);
-  }, [healthData, historicalData, timeRange]);
 
 
   const metrics = [
