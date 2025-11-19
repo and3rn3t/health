@@ -722,7 +722,7 @@ function AppContent() {
                   </div>
                 }
               >
-                <div className="mx-auto max-w-7xl space-y-8">
+                <div className={cn('mx-auto space-y-8', activeTab !== 'dashboard' && 'max-w-7xl')}>
                   <h1 className="sr-only" aria-live="polite">
                     {activeLabel}
                   </h1>
