@@ -230,8 +230,8 @@ jobs:
             fi
             echo "✅ Worker build successful";
           fi
-            - name: Smoke (basic)
-              run: pnpm run ci:smoke
+      - name: Smoke (basic)
+        run: pnpm run ci:smoke
             - name: Smoke (comprehensive)
               run: pnpm run ci:smoke:comprehensive || echo "Comprehensive smoke test failed (non-blocking)"
               continue-on-error: true
