@@ -99,12 +99,25 @@ jobs:
         run: |
           pnpm run ci:bundle-threshold
           pnpm run ci:bundle-drift || echo "Bundle drift check (soft)"
+      - name: Ensure reports directory exists
+        run: mkdir -p reports || true
+      - name: Check for bundle report files
+        run: |
+          if ls reports/bundle-*.json 1> /dev/null 2>&1; then
+            echo "Bundle report files found:"
+            ls -la reports/bundle-*.json
+          else
+            echo "No bundle report files found, creating placeholder"
+            echo '{"status": "no-reports"}' > reports/bundle-empty.json
+          fi
       - name: Upload Bundle Reports
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: bundle-reports
           path: reports/bundle-*.json
           if-no-files-found: warn
+          retention-days: 3
 
   smoke:
     runs-on: ubuntu-latest
