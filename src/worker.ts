@@ -567,6 +567,10 @@ app.use('/*', async (c, next) => {
   // Bypass ASSETS for server-rendered pages like /login and /callback
   const urlObj = new URL(c.req.url);
   const p = urlObj.pathname;
+  // Skip static asset serving for app-config.js - let the worker route handle it
+  if (p === '/app-config.js') {
+    return next();
+  }
   // Normalize Auth0 callback on any asset request
   const hasCode = urlObj.searchParams.has('code');
   const hasState = urlObj.searchParams.has('state');
