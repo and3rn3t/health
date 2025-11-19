@@ -19,7 +19,18 @@ console.log('🚀 main.tsx: Starting app initialization...');
 
 // Global error handler for ALL errors
 window.addEventListener('error', (event) => {
-  console.error('🚨 Global error caught:', event.error);
+  console.error('🚨 Global error caught:', event.error, event.filename, event.lineno, event.colno);
+  // Don't prevent default - let React error boundary handle it
+  // But log detailed info for debugging
+  if (event.error?.message?.includes('z') || event.error?.message?.includes('initialization')) {
+    console.error('🚨 Potential initialization error detected:', {
+      message: event.error?.message,
+      stack: event.error?.stack,
+      filename: event.filename,
+      line: event.lineno,
+      col: event.colno
+    });
+  }
 });
 
 window.addEventListener('unhandledrejection', (event) => {
@@ -27,6 +38,9 @@ window.addEventListener('unhandledrejection', (event) => {
   if (event.reason?.message?.includes('Failed to parse KV key response')) {
     console.warn('🚨 Caught KV parsing error, preventing crash:', event.reason);
     event.preventDefault(); // Prevent the error from crashing the app
+  }
+  if (event.reason?.message?.includes('z') || event.reason?.message?.includes('initialization')) {
+    console.error('🚨 Potential initialization error in promise:', event.reason);
   }
 });
 

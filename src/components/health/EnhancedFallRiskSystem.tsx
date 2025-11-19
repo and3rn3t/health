@@ -44,26 +44,39 @@ export default function EnhancedFallRiskSystem({
   }, [requestNotificationPermission]);
 
   // Example sensor data (would come from real sensors in production)
+  // Initialize all values before using them to prevent temporal dead zone errors
   const mockSensorData = React.useMemo(() => {
-    const accelZ = 9.8 + Math.random() * 0.5;
-    const gyroZ = Math.random() * 0.5;
+    // Calculate all values first
+    const accelZValue = 9.8 + Math.random() * 0.5;
+    const gyroZValue = Math.random() * 0.5;
+    const accelX = 0.1 + Math.random() * 0.2;
+    const accelY = 0.2 + Math.random() * 0.3;
+    const accelMagnitude = 1.2 + Math.random() * 0.8;
+    const gyroX = Math.random() * 0.5;
+    const gyroY = Math.random() * 0.5;
+    const gyroMagnitude = Math.random() * 1.0;
+    const heartRateValue = 70 + Math.random() * 30;
+    const heartRateVariabilityValue = 30 + Math.random() * 20;
+    const confidenceValue = 0.85 + Math.random() * 0.15;
+    
+    // Now construct the object with all pre-calculated values
     return {
       timestamp: Date.now(),
       accelerometer: {
-        x: 0.1 + Math.random() * 0.2,
-        y: 0.2 + Math.random() * 0.3,
-        z: accelZ,
-        magnitude: 1.2 + Math.random() * 0.8,
+        x: accelX,
+        y: accelY,
+        z: accelZValue,
+        magnitude: accelMagnitude,
       },
       gyroscope: {
-        x: Math.random() * 0.5,
-        y: Math.random() * 0.5,
-        z: gyroZ,
-        magnitude: Math.random() * 1.0,
+        x: gyroX,
+        y: gyroY,
+        z: gyroZValue,
+        magnitude: gyroMagnitude,
       },
-      heartRate: 70 + Math.random() * 30,
-      heartRateVariability: 30 + Math.random() * 20,
-      confidence: 0.85 + Math.random() * 0.15,
+      heartRate: heartRateValue,
+      heartRateVariability: heartRateVariabilityValue,
+      confidence: confidenceValue,
       postureOrientation: 'standing' as const,
       activityType: 'walking' as const,
     };
