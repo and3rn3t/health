@@ -82,6 +82,7 @@
     "branding:audit:local": "node scripts/branding/branding-audit.js --local --url=http://127.0.0.1:8789",
     "ci:bundle-threshold": "node scripts/ci/verify-bundle-threshold.mjs",
     "ci:smoke": "node scripts/ci/smoke-worker.mjs",
+    "ci:smoke:comprehensive": "node scripts/ci/smoke-comprehensive.mjs",
     "ci:privacy": "node scripts/ci/privacy-log-guard.mjs",
     "ci:bundle-drift": "node scripts/ci/compare-bundle-drift.mjs",
     "ci:secrets": "node scripts/ci/secret-rotation-check.mjs",
