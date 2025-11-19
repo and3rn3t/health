@@ -41,6 +41,7 @@ import PatternDetectionPanel from './PatternDetectionPanel';
 import PredictiveAnalytics from './PredictiveAnalytics';
 import MetricComparisonCard from './MetricComparisonCard';
 import AnalyticsExporter from './AnalyticsExporter';
+import AIInsightsCard from './AIInsightsCard';
 
 interface EnhancedAnalyticsDashboardProps {
   healthData: ProcessedHealthData | null;
@@ -142,15 +143,19 @@ export default function EnhancedAnalyticsDashboard({
         </Card>
       </div>
 
+      {/* AI Insights Card */}
+      <AIInsightsCard healthData={healthData} compact={false} />
+
       {/* Main Analytics Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="trends">Trends</TabsTrigger>
           <TabsTrigger value="correlations">Correlations</TabsTrigger>
           <TabsTrigger value="anomalies">Anomalies</TabsTrigger>
           <TabsTrigger value="patterns">Patterns</TabsTrigger>
           <TabsTrigger value="predictions">Predictions</TabsTrigger>
+          <TabsTrigger value="ai-insights">AI Insights</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -274,6 +279,11 @@ export default function EnhancedAnalyticsDashboard({
         {/* Predictions Tab */}
         <TabsContent value="predictions">
           <PredictiveAnalytics healthData={healthData} forecastDays={30} />
+        </TabsContent>
+
+        {/* AI Insights Tab */}
+        <TabsContent value="ai-insights">
+          <EnhancedAIInsights healthData={healthData} />
         </TabsContent>
       </Tabs>
     </div>

@@ -192,6 +192,7 @@ export class LiveHealthDataSync {
           this.connectionStatus.connected = true;
           this.connectionStatus.reconnectAttempts = 0;
           this.connectionStatus.dataQuality = 'excellent';
+          this.notifyConnectionChange(true);
 
           // Identify as web dashboard client
           this.ws?.send(
@@ -231,6 +232,7 @@ export class LiveHealthDataSync {
           console.log('Disconnected from health monitoring server');
           this.connectionStatus.connected = false;
           this.connectionStatus.dataQuality = 'offline';
+          this.notifyConnectionChange(false);
           this.stopHeartbeat();
           this.attemptReconnect();
         };
@@ -482,6 +484,42 @@ export class LiveHealthDataSync {
 
   unsubscribe(subscriptionId: string): boolean {
     return this.subscriptions.delete(subscriptionId);
+  }
+
+  private connectionChangeListeners: Set<(connected: boolean) => void> = new Set();
+
+  isConnected(): boolean {
+    return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
+  }
+
+  onConnectionChange(callback: (connected: boolean) => void): () => void {
+    this.connectionChangeListeners.add(callback);
+    return () => {
+      this.connectionChangeListeners.delete(callback);
+    };
+  }
+
+  private notifyConnectionChange(connected: boolean): void {
+    this.connectionChangeListeners.forEach((listener) => listener(connected));
+  }
+
+  sendHealthData(metric: LiveHealthMetric): void {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(
+        JSON.stringify({
+          type: 'live_health_data',
+          data: metric,
+          timestamp: new Date().toISOString(),
+        })
+      );
+    } else {
+      // Queue if not connected
+      this.messageQueue.push({
+        type: 'live_health_data',
+        data: metric,
+        timestamp: new Date().toISOString(),
+      });
+    }
   }
 
   disconnect() {
