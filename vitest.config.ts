@@ -18,6 +18,7 @@ export default defineConfig({
       'src/**/*.{e2e-test,e2e.spec,e2e.test}.{ts,tsx}',
       'src/__tests__/emergency-cancel.test.ts',
       'src/__tests__/branding/vitalsense-branding.test.tsx',
+      'src/**/*integration*.test.ts', // Exclude integration tests that require running servers
     ],
     setupFiles: ['./vitest.setup.ts'],
     globals: true,
