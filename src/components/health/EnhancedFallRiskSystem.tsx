@@ -9,7 +9,8 @@ import type { FallDetectionEvent } from '@/lib/enhanced-fall-detection-engine';
 import { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { generateSampleHealthData } from '@/lib/sampleHealthData';
 import React from 'react';
-import EnhancedFallRiskDashboard from './EnhancedFallRiskDashboard';
+// Lazy load the dashboard to prevent initialization errors from blocking the app
+const EnhancedFallRiskDashboard = React.lazy(() => import('./EnhancedFallRiskDashboard'));
 
 // Note: Engine exports removed to prevent circular dependency issues
 // Import engines directly from their source modules:
@@ -153,12 +154,14 @@ export default function EnhancedFallRiskSystem({
           </p>
         </div>
 
-        <EnhancedFallRiskDashboard
-          healthData={effectiveHealthData}
-          sensorData={mockSensorData}
-          onEmergencyAlert={handleEmergencyAlert}
-          onInterventionStart={handleInterventionStart}
-        />
+        <React.Suspense fallback={<div className="text-center p-8">Loading dashboard...</div>}>
+          <EnhancedFallRiskDashboard
+            healthData={effectiveHealthData}
+            sensorData={mockSensorData}
+            onEmergencyAlert={handleEmergencyAlert}
+            onInterventionStart={handleInterventionStart}
+          />
+        </React.Suspense>
       </div>
     </div>
   );
