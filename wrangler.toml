@@ -234,7 +234,12 @@ class_name = "HealthWebSocket"
 # ============================================================================
 [[migrations]]
 tag = "v1"
-new_sqlite_classes = ["HealthWebSocket", "RateLimiter", "VitalSenseAdvancedWebSocketDO", "VitalSenseWebSocketDO"]
+new_sqlite_classes = ["HealthWebSocket", "VitalSenseAdvancedWebSocketDO", "VitalSenseWebSocketDO"]
+
+# Migration to add RateLimiter Durable Object
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["RateLimiter"]
 
 # ============================================================================
 # Observability
