@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest'
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { scheduler, sendNotification } from '../scheduling'
 
 describe('Scheduling', () => {
@@ -145,13 +145,37 @@ describe('Scheduling', () => {
 })
 
 describe('Notifications', () => {
+  beforeEach(() => {
+    // Mock fetch globally
+    global.fetch = vi.fn()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   test('sendNotification handles webhook config', async () => {
     const config = {
       webhooks: [{ url: 'https://httpbin.org/post', events: ['*'] }],
     }
 
-    // This will make an actual HTTP request - in production, mock this
+    // Mock successful fetch response
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+    } as Response)
+
     await expect(sendNotification(config, 'test', { data: 'test' })).resolves.not.toThrow()
+    
+    // Verify fetch was called with correct parameters
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://httpbin.org/post',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: expect.stringContaining('"event":"test"'),
+      })
+    )
   })
 
   test('sendNotification handles email config', async () => {
