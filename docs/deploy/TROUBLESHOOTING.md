@@ -144,4 +144,3 @@ curl -I https://health.andernet.dev/
    - Verify all assets are loading (200 status)
    - Check for blocked requests (CSP violations)
    - Verify WebSocket connections
-

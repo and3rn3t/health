@@ -58,7 +58,7 @@ export default function EnhancedFallRiskSystem({
     const heartRateValue = 70 + Math.random() * 30;
     const heartRateVariabilityValue = 30 + Math.random() * 20;
     const confidenceValue = 0.85 + Math.random() * 0.15;
-    
+
     // Now construct the object with all pre-calculated values
     return {
       timestamp: Date.now(),
@@ -162,4 +162,3 @@ export default function EnhancedFallRiskSystem({
     </div>
   );
 }
-

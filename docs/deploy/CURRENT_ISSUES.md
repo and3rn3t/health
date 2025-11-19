@@ -99,4 +99,3 @@ curl -I https://health.andernet.dev/
 - `src/worker.ts` - Skip static asset serving for app-config.js
 - `wrangler.toml` - Disabled observability
 - `index.html` - Removed TEST MODE from title
-

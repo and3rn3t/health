@@ -761,15 +761,15 @@ function AppContent() {
                         | React.ComponentType<WithOptionalHealthData>
                         | undefined;
                       if (!ActiveComponent) return null;
-                      
+
                       // Wrap EnhancedFallRiskSystem with error boundary to prevent blank screen
                       const isEnhancedFallRisk = activeTab === 'enhanced-fall-risk';
-                      
+
                       const component = (
                         // Provide shared healthData to components that can consume it.
                         <ActiveComponent healthData={healthData} />
                       );
-                      
+
                       return isEnhancedFallRisk ? (
                         <ComponentErrorBoundary
                           onError={(error, errorInfo) => {
