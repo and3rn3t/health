@@ -271,4 +271,4 @@ new_sqlite_classes = ["RateLimiter"]
 # Observability
 # ============================================================================
 [observability]
-enabled = true
+enabled = false  # Disabled to prevent Cloudflare Insights beacon injection
