@@ -6,7 +6,7 @@ import {
   NetworkErrorFallback,
   ComponentErrorBoundary,
 } from '../ErrorBoundary';
-import { AppErrorHandler, ErrorFactory } from '@/lib/errorHandling';
+import { AppErrorHandler } from '@/lib/errorHandling';
 
 // Mock the error handling module
 vi.mock('@/lib/errorHandling', () => ({
@@ -19,7 +19,7 @@ vi.mock('@/lib/errorHandling', () => ({
     log() {}
   },
   ErrorFactory: {
-    processingError: vi.fn((message, context) => ({
+    processingError: vi.fn((message, _context) => ({
       id: 'test-id',
       category: 'processing',
       severity: 'error',
@@ -55,7 +55,6 @@ describe('ErrorBoundary', () => {
 
     test('should show technical details in non-production', () => {
       // Use AppErrorHandler to avoid re-throw in localhost
-      const { AppErrorHandler } = require('@/lib/errorHandling');
       const error = new AppErrorHandler('Test error');
       const resetErrorBoundary = vi.fn();
 
@@ -83,7 +82,6 @@ describe('ErrorBoundary', () => {
 
     test('should call resetErrorBoundary when button clicked', () => {
       // Use AppErrorHandler to avoid re-throw in localhost
-      const { AppErrorHandler } = require('@/lib/errorHandling');
       const error = new AppErrorHandler('Test error');
       const resetErrorBoundary = vi.fn();
 
