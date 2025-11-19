@@ -56,6 +56,8 @@ export class WebSocketClient {
   private lastPingAt = 0;
   private readonly listeners = new Map<string, Set<MessageHandler>>();
   private closedByUser = false;
+  private maxRetries = 5; // Limit retries to prevent infinite loops
+  private consecutiveFailures = 0;
 
   private readonly enforceSchema: boolean;
 
@@ -97,7 +99,20 @@ export class WebSocketClient {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ ...evt, readyState: this.ws?.readyState }),
         keepalive: true,
-      }).catch(() => void 0);
+      })
+        .then((res) => {
+          // Silently ignore 401 (Unauthorized) and 429 (Too Many Requests) - expected when not authenticated or rate limited
+          if (res.status === 401 || res.status === 429) {
+            return;
+          }
+          // Only log other errors in development
+          if (!res.ok && import.meta.env.DEV) {
+            console.debug('WebSocket telemetry error:', res.status, res.statusText);
+          }
+        })
+        .catch(() => {
+          // Silently ignore network errors - they're expected in some scenarios
+        });
     } catch {
       /* noop */
     }
@@ -203,6 +218,8 @@ export class WebSocketClient {
 
   private readonly onOpen = () => {
     this.openedAt = Date.now();
+    this.attempt = 0;
+    this.consecutiveFailures = 0; // Reset on successful connection
     this.telemetry({
       event: 'connect_success',
       attempt: this.attempt,
@@ -243,6 +260,14 @@ export class WebSocketClient {
   };
 
   private retry() {
+    this.consecutiveFailures += 1;
+    
+    // Stop retrying after max retries to prevent infinite loops
+    if (this.consecutiveFailures > this.maxRetries) {
+      // Silently stop retrying - connection is likely not available
+      return;
+    }
+    
     this.attempt += 1;
     const backoff = Math.min(
       this.opts.maxBackoffMs,

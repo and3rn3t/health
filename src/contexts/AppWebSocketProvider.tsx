@@ -52,6 +52,15 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
   useEffect(() => {
     let cancelled = false;
     const connect = async () => {
+      // Check if WebSocket is disabled via window flags
+      if (
+        typeof window !== 'undefined' &&
+        ((window as any).VITALSENSE_DISABLE_WEBSOCKET ||
+          (window as any).VITALSENSE_LIVE_DISABLED)
+      ) {
+        return; // Skip WebSocket connection
+      }
+
       const cfg =
         (typeof window !== 'undefined'
           ? (window as any).__VITALSENSE_CONFIG__
@@ -59,8 +68,20 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
       const wsUrl: string | undefined =
         (cfg && typeof cfg.wsBaseUrl === 'string' && cfg.wsBaseUrl) || undefined;
 
+      // Check if auth is required but not enabled
+      const authRequired =
+        cfg?.features?.enableAuth !== false &&
+        cfg?.auth0?.domain &&
+        cfg.auth0.domain !== 'vitalsense-health.auth0.com' &&
+        cfg.auth0.clientId &&
+        cfg.auth0.clientId !== 'your-client-id';
+      
+      // If auth is required, check if we're authenticated
+      // For now, we'll still try to connect but the retry limit will prevent infinite loops
       const c = new WebSocketClient({
         url: wsUrl, // Fallback to /api/ws-url if undefined
+        maxBackoffMs: 30000, // Cap backoff at 30 seconds
+        baseBackoffMs: 2000, // Start with 2 second backoff
         onOpen: () => {
           /* noop */
         },

@@ -178,7 +178,20 @@ function initClientErrorReporter() {
             ua: navigator.userAgent,
           }),
           keepalive: true,
-        }).catch(() => void 0);
+        })
+          .then((res) => {
+            // Silently ignore 401 (Unauthorized) - expected when not authenticated
+            if (res.status === 401) {
+              return;
+            }
+            // Only log other errors in development
+            if (!res.ok && import.meta.env.DEV) {
+              console.debug('Client error reporting failed:', res.status, res.statusText);
+            }
+          })
+          .catch(() => {
+            // Silently ignore network errors
+          });
       } catch {
         /* noop */
       }
