@@ -1,0 +1,47 @@
+# syntax=docker/dockerfile:1.7
+# Build-only Dockerfile for CI/CD
+# This image contains build tools and outputs, optimized for CI caching
+
+FROM node:22-alpine AS build
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apk add --no-cache \
+    bash \
+    git \
+    python3 \
+    make \
+    g++
+
+# Install pnpm
+RUN npm install -g pnpm@9
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install all dependencies (including dev dependencies for building)
+RUN pnpm install --frozen-lockfile
+
+# Copy source files
+COPY . .
+
+# Build the application
+RUN pnpm run build
+
+# Build the worker
+RUN pnpm run build:worker || echo "Worker build optional"
+
+# Verify builds
+RUN test -d dist && echo "✅ App build successful" || (echo "❌ App build failed" && exit 1)
+RUN test -d dist-worker && echo "✅ Worker build successful" || echo "⚠️ Worker build skipped"
+
+# Output build artifacts to /build-output for easy extraction
+RUN mkdir -p /build-output && \
+    cp -r dist /build-output/ && \
+    cp -r dist-worker /build-output/ && \
+    echo "Build artifacts ready in /build-output"
+
+# Default command shows build info
+CMD ["sh", "-c", "echo 'Build complete. Artifacts in /build-output' && ls -la /build-output"]
+
