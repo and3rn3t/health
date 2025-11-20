@@ -41,7 +41,8 @@ export default defineConfig({
   build: {
     cssMinify: 'esbuild',
     outDir: 'dist',
-    sourcemap: true,
+    // Disable source maps in CI/production to reduce bundle size
+    sourcemap: process.env.CI === 'true' ? false : true,
     // Aggressive bundle size optimizations for CI compliance
     rollupOptions: {
       output: {
@@ -246,6 +247,15 @@ export default defineConfig({
 
         // Optimize entry file names
         entryFileNames: 'js/[name]-[hash].js',
+
+        // More aggressive minification in CI
+        ...(process.env.CI === 'true' && {
+          compact: true,
+          generatedCode: {
+            preset: 'es2015',
+            constBindings: true,
+          },
+        }),
         assetFileNames: (assetInfo) => {
           const name = assetInfo.name || 'asset';
           if (/\.(css)$/.test(name)) {
@@ -274,8 +284,13 @@ export default defineConfig({
     minify: 'esbuild',
     target: 'esnext',
 
+    // Reduce asset inlining to allow better code splitting
+    assetsInlineLimit: process.env.CI === 'true' ? 2048 : 4096,
+
     // Compression and optimization
     cssCodeSplit: true,
-    assetsInlineLimit: 4096,
+
+    // Report compressed sizes to help with optimization
+    reportCompressedSize: true,
   },
 });

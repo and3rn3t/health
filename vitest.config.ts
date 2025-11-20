@@ -27,18 +27,18 @@ export default defineConfig({
     pool: process.env.CI ? 'forks' : 'threads',
     poolOptions: {
       threads: {
-        // Use more threads for parallel execution in local dev
-        maxThreads: 8,
-        minThreads: 4,
+        // Reduce threads for better memory management
+        maxThreads: process.env.CI ? 2 : 4, // Reduced from 8 to 4 (2 in CI)
+        minThreads: process.env.CI ? 1 : 2, // Reduced from 4 to 2 (1 in CI)
         singleThread: false,
       },
       forks: {
         // Use forks pool in CI for better isolation and stability
-        // Reduced parallelism in CI to prevent memory issues
-        singleFork: process.env.CI ? false : false,
-        isolate: true, // Isolate each test file in its own process
-        maxForks: process.env.CI ? 2 : 2, // Reduced from 4 to 2 to prevent OOM
-        minForks: process.env.CI ? 1 : 1, // Reduced from 2 to 1 for lower memory usage
+        // Further reduced parallelism in CI to prevent memory issues
+        singleFork: process.env.CI ? true : false, // Use single fork in CI to prevent OOM
+        isolate: true, // Isolate each test file in its own process for better memory cleanup
+        maxForks: process.env.CI ? 1 : 2, // Use only 1 fork in CI to reduce memory pressure
+        minForks: process.env.CI ? 1 : 1, // Single fork in CI
       },
     },
     // Test timeout optimization for faster failure detection
@@ -48,11 +48,11 @@ export default defineConfig({
     // Memory optimization: reduce concurrent test execution to prevent OOM in CI
     // Sequence tests within files to reduce memory pressure when using forks pool
     sequence: {
-      shuffle: false, // Disable shuffle in CI to reduce memory overhead
+      shuffle: false, // Disable shuffle to reduce memory overhead
       concurrent: process.env.CI ? false : true, // Run tests sequentially in CI, concurrently in local dev
     },
     // Memory optimization: limit concurrent tests and file parallelism in CI
-    maxConcurrency: process.env.CI ? 2 : 5, // Limit concurrent tests in CI to reduce memory pressure
+    maxConcurrency: process.env.CI ? 1 : 3, // Further reduced: 1 in CI, 3 in local dev (was 2/5)
     fileParallelism: process.env.CI ? false : true, // Disable file-level parallelism in CI to reduce memory usage
     coverage: {
       provider: 'v8',
