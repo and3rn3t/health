@@ -22,12 +22,18 @@ export default defineConfig({
   },
   plugins: [react()],
   esbuild: {
-    drop: ['console', 'debugger'],
+    drop: process.env.CI === 'true' ? ['console', 'debugger'] : [],
     legalComments: 'none',
     // More aggressive minification
     minifyWhitespace: true,
     minifyIdentifiers: true,
     minifySyntax: true,
+    // Tree-shaking optimizations
+    treeShaking: true,
+    // Better compression in production
+    ...(process.env.CI === 'true' && {
+      pure: ['console.log', 'console.info', 'console.debug'],
+    }),
   },
   resolve: {
     alias: {
@@ -115,31 +121,36 @@ export default defineConfig({
             }
 
             // Large ML/Data Visualization Libraries - Split separately (VERY LARGE)
+            // These should ideally be lazy-loaded and not in initial bundle
             if (id.includes('@tensorflow/tfjs')) {
-              return 'tensorflow'; // TensorFlow is huge (~500KB+)
+              return 'tensorflow'; // TensorFlow is huge (~500KB+) - lazy load in ML features
             }
             if (id.includes('three')) {
-              return 'three-js'; // Three.js is large (~200KB+)
+              return 'three-js'; // Three.js is large (~200KB+) - lazy load in 3D visualizations
             }
             if (id.includes('recharts')) {
-              return 'recharts'; // Recharts is large (~150KB+)
+              return 'recharts-lazy'; // Recharts is large (~150KB+) - should be lazy-loaded
             }
             if (id.includes('/d3-') || id.includes('/d3/')) {
-              return 'd3-lib'; // D3 is large (~150KB+)
+              return 'd3-lib'; // D3 is large (~150KB+) - lazy load for advanced charts
             }
             if (id.includes('framer-motion')) {
-              return 'framer-motion'; // Framer Motion is medium-large (~100KB+)
+              return 'framer-motion'; // Framer Motion is medium-large (~100KB+) - lazy load
             }
 
-            // Icons - separate large icon libraries
+            // Icons - separate large icon libraries (lucide-react is ~100KB+)
+            // Consider using individual icon imports instead of full library
             if (id.includes('lucide-react')) {
-              return 'lucide-icons';
+              return 'lucide-icons'; // ~100KB+ - should use individual imports
             }
             if (id.includes('@phosphor-icons')) {
-              return 'phosphor-icons';
+              return 'phosphor-icons'; // Large - consider removing if not used
             }
             if (id.includes('react-icons')) {
-              return 'react-icons';
+              return 'react-icons'; // Very large - consider removing if not used
+            }
+            if (id.includes('@heroicons/react')) {
+              return 'heroicons'; // Large - consider individual imports
             }
 
             // Utilities
@@ -304,7 +315,7 @@ export default defineConfig({
     },
 
     // Additional aggressive optimizations
-    chunkSizeWarningLimit: 200, // Further reduced to enforce smaller chunks
+    chunkSizeWarningLimit: 150, // Further reduced to enforce smaller chunks (was 200)
     minify: 'esbuild',
     target: 'esnext',
 
@@ -316,5 +327,18 @@ export default defineConfig({
 
     // Report compressed sizes to help with optimization
     reportCompressedSize: true,
+
+    // Enable terser-style minification for better compression
+    terserOptions: process.env.CI === 'true' ? {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        passes: 3, // Multiple passes for better optimization
+      },
+      format: {
+        comments: false,
+      },
+    } : undefined,
   },
 });

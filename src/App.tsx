@@ -50,6 +50,7 @@ import { cn } from '@/lib/utils';
 import { createLazyComponent, createLazyNamedComponent } from '@/lib/lazyLoading';
 import { createNavigationItems, type NavigationItem } from '@/lib/navigationHelpers';
 import type { ProcessedHealthData } from '@/types';
+// Optimized icon imports - individual imports reduce bundle size
 import {
   Activity,
   AlertTriangle,
@@ -67,7 +68,7 @@ import {
   Users,
   Wrench,
   X,
-} from 'lucide-react';
+} from '@/lib/icons';
 
 // Lazy loaded components with fallbacks
 const LandingPage = lazy(() => import('@/components/LandingPageOptimized'));

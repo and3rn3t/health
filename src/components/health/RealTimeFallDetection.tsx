@@ -30,13 +30,13 @@ import { useEffect, useRef, useState } from 'react';
 import {
   CartesianGrid,
   Line,
-  LineChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
+import { LazyLineChartWrapper } from '@/components/charts/LazyChart';
 import { toast } from 'sonner';
 
 interface SensorData {
@@ -615,7 +615,7 @@ export default function RealTimeFallDetection() {
               <CardContent>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData}>
+                    <LazyLineChartWrapper data={chartData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="time" />
                       <YAxis />
@@ -648,7 +648,7 @@ export default function RealTimeFallDetection() {
                           />
                         </>
                       )}
-                    </LineChart>
+                    </LazyLineChartWrapper>
                   </ResponsiveContainer>
                 </div>
               </CardContent>

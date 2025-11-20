@@ -16,6 +16,7 @@ import { holtWinters } from '@/lib/ai/forecast/holtWinters';
 import { logisticPredict } from '@/lib/ai/inference';
 import { fallRiskModel } from '@/lib/ai/models/fallRiskModel';
 import type { AnalyticsHealthData as ProcessedHealthData } from '@/lib/healthDataProcessor';
+// Optimized icon imports
 import {
   Activity,
   AlertTriangle,
@@ -28,21 +29,22 @@ import {
   Target,
   TrendingUp,
   XCircle,
-} from 'lucide-react';
+} from '@/lib/icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { TooltipProps } from 'recharts';
+// Lazy load chart components to reduce initial bundle size
 import {
   Area,
   CartesianGrid,
   Legend,
   Line,
-  LineChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
+  type TooltipProps,
 } from 'recharts';
+import { LazyLineChartWrapper } from '@/components/charts/LazyChart';
 
 type BandDatum = {
   type: 'historical' | 'predicted';
@@ -591,7 +593,7 @@ export default function MLAnalytics({
     return (
       <div ref={chartContainerRef} className="w-full">
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={bandedData}>
+          <LazyLineChartWrapper data={bandedData}>
             <defs>
               <linearGradient id="vsHsBand" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#10b981" stopOpacity={0.18} />
@@ -700,7 +702,7 @@ export default function MLAnalytics({
               stroke="#6b7280"
               strokeDasharray="2 2"
             />
-          </LineChart>
+          </LazyLineChartWrapper>
         </ResponsiveContainer>
       </div>
     );
