@@ -19,9 +19,14 @@ describe('Device Capability Detection', () => {
     // Mock iOS user agent
     Object.defineProperty(navigator, 'userAgent', {
       writable: true,
+      configurable: true,
       value:
         'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15',
     });
+
+    // Mock DeviceMotionEvent and DeviceOrientationEvent for motion sensor detection
+    (global as any).DeviceMotionEvent = class DeviceMotionEvent {};
+    (global as any).DeviceOrientationEvent = class DeviceOrientationEvent {};
 
     const deviceInfo = detectDeviceCapabilities();
     expect(deviceInfo.type).toBe('iphone');

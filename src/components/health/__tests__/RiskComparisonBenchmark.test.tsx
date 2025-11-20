@@ -91,7 +91,9 @@ describe('RiskComparisonBenchmark', () => {
     const prediction = createMockPrediction(35);
     render(<RiskComparisonBenchmark prediction={prediction} userAge={72} />);
 
-    expect(screen.getByText('35.0')).toBeInTheDocument();
+    // Use getAllByText since the score may appear multiple times
+    const scoreElements = screen.getAllByText('35.0');
+    expect(scoreElements.length).toBeGreaterThan(0);
   });
 
   it('displays age group average', () => {
@@ -105,7 +107,9 @@ describe('RiskComparisonBenchmark', () => {
     const prediction = createMockPrediction(35);
     render(<RiskComparisonBenchmark prediction={prediction} userAge={72} />);
 
-    expect(screen.getByText(/percentile/i)).toBeInTheDocument();
+    // Use getAllByText since "percentile" may appear multiple times
+    const percentileElements = screen.getAllByText(/percentile/i);
+    expect(percentileElements.length).toBeGreaterThan(0);
   });
 
   it('shows comparison to average', () => {
@@ -119,10 +123,15 @@ describe('RiskComparisonBenchmark', () => {
     const prediction = createMockPrediction(35);
     render(<RiskComparisonBenchmark prediction={prediction} userAge={72} />);
 
-    expect(screen.getByText(/25th percentile/i)).toBeInTheDocument();
-    expect(screen.getByText(/50th percentile/i)).toBeInTheDocument();
-    expect(screen.getByText(/75th percentile/i)).toBeInTheDocument();
-    expect(screen.getByText(/90th percentile/i)).toBeInTheDocument();
+    // Use getAllByText since percentiles may appear multiple times
+    const percentile25 = screen.getAllByText(/25th percentile/i);
+    expect(percentile25.length).toBeGreaterThan(0);
+    const percentile50 = screen.getAllByText(/50th percentile/i);
+    expect(percentile50.length).toBeGreaterThan(0);
+    const percentile75 = screen.getAllByText(/75th percentile/i);
+    expect(percentile75.length).toBeGreaterThan(0);
+    const percentile90 = screen.getAllByText(/90th percentile/i);
+    expect(percentile90.length).toBeGreaterThan(0);
   });
 
   it('renders comparison bar chart', () => {

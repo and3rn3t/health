@@ -151,10 +151,16 @@ describe('FallRiskReportExporter', () => {
       href: '',
       download: '',
       click: vi.fn(),
-    };
-    vi.spyOn(document, 'createElement').mockReturnValue(mockAnchor as any);
-    vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockAnchor as any);
-    vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockAnchor as any);
+    } as any;
+
+    // Create a real anchor element and spy on it
+    const realAnchor = document.createElement('a');
+    const clickSpy = vi.spyOn(realAnchor, 'click');
+
+    vi.spyOn(document, 'createElement').mockReturnValue(realAnchor);
+    // appendChild should return the element that was appended
+    vi.spyOn(document.body, 'appendChild').mockImplementation((node) => node);
+    vi.spyOn(document.body, 'removeChild').mockImplementation((node) => node);
 
     render(
       <FallRiskReportExporter
@@ -169,21 +175,21 @@ describe('FallRiskReportExporter', () => {
     const jsonButton = screen.getByText(/export as json/i);
     fireEvent.click(jsonButton);
 
-    expect(mockAnchor.click).toHaveBeenCalled();
+    expect(clickSpy).toHaveBeenCalled();
   });
 
   it('exports CSV format', () => {
     const prediction = createMockPrediction();
     const onExport = vi.fn();
 
-    const mockAnchor = {
-      href: '',
-      download: '',
-      click: vi.fn(),
-    };
-    vi.spyOn(document, 'createElement').mockReturnValue(mockAnchor as any);
-    vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockAnchor as any);
-    vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockAnchor as any);
+    // Create a real anchor element and spy on it
+    const realAnchor = document.createElement('a');
+    const clickSpy = vi.spyOn(realAnchor, 'click');
+
+    vi.spyOn(document, 'createElement').mockReturnValue(realAnchor);
+    // appendChild should return the element that was appended
+    vi.spyOn(document.body, 'appendChild').mockImplementation((node) => node);
+    vi.spyOn(document.body, 'removeChild').mockImplementation((node) => node);
 
     render(
       <FallRiskReportExporter
@@ -198,7 +204,7 @@ describe('FallRiskReportExporter', () => {
     const csvButton = screen.getByText(/export as csv/i);
     fireEvent.click(csvButton);
 
-    expect(mockAnchor.click).toHaveBeenCalled();
+    expect(clickSpy).toHaveBeenCalled();
   });
 
   it('exports PDF format (opens print dialog)', () => {
@@ -229,14 +235,14 @@ describe('FallRiskReportExporter', () => {
     const prediction = createMockPrediction();
     const onExport = vi.fn();
 
-    const mockAnchor = {
-      href: '',
-      download: '',
-      click: vi.fn(),
-    };
-    vi.spyOn(document, 'createElement').mockReturnValue(mockAnchor as any);
-    vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockAnchor as any);
-    vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockAnchor as any);
+    // Create a real anchor element and spy on it
+    const realAnchor = document.createElement('a');
+    vi.spyOn(realAnchor, 'click');
+
+    vi.spyOn(document, 'createElement').mockReturnValue(realAnchor);
+    // appendChild should return the element that was appended
+    vi.spyOn(document.body, 'appendChild').mockImplementation((node) => node);
+    vi.spyOn(document.body, 'removeChild').mockImplementation((node) => node);
 
     render(
       <FallRiskReportExporter

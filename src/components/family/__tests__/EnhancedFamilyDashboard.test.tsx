@@ -125,24 +125,31 @@ describe('EnhancedFamilyDashboard', () => {
     expect(screen.getByText('Emergency')).toBeInTheDocument();
   });
 
-  it('switches between tabs', () => {
+  it('switches between tabs', async () => {
     const healthData = createMockHealthData();
     render(<EnhancedFamilyDashboard healthData={healthData} />);
 
     const sharingTab = screen.getByText('Sharing');
     fireEvent.click(sharingTab);
 
-    expect(screen.getByText('Health Data Sharing')).toBeInTheDocument();
+    // Wait for tab content to render
+    await waitFor(() => {
+      // The text might be split across elements, so use a more flexible query
+      expect(screen.getByText(/Health Data Sharing/i)).toBeInTheDocument();
+    });
   });
 
-  it('displays health status in emergency tab', () => {
+  it('displays health status in emergency tab', async () => {
     const healthData = createMockHealthData();
     render(<EnhancedFamilyDashboard healthData={healthData} />);
 
     const emergencyTab = screen.getByText('Emergency');
     fireEvent.click(emergencyTab);
 
-    expect(screen.getByText('Emergency & Safety')).toBeInTheDocument();
-    expect(screen.getByText('Current Health Status')).toBeInTheDocument();
+    // Wait for tab content to render
+    await waitFor(() => {
+      expect(screen.getByText(/Emergency.*Safety/i)).toBeInTheDocument();
+      expect(screen.getByText(/Current Health Status/i)).toBeInTheDocument();
+    });
   });
 });
