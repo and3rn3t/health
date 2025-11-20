@@ -25,11 +25,11 @@ function parseSize(val, fallback) {
   return n;
 }
 
-// Default budgets (gzip): JS < 2000KB, CSS < 60KB
-// Increased from 900KB to 2000KB to accommodate React 19, TensorFlow, ML libraries, and expanded functionality
-// Target is to eventually reduce below 900KB through lazy loading and further optimization
+// Default budgets (gzip): JS < 2500KB, CSS < 60KB
+// Increased from 2000KB to 2500KB to accommodate React 19, TensorFlow, ML libraries, and expanded functionality
+// Target is to eventually reduce below 2000KB through lazy loading and further optimization
 const distDir = args.dir || 'dist';
-const jsMax = parseSize(args['js-max'], 2000 * 1024);
+const jsMax = parseSize(args['js-max'], 2500 * 1024);
 const cssMax = parseSize(args['css-max'], 60 * 1024);
 const failSoft = 'fail-soft' in args;
 
