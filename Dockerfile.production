@@ -28,8 +28,9 @@ COPY scripts/ci/ensure-node-version.mjs ./scripts/ci/ensure-node-version.mjs
 # Use --frozen-lockfile for reproducible builds
 # Use cache mount for pnpm store (BuildKit feature)
 # Note: preinstall script will run and verify Node version (which matches the image)
+# Omitting --prod installs all dependencies including dev dependencies (needed for build)
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile --prod=false
+    pnpm install --frozen-lockfile
 
 # ============================================================================
 # Stage 2: Build stage
@@ -90,4 +91,3 @@ USER nodejs
 
 # Default command (can be overridden)
 CMD ["node", "--version"]
-

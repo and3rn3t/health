@@ -36,6 +36,11 @@ export default function FallRiskHistoryChart({
 }: FallRiskHistoryChartProps) {
   const [selectedRange, setSelectedRange] = React.useState(timeRange);
 
+  // Sync selectedRange with timeRange prop when it changes
+  React.useEffect(() => {
+    setSelectedRange(timeRange);
+  }, [timeRange]);
+
   // Filter data based on selected time range
   const filteredData = React.useMemo(() => {
     if (!historyData || historyData.length === 0) return [];
@@ -102,9 +107,19 @@ export default function FallRiskHistoryChart({
   }, [filteredData]);
 
   // Generate chart data points for visualization
+  // Limit to max 200 points for performance (sample large datasets)
   const chartData = React.useMemo(() => {
     const sorted = [...filteredData].sort((a, b) => a.date.getTime() - b.date.getTime());
-    return sorted.map((point, index) => ({
+
+    // If we have too many points, sample them for better performance
+    const maxPoints = 200;
+    let sampled = sorted;
+    if (sorted.length > maxPoints) {
+      const step = Math.ceil(sorted.length / maxPoints);
+      sampled = sorted.filter((_, index) => index % step === 0 || index === sorted.length - 1);
+    }
+
+    return sampled.map((point, index) => ({
       x: index,
       date: point.date,
       riskScore: point.riskScore,
@@ -133,7 +148,9 @@ export default function FallRiskHistoryChart({
     const scoreRange = maxScore - minScore || 100;
 
     const points = chartData.map((d, i) => {
-      const xCoord = padding + (i / (chartData.length - 1 || 1)) * chartWidth;
+      // Handle single point case to avoid division by zero
+      const divisor = chartData.length > 1 ? chartData.length - 1 : 1;
+      const xCoord = padding + (i / divisor) * chartWidth;
       const y =
         padding +
         chartHeight -

@@ -46,7 +46,8 @@ export default defineConfig({
     // Aggressive bundle size optimizations for CI compliance
     rollupOptions: {
       output: {
-        // Very aggressive chunk splitting to keep each chunk under 400KB
+        // Very aggressive chunk splitting to keep each chunk under 200KB (reduced from 400KB)
+        // This ensures faster initial load by splitting large libraries into separate chunks
         manualChunks: (id) => {
           // Vendor libraries - ultra-granular splitting
           if (id.includes('node_modules')) {
@@ -111,6 +112,23 @@ export default defineConfig({
             }
             if (id.includes('zustand') || id.includes('jotai')) {
               return 'state-mgmt';
+            }
+
+            // Large ML/Data Visualization Libraries - Split separately (VERY LARGE)
+            if (id.includes('@tensorflow/tfjs')) {
+              return 'tensorflow'; // TensorFlow is huge (~500KB+)
+            }
+            if (id.includes('three')) {
+              return 'three-js'; // Three.js is large (~200KB+)
+            }
+            if (id.includes('recharts')) {
+              return 'recharts'; // Recharts is large (~150KB+)
+            }
+            if (id.includes('/d3-') || id.includes('/d3/')) {
+              return 'd3-lib'; // D3 is large (~150KB+)
+            }
+            if (id.includes('framer-motion')) {
+              return 'framer-motion'; // Framer Motion is medium-large (~100KB+)
             }
 
             // Icons - separate large icon libraries
@@ -270,7 +288,13 @@ export default defineConfig({
 
       // Tree shaking optimizations
       treeshake: {
-        moduleSideEffects: false,
+        moduleSideEffects: (id) => {
+          // Allow side effects for some libraries that need them
+          if (id.includes('@tensorflow') || id.includes('polyfill')) {
+            return true;
+          }
+          return false;
+        },
         propertyReadSideEffects: false,
         tryCatchDeoptimization: false,
         // More aggressive tree shaking
@@ -280,7 +304,7 @@ export default defineConfig({
     },
 
     // Additional aggressive optimizations
-    chunkSizeWarningLimit: 350, // Force even smaller chunks
+    chunkSizeWarningLimit: 200, // Further reduced to enforce smaller chunks
     minify: 'esbuild',
     target: 'esnext',
 

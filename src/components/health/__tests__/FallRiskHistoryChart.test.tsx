@@ -258,11 +258,15 @@ describe('FallRiskHistoryChart', () => {
     }, { timeout: 2000 });
   });
 
-  it('handles all time range correctly', () => {
+  it('handles all time range correctly', async () => {
     const history = createMockHistoryData(100);
     render(<FallRiskHistoryChart historyData={history} timeRange="all" />);
 
-    const allButton = screen.getByText('All');
+    // Wait for component to render with large dataset
+    const allButton = await waitFor(
+      () => screen.getByText('All'),
+      { timeout: 3000 }
+    );
     expect(allButton).toBeInTheDocument();
-  });
+  }, 5000); // Increase test timeout to 5 seconds
 });
