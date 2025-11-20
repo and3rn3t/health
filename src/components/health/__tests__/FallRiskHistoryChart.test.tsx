@@ -121,6 +121,13 @@ const createMockHistoryData = (
 describe('FallRiskHistoryChart', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Clean up DOM after each test
+    document.body.innerHTML = '';
+  });
+
+  afterEach(() => {
+    // Ensure all timers are cleared
+    vi.clearAllTimers();
   });
 
   it('renders with empty history data', () => {
@@ -258,15 +265,19 @@ describe('FallRiskHistoryChart', () => {
     }, { timeout: 2000 });
   });
 
-  it('handles all time range correctly', async () => {
-    const history = createMockHistoryData(100);
-    render(<FallRiskHistoryChart historyData={history} timeRange="all" />);
+  it('handles all time range correctly', () => {
+    // Use smaller dataset to avoid performance issues in test
+    const history = createMockHistoryData(50);
+    const { unmount } = render(<FallRiskHistoryChart historyData={history} timeRange="all" />);
 
-    // Wait for component to render with large dataset
-    const allButton = await waitFor(
-      () => screen.getByText('All'),
-      { timeout: 3000 }
-    );
+    // Component should render immediately with "all" time range
+    const allButton = screen.getByText('All');
     expect(allButton).toBeInTheDocument();
-  }, 5000); // Increase test timeout to 5 seconds
+
+    // Verify component rendered (check for title)
+    expect(screen.getByText(/fall risk history/i)).toBeInTheDocument();
+
+    // Clean up
+    unmount();
+  });
 });

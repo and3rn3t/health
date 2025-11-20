@@ -36,30 +36,33 @@ export default function FallRiskHistoryChart({
 }: FallRiskHistoryChartProps) {
   const [selectedRange, setSelectedRange] = React.useState(timeRange);
 
-  // Sync selectedRange with timeRange prop when it changes
+  // Sync selectedRange with timeRange prop when it changes (only if different to avoid unnecessary updates)
   React.useEffect(() => {
-    setSelectedRange(timeRange);
-  }, [timeRange]);
+    if (timeRange !== selectedRange) {
+      setSelectedRange(timeRange);
+    }
+  }, [timeRange, selectedRange]);
 
   // Filter data based on selected time range
   const filteredData = React.useMemo(() => {
     if (!historyData || historyData.length === 0) return [];
 
-    const now = new Date();
+    // Use a stable reference time to avoid recalculation on every render
+    const now = Date.now();
     const cutoffDate = new Date();
 
     switch (selectedRange) {
       case '7d':
-        cutoffDate.setDate(now.getDate() - 7);
+        cutoffDate.setTime(now - 7 * 24 * 60 * 60 * 1000);
         break;
       case '30d':
-        cutoffDate.setDate(now.getDate() - 30);
+        cutoffDate.setTime(now - 30 * 24 * 60 * 60 * 1000);
         break;
       case '90d':
-        cutoffDate.setDate(now.getDate() - 90);
+        cutoffDate.setTime(now - 90 * 24 * 60 * 60 * 1000);
         break;
       case '1y':
-        cutoffDate.setFullYear(now.getFullYear() - 1);
+        cutoffDate.setTime(now - 365 * 24 * 60 * 60 * 1000);
         break;
       case 'all':
       default:
