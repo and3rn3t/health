@@ -4,6 +4,13 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   esbuild: {
     target: 'node18',
+    // Optimize esbuild for faster compilation in tests
+    format: 'esm',
+    treeShaking: true,
+    // Faster compilation with sourcemaps disabled in tests
+    sourcemap: false,
+    // Optimize for speed over size in tests
+    minify: false,
   },
   test: {
     environment: 'jsdom', // For React component testing
@@ -27,9 +34,9 @@ export default defineConfig({
     pool: process.env.CI ? 'forks' : 'threads',
     poolOptions: {
       threads: {
-        // Reduce threads for better memory management
-        maxThreads: process.env.CI ? 2 : 4, // Reduced from 8 to 4 (2 in CI)
-        minThreads: process.env.CI ? 1 : 2, // Reduced from 4 to 2 (1 in CI)
+        // Optimize threads for performance: use more threads in local dev for speed
+        maxThreads: process.env.CI ? 2 : 8, // Use more threads locally (CPU cores typically available)
+        minThreads: process.env.CI ? 1 : 4, // Keep multiple threads active locally
         singleThread: false,
       },
       forks: {
@@ -42,18 +49,22 @@ export default defineConfig({
       },
     },
     // Test timeout optimization for faster failure detection
-    testTimeout: 10000, // 10s default
-    hookTimeout: 5000,  // 5s for hooks
-    teardownTimeout: 5000,
-    // Memory optimization: reduce concurrent test execution to prevent OOM in CI
-    // Sequence tests within files to reduce memory pressure when using forks pool
+    testTimeout: process.env.CI ? 10000 : 5000, // Shorter timeouts locally (5s), longer in CI (10s)
+    hookTimeout: process.env.CI ? 5000 : 3000,  // Faster hook timeouts locally
+    teardownTimeout: process.env.CI ? 5000 : 2000, // Faster teardown locally
+    // Enable bail mode in CI to fail fast, but not locally for full test coverage
+    bail: process.env.CI ? 1 : 0, // Stop after first failure in CI, continue locally
+    // Optimize test execution: maximize parallelism in local dev for speed
     sequence: {
-      shuffle: false, // Disable shuffle to reduce memory overhead
-      concurrent: process.env.CI ? false : true, // Run tests sequentially in CI, concurrently in local dev
+      shuffle: false, // Disable shuffle for faster execution and deterministic order
+      concurrent: true, // Always run concurrently (tests should be isolated anyway)
     },
-    // Memory optimization: limit concurrent tests and file parallelism in CI
-    maxConcurrency: process.env.CI ? 1 : 3, // Further reduced: 1 in CI, 3 in local dev (was 2/5)
-    fileParallelism: process.env.CI ? false : true, // Disable file-level parallelism in CI to reduce memory usage
+    // Performance optimization: maximize concurrency in local dev
+    maxConcurrency: process.env.CI ? 1 : 10, // Much higher concurrency locally for speed
+    fileParallelism: true, // Enable file-level parallelism for faster execution
+    // Enable test retries for flaky tests (faster than manual reruns)
+    retry: process.env.CI ? 1 : 0, // Retry once in CI, but not locally to save time
+    // Coverage is only collected when --coverage flag is used
     coverage: {
       provider: 'v8',
       // Added 'json-summary' so CI coverage gate (expects coverage/coverage-summary.json)
@@ -61,7 +72,7 @@ export default defineConfig({
       // In CI, use minimal reporters to reduce memory usage (json-summary is sufficient for gate)
       reporter: process.env.CI
         ? ['json-summary', 'json'] // Minimal reporters in CI to reduce memory overhead
-        : ['text', 'json', 'json-summary', 'lcov'], // Full reporters in local dev
+        : ['text', 'json', 'json-summary', 'lcov'], // Full reporters when coverage is enabled
       reportsDirectory: 'coverage',
       // Memory optimization: only collect coverage for tested files (not all source files)
       all: false, // Reduces memory usage by not processing untested files
