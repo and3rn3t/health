@@ -4,14 +4,8 @@
  */
 
 // WebXR type declarations
-// Note: We extend Navigator but need to avoid conflicts with standard DOM types
-// The 'xr' property exists in browsers but may not be in all TypeScript DOM lib versions
-declare global {
-  interface Navigator {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    xr?: any; // Use any to avoid type conflicts with standard DOM types
-  }
-}
+// Note: We don't extend Navigator globally to avoid type conflicts
+// Instead, we use type assertions directly when accessing navigator.xr
 
 interface XRSystem {
   isSessionSupported(mode: string): Promise<boolean>;
@@ -114,14 +108,14 @@ export class WebXRHealthOverlay implements AROverlaySystem {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async initializeWebXR(): Promise<any | null> {
-    if (!navigator.xr) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const xr = (navigator as any).xr;
+    if (!xr) {
       console.warn('WebXR not supported in this browser');
       return null;
     }
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const xr = navigator.xr as any;
       const isARSupported =
         await xr.isSessionSupported('immersive-ar');
       if (!isARSupported) {

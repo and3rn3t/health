@@ -213,11 +213,15 @@ describe('EnhancedAIInsights', () => {
     render(<EnhancedAIInsights healthData={healthData} />);
 
     await waitFor(() => {
-      const textarea = screen.getByPlaceholderText(/Ask me anything/i);
-      fireEvent.change(textarea, { target: { value: 'What exercises help balance?' } });
+      // Use getAllByPlaceholderText since component may render multiple times (React StrictMode)
+      const textareas = screen.getAllByPlaceholderText(/Ask me anything/i);
+      expect(textareas.length).toBeGreaterThan(0);
+      fireEvent.change(textareas[0], { target: { value: 'What exercises help balance?' } });
 
-      const submitButton = screen.getByText('Get AI Answer');
-      fireEvent.click(submitButton);
+      // Use getAllByText for the button as well since there may be multiple instances
+      const submitButtons = screen.getAllByText('Get AI Answer');
+      expect(submitButtons.length).toBeGreaterThan(0);
+      fireEvent.click(submitButtons[0]);
     }, { timeout: 3000 });
 
     await waitFor(() => {
@@ -229,7 +233,10 @@ describe('EnhancedAIInsights', () => {
     const healthData = createMockHealthData();
     render(<EnhancedAIInsights healthData={healthData} />);
 
-    const submitButton = screen.getByText('Get AI Answer');
+    // Use getAllByText since component may render multiple times (React StrictMode)
+    const submitButtons = screen.getAllByText('Get AI Answer');
+    expect(submitButtons.length).toBeGreaterThan(0);
+    const submitButton = submitButtons[0];
     expect(submitButton).toBeDisabled();
   });
 

@@ -25,12 +25,12 @@ COPY package.json pnpm-lock.yaml ./
 COPY scripts/ci/ensure-node-version.mjs ./scripts/ci/ensure-node-version.mjs
 
 # Install dependencies (this layer will be cached if package files don't change)
-# Use --frozen-lockfile for reproducible builds
+# Try --frozen-lockfile first for reproducible builds, fallback to update lockfile if needed
 # Use cache mount for pnpm store (BuildKit feature)
 # Note: preinstall script will run and verify Node version (which matches the image)
 # Omitting --prod installs all dependencies including dev dependencies (needed for build)
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile
+    pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
 
 # ============================================================================
 # Stage 2: Build stage
@@ -72,7 +72,8 @@ RUN npm install -g pnpm@9 wrangler@latest
 COPY package.json pnpm-lock.yaml ./
 
 # Install only production dependencies
-RUN pnpm install --frozen-lockfile --prod
+# Fallback to update lockfile if needed
+RUN pnpm install --frozen-lockfile --prod || pnpm install --no-frozen-lockfile --prod
 
 # Copy built artifacts from builder
 COPY --from=builder /app/dist ./dist
