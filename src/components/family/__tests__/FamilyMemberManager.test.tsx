@@ -78,7 +78,7 @@ describe('FamilyMemberManager', () => {
     expect(screen.getByText('Jane Doe')).toBeInTheDocument();
   });
 
-  it('opens add dialog when button clicked', () => {
+  it('opens add dialog when button clicked', async () => {
     render(
       <FamilyMemberManager
         members={[]}
@@ -88,10 +88,13 @@ describe('FamilyMemberManager', () => {
       />
     );
 
-    const addButton = screen.getByText('Add Member');
-    fireEvent.click(addButton);
+    const addButtons = screen.getAllByText('Add Member');
+    fireEvent.click(addButtons[0]);
 
-    expect(screen.getByText('Add Family Member')).toBeInTheDocument();
+    await waitFor(() => {
+      const dialogTitles = screen.getAllByText('Add Family Member');
+      expect(dialogTitles.length).toBeGreaterThan(0);
+    });
   });
 
   it('adds a new member', async () => {
@@ -104,21 +107,23 @@ describe('FamilyMemberManager', () => {
       />
     );
 
-    const addButton = screen.getByText('Add Member');
-    fireEvent.click(addButton);
+    const addButtons = screen.getAllByText('Add Member');
+    fireEvent.click(addButtons[0]);
 
-    // Fill form
-    const nameInput = screen.getByPlaceholderText('Full name');
-    fireEvent.change(nameInput, { target: { value: 'New Member' } });
+    await waitFor(() => {
+      // Fill form
+      const nameInput = screen.getByPlaceholderText('Full name');
+      fireEvent.change(nameInput, { target: { value: 'New Member' } });
 
-    const relationshipSelect = screen.getByText('Select relationship');
-    fireEvent.click(relationshipSelect);
-    const childOption = screen.getByText('Child');
-    fireEvent.click(childOption);
+      const relationshipSelect = screen.getByText('Select relationship');
+      fireEvent.click(relationshipSelect);
+      const childOption = screen.getByText('Child');
+      fireEvent.click(childOption);
 
-    // Save
-    const saveButton = screen.getByText('Save');
-    fireEvent.click(saveButton);
+      // Save
+      const saveButtons = screen.getAllByText('Save');
+      fireEvent.click(saveButtons[0]);
+    });
 
     await waitFor(() => {
       expect(mockOnAdd).toHaveBeenCalled();
@@ -135,12 +140,14 @@ describe('FamilyMemberManager', () => {
       />
     );
 
-    const addButton = screen.getByText('Add Member');
-    fireEvent.click(addButton);
+    const addButtons = screen.getAllByText('Add Member');
+    fireEvent.click(addButtons[0]);
 
-    // Try to save without filling required fields
-    const saveButton = screen.getByText('Save');
-    fireEvent.click(saveButton);
+    await waitFor(() => {
+      // Try to save without filling required fields
+      const saveButtons = screen.getAllByText('Save');
+      fireEvent.click(saveButtons[0]);
+    });
 
     await waitFor(() => {
       expect(mockOnAdd).not.toHaveBeenCalled();

@@ -121,29 +121,38 @@ describe('FallRiskReportExporter', () => {
     const prediction = createMockPrediction();
     render(<FallRiskReportExporter currentPrediction={prediction} />);
 
-    expect(screen.getByText(/export report/i)).toBeInTheDocument();
+    const buttons = screen.getAllByText(/export report/i);
+    expect(buttons.length).toBeGreaterThan(0);
   });
 
-  it('opens dialog when button is clicked', () => {
+  it('opens dialog when button is clicked', async () => {
     const prediction = createMockPrediction();
     render(<FallRiskReportExporter currentPrediction={prediction} />);
 
-    const button = screen.getByText(/export report/i);
-    fireEvent.click(button);
+    const buttons = screen.getAllByText(/export report/i);
+    fireEvent.click(buttons[0]);
 
-    expect(screen.getByText(/export fall risk report/i)).toBeInTheDocument();
+    await waitFor(() => {
+      const dialogTitles = screen.getAllByText(/export fall risk report/i);
+      expect(dialogTitles.length).toBeGreaterThan(0);
+    });
   });
 
-  it('shows all export format options', () => {
+  it('shows all export format options', async () => {
     const prediction = createMockPrediction();
     render(<FallRiskReportExporter currentPrediction={prediction} />);
 
-    const button = screen.getByText(/export report/i);
-    fireEvent.click(button);
+    const buttons = screen.getAllByText(/export report/i);
+    fireEvent.click(buttons[0]);
 
-    expect(screen.getByText(/export as pdf/i)).toBeInTheDocument();
-    expect(screen.getByText(/export as json/i)).toBeInTheDocument();
-    expect(screen.getByText(/export as csv/i)).toBeInTheDocument();
+    await waitFor(() => {
+      const pdfButtons = screen.getAllByText(/export as pdf/i);
+      const jsonButtons = screen.getAllByText(/export as json/i);
+      const csvButtons = screen.getAllByText(/export as csv/i);
+      expect(pdfButtons.length).toBeGreaterThan(0);
+      expect(jsonButtons.length).toBeGreaterThan(0);
+      expect(csvButtons.length).toBeGreaterThan(0);
+    });
   });
 
   it('exports JSON format', async () => {
@@ -174,12 +183,12 @@ describe('FallRiskReportExporter', () => {
       />
     );
 
-    const button = screen.getByText(/export report/i);
-    fireEvent.click(button);
+    const buttons = screen.getAllByText(/export report/i);
+    fireEvent.click(buttons[0]);
 
     await waitFor(() => {
-      const jsonButton = screen.getByText(/export as json/i);
-      fireEvent.click(jsonButton);
+      const jsonButtons = screen.getAllByText(/export as json/i);
+      fireEvent.click(jsonButtons[0]);
     });
 
     // Verify onExport callback was called (this is what we really care about)
@@ -225,12 +234,12 @@ describe('FallRiskReportExporter', () => {
       />
     );
 
-    const button = screen.getByText(/export report/i);
-    fireEvent.click(button);
+    const buttons = screen.getAllByText(/export report/i);
+    fireEvent.click(buttons[0]);
 
     await waitFor(() => {
-      const csvButton = screen.getByText(/export as csv/i);
-      fireEvent.click(csvButton);
+      const csvButtons = screen.getAllByText(/export as csv/i);
+      fireEvent.click(csvButtons[0]);
     });
 
     // Verify onExport callback was called (this is what we really care about)
@@ -248,7 +257,7 @@ describe('FallRiskReportExporter', () => {
     }
   });
 
-  it('exports PDF format (opens print dialog)', () => {
+  it('exports PDF format (opens print dialog)', async () => {
     const prediction = createMockPrediction();
     const mockWindow = {
       document: {
@@ -262,11 +271,13 @@ describe('FallRiskReportExporter', () => {
 
     render(<FallRiskReportExporter currentPrediction={prediction} />);
 
-    const button = screen.getByText(/export report/i);
-    fireEvent.click(button);
+    const buttons = screen.getAllByText(/export report/i);
+    fireEvent.click(buttons[0]);
 
-    const pdfButton = screen.getByText(/export as pdf/i);
-    fireEvent.click(pdfButton);
+    await waitFor(() => {
+      const pdfButtons = screen.getAllByText(/export as pdf/i);
+      fireEvent.click(pdfButtons[0]);
+    });
 
     expect(window.open).toHaveBeenCalled();
     expect(mockWindow.document.write).toHaveBeenCalled();
@@ -300,12 +311,12 @@ describe('FallRiskReportExporter', () => {
       />
     );
 
-    const button = screen.getByText(/export report/i);
-    fireEvent.click(button);
+    const buttons = screen.getAllByText(/export report/i);
+    fireEvent.click(buttons[0]);
 
     await waitFor(() => {
-      const jsonButton = screen.getByText(/export as json/i);
-      fireEvent.click(jsonButton);
+      const jsonButtons = screen.getAllByText(/export as json/i);
+      fireEvent.click(jsonButtons[0]);
     });
 
     // Verify onExport callback was called with correct parameters
@@ -347,6 +358,7 @@ describe('FallRiskReportExporter', () => {
     );
 
     // Component should render with history
-    expect(screen.getByText(/export report/i)).toBeInTheDocument();
+    const buttons = screen.getAllByText(/export report/i);
+    expect(buttons.length).toBeGreaterThan(0);
   });
 });

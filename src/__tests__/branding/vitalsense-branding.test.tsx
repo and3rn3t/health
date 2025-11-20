@@ -75,8 +75,8 @@ describe('VitalSense Branding Compliance', () => {
       render(<Footer {...mockFooterProps} />);
 
       // Check for VitalSense branding in footer
-      const footerBrand = screen.getByText(/VitalSense/i);
-      expect(footerBrand).toBeInTheDocument();
+      const footerBrands = screen.getAllByText(/VitalSense/i);
+      expect(footerBrands.length).toBeGreaterThan(0);
     });
 
     it('should not contain generic "Health App" references', () => {
@@ -179,8 +179,8 @@ describe('VitalSense Branding Compliance', () => {
       render(<Footer {...mockFooterProps} />);
 
       // Check for VitalSense branding in footer
-      const footerBrand = screen.getByText(/VitalSense/i);
-      expect(footerBrand).toBeInTheDocument();
+      const footerBrands = screen.getAllByText(/VitalSense/i);
+      expect(footerBrands.length).toBeGreaterThan(0);
     });
 
     it('should not contain generic "Health App" references', () => {

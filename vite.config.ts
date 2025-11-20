@@ -32,7 +32,10 @@ export default defineConfig({
     treeShaking: true,
     // Better compression in production
     ...(process.env.CI === 'true' && {
-      pure: ['console.log', 'console.info', 'console.debug'],
+      pure: ['console.log', 'console.info', 'console.debug', 'console.warn'],
+      // More aggressive minification in CI
+      minify: true,
+      keepNames: false, // Don't keep function names for smaller bundle
     }),
   },
   resolve: {
@@ -128,8 +131,13 @@ export default defineConfig({
             if (id.includes('three')) {
               return 'three-js'; // Three.js is large (~200KB+) - lazy load in 3D visualizations
             }
+            // Recharts - force into separate chunk and ensure it's not eagerly loaded
             if (id.includes('recharts')) {
               return 'recharts-lazy'; // Recharts is large (~150KB+) - should be lazy-loaded
+            }
+            // Ensure chart component is also in a separate chunk
+            if (id.includes('/ui/chart') || id.includes('components/ui/chart')) {
+              return 'chart-components'; // Chart wrapper should be separate from recharts
             }
             if (id.includes('/d3-') || id.includes('/d3/')) {
               return 'd3-lib'; // D3 is large (~150KB+) - lazy load for advanced charts
@@ -304,6 +312,10 @@ export default defineConfig({
           if (id.includes('@tensorflow') || id.includes('polyfill')) {
             return true;
           }
+          // Recharts should not have side effects in initial bundle
+          if (id.includes('recharts')) {
+            return false; // Force tree-shaking for recharts
+          }
           return false;
         },
         propertyReadSideEffects: false,
@@ -311,16 +323,18 @@ export default defineConfig({
         // More aggressive tree shaking
         preset: 'smallest',
         unknownGlobalSideEffects: false,
+        // More aggressive tree shaking settings
+        annotations: true,
       },
     },
 
     // Additional aggressive optimizations
-    chunkSizeWarningLimit: 150, // Further reduced to enforce smaller chunks (was 200)
+    chunkSizeWarningLimit: 100, // Further reduced to enforce smaller chunks (was 150)
     minify: 'esbuild',
     target: 'esnext',
 
     // Reduce asset inlining to allow better code splitting
-    assetsInlineLimit: process.env.CI === 'true' ? 2048 : 4096,
+    assetsInlineLimit: process.env.CI === 'true' ? 1024 : 2048, // Reduced to force more code splitting
 
     // Compression and optimization
     cssCodeSplit: true,

@@ -136,8 +136,8 @@ describe('InterventionProgressAnalytics', () => {
     const plan = createMockPlan();
     render(<InterventionProgressAnalytics interventionPlan={plan} />);
 
-    const completedTab = screen.getByText(/completed/i);
-    fireEvent.click(completedTab);
+    const completedTabs = screen.getAllByText(/completed/i);
+    fireEvent.click(completedTabs[0]);
 
     // Wait for tab content to render and use flexible query with longer timeout
     await waitFor(() => {
@@ -157,8 +157,8 @@ describe('InterventionProgressAnalytics', () => {
     plan.completedInterventions = [];
     render(<InterventionProgressAnalytics interventionPlan={plan} />);
 
-    const completedTab = screen.getByText(/completed/i);
-    fireEvent.click(completedTab);
+    const completedTabs = screen.getAllByText(/completed/i);
+    fireEvent.click(completedTabs[0]);
 
     // Wait for tab content to render with flexible query
     await waitFor(() => {

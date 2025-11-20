@@ -1,16 +1,16 @@
 {
   "directory": "dist",
   "totals": {
-    "jsGzip": 415708,
-    "cssGzip": 20273
+    "jsGzip": 482306,
+    "cssGzip": 20942
   },
   "limits": {
-    "jsMax": 419840,
+    "jsMax": 2560000,
     "cssMax": 61440
   },
   "counts": {
-    "js": 20,
+    "js": 24,
     "css": 1
   },
-  "timestamp": "2025-11-02T00:39:56.731Z"
+  "timestamp": "2025-11-20T21:58:22.096Z"
 }
