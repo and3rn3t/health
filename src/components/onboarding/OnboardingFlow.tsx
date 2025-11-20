@@ -42,8 +42,15 @@ export default function OnboardingFlow({
     dismissed: false,
     completedSteps: [],
   });
+  const [devices] = useKV<Array<{ id: string; status: string }>>(
+    'connected-devices',
+    []
+  );
 
   const contactsCount = contacts?.length ?? 0;
+  const hasConnectedDevices =
+    devices.length > 0 &&
+    devices.some((d) => d.status === 'connected' || d.status === 'syncing');
 
   const steps = useMemo(
     () => [
@@ -63,7 +70,9 @@ export default function OnboardingFlow({
         id: 'device',
         title: 'Connect live monitoring',
         description: 'Enable live updates from your device',
-        done: Boolean(state?.completedSteps?.includes('device')),
+        done:
+          Boolean(state?.completedSteps?.includes('device')) ||
+          hasConnectedDevices,
       },
       {
         id: 'analytics',
@@ -74,7 +83,7 @@ export default function OnboardingFlow({
         ),
       },
     ],
-    [contactsCount, healthData, state?.completedSteps]
+    [contactsCount, healthData, state?.completedSteps, hasConnectedDevices]
   );
 
   const completed = steps.filter((s) => s.done).length;
@@ -92,7 +101,12 @@ export default function OnboardingFlow({
     setExpandedStep((curr) =>
       curr && !steps.find((s) => s.id === curr)?.done ? curr : firstIncomplete
     );
-  }, [steps]);
+
+    // Auto-mark device step as done when a device is connected
+    if (hasConnectedDevices && !state?.completedSteps?.includes('device')) {
+      markDone('device');
+    }
+  }, [steps, hasConnectedDevices, state?.completedSteps]);
 
   const markDone = (id: string) => {
     setState((prev) => ({

@@ -142,16 +142,9 @@ describe('FallRiskReportExporter', () => {
     expect(screen.getByText(/export as csv/i)).toBeInTheDocument();
   });
 
-  it('exports JSON format', () => {
+  it('exports JSON format', async () => {
     const prediction = createMockPrediction();
     const onExport = vi.fn();
-
-    // Mock createElement for anchor tag
-    const mockAnchor = {
-      href: '',
-      download: '',
-      click: vi.fn(),
-    } as any;
 
     // Create a real anchor element and spy on it
     const realAnchor = document.createElement('a');
@@ -172,13 +165,17 @@ describe('FallRiskReportExporter', () => {
     const button = screen.getByText(/export report/i);
     fireEvent.click(button);
 
-    const jsonButton = screen.getByText(/export as json/i);
-    fireEvent.click(jsonButton);
+    await waitFor(() => {
+      const jsonButton = screen.getByText(/export as json/i);
+      fireEvent.click(jsonButton);
+    });
 
-    expect(clickSpy).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(clickSpy).toHaveBeenCalled();
+    });
   });
 
-  it('exports CSV format', () => {
+  it('exports CSV format', async () => {
     const prediction = createMockPrediction();
     const onExport = vi.fn();
 
@@ -201,10 +198,14 @@ describe('FallRiskReportExporter', () => {
     const button = screen.getByText(/export report/i);
     fireEvent.click(button);
 
-    const csvButton = screen.getByText(/export as csv/i);
-    fireEvent.click(csvButton);
+    await waitFor(() => {
+      const csvButton = screen.getByText(/export as csv/i);
+      fireEvent.click(csvButton);
+    });
 
-    expect(clickSpy).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(clickSpy).toHaveBeenCalled();
+    });
   });
 
   it('exports PDF format (opens print dialog)', () => {
@@ -254,12 +255,18 @@ describe('FallRiskReportExporter', () => {
     const button = screen.getByText(/export report/i);
     fireEvent.click(button);
 
-    const jsonButton = screen.getByText(/export as json/i);
-    fireEvent.click(jsonButton);
+    await waitFor(() => {
+      const jsonButton = screen.getByText(/export as json/i);
+      fireEvent.click(jsonButton);
+    });
 
     await waitFor(() => {
-      expect(onExport).toHaveBeenCalledWith('json', expect.any(Object));
-    });
+      expect(onExport).toHaveBeenCalledWith('json', expect.objectContaining({
+        prediction: expect.any(Object),
+        exportDate: expect.any(Date),
+        exportVersion: expect.any(String),
+      }));
+    }, { timeout: 3000 });
   });
 
   it('includes history data in export when provided', () => {

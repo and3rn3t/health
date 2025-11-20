@@ -83,7 +83,9 @@ describe('RiskFactorDetailView', () => {
     // Use getAllByText since text may appear multiple times
     const gaitElements = screen.getAllByText(/gait/i);
     expect(gaitElements.length).toBeGreaterThan(0);
-    expect(screen.getByText(/worsening/i)).toBeInTheDocument();
+    // Use getAllByText since "worsening" may appear multiple times
+    const worseningElements = screen.getAllByText(/worsening/i);
+    expect(worseningElements.length).toBeGreaterThan(0);
   });
 
   it('shows related interventions when provided', () => {
@@ -162,6 +164,8 @@ describe('ProtectiveFactorDetailView', () => {
 
   it('displays category', () => {
     render(<ProtectiveFactorDetailView protectiveFactor={mockProtectiveFactor} />);
-    expect(screen.getByText(/strength/i)).toBeInTheDocument();
+    // Use getAllByText since "strength" may appear multiple times (in category and "Protective Strength")
+    const strengthElements = screen.getAllByText(/strength/i);
+    expect(strengthElements.length).toBeGreaterThan(0);
   });
 });

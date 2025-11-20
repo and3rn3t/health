@@ -159,8 +159,9 @@ describe('FallRiskHistoryChart', () => {
     const history = createMockHistoryData(20);
     render(<FallRiskHistoryChart historyData={history} showTrends={true} />);
 
-    // Should show trend information
-    expect(screen.getByText(/trend/i)).toBeInTheDocument();
+    // Should show trend information - use getAllByText since "trend" may appear multiple times
+    const trendElements = screen.getAllByText(/trend/i);
+    expect(trendElements.length).toBeGreaterThan(0);
   });
 
   it('switches between tabs', () => {
