@@ -27,6 +27,7 @@
     "test": "vitest run -c vitest.config.ts",
     "test:ui": "vitest --ui -c vitest.config.ts",
     "test:coverage": "vitest run --coverage -c vitest.config.ts",
+    "test:changed": "vitest run --changed -c vitest.config.ts",
     "test:api-endpoints": "node scripts/testing/test-api-endpoints.js",
     "test:geospatial": "vitest run src/lib/__tests__/risk-scoring.test.ts src/lib/__tests__/explainability.test.ts src/lib/__tests__/change-detection.test.ts src/lib/__tests__/vector-spatial.test.ts src/lib/__tests__/lidar.test.ts src/lib/__tests__/features.test.ts",
     "test:phase5": "vitest run src/lib/__tests__/projects.test.ts src/lib/__tests__/scheduling.test.ts src/lib/__tests__/exports.test.ts src/lib/__tests__/rbac.test.ts",

@@ -22,15 +22,28 @@ export default defineConfig({
     ],
     setupFiles: ['./vitest.setup.ts'],
     globals: true,
-    // Optimize memory usage: reduce number of worker threads to prevent OOM
-    pool: 'threads',
+    // Optimize parallel execution: use forks pool in CI for better isolation and stability
+    // threads pool for local development (faster), forks pool for CI (more stable)
+    pool: process.env.CI ? 'forks' : 'threads',
     poolOptions: {
       threads: {
-        // Use fewer threads to reduce memory pressure (default is CPU cores)
-        maxThreads: 2,
-        minThreads: 1,
+        // Use more threads for parallel execution in local dev
+        maxThreads: 8,
+        minThreads: 4,
+        singleThread: false,
+      },
+      forks: {
+        // Use forks pool in CI for better isolation and stability
+        singleFork: false,
+        isolate: true, // Isolate each test file in its own process
+        maxForks: process.env.CI ? 4 : 2,
+        minForks: process.env.CI ? 2 : 1,
       },
     },
+    // Test timeout optimization for faster failure detection
+    testTimeout: 10000, // 10s default
+    hookTimeout: 5000,  // 5s for hooks
+    teardownTimeout: 5000,
     coverage: {
       provider: 'v8',
       // Added 'json-summary' so CI coverage gate (expects coverage/coverage-summary.json)
