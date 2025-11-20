@@ -128,10 +128,12 @@ describe('EnhancedAIInsights', () => {
     render(<EnhancedAIInsights healthData={healthData} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/All/i)).toBeInTheDocument();
-      expect(screen.getByText(/High Priority/i)).toBeInTheDocument();
-      expect(screen.getByText(/Actionable/i)).toBeInTheDocument();
-      expect(screen.getByText(/Achievements/i)).toBeInTheDocument();
+      // Use getAllByText and check first occurrence, or use getByRole for tabs
+      const allTabs = screen.getAllByText(/All/i);
+      expect(allTabs.length).toBeGreaterThan(0);
+      expect(screen.getByRole('tab', { name: /High Priority/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Actionable/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Achievements/i })).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 
@@ -189,7 +191,7 @@ describe('EnhancedAIInsights', () => {
     render(<EnhancedAIInsights healthData={healthData} />);
 
     await waitFor(() => {
-      const highPriorityTab = screen.getByText(/High Priority/i);
+      const highPriorityTab = screen.getByRole('tab', { name: /High Priority/i });
       fireEvent.click(highPriorityTab);
     }, { timeout: 3000 });
   });
@@ -285,8 +287,9 @@ describe('EnhancedAIInsights', () => {
     render(<EnhancedAIInsights healthData={healthData} />);
 
     await waitFor(() => {
-      // Should generate activity-related insight
-      expect(screen.queryByText(/activity/i)).toBeTruthy();
+      // Should generate activity-related insight - use getAllByText since there may be multiple
+      const activityElements = screen.queryAllByText(/activity/i);
+      expect(activityElements.length).toBeGreaterThan(0);
     }, { timeout: 3000 });
   });
 
@@ -343,8 +346,9 @@ describe('EnhancedAIInsights', () => {
     render(<EnhancedAIInsights healthData={healthData} />);
 
     await waitFor(() => {
-      // Should generate sleep-related insight
-      expect(screen.queryByText(/sleep/i)).toBeTruthy();
+      // Should generate sleep-related insight - use getAllByText since there may be multiple
+      const sleepElements = screen.queryAllByText(/sleep/i);
+      expect(sleepElements.length).toBeGreaterThan(0);
     }, { timeout: 3000 });
   });
 

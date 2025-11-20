@@ -42,9 +42,13 @@ describe('SensorDataVisualization', () => {
     const sensorData = createMockSensorData();
     render(<SensorDataVisualization sensorData={sensorData} />);
 
-    expect(screen.getByText(/0.10/i)).toBeInTheDocument(); // X-axis
-    expect(screen.getByText(/0.20/i)).toBeInTheDocument(); // Y-axis
-    expect(screen.getByText(/9.80/i)).toBeInTheDocument(); // Z-axis
+    // Use getAllByText since values may appear multiple times (e.g., in labels and values)
+    const xAxisElements = screen.getAllByText(/0.10/i);
+    expect(xAxisElements.length).toBeGreaterThan(0);
+    const yAxisElements = screen.getAllByText(/0.20/i);
+    expect(yAxisElements.length).toBeGreaterThan(0);
+    const zAxisElements = screen.getAllByText(/9.80/i);
+    expect(zAxisElements.length).toBeGreaterThan(0);
   });
 
   it('displays gyroscope data', () => {

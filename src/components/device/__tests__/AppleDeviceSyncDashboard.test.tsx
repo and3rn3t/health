@@ -92,13 +92,16 @@ describe('AppleDeviceSyncDashboard', () => {
     expect(mockStartSync).toHaveBeenCalled();
   });
 
-  it('switches between tabs', () => {
+  it('switches between tabs', async () => {
     render(<AppleDeviceSyncDashboard userId="test-user" />);
 
     const errorsTab = screen.getByText('Errors');
     fireEvent.click(errorsTab);
 
-    expect(screen.getByText(/No Errors/i)).toBeInTheDocument();
+    // Wait for tab content to render
+    await waitFor(() => {
+      expect(screen.getByText('No Errors')).toBeInTheDocument();
+    });
   });
 
   it('displays device capabilities', () => {

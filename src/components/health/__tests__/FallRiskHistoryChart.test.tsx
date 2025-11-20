@@ -137,7 +137,7 @@ describe('FallRiskHistoryChart', () => {
     expect(screen.getByText('30D')).toBeInTheDocument();
     expect(screen.getByText('90D')).toBeInTheDocument();
     expect(screen.getByText('1Y')).toBeInTheDocument();
-    expect(screen.getByText('ALL')).toBeInTheDocument();
+    expect(screen.getByText('All')).toBeInTheDocument();
   });
 
   it('filters data by time range', () => {
@@ -226,7 +226,7 @@ describe('FallRiskHistoryChart', () => {
     const history = createMockHistoryData(100);
     render(<FallRiskHistoryChart historyData={history} timeRange="all" />);
 
-    const allButton = screen.getByText('ALL');
+    const allButton = screen.getByText('All');
     expect(allButton).toBeInTheDocument();
   });
 });

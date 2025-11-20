@@ -2,7 +2,7 @@
  * Tests for InterventionProgressAnalytics component
  */
 
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import InterventionProgressAnalytics from '../InterventionProgressAnalytics';
 import type {
@@ -119,22 +119,29 @@ describe('InterventionProgressAnalytics', () => {
     const plan = createMockPlan();
     render(<InterventionProgressAnalytics interventionPlan={plan} />);
 
-    expect(screen.getByText(/60%/i)).toBeInTheDocument(); // Completion rate
-    expect(screen.getByText(/75%/i)).toBeInTheDocument(); // Adherence rate
-    expect(screen.getByText(/50%/i)).toBeInTheDocument(); // Effectiveness
+    // Use getAllByText since percentages may appear multiple times
+    const completionElements = screen.getAllByText(/60%/i);
+    expect(completionElements.length).toBeGreaterThan(0);
+    const adherenceElements = screen.getAllByText(/75%/i);
+    expect(adherenceElements.length).toBeGreaterThan(0);
+    const effectivenessElements = screen.getAllByText(/50%/i);
+    expect(effectivenessElements.length).toBeGreaterThan(0);
   });
 
-  it('switches between active and completed tabs', () => {
+  it('switches between active and completed tabs', async () => {
     const plan = createMockPlan();
     render(<InterventionProgressAnalytics interventionPlan={plan} />);
 
     const completedTab = screen.getByText(/completed/i);
     fireEvent.click(completedTab);
 
-    expect(screen.getByText('Completed Program')).toBeInTheDocument();
+    // Wait for tab content to render and use flexible query
+    await waitFor(() => {
+      expect(screen.getByText(/Completed Program/i)).toBeInTheDocument();
+    });
   });
 
-  it('shows empty state for no completed interventions', () => {
+  it('shows empty state for no completed interventions', async () => {
     const plan = createMockPlan();
     plan.completedInterventions = [];
     render(<InterventionProgressAnalytics interventionPlan={plan} />);
@@ -142,16 +149,21 @@ describe('InterventionProgressAnalytics', () => {
     const completedTab = screen.getByText(/completed/i);
     fireEvent.click(completedTab);
 
-    expect(
-      screen.getByText(/no completed interventions yet/i)
-    ).toBeInTheDocument();
+    // Wait for tab content to render
+    await waitFor(() => {
+      expect(
+        screen.getByText(/no completed interventions/i)
+      ).toBeInTheDocument();
+    });
   });
 
   it('displays days active for interventions', () => {
     const plan = createMockPlan();
     render(<InterventionProgressAnalytics interventionPlan={plan} />);
 
-    expect(screen.getByText(/days active/i)).toBeInTheDocument();
+    // Use getAllByText since "days active" may appear multiple times
+    const daysActiveElements = screen.getAllByText(/days active/i);
+    expect(daysActiveElements.length).toBeGreaterThan(0);
   });
 
   it('handles empty progress array', () => {

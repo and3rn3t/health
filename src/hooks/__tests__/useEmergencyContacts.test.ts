@@ -195,6 +195,9 @@ describe('useEmergencyContacts', () => {
         preferredMethods: ['all'],
         isActive: true,
       });
+    });
+
+    act(() => {
       result.current.addContact({
         name: 'Primary Contact',
         phone: '5551234568',
@@ -203,6 +206,9 @@ describe('useEmergencyContacts', () => {
         preferredMethods: ['all'],
         isActive: true,
       });
+    });
+
+    act(() => {
       result.current.addContact({
         name: 'Inactive Contact',
         phone: '5551234569',
@@ -212,6 +218,9 @@ describe('useEmergencyContacts', () => {
         isActive: false,
       });
     });
+
+    // Wait for state to update and verify contacts are added
+    expect(result.current.contacts.length).toBe(3);
 
     const sorted = result.current.getSortedActiveContacts();
 
