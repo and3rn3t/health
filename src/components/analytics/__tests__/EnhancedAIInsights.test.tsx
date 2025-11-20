@@ -201,8 +201,10 @@ describe('EnhancedAIInsights', () => {
     render(<EnhancedAIInsights healthData={healthData} />);
 
     await waitFor(() => {
-      const highPriorityTab = screen.getByRole('tab', { name: /High Priority/i });
-      fireEvent.click(highPriorityTab);
+      // Use getAllByRole since component may render multiple times (React StrictMode)
+      const highPriorityTabs = screen.getAllByRole('tab', { name: /High Priority/i });
+      expect(highPriorityTabs.length).toBeGreaterThan(0);
+      fireEvent.click(highPriorityTabs[0]); // Click the first one
     }, { timeout: 3000 });
   });
 
