@@ -349,7 +349,7 @@ jobs:
     timeout-minutes: 15
     env:
       # Increase Node.js heap size to prevent OOM errors during test execution
-      NODE_OPTIONS: --max-old-space-size=4096
+      NODE_OPTIONS: --max-old-space-size=6144
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node & pnpm
@@ -440,7 +440,9 @@ jobs:
     needs: build  # Start immediately after build, don't wait for code_quality
     timeout-minutes: 15
     env:
-      NODE_OPTIONS: --max-old-space-size=4096
+      # Increased heap size to 6GB to prevent OOM errors with coverage collection
+      # Reduced maxForks to 2 in vitest.config.ts to reduce memory pressure
+      NODE_OPTIONS: --max-old-space-size=6144
     steps:
       - uses: actions/checkout@v4
         with:
@@ -612,7 +614,7 @@ jobs:
     needs: build  # Start immediately after build, don't wait for code_quality
     timeout-minutes: 12
     env:
-      NODE_OPTIONS: --max-old-space-size=4096
+      NODE_OPTIONS: --max-old-space-size=6144
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node & pnpm
@@ -645,7 +647,7 @@ jobs:
     needs: build  # Start immediately after build, don't wait for code_quality
     timeout-minutes: 12
     env:
-      NODE_OPTIONS: --max-old-space-size=4096
+      NODE_OPTIONS: --max-old-space-size=6144
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node & pnpm
@@ -705,7 +707,7 @@ jobs:
     needs: build  # Start immediately after build, don't wait for code_quality
     timeout-minutes: 10
     env:
-      NODE_OPTIONS: --max-old-space-size=4096
+      NODE_OPTIONS: --max-old-space-size=6144
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node & pnpm
@@ -763,7 +765,7 @@ jobs:
     needs: build  # Start immediately after build, don't wait for code_quality
     timeout-minutes: 10
     env:
-      NODE_OPTIONS: --max-old-space-size=4096
+      NODE_OPTIONS: --max-old-space-size=6144
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node & pnpm

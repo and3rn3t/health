@@ -7,7 +7,16 @@ import type { AuthContextType } from '@/lib/authTypes';
 describe('useAuth', () => {
   test('should return context when provided', () => {
     const mockContext: AuthContextType = {
-      user: { id: '1', email: 'test@example.com' },
+      user: {
+        id: '1',
+        email: 'test@example.com',
+        name: 'Test User',
+        roles: [],
+        permissions: [],
+        lastLogin: new Date().toISOString(),
+        mfaEnabled: false,
+        hipaaConsent: false,
+      },
       isAuthenticated: true,
       isLoading: false,
       login: vi.fn(),
@@ -83,4 +92,3 @@ describe('useAuth', () => {
     expect(result.current.isAuthenticated).toBe(false);
   });
 });
-

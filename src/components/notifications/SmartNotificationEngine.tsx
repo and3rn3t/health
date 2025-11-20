@@ -1352,9 +1352,7 @@ export default function SmartNotificationEngine({
                             ...(notifications || []),
                             testNotification,
                           ]);
-                          toast.success(
-                            `Test ${priority} notification created`
-                          );
+                          // toast.success(`Test ${priority} notification created`);
                         }}
                         className="capitalize"
                       >

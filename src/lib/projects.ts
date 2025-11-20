@@ -207,9 +207,18 @@ export function calculateBBoxFromGeometry(geometry: AOI['geometry']): AOI['bbox'
         minY = Math.min(minY, y)
         maxX = Math.max(maxX, x)
         maxY = Math.max(maxY, y)
-      } else {
-        // Nested arrays
-        coords.forEach(processCoordinates)
+      } else if (Array.isArray(coords)) {
+        // Nested arrays - recursively process
+        coords.forEach((coord: number | number[] | number[][] | number[][][]) => {
+          if (typeof coord === 'number') {
+            // Single number in array
+            maxX = Math.max(maxX, coord);
+            maxY = Math.max(maxY, coord);
+          } else if (Array.isArray(coord)) {
+            // Recursively process nested arrays
+            processCoordinates(coord as number[] | number[][] | number[][][]);
+          }
+        });
       }
     }
   }

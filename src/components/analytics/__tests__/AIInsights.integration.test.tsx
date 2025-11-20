@@ -96,10 +96,9 @@ const createMockHealthData = (): ProcessedHealthData => ({
   fallRiskFactors: [
     {
       factor: 'low_steadiness',
-      severity: 'moderate',
+      risk: 'moderate',
       impact: 0.6,
-      modifiable: true,
-      trend: 'declining',
+      recommendation: 'Improve balance',
     },
   ],
   healthScore: 65,
@@ -167,6 +166,39 @@ describe('AI Insights Integration', () => {
     const healthData = createMockHealthData();
     healthData.metrics = {
       steps: {
+        daily: [],
+        weekly: [],
+        monthly: [],
+        average: 0,
+        trend: 'stable',
+        variability: 0,
+        reliability: 0,
+        lastValue: 0,
+        percentileRank: 0,
+      },
+      heartRate: {
+        daily: [],
+        weekly: [],
+        monthly: [],
+        average: 0,
+        trend: 'stable',
+        variability: 0,
+        reliability: 0,
+        lastValue: 0,
+        percentileRank: 0,
+      },
+      walkingSteadiness: {
+        daily: [],
+        weekly: [],
+        monthly: [],
+        average: 0,
+        trend: 'stable',
+        variability: 0,
+        reliability: 0,
+        lastValue: 0,
+        percentileRank: 0,
+      },
+      sleepHours: {
         daily: [],
         weekly: [],
         monthly: [],

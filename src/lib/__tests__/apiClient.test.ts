@@ -125,10 +125,12 @@ describe('apiClient', () => {
     test('should post health data', async () => {
       const payload = {
         id: '1',
-        type: 'heart_rate',
+        type: 'heart_rate' as const,
         value: 72,
         timestamp: '2024-01-01T00:00:00Z',
-        source: 'apple_health',
+        processedAt: '2024-01-01T00:00:00Z',
+        validated: true,
+        source: { userId: 'user-1', collectedAt: '2024-01-01T00:00:00Z' },
       };
 
       vi.mocked(httpClient.post).mockResolvedValue({ success: true });
@@ -172,4 +174,3 @@ describe('apiClient', () => {
     });
   });
 });
-

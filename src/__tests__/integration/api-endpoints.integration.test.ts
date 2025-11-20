@@ -53,7 +53,7 @@ describe('API Endpoints Integration', () => {
       });
 
       expect(res.status).toBe(200);
-      const data = await res.json();
+      const data = await res.json() as { ok: boolean; service: unknown; timestamp: unknown };
       expect(data.ok).toBe(true);
       expect(data.service).toBeDefined();
       expect(data.timestamp).toBeDefined();
@@ -83,7 +83,7 @@ describe('API Endpoints Integration', () => {
       const res = await mf.dispatchFetch(`${baseUrl}/api/ws-url`);
 
       expect(res.status).toBe(200);
-      const data = await res.json();
+      const data = await res.json() as { url: string };
       expect(data.url).toBeDefined();
       expect(typeof data.url).toBe('string');
     });
@@ -96,7 +96,7 @@ describe('API Endpoints Integration', () => {
       });
 
       expect(res.status).toBe(200);
-      const data = await res.json();
+      const data = await res.json() as { token: string };
       expect(data.token).toBeDefined();
       expect(typeof data.token).toBe('string');
     });
@@ -105,7 +105,7 @@ describe('API Endpoints Integration', () => {
       const res = await mf.dispatchFetch(`${baseUrl}/api/ws-live-enabled`);
 
       expect(res.status).toBe(200);
-      const data = await res.json();
+      const data = await res.json() as { enabled: boolean };
       expect(typeof data.enabled).toBe('boolean');
     });
   });
@@ -189,4 +189,3 @@ describe('API Endpoints Integration', () => {
     });
   });
 });
-

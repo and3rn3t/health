@@ -32,6 +32,7 @@ import {
 import React, { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import EnhancedAIInsights from './EnhancedAIInsights';
 import type { TimeRange } from '@/lib/analytics';
 import { extractTimeSeries, generateAnalyticsSummary } from '@/lib/analytics';
 import TimeSeriesChart from './TimeSeriesChart';

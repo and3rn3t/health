@@ -34,22 +34,37 @@ export default defineConfig({
       },
       forks: {
         // Use forks pool in CI for better isolation and stability
-        singleFork: false,
+        // Reduced parallelism in CI to prevent memory issues
+        singleFork: process.env.CI ? false : false,
         isolate: true, // Isolate each test file in its own process
-        maxForks: process.env.CI ? 4 : 2,
-        minForks: process.env.CI ? 2 : 1,
+        maxForks: process.env.CI ? 2 : 2, // Reduced from 4 to 2 to prevent OOM
+        minForks: process.env.CI ? 1 : 1, // Reduced from 2 to 1 for lower memory usage
       },
     },
     // Test timeout optimization for faster failure detection
     testTimeout: 10000, // 10s default
     hookTimeout: 5000,  // 5s for hooks
     teardownTimeout: 5000,
+    // Memory optimization: reduce concurrent test execution to prevent OOM in CI
+    // Sequence tests within files to reduce memory pressure when using forks pool
+    sequence: {
+      shuffle: false, // Disable shuffle in CI to reduce memory overhead
+      concurrent: process.env.CI ? false : true, // Run tests sequentially in CI, concurrently in local dev
+    },
+    // Memory optimization: limit concurrent tests and file parallelism in CI
+    maxConcurrency: process.env.CI ? 2 : 5, // Limit concurrent tests in CI to reduce memory pressure
+    fileParallelism: process.env.CI ? false : true, // Disable file-level parallelism in CI to reduce memory usage
     coverage: {
       provider: 'v8',
       // Added 'json-summary' so CI coverage gate (expects coverage/coverage-summary.json)
       // succeeds; previously only 'json' produced coverage-final.json causing gate failure.
-      reporter: ['text', 'json', 'json-summary', 'lcov'],
+      // In CI, use minimal reporters to reduce memory usage (json-summary is sufficient for gate)
+      reporter: process.env.CI
+        ? ['json-summary', 'json'] // Minimal reporters in CI to reduce memory overhead
+        : ['text', 'json', 'json-summary', 'lcov'], // Full reporters in local dev
       reportsDirectory: 'coverage',
+      // Memory optimization: only collect coverage for tested files (not all source files)
+      all: false, // Reduces memory usage by not processing untested files
       // Exclude large, non-runtime or archival areas to raise meaningful signal
       exclude: [
         'src/_archive/**',

@@ -168,20 +168,21 @@ export function exportToPDF(
 export function createExport(
   data: any,
   format: ExportOptions['format'],
-  options: ExportOptions = {}
+  options: Partial<ExportOptions> = {}
 ): ExportResult {
   const id = `export-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`
   let content: string
 
+  const finalOptions: ExportOptions = { format, ...options };
   switch (format) {
     case 'csv':
-      content = exportToCSV(Array.isArray(data) ? data : [data], options)
+      content = exportToCSV(Array.isArray(data) ? data : [data], finalOptions)
       break
     case 'geopackage':
-      content = exportToGeoPackage(data, options)
+      content = exportToGeoPackage(data, finalOptions)
       break
     case 'pdf':
-      content = exportToPDF(data, options)
+      content = exportToPDF(data, finalOptions)
       break
     default:
       throw new Error(`Unsupported format: ${format}`)

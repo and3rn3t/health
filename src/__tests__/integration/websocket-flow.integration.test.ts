@@ -67,7 +67,7 @@ describe('WebSocket Flow Integration', () => {
       const res = await mf.dispatchFetch(`${baseUrl}/api/ws-url`);
 
       expect(res.status).toBe(200);
-      const data = await res.json();
+      const data = await res.json() as { url: string };
       expect(data.url).toBeDefined();
       expect(data.url).toContain('ws');
     });
@@ -86,7 +86,7 @@ describe('WebSocket Flow Integration', () => {
       });
 
       expect(res.status).toBe(200);
-      const data = await res.json();
+      const data = await res.json() as { token: string };
       expect(data.token).toBeDefined();
       expect(typeof data.token).toBe('string');
       expect(data.token.length).toBeGreaterThan(0);
@@ -103,7 +103,7 @@ describe('WebSocket Flow Integration', () => {
       });
 
       if (res.ok) {
-        const data = await res.json();
+        const data = await res.json() as { token: string };
         // Token should be a JWT (has dots)
         expect(data.token.split('.')).toHaveLength(3);
       }
@@ -115,7 +115,7 @@ describe('WebSocket Flow Integration', () => {
       const res = await mf.dispatchFetch(`${baseUrl}/api/ws-live-enabled`);
 
       expect(res.status).toBe(200);
-      const data = await res.json();
+      const data = await res.json() as { enabled: boolean };
       expect(typeof data.enabled).toBe('boolean');
     });
 
@@ -129,4 +129,3 @@ describe('WebSocket Flow Integration', () => {
     });
   });
 });
-

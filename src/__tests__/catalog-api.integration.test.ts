@@ -44,7 +44,7 @@ describe('Catalog API Integration Tests', () => {
   test('health endpoint responds', async () => {
     const response = await fetch(`${API_URL}/health`)
     expect(response.ok).toBe(true)
-    const data = await response.json()
+    const data = await response.json() as { ok: boolean }
     expect(data.ok).toBe(true)
   })
 
@@ -65,7 +65,7 @@ describe('Catalog API Integration Tests', () => {
       })
 
       expect(response.ok).toBe(true)
-      const data = await response.json()
+      const data = await response.json() as { matched: number; features: unknown[] }
       expect(data.matched).toBeGreaterThanOrEqual(0)
       expect(Array.isArray(data.features)).toBe(true)
     })
@@ -81,7 +81,7 @@ describe('Catalog API Integration Tests', () => {
       })
 
       expect(response.ok).toBe(true)
-      const data = await response.json()
+      const data = await response.json() as { buffer: { geometry: { type: string } } }
       expect(data.buffer).toBeDefined()
       expect(data.buffer.geometry.type).toBe('Polygon')
     })
@@ -103,7 +103,7 @@ describe('Catalog API Integration Tests', () => {
       })
 
       expect(response.ok).toBe(true)
-      const data = await response.json()
+      const data = await response.json() as { nearest: unknown[] }
       expect(Array.isArray(data.nearest)).toBe(true)
     })
   })
@@ -123,7 +123,7 @@ describe('Catalog API Integration Tests', () => {
       })
 
       expect(response.ok).toBe(true)
-      const data = await response.json()
+      const data = await response.json() as { groundCount: number; nonGroundCount: number; stats: unknown }
       expect(data.groundCount + data.nonGroundCount).toBe(3)
       expect(data.stats).toBeDefined()
     })
@@ -141,7 +141,7 @@ describe('Catalog API Integration Tests', () => {
       })
 
       expect(response.ok).toBe(true)
-      const data = await response.json()
+      const data = await response.json() as { grid: unknown; width: number; height: number }
       expect(data.grid).toBeDefined()
       expect(data.width).toBeGreaterThan(0)
       expect(data.height).toBeGreaterThan(0)
@@ -160,7 +160,7 @@ describe('Catalog API Integration Tests', () => {
       })
 
       expect(response.ok).toBe(true)
-      const data = await response.json()
+      const data = await response.json() as { grid: unknown; stats: unknown }
       expect(data.grid).toBeDefined()
       expect(data.stats).toBeDefined()
     })
@@ -180,7 +180,7 @@ describe('Catalog API Integration Tests', () => {
       })
 
       expect(response.ok).toBe(true)
-      const data = await response.json()
+      const data = await response.json() as { scores: unknown[]; statistics: unknown }
       expect(data.scores).toHaveLength(3)
       expect(data.statistics).toBeDefined()
     })
@@ -196,7 +196,7 @@ describe('Catalog API Integration Tests', () => {
       })
 
       expect(response.ok).toBe(true)
-      const data = await response.json()
+      const data = await response.json() as { confidence: unknown[]; uncertainty: unknown[] }
       expect(data.confidence).toHaveLength(3)
       expect(data.uncertainty).toHaveLength(3)
     })
@@ -213,7 +213,7 @@ describe('Catalog API Integration Tests', () => {
       })
 
       expect(response.ok).toBe(true)
-      const data = await response.json()
+      const data = await response.json() as { changeMap: unknown[]; statistics: unknown }
       expect(data.changeMap).toHaveLength(3)
       expect(data.statistics).toBeDefined()
     })
@@ -228,7 +228,7 @@ describe('Catalog API Integration Tests', () => {
       })
 
       expect(response.ok).toBe(true)
-      const data = await response.json()
+      const data = await response.json() as { segmentation: unknown[]; statistics: unknown }
       expect(data.segmentation).toHaveLength(5)
       expect(data.statistics).toBeDefined()
     })
@@ -253,7 +253,7 @@ describe('Catalog API Integration Tests', () => {
       // List models
       const listResponse = await fetch(`${API_URL}/models`)
       expect(listResponse.ok).toBe(true)
-      const listData = await listResponse.json()
+      const listData = await listResponse.json() as { models: unknown[] }
       expect(Array.isArray(listData.models)).toBe(true)
     })
 
@@ -269,7 +269,7 @@ describe('Catalog API Integration Tests', () => {
       })
 
       expect(createResponse.ok).toBe(true)
-      const jobData = await createResponse.json()
+      const jobData = await createResponse.json() as { id: string; status: string }
       expect(jobData.id).toBeDefined()
       expect(jobData.status).toBe('pending')
 
@@ -290,7 +290,7 @@ describe('Catalog API Integration Tests', () => {
       })
 
       expect(createResponse.ok).toBe(true)
-      const reviewData = await createResponse.json()
+      const reviewData = await createResponse.json() as { id: string; status: string }
       expect(reviewData.id).toBeDefined()
       expect(reviewData.status).toBe('pending')
     })

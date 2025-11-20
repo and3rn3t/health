@@ -66,7 +66,7 @@ describe('Observability Integration Tests', () => {
     const response = await fetch(`${API_URL}/health`)
     expect(response.ok).toBe(true)
 
-    const data = await response.json()
+    const data = await response.json() as { ok: boolean; timestamp: unknown; service: string; uptime: { seconds: number } }
     expect(data.ok).toBe(true)
     expect(data.timestamp).toBeDefined()
     expect(data.service).toBe('catalog-api')
@@ -81,7 +81,7 @@ describe('Observability Integration Tests', () => {
     const response = await fetch(`${API_URL}/metrics`)
     expect(response.ok).toBe(true)
 
-    const data = await response.json()
+    const data = await response.json() as { requests: { total: number }; responseTime: unknown; errors: unknown; cache: unknown; uptime: unknown; analysis: unknown }
     expect(data.requests).toBeDefined()
     expect(data.requests.total).toBeGreaterThanOrEqual(0)
     expect(data.responseTime).toBeDefined()
@@ -94,7 +94,7 @@ describe('Observability Integration Tests', () => {
   test.skipIf(!serverAvailable)('metrics tracks requests correctly', async () => {
     // Reset by checking initial state
     const initialResponse = await fetch(`${API_URL}/metrics`)
-    const initial = await initialResponse.json()
+    const initial = await initialResponse.json() as { requests: { total: number } }
     const initialTotal = initial.requests.total
 
     // Make a request
@@ -102,7 +102,7 @@ describe('Observability Integration Tests', () => {
 
     // Check metrics increased
     const metricsResponse = await fetch(`${API_URL}/metrics`)
-    const metrics = await metricsResponse.json()
+    const metrics = await metricsResponse.json() as { requests: { total: number } }
     expect(metrics.requests.total).toBeGreaterThan(initialTotal)
   })
 
@@ -112,7 +112,7 @@ describe('Observability Integration Tests', () => {
     })
 
     expect(response.status).toBe(404)
-    const data = await response.json()
+    const data = await response.json() as { error: unknown; path: unknown }
     expect(data.error).toBeDefined()
     expect(data.path).toBeDefined()
   })

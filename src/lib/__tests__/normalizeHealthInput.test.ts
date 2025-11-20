@@ -161,7 +161,9 @@ describe('normalizeHealthInput', () => {
         type: 'heart_rate',
         value: 72,
         timestamp: '2024-01-01T00:00:00Z',
-        source: 'apple_health',
+        processedAt: '2024-01-01T00:00:00Z',
+        validated: true,
+        source: { userId: 'user-1', collectedAt: '2024-01-01T00:00:00Z' },
       };
 
       const result = normalizeToHealthData(record);
@@ -182,14 +184,18 @@ describe('normalizeHealthInput', () => {
           type: 'heart_rate',
           value: 72,
           timestamp: '2024-01-01T00:00:00Z',
-          source: 'apple_health',
+          processedAt: '2024-01-01T00:00:00Z',
+          validated: true,
+          source: { userId: 'user-1', collectedAt: '2024-01-01T00:00:00Z' },
         },
         {
           id: '2',
           type: 'steps',
           value: 5000,
           timestamp: '2024-01-01T00:00:00Z',
-          source: 'apple_health',
+          processedAt: '2024-01-01T00:00:00Z',
+          validated: true,
+          source: { userId: 'user-1', collectedAt: '2024-01-01T00:00:00Z' },
         },
       ];
 
@@ -208,7 +214,9 @@ describe('normalizeHealthInput', () => {
           type: 'heart_rate',
           value: 72,
           timestamp: '2024-01-01T00:00:00Z',
-          source: 'apple_health',
+          processedAt: '2024-01-01T00:00:00Z',
+          validated: true,
+          source: { userId: 'user-1', collectedAt: '2024-01-01T00:00:00Z' },
         },
       ];
 
@@ -228,7 +236,9 @@ describe('normalizeHealthInput', () => {
           type: 'heart_rate',
           value: 72,
           timestamp: '2024-01-01T00:00:00Z',
-          source: 'apple_health',
+          processedAt: '2024-01-01T00:00:00Z',
+          validated: true,
+          source: { userId: 'user-1', collectedAt: '2024-01-01T00:00:00Z' },
         },
       ];
 
@@ -248,7 +258,9 @@ describe('normalizeHealthInput', () => {
           type: 'heart_rate',
           value: 72,
           timestamp: '2024-01-01T00:00:00Z',
-          source: 'apple_health',
+          processedAt: '2024-01-01T00:00:00Z',
+          validated: true,
+          source: { userId: 'user-1', collectedAt: '2024-01-01T00:00:00Z' },
         },
       ];
 
@@ -261,4 +273,3 @@ describe('normalizeHealthInput', () => {
     });
   });
 });
-

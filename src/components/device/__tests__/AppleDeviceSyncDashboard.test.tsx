@@ -43,8 +43,10 @@ vi.mock('@/hooks/useAppleDeviceSync', () => ({
     updateConfig: vi.fn(),
     getConnectionStatus: vi.fn(() => ({
       connected: true,
+      lastHeartbeat: new Date().toISOString(),
+      reconnectAttempts: 0,
       latency: 50,
-      dataQuality: 'excellent',
+      dataQuality: 'excellent' as const,
     })),
   })),
 }));
@@ -82,7 +84,15 @@ describe('AppleDeviceSyncDashboard', () => {
       startSync: mockStartSync,
       stopSync: mockStopSync,
       updateConfig: vi.fn(),
-      getConnectionStatus: vi.fn(() => ({ connected: false })),
+      getDevice: vi.fn(),
+      getConnectionStatus: vi.fn(() => ({
+        connected: false,
+        lastHeartbeat: new Date().toISOString(),
+        reconnectAttempts: 0,
+        latency: 0,
+        dataQuality: 'offline' as const,
+      })),
+      service: {} as any,
     });
 
     render(<AppleDeviceSyncDashboard userId="test-user" />);
@@ -159,7 +169,15 @@ describe('AppleDeviceSyncDashboard', () => {
       startSync: vi.fn(),
       stopSync: vi.fn(),
       updateConfig: vi.fn(),
-      getConnectionStatus: vi.fn(),
+      getDevice: vi.fn(),
+      getConnectionStatus: vi.fn(() => ({
+        connected: false,
+        lastHeartbeat: new Date().toISOString(),
+        reconnectAttempts: 0,
+        latency: 0,
+        dataQuality: 'offline' as const,
+      })),
+      service: {} as any,
     });
 
     render(<AppleDeviceSyncDashboard userId="test-user" />);

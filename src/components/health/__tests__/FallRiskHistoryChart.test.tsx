@@ -2,7 +2,7 @@
  * Tests for FallRiskHistoryChart component
  */
 
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import FallRiskHistoryChart, {
   type FallRiskHistoryDataPoint,
@@ -40,9 +40,13 @@ const createMockPrediction = (
     stabilityIndex: 0.7,
     fallHistory: {
       totalFalls: 0,
-      recentFalls: 0,
-      fallFrequency: 0,
-      lastFallDate: null,
+      fallsLast30Days: 0,
+      fallsLast90Days: 0,
+      fallsLastYear: 0,
+      fallPattern: 'none' as const,
+      commonLocations: [],
+      commonTimes: [],
+      injuryRate: 0,
     },
   },
   environmentalRisk: {

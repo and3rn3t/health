@@ -78,6 +78,8 @@ export function useDeviceManagement(userId?: string) {
       const hasWebBluetooth =
         typeof navigator !== 'undefined' &&
         'bluetooth' in navigator &&
+        navigator.bluetooth &&
+        typeof navigator.bluetooth === 'object' &&
         'requestDevice' in navigator.bluetooth;
 
       if (hasWebBluetooth) {
@@ -172,7 +174,7 @@ export function useDeviceManagement(userId?: string) {
         return null;
       }
 
-      const data = await response.json();
+      const data = await response.json() as { token?: string };
       return data.token || null;
     } catch (error) {
       console.error('Failed to get device auth token:', error);

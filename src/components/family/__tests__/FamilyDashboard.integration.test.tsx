@@ -20,14 +20,14 @@ const createMockUseKV = () => {
     'health-data-shares': [],
   };
 
-  return (key: string, defaultValue: any) => {
-    const setter = vi.fn((valueOrUpdater: any) => {
+  return <T,>(key: string, defaultValue: T): [T, (value: T | ((prev: T) => T)) => void] => {
+    const setter = vi.fn((valueOrUpdater: T | ((prev: T) => T)) => {
       if (typeof valueOrUpdater === 'function') {
-        storage[key] = valueOrUpdater(storage[key] || defaultValue);
+        storage[key] = (valueOrUpdater as (prev: T) => T)(storage[key] || defaultValue);
       } else {
         storage[key] = valueOrUpdater;
       }
-    });
+    }) as (value: T | ((prev: T) => T)) => void;
 
     return [storage[key] || defaultValue, setter];
   };

@@ -306,7 +306,7 @@ export default function FallRiskReportExporter({
       <div style="margin: 15px 0; padding: 15px; border: 1px solid #d1fae5; border-radius: 4px; background: #f0fdf4;">
         <strong>${factor.description}</strong>
         <div style="margin-top: 5px; color: #065f46; font-size: 14px;">
-          ${factor.explanation}
+          ${factor.recommendations?.join(', ') || 'No recommendations available'}
         </div>
       </div>
     `
@@ -328,7 +328,7 @@ export default function FallRiskReportExporter({
         </div>
         <div style="margin-top: 5px; font-size: 12px;">
           Priority: ${intervention.priority} |
-          Evidence Level: ${intervention.evidenceLevel}
+          Evidence Level: ${intervention.evidence || 'not specified'}
         </div>
       </div>
     `

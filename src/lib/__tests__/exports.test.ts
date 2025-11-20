@@ -227,13 +227,14 @@ describe('exports', () => {
 
     test('should include custom version', () => {
       const data = [{ name: 'John' }];
-      const result = createExport(data, 'csv', { version: '2.0.0' });
+      const result = createExport(data, 'csv', { format: 'csv', version: '2.0.0' });
       expect(result.metadata.version).toBe('2.0.0');
     });
 
     test('should include watermark when requested', () => {
       const data = [{ name: 'John' }];
       const result = createExport(data, 'csv', {
+        format: 'csv',
         includeWatermark: true,
       });
       expect(result.metadata.watermark).toBeDefined();

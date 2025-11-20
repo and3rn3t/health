@@ -133,12 +133,12 @@ export default function FallRiskHistoryChart({
     const scoreRange = maxScore - minScore || 100;
 
     const points = chartData.map((d, i) => {
-      const x = padding + (i / (chartData.length - 1 || 1)) * chartWidth;
+      const xCoord = padding + (i / (chartData.length - 1 || 1)) * chartWidth;
       const y =
         padding +
         chartHeight -
         ((d.riskScore - minScore) / scoreRange) * chartHeight;
-      return { x, y, ...d };
+      return { x: xCoord, y, riskScore: d.riskScore, date: d.date, riskLevel: d.riskLevel };
     });
 
     // Generate path for line

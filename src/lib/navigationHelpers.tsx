@@ -2,7 +2,8 @@
  * Helper functions for navigation configuration
  */
 
-import { ComponentType, LucideIcon } from 'react';
+import type { ComponentType } from 'react';
+import type { LucideIcon } from 'lucide-react';
 
 export interface NavigationItem {
   id: string;
