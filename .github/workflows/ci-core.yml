@@ -291,6 +291,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     timeout-minutes: 15
+    env:
+      # Increase Node.js heap size to prevent OOM errors during test execution
+      NODE_OPTIONS: --max-old-space-size=4096
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node & pnpm
@@ -309,14 +312,24 @@ jobs:
           # Second run: JSON output for artifacts (use pnpm exec to avoid inserting an extra '--' that breaks argument parsing)
           pnpm exec eslint src --format json --output-file reports/eslint-report.json || echo "{}" > reports/eslint-report.json
       - name: Unit Tests w/ Coverage (enforced)
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm run test:coverage
       - name: Geospatial Tests (Phase 2-3)
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm run test:geospatial
       - name: Phase 5 Workflow Tests
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm run test:phase5
       - name: Observability Tests (Phase 6)
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm run test:observability
       - name: Acceptance Tests
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm test src/__tests__/analysis.acceptance*.test.ts || echo "Acceptance tests optional"
       - name: Coverage Gate (minimum 10% — dynamic if coverage-target.json present)
         env:

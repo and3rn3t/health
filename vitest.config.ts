@@ -22,6 +22,15 @@ export default defineConfig({
     ],
     setupFiles: ['./vitest.setup.ts'],
     globals: true,
+    // Optimize memory usage: reduce number of worker threads to prevent OOM
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        // Use fewer threads to reduce memory pressure (default is CPU cores)
+        maxThreads: 2,
+        minThreads: 1,
+      },
+    },
     coverage: {
       provider: 'v8',
       // Added 'json-summary' so CI coverage gate (expects coverage/coverage-summary.json)
