@@ -76,8 +76,8 @@ export function DeviceStatusCard({
   };
 
   const handleQuickConnect = () => {
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('open-device-setup', 'true');
+    if (globalThis.window !== undefined) {
+      globalThis.window.sessionStorage.setItem('open-device-setup', 'true');
     }
     navigate('/device-sync');
   };

@@ -243,7 +243,7 @@ export function useDeviceManagement(userId?: string) {
         return;
       }
 
-      const deviceId = `manual-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const deviceId = `manual-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
       const detected = detectionService.addManualDevice({
         id: deviceId,
         name: config.name,
@@ -268,7 +268,9 @@ export function useDeviceManagement(userId?: string) {
         // Determine client type based on device type and connection method
         // iOS devices can connect via iOS app, Bluetooth, or manual entry
         // Only use 'ios_app' if it's actually an iOS app connection
-        const isIOSDevice = ['iphone', 'apple_watch', 'ipad'].includes(deviceType);
+        const isIOSDevice = ['iphone', 'apple_watch', 'ipad'].includes(
+          deviceType
+        );
         const clientType = isIOSDevice
           ? 'ios_app' // Default for iOS devices, but can be overridden
           : 'web_dashboard';
@@ -323,9 +325,22 @@ export function useDeviceManagement(userId?: string) {
 
         // Check if device is detected via WebSocket, Bluetooth, or manual entry
         const detectedDevice = detectionService?.getDevice(deviceData.id);
-        const connectionMethod = detectedDevice?.metadata?.connectionMethod ||
-                                detectedDevice?.metadata?.clientType;
-        const isIOSDevice = ['iphone', 'apple_watch', 'ipad'].includes(deviceData.type);
+        const connectionMethod =
+          (
+            detectedDevice?.metadata as {
+              connectionMethod?: string;
+              clientType?: string;
+            }
+          )?.connectionMethod ||
+          (
+            detectedDevice?.metadata as {
+              connectionMethod?: string;
+              clientType?: string;
+            }
+          )?.clientType;
+        const isIOSDevice = ['iphone', 'apple_watch', 'ipad'].includes(
+          deviceData.type
+        );
 
         // Set status to syncing
         const newDevice: ConnectedDevice = {
@@ -359,15 +374,16 @@ export function useDeviceManagement(userId?: string) {
 
         // For iOS devices, try WebSocket connection if available
         // But don't require it - iOS devices can work via Bluetooth or manual entry too
-        const isIOSDevice = ['iphone', 'apple_watch', 'ipad'].includes(deviceData.type);
-        const connectionMethod = detectedDevice?.metadata?.connectionMethod ||
-                                detectedDevice?.metadata?.clientType;
 
         // Only attempt WebSocket connection if:
         // 1. It's an iOS device AND
         // 2. Connection method is 'ios_app' or undefined (defaults to iOS app)
         // 3. Not a direct Bluetooth or manual connection
-        if (isIOSDevice && connectionMethod !== 'bluetooth' && connectionMethod !== 'manual') {
+        if (
+          isIOSDevice &&
+          connectionMethod !== 'bluetooth' &&
+          connectionMethod !== 'manual'
+        ) {
           if (liveSync && !liveSync.isConnected()) {
             await liveSync.connect();
           }
@@ -376,15 +392,15 @@ export function useDeviceManagement(userId?: string) {
           const authToken = await getDeviceAuthToken(deviceData.type);
 
           // Store token for WebSocket connections if available
-          if (authToken && typeof window !== 'undefined') {
+          if (authToken && globalThis.window !== undefined) {
             (
-              window as unknown as { __WS_DEVICE_TOKEN__?: string }
+              globalThis.window as unknown as { __WS_DEVICE_TOKEN__?: string }
             ).__WS_DEVICE_TOKEN__ = authToken;
           }
 
           // Request device to connect (iOS app will listen for this)
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(
+          if (globalThis.window !== undefined) {
+            globalThis.window.dispatchEvent(
               new CustomEvent('request-device-connection', {
                 detail: {
                   deviceId: deviceData.id,
@@ -421,8 +437,8 @@ export function useDeviceManagement(userId?: string) {
         );
 
         // Dispatch device connected event for other components
-        if (typeof window !== 'undefined' && isOnline) {
-          window.dispatchEvent(
+        if (globalThis.window !== undefined && isOnline) {
+          globalThis.window.dispatchEvent(
             new CustomEvent('device-connected', {
               detail: { deviceId: deviceData.id, deviceName: deviceData.name },
             })
@@ -503,8 +519,8 @@ export function useDeviceManagement(userId?: string) {
         // Request sync from device via WebSocket
         if (liveSync && liveSync.isConnected()) {
           // Send sync request message
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(
+          if (globalThis.window !== undefined) {
+            globalThis.window.dispatchEvent(
               new CustomEvent('request-device-sync', {
                 detail: { deviceId },
               })

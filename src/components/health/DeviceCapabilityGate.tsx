@@ -84,8 +84,8 @@ export function DeviceCapabilityGate({
         <Button
           size="sm"
           onClick={() => {
-            if (typeof window !== 'undefined') {
-              sessionStorage.setItem('open-device-setup', 'true');
+            if (globalThis.window !== undefined) {
+              globalThis.window.sessionStorage.setItem('open-device-setup', 'true');
             }
             navigate('/device-sync');
           }}
