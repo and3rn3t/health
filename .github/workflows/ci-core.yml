@@ -216,9 +216,33 @@ jobs:
         run: |
           if [ ! -d dist ]; then
             echo "🔨 Building application (fallback)..."
-            pnpm run build
+            echo "📦 Verifying dependencies are installed..."
+            if [ ! -d node_modules ]; then
+              echo "⚠️ node_modules not found, installing dependencies..."
+              pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+            else
+              echo "✅ Dependencies already installed"
+            fi
+            echo "🏗️ Running build with CI=true and NODE_ENV=production..."
+            set -e  # Exit on any error
+            CI=true NODE_ENV=production pnpm run build
+            if [ ! -d dist ]; then
+              echo "❌ Build completed but dist directory was not created"
+              echo "📊 Current directory contents:"
+              ls -la
+              echo "📊 Checking package.json build script:"
+              grep -A 3 '"build"' package.json || true
+              exit 1
+            fi
+            echo "✅ Build successful, dist directory created"
+            echo "📊 Dist directory size:"
+            du -sh dist || true
+            echo "📊 Dist directory contents (first 10 items):"
+            ls -la dist | head -10 || true
           else
             echo "✅ Using downloaded build artifacts"
+            echo "📊 Dist directory size:"
+            du -sh dist || true
           fi
       - name: Verify dist directory exists
         run: |

@@ -233,21 +233,29 @@ describe('EnhancedAIInsights', () => {
     const healthData = createMockHealthData();
     render(<EnhancedAIInsights healthData={healthData} />);
 
-    // Wait for component to render and find all buttons (React StrictMode causes multiple renders)
+    // Wait for component to render and find the query input
+    await waitFor(() => {
+      const queryInput = screen.getAllByPlaceholderText(/ask me anything about your health data/i);
+      expect(queryInput.length).toBeGreaterThan(0);
+    });
+
+    // Ensure the query input is empty (it should be by default, but explicitly clear it)
+    const queryInputs = screen.getAllByPlaceholderText(/ask me anything about your health data/i);
+    queryInputs.forEach((input) => {
+      if ((input as HTMLTextAreaElement).value) {
+        fireEvent.change(input, { target: { value: '' } });
+      }
+    });
+
+    // Wait for buttons to be rendered and verify they are disabled
     await waitFor(() => {
       const submitButtons = screen.getAllByRole('button', { name: /get ai answer/i });
       expect(submitButtons.length).toBeGreaterThan(0);
-    });
-
-    // Find all buttons with "Get AI Answer" text (React StrictMode causes double render)
-    // All of them should be disabled when query is empty
-    const submitButtons = screen.getAllByRole('button', { name: /get ai answer/i });
-
-    // Verify all buttons are disabled (handles StrictMode double render)
-    expect(submitButtons.length).toBeGreaterThan(0);
-    submitButtons.forEach((button) => {
-      expect(button).toBeDisabled();
-    });
+      // All buttons should be disabled when query is empty
+      submitButtons.forEach((button) => {
+        expect(button).toBeDisabled();
+      });
+    }, { timeout: 3000 });
   });
 
   it('displays insight summary statistics', async () => {
