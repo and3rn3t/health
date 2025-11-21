@@ -10,6 +10,9 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLiveHealthData } from '@/hooks/useLiveHealthData';
+import { useDeviceManagement } from '@/hooks/useDeviceManagement';
+import { DeviceStatusCard } from './DeviceStatusCard';
+import { DeviceAttributionBadge } from './DeviceAttributionBadge';
 import {
   Activity,
   AlertTriangle,
@@ -201,6 +204,8 @@ export function VitalSenseEnhancedDashboard() {
     isIOSConnected,
     getCriticalAlerts,
   } = useLiveHealthData();
+
+  const { devices, hasConnectedDevices } = useDeviceManagement();
 
   const [selectedTab, setSelectedTab] = useState('overview');
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(
@@ -464,8 +469,10 @@ export function VitalSenseEnhancedDashboard() {
             </Card>
           </div>
 
-          {/* Recent Activity Section */}
+          {/* Device Status & Recent Activity Section */}
           <div className="grid gap-6 md:grid-cols-2">
+            <DeviceStatusCard compact={false} showQuickActions={true} />
+
             <Card className="rounded-md border border-border">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center space-x-2 text-lg">
@@ -474,6 +481,11 @@ export function VitalSenseEnhancedDashboard() {
                 </CardTitle>
                 <CardDescription className="text-base">
                   Live health data updates
+                  {hasConnectedDevices && (
+                    <span className="ml-2 text-xs">
+                      from {devices.length} device{devices.length !== 1 ? 's' : ''}
+                    </span>
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-3">
@@ -531,9 +543,18 @@ export function VitalSenseEnhancedDashboard() {
                         key={key}
                         className="flex items-center justify-between border-b border-border pb-4"
                       >
-                        <span className="text-sm font-medium capitalize">
-                          {key.replace('_', ' ')}
-                        </span>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-medium capitalize">
+                            {key.replace('_', ' ')}
+                          </span>
+                          {metric.deviceId && (
+                            <DeviceAttributionBadge
+                              deviceId={metric.deviceId}
+                              source={metric.source}
+                              compact
+                            />
+                          )}
+                        </div>
                         <span className="text-sm font-medium">
                           {displayValue} {metric.unit}
                         </span>

@@ -198,12 +198,16 @@ export class AppleDeviceSyncService {
 
   /**
    * Setup listeners for device detection service
+   * Now supports iOS devices from any connection method
    */
   private setupDetectionListeners(): void {
     this.deviceDetection.onDevicesChange((detectedDevices) => {
       // Update our device map with detected devices
+      // Include iOS devices regardless of connection method (iOS app, Bluetooth, manual)
       detectedDevices.forEach((detected) => {
-        if (detected.status === 'online') {
+        // Only process iOS devices (iphone, apple_watch, ipad)
+        const isIOSDevice = ['iphone', 'apple_watch', 'ipad'].includes(detected.type);
+        if (detected.status === 'online' && isIOSDevice) {
           const appleDevice: AppleDevice = {
             id: detected.id,
             name: detected.name,

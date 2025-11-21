@@ -509,6 +509,9 @@ export function DeviceSetupWizard({
                   aria-label="Device Type"
                 >
                   <option value="health_app">Health App</option>
+                  <option value="iphone">iPhone</option>
+                  <option value="apple_watch">Apple Watch</option>
+                  <option value="ipad">iPad</option>
                   <option value="scale">Scale</option>
                   <option value="blood-pressure">Blood Pressure Monitor</option>
                   <option value="glucose">Glucose Monitor</option>

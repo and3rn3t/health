@@ -3,6 +3,7 @@
  * Redesigned for better visual hierarchy, touch targets, and user experience
  */
 
+import { DeviceStatusCard } from '@/components/health/DeviceStatusCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +16,7 @@ import {
 import { InteractiveCard } from '@/components/ui/interactive-card';
 import { IOS26Button } from '@/components/ui/ios26-button-system';
 import { EnhancedVitalSenseStatusCard } from '@/components/ui/ios26-enhanced-components';
+import { useDeviceManagement } from '@/hooks/useDeviceManagement';
 import { useLiveRegion } from '@/hooks/useLiveRegion';
 import { ProcessedHealthData } from '@/types';
 import {
@@ -74,6 +76,7 @@ export default function LandingPageOptimized({
   );
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const { hasConnectedDevices, devices } = useDeviceManagement();
 
   // Live region for screen readers
   const _announceToScreenReader = useLiveRegion();
@@ -441,6 +444,13 @@ export default function LandingPageOptimized({
           </div>
         </div>
       </div>
+
+      {/* Device Status - Show if no devices connected */}
+      {!hasConnectedDevices && (
+        <div className="px-2 py-6 sm:px-4">
+          <DeviceStatusCard compact={true} showQuickActions={true} />
+        </div>
+      )}
 
       {/* Additional Actions - Compact List */}
       <div className="px-2 py-6 sm:px-4">

@@ -191,6 +191,7 @@ export class DeviceDetectionService {
 
   /**
    * Update device from WebSocket presence message
+   * Now supports any device type, not just iOS app connections
    */
   updateFromPresence(presence: {
     userId: string;
@@ -205,12 +206,23 @@ export class DeviceDetectionService {
       [key: string]: unknown;
     };
   }): void {
-    // Only process iOS app clients
-    if (presence.clientType !== 'ios_app') return;
+    // Process all client types, not just iOS app
+    // iOS devices can come from iOS app, but also from other sources
 
-    const deviceId = presence.deviceInfo?.deviceId || `ios-${presence.userId}`;
-    const deviceName = presence.deviceInfo?.deviceName || 'iPhone';
-    const deviceType = this.mapClientTypeToDeviceType(presence.clientType);
+    const deviceId =
+      presence.deviceInfo?.deviceId ||
+      `${presence.clientType}-${presence.userId}`;
+    const deviceName =
+      presence.deviceInfo?.deviceName ||
+      (presence.deviceInfo?.deviceType
+        ? presence.deviceInfo.deviceType.charAt(0).toUpperCase() +
+          presence.deviceInfo.deviceType.slice(1).replace('_', ' ')
+        : 'Device');
+
+    // Determine device type from deviceInfo first, then fall back to client type mapping
+    const deviceType = presence.deviceInfo?.deviceType
+      ? (presence.deviceInfo.deviceType as DeviceType)
+      : this.mapClientTypeToDeviceType(presence.clientType);
 
     const device: DetectedDevice = {
       id: deviceId,
@@ -221,9 +233,11 @@ export class DeviceDetectionService {
       model: presence.deviceInfo?.model,
       osVersion: presence.deviceInfo?.osVersion,
       capabilities: {
-        healthKit: true,
+        // iOS devices have HealthKit regardless of connection method
+        healthKit: ['iphone', 'apple_watch', 'ipad'].includes(deviceType),
         realTimeSync: true,
-        backgroundSync: true,
+        // Background sync depends on connection method
+        backgroundSync: presence.clientType === 'ios_app',
       },
       metadata: {
         userId: presence.userId,
@@ -277,6 +291,7 @@ export class DeviceDetectionService {
 
       // Request Bluetooth device with health service
       // This allows direct connection without iOS app
+      // Includes Apple devices (iPhone, Apple Watch) that can connect via Bluetooth
       const device = await nav.bluetooth.requestDevice({
         filters: [
           { services: ['heart_rate'] },
@@ -285,6 +300,9 @@ export class DeviceDetectionService {
           { services: ['glucose'] },
           { services: ['weight_scale'] },
           { namePrefix: 'Apple' },
+          { namePrefix: 'iPhone' },
+          { namePrefix: 'Apple Watch' },
+          { namePrefix: 'Watch' },
           { namePrefix: 'Withings' },
           { namePrefix: 'Omron' },
           { namePrefix: 'Fitbit' },
@@ -366,6 +384,10 @@ export class DeviceDetectionService {
         }
 
         // Update device status
+        // iOS devices connected via Bluetooth still have HealthKit capabilities
+        const isIOSDevice = ['iphone', 'apple_watch', 'ipad'].includes(
+          scanResult.type
+        );
         const detected: DetectedDevice = {
           id: device.id,
           name: device.name || scanResult.name,
@@ -374,9 +396,10 @@ export class DeviceDetectionService {
           lastSeen: new Date(),
           model: scanResult.model,
           capabilities: {
-            healthKit: false, // Direct Bluetooth devices don't use HealthKit
+            // iOS devices maintain HealthKit capabilities even via Bluetooth
+            healthKit: isIOSDevice,
             realTimeSync: true,
-            backgroundSync: false, // Browser limitations
+            backgroundSync: false, // Browser limitations for direct Bluetooth
           },
         };
 
@@ -412,9 +435,12 @@ export class DeviceDetectionService {
       lastSeen: new Date(),
       model: config.model,
       capabilities: {
-        healthKit: false,
-        realTimeSync: config.connectionMethod === 'api',
-        backgroundSync: false,
+        // iOS devices maintain HealthKit capabilities regardless of connection method
+        healthKit: ['iphone', 'apple_watch', 'ipad'].includes(config.type),
+        realTimeSync:
+          config.connectionMethod === 'api' ||
+          ['iphone', 'apple_watch', 'ipad'].includes(config.type),
+        backgroundSync: false, // Manual/manual entry doesn't support background sync
       },
       metadata: {
         userId: undefined,
@@ -433,12 +459,26 @@ export class DeviceDetectionService {
 
   /**
    * Infer device type from device name
+   * Optimized to detect iOS devices from any connection method
    */
   private inferDeviceType(deviceName: string): DeviceType {
     const name = deviceName.toLowerCase();
-    if (name.includes('watch')) return 'apple_watch';
-    if (name.includes('iphone')) return 'iphone';
-    if (name.includes('ipad')) return 'ipad';
+
+    // iOS device detection - works for any connection method
+    if (
+      (name.includes('apple watch') || name.includes('watch')) &&
+      name.includes('apple')
+    ) {
+      return 'apple_watch';
+    }
+    if (name.includes('iphone')) {
+      return 'iphone';
+    }
+    if (name.includes('ipad')) {
+      return 'ipad';
+    }
+
+    // Other health devices
     if (name.includes('scale') || name.includes('withings')) return 'scale';
     if (
       name.includes('blood') ||
@@ -447,6 +487,9 @@ export class DeviceDetectionService {
     )
       return 'blood-pressure';
     if (name.includes('glucose')) return 'glucose';
+    if (name.includes('fitbit')) return 'health_app';
+    if (name.includes('garmin')) return 'health_app';
+
     return 'health_app';
   }
 

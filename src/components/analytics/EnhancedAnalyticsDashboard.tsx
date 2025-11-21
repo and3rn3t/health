@@ -3,14 +3,8 @@
  * Comprehensive health analytics with visualizations, trends, and insights
  */
 
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { DeviceStatusCard } from '@/components/health/DeviceStatusCard';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -19,30 +13,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  BarChart3,
-  Download,
-  Filter,
-  TrendingUp,
-  Activity,
-  AlertTriangle,
-  Target,
-  Calendar,
-} from 'lucide-react';
-import React, { useState, useMemo } from 'react';
-import { toast } from 'sonner';
-import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
-import EnhancedAIInsights from './EnhancedAIInsights';
 import type { TimeRange } from '@/lib/analytics';
 import { extractTimeSeries, generateAnalyticsSummary } from '@/lib/analytics';
-import TimeSeriesChart from './TimeSeriesChart';
-import CorrelationMatrix from './CorrelationMatrix';
+import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { BarChart3 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import AIInsightsCard from './AIInsightsCard';
+import AnalyticsExporter from './AnalyticsExporter';
 import AnomalyDetectionPanel from './AnomalyDetectionPanel';
+import CorrelationMatrix from './CorrelationMatrix';
+import EnhancedAIInsights from './EnhancedAIInsights';
+import MetricComparisonCard from './MetricComparisonCard';
 import PatternDetectionPanel from './PatternDetectionPanel';
 import PredictiveAnalytics from './PredictiveAnalytics';
-import MetricComparisonCard from './MetricComparisonCard';
-import AnalyticsExporter from './AnalyticsExporter';
-import AIInsightsCard from './AIInsightsCard';
+import TimeSeriesChart from './TimeSeriesChart';
 
 interface EnhancedAnalyticsDashboardProps {
   healthData: ProcessedHealthData | null;
@@ -71,7 +55,10 @@ export default function EnhancedAnalyticsDashboard({
         patterns: [],
       };
     }
-    const allData = historicalData.length > 0 ? [...historicalData, healthData] : [healthData];
+    const allData =
+      historicalData.length > 0
+        ? [...historicalData, healthData]
+        : [healthData];
     return generateAnalyticsSummary(allData, timeRange);
   }, [healthData, historicalData, timeRange]);
 
@@ -80,8 +67,8 @@ export default function EnhancedAnalyticsDashboard({
     return (
       <div className="flex min-h-screen items-center justify-center p-6">
         <div className="text-center">
-          <BarChart3 className="text-gray-400 mx-auto mb-4 h-16 w-16" />
-          <h2 className="text-2xl font-bold mb-2">No Health Data</h2>
+          <BarChart3 className="mx-auto mb-4 h-16 w-16 text-gray-400" />
+          <h2 className="mb-2 text-2xl font-bold">No Health Data</h2>
           <p className="text-gray-600">
             Import your Apple Health data to view comprehensive analytics
           </p>
@@ -89,7 +76,6 @@ export default function EnhancedAnalyticsDashboard({
       </div>
     );
   }
-
 
   const metrics = [
     { value: 'steps', label: 'Steps' },
@@ -103,16 +89,19 @@ export default function EnhancedAnalyticsDashboard({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
+          <h1 className="flex items-center gap-2 text-3xl font-bold">
             <BarChart3 className="h-8 w-8" />
             Health Analytics
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="mt-1 text-gray-600">
             Comprehensive analysis of your health data patterns and trends
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Select value={timeRange} onValueChange={(value) => setTimeRange(value as TimeRange)}>
+          <Select
+            value={timeRange}
+            onValueChange={(value) => setTimeRange(value as TimeRange)}
+          >
             <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>
@@ -135,29 +124,40 @@ export default function EnhancedAnalyticsDashboard({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-4">
-            <div className="text-sm text-gray-500 mb-1">Data Points</div>
-            <div className="text-2xl font-bold">{analyticsSummary.totalDataPoints}</div>
+            <div className="mb-1 text-sm text-gray-500">Data Points</div>
+            <div className="text-2xl font-bold">
+              {analyticsSummary.totalDataPoints}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-sm text-gray-500 mb-1">Health Score</div>
-            <div className="text-2xl font-bold">{analyticsSummary.overallHealthScore.toFixed(1)}</div>
+            <div className="mb-1 text-sm text-gray-500">Health Score</div>
+            <div className="text-2xl font-bold">
+              {analyticsSummary.overallHealthScore.toFixed(1)}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-sm text-gray-500 mb-1">Metrics Analyzed</div>
-            <div className="text-2xl font-bold">{analyticsSummary.metricsAnalyzed.length}</div>
+            <div className="mb-1 text-sm text-gray-500">Metrics Analyzed</div>
+            <div className="text-2xl font-bold">
+              {analyticsSummary.metricsAnalyzed.length}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-sm text-gray-500 mb-1">Anomalies</div>
-            <div className="text-2xl font-bold">{analyticsSummary.anomalies}</div>
+            <div className="mb-1 text-sm text-gray-500">Anomalies</div>
+            <div className="text-2xl font-bold">
+              {analyticsSummary.anomalies}
+            </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Device Status Card */}
+      <DeviceStatusCard compact={false} showQuickActions={true} />
 
       {/* AI Insights Card */}
       <AIInsightsCard healthData={healthData} compact={false} />
@@ -182,7 +182,13 @@ export default function EnhancedAnalyticsDashboard({
                 key={metric.value}
                 healthData={healthData}
                 metric={metric.value as any}
-                period={timeRange === '7d' ? '7d' : timeRange === '30d' ? '30d' : '90d'}
+                period={
+                  timeRange === '7d'
+                    ? '7d'
+                    : timeRange === '30d'
+                      ? '30d'
+                      : '90d'
+                }
               />
             ))}
           </div>
@@ -226,7 +232,10 @@ export default function EnhancedAnalyticsDashboard({
             />
             <TimeSeriesChart
               title="Walking Steadiness Trend"
-              data={extractTimeSeries(healthData.metrics.walkingSteadiness, timeRange)}
+              data={extractTimeSeries(
+                healthData.metrics.walkingSteadiness,
+                timeRange
+              )}
               unit="%"
               color="#10b981"
               showTrend={true}
@@ -251,14 +260,8 @@ export default function EnhancedAnalyticsDashboard({
         {/* Anomalies Tab */}
         <TabsContent value="anomalies" className="space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <AnomalyDetectionPanel
-              healthData={healthData}
-              metric="steps"
-            />
-            <AnomalyDetectionPanel
-              healthData={healthData}
-              metric="heartRate"
-            />
+            <AnomalyDetectionPanel healthData={healthData} metric="steps" />
+            <AnomalyDetectionPanel healthData={healthData} metric="heartRate" />
             <AnomalyDetectionPanel
               healthData={healthData}
               metric="walkingSteadiness"
@@ -273,14 +276,8 @@ export default function EnhancedAnalyticsDashboard({
         {/* Patterns Tab */}
         <TabsContent value="patterns" className="space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <PatternDetectionPanel
-              healthData={healthData}
-              metric="steps"
-            />
-            <PatternDetectionPanel
-              healthData={healthData}
-              metric="heartRate"
-            />
+            <PatternDetectionPanel healthData={healthData} metric="steps" />
+            <PatternDetectionPanel healthData={healthData} metric="heartRate" />
             <PatternDetectionPanel
               healthData={healthData}
               metric="walkingSteadiness"

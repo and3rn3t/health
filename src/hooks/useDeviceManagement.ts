@@ -265,11 +265,12 @@ export function useDeviceManagement(userId?: string) {
   const getDeviceAuthToken = useCallback(
     async (deviceType: DeviceType): Promise<string | null> => {
       try {
-        // Determine client type based on device type
-        const clientType = ['iphone', 'apple_watch', 'ipad'].includes(
-          deviceType
-        )
-          ? 'ios_app'
+        // Determine client type based on device type and connection method
+        // iOS devices can connect via iOS app, Bluetooth, or manual entry
+        // Only use 'ios_app' if it's actually an iOS app connection
+        const isIOSDevice = ['iphone', 'apple_watch', 'ipad'].includes(deviceType);
+        const clientType = isIOSDevice
+          ? 'ios_app' // Default for iOS devices, but can be overridden
           : 'web_dashboard';
 
         // Get device auth token from API
@@ -320,8 +321,11 @@ export function useDeviceManagement(userId?: string) {
         const detectionService = detectionServiceRef.current;
         const liveSync = liveSyncRef.current;
 
-        // Check if device is detected via WebSocket
+        // Check if device is detected via WebSocket, Bluetooth, or manual entry
         const detectedDevice = detectionService?.getDevice(deviceData.id);
+        const connectionMethod = detectedDevice?.metadata?.connectionMethod ||
+                                detectedDevice?.metadata?.clientType;
+        const isIOSDevice = ['iphone', 'apple_watch', 'ipad'].includes(deviceData.type);
 
         // Set status to syncing
         const newDevice: ConnectedDevice = {
@@ -334,11 +338,11 @@ export function useDeviceManagement(userId?: string) {
           lastSeen: new Date().toISOString(),
           signalStrength: deviceData.signalStrength,
           capabilities: {
-            healthKit: ['iphone', 'apple_watch', 'ipad'].includes(
-              deviceData.type
-            ),
+            // iOS devices have HealthKit regardless of connection method
+            healthKit: isIOSDevice,
             realTimeSync: true,
-            backgroundSync: true,
+            // Background sync only for iOS app connections, not Bluetooth/manual
+            backgroundSync: isIOSDevice && connectionMethod === 'ios_app',
           },
         };
 
@@ -353,8 +357,17 @@ export function useDeviceManagement(userId?: string) {
           return [...prev, newDevice];
         });
 
-        // For iOS devices, ensure WebSocket is connected
-        if (['iphone', 'apple_watch', 'ipad'].includes(deviceData.type)) {
+        // For iOS devices, try WebSocket connection if available
+        // But don't require it - iOS devices can work via Bluetooth or manual entry too
+        const isIOSDevice = ['iphone', 'apple_watch', 'ipad'].includes(deviceData.type);
+        const connectionMethod = detectedDevice?.metadata?.connectionMethod ||
+                                detectedDevice?.metadata?.clientType;
+
+        // Only attempt WebSocket connection if:
+        // 1. It's an iOS device AND
+        // 2. Connection method is 'ios_app' or undefined (defaults to iOS app)
+        // 3. Not a direct Bluetooth or manual connection
+        if (isIOSDevice && connectionMethod !== 'bluetooth' && connectionMethod !== 'manual') {
           if (liveSync && !liveSync.isConnected()) {
             await liveSync.connect();
           }
