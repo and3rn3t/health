@@ -4,6 +4,7 @@
  */
 
 import EmergencyButton from '@/components/health/EmergencyButton';
+import { DeviceStatusIndicator } from '@/components/health/DeviceStatusIndicator';
 import { LiveConnectionStatus } from '@/components/live/LiveConnectionStatus';
 import { AppleSidebarTrigger } from '@/components/nav/AppleSidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -353,6 +354,7 @@ function NavigationHeader({
               {healthScore}/100
             </Badge>
           )}
+          <DeviceStatusIndicator />
           <LiveConnectionStatus />
         </div>
       </div>

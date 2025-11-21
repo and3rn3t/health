@@ -21,6 +21,7 @@ if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
 import { AnalyticsVersionBadge } from '@/components/analytics/AnalyticsVersionBadge';
 import Footer from '@/components/Footer';
 import NavigationHeader from '@/components/NavigationHeader';
+import { DeviceHealthMonitor } from '@/components/health/DeviceHealthMonitor';
 import { ErrorFallback } from '@/ErrorFallback';
 
 // Mobile-optimized components
@@ -804,6 +805,7 @@ function AppContent() {
             </main>
           </ErrorBoundary>
           <Footer onNavigate={handleTabChange} />
+          <DeviceHealthMonitor />
         </AppleSidebarMain>
 
         {/* AppleSidebar handles mobile overlay internally */}

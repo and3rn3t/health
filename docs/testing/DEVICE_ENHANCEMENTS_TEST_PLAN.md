@@ -9,11 +9,15 @@ This document outlines comprehensive unit and integration tests for the device e
 ```
 src/
 ├── components/
-│   └── health/
-│       └── __tests__/
-│           ├── DeviceStatusCard.test.tsx
-│           ├── DeviceAttributionBadge.test.tsx
-│           └── DeviceCapabilityGate.test.tsx
+│   ├── health/
+│   │   └── __tests__/
+│   │       ├── DeviceStatusCard.test.tsx
+│   │       ├── DeviceAttributionBadge.test.tsx
+│   │       ├── DeviceCapabilityGate.test.tsx
+│   │       ├── DeviceStatusIndicator.test.tsx
+│   │       └── DeviceHealthMonitor.test.tsx
+│   └── __tests__/
+│       └── NavigationHeader.device.test.tsx
 ├── hooks/
 │   └── __tests__/
 │       └── useDeviceManagement.enhanced.test.ts
@@ -65,7 +69,77 @@ src/
 
 ---
 
-## 2. Unit Tests: DeviceAttributionBadge Component
+## 2. Unit Tests: DeviceStatusIndicator Component
+
+**File:** `src/components/health/__tests__/DeviceStatusIndicator.test.tsx`
+
+### Test Cases
+
+#### Rendering Tests
+- ✅ Renders with connected devices
+- ✅ Renders with no connected devices
+- ✅ Shows Bluetooth icon when devices connected
+- ✅ Shows WifiOff icon when no devices connected
+- ✅ Shows correct badge variants (default/secondary)
+- ✅ Displays correct device count
+
+#### Interaction Tests
+- ✅ Opens popover when clicked
+- ✅ Shows full device status card in popover
+- ✅ Popover closes when clicking outside
+
+#### Tooltip Tests
+- ✅ Shows correct tooltip for single device
+- ✅ Shows correct tooltip for multiple devices
+- ✅ Shows correct tooltip when no devices
+
+---
+
+## 3. Unit Tests: DeviceHealthMonitor Component
+
+**File:** `src/components/health/__tests__/DeviceHealthMonitor.test.tsx`
+
+### Test Cases
+
+#### Low Battery Alerts
+- ✅ Shows warning for low battery device (< 20%)
+- ✅ Does not show alert for battery above 20%
+- ✅ Clears alert when battery goes above 20%
+- ✅ Handles multiple devices with low battery
+- ✅ Handles devices without battery info
+
+#### Disconnection Alerts
+- ✅ Shows error for disconnected device
+- ✅ Does not show alert for connected device
+- ✅ Clears alert when device reconnects
+
+#### Error Status Alerts
+- ✅ Shows error for device with error status
+
+#### Multiple Alerts
+- ✅ Handles device with both low battery and disconnection
+
+#### Edge Cases
+- ✅ Handles empty device list
+- ✅ Renders without UI (silent component)
+
+---
+
+## 4. Integration Tests: NavigationHeader with DeviceStatusIndicator
+
+**File:** `src/components/__tests__/NavigationHeader.device.test.tsx`
+
+### Test Cases
+
+#### Integration Tests
+- ✅ Renders DeviceStatusIndicator in header
+- ✅ Renders DeviceStatusIndicator next to LiveConnectionStatus
+- ✅ Maintains header layout with device indicator
+- ✅ All header elements present together
+
+---
+
+## 5. Unit Tests: DeviceAttributionBadge Component
 
 **File:** `src/components/health/__tests__/DeviceAttributionBadge.test.tsx`
 
@@ -94,7 +168,7 @@ src/
 
 ---
 
-## 3. Unit Tests: DeviceCapabilityGate Component
+## 6. Unit Tests: DeviceCapabilityGate Component
 
 **File:** `src/components/health/__tests__/DeviceCapabilityGate.test.tsx`
 
@@ -131,7 +205,7 @@ src/
 
 ---
 
-## 4. Unit Tests: useDeviceManagement Hook Enhancements
+## 7. Unit Tests: useDeviceManagement Hook Enhancements
 
 **File:** `src/hooks/__tests__/useDeviceManagement.enhanced.test.ts`
 
@@ -167,7 +241,7 @@ src/
 
 ---
 
-## 5. Unit Tests: DeviceDetectionService Optimizations
+## 8. Unit Tests: DeviceDetectionService Optimizations
 
 **File:** `src/lib/__tests__/deviceDetectionService.optimized.test.ts`
 
@@ -214,7 +288,7 @@ src/
 
 ---
 
-## 6. Integration Tests: Multi-Method Device Connection
+## 9. Integration Tests: Multi-Method Device Connection
 
 **File:** `src/__tests__/integration/deviceMultiMethodConnection.test.ts`
 
@@ -249,7 +323,7 @@ src/
 
 ---
 
-## 7. Integration Tests: Dashboard Integration
+## 10. Integration Tests: Dashboard Integration
 
 **File:** `src/__tests__/integration/deviceDashboardIntegration.test.ts`
 
@@ -352,6 +426,8 @@ export const mockLiveHealthDataSync = {
 - **DeviceStatusCard**: 95%+
 - **DeviceAttributionBadge**: 90%+
 - **DeviceCapabilityGate**: 90%+
+- **DeviceStatusIndicator**: 90%+
+- **DeviceHealthMonitor**: 90%+
 
 ### Hook Coverage
 - **useDeviceManagement**: 85%+ (enhanced methods)
