@@ -1,7 +1,7 @@
 {
   "directory": "dist",
   "totals": {
-    "jsGzip": 476161,
+    "jsGzip": 472116,
     "cssGzip": 20942
   },
   "limits": {
@@ -12,5 +12,5 @@
     "js": 21,
     "css": 1
   },
-  "timestamp": "2025-11-21T00:04:26.943Z"
+  "timestamp": "2025-11-21T00:35:00.633Z"
 }

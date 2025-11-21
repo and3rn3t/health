@@ -238,11 +238,15 @@ describe('EnhancedAIInsights', () => {
       expect(screen.getByText('Get AI Answer')).toBeInTheDocument();
     });
 
-    // Find button by role and text (more reliable than getAllByText)
-    const submitButton = screen.getByRole('button', { name: /get ai answer/i });
+    // Find all buttons with "Get AI Answer" text (React StrictMode causes double render)
+    // All of them should be disabled when query is empty
+    const submitButtons = screen.getAllByRole('button', { name: /get ai answer/i });
 
-    // Button should be disabled when query is empty
-    expect(submitButton).toBeDisabled();
+    // Verify all buttons are disabled (handles StrictMode double render)
+    expect(submitButtons.length).toBeGreaterThan(0);
+    submitButtons.forEach((button) => {
+      expect(button).toBeDisabled();
+    });
   });
 
   it('displays insight summary statistics', async () => {
