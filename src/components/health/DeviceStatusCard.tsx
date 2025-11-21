@@ -242,6 +242,7 @@ export function DeviceStatusCard({
                         <Button
                           variant="ghost"
                           size="sm"
+                          aria-label={`Sync ${device.name}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             syncDevice(device.id);

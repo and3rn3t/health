@@ -172,13 +172,11 @@ describe('DeviceStatusCard', () => {
 
       render(<DeviceStatusCard compact={false} />);
 
-      const syncButtons = screen.getAllByRole('button');
-      const syncButton = syncButtons.find((btn) => btn.querySelector('svg'));
+      // Find the sync button by its aria-label
+      const syncButton = screen.getByLabelText('Sync iPhone 15 Pro');
 
-      if (syncButton) {
-        fireEvent.click(syncButton);
-        expect(mockSyncDevice).toHaveBeenCalled();
-      }
+      fireEvent.click(syncButton);
+      expect(mockSyncDevice).toHaveBeenCalledWith('device-1');
     });
 
     it('shows "View all X devices" when more than 3 devices', () => {
