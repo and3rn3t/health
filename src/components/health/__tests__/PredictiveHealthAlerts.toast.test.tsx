@@ -2,10 +2,10 @@
  * Tests for PredictiveHealthAlerts toast usage with useOnceToast
  */
 
-import { render, screen, waitFor } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import PredictiveHealthAlerts from '../PredictiveHealthAlerts';
 import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import PredictiveHealthAlerts from '../PredictiveHealthAlerts';
 
 // Mock useKV
 vi.mock('@github/spark/hooks', () => ({
@@ -106,18 +106,42 @@ describe('PredictiveHealthAlerts - Toast Usage', () => {
     const healthData = createMockHealthData();
     render(<PredictiveHealthAlerts healthData={healthData} />);
 
-    // Wait for analysis to complete
+    // Wait for component to render
     await waitFor(
       () => {
-        // Component should render
-        expect(screen.getByText(/Predictive Health Alerts/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Predictive Health Alerts/i)
+        ).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
 
-    // Verify useOnceToast was used (either for success or warning)
-    // The exact call depends on whether alerts were generated
-    expect(mockShowOnce).toHaveBeenCalled();
+    // Find and click the button to trigger analysis
+    const analyzeButton = screen.queryByRole('button', {
+      name: /analyze|generate|run/i,
+    });
+    if (analyzeButton) {
+      analyzeButton.click();
+
+      // Wait for analysis to complete (it has a 2 second delay)
+      await waitFor(
+        () => {
+          // Verify useOnceToast was used (either for success or warning)
+          // The exact call depends on whether alerts were generated
+          expect(mockShowOnce).toHaveBeenCalled();
+        },
+        { timeout: 5000 }
+      );
+    } else {
+      // If no button found, the analysis might run automatically or component structure changed
+      // Wait a bit and check if toast was called
+      await waitFor(
+        () => {
+          expect(mockShowOnce).toHaveBeenCalled();
+        },
+        { timeout: 5000 }
+      );
+    }
   });
 
   it('should use useOnceToast for alert acknowledgment', async () => {
