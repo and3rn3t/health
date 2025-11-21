@@ -59,7 +59,7 @@ describe('AppleDeviceSyncDashboard', () => {
   it('renders dashboard with devices', async () => {
     render(<AppleDeviceSyncDashboard userId="test-user" />);
     expect(screen.getByText('Apple Device Sync')).toBeInTheDocument();
-    
+
     // The device name is in the Devices tab, which should be active by default
     // Wait for the tab content to render
     await waitFor(() => {
@@ -153,7 +153,7 @@ describe('AppleDeviceSyncDashboard', () => {
         expect(deviceNames.length).toBeGreaterThan(0);
         return; // Device found, test passes
       }
-      
+
       // If device name not found, check if "No Devices" is shown (mock might not be working)
       const noDevices = screen.queryByText(/No Devices Connected/i);
       if (noDevices) {
@@ -161,7 +161,7 @@ describe('AppleDeviceSyncDashboard', () => {
         expect(noDevices).toBeInTheDocument();
         return; // Skip device-specific checks
       }
-      
+
       // If neither found, verify at least the dashboard rendered
       const dashboardTitle = screen.queryByText(/Apple Device Sync/i);
       expect(dashboardTitle).toBeInTheDocument();
