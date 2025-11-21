@@ -100,6 +100,18 @@ if (!fs.existsSync(distDir)) {
   console.error(`   Current working directory: ${process.cwd()}`);
   console.error(`   Please ensure the build step completed successfully.`);
   console.error(`   If running locally, run: pnpm run build`);
+  console.error(`   If running in CI, check that build artifacts were downloaded or fallback build completed.`);
+  // In CI, this might be a transient issue - provide more diagnostic info
+  if (process.env.CI === 'true') {
+    console.error(`   CI Environment detected - checking for alternative locations...`);
+    const altDirs = ['build', 'out', 'output', 'dist-production'];
+    for (const alt of altDirs) {
+      if (fs.existsSync(alt)) {
+        console.error(`   ⚠️  Found alternative directory: ${alt}`);
+      }
+    }
+    console.error(`   Current directory contents:`, fs.readdirSync('.').slice(0, 10));
+  }
   process.exit(2);
 }
 
