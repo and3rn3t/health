@@ -2,10 +2,10 @@
  * Unit tests for DeviceAttributionBadge component
  */
 
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { DeviceAttributionBadge } from '../DeviceAttributionBadge';
 import { useDeviceManagement } from '@/hooks/useDeviceManagement';
+import { render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DeviceAttributionBadge } from '../DeviceAttributionBadge';
 
 // Mock dependencies
 vi.mock('@/hooks/useDeviceManagement');
@@ -22,14 +22,16 @@ describe('DeviceAttributionBadge', () => {
 
   describe('Rendering', () => {
     it('renders in compact mode', () => {
+      mockGetDevice.mockReturnValue(null);
       render(<DeviceAttributionBadge deviceId="device-1" compact={true} />);
-      const badge = screen.getByRole('status', { hidden: true });
+      const badge = screen.getByText('Device');
       expect(badge).toBeInTheDocument();
     });
 
     it('renders in full mode', () => {
+      mockGetDevice.mockReturnValue(null);
       render(<DeviceAttributionBadge deviceId="device-1" compact={false} />);
-      const badge = screen.getByRole('status', { hidden: true });
+      const badge = screen.getByText('Device');
       expect(badge).toBeInTheDocument();
     });
 
