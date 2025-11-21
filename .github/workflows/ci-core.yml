@@ -224,14 +224,30 @@ jobs:
               echo "✅ Dependencies already installed"
             fi
             echo "🏗️ Running build with CI=true and NODE_ENV=production..."
-            set -e  # Exit on any error
+            echo "📊 Environment variables:"
+            echo "  CI=$CI"
+            echo "  NODE_ENV=$NODE_ENV"
+            # Run build and capture exit code properly
+            set +e  # Don't exit on error, we'll check manually
             CI=true NODE_ENV=production pnpm run build
+            BUILD_EXIT=$?
+            set -e  # Re-enable exit on error
+            if [ $BUILD_EXIT -ne 0 ]; then
+              echo "❌ Build failed with exit code $BUILD_EXIT"
+              echo "📊 Checking for build errors..."
+              exit 1
+            fi
+            # Verify dist was created
             if [ ! -d dist ]; then
               echo "❌ Build completed but dist directory was not created"
               echo "📊 Current directory contents:"
               ls -la
+              echo "📊 Checking for alternative output directories:"
+              ls -d */ 2>/dev/null | grep -E "(build|out|output)" || echo "  No alternative output directories found"
               echo "📊 Checking package.json build script:"
               grep -A 3 '"build"' package.json || true
+              echo "📊 Checking vite.config.ts for outDir:"
+              grep -i "outdir\|outDir" vite.config.ts || echo "  No outDir found in vite.config.ts"
               exit 1
             fi
             echo "✅ Build successful, dist directory created"
