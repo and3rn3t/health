@@ -750,6 +750,14 @@ function AppContent() {
                           'system-status': 'dev-diagnostics',
                         };
                         const target = map[featureId] ?? 'dashboard';
+                        
+                        // If navigating to device-sync from healthkit-guide, set flag to open setup wizard
+                        if (featureId === 'healthkit-guide' && target === 'device-sync') {
+                          if (typeof window !== 'undefined') {
+                            sessionStorage.setItem('open-device-setup', 'true');
+                          }
+                        }
+                        
                         handleTabChange(target);
                       }}
                     />

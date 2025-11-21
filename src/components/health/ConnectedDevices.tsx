@@ -42,7 +42,27 @@ export function ConnectedDevices() {
     hasConnectedDevices,
   } = useDeviceManagement();
 
-  const [showSetupWizard, setShowSetupWizard] = useState(false);
+  // Check if we should auto-open the setup wizard (from Setup button)
+  const [showSetupWizard, setShowSetupWizard] = useState(() => {
+    // Check for URL parameter or session storage flag
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('setup') === 'true') {
+        // Clear the URL parameter
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('setup');
+        window.history.replaceState({}, '', newUrl.toString());
+        return true;
+      }
+      // Check session storage for setup flag
+      const shouldSetup = sessionStorage.getItem('open-device-setup') === 'true';
+      if (shouldSetup) {
+        sessionStorage.removeItem('open-device-setup');
+        return true;
+      }
+    }
+    return false;
+  });
 
   const getDeviceIcon = (type: DeviceType) => {
     switch (type) {
