@@ -84,6 +84,12 @@ describe('Toast Deduplication Behavior', () => {
       delete (window as any).__VS_TOAST_TIME__;
       delete (window as any).__VS_TOAST_LAST_TS;
     }
+    // Use fake timers to control time for rate limiting tests
+    vi.useFakeTimers({ now: 100000 });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('should prevent duplicate toasts with same ID', async () => {
@@ -113,13 +119,28 @@ describe('Toast Deduplication Behavior', () => {
 
     const { result } = renderHook(() => useOnceToast());
 
+    // First call
     act(() => {
       result.current.showOnce('id-1', 'success', 'Message 1');
+    });
+
+    expect(mockToastSuccess).toHaveBeenCalledTimes(1);
+
+    // Advance time past rate limit (500ms) for second call
+    act(() => {
+      vi.advanceTimersByTime(600);
       result.current.showOnce('id-2', 'success', 'Message 2');
+    });
+
+    expect(mockToastSuccess).toHaveBeenCalledTimes(2);
+
+    // Advance time past rate limit again for third call
+    act(() => {
+      vi.advanceTimersByTime(600);
       result.current.showOnce('id-3', 'success', 'Message 3');
     });
 
-    // All should show since they have different IDs
+    // All should show since they have different IDs and we've advanced time
     expect(mockToastSuccess).toHaveBeenCalledTimes(3);
   });
 });
