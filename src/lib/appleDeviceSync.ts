@@ -4,8 +4,12 @@
  * Handles HealthKit data, device-dependent features, and real-time updates
  */
 
-import { LiveHealthDataSync, type LiveHealthMetric } from './liveHealthDataSync';
 import { toast } from 'sonner';
+import { DeviceDetectionService } from './deviceDetectionService';
+import {
+  LiveHealthDataSync,
+  type LiveHealthMetric,
+} from './liveHealthDataSync';
 
 export interface AppleDevice {
   id: string;
@@ -74,15 +78,13 @@ export class AppleDeviceSyncService {
   private syncStatus: SyncStatus;
   private syncConfig: SyncConfiguration;
   private liveSync: LiveHealthDataSync;
+  private deviceDetection: DeviceDetectionService;
   private syncIntervalId: ReturnType<typeof setInterval> | null = null;
   private errorListeners: Set<(error: SyncError) => void> = new Set();
   private statusListeners: Set<(status: SyncStatus) => void> = new Set();
   private deviceListeners: Set<(devices: AppleDevice[]) => void> = new Set();
 
-  constructor(
-    userId: string,
-    config?: Partial<SyncConfiguration>
-  ) {
+  constructor(userId: string, config?: Partial<SyncConfiguration>) {
     this.syncConfig = {
       syncInterval: config?.syncInterval || 30000, // 30 seconds default
       realTimeSync: config?.realTimeSync ?? true,
@@ -111,8 +113,14 @@ export class AppleDeviceSyncService {
       heartbeatInterval: 30000,
     });
 
+    // Initialize device detection service
+    this.deviceDetection = new DeviceDetectionService(this.liveSync);
+
     // Listen for device connections
     this.setupDeviceListeners();
+
+    // Listen for detected devices from detection service
+    this.setupDetectionListeners();
   }
 
   /**
@@ -138,26 +146,99 @@ export class AppleDeviceSyncService {
     if (typeof window === 'undefined') return;
 
     // Listen for iOS device connection events
-    window.addEventListener('apple-device-connected', ((event: CustomEvent<AppleDevice>) => {
-      this.handleDeviceConnected(event.detail);
+    window.addEventListener('apple-device-connected', ((
+      event: CustomEvent<{
+        deviceId: string;
+        deviceName: string;
+        deviceType: string;
+        deviceInfo?: Record<string, unknown>;
+      }>
+    ) => {
+      const detected = this.deviceDetection.getDevice(event.detail.deviceId);
+      if (detected) {
+        const appleDevice: AppleDevice = {
+          id: detected.id,
+          name: detected.name,
+          type: detected.type as 'iphone' | 'apple_watch' | 'ipad',
+          model: detected.model,
+          osVersion: detected.osVersion,
+          capabilities: this.mapCapabilities(detected.capabilities),
+          connectionStatus:
+            detected.status === 'online' ? 'connected' : 'disconnected',
+          lastSync: detected.lastSeen,
+        };
+        this.handleDeviceConnected(appleDevice);
+      }
     }) as EventListener);
 
-    window.addEventListener('apple-device-disconnected', ((event: CustomEvent<{ deviceId: string }>) => {
+    window.addEventListener('apple-device-disconnected', ((
+      event: CustomEvent<{ deviceId: string }>
+    ) => {
       this.handleDeviceDisconnected(event.detail.deviceId);
     }) as EventListener);
 
-    window.addEventListener('apple-health-data', ((event: CustomEvent<DeviceHealthData>) => {
+    window.addEventListener('apple-health-data', ((
+      event: CustomEvent<DeviceHealthData>
+    ) => {
       this.handleHealthData(event.detail);
     }) as EventListener);
 
     // Listen for WebSocket connection status
     this.liveSync.onConnectionChange((connected) => {
       if (connected) {
-        this.startSync();
+        // Auto-start sync if enabled
+        if (this.syncConfig.realTimeSync && !this.syncStatus.isActive) {
+          this.startSync();
+        }
       } else {
         this.stopSync();
       }
     });
+  }
+
+  /**
+   * Setup listeners for device detection service
+   */
+  private setupDetectionListeners(): void {
+    this.deviceDetection.onDevicesChange((detectedDevices) => {
+      // Update our device map with detected devices
+      detectedDevices.forEach((detected) => {
+        if (detected.status === 'online') {
+          const appleDevice: AppleDevice = {
+            id: detected.id,
+            name: detected.name,
+            type: detected.type as 'iphone' | 'apple_watch' | 'ipad',
+            model: detected.model,
+            osVersion: detected.osVersion,
+            capabilities: this.mapCapabilities(detected.capabilities),
+            connectionStatus: 'connected',
+            lastSync: detected.lastSeen,
+          };
+          this.devices.set(appleDevice.id, appleDevice);
+        }
+      });
+      this.notifyDeviceListeners();
+    });
+  }
+
+  /**
+   * Map detected capabilities to AppleDevice capabilities
+   */
+  private mapCapabilities(capabilities?: {
+    healthKit?: boolean;
+    realTimeSync?: boolean;
+    backgroundSync?: boolean;
+  }): DeviceCapabilities {
+    return {
+      healthKit: capabilities?.healthKit ?? true,
+      lidar: false, // Would need device info to determine
+      motionSensors: true,
+      heartRate: true,
+      fallDetection: true,
+      backgroundSync: capabilities?.backgroundSync ?? true,
+      watchConnectivity: true,
+      arKit: false, // Would need device info to determine
+    };
   }
 
   /**
@@ -296,6 +377,25 @@ export class AppleDeviceSyncService {
   }
 
   /**
+   * Resolve an error
+   */
+  resolveError(errorId: string): void {
+    const error = this.syncStatus.errors.find((e) => e.id === errorId);
+    if (error) {
+      error.resolved = true;
+      this.notifyStatusListeners();
+    }
+  }
+
+  /**
+   * Clear all resolved errors
+   */
+  clearResolvedErrors(): void {
+    this.syncStatus.errors = this.syncStatus.errors.filter((e) => !e.resolved);
+    this.notifyStatusListeners();
+  }
+
+  /**
    * Perform synchronization cycle
    */
   private async performSync(): Promise<void> {
@@ -345,13 +445,40 @@ export class AppleDeviceSyncService {
 
   /**
    * Request sync from specific device
+   * Sends actual sync request via WebSocket
    */
   private requestDeviceSync(deviceId: string): void {
-    // Dispatch event that iOS app can listen to
+    const device = this.devices.get(deviceId);
+    if (!device) {
+      this.addError({
+        deviceId,
+        errorType: 'connection',
+        message: 'Device not found',
+      });
+      return;
+    }
+
+    // Send sync request via WebSocket if connected
+    if (this.liveSync.isConnected()) {
+      this.liveSync.sendHealthData({
+        timestamp: new Date().toISOString(),
+        metricType: 'heart_rate', // Sync request trigger
+        value: 0,
+        deviceId,
+        confidence: 1,
+        source: device.type === 'apple_watch' ? 'apple_watch' : 'iphone',
+      } as LiveHealthMetric);
+    }
+
+    // Also dispatch event that iOS app can listen to
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
         new CustomEvent('request-device-sync', {
-          detail: { deviceId },
+          detail: {
+            deviceId,
+            metrics: this.syncConfig.syncMetrics,
+            syncInterval: this.syncConfig.syncInterval,
+          },
         })
       );
     }
@@ -360,12 +487,15 @@ export class AppleDeviceSyncService {
   /**
    * Add sync error
    */
-  private addError(error: Omit<SyncError, 'id' | 'timestamp' | 'resolved'>): void {
+  private addError(
+    error: Omit<SyncError, 'id' | 'timestamp' | 'resolved'>
+  ): void {
     // Use crypto.randomUUID() for secure ID generation
     const syncError: SyncError = {
-      id: typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `error-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(36)).join('')}`,
+      id:
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `error-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(36)).join('')}`,
       timestamp: new Date(),
       resolved: false,
       ...error,

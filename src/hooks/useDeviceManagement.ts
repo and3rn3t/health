@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useKV } from './useCloudflareKV';
+import { DeviceDetectionService } from '@/lib/deviceDetectionService';
+import { getLiveHealthDataSync } from '@/lib/liveHealthDataSync';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useKV } from './useCloudflareKV';
 
 export type DeviceType =
   | 'iphone'
@@ -53,90 +55,126 @@ export function useDeviceManagement(userId?: string) {
   );
   const [isScanning, setIsScanning] = useState(false);
   const [scanResults, setScanResults] = useState<DeviceScanResult[]>([]);
+  const detectionServiceRef = useRef<DeviceDetectionService | null>(null);
+  const liveSyncRef = useRef<ReturnType<typeof getLiveHealthDataSync> | null>(
+    null
+  );
 
-  // Initialize with default devices if none exist (for demo purposes)
+  // Initialize device detection service
   useEffect(() => {
-    if (devices.length === 0) {
-      // Don't auto-populate, let user add devices
+    const userIdValue = userId || 'default-user';
+
+    // Initialize LiveHealthDataSync
+    if (!liveSyncRef.current) {
+      liveSyncRef.current = getLiveHealthDataSync(userIdValue);
     }
-  }, [devices.length]);
+
+    // Initialize DeviceDetectionService
+    if (!detectionServiceRef.current) {
+      detectionServiceRef.current = new DeviceDetectionService(
+        liveSyncRef.current
+      );
+    }
+
+    const detectionService = detectionServiceRef.current;
+    const liveSync = liveSyncRef.current;
+
+    // Listen for device changes from detection service
+    const unsubscribe = detectionService.onDevicesChange((detectedDevices) => {
+      // Update scan results with detected devices
+      const newScanResults = detectedDevices
+        .filter((d) => d.status === 'online')
+        .map((d) => detectionService.toScanResult(d));
+      setScanResults(newScanResults);
+
+      // Auto-connect to newly detected devices that aren't in our list
+      detectedDevices.forEach((detected) => {
+        if (detected.status === 'online') {
+          const existing = devices.find((d) => d.id === detected.id);
+          if (!existing || existing.status !== 'connected') {
+            // Auto-add to connected devices
+            const connectedDevice =
+              detectionService.toConnectedDevice(detected);
+            setDevices((prev) => {
+              const existingIndex = prev.findIndex(
+                (d) => d.id === connectedDevice.id
+              );
+              if (existingIndex >= 0) {
+                const updated = [...prev];
+                updated[existingIndex] = connectedDevice;
+                return updated;
+              }
+              return [...prev, connectedDevice];
+            });
+          }
+        }
+      });
+    });
+
+    // Listen for WebSocket presence messages
+    if (liveSync) {
+      // The LiveHealthDataSync service already handles client_presence messages
+      // We'll hook into it via the detection service
+    }
+
+    // Connect to WebSocket if not connected
+    if (liveSync && !liveSync.isConnected()) {
+      liveSync.connect();
+    }
+
+    return () => {
+      unsubscribe();
+    };
+  }, [userId, devices, setDevices]);
 
   /**
    * Scan for available devices
-   * In a real implementation, this would use Web Bluetooth API or other device discovery
+   * Uses WebSocket presence detection and Web Bluetooth API
    */
   const scanForDevices = useCallback(async () => {
     setIsScanning(true);
     setScanResults([]);
 
     try {
-      // Simulate device scanning with a delay
-      // In production, this would use actual device discovery APIs
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const detectionService = detectionServiceRef.current;
+      if (!detectionService) {
+        toast.error('Device detection service not initialized');
+        setIsScanning(false);
+        return;
+      }
 
-      // Check if Web Bluetooth is available
-      const hasWebBluetooth =
-        typeof navigator !== 'undefined' &&
-        'bluetooth' in navigator &&
-        navigator.bluetooth &&
-        typeof navigator.bluetooth === 'object' &&
-        'requestDevice' in navigator.bluetooth;
+      // First, check for devices via WebSocket (iOS devices)
+      const detectedDevices = detectionService.getDetectedDevices();
+      const wsDevices = detectedDevices
+        .filter((d) => d.status === 'online')
+        .map((d) => detectionService.toScanResult(d));
 
-      if (hasWebBluetooth) {
-        // Use Web Bluetooth API for scanning
-        // Note: This requires HTTPS or localhost
-        const simulatedDevices: DeviceScanResult[] = [
-          {
-            id: 'apple-watch-scan-1',
-            name: 'Apple Watch Series 9',
-            type: 'apple_watch',
-            isPaired: false,
-            signalStrength: 85,
-            model: 'Series 9',
-          },
-          {
-            id: 'iphone-scan-1',
-            name: 'iPhone 15 Pro',
-            type: 'iphone',
-            isPaired: true,
-            signalStrength: 92,
-            model: 'iPhone 15 Pro',
-          },
-        ];
-        setScanResults(simulatedDevices);
+      // Also try Web Bluetooth scanning for physical devices
+      let bluetoothDevices: DeviceScanResult[] = [];
+      try {
+        bluetoothDevices = await detectionService.scanBluetoothDevices();
+      } catch (error) {
+        // User may have cancelled or Bluetooth not available
+        console.debug('Bluetooth scan cancelled or unavailable:', error);
+      }
+
+      // Combine both sources
+      const allDevices = [...wsDevices, ...bluetoothDevices];
+
+      // Remove duplicates
+      const uniqueDevices = allDevices.filter(
+        (device, index, self) =>
+          index === self.findIndex((d) => d.id === device.id)
+      );
+
+      setScanResults(uniqueDevices);
+
+      if (uniqueDevices.length === 0) {
+        toast.info(
+          'No devices found. Make sure your iOS app is running and connected.'
+        );
       } else {
-        // Fallback to simulated devices
-        const simulatedDevices: DeviceScanResult[] = [
-          {
-            id: 'apple-watch-scan-1',
-            name: 'Apple Watch Series 9',
-            type: 'apple_watch',
-            isPaired: false,
-            signalStrength: 85,
-          },
-          {
-            id: 'iphone-scan-1',
-            name: 'iPhone 15 Pro',
-            type: 'iphone',
-            isPaired: true,
-            signalStrength: 92,
-          },
-          {
-            id: 'scale-scan-1',
-            name: 'Withings Body+ Scale',
-            type: 'scale',
-            isPaired: false,
-            signalStrength: 75,
-          },
-          {
-            id: 'bp-scan-1',
-            name: 'Omron Blood Pressure Monitor',
-            type: 'blood-pressure',
-            isPaired: false,
-            signalStrength: 80,
-          },
-        ];
-        setScanResults(simulatedDevices);
+        toast.success(`Found ${uniqueDevices.length} device(s)`);
       }
     } catch (error) {
       console.error('Device scanning error:', error);
@@ -149,41 +187,50 @@ export function useDeviceManagement(userId?: string) {
   /**
    * Get device auth token for WebSocket connection
    */
-  const getDeviceAuthToken = useCallback(async (deviceType: DeviceType): Promise<string | null> => {
-    try {
-      // Determine client type based on device type
-      const clientType = ['iphone', 'apple_watch', 'ipad'].includes(deviceType)
-        ? 'ios_app'
-        : 'web_dashboard';
+  const getDeviceAuthToken = useCallback(
+    async (deviceType: DeviceType): Promise<string | null> => {
+      try {
+        // Determine client type based on device type
+        const clientType = ['iphone', 'apple_watch', 'ipad'].includes(
+          deviceType
+        )
+          ? 'ios_app'
+          : 'web_dashboard';
 
-      // Get device auth token from API
-      const response = await fetch('/api/device/auth', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: userId || 'default-user',
-          clientType,
-          ttlSec: 600, // 10 minutes
-        }),
-      });
+        // Get device auth token from API
+        const response = await fetch('/api/device/auth', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: userId || 'default-user',
+            clientType,
+            ttlSec: 600, // 10 minutes
+          }),
+        });
 
-      if (!response.ok) {
-        console.warn('Device auth token request failed:', response.statusText);
+        if (!response.ok) {
+          console.warn(
+            'Device auth token request failed:',
+            response.statusText
+          );
+          return null;
+        }
+
+        const data = (await response.json()) as { token?: string };
+        return data.token || null;
+      } catch (error) {
+        console.error('Failed to get device auth token:', error);
         return null;
       }
-
-      const data = await response.json() as { token?: string };
-      return data.token || null;
-    } catch (error) {
-      console.error('Failed to get device auth token:', error);
-      return null;
-    }
-  }, [userId]);
+    },
+    [userId]
+  );
 
   /**
    * Connect to a device
+   * Uses real device detection and WebSocket connection
    */
   const connectDevice = useCallback(
     async (deviceData: DeviceScanResult | ConnectedDevice) => {
@@ -195,7 +242,13 @@ export function useDeviceManagement(userId?: string) {
           return;
         }
 
-        // Simulate connection process
+        const detectionService = detectionServiceRef.current;
+        const liveSync = liveSyncRef.current;
+
+        // Check if device is detected via WebSocket
+        const detectedDevice = detectionService?.getDevice(deviceData.id);
+
+        // Set status to syncing
         const newDevice: ConnectedDevice = {
           id: deviceData.id,
           name: deviceData.name,
@@ -225,25 +278,54 @@ export function useDeviceManagement(userId?: string) {
           return [...prev, newDevice];
         });
 
-        // Get device auth token for WebSocket connection
-        const authToken = await getDeviceAuthToken(deviceData.type);
+        // For iOS devices, ensure WebSocket is connected
+        if (['iphone', 'apple_watch', 'ipad'].includes(deviceData.type)) {
+          if (liveSync && !liveSync.isConnected()) {
+            await liveSync.connect();
+          }
 
-        // Store token for WebSocket connections if available
-        if (authToken && typeof window !== 'undefined') {
-          (window as unknown as { __WS_DEVICE_TOKEN__?: string }).__WS_DEVICE_TOKEN__ = authToken;
+          // Get device auth token for WebSocket connection
+          const authToken = await getDeviceAuthToken(deviceData.type);
+
+          // Store token for WebSocket connections if available
+          if (authToken && typeof window !== 'undefined') {
+            (
+              window as unknown as { __WS_DEVICE_TOKEN__?: string }
+            ).__WS_DEVICE_TOKEN__ = authToken;
+          }
+
+          // Request device to connect (iOS app will listen for this)
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('request-device-connection', {
+                detail: {
+                  deviceId: deviceData.id,
+                  deviceName: deviceData.name,
+                  deviceType: deviceData.type,
+                },
+              })
+            );
+          }
+
+          // Wait a moment for connection to establish
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
 
-        // Simulate connection delay (in production, this would be actual device pairing)
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        // Check if device is actually online
+        const isOnline =
+          detectedDevice?.status === 'online' ||
+          (liveSync && liveSync.isConnected());
 
-        // Update device status to connected
+        // Update device status
         setDevices((prev) =>
           prev.map((d) =>
             d.id === deviceData.id
               ? {
                   ...d,
-                  status: 'connected' as const,
-                  lastSync: 'Just now',
+                  status: isOnline
+                    ? ('connected' as const)
+                    : ('error' as const),
+                  lastSync: isOnline ? 'Just now' : undefined,
                   battery: deviceData.type === 'apple_watch' ? 85 : undefined,
                 }
               : d
@@ -251,7 +333,7 @@ export function useDeviceManagement(userId?: string) {
         );
 
         // Dispatch device connected event for other components
-        if (typeof window !== 'undefined') {
+        if (typeof window !== 'undefined' && isOnline) {
           window.dispatchEvent(
             new CustomEvent('device-connected', {
               detail: { deviceId: deviceData.id, deviceName: deviceData.name },
@@ -259,14 +341,18 @@ export function useDeviceManagement(userId?: string) {
           );
         }
 
-        toast.success(`Successfully connected to ${deviceData.name}`);
+        if (isOnline) {
+          toast.success(`Successfully connected to ${deviceData.name}`);
+        } else {
+          toast.warning(
+            `Device ${deviceData.name} may not be online. Make sure the iOS app is running.`
+          );
+        }
       } catch (error) {
         console.error('Device connection error:', error);
         setDevices((prev) =>
           prev.map((d) =>
-            d.id === deviceData.id
-              ? { ...d, status: 'error' as const }
-              : d
+            d.id === deviceData.id ? { ...d, status: 'error' as const } : d
           )
         );
         toast.error(`Failed to connect to ${deviceData.name}`);
@@ -310,6 +396,7 @@ export function useDeviceManagement(userId?: string) {
 
   /**
    * Sync a device (request manual sync)
+   * Sends sync request via WebSocket to the device
    */
   const syncDevice = useCallback(
     async (deviceId: string) => {
@@ -323,9 +410,34 @@ export function useDeviceManagement(userId?: string) {
       );
 
       try {
-        // Simulate sync delay
+        const liveSync = liveSyncRef.current;
+
+        // Request sync from device via WebSocket
+        if (liveSync && liveSync.isConnected()) {
+          // Send sync request message
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('request-device-sync', {
+                detail: { deviceId },
+              })
+            );
+          }
+
+          // Also send via WebSocket if available
+          liveSync.sendHealthData({
+            timestamp: new Date().toISOString(),
+            metricType: 'heart_rate', // Dummy metric to trigger sync
+            value: 0,
+            deviceId,
+            confidence: 1,
+            source: 'web_dashboard',
+          } as any);
+        }
+
+        // Wait for sync to complete (device will send data back)
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
+        // Update device status
         setDevices((prev) =>
           prev.map((d) =>
             d.id === deviceId
@@ -366,9 +478,7 @@ export function useDeviceManagement(userId?: string) {
   /**
    * Get connected devices count
    */
-  const connectedCount = devices.filter(
-    (d) => d.status === 'connected'
-  ).length;
+  const connectedCount = devices.filter((d) => d.status === 'connected').length;
 
   /**
    * Check if any device is connected

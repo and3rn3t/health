@@ -48,7 +48,10 @@ export function DeviceSetupWizard({
   // Auto-start scanning when entering scanning step
   useEffect(() => {
     if (step === 'scanning' && !isScanning && scanResults.length === 0) {
-      scanForDevices();
+      scanForDevices().catch((error) => {
+        console.error('Scan error:', error);
+        // Stay on scanning step to show error state
+      });
     }
   }, [step, isScanning, scanResults.length, scanForDevices]);
 
@@ -56,6 +59,9 @@ export function DeviceSetupWizard({
   useEffect(() => {
     if (step === 'scanning' && !isScanning && scanResults.length > 0) {
       setStep('selecting');
+    } else if (step === 'scanning' && !isScanning && scanResults.length === 0) {
+      // If scan completed with no results, show message
+      // User can try again or skip
     }
   }, [step, isScanning, scanResults.length]);
 
@@ -244,7 +250,9 @@ export function DeviceSetupWizard({
             <div>
               <h3 className="text-lg font-semibold mb-2">Scanning for devices...</h3>
               <p className="text-sm text-muted-foreground">
-                Make sure your device is nearby and Bluetooth is enabled
+                {isScanning
+                  ? 'Searching for iOS devices and Bluetooth health devices...'
+                  : 'Make sure your iOS app is running and connected to the same account'}
               </p>
             </div>
             {isScanning && (
@@ -252,6 +260,19 @@ export function DeviceSetupWizard({
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>Searching for available devices</span>
               </div>
+            )}
+            {!isScanning && scanResults.length === 0 && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  No devices found. Make sure:
+                  <ul className="list-disc list-inside mt-2 text-left">
+                    <li>Your iOS VitalSense app is running</li>
+                    <li>The app is connected to the same account</li>
+                    <li>Bluetooth is enabled (for physical devices)</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
             )}
           </div>
         )}
@@ -312,10 +333,18 @@ export function DeviceSetupWizard({
                 variant="outline"
                 onClick={handleStartScan}
                 className="flex-1"
+                disabled={isScanning}
               >
-                Scan Again
+                {isScanning ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Scanning...
+                  </>
+                ) : (
+                  'Scan Again'
+                )}
               </Button>
-              <Button variant="outline" onClick={handleSkip}>
+              <Button variant="outline" onClick={handleSkip} disabled={isScanning}>
                 Skip
               </Button>
             </div>

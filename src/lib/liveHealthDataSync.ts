@@ -326,10 +326,49 @@ export class LiveHealthDataSync {
 
   private onClientPresence(data: unknown) {
     const d = data as
-      | { userId?: string; clientType?: string; status?: string }
+      | {
+          userId?: string;
+          clientType?: string;
+          status?: string;
+          deviceInfo?: {
+            deviceId?: string;
+            deviceName?: string;
+            deviceType?: string;
+            model?: string;
+            osVersion?: string;
+            [key: string]: unknown;
+          };
+        }
       | undefined;
     if (d && d.clientType === 'ios_app') {
       this.iosOnline = d.status === 'online';
+
+      // Dispatch device presence event for device detection service
+      if (typeof window !== 'undefined' && d.status === 'online') {
+        const deviceId =
+          d.deviceInfo?.deviceId || `ios-${d.userId || 'unknown'}`;
+        const deviceName = d.deviceInfo?.deviceName || 'iPhone';
+        const deviceType = d.deviceInfo?.deviceType || 'iphone';
+
+        window.dispatchEvent(
+          new CustomEvent('apple-device-connected', {
+            detail: {
+              deviceId,
+              deviceName,
+              deviceType,
+              deviceInfo: d.deviceInfo,
+            },
+          })
+        );
+      } else if (typeof window !== 'undefined' && d.status === 'offline') {
+        const deviceId =
+          d.deviceInfo?.deviceId || `ios-${d.userId || 'unknown'}`;
+        window.dispatchEvent(
+          new CustomEvent('apple-device-disconnected', {
+            detail: { deviceId },
+          })
+        );
+      }
     }
   }
 
@@ -486,7 +525,8 @@ export class LiveHealthDataSync {
     return this.subscriptions.delete(subscriptionId);
   }
 
-  private connectionChangeListeners: Set<(connected: boolean) => void> = new Set();
+  private connectionChangeListeners: Set<(connected: boolean) => void> =
+    new Set();
 
   isConnected(): boolean {
     return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
