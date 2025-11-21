@@ -21,6 +21,7 @@ export interface LiveHealthMetric {
   unit: string;
   timestamp: number;
   source?: string;
+  deviceId?: string;
   processedAt: number;
   wellnessScore: number;
 }
