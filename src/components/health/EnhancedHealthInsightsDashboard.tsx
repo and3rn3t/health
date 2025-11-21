@@ -52,9 +52,13 @@ interface PredictiveAlert {
 
 interface Props {
   readonly healthData: ProcessedHealthData;
+  onNavigate?: (destination: string) => void;
 }
 
-export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
+export default function EnhancedHealthInsightsDashboard({
+  healthData,
+  onNavigate,
+}: Props) {
   const [currentScore] = useKV<number>('current-health-score', 75);
   const [trends, setTrends] = useKV<HealthTrend[]>('health-trends', []);
   const [insights, setInsights] = useKV<HealthInsight[]>('health-insights', []);
@@ -347,7 +351,18 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
     <div className="space-y-6">
       {/* Health Score Summary */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card>
+        <Card
+          className={onNavigate ? 'cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]' : ''}
+          onClick={onNavigate ? () => onNavigate('analytics') : undefined}
+          role={onNavigate ? 'button' : undefined}
+          tabIndex={onNavigate ? 0 : undefined}
+          onKeyDown={onNavigate ? (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onNavigate('analytics');
+            }
+          } : undefined}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
               <Heart className="h-5 w-5 text-red-500" />
@@ -365,7 +380,18 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card
+          className={onNavigate ? 'cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]' : ''}
+          onClick={onNavigate ? () => onNavigate('fall-detection') : undefined}
+          role={onNavigate ? 'button' : undefined}
+          tabIndex={onNavigate ? 0 : undefined}
+          onKeyDown={onNavigate ? (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onNavigate('fall-detection');
+            }
+          } : undefined}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-blue-500" />
@@ -492,7 +518,19 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
               if (trend.trend === 'up') trendVariant = 'default';
               else if (trend.trend === 'down') trendVariant = 'destructive';
               return (
-                <Card key={`${trend.metric}:${trend.timeframe}`}>
+                <Card
+                  key={`${trend.metric}:${trend.timeframe}`}
+                  className={onNavigate ? 'cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]' : ''}
+                  onClick={onNavigate ? () => onNavigate('analytics') : undefined}
+                  role={onNavigate ? 'button' : undefined}
+                  tabIndex={onNavigate ? 0 : undefined}
+                  onKeyDown={onNavigate ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onNavigate('analytics');
+                    }
+                  } : undefined}
+                >
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center justify-between text-sm">
                       <span>{trend.metric}</span>
@@ -528,7 +566,24 @@ export default function EnhancedHealthInsightsDashboard({ healthData }: Props) {
             if (alert.severity === 'high') severityVariant = 'destructive';
             else if (alert.severity === 'medium') severityVariant = 'secondary';
             return (
-              <Card key={alert.id}>
+              <Card
+                key={alert.id}
+                className={onNavigate ? 'cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]' : ''}
+                onClick={onNavigate ? () => {
+                  // Navigate to fall detection for fall-related alerts, analytics for others
+                  const target = alert.id.includes('fall') ? 'fall-detection' : 'analytics';
+                  onNavigate(target);
+                } : undefined}
+                role={onNavigate ? 'button' : undefined}
+                tabIndex={onNavigate ? 0 : undefined}
+                onKeyDown={onNavigate ? (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    const target = alert.id.includes('fall') ? 'fall-detection' : 'analytics';
+                    onNavigate(target);
+                  }
+                } : undefined}
+              >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Brain className="h-5 w-5 text-purple-600" />

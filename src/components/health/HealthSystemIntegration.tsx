@@ -23,11 +23,7 @@ import {
   LiveDataStream,
 } from './integration-components';
 
-// Import the new components
-// import AdvancedAnalytics from './AdvancedAnalytics';
-// import DataSync from './DataSync';
 import { EnhancedHealthDataUpload } from './EnhancedHealthDataUpload';
-// import LiveDataStream from './LiveDataStream';
 import MLAnalytics from './MLAnalytics';
 
 interface FeatureCard {
@@ -165,7 +161,7 @@ export default function HealthSystemIntegration({
               <div className="text-2xl font-bold text-blue-600">
                 {systemMetrics.totalRecords.toLocaleString()}
               </div>
-              <div className="text-muted-foreground text-sm">
+              <div className="text-sm text-muted-foreground">
                 Health Records
               </div>
             </div>
@@ -173,7 +169,7 @@ export default function HealthSystemIntegration({
               <div className="text-2xl font-bold text-green-600">
                 {systemMetrics.activeConnections}
               </div>
-              <div className="text-muted-foreground text-sm">
+              <div className="text-sm text-muted-foreground">
                 Active Connections
               </div>
             </div>
@@ -181,19 +177,19 @@ export default function HealthSystemIntegration({
               <div className="text-2xl font-bold text-purple-600">
                 {systemMetrics.mlModelsActive}
               </div>
-              <div className="text-muted-foreground text-sm">ML Models</div>
+              <div className="text-sm text-muted-foreground">ML Models</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">
                 {systemMetrics.realTimeStreams}
               </div>
-              <div className="text-muted-foreground text-sm">Live Streams</div>
+              <div className="text-sm text-muted-foreground">Live Streams</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-indigo-600">
                 {systemMetrics.dailyAnalytics}
               </div>
-              <div className="text-muted-foreground text-sm">
+              <div className="text-sm text-muted-foreground">
                 Daily Insights
               </div>
             </div>
@@ -201,7 +197,7 @@ export default function HealthSystemIntegration({
               <div className="text-2xl font-bold text-emerald-600">
                 {systemMetrics.securityScore}%
               </div>
-              <div className="text-muted-foreground text-sm">
+              <div className="text-sm text-muted-foreground">
                 Security Score
               </div>
             </div>
@@ -216,7 +212,16 @@ export default function HealthSystemIntegration({
           return (
             <Card
               key={feature.id}
-              className="cursor-pointer transition-shadow hover:shadow-lg"
+              className="cursor-pointer transition-shadow hover:shadow-lg active:scale-[0.98]"
+              onClick={() => setActiveFeature(feature.id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setActiveFeature(feature.id);
+                }
+              }}
             >
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -234,7 +239,7 @@ export default function HealthSystemIntegration({
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   {feature.description}
                 </p>
 
@@ -254,7 +259,10 @@ export default function HealthSystemIntegration({
                 </div>
 
                 <Button
-                  onClick={() => setActiveFeature(feature.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveFeature(feature.id);
+                  }}
                   className="w-full"
                   variant="outline"
                 >
@@ -278,44 +286,44 @@ export default function HealthSystemIntegration({
         <CardContent>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                <Smartphone className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="dark:bg-blue-900 mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+                <Smartphone className="dark:text-blue-400 h-6 w-6 text-blue-600" />
               </div>
               <h3 className="font-medium">Multi-Device Sync</h3>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-sm text-muted-foreground">
                 Seamlessly sync data from Apple Health, Fitbit, and other
                 platforms
               </p>
             </div>
 
             <div className="space-y-2 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-                <Brain className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="dark:bg-green-900 mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                <Brain className="dark:text-green-400 h-6 w-6 text-green-600" />
               </div>
               <h3 className="font-medium">AI-Powered Insights</h3>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-sm text-muted-foreground">
                 Machine learning models provide predictive analytics and
                 personalized recommendations
               </p>
             </div>
 
             <div className="space-y-2 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
-                <Zap className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              <div className="dark:bg-purple-900 mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-purple-100">
+                <Zap className="dark:text-purple-400 h-6 w-6 text-purple-600" />
               </div>
               <h3 className="font-medium">Real-Time Monitoring</h3>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-sm text-muted-foreground">
                 Live data streaming with instant alerts for critical health
                 events
               </p>
             </div>
 
             <div className="space-y-2 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900">
-                <Shield className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+              <div className="dark:bg-orange-900 mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
+                <Shield className="dark:text-orange-400 h-6 w-6 text-orange-600" />
               </div>
               <h3 className="font-medium">Enterprise Security</h3>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-sm text-muted-foreground">
                 HIPAA-compliant data processing with end-to-end encryption
               </p>
             </div>
@@ -412,7 +420,7 @@ export default function HealthSystemIntegration({
       {/* Header */}
       <div className="space-y-2 text-center">
         <h1 className="text-4xl font-bold">Health Data Platform</h1>
-        <p className="text-muted-foreground text-xl">
+        <p className="text-xl text-muted-foreground">
           Comprehensive health data processing, analytics, and insights platform
         </p>
       </div>

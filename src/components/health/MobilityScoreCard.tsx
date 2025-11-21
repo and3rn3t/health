@@ -10,6 +10,7 @@ export interface MobilityScoreCardProps {
   mobilityScore: number; // 0..100
   riskPercent: number; // 0..100
   topFactors?: Array<{ label: string; percent: number }>;
+  onNavigate?: () => void;
 }
 
 function tone(score: number): string {
@@ -22,9 +23,27 @@ export function MobilityScoreCard({
   mobilityScore,
   riskPercent,
   topFactors = [],
+  onNavigate,
 }: MobilityScoreCardProps) {
+  const handleClick = () => {
+    if (onNavigate) {
+      onNavigate();
+    }
+  };
+
   return (
-    <Card>
+    <Card
+      className={onNavigate ? 'cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]' : ''}
+      onClick={onNavigate ? handleClick : undefined}
+      role={onNavigate ? 'button' : undefined}
+      tabIndex={onNavigate ? 0 : undefined}
+      onKeyDown={onNavigate ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      } : undefined}
+    >
       <CardHeader>
         <CardTitle>Mobility & Fall Risk</CardTitle>
         <CardDescription>

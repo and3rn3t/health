@@ -127,7 +127,7 @@ function DeviceStatus({ devices }: DeviceStatusProps) {
 
   return (
     <Card className="rounded-md border border-border">
-      <CardHeader className="px-4 py-3 pb-3">
+      <CardHeader className="pb-3">
         <CardTitle className="flex items-center space-x-2 text-lg">
           <Shield className="h-5 w-5" />
           <span>Connected Devices</span>
@@ -136,7 +136,7 @@ function DeviceStatus({ devices }: DeviceStatusProps) {
           Active health monitoring devices
         </CardDescription>
       </CardHeader>
-      <CardContent className="px-4 pt-3">
+      <CardContent className="pt-3">
         <div className="space-y-4">
           {devices.length === 0 ? (
             <div className="text-vitalsense-gray py-8 text-center">
@@ -331,16 +331,34 @@ export function VitalSenseEnhancedDashboard() {
           )}
 
           {/* Health Metrics Grid - VitalSense Style */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 lg:gap-7">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 md:gap-6">
             {latestMetrics.heart_rate && (
-              <Card className="rounded-md border border-border border-vitalsense-primary/20 bg-gradient-to-br from-vitalsense-primary/5 to-vitalsense-primary/10">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4 py-3">
+              <Card
+                className="rounded-md border border-border border-vitalsense-primary/20 bg-gradient-to-br from-vitalsense-primary/5 to-vitalsense-primary/10 cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]"
+                onClick={() => {
+                  // Navigate to analytics or detailed heart rate view
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'analytics', metric: 'heartRate' } }));
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (typeof window !== 'undefined') {
+                      window.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'analytics', metric: 'heartRate' } }));
+                    }
+                  }
+                }}
+              >
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                   <CardTitle className="text-sm font-medium">
                     Heart Rate
                   </CardTitle>
                   <Heart className="h-5 w-5 text-vitalsense-primary" />
                 </CardHeader>
-                <CardContent className="px-4 pb-5 pt-2 md:pt-3">
+                <CardContent className="pb-5 pt-0">
                   <div className="mb-2 text-3xl font-bold text-vitalsense-primary">
                     {Math.round(latestMetrics.heart_rate.value)}
                   </div>
@@ -352,14 +370,32 @@ export function VitalSenseEnhancedDashboard() {
             )}
 
             {latestMetrics.walking_steadiness && (
-              <Card className="rounded-md border border-border border-vitalsense-secondary/20 bg-gradient-to-br from-vitalsense-secondary/5 to-vitalsense-secondary/10">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4 py-3">
+              <Card
+                className="rounded-md border border-border border-vitalsense-secondary/20 bg-gradient-to-br from-vitalsense-secondary/5 to-vitalsense-secondary/10 cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]"
+                onClick={() => {
+                  // Navigate to fall risk or gait analysis
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'fall-detection', metric: 'walkingSteadiness' } }));
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (typeof window !== 'undefined') {
+                      window.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'fall-detection', metric: 'walkingSteadiness' } }));
+                    }
+                  }
+                }}
+              >
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                   <CardTitle className="text-sm font-medium">
                     Walking Steadiness
                   </CardTitle>
                   <Activity className="h-5 w-5 text-vitalsense-secondary" />
                 </CardHeader>
-                <CardContent className="px-4 pb-5 pt-2 md:pt-3">
+                <CardContent className="pb-5 pt-0">
                   <div className="mb-2 text-3xl font-bold text-vitalsense-secondary">
                     {Math.round(latestMetrics.walking_steadiness.value * 100)}
                   </div>
@@ -372,14 +408,32 @@ export function VitalSenseEnhancedDashboard() {
             )}
 
             {latestMetrics.step_count && (
-              <Card className="from-vitalsense-accent/5 to-vitalsense-accent/10 border-vitalsense-accent/20 rounded-md border border-border bg-gradient-to-br">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4 py-3">
+              <Card
+                className="from-vitalsense-accent/5 to-vitalsense-accent/10 border-vitalsense-accent/20 rounded-md border border-border bg-gradient-to-br cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]"
+                onClick={() => {
+                  // Navigate to analytics
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'analytics', metric: 'steps' } }));
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (typeof window !== 'undefined') {
+                      window.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'analytics', metric: 'steps' } }));
+                    }
+                  }
+                }}
+              >
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                   <CardTitle className="text-sm font-medium">
                     Daily Steps
                   </CardTitle>
                   <MapPin className="text-vitalsense-accent h-5 w-5" />
                 </CardHeader>
-                <CardContent className="px-4 pb-5 pt-2 md:pt-3">
+                <CardContent className="pb-5 pt-0">
                   <div className="text-vitalsense-accent mb-2 text-3xl font-bold">
                     {Math.round(
                       latestMetrics.step_count.value
@@ -393,13 +447,13 @@ export function VitalSenseEnhancedDashboard() {
             )}
 
             <Card className="rounded-md border border-border border-vitalsense-success/20 bg-gradient-to-br from-vitalsense-success/5 to-vitalsense-success/10">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4 py-3">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                 <CardTitle className="text-sm font-medium">
                   System Status
                 </CardTitle>
                 <Monitor className="h-5 w-5 text-vitalsense-success" />
               </CardHeader>
-              <CardContent className="px-4 pb-5 pt-2 md:pt-3">
+              <CardContent className="pb-5 pt-0">
                 <div className="mb-2 text-3xl font-bold text-vitalsense-success">
                   {connectionStatus.connected ? 'Online' : 'Offline'}
                 </div>
@@ -411,9 +465,9 @@ export function VitalSenseEnhancedDashboard() {
           </div>
 
           {/* Recent Activity Section */}
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             <Card className="rounded-md border border-border">
-              <CardHeader className="px-4 py-3 pb-3">
+              <CardHeader className="pb-3">
                 <CardTitle className="flex items-center space-x-2 text-lg">
                   <Clock className="h-5 w-5" />
                   <span>Recent Activity</span>
@@ -422,7 +476,7 @@ export function VitalSenseEnhancedDashboard() {
                   Live health data updates
                 </CardDescription>
               </CardHeader>
-              <CardContent className="px-4 pt-3">
+              <CardContent className="pt-3">
                 <div className="space-y-6">
                   {liveMetrics.slice(0, 5).map((metric) => (
                     <div
@@ -455,15 +509,15 @@ export function VitalSenseEnhancedDashboard() {
         </TabsContent>
 
         <TabsContent value="metrics" className="space-y-6">
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             <Card className="rounded-md border border-border">
-              <CardHeader className="px-4 py-3 pb-3">
+              <CardHeader className="pb-3">
                 <CardTitle className="text-lg">Live Health Metrics</CardTitle>
                 <CardDescription className="text-base">
                   Current health data values
                 </CardDescription>
               </CardHeader>
-              <CardContent className="px-4 pt-3">
+              <CardContent className="pt-3">
                 <div className="space-y-6">
                   {Object.entries(latestMetrics).map(([key, metric]) => {
                     const multiplier = getMetricMultiplier(key);
@@ -491,13 +545,13 @@ export function VitalSenseEnhancedDashboard() {
             </Card>
 
             <Card className="rounded-md border border-border">
-              <CardHeader className="px-4 py-3 pb-3">
+              <CardHeader className="pb-3">
                 <CardTitle className="text-lg">System Performance</CardTitle>
                 <CardDescription className="text-base">
                   Real-time monitoring stats
                 </CardDescription>
               </CardHeader>
-              <CardContent className="px-4 pt-3">
+              <CardContent className="pt-3">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between border-b border-border pb-4">
                     <span className="text-sm font-medium">Data Quality</span>
@@ -575,17 +629,17 @@ export function VitalSenseEnhancedDashboard() {
         </TabsContent>
 
         <TabsContent value="devices" className="space-y-6">
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             <DeviceStatus devices={connectedDevices} />
 
             <Card className="rounded-md border border-border">
-              <CardHeader className="px-4 py-3 pb-3">
+              <CardHeader className="pb-3">
                 <CardTitle className="text-lg">System Information</CardTitle>
                 <CardDescription className="text-base">
                   Connected devices and server status
                 </CardDescription>
               </CardHeader>
-              <CardContent className="px-4 pt-3">
+              <CardContent className="pt-3">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between border-b border-border pb-4">
                     <span className="text-sm font-medium">Active Devices</span>

@@ -748,16 +748,18 @@ function AppContent() {
                           import: 'dashboard',
                           'healthkit-guide': 'device-sync',
                           'system-status': 'dev-diagnostics',
+                          'usage-analytics': 'analytics',
+                          'usage-predictions': 'advanced-analytics',
                         };
                         const target = map[featureId] ?? 'dashboard';
-                        
+
                         // If navigating to device-sync from healthkit-guide, set flag to open setup wizard
                         if (featureId === 'healthkit-guide' && target === 'device-sync') {
                           if (typeof window !== 'undefined') {
                             sessionStorage.setItem('open-device-setup', 'true');
                           }
                         }
-                        
+
                         handleTabChange(target);
                       }}
                     />

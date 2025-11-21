@@ -291,7 +291,7 @@ export function IOSTabNavigation({
       aria-label="Content navigation"
     >
       <div
-        className="flex flex-nowrap gap-2 overflow-x-auto overflow-y-hidden"
+        className="flex flex-nowrap items-center gap-2 overflow-x-auto overflow-y-hidden"
         role="tablist"
         aria-orientation="horizontal"
       >

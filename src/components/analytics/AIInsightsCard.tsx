@@ -309,9 +309,26 @@ export default function AIInsightsCard({
     );
   }
 
+  const handleCardClick = () => {
+    if (insights.length > topInsights.length) {
+      setIsOpen(true);
+    }
+  };
+
   return (
     <>
-      <Card className="relative overflow-hidden">
+      <Card
+        className={`relative overflow-hidden ${insights.length > topInsights.length ? 'cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]' : ''}`}
+        onClick={insights.length > topInsights.length ? handleCardClick : undefined}
+        role={insights.length > topInsights.length ? 'button' : undefined}
+        tabIndex={insights.length > topInsights.length ? 0 : undefined}
+        onKeyDown={insights.length > topInsights.length ? (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleCardClick();
+          }
+        } : undefined}
+      >
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

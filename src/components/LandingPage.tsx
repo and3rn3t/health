@@ -677,6 +677,10 @@ export default function LandingPage({
                   <Button
                     variant="ghost"
                     className="group-hover:text-vitalsense-primary-contrast w-full transition-colors group-hover:bg-vitalsense-primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onNavigateToFeature(feature.id);
+                    }}
                   >
                     {feature.status === 'setup' ? 'Set Up' : 'Open'} →
                   </Button>

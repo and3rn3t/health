@@ -143,7 +143,7 @@ export function MobileHeader({
       {/* Expandable secondary actions */}
       {isExpanded && secondaryItems.length > 0 && (
         <div className="bg-muted/30 border-t border-border px-4 py-2">
-          <div className="scrollbar-hide flex gap-2 overflow-x-auto">
+          <div className="scrollbar-hide flex items-center gap-2 overflow-x-auto">
             {secondaryItems.slice(0, 6).map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -156,7 +156,7 @@ export function MobileHeader({
                     onNavigate(item.id);
                     setIsExpanded(false);
                   }}
-                  className="flex items-center gap-2 whitespace-nowrap"
+                  className="flex items-center gap-2 whitespace-nowrap shrink-0"
                 >
                   <Icon className="h-3 w-3" />
                   {item.label}

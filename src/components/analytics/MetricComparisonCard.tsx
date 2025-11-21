@@ -15,12 +15,14 @@ interface MetricComparisonCardProps {
   healthData: ProcessedHealthData;
   metric: 'steps' | 'heartRate' | 'walkingSteadiness' | 'sleepHours';
   period: '7d' | '30d' | '90d';
+  onNavigate?: (metric: string) => void;
 }
 
 export default function MetricComparisonCard({
   healthData,
   metric,
   period,
+  onNavigate,
 }: MetricComparisonCardProps) {
   const comparison = useMemo(() => {
     const metricData = healthData.metrics[metric];
@@ -82,8 +84,25 @@ export default function MetricComparisonCard({
     }
   };
 
+  const handleClick = () => {
+    if (onNavigate) {
+      onNavigate(metric);
+    }
+  };
+
   return (
-    <Card>
+    <Card
+      className={onNavigate ? 'cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]' : ''}
+      onClick={onNavigate ? handleClick : undefined}
+      role={onNavigate ? 'button' : undefined}
+      tabIndex={onNavigate ? 0 : undefined}
+      onKeyDown={onNavigate ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      } : undefined}
+    >
       <CardContent className="p-4">
         <div className="mb-3 flex items-center justify-between">
           <span className="font-medium capitalize">{comparison.metric}</span>
