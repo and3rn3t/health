@@ -29,29 +29,29 @@ export default defineConfig({
     ],
     setupFiles: ['./vitest.setup.ts'],
     globals: true,
-    // Optimize parallel execution: use forks pool in CI for better isolation and stability
-    // threads pool for local development (faster), forks pool for CI (more stable)
-    pool: process.env.CI ? 'forks' : 'threads',
+    // Memory optimization: use forks pool for better memory isolation (prevents OOM)
+    // Forks pool isolates each test file in its own process, allowing better memory cleanup
+    pool: 'forks', // Use forks for both CI and local to prevent memory exhaustion
     poolOptions: {
       threads: {
-        // Optimize threads for performance: use more threads in local dev for speed
-        maxThreads: process.env.CI ? 2 : 8, // Use more threads locally (CPU cores typically available)
-        minThreads: process.env.CI ? 1 : 4, // Keep multiple threads active locally
+        // Threads pool options (not used when pool is 'forks', but kept for reference)
+        maxThreads: 2,
+        minThreads: 1,
         singleThread: false,
       },
       forks: {
-        // Use forks pool in CI for better isolation and stability
-        // Further reduced parallelism in CI to prevent memory issues
-        singleFork: process.env.CI ? true : false, // Use single fork in CI to prevent OOM
+        // Use forks pool for better memory isolation and cleanup
+        // Reduced parallelism to prevent memory exhaustion
+        singleFork: false, // Allow multiple forks but limit them
         isolate: true, // Isolate each test file in its own process for better memory cleanup
-        maxForks: process.env.CI ? 1 : 2, // Use only 1 fork in CI to reduce memory pressure
-        minForks: process.env.CI ? 1 : 1, // Single fork in CI
+        maxForks: process.env.CI ? 1 : 2, // Limit forks: 1 in CI, 2 locally to prevent OOM
+        minForks: 1, // Minimum 1 fork
       },
     },
     // Test timeout optimization - increased to accommodate tests with multiple waitFor calls
     // Tests use waitFor with 2-3s timeouts, so we need higher global timeout
     testTimeout: process.env.CI ? 20000 : 15000, // Increased: 15s locally, 20s in CI
-    hookTimeout: process.env.CI ? 10000 : 5000,  // Increased hook timeouts
+    hookTimeout: process.env.CI ? 10000 : 5000, // Increased hook timeouts
     teardownTimeout: process.env.CI ? 10000 : 5000, // Increased teardown timeout
     // Enable bail mode in CI to fail fast, but not locally for full test coverage
     bail: process.env.CI ? 1 : 0, // Stop after first failure in CI, continue locally
@@ -60,9 +60,9 @@ export default defineConfig({
       shuffle: false, // Disable shuffle for faster execution and deterministic order
       concurrent: true, // Always run concurrently (tests should be isolated anyway)
     },
-    // Performance optimization: maximize concurrency in local dev
-    maxConcurrency: process.env.CI ? 1 : 10, // Much higher concurrency locally for speed
-    fileParallelism: true, // Enable file-level parallelism for faster execution
+    // Memory optimization: reduce concurrency to prevent memory exhaustion
+    maxConcurrency: process.env.CI ? 1 : 2, // Reduced from 10 to 2 to prevent OOM
+    fileParallelism: true, // Enable file-level parallelism but limited by maxConcurrency
     // Enable test retries for flaky tests (faster than manual reruns)
     retry: process.env.CI ? 1 : 0, // Retry once in CI, but not locally to save time
     // Coverage is only collected when --coverage flag is used
