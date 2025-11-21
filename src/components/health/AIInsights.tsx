@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
+import { useOnceToast } from '@/hooks/useOnceToast';
 import { ProcessedHealthData } from '@/types';
 import {
   AlertTriangle,
@@ -18,7 +19,6 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
 
 interface AIInsightsProps {
   healthData: ProcessedHealthData | null;
@@ -38,6 +38,7 @@ export default function AIInsights({ healthData }: Readonly<AIInsightsProps>) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [customQuery, setCustomQuery] = useState('');
   const [customResponse, setCustomResponse] = useState('');
+  const { showOnce } = useOnceToast();
 
   const generateAIInsights = useCallback(async () => {
     if (!healthData) return;
@@ -119,25 +120,36 @@ export default function AIInsights({ healthData }: Readonly<AIInsightsProps>) {
       }
 
       setInsights(generatedInsights);
-      toast.success('AI insights generated successfully!');
+      showOnce(
+        'ai-insights-generated',
+        'success',
+        'AI insights generated successfully!'
+      );
     } catch (error) {
       console.error('Error generating insights:', error);
-      toast.error('Failed to generate AI insights. Please try again.');
+      showOnce(
+        'ai-insights-error',
+        'error',
+        'Failed to generate AI insights. Please try again.'
+      );
     } finally {
       setIsGenerating(false);
     }
-  }, [healthData]);
+  }, [healthData, showOnce]);
 
   useEffect(() => {
-    // Auto-generate insights when component mounts or data changes
-    generateAIInsights();
-  }, [generateAIInsights]);
+    // Auto-generate insights when component mounts or data changes, but only if we don't have insights yet
+    if (insights.length === 0 && healthData) {
+      void generateAIInsights();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [healthData]); // Only depend on healthData, not the function
 
   if (!healthData) {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-muted-foreground text-center">
+          <div className="text-center text-muted-foreground">
             No health data available for AI analysis
           </div>
         </CardContent>
@@ -159,9 +171,17 @@ export default function AIInsights({ healthData }: Readonly<AIInsightsProps>) {
 
 This guidance is informational and not medical advice.`;
       setCustomResponse(answer);
-      toast.success('Got your personalized answer!');
+      showOnce(
+        'ai-custom-query-success',
+        'success',
+        'Got your personalized answer!'
+      );
     } catch (_error) {
-      toast.error('Failed to get response. Please try again.');
+      showOnce(
+        'ai-custom-query-error',
+        'error',
+        'Failed to get response. Please try again.'
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -197,7 +217,7 @@ This guidance is informational and not medical advice.`;
       <div className="flex items-center justify-between">
         <div>
           <h2 className="flex items-center gap-2 text-2xl font-bold">
-            <Brain className="text-primary h-6 w-6" />
+            <Brain className="h-6 w-6 text-primary" />
             AI Health Insights
           </h2>
           <p className="text-muted-foreground">
@@ -220,12 +240,12 @@ This guidance is informational and not medical advice.`;
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <Brain className="text-primary h-5 w-5 animate-spin" />
+                <Brain className="h-5 w-5 animate-spin text-primary" />
                 <div>
                   <div className="font-medium">
                     Analyzing your health data...
                   </div>
-                  <div className="text-muted-foreground text-sm">
+                  <div className="text-sm text-muted-foreground">
                     This may take a few moments
                   </div>
                 </div>
@@ -266,7 +286,7 @@ This guidance is informational and not medical advice.`;
               <CardContent>
                 <p className="text-sm leading-relaxed">{insight.content}</p>
                 {insight.actionable && (
-                  <div className="text-muted-foreground mt-3 flex items-center gap-2 text-xs">
+                  <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                     <CheckCircle className="h-3 w-3" />
                     Actionable recommendation
                   </div>
@@ -306,7 +326,7 @@ This guidance is informational and not medical advice.`;
           {customResponse && (
             <div className="bg-muted/30 mt-4 rounded-lg p-4">
               <div className="mb-2 flex items-center gap-2">
-                <Brain className="text-primary h-4 w-4" />
+                <Brain className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium">AI Response:</span>
               </div>
               <p className="text-sm leading-relaxed">{customResponse}</p>
@@ -326,13 +346,13 @@ This guidance is informational and not medical advice.`;
               <div className="text-2xl font-bold text-red-500">
                 {insights.filter((i) => i.priority === 'high').length}
               </div>
-              <div className="text-muted-foreground text-sm">High Priority</div>
+              <div className="text-sm text-muted-foreground">High Priority</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-yellow-500">
                 {insights.filter((i) => i.priority === 'medium').length}
               </div>
-              <div className="text-muted-foreground text-sm">
+              <div className="text-sm text-muted-foreground">
                 Medium Priority
               </div>
             </div>
@@ -340,13 +360,13 @@ This guidance is informational and not medical advice.`;
               <div className="text-2xl font-bold text-green-500">
                 {insights.filter((i) => i.type === 'achievement').length}
               </div>
-              <div className="text-muted-foreground text-sm">Achievements</div>
+              <div className="text-sm text-muted-foreground">Achievements</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-blue-500">
                 {insights.filter((i) => i.actionable).length}
               </div>
-              <div className="text-muted-foreground text-sm">
+              <div className="text-sm text-muted-foreground">
                 Actionable Items
               </div>
             </div>

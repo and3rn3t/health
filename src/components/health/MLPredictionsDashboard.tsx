@@ -34,7 +34,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { useOnceToast } from '@/hooks/useOnceToast';
 
 interface MLPredictionsDashboardProps {
   healthData: ProcessedHealthData;
@@ -52,6 +52,7 @@ function MLPredictionsDashboard({
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTimeHorizon, setSelectedTimeHorizon] =
     useState<RiskPrediction['timeHorizon']>('24hours');
+  const { showOnce } = useOnceToast();
 
   useEffect(() => {
     generatePredictions();
@@ -80,7 +81,7 @@ function MLPredictionsDashboard({
 
       setPredictions(newPredictions);
     } catch (error) {
-      toast.error('Failed to generate ML predictions');
+      showOnce('ml-predictions-error', 'error', 'Failed to generate ML predictions');
       console.error('Prediction error:', error);
     } finally {
       setIsLoading(false);

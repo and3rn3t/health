@@ -24,7 +24,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { useOnceToast } from '@/hooks/useOnceToast';
 
 type Timeframe = '7days' | '30days' | '90days';
 type Trend = 'increasing' | 'decreasing' | 'stable';
@@ -73,6 +73,7 @@ export default function AIUsagePredictions({
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedTimeframe, setSelectedTimeframe] =
     useState<Timeframe>('30days');
+  const { showOnce } = useOnceToast();
 
   // Generate AI-powered predictions
   const generatePredictions = useCallback(async () => {
@@ -253,14 +254,14 @@ export default function AIUsagePredictions({
       setPredictions(newPredictions);
       setForecasts(newForecasts);
 
-      toast.success('AI usage predictions generated successfully');
+      showOnce('ai-usage-predictions-generated', 'success', 'AI usage predictions generated successfully');
     } catch (error) {
       console.error('Error generating predictions:', error);
-      toast.error('Failed to generate predictions. Please try again.');
+      showOnce('ai-usage-predictions-error', 'error', 'Failed to generate predictions. Please try again.');
     } finally {
       setIsGenerating(false);
     }
-  }, [healthData, selectedTimeframe, setForecasts, setPredictions, spark]);
+    }, [healthData, selectedTimeframe, setForecasts, setPredictions, spark, showOnce]);
 
   // Safe fallbacks for possibly undefined KV reads
   const safePredictions = predictions ?? [];
@@ -271,7 +272,8 @@ export default function AIUsagePredictions({
     if (healthData && safePredictions.length === 0) {
       void generatePredictions();
     }
-  }, [healthData, safePredictions.length, generatePredictions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [healthData, safePredictions.length]); // Only depend on data, not the function
 
   const getTrendIcon = (trend: Trend) => {
     switch (trend) {

@@ -37,7 +37,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { useOnceToast } from '@/hooks/useOnceToast';
 
 interface MovementPatternAnalysisProps {
   readonly healthData: ProcessedHealthData;
@@ -61,6 +61,7 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
     actions: string[];
   };
   const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
+  const { showOnce } = useOnceToast();
 
   const analyzeMovementPatterns = useCallback(async () => {
     setIsAnalyzing(true);
@@ -89,14 +90,14 @@ function MovementPatternAnalysis({ healthData }: MovementPatternAnalysisProps) {
         await movementPatternAnalyzer.detectAnomalies(healthData);
       setAnomalies(detectedAnomalies);
 
-      toast.success('Movement pattern analysis completed');
+      showOnce('movement-analysis-completed', 'success', 'Movement pattern analysis completed');
     } catch (error) {
-      toast.error('Failed to analyze movement patterns');
+      showOnce('movement-analysis-error', 'error', 'Failed to analyze movement patterns');
       console.error('Analysis error:', error);
     } finally {
       setIsAnalyzing(false);
     }
-  }, [healthData, selectedTimeframe]);
+    }, [healthData, selectedTimeframe, showOnce]);
 
   useEffect(() => {
     analyzeMovementPatterns();

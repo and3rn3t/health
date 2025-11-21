@@ -25,7 +25,7 @@ import {
   Zap,
 } from 'lucide-react';
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
-import { toast } from 'sonner';
+import { useOnceToast } from '@/hooks/useOnceToast';
 import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { calculateTrend, extractTimeSeries } from '@/lib/analytics';
 import type { AIInsight } from './AIInsightsCard';
@@ -41,6 +41,7 @@ export default function EnhancedAIInsights({
   const [isGenerating, setIsGenerating] = useState(false);
   const [customQuery, setCustomQuery] = useState('');
   const [customResponse, setCustomResponse] = useState('');
+  const { showOnce } = useOnceToast();
 
   const generateInsights = useCallback(async () => {
     if (!healthData) return;
@@ -215,20 +216,22 @@ export default function EnhancedAIInsights({
       }
 
       setInsights(generatedInsights);
-      toast.success('AI insights generated successfully!');
+      showOnce('enhanced-ai-insights-generated', 'success', 'AI insights generated successfully!');
     } catch (error) {
       console.error('Error generating insights:', error);
-      toast.error('Failed to generate AI insights');
+      showOnce('enhanced-ai-insights-error', 'error', 'Failed to generate AI insights');
     } finally {
       setIsGenerating(false);
     }
-  }, [healthData]);
+    }, [healthData, showOnce]);
 
   useEffect(() => {
-    if (healthData) {
+    // Only auto-generate if we don't have insights yet
+    if (healthData && insights.length === 0) {
       generateInsights();
     }
-  }, [healthData, generateInsights]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [healthData]); // Only depend on healthData, not the function
 
   const handleCustomQuery = async () => {
     if (!customQuery.trim()) return;
@@ -254,9 +257,9 @@ Here are personalized recommendations:
 
 This guidance is informational and not medical advice. Consult healthcare providers for personalized medical recommendations.`;
       setCustomResponse(answer);
-      toast.success('Got your personalized answer!');
+      showOnce('enhanced-ai-custom-query-success', 'success', 'Got your personalized answer!');
     } catch (_error) {
-      toast.error('Failed to get response');
+      showOnce('enhanced-ai-custom-query-error', 'error', 'Failed to get response');
     } finally {
       setIsGenerating(false);
     }

@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useKV } from '@/hooks/useCloudflareKV';
+import { useOnceToast } from '@/hooks/useOnceToast';
 import { ProcessedHealthData } from '@/types';
 import {
   Activity,
@@ -29,7 +30,6 @@ import {
   Zap,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
 
 interface Recommendation {
   id: string;
@@ -79,6 +79,7 @@ const AIRecommendations = ({
     'last-recommendations-generated',
     ''
   );
+  const { showOnce } = useOnceToast();
 
   // Generate AI recommendations based on health data
   const generateRecommendations = useCallback(async () => {
@@ -145,14 +146,22 @@ const AIRecommendations = ({
 
       setRecommendations(formattedRecs);
       setLastGenerated(new Date().toISOString());
-      toast.success('AI recommendations generated successfully!');
+      showOnce(
+        'ai-recommendations-generated',
+        'success',
+        'AI recommendations generated successfully!'
+      );
     } catch (error) {
       console.error('Error generating recommendations:', error);
-      toast.error('Failed to generate recommendations. Please try again.');
+      showOnce(
+        'ai-recommendations-error',
+        'error',
+        'Failed to generate recommendations. Please try again.'
+      );
     } finally {
       setIsGenerating(false);
     }
-  }, [healthData, setLastGenerated, setRecommendations, spark]);
+  }, [healthData, setLastGenerated, setRecommendations, spark, showOnce]);
 
   // Mark recommendation as completed
   const completeRecommendation = (id: string) => {
@@ -160,7 +169,11 @@ const AIRecommendations = ({
       current.map((rec) => (rec.id === id ? { ...rec, completed: true } : rec))
     );
     setCompletedRecommendations((current = []) => [...current, id]);
-    toast.success('Recommendation marked as completed!');
+    showOnce(
+      `recommendation-completed-${id}`,
+      'success',
+      'Recommendation marked as completed!'
+    );
   };
 
   // Dismiss recommendation
@@ -172,7 +185,11 @@ const AIRecommendations = ({
           : rec
       )
     );
-    toast.success('Recommendation dismissed');
+    showOnce(
+      `recommendation-dismissed-${id}`,
+      'success',
+      'Recommendation dismissed'
+    );
   };
 
   // Filter recommendations
@@ -240,7 +257,8 @@ const AIRecommendations = ({
     ) {
       void generateRecommendations();
     }
-  }, [healthData, safeRecs.length, generateRecommendations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [healthData.metrics, safeRecs.length]); // Only depend on data, not the function
 
   return (
     <div className="space-y-6">

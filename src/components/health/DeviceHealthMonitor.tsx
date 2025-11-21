@@ -4,8 +4,8 @@
  */
 
 import { useDeviceManagement } from '@/hooks/useDeviceManagement';
+import { useOnceToast } from '@/hooks/useOnceToast';
 import { useEffect, useRef } from 'react';
-import { toast } from 'sonner';
 
 interface DeviceHealthState {
   batteryAlerts: Set<string>;
@@ -14,6 +14,7 @@ interface DeviceHealthState {
 
 export function DeviceHealthMonitor() {
   const { devices } = useDeviceManagement();
+  const { showOnce } = useOnceToast();
   const alertStateRef = useRef<DeviceHealthState>({
     batteryAlerts: new Set(),
     disconnectedAlerts: new Set(),
@@ -27,10 +28,15 @@ export function DeviceHealthMonitor() {
       if (device.battery !== undefined) {
         if (device.battery < 20 && !state.batteryAlerts.has(device.id)) {
           state.batteryAlerts.add(device.id);
-          toast.warning(`${device.name} battery is low (${device.battery}%)`, {
-            description: 'Consider charging your device soon',
-            duration: 5000,
-          });
+          showOnce(
+            `device-battery-low-${device.id}`,
+            'warning',
+            `${device.name} battery is low (${device.battery}%)`,
+            {
+              description: 'Consider charging your device soon',
+              duration: 5000,
+            }
+          );
         } else if (device.battery >= 20) {
           state.batteryAlerts.delete(device.id);
         }
@@ -40,10 +46,16 @@ export function DeviceHealthMonitor() {
       if (device.status === 'disconnected') {
         if (!state.disconnectedAlerts.has(device.id)) {
           state.disconnectedAlerts.add(device.id);
-          toast.error(`${device.name} disconnected`, {
-            description: 'Device is no longer connected. Check your connection.',
-            duration: 5000,
-          });
+          showOnce(
+            `device-disconnected-${device.id}`,
+            'error',
+            `${device.name} disconnected`,
+            {
+              description:
+                'Device is no longer connected. Check your connection.',
+              duration: 5000,
+            }
+          );
         }
       } else {
         state.disconnectedAlerts.delete(device.id);
@@ -51,13 +63,18 @@ export function DeviceHealthMonitor() {
 
       // Error status alert
       if (device.status === 'error') {
-        toast.error(`${device.name} connection error`, {
-          description: 'There was an issue connecting to this device.',
-          duration: 5000,
-        });
+        showOnce(
+          `device-error-${device.id}`,
+          'error',
+          `${device.name} connection error`,
+          {
+            description: 'There was an issue connecting to this device.',
+            duration: 5000,
+          }
+        );
       }
     });
-  }, [devices]);
+  }, [devices, showOnce]);
 
   // Silent component - no UI
   return null;

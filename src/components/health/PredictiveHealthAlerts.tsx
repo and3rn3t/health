@@ -21,6 +21,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useOnceToast } from '@/hooks/useOnceToast';
 import type {
   MetricData,
   ProcessedHealthData,
@@ -39,7 +40,6 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 interface HealthAlert {
   id: string;
@@ -111,6 +111,7 @@ export default function PredictiveHealthAlerts({
   const [trendAnalysis, setTrendAnalysis] = useState<TrendAnalysis[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState('alerts');
+  const { showOnce } = useOnceToast();
 
   // Simulate ML trend analysis
   const computeTrendDirection = (slope: number): TrendAnalysis['direction'] => {
@@ -171,7 +172,12 @@ export default function PredictiveHealthAlerts({
           if (decline > 25) severity = 'critical';
           else if (decline > 20) severity = 'high';
           newAlerts.push({
-            id: `alert-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(14)), b => b.toString(36)).join('').slice(0, 9)}`,
+            id: `alert-${Date.now()}-${Array.from(
+              crypto.getRandomValues(new Uint8Array(14)),
+              (b) => b.toString(36)
+            )
+              .join('')
+              .slice(0, 9)}`,
             type: 'decline',
             severity,
             title: `Predicted Decline in ${trend.metric}`,
@@ -192,14 +198,24 @@ export default function PredictiveHealthAlerts({
       }
       if (newAlerts.length > 0) {
         setAlerts([...(alerts || []), ...newAlerts]);
-        toast.warning(
+        showOnce(
+          'predictive-alerts-generated',
+          'warning',
           `${newAlerts.length} new predictive health alerts generated`
         );
       } else {
-        toast.success('Analysis complete - no concerning trends detected');
+        showOnce(
+          'predictive-alerts-none',
+          'success',
+          'Analysis complete - no concerning trends detected'
+        );
       }
     } catch (_error) {
-      toast.error('Failed to analyze health trends');
+      showOnce(
+        'predictive-alerts-error',
+        'error',
+        'Failed to analyze health trends'
+      );
     } finally {
       setIsAnalyzing(false);
     }
@@ -242,12 +258,12 @@ export default function PredictiveHealthAlerts({
         alert.id === alertId ? { ...alert, acknowledged: true } : alert
       )
     );
-    toast.success('Alert acknowledged');
+    showOnce(`alert-acknowledged-${alertId}`, 'success', 'Alert acknowledged');
   };
 
   const dismissAlert = (alertId: string) => {
     setAlerts(alerts.filter((alert) => alert.id !== alertId));
-    toast.success('Alert dismissed');
+    showOnce(`alert-dismissed-${alertId}`, 'success', 'Alert dismissed');
   };
 
   const getSeverityColor = (severity: string) => {
@@ -293,7 +309,7 @@ export default function PredictiveHealthAlerts({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <Brain className="text-primary h-6 w-6" />
+            <Brain className="h-6 w-6 text-primary" />
             Predictive Health Alerts
           </h2>
           <p className="text-muted-foreground">
@@ -326,14 +342,14 @@ export default function PredictiveHealthAlerts({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-sm font-medium text-muted-foreground">
                   Active Alerts
                 </p>
                 <p className="text-2xl font-bold">
                   {unacknowledgedAlerts.length}
                 </p>
               </div>
-              <Bell className="text-primary h-8 w-8" />
+              <Bell className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -342,14 +358,14 @@ export default function PredictiveHealthAlerts({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-sm font-medium text-muted-foreground">
                   Critical Alerts
                 </p>
-                <p className="text-destructive text-2xl font-bold">
+                <p className="text-2xl font-bold text-destructive">
                   {criticalAlerts.length}
                 </p>
               </div>
-              <AlertTriangle className="text-destructive h-8 w-8" />
+              <AlertTriangle className="h-8 w-8 text-destructive" />
             </div>
           </CardContent>
         </Card>
@@ -358,12 +374,12 @@ export default function PredictiveHealthAlerts({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-sm font-medium text-muted-foreground">
                   Metrics Tracked
                 </p>
                 <p className="text-2xl font-bold">{trendAnalysis.length}</p>
               </div>
-              <Target className="text-primary h-8 w-8" />
+              <Target className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -372,7 +388,7 @@ export default function PredictiveHealthAlerts({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-sm font-medium text-muted-foreground">
                   System Status
                 </p>
                 <p className="text-sm font-semibold text-green-600">Active</p>
@@ -385,7 +401,7 @@ export default function PredictiveHealthAlerts({
 
       {/* Critical Alerts Banner */}
       {criticalAlerts.length > 0 && (
-        <Alert className="border-destructive bg-destructive/10">
+        <Alert className="bg-destructive/10 border-destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             <span className="font-semibold">Critical Health Alert:</span>{' '}
@@ -447,7 +463,7 @@ export default function PredictiveHealthAlerts({
                             <Badge variant="outline" className="text-xs">
                               {alert.severity}
                             </Badge>
-                            <span className="text-muted-foreground text-xs">
+                            <span className="text-xs text-muted-foreground">
                               {new Date(alert.triggered).toLocaleDateString()}
                             </span>
                           </div>
@@ -478,7 +494,7 @@ export default function PredictiveHealthAlerts({
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       <div>
-                        <Label className="text-muted-foreground text-xs">
+                        <Label className="text-xs text-muted-foreground">
                           Current Value
                         </Label>
                         <p className="font-semibold">
@@ -486,15 +502,15 @@ export default function PredictiveHealthAlerts({
                         </p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground text-xs">
+                        <Label className="text-xs text-muted-foreground">
                           Predicted Value
                         </Label>
-                        <p className="text-destructive font-semibold">
+                        <p className="font-semibold text-destructive">
                           {alert.predictedValue.toFixed(1)}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground text-xs">
+                        <Label className="text-xs text-muted-foreground">
                           Confidence
                         </Label>
                         <div className="flex items-center gap-2">
@@ -517,9 +533,9 @@ export default function PredictiveHealthAlerts({
                         {alert.recommendations.map((rec) => (
                           <li
                             key={`${alert.id}-${rec}`}
-                            className="text-muted-foreground flex items-center gap-2 text-sm"
+                            className="flex items-center gap-2 text-sm text-muted-foreground"
                           >
-                            <div className="bg-primary h-1 w-1 rounded-full" />
+                            <div className="h-1 w-1 rounded-full bg-primary" />
                             {rec}
                           </li>
                         ))}
@@ -536,7 +552,7 @@ export default function PredictiveHealthAlerts({
           {trendAnalysis.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <LineChart className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                <LineChart className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                 <h3 className="mb-2 text-lg font-semibold">
                   No Trend Analysis Available
                 </h3>
@@ -581,7 +597,7 @@ export default function PredictiveHealthAlerts({
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       <div>
-                        <Label className="text-muted-foreground text-xs">
+                        <Label className="text-xs text-muted-foreground">
                           Next Week Prediction
                         </Label>
                         <p className="font-semibold">
@@ -589,7 +605,7 @@ export default function PredictiveHealthAlerts({
                         </p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground text-xs">
+                        <Label className="text-xs text-muted-foreground">
                           Next Month Prediction
                         </Label>
                         <p className="font-semibold">
@@ -597,7 +613,7 @@ export default function PredictiveHealthAlerts({
                         </p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground text-xs">
+                        <Label className="text-xs text-muted-foreground">
                           Prediction Confidence
                         </Label>
                         <div className="flex items-center gap-2">
@@ -650,7 +666,7 @@ export default function PredictiveHealthAlerts({
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-base">Enable Predictive Alerts</Label>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm text-muted-foreground">
                     Turn on AI-powered health decline predictions
                   </p>
                 </div>
@@ -667,7 +683,7 @@ export default function PredictiveHealthAlerts({
               <div className="space-y-4">
                 <div>
                   <Label className="text-base">Alert Sensitivity</Label>
-                  <p className="text-muted-foreground mb-3 text-sm">
+                  <p className="mb-3 text-sm text-muted-foreground">
                     Higher sensitivity generates more alerts for smaller changes
                   </p>
                   <Select
@@ -695,7 +711,7 @@ export default function PredictiveHealthAlerts({
 
                 <div>
                   <Label className="text-base">Prediction Timeframe</Label>
-                  <p className="text-muted-foreground mb-3 text-sm">
+                  <p className="mb-3 text-sm text-muted-foreground">
                     How far ahead to predict health trends (days)
                   </p>
                   <Input
@@ -714,7 +730,7 @@ export default function PredictiveHealthAlerts({
 
                 <div>
                   <Label className="text-base">Decline Threshold</Label>
-                  <p className="text-muted-foreground mb-3 text-sm">
+                  <p className="mb-3 text-sm text-muted-foreground">
                     Minimum percentage decline to trigger alert
                   </p>
                   <Input
@@ -736,7 +752,7 @@ export default function PredictiveHealthAlerts({
 
                 <div>
                   <Label className="text-base">Minimum Confidence</Label>
-                  <p className="text-muted-foreground mb-3 text-sm">
+                  <p className="mb-3 text-sm text-muted-foreground">
                     Minimum ML confidence level (0.5 - 0.95)
                   </p>
                   <Input
@@ -768,7 +784,7 @@ export default function PredictiveHealthAlerts({
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Email Notifications</Label>
-                      <p className="text-muted-foreground text-sm">
+                      <p className="text-sm text-muted-foreground">
                         Receive alerts via email
                       </p>
                     </div>
@@ -789,7 +805,7 @@ export default function PredictiveHealthAlerts({
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Push Notifications</Label>
-                      <p className="text-muted-foreground text-sm">
+                      <p className="text-sm text-muted-foreground">
                         Receive alerts on your device
                       </p>
                     </div>
@@ -807,7 +823,7 @@ export default function PredictiveHealthAlerts({
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>SMS Notifications</Label>
-                      <p className="text-muted-foreground text-sm">
+                      <p className="text-sm text-muted-foreground">
                         Receive alerts via text message
                       </p>
                     </div>

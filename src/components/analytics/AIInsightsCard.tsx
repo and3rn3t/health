@@ -32,7 +32,7 @@ import {
   Zap,
 } from 'lucide-react';
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
-import { toast } from 'sonner';
+import { useOnceToast } from '@/hooks/useOnceToast';
 import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { calculateTrend, extractTimeSeries } from '@/lib/analytics';
 import EnhancedAIInsights from './EnhancedAIInsights';
@@ -63,6 +63,7 @@ export default function AIInsightsCard({
   const [insights, setInsights] = useState<AIInsight[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const { showOnce } = useOnceToast();
 
   const generateInsights = useCallback(async () => {
     if (!healthData) return;
@@ -243,20 +244,22 @@ export default function AIInsightsCard({
       }
 
       setInsights(generatedInsights);
-      toast.success('AI insights generated successfully!');
+      showOnce('ai-insights-card-generated', 'success', 'AI insights generated successfully!');
     } catch (error) {
       console.error('Error generating insights:', error);
-      toast.error('Failed to generate AI insights');
+      showOnce('ai-insights-card-error', 'error', 'Failed to generate AI insights');
     } finally {
       setIsGenerating(false);
     }
-  }, [healthData]);
+    }, [healthData, showOnce]);
 
   useEffect(() => {
-    if (healthData) {
+    // Only auto-generate if we don't have insights yet
+    if (healthData && insights.length === 0) {
       generateInsights();
     }
-  }, [healthData, generateInsights]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [healthData]); // Only depend on healthData, not the function
 
   const topInsights = useMemo(() => {
     return insights

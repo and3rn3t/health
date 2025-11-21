@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Download, FileText, FileSpreadsheet, FileJson } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { useOnceToast } from '@/hooks/useOnceToast';
 import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import type { AnalyticsSummary } from '@/lib/analytics';
 
@@ -36,15 +36,16 @@ export default function AnalyticsExporter({
 }: AnalyticsExporterProps) {
   const [format, setFormat] = useState<'pdf' | 'csv' | 'json'>('pdf');
   const [isExporting, setIsExporting] = useState(false);
+  const { showOnce } = useOnceToast();
 
   const exportData = async () => {
     if (!healthData) {
-      toast.error('No data to export');
+      showOnce('export-no-data', 'error', 'No data to export');
       return;
     }
 
     setIsExporting(true);
-    toast.info(`Generating ${format.toUpperCase()} report...`);
+    showOnce(`export-generating-${format}`, 'info', `Generating ${format.toUpperCase()} report...`);
 
     try {
       // Simulate export generation
@@ -85,9 +86,9 @@ export default function AnalyticsExporter({
           break;
       }
 
-      toast.success(`Report exported as ${filename}`);
+      showOnce(`export-success-${format}`, 'success', `Report exported as ${filename}`);
     } catch (error) {
-      toast.error('Failed to export report');
+      showOnce('export-error', 'error', 'Failed to export report');
       console.error(error);
     } finally {
       setIsExporting(false);
