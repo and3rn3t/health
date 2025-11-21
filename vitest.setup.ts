@@ -33,9 +33,23 @@ Object.defineProperty(window, 'location', {
     protocol: 'https:',
     host: 'localhost:3000',
     href: 'https://localhost:3000',
+    assign: vi.fn(), // Mock location.assign to prevent navigation errors
+    replace: vi.fn(), // Mock location.replace to prevent navigation errors
+    reload: vi.fn(), // Mock location.reload to prevent navigation errors
   },
   writable: true,
 });
+
+// Suppress jsdom navigation errors (they're expected in tests with download links)
+const originalError = console.error;
+console.error = (...args: unknown[]) => {
+  const message = String(args[0] || '');
+  // Suppress jsdom navigation errors
+  if (message.includes('Not implemented: navigation')) {
+    return;
+  }
+  originalError(...args);
+};
 
 // Mock matchMedia for components that use responsive hooks
 // Some jsdom versions expose matchMedia as undefined; normalize to a stub function

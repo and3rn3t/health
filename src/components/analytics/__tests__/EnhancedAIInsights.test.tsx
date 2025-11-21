@@ -229,14 +229,19 @@ describe('EnhancedAIInsights', () => {
     });
   });
 
-  it('disables submit button when query is empty', () => {
+  it('disables submit button when query is empty', async () => {
     const healthData = createMockHealthData();
     render(<EnhancedAIInsights healthData={healthData} />);
 
-    // Use getAllByText since component may render multiple times (React StrictMode)
-    const submitButtons = screen.getAllByText('Get AI Answer');
-    expect(submitButtons.length).toBeGreaterThan(0);
-    const submitButton = submitButtons[0];
+    // Wait for component to render
+    await waitFor(() => {
+      expect(screen.getByText('Get AI Answer')).toBeInTheDocument();
+    });
+
+    // Find button by role and text (more reliable than getAllByText)
+    const submitButton = screen.getByRole('button', { name: /get ai answer/i });
+
+    // Button should be disabled when query is empty
     expect(submitButton).toBeDisabled();
   });
 

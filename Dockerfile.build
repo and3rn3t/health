@@ -36,8 +36,9 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
 COPY . .
 
 # Build the application with error handling
+# Set CI=true to disable source maps and enable production optimizations
 RUN echo "🏗️ Building application..." && \
-    pnpm run build || (echo "❌ App build failed" && exit 1)
+    CI=true NODE_ENV=production pnpm run build || (echo "❌ App build failed" && exit 1)
 
 # Build the worker
 RUN echo "🔧 Building worker..." && \
@@ -67,4 +68,3 @@ RUN mkdir -p /build-output && \
 
 # Default command shows build info
 CMD ["sh", "-c", "echo 'Build complete. Artifacts in /build-output' && ls -la /build-output"]
-

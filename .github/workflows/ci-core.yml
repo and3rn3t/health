@@ -151,6 +151,9 @@ jobs:
 
       - name: Build App (traditional)
         if: steps.check-docker-artifacts.outputs.available != 'true' && (steps.inline-docker-build.outcome == 'failure' || steps.inline-docker-build.outputs.build_method == 'traditional')
+        env:
+          CI: 'true'
+          NODE_ENV: 'production'
         run: pnpm run build
 
       - name: Verify build outputs
