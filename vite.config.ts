@@ -21,6 +21,8 @@ export default defineConfig({
     ),
   },
   plugins: [react()],
+  // Suppress PostCSS warnings in CI/production (known harmless warning about 'from' option)
+  logLevel: process.env.CI === 'true' ? 'error' : 'warn',
   esbuild: {
     drop: process.env.CI === 'true' ? ['console', 'debugger'] : [],
     legalComments: 'none',

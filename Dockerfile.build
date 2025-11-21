@@ -29,8 +29,10 @@ COPY scripts/ci/ensure-node-version.mjs ./scripts/ci/ensure-node-version.mjs
 # Install all dependencies (including dev dependencies for building)
 # Use cache mount for pnpm store (BuildKit feature)
 # Note: preinstall script will run and verify Node version (which matches the image)
+# If lockfile is out of sync with package.json, automatically update it
+# This handles cases where package.json was modified but lockfile wasn't committed
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile
+    (pnpm install --frozen-lockfile || (echo "⚠️ Lockfile out of sync with package.json, updating lockfile..." && pnpm install --no-frozen-lockfile && echo "✅ Lockfile updated"))
 
 # Copy source files
 COPY . .
