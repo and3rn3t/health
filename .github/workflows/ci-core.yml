@@ -210,9 +210,31 @@ jobs:
           path: .
         continue-on-error: true
       - name: Fallback Build (if artifacts missing)
-        run: if [ ! -d dist ]; then pnpm run build; fi
+        env:
+          CI: 'true'
+          NODE_ENV: 'production'
+        run: |
+          if [ ! -d dist ]; then
+            echo "🔨 Building application (fallback)..."
+            pnpm run build
+          else
+            echo "✅ Using downloaded build artifacts"
+          fi
+      - name: Verify dist directory exists
+        run: |
+          if [ ! -d dist ]; then
+            echo "❌ dist directory not found after build/download"
+            exit 1
+          fi
+          echo "✅ dist directory exists"
+          echo "📊 Dist contents:"
+          ls -la dist | head -20 || true
       - name: Clean dist directory before bundle check
         run: |
+          if [ ! -d dist ]; then
+            echo "❌ dist directory not found, cannot clean"
+            exit 1
+          fi
           echo "🧹 Cleaning dist directory before bundle check..."
           # Remove source maps
           find dist -name "*.map" -type f -delete 2>/dev/null || true

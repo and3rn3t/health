@@ -2,10 +2,10 @@
  * Tests for FallRiskReportExporter component
  */
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import FallRiskReportExporter from '../FallRiskReportExporter';
 import type { AdvancedFallRiskPrediction } from '@/lib/advanced-fall-risk-engine';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import FallRiskReportExporter from '../FallRiskReportExporter';
 
 // Mock window.print
 const mockPrint = vi.fn();
@@ -146,13 +146,29 @@ describe('FallRiskReportExporter', () => {
     fireEvent.click(buttons[0]);
 
     await waitFor(() => {
-      const pdfButtons = screen.getAllByText(/export as pdf/i);
-      const jsonButtons = screen.getAllByText(/export as json/i);
-      const csvButtons = screen.getAllByText(/export as csv/i);
-      expect(pdfButtons.length).toBeGreaterThan(0);
-      expect(jsonButtons.length).toBeGreaterThan(0);
-      expect(csvButtons.length).toBeGreaterThan(0);
+      // Wait for dialog to be visible first
+      const dialogTitles = screen.getAllByText(/export fall risk report/i);
+      expect(dialogTitles.length).toBeGreaterThan(0);
     });
+
+    await waitFor(
+      () => {
+        // Use getAllByRole to find buttons by accessible name (handles case-insensitive matching)
+        const pdfButtons = screen.getAllByRole('button', {
+          name: /export as pdf/i,
+        });
+        const jsonButtons = screen.getAllByRole('button', {
+          name: /export as json/i,
+        });
+        const csvButtons = screen.getAllByRole('button', {
+          name: /export as csv/i,
+        });
+        expect(pdfButtons.length).toBeGreaterThan(0);
+        expect(jsonButtons.length).toBeGreaterThan(0);
+        expect(csvButtons.length).toBeGreaterThan(0);
+      },
+      { timeout: 3000 }
+    );
   });
 
   it('exports JSON format', async () => {
@@ -165,16 +181,18 @@ describe('FallRiskReportExporter', () => {
 
     // Mock createElement only for anchor tags, but don't interfere with React
     const originalCreateElement = document.createElement.bind(document);
-    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
-      if (tagName === 'a') {
-        anchorElement = originalCreateElement('a') as HTMLAnchorElement;
-        const clickSpy = vi.spyOn(anchorElement, 'click');
-        clickSpies.push({ click: clickSpy });
-        return anchorElement;
-      }
-      // For all other tags, use original implementation (don't interfere with React)
-      return originalCreateElement(tagName);
-    });
+    const createElementSpy = vi
+      .spyOn(document, 'createElement')
+      .mockImplementation((tagName: string) => {
+        if (tagName === 'a') {
+          anchorElement = originalCreateElement('a') as HTMLAnchorElement;
+          const clickSpy = vi.spyOn(anchorElement, 'click');
+          clickSpies.push({ click: clickSpy });
+          return anchorElement;
+        }
+        // For all other tags, use original implementation (don't interfere with React)
+        return originalCreateElement(tagName);
+      });
 
     render(
       <FallRiskReportExporter
@@ -183,22 +201,45 @@ describe('FallRiskReportExporter', () => {
       />
     );
 
+    // Find and click the export button (handle multiple instances from StrictMode)
     const buttons = screen.getAllByText(/export report/i);
+    expect(buttons.length).toBeGreaterThan(0);
     fireEvent.click(buttons[0]);
 
+    // Wait for dialog to open and content to be visible
     await waitFor(() => {
-      const jsonButtons = screen.getAllByText(/export as json/i);
-      fireEvent.click(jsonButtons[0]);
+      // Wait for dialog title to appear (confirms dialog is open)
+      const dialogTitles = screen.getAllByText(/export fall risk report/i);
+      expect(dialogTitles.length).toBeGreaterThan(0);
     });
 
+    // Wait for JSON export button to be visible and click it
+    await waitFor(
+      () => {
+        // Use getAllByRole to find buttons by accessible name (handles case-insensitive matching)
+        const jsonButtons = screen.getAllByRole('button', {
+          name: /export as json/i,
+        });
+        expect(jsonButtons.length).toBeGreaterThan(0);
+        fireEvent.click(jsonButtons[0]);
+      },
+      { timeout: 3000 }
+    );
+
     // Verify onExport callback was called (this is what we really care about)
-    await waitFor(() => {
-      expect(onExport).toHaveBeenCalledWith('json', expect.objectContaining({
-        prediction: expect.any(Object),
-        exportDate: expect.any(Date),
-        exportVersion: expect.any(String),
-      }));
-    }, { timeout: 2000 });
+    await waitFor(
+      () => {
+        expect(onExport).toHaveBeenCalledWith(
+          'json',
+          expect.objectContaining({
+            prediction: expect.any(Object),
+            exportDate: expect.any(Date),
+            exportVersion: expect.any(String),
+          })
+        );
+      },
+      { timeout: 2000 }
+    );
 
     // Optionally verify click was called if anchor was created
     if (clickSpies.length > 0) {
@@ -216,16 +257,18 @@ describe('FallRiskReportExporter', () => {
 
     // Mock createElement only for anchor tags, but don't interfere with React
     const originalCreateElement = document.createElement.bind(document);
-    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
-      if (tagName === 'a') {
-        anchorElement = originalCreateElement('a') as HTMLAnchorElement;
-        const clickSpy = vi.spyOn(anchorElement, 'click');
-        clickSpies.push({ click: clickSpy });
-        return anchorElement;
-      }
-      // For all other tags, use original implementation (don't interfere with React)
-      return originalCreateElement(tagName);
-    });
+    const createElementSpy = vi
+      .spyOn(document, 'createElement')
+      .mockImplementation((tagName: string) => {
+        if (tagName === 'a') {
+          anchorElement = originalCreateElement('a') as HTMLAnchorElement;
+          const clickSpy = vi.spyOn(anchorElement, 'click');
+          clickSpies.push({ click: clickSpy });
+          return anchorElement;
+        }
+        // For all other tags, use original implementation (don't interfere with React)
+        return originalCreateElement(tagName);
+      });
 
     render(
       <FallRiskReportExporter
@@ -234,22 +277,45 @@ describe('FallRiskReportExporter', () => {
       />
     );
 
+    // Find and click the export button (handle multiple instances from StrictMode)
     const buttons = screen.getAllByText(/export report/i);
+    expect(buttons.length).toBeGreaterThan(0);
     fireEvent.click(buttons[0]);
 
+    // Wait for dialog to open and content to be visible
     await waitFor(() => {
-      const csvButtons = screen.getAllByText(/export as csv/i);
-      fireEvent.click(csvButtons[0]);
+      // Wait for dialog title to appear (confirms dialog is open)
+      const dialogTitles = screen.getAllByText(/export fall risk report/i);
+      expect(dialogTitles.length).toBeGreaterThan(0);
     });
 
+    // Wait for CSV export button to be visible and click it
+    await waitFor(
+      () => {
+        // Use getAllByRole to find buttons by accessible name (handles case-insensitive matching)
+        const csvButtons = screen.getAllByRole('button', {
+          name: /export as csv/i,
+        });
+        expect(csvButtons.length).toBeGreaterThan(0);
+        fireEvent.click(csvButtons[0]);
+      },
+      { timeout: 3000 }
+    );
+
     // Verify onExport callback was called (this is what we really care about)
-    await waitFor(() => {
-      expect(onExport).toHaveBeenCalledWith('csv', expect.objectContaining({
-        prediction: expect.any(Object),
-        exportDate: expect.any(Date),
-        exportVersion: expect.any(String),
-      }));
-    }, { timeout: 2000 });
+    await waitFor(
+      () => {
+        expect(onExport).toHaveBeenCalledWith(
+          'csv',
+          expect.objectContaining({
+            prediction: expect.any(Object),
+            exportDate: expect.any(Date),
+            exportVersion: expect.any(String),
+          })
+        );
+      },
+      { timeout: 2000 }
+    );
 
     // Optionally verify click was called if anchor was created
     if (clickSpies.length > 0) {
@@ -274,10 +340,23 @@ describe('FallRiskReportExporter', () => {
     const buttons = screen.getAllByText(/export report/i);
     fireEvent.click(buttons[0]);
 
+    // Wait for dialog to open and content to be visible
     await waitFor(() => {
-      const pdfButtons = screen.getAllByText(/export as pdf/i);
-      fireEvent.click(pdfButtons[0]);
+      const dialogTitles = screen.getAllByText(/export fall risk report/i);
+      expect(dialogTitles.length).toBeGreaterThan(0);
     });
+
+    await waitFor(
+      () => {
+        // Use getAllByRole to find buttons by accessible name (handles case-insensitive matching)
+        const pdfButtons = screen.getAllByRole('button', {
+          name: /export as pdf/i,
+        });
+        expect(pdfButtons.length).toBeGreaterThan(0);
+        fireEvent.click(pdfButtons[0]);
+      },
+      { timeout: 3000 }
+    );
 
     expect(window.open).toHaveBeenCalled();
     expect(mockWindow.document.write).toHaveBeenCalled();
@@ -293,16 +372,18 @@ describe('FallRiskReportExporter', () => {
 
     // Mock createElement only for anchor tags, but don't interfere with React
     const originalCreateElement = document.createElement.bind(document);
-    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
-      if (tagName === 'a') {
-        anchorElement = originalCreateElement('a') as HTMLAnchorElement;
-        const clickSpy = vi.spyOn(anchorElement, 'click');
-        clickSpies.push({ click: clickSpy });
-        return anchorElement;
-      }
-      // For all other tags, use original implementation (don't interfere with React)
-      return originalCreateElement(tagName);
-    });
+    const createElementSpy = vi
+      .spyOn(document, 'createElement')
+      .mockImplementation((tagName: string) => {
+        if (tagName === 'a') {
+          anchorElement = originalCreateElement('a') as HTMLAnchorElement;
+          const clickSpy = vi.spyOn(anchorElement, 'click');
+          clickSpies.push({ click: clickSpy });
+          return anchorElement;
+        }
+        // For all other tags, use original implementation (don't interfere with React)
+        return originalCreateElement(tagName);
+      });
 
     render(
       <FallRiskReportExporter
@@ -311,22 +392,45 @@ describe('FallRiskReportExporter', () => {
       />
     );
 
+    // Find and click the export button (handle multiple instances from StrictMode)
     const buttons = screen.getAllByText(/export report/i);
+    expect(buttons.length).toBeGreaterThan(0);
     fireEvent.click(buttons[0]);
 
+    // Wait for dialog to open and content to be visible
     await waitFor(() => {
-      const jsonButtons = screen.getAllByText(/export as json/i);
-      fireEvent.click(jsonButtons[0]);
+      // Wait for dialog title to appear (confirms dialog is open)
+      const dialogTitles = screen.getAllByText(/export fall risk report/i);
+      expect(dialogTitles.length).toBeGreaterThan(0);
     });
 
+    // Wait for JSON export button to be visible and click it
+    await waitFor(
+      () => {
+        // Use getAllByRole to find buttons by accessible name (handles case-insensitive matching)
+        const jsonButtons = screen.getAllByRole('button', {
+          name: /export as json/i,
+        });
+        expect(jsonButtons.length).toBeGreaterThan(0);
+        fireEvent.click(jsonButtons[0]);
+      },
+      { timeout: 3000 }
+    );
+
     // Verify onExport callback was called with correct parameters
-    await waitFor(() => {
-      expect(onExport).toHaveBeenCalledWith('json', expect.objectContaining({
-        prediction: expect.any(Object),
-        exportDate: expect.any(Date),
-        exportVersion: expect.any(String),
-      }));
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(onExport).toHaveBeenCalledWith(
+          'json',
+          expect.objectContaining({
+            prediction: expect.any(Object),
+            exportDate: expect.any(Date),
+            exportVersion: expect.any(String),
+          })
+        );
+      },
+      { timeout: 3000 }
+    );
 
     // Optionally verify click was called if anchor was created
     if (clickSpies.length > 0) {

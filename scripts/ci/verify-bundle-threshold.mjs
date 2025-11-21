@@ -97,6 +97,9 @@ function collect(dir, exts) {
 
 if (!fs.existsSync(distDir)) {
   console.error(`❌ dist directory not found: ${distDir}`);
+  console.error(`   Current working directory: ${process.cwd()}`);
+  console.error(`   Please ensure the build step completed successfully.`);
+  console.error(`   If running locally, run: pnpm run build`);
   process.exit(2);
 }
 
