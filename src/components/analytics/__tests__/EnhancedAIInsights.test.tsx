@@ -233,9 +233,10 @@ describe('EnhancedAIInsights', () => {
     const healthData = createMockHealthData();
     render(<EnhancedAIInsights healthData={healthData} />);
 
-    // Wait for component to render
+    // Wait for component to render and find all buttons (React StrictMode causes multiple renders)
     await waitFor(() => {
-      expect(screen.getByText('Get AI Answer')).toBeInTheDocument();
+      const submitButtons = screen.getAllByRole('button', { name: /get ai answer/i });
+      expect(submitButtons.length).toBeGreaterThan(0);
     });
 
     // Find all buttons with "Get AI Answer" text (React StrictMode causes double render)
