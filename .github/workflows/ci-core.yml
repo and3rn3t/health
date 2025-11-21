@@ -1104,7 +1104,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: code-quality
+          name: code-quality-coverage
           path: |
             coverage/coverage-summary.json
             coverage/coverage-final.json
@@ -1172,7 +1172,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: code-quality
+          name: code-quality-delta
           path: |
             coverage/coverage-summary.json
             coverage/coverage-final.json
@@ -1268,8 +1268,9 @@ jobs:
       - name: Download Coverage
         uses: actions/download-artifact@v4
         with:
-          name: code-quality
+          name: code-quality-coverage
           path: coverage-artifacts
+        continue-on-error: true
       - name: Compute Coverage Delta
         id: delta
         run: |
