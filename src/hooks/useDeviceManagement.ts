@@ -129,7 +129,7 @@ export function useDeviceManagement(userId?: string) {
 
   /**
    * Scan for available devices
-   * Uses WebSocket presence detection and Web Bluetooth API
+   * Uses WebSocket presence detection, Web Bluetooth API, and manual entry
    */
   const scanForDevices = useCallback(async () => {
     setIsScanning(true);
@@ -149,7 +149,7 @@ export function useDeviceManagement(userId?: string) {
         .filter((d) => d.status === 'online')
         .map((d) => detectionService.toScanResult(d));
 
-      // Also try Web Bluetooth scanning for physical devices
+      // Also try Web Bluetooth scanning for physical devices (direct connection)
       let bluetoothDevices: DeviceScanResult[] = [];
       try {
         bluetoothDevices = await detectionService.scanBluetoothDevices();
@@ -171,7 +171,7 @@ export function useDeviceManagement(userId?: string) {
 
       if (uniqueDevices.length === 0) {
         toast.info(
-          'No devices found. Make sure your iOS app is running and connected.'
+          'No devices found. You can connect devices directly via Bluetooth or add them manually.'
         );
       } else {
         toast.success(`Found ${uniqueDevices.length} device(s)`);
@@ -183,6 +183,81 @@ export function useDeviceManagement(userId?: string) {
       setIsScanning(false);
     }
   }, []);
+
+  /**
+   * Connect directly to a Bluetooth device without iOS app
+   */
+  const connectBluetoothDevice = useCallback(
+    async (deviceId: string) => {
+      const detectionService = detectionServiceRef.current;
+      if (!detectionService) {
+        toast.error('Device detection service not initialized');
+        return;
+      }
+
+      try {
+        const success = await detectionService.connectBluetoothDevice(deviceId);
+        if (success) {
+          const detected = detectionService.getDevice(deviceId);
+          if (detected) {
+            const connectedDevice =
+              detectionService.toConnectedDevice(detected);
+            setDevices((prev) => {
+              const existingIndex = prev.findIndex(
+                (d) => d.id === connectedDevice.id
+              );
+              if (existingIndex >= 0) {
+                const updated = [...prev];
+                updated[existingIndex] = connectedDevice;
+                return updated;
+              }
+              return [...prev, connectedDevice];
+            });
+            toast.success(`Connected to ${detected.name} directly`);
+          }
+        } else {
+          toast.error('Failed to connect to Bluetooth device');
+        }
+      } catch (error) {
+        console.error('Bluetooth connection error:', error);
+        toast.error('Failed to connect to Bluetooth device');
+      }
+    },
+    [setDevices]
+  );
+
+  /**
+   * Add a manually configured device
+   * Allows connection without scanning or iOS app
+   */
+  const addManualDevice = useCallback(
+    (config: {
+      name: string;
+      type: DeviceType;
+      model?: string;
+      connectionMethod?: 'manual' | 'bluetooth' | 'api' | 'other';
+    }) => {
+      const detectionService = detectionServiceRef.current;
+      if (!detectionService) {
+        toast.error('Device detection service not initialized');
+        return;
+      }
+
+      const deviceId = `manual-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const detected = detectionService.addManualDevice({
+        id: deviceId,
+        name: config.name,
+        type: config.type,
+        model: config.model,
+        connectionMethod: config.connectionMethod || 'manual',
+      });
+
+      const connectedDevice = detectionService.toConnectedDevice(detected);
+      setDevices((prev) => [...prev, connectedDevice]);
+      toast.success(`Added ${config.name}`);
+    },
+    [setDevices]
+  );
 
   /**
    * Get device auth token for WebSocket connection
@@ -491,6 +566,8 @@ export function useDeviceManagement(userId?: string) {
     scanResults,
     scanForDevices,
     connectDevice,
+    connectBluetoothDevice,
+    addManualDevice,
     disconnectDevice,
     removeDevice,
     syncDevice,

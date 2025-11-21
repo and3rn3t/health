@@ -9,7 +9,11 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { useDeviceManagement, type DeviceScanResult } from '@/hooks/useDeviceManagement';
+import {
+  useDeviceManagement,
+  type DeviceScanResult,
+  type DeviceType,
+} from '@/hooks/useDeviceManagement';
 import {
   AlertCircle,
   Bluetooth,
@@ -36,14 +40,41 @@ export function DeviceSetupWizard({
   const {
     scanForDevices,
     connectDevice,
+    connectBluetoothDevice,
+    addManualDevice,
     isScanning,
     scanResults,
     hasConnectedDevices,
   } = useDeviceManagement();
 
-  const [step, setStep] = useState<'intro' | 'scanning' | 'selecting' | 'connecting' | 'complete'>('intro');
-  const [selectedDevice, setSelectedDevice] = useState<DeviceScanResult | null>(null);
+  // Check if we should show connection options directly
+  const [step, setStep] = useState<
+    'intro' | 'scanning' | 'selecting' | 'connecting' | 'manual' | 'complete'
+  >(() => {
+    if (typeof window !== 'undefined') {
+      const showOptions = sessionStorage.getItem('show-connection-options');
+      if (showOptions === 'bluetooth') {
+        sessionStorage.removeItem('show-connection-options');
+        return 'scanning';
+      }
+      if (showOptions === 'ios') {
+        sessionStorage.removeItem('show-connection-options');
+        return 'scanning';
+      }
+      if (showOptions === 'true') {
+        sessionStorage.removeItem('show-connection-options');
+        // Show intro with all options
+      }
+    }
+    return 'intro';
+  });
+  const [selectedDevice, setSelectedDevice] = useState<DeviceScanResult | null>(
+    null
+  );
   const [connectionProgress, setConnectionProgress] = useState(0);
+  const [manualDeviceName, setManualDeviceName] = useState('');
+  const [manualDeviceType, setManualDeviceType] =
+    useState<DeviceType>('health_app');
 
   // Auto-start scanning when entering scanning step
   useEffect(() => {
@@ -90,7 +121,18 @@ export function DeviceSetupWizard({
     }, 200);
 
     try {
-      await connectDevice(selectedDevice);
+      // Check if this is a Bluetooth device that needs direct connection
+      const isBluetoothDevice =
+        selectedDevice.type !== 'iphone' &&
+        selectedDevice.type !== 'apple_watch' &&
+        selectedDevice.type !== 'ipad';
+
+      if (isBluetoothDevice && connectBluetoothDevice) {
+        await connectBluetoothDevice(selectedDevice.id);
+      } else {
+        await connectDevice(selectedDevice);
+      }
+
       setConnectionProgress(100);
       setTimeout(() => {
         setStep('complete');
@@ -104,6 +146,23 @@ export function DeviceSetupWizard({
       setSelectedDevice(null);
     } finally {
       clearInterval(progressInterval);
+    }
+  };
+
+  const handleAddManual = () => {
+    if (!manualDeviceName.trim()) {
+      return;
+    }
+
+    addManualDevice({
+      name: manualDeviceName,
+      type: manualDeviceType,
+      connectionMethod: 'manual',
+    });
+
+    setStep('complete');
+    if (onComplete && skipOnComplete) {
+      onComplete();
     }
   };
 
@@ -129,13 +188,14 @@ export function DeviceSetupWizard({
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="mx-auto w-full max-w-2xl">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-2xl">Connect Your Devices</CardTitle>
             <CardDescription className="mt-2">
-              Connect your health monitoring devices to enable real-time tracking
+              Connect your health monitoring devices to enable real-time
+              tracking
             </CardDescription>
           </div>
           {onCancel && (
@@ -147,22 +207,32 @@ export function DeviceSetupWizard({
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Step Progress Indicator */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           {['intro', 'scanning', 'selecting', 'connecting', 'complete'].map(
             (s, index) => (
-              <div key={s} className="flex items-center flex-1">
+              <div key={s} className="flex flex-1 items-center">
                 <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
+                  className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${
                     step === s
                       ? 'border-vitalsense-primary bg-vitalsense-primary text-white'
-                      : ['intro', 'scanning', 'selecting', 'connecting', 'complete'].indexOf(step) >
-                        index
-                      ? 'border-green-500 bg-green-500 text-white'
-                      : 'border-gray-300 bg-white text-gray-400'
+                      : [
+                            'intro',
+                            'scanning',
+                            'selecting',
+                            'connecting',
+                            'complete',
+                          ].indexOf(step) > index
+                        ? 'border-green-500 bg-green-500 text-white'
+                        : 'border-gray-300 bg-white text-gray-400'
                   }`}
                 >
-                  {['intro', 'scanning', 'selecting', 'connecting', 'complete'].indexOf(step) >
-                  index ? (
+                  {[
+                    'intro',
+                    'scanning',
+                    'selecting',
+                    'connecting',
+                    'complete',
+                  ].indexOf(step) > index ? (
                     <CheckCircle2 className="h-4 w-4" />
                   ) : (
                     <span className="text-sm font-medium">{index + 1}</span>
@@ -170,9 +240,14 @@ export function DeviceSetupWizard({
                 </div>
                 {index < 4 && (
                   <div
-                    className={`flex-1 h-0.5 mx-2 ${
-                      ['intro', 'scanning', 'selecting', 'connecting', 'complete'].indexOf(step) >
-                      index
+                    className={`mx-2 h-0.5 flex-1 ${
+                      [
+                        'intro',
+                        'scanning',
+                        'selecting',
+                        'connecting',
+                        'complete',
+                      ].indexOf(step) > index
                         ? 'bg-green-500'
                         : 'bg-gray-300'
                     }`}
@@ -189,8 +264,8 @@ export function DeviceSetupWizard({
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                Make sure your device is nearby and Bluetooth is enabled. For iOS
-                devices, ensure HealthKit permissions are granted.
+                Make sure your device is nearby and Bluetooth is enabled. For
+                iOS devices, ensure HealthKit permissions are granted.
               </AlertDescription>
             </Alert>
 
@@ -233,6 +308,9 @@ export function DeviceSetupWizard({
                 <Bluetooth className="mr-2 h-4 w-4" />
                 Start Scanning
               </Button>
+              <Button variant="outline" onClick={() => setStep('manual')}>
+                Add Manually
+              </Button>
               <Button variant="outline" onClick={handleSkip}>
                 Skip for now
               </Button>
@@ -242,13 +320,15 @@ export function DeviceSetupWizard({
 
         {/* Scanning Step */}
         {step === 'scanning' && (
-          <div className="space-y-4 text-center py-8">
+          <div className="space-y-4 py-8 text-center">
             <div className="relative">
-              <Bluetooth className="h-16 w-16 mx-auto text-vitalsense-primary animate-pulse" />
-              <Radio className="h-8 w-8 mx-auto mt-4 text-muted-foreground animate-pulse" />
+              <Bluetooth className="mx-auto h-16 w-16 animate-pulse text-vitalsense-primary" />
+              <Radio className="mx-auto mt-4 h-8 w-8 animate-pulse text-muted-foreground" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-2">Scanning for devices...</h3>
+              <h3 className="mb-2 text-lg font-semibold">
+                Scanning for devices...
+              </h3>
               <p className="text-sm text-muted-foreground">
                 {isScanning
                   ? 'Searching for iOS devices and Bluetooth health devices...'
@@ -266,7 +346,7 @@ export function DeviceSetupWizard({
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                   No devices found. Make sure:
-                  <ul className="list-disc list-inside mt-2 text-left">
+                  <ul className="mt-2 list-inside list-disc text-left">
                     <li>Your iOS VitalSense app is running</li>
                     <li>The app is connected to the same account</li>
                     <li>Bluetooth is enabled (for physical devices)</li>
@@ -281,35 +361,36 @@ export function DeviceSetupWizard({
         {step === 'selecting' && (
           <div className="space-y-4">
             <div>
-              <h3 className="text-lg font-semibold mb-2">
-                Found {scanResults.length} device{scanResults.length !== 1 ? 's' : ''}
+              <h3 className="mb-2 text-lg font-semibold">
+                Found {scanResults.length} device
+                {scanResults.length !== 1 ? 's' : ''}
               </h3>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="mb-4 text-sm text-muted-foreground">
                 Select a device to connect
               </p>
             </div>
 
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="max-h-96 space-y-3 overflow-y-auto">
               {scanResults.map((device) => {
                 const IconComponent = getDeviceIcon(device.type);
                 return (
                   <Card
                     key={device.id}
-                    className="cursor-pointer hover:border-vitalsense-primary transition-colors"
+                    className="cursor-pointer transition-colors hover:border-vitalsense-primary"
                     onClick={() => handleSelectDevice(device)}
                   >
                     <CardContent className="flex items-center gap-4 p-4">
-                      <div className="bg-vitalsense-primary/10 rounded-lg p-3 text-vitalsense-primary">
+                      <div className="rounded-lg bg-vitalsense-primary/10 p-3 text-vitalsense-primary">
                         <IconComponent className="h-6 w-6" />
                       </div>
                       <div className="flex-1">
                         <div className="font-medium">{device.name}</div>
-                        <div className="text-sm text-muted-foreground capitalize">
+                        <div className="text-sm capitalize text-muted-foreground">
                           {device.type.replace('-', ' ')}
                           {device.model && ` • ${device.model}`}
                         </div>
                         {device.signalStrength && (
-                          <div className="text-xs text-muted-foreground mt-1">
+                          <div className="mt-1 text-xs text-muted-foreground">
                             Signal: {device.signalStrength}%
                           </div>
                         )}
@@ -344,7 +425,11 @@ export function DeviceSetupWizard({
                   'Scan Again'
                 )}
               </Button>
-              <Button variant="outline" onClick={handleSkip} disabled={isScanning}>
+              <Button
+                variant="outline"
+                onClick={handleSkip}
+                disabled={isScanning}
+              >
                 Skip
               </Button>
             </div>
@@ -353,39 +438,108 @@ export function DeviceSetupWizard({
 
         {/* Connecting Step */}
         {step === 'connecting' && selectedDevice && (
-          <div className="space-y-4 text-center py-8">
-            <div className="bg-vitalsense-primary/10 rounded-full p-6 w-24 h-24 mx-auto flex items-center justify-center">
+          <div className="space-y-4 py-8 text-center">
+            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-vitalsense-primary/10 p-6">
               {(() => {
                 const IconComponent = getDeviceIcon(selectedDevice.type);
-                return <IconComponent className="h-12 w-12 text-vitalsense-primary" />;
+                return (
+                  <IconComponent className="h-12 w-12 text-vitalsense-primary" />
+                );
               })()}
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-2">
+              <h3 className="mb-2 text-lg font-semibold">
                 Connecting to {selectedDevice.name}
               </h3>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="mb-4 text-sm text-muted-foreground">
                 This may take a few seconds...
               </p>
             </div>
-            <Progress value={connectionProgress} className="max-w-md mx-auto" />
+            <Progress value={connectionProgress} className="mx-auto max-w-md" />
             <div className="text-sm text-muted-foreground">
               {connectionProgress < 30 && 'Initializing connection...'}
-              {connectionProgress >= 30 && connectionProgress < 60 && 'Pairing device...'}
-              {connectionProgress >= 60 && connectionProgress < 90 && 'Syncing data...'}
+              {connectionProgress >= 30 &&
+                connectionProgress < 60 &&
+                'Pairing device...'}
+              {connectionProgress >= 60 &&
+                connectionProgress < 90 &&
+                'Syncing data...'}
               {connectionProgress >= 90 && 'Almost done...'}
+            </div>
+          </div>
+        )}
+
+        {/* Manual Device Entry Step */}
+        {step === 'manual' && (
+          <div className="space-y-4">
+            <div>
+              <h3 className="mb-2 text-lg font-semibold">
+                Add Device Manually
+              </h3>
+              <p className="mb-4 text-sm text-muted-foreground">
+                Add a device that doesn't require the iOS app or Bluetooth
+                scanning
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Device Name
+                </label>
+                <input
+                  type="text"
+                  value={manualDeviceName}
+                  onChange={(e) => setManualDeviceName(e.target.value)}
+                  placeholder="e.g., My Fitness Tracker"
+                  className="w-full rounded-md border px-3 py-2"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Device Type
+                </label>
+                <select
+                  value={manualDeviceType}
+                  onChange={(e) =>
+                    setManualDeviceType(e.target.value as DeviceType)
+                  }
+                  className="w-full rounded-md border px-3 py-2"
+                  aria-label="Device Type"
+                >
+                  <option value="health_app">Health App</option>
+                  <option value="scale">Scale</option>
+                  <option value="blood-pressure">Blood Pressure Monitor</option>
+                  <option value="glucose">Glucose Monitor</option>
+                  <option value="smart_home">Smart Home Device</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={handleAddManual}
+                className="flex-1"
+                disabled={!manualDeviceName.trim()}
+              >
+                Add Device
+              </Button>
+              <Button variant="outline" onClick={() => setStep('intro')}>
+                Cancel
+              </Button>
             </div>
           </div>
         )}
 
         {/* Complete Step */}
         {step === 'complete' && (
-          <div className="space-y-4 text-center py-8">
-            <div className="bg-green-100 rounded-full p-6 w-24 h-24 mx-auto flex items-center justify-center">
+          <div className="space-y-4 py-8 text-center">
+            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-green-100 p-6">
               <CheckCircle2 className="h-12 w-12 text-green-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-2">Device Connected!</h3>
+              <h3 className="mb-2 text-lg font-semibold">Device Connected!</h3>
               <p className="text-sm text-muted-foreground">
                 {selectedDevice?.name} is now connected and ready to use
               </p>
@@ -400,7 +554,7 @@ export function DeviceSetupWizard({
               </Alert>
             )}
 
-            <div className="flex gap-3 justify-center">
+            <div className="flex justify-center gap-3">
               {!skipOnComplete && (
                 <Button onClick={() => setStep('intro')} variant="outline">
                   Connect Another Device

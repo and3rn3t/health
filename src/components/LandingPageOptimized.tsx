@@ -228,7 +228,7 @@ export default function LandingPageOptimized({
       {
         id: 'device-sync',
         title: 'Device Sync',
-        description: 'Connect Apple Health and devices',
+        description: 'Connect devices directly or via iOS app',
         icon: Smartphone,
         color: 'bg-gradient-to-br from-teal-500 to-cyan-600',
         action: 'device-sync',
@@ -251,7 +251,7 @@ export default function LandingPageOptimized({
   return (
     <div className="min-h-screen bg-background">
       {/* iOS 26 Large Title Header */}
-      <div className="pt-safe-top px-2 sm:px-4 py-6">
+      <div className="pt-safe-top px-2 py-6 sm:px-4">
         <div className="space-y-4">
           {/* Large Title Section */}
           <div className="space-y-2">
@@ -289,7 +289,7 @@ export default function LandingPageOptimized({
 
       {/* Critical Health Metrics - Prominent Display */}
       {healthData && criticalMetrics.length > 0 && (
-        <div className="px-2 sm:px-4 py-6">
+        <div className="px-2 py-6 sm:px-4">
           <div className="space-y-6">
             <h2 className="text-2xl font-semibold text-foreground">
               Health Overview
@@ -324,7 +324,7 @@ export default function LandingPageOptimized({
 
       {/* Time Range Controls - iOS 26 Segmented Control */}
       {healthData && (
-        <div className="px-2 sm:px-4 py-6">
+        <div className="px-2 py-6 sm:px-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center rounded-xl bg-muted p-1">
               {(['today', '7d', '30d', '90d'] as const).map((tf) => (
@@ -374,7 +374,7 @@ export default function LandingPageOptimized({
 
       {/* Additional Metrics - Compact Display */}
       {healthData && importantMetrics.length > 0 && (
-        <div className="px-2 sm:px-4 pb-8">
+        <div className="px-2 pb-8 sm:px-4">
           <div className="grid grid-cols-2 gap-4">
             {importantMetrics.map((metric) => {
               const IconComponent = metric.icon;
@@ -406,7 +406,7 @@ export default function LandingPageOptimized({
       )}
 
       {/* Featured Actions - iOS 26 Large Cards */}
-      <div className="px-2 sm:px-4 py-6">
+      <div className="px-2 py-6 sm:px-4">
         <div className="space-y-6">
           <h2 className="text-2xl font-semibold text-foreground">
             Featured Tools
@@ -421,7 +421,7 @@ export default function LandingPageOptimized({
                   className="group transform overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <div className={`h-2 ${action.color}`} />
-                  <CardHeader className="pt-6 pb-4">
+                  <CardHeader className="pb-4 pt-6">
                     <div className="mb-3 flex items-center justify-between">
                       <div className={`rounded-xl p-3 ${action.color}`}>
                         <IconComponent className="h-6 w-6 text-white" />
@@ -443,7 +443,7 @@ export default function LandingPageOptimized({
       </div>
 
       {/* Additional Actions - Compact List */}
-      <div className="px-2 sm:px-4 py-6">
+      <div className="px-2 py-6 sm:px-4">
         <div className="space-y-6">
           <h2 className="text-xl font-semibold text-foreground">More Tools</h2>
           <div className="space-y-3">

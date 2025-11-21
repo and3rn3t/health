@@ -8,11 +8,26 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  useDeviceManagement,
+  type ConnectedDevice,
+  type DeviceType,
+} from '@/hooks/useDeviceManagement';
+import { formatDistanceToNow } from 'date-fns';
+import {
   AlertTriangle,
   Battery,
   Bluetooth,
   Loader2,
   MoreVertical,
+  Plus,
+  Radio,
   Settings,
   Smartphone,
   Trash2,
@@ -21,16 +36,7 @@ import {
   WifiOff,
 } from 'lucide-react';
 import { useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
-import { useDeviceManagement, type ConnectedDevice, type DeviceType } from '@/hooks/useDeviceManagement';
 import { DeviceSetupWizard } from './DeviceSetupWizard';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 export function ConnectedDevices() {
   const {
@@ -55,7 +61,8 @@ export function ConnectedDevices() {
         return true;
       }
       // Check session storage for setup flag
-      const shouldSetup = sessionStorage.getItem('open-device-setup') === 'true';
+      const shouldSetup =
+        sessionStorage.getItem('open-device-setup') === 'true';
       if (shouldSetup) {
         sessionStorage.removeItem('open-device-setup');
         return true;
@@ -107,7 +114,7 @@ export function ConnectedDevices() {
         return <Badge variant="destructive">Disconnected</Badge>;
       case 'syncing':
         return (
-          <Badge className="bg-yellow-100 text-yellow-800 flex items-center gap-1">
+          <Badge className="flex items-center gap-1 bg-yellow-100 text-yellow-800">
             <Loader2 className="h-3 w-3 animate-spin" />
             Syncing
           </Badge>
@@ -170,15 +177,30 @@ export function ConnectedDevices() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Connected Devices</h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="mt-2 text-muted-foreground">
             Manage and monitor your health monitoring devices and data
             synchronization.
           </p>
         </div>
-        <Button onClick={() => setShowSetupWizard(true)}>
-          <Bluetooth className="mr-2 h-4 w-4" />
-          Add Device
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              // Set flag to show connection options
+              if (typeof window !== 'undefined') {
+                sessionStorage.setItem('show-connection-options', 'true');
+              }
+              setShowSetupWizard(true);
+            }}
+          >
+            <Bluetooth className="mr-2 h-4 w-4" />
+            Connect Device
+          </Button>
+          <Button onClick={() => setShowSetupWizard(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Device
+          </Button>
+        </div>
       </div>
 
       {devices.length === 0 ? (
@@ -192,15 +214,44 @@ export function ConnectedDevices() {
               Get started by connecting your first health monitoring device
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Button
+                className="w-full"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    sessionStorage.setItem('show-connection-options', 'true');
+                  }
+                  setShowSetupWizard(true);
+                }}
+                size="lg"
+                variant="outline"
+              >
+                <Radio className="mr-2 h-4 w-4" />
+                Connect via Bluetooth
+              </Button>
+              <Button
+                className="w-full"
+                onClick={() => setShowSetupWizard(true)}
+                size="lg"
+              >
+                <Smartphone className="mr-2 h-4 w-4" />
+                Connect iOS App
+              </Button>
+            </div>
             <Button
               className="w-full"
               onClick={() => setShowSetupWizard(true)}
               size="lg"
+              variant="outline"
             >
-              <Bluetooth className="mr-2 h-4 w-4" />
-              Connect Your First Device
+              <Plus className="mr-2 h-4 w-4" />
+              Add Device Manually
             </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              Connect devices directly via Bluetooth, sync with iOS app, or add
+              manually
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -212,13 +263,14 @@ export function ConnectedDevices() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="bg-vitalsense-primary/10 rounded-lg p-2 text-vitalsense-primary">
+                      <div className="rounded-lg bg-vitalsense-primary/10 p-2 text-vitalsense-primary">
                         <IconComponent className="h-5 w-5" />
                       </div>
                       <div>
                         <CardTitle className="text-lg">{device.name}</CardTitle>
                         <CardDescription className="capitalize">
-                          {device.type.replace('-', ' ').replace('_', ' ')} device
+                          {device.type.replace('-', ' ').replace('_', ' ')}{' '}
+                          device
                           {device.model && ` • ${device.model}`}
                         </CardDescription>
                       </div>
@@ -278,8 +330,10 @@ export function ConnectedDevices() {
                   <div className="grid gap-4 sm:grid-cols-3">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm">
-                        <Wifi className="text-muted-foreground h-4 w-4" />
-                        <span className="text-muted-foreground">Connection:</span>
+                        <Wifi className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">
+                          Connection:
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         {device.status === 'connected' ? (
@@ -296,8 +350,10 @@ export function ConnectedDevices() {
                     {device.battery !== undefined && (
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 text-sm">
-                          <Battery className="text-muted-foreground h-4 w-4" />
-                          <span className="text-muted-foreground">Battery:</span>
+                          <Battery className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">
+                            Battery:
+                          </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Battery
@@ -310,8 +366,10 @@ export function ConnectedDevices() {
 
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm">
-                        <Bluetooth className="text-muted-foreground h-4 w-4" />
-                        <span className="text-muted-foreground">Last sync:</span>
+                        <Bluetooth className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">
+                          Last sync:
+                        </span>
                       </div>
                       <div className="font-medium">
                         {formatLastSync(device.lastSync, device.lastSeen)}
@@ -373,14 +431,45 @@ export function ConnectedDevices() {
             accuracy
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Button
+              className="w-full"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  sessionStorage.setItem(
+                    'show-connection-options',
+                    'bluetooth'
+                  );
+                }
+                setShowSetupWizard(true);
+              }}
+              variant="outline"
+            >
+              <Radio className="mr-2 h-4 w-4" />
+              Bluetooth Device
+            </Button>
+            <Button
+              className="w-full"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  sessionStorage.setItem('show-connection-options', 'ios');
+                }
+                setShowSetupWizard(true);
+              }}
+              variant="outline"
+            >
+              <Smartphone className="mr-2 h-4 w-4" />
+              iOS App
+            </Button>
+          </div>
           <Button
             className="w-full"
             onClick={() => setShowSetupWizard(true)}
             variant="outline"
           >
-            <Bluetooth className="mr-2 h-4 w-4" />
-            Scan for Devices
+            <Plus className="mr-2 h-4 w-4" />
+            Add Manually
           </Button>
         </CardContent>
       </Card>
