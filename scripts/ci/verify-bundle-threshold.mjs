@@ -95,8 +95,12 @@ function collect(dir, exts) {
   return out;
 }
 
-if (!fs.existsSync(distDir)) {
-  console.error(`❌ dist directory not found: ${distDir}`);
+// Resolve dist directory to absolute path to avoid working directory issues
+const distDirAbs = path.isAbsolute(distDir) ? distDir : path.resolve(process.cwd(), distDir);
+
+if (!fs.existsSync(distDirAbs)) {
+  console.error(`❌ dist directory not found: ${distDirAbs}`);
+  console.error(`   Resolved from: ${distDir}`);
   console.error(`   Current working directory: ${process.cwd()}`);
   console.error(`   Please ensure the build step completed successfully.`);
   console.error(`   If running locally, run: pnpm run build`);
@@ -106,16 +110,30 @@ if (!fs.existsSync(distDir)) {
     console.error(`   CI Environment detected - checking for alternative locations...`);
     const altDirs = ['build', 'out', 'output', 'dist-production'];
     for (const alt of altDirs) {
-      if (fs.existsSync(alt)) {
-        console.error(`   ⚠️  Found alternative directory: ${alt}`);
+      const altPath = path.resolve(process.cwd(), alt);
+      if (fs.existsSync(altPath)) {
+        console.error(`   ⚠️  Found alternative directory: ${altPath}`);
       }
     }
-    console.error(`   Current directory contents:`, fs.readdirSync('.').slice(0, 10));
+    try {
+      const contents = fs.readdirSync(process.cwd());
+      console.error(`   Current directory contents:`, contents.slice(0, 20));
+      // Check if dist exists as a relative path
+      if (fs.existsSync('dist')) {
+        console.error(`   ⚠️  dist exists as relative path but not as resolved path`);
+        console.error(`   Resolved dist path: ${distDirAbs}`);
+        const stats = fs.statSync('dist');
+        console.error(`   dist stats: isDirectory=${stats.isDirectory()}, isFile=${stats.isFile()}`);
+      }
+    } catch (e) {
+      console.error(`   Error reading directory: ${e.message}`);
+    }
   }
   process.exit(2);
 }
 
-const jsFiles = collect(distDir, ['.js', '.mjs', '.cjs']);
+// Use absolute path for all operations
+const jsFiles = collect(distDirAbs, ['.js', '.mjs', '.cjs']);
 // Collect CSS files separately (they're in css/ subdirectory and should be included)
 const cssFiles = (function collectCss(dir) {
   const out = [];
@@ -131,7 +149,7 @@ const cssFiles = (function collectCss(dir) {
     }
   })(dir);
   return out;
-})(distDir);
+})(distDirAbs);
 
 // Filter out any files that might have been missed by exclusion patterns
 // This is a safety net to ensure source maps and non-bundle files are never included
@@ -139,7 +157,7 @@ const cssFiles = (function collectCss(dir) {
 const filteredJsFiles = jsFiles.filter((f) => {
   const fileName = path.basename(f);
   // Normalize all paths to forward slashes for consistent matching
-  const relativePath = path.relative(distDir, f).replace(/\\/g, '/');
+  const relativePath = path.relative(distDirAbs, f).replace(/\\/g, '/');
   const fullPath = f.replace(/\\/g, '/');
 
   // Aggressively exclude source maps (they can be huge - often 2-3x the bundle size)
@@ -233,7 +251,7 @@ if (process.env.CI === 'true') {
   console.log(`   CSS files counted: ${cssFiles.length}`);
   if (deduplicatedJsFiles.length > 0) {
     const largest = deduplicatedJsFiles
-      .map(f => ({ name: path.relative(distDir, f), size: gzipSize(fs.readFileSync(f)) }))
+      .map(f => ({ name: path.relative(distDirAbs, f), size: gzipSize(fs.readFileSync(f)) }))
       .sort((a, b) => b.size - a.size)
       .slice(0, 5);
     console.log('   Largest JS chunks:');
@@ -249,7 +267,7 @@ console.log(' JS  :', fmt(jsGzip), 'limit', fmt(jsMax), jsGzip <= jsMax ? '✅' 
 console.log(' CSS :', fmt(cssGzip), 'limit', fmt(cssMax), cssGzip <= cssMax ? '✅' : '❌');
 
 const report = {
-  directory: distDir,
+  directory: distDirAbs,
   totals: { jsGzip, cssGzip },
   limits: { jsMax, cssMax },
   counts: { js: deduplicatedJsFiles.length, css: cssFiles.length },
@@ -270,3 +288,4 @@ if (jsGzip > jsMax || cssGzip > cssMax) {
 } else {
   console.log('✅ All thresholds satisfied');
 }
+

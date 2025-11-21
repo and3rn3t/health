@@ -314,16 +314,27 @@ jobs:
             exit 1
           fi
           echo "🧹 Cleaning dist directory before bundle check..."
+          echo "📊 Dist contents before cleaning:"
+          ls -la dist | head -10 || true
           # Remove source maps
           find dist -name "*.map" -type f -delete 2>/dev/null || true
           find dist -name "*.map.js" -type f -delete 2>/dev/null || true
           # Remove any nested dist directories (from multiple builds)
-          find dist -type d -name "dist" -exec rm -rf {} + 2>/dev/null || true
+          # Be careful: only remove nested dist dirs, not the root dist dir
+          find dist -mindepth 2 -type d -name "dist" -exec rm -rf {} + 2>/dev/null || true
           # Remove any duplicate build artifacts in subdirectories
           # Keep only files in js/, css/, img/, assets/ subdirectories
           echo "✅ Dist directory cleaned"
-          echo "📊 Dist structure:"
+          echo "📊 Verifying dist still exists after cleaning:"
+          if [ ! -d dist ]; then
+            echo "❌ ERROR: dist directory was removed during cleaning!"
+            exit 1
+          fi
+          echo "✅ dist directory still exists"
+          echo "📊 Dist structure after cleaning:"
           find dist -type f -name "*.js" | head -20 | sed 's/^/   /' || true
+          echo "📊 Dist directory contents:"
+          ls -la dist | head -10 || true
       - name: Verify dist exists before bundle check
         run: |
           echo "🔍 Final verification before bundle check..."
@@ -352,6 +363,22 @@ jobs:
           ls -la dist | head -10 || true
       - name: Bundle Checks (threshold + drift)
         run: |
+          echo "🔍 Pre-bundle-check verification..."
+          echo "📊 Current directory: $(pwd)"
+          echo "📊 Checking if dist exists:"
+          if [ -d dist ]; then
+            echo "  ✅ dist directory exists"
+            echo "  📊 Dist contents:"
+            ls -la dist | head -10 || true
+            echo "  📊 JS files in dist:"
+            find dist -name "*.js" -type f | head -10 || true
+          else
+            echo "  ❌ dist directory NOT found!"
+            echo "  📊 Current directory contents:"
+            ls -la | head -30
+            exit 1
+          fi
+          echo "🚀 Running bundle checks..."
           pnpm run ci:bundle-threshold
           pnpm run ci:bundle-drift || echo "Bundle drift check (soft)"
       - name: Ensure reports directory exists
