@@ -653,17 +653,17 @@ export default function DevDiagnostics() {
         </div>
       </div>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Gauge className="h-5 w-5" />
             Worker & Bindings
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Summary of environment and optional bindings.
           </CardDescription>
         </CardHeader>
-        <CardContent className="md:grid-cols-2 grid gap-4">
+        <CardContent className="md:grid-cols-2 grid gap-4 text-foreground">
           <div className="space-y-2">
             <div className="text-muted-foreground text-sm">Environment</div>
             <div className="text-foreground text-lg font-medium">
@@ -737,15 +737,15 @@ export default function DevDiagnostics() {
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Wifi className="h-5 w-5" />
             WebSocket Config
           </CardTitle>
-          <CardDescription>Server-provided connection details.</CardDescription>
+          <CardDescription className="text-muted-foreground">Server-provided connection details.</CardDescription>
         </CardHeader>
-        <CardContent className="gap-3 grid">
+        <CardContent className="gap-3 grid text-foreground">
           <div className="flex gap-2">
             <Button size="sm" onClick={onFetchWsInfo}>
               Refresh
@@ -779,13 +779,13 @@ export default function DevDiagnostics() {
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Network className="h-5 w-5" />
             Quick Probes
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Run common checks against dev-only endpoints.
           </CardDescription>
         </CardHeader>
@@ -929,13 +929,13 @@ export default function DevDiagnostics() {
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Gauge className="h-5 w-5" />
             Analytics Version Mismatch (Debug)
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Recent client-reported analytics config mismatches (non-production
             only).
           </CardDescription>
@@ -1113,13 +1113,13 @@ export default function DevDiagnostics() {
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Wrench className="h-5 w-5" />
             Local Tips
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Use VS Code tasks for tails and analytics fetches.
           </CardDescription>
         </CardHeader>
@@ -1166,15 +1166,15 @@ export default function DevDiagnostics() {
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <FileText className="h-5 w-5" />
             Audit Events
           </CardTitle>
-          <CardDescription>Recent audit entries (latest 10).</CardDescription>
+          <CardDescription className="text-muted-foreground">Recent audit entries (latest 10).</CardDescription>
         </CardHeader>
-        <CardContent className="gap-3 grid">
+        <CardContent className="gap-3 grid text-foreground">
           <div className="flex gap-2">
             <Button size="sm" onClick={onFetchAudit}>
               Fetch
@@ -1201,13 +1201,13 @@ export default function DevDiagnostics() {
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Bug className="h-5 w-5" />
             Client Error Telemetry
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Send a synthetic client error event.
           </CardDescription>
         </CardHeader>
@@ -1228,15 +1228,15 @@ export default function DevDiagnostics() {
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Globe className="h-5 w-5" />
             Auth0 Health
           </CardTitle>
-          <CardDescription>Check dev Auth0 endpoints.</CardDescription>
+          <CardDescription className="text-muted-foreground">Check dev Auth0 endpoints.</CardDescription>
         </CardHeader>
-        <CardContent className="gap-3 grid">
+        <CardContent className="gap-3 grid text-foreground">
           <div className="flex gap-2">
             <Button size="sm" onClick={onAuth0Health}>
               Check
@@ -1254,15 +1254,15 @@ export default function DevDiagnostics() {
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Cpu className="h-5 w-5" />
             Browser & Network
           </CardTitle>
-          <CardDescription>Local environment snapshot.</CardDescription>
+          <CardDescription className="text-muted-foreground">Local environment snapshot.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-2 text-sm">
+        <CardContent className="grid gap-2 text-sm text-foreground">
           <div>
             <span className="text-muted-foreground">User Agent:</span>{' '}
             {browserInfo.ua}

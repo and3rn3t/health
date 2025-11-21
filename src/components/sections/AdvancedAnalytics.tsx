@@ -79,12 +79,12 @@ export default function AdvancedAnalytics() {
     return 'text-green-500';
   })();
   return (
-    <div className="md:space-y-10 text-foreground space-y-8">
+    <div className="space-y-8 text-foreground md:space-y-10">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
-            <BarChart3 className="text-primary h-6 w-6" />
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
+            <BarChart3 className="h-6 w-6 text-primary" />
             Advanced Health Analytics
           </h2>
           <p className="text-muted-foreground">
@@ -94,18 +94,18 @@ export default function AdvancedAnalytics() {
       </div>
 
       {/* AI Insights & Recommendations */}
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Brain className="h-5 w-5" />
             AI Insights & Recommendations
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Personalized insights and action plans derived from measured
             patterns.
           </CardDescription>
         </CardHeader>
-        <CardContent className="md:grid-cols-2 grid gap-8">
+        <CardContent className="grid gap-8 md:grid-cols-2">
           <div>
             <AIInsights healthData={analyticsNow} />
           </div>
@@ -116,52 +116,54 @@ export default function AdvancedAnalytics() {
       </Card>
 
       {/* AI Decision Engine (Fall Risk) */}
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <ShieldAlert className="h-5 w-5" />
             AI Decision Engine — Fall Risk
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Logistic regression inference using normalized gait and lifestyle
             features.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="md:grid-cols-4 gap-5 md:gap-6 grid grid-cols-1">
-            <div className="rounded-lg border p-4">
-              <div className="text-muted-foreground text-sm">Probability</div>
-              <div className="text-2xl font-bold">
+        <CardContent className="text-foreground">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-6">
+            <div className="rounded-lg border p-4 text-foreground">
+              <div className="text-sm text-muted-foreground">Probability</div>
+              <div className="text-2xl font-bold text-foreground">
                 {Math.round(fallRisk.probability * 100)}%
               </div>
             </div>
-            <div className="rounded-lg border p-4">
-              <div className="text-muted-foreground text-sm">Risk Level</div>
+            <div className="rounded-lg border p-4 text-foreground">
+              <div className="text-sm text-muted-foreground">Risk Level</div>
               <div className={`text-2xl font-bold ${riskColorClass}`}>
                 {fallRisk.riskLevel.toUpperCase()}
               </div>
             </div>
-            <div className="rounded-lg border p-4">
-              <div className="text-muted-foreground text-sm">Model</div>
-              <div className="text-2xl font-bold">{fallRisk.modelVersion}</div>
+            <div className="rounded-lg border p-4 text-foreground">
+              <div className="text-sm text-muted-foreground">Model</div>
+              <div className="text-2xl font-bold text-foreground">
+                {fallRisk.modelVersion}
+              </div>
             </div>
-            <div className="rounded-lg border p-4">
-              <div className="text-muted-foreground text-sm">Score (logit)</div>
-              <div className="text-2xl font-bold">
+            <div className="rounded-lg border p-4 text-foreground">
+              <div className="text-sm text-muted-foreground">Score (logit)</div>
+              <div className="text-2xl font-bold text-foreground">
                 {fallRisk.score.toFixed(2)}
               </div>
             </div>
           </div>
 
           <div className="mt-7 md:mt-8">
-            <div className="mb-2 text-sm font-medium">
+            <div className="mb-2 text-sm font-medium text-foreground">
               Top contributing factors
             </div>
-            <div className="gap-2.5 md:gap-3 flex flex-wrap">
+            <div className="flex flex-wrap gap-2.5 md:gap-3">
               {fallRisk.contributions.slice(0, 6).map((c) => (
                 <span
                   key={c.feature}
-                  className={`px-3 text-xs rounded-full py-1 ${c.contribution >= 0 ? 'bg-red-50 text-red-700 border-red-200 border' : 'bg-green-50 text-green-700 border-green-200 border'}`}
+                  className={`rounded-full px-3 py-1 text-xs ${c.contribution >= 0 ? 'border border-red-200 bg-red-50 text-red-700' : 'border border-green-200 bg-green-50 text-green-700'}`}
                   title={`weight ${c.weight.toFixed(3)} × value ${c.value.toFixed(2)} = ${c.contribution.toFixed(3)}`}
                 >
                   {c.feature.replace(/_/g, ' ')}:{' '}
@@ -172,13 +174,16 @@ export default function AdvancedAnalytics() {
             </div>
           </div>
 
-          <div className="gap-3.5 md:gap-4 md:grid-cols-5 mt-7 md:mt-8 grid grid-cols-1">
+          <div className="mt-7 grid grid-cols-1 gap-3.5 md:mt-8 md:grid-cols-5 md:gap-4">
             {Object.entries(fallRisk.inputs).map(([k, v]) => (
-              <div key={k} className="p-3 text-xs rounded-md border">
+              <div
+                key={k}
+                className="rounded-md border p-3 text-xs text-foreground"
+              >
                 <div className="text-muted-foreground">
                   {k.replace(/_/g, ' ')}
                 </div>
-                <div className="font-mono">{v.toFixed(2)}</div>
+                <div className="font-mono text-foreground">{v.toFixed(2)}</div>
               </div>
             ))}
           </div>
@@ -188,18 +193,18 @@ export default function AdvancedAnalytics() {
       <Separator />
 
       {/* ML Analytics */}
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <BarChart3 className="h-5 w-5" />
             Machine Learning Predictions & Anomalies
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Predictive fall risk modeling, health score forecasting, and anomaly
             detection.
           </CardDescription>
         </CardHeader>
-        <CardContent className="md:space-y-6 space-y-4">
+        <CardContent className="space-y-4 md:space-y-6">
           <MLAnalytics
             userId="demo-user"
             healthData={[analyticsYesterday, analyticsNow]}
@@ -208,33 +213,33 @@ export default function AdvancedAnalytics() {
       </Card>
 
       {/* Gait & Walking Visualizers */}
-      <div className="md:grid-cols-2 gap-7 md:gap-8 grid">
-        <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <div className="grid gap-7 md:grid-cols-2 md:gap-8">
+        <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Activity className="h-5 w-5" />
               Enhanced Gait Analyzer
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-muted-foreground">
               Uses real device sensors when available; otherwise previews.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-foreground">
             <EnhancedGaitAnalyzer />
           </CardContent>
         </Card>
 
-        <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+        <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Footprints className="h-5 w-5" />
               Walking Pattern Visualizer
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-muted-foreground">
               Real-time stride, cadence, and steadiness visualization.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-foreground">
             <WalkingPatternVisualizer />
           </CardContent>
         </Card>

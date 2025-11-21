@@ -109,13 +109,13 @@ export default function ShowcaseLabs() {
       </Alert>
 
       {/* AI Insights & Recommendations */}
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Brain className="h-5 w-5" />
             AI Insights & Recommendations
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Personalized analysis and action plans derived from your health
             patterns.
           </CardDescription>
@@ -133,17 +133,17 @@ export default function ShowcaseLabs() {
       <Separator />
 
       {/* ML Analytics */}
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Sparkles className="h-5 w-5" />
             ML Analytics (Predictions & Anomalies)
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Mocked predictive analytics and anomaly detection visualizations.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="text-foreground">
           <MLAnalytics
             userId="demo-user"
             healthData={[analyticsYesterday, analyticsNow]}
@@ -153,59 +153,59 @@ export default function ShowcaseLabs() {
 
       {/* Gait & Walking Visualizers */}
       <div className="md:grid-cols-2 grid gap-6">
-        <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+        <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Activity className="h-5 w-5" />
               Enhanced Gait Analyzer
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-muted-foreground">
               Starts real device sensor analysis when supported; otherwise
               previews UI flow.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-foreground">
             <EnhancedGaitAnalyzer />
           </CardContent>
         </Card>
 
-        <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+        <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Activity className="h-5 w-5" />
               Walking Pattern Visualizer
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-muted-foreground">
               Simulated live gait metrics with session history.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-foreground">
             <WalkingPatternVisualizer />
           </CardContent>
         </Card>
       </div>
 
       {/* WebSocket Tools */}
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10">
+      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Network className="h-5 w-5" />
             WebSocket Tools & Architecture
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Token configuration and a detailed end-to-end WebSocket architecture
             guide.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="p-3 rounded border">
-            <div className="mb-2 text-sm font-medium">
+        <CardContent className="space-y-6 text-foreground">
+          <div className="p-3 rounded border text-foreground">
+            <div className="mb-2 text-sm font-medium text-foreground">
               Device Token & Connection
             </div>
             <WSTokenSettings />
           </div>
-          <div className="p-3 rounded border">
-            <div className="mb-2 flex items-center gap-2 text-sm font-medium">
+          <div className="p-3 rounded border text-foreground">
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
               <Wrench className="h-4 w-4" />
               Architecture Guide
             </div>

@@ -540,18 +540,18 @@ export default function CognitiveHealth() {
 
         {/* Overview cards */}
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md">
+          <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md text-foreground">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <HIGIcon
                   icon={IOSHIGIcons.health.brain}
                   className="h-5 w-5 text-vitalsense-primary"
                 />{' '}
                 Composite Score
               </CardTitle>
-              <CardDescription>Latest assessment</CardDescription>
+              <CardDescription className="text-muted-foreground">Latest assessment</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="text-foreground">
               <div className="flex items-end justify-between">
                 <div>
                   <div className="text-3xl font-bold">
@@ -573,15 +573,15 @@ export default function CognitiveHealth() {
             </CardContent>
           </Card>
 
-          <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md">
+          <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md text-foreground">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <MousePointerClick className="h-5 w-5 text-vitalsense-primary" />{' '}
                 Reaction Time
               </CardTitle>
-              <CardDescription>Avg across latest session</CardDescription>
+              <CardDescription className="text-muted-foreground">Avg across latest session</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="text-foreground">
               <div className="text-3xl font-bold">
                 {last?.reactionAvgMs ?? '—'}
                 <span className="ml-1 text-lg font-normal text-muted-foreground">
@@ -594,15 +594,15 @@ export default function CognitiveHealth() {
             </CardContent>
           </Card>
 
-          <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md">
+          <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md text-foreground">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Eye className="h-5 w-5 text-vitalsense-primary" /> Memory
                 Sequence
               </CardTitle>
-              <CardDescription>Max level achieved</CardDescription>
+              <CardDescription className="text-muted-foreground">Max level achieved</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="text-foreground">
               <div className="text-3xl font-bold">
                 {last?.memoryMaxLevel ?? '—'}
               </div>
@@ -624,18 +624,18 @@ export default function CognitiveHealth() {
           <TabsContent value="assessments" className="space-y-4">
             <Card
               id="reaction-test"
-              className="ios-26-surface-elevated border border-white/10 backdrop-blur-md"
+              className="ios-26-surface-elevated border border-white/10 backdrop-blur-md text-foreground"
             >
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                   <MousePointerClick className="h-5 w-5 text-vitalsense-primary" />{' '}
                   Reaction Time Test
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-muted-foreground">
                   Measure response speed to visual cues
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="text-foreground">
                 <ReactionTest
                   onComplete={(avg) =>
                     onAssessmentComplete({ reactionAvgMs: avg })
@@ -646,18 +646,18 @@ export default function CognitiveHealth() {
 
             <Card
               id="memory-test"
-              className="ios-26-surface-elevated border border-white/10 backdrop-blur-md"
+              className="ios-26-surface-elevated border border-white/10 backdrop-blur-md text-foreground"
             >
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                   <Target className="h-5 w-5 text-vitalsense-primary" /> Memory
                   Sequence Test
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-muted-foreground">
                   Repeat the flashing sequence to progress levels
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="text-foreground">
                 <MemorySequenceTest
                   onComplete={(level) =>
                     onAssessmentComplete({ memoryMaxLevel: level })
@@ -668,21 +668,21 @@ export default function CognitiveHealth() {
 
             <Card
               id="attention-test"
-              className="ios-26-surface-elevated border border-white/10 backdrop-blur-md"
+              className="ios-26-surface-elevated border border-white/10 backdrop-blur-md text-foreground"
             >
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                   <HIGIcon
                     icon={IOSHIGIcons.health.activity}
                     className="h-5 w-5 text-vitalsense-primary"
                   />{' '}
                   Attention Control Test
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-muted-foreground">
                   Tap on GO stimuli, avoid tapping on NO-GO
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="text-foreground">
                 <AttentionGoNoGoTest
                   onComplete={(score) =>
                     onAssessmentComplete({ attentionScore: score })
@@ -693,12 +693,12 @@ export default function CognitiveHealth() {
           </TabsContent>
 
           <TabsContent value="trends">
-            <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md">
+            <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md text-foreground">
               <CardHeader>
-                <CardTitle>Performance Trends</CardTitle>
-                <CardDescription>Recent cognitive scores</CardDescription>
+                <CardTitle className="text-foreground">Performance Trends</CardTitle>
+                <CardDescription className="text-muted-foreground">Recent cognitive scores</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="text-foreground">
                 {trendValues.length > 0 ? (
                   <div className="flex items-center justify-between">
                     <Sparkline values={trendValues} />
@@ -727,14 +727,14 @@ export default function CognitiveHealth() {
           </TabsContent>
 
           <TabsContent value="settings">
-            <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md">
+            <Card className="ios-26-surface-elevated border border-white/10 backdrop-blur-md text-foreground">
               <CardHeader>
-                <CardTitle>Assessment Settings</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-foreground">Assessment Settings</CardTitle>
+                <CardDescription className="text-muted-foreground">
                   Configure reminders and sharing
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 text-foreground">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">Weekly Frequency</div>
