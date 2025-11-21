@@ -6,12 +6,17 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useDeviceManagement } from '@/hooks/useDeviceManagement';
-import { AlertCircle, Bluetooth, Smartphone } from 'lucide-react';
+import { AlertCircle, Bluetooth } from 'lucide-react';
 import { ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 interface DeviceCapabilityGateProps {
-  requiredCapability: 'healthKit' | 'lidar' | 'motionSensors' | 'heartRate' | 'fallDetection' | 'backgroundSync';
+  requiredCapability:
+    | 'healthKit'
+    | 'lidar'
+    | 'motionSensors'
+    | 'heartRate'
+    | 'fallDetection'
+    | 'backgroundSync';
   fallback?: ReactNode;
   showConnectPrompt?: boolean;
   children: ReactNode;
@@ -24,25 +29,35 @@ export function DeviceCapabilityGate({
   children,
 }: DeviceCapabilityGateProps) {
   const { devices } = useDeviceManagement();
-  const navigate = useNavigate();
 
   // Check if any connected device has the required capability
   const hasCapability = devices.some((device) => {
     if (!device.capabilities) return false;
 
+    // Type assertion for capabilities that may not be in the base type
+    const caps = device.capabilities as {
+      healthKit?: boolean;
+      lidar?: boolean;
+      motionSensors?: boolean;
+      heartRate?: boolean;
+      fallDetection?: boolean;
+      backgroundSync?: boolean;
+      realTimeSync?: boolean;
+    };
+
     switch (requiredCapability) {
       case 'healthKit':
-        return device.capabilities.healthKit === true;
+        return caps.healthKit === true;
       case 'lidar':
-        return device.capabilities.lidar === true;
+        return caps.lidar === true;
       case 'motionSensors':
-        return device.capabilities.motionSensors === true;
+        return caps.motionSensors === true;
       case 'heartRate':
-        return device.capabilities.heartRate === true;
+        return caps.heartRate === true;
       case 'fallDetection':
-        return device.capabilities.fallDetection === true;
+        return caps.fallDetection === true;
       case 'backgroundSync':
-        return device.capabilities.backgroundSync === true;
+        return caps.backgroundSync === true;
       default:
         return false;
     }
@@ -78,16 +93,25 @@ export function DeviceCapabilityGate({
             {capabilityNames[requiredCapability]} capability required
           </p>
           <p className="text-sm text-muted-foreground">
-            Connect a device with {capabilityNames[requiredCapability]} support to use this feature.
+            Connect a device with {capabilityNames[requiredCapability]} support
+            to use this feature.
           </p>
         </div>
         <Button
           size="sm"
           onClick={() => {
             if (globalThis.window !== undefined) {
-              globalThis.window.sessionStorage.setItem('open-device-setup', 'true');
+              globalThis.window.sessionStorage.setItem(
+                'open-device-setup',
+                'true'
+              );
+              // Navigate using app's custom navigation system
+              globalThis.window.dispatchEvent(
+                new CustomEvent('navigate', {
+                  detail: { feature: 'device-sync' },
+                })
+              );
             }
-            navigate('/device-sync');
           }}
         >
           <Bluetooth className="mr-2 h-4 w-4" />

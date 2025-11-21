@@ -2,17 +2,13 @@
  * Unit tests for DeviceStatusCard component
  */
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { DeviceStatusCard } from '../DeviceStatusCard';
 import { useDeviceManagement } from '@/hooks/useDeviceManagement';
-import { useNavigate } from 'react-router-dom';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DeviceStatusCard } from '../DeviceStatusCard';
 
 // Mock dependencies
 vi.mock('@/hooks/useDeviceManagement');
-vi.mock('react-router-dom', () => ({
-  useNavigate: vi.fn(),
-}));
 vi.mock('../DeviceSetupWizard', () => ({
   DeviceSetupWizard: ({ onComplete, onCancel }: any) => (
     <div data-testid="device-setup-wizard">
@@ -22,8 +18,8 @@ vi.mock('../DeviceSetupWizard', () => ({
   ),
 }));
 
-const mockNavigate = vi.fn();
 const mockSyncDevice = vi.fn();
+const mockDispatchEvent = vi.fn();
 
 const mockDevices = [
   {
@@ -55,7 +51,10 @@ const mockDevices = [
 describe('DeviceStatusCard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (useNavigate as any).mockReturnValue(mockNavigate);
+    // Mock window.dispatchEvent
+    if (globalThis.window) {
+      globalThis.window.dispatchEvent = mockDispatchEvent;
+    }
     (useDeviceManagement as any).mockReturnValue({
       devices: [],
       hasConnectedDevices: false,
@@ -136,7 +135,12 @@ describe('DeviceStatusCard', () => {
       const connectButton = screen.getByText('Connect Device');
       fireEvent.click(connectButton);
 
-      expect(mockNavigate).toHaveBeenCalledWith('/device-sync');
+      expect(mockDispatchEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'navigate',
+          detail: { feature: 'device-sync' },
+        })
+      );
     });
 
     it('calls onDeviceClick callback when device clicked', () => {
@@ -149,10 +153,7 @@ describe('DeviceStatusCard', () => {
       });
 
       render(
-        <DeviceStatusCard
-          compact={false}
-          onDeviceClick={onDeviceClick}
-        />
+        <DeviceStatusCard compact={false} onDeviceClick={onDeviceClick} />
       );
 
       const device = screen.getByText('iPhone 15 Pro');
@@ -172,9 +173,7 @@ describe('DeviceStatusCard', () => {
       render(<DeviceStatusCard compact={false} />);
 
       const syncButtons = screen.getAllByRole('button');
-      const syncButton = syncButtons.find((btn) =>
-        btn.querySelector('svg')
-      );
+      const syncButton = syncButtons.find((btn) => btn.querySelector('svg'));
 
       if (syncButton) {
         fireEvent.click(syncButton);

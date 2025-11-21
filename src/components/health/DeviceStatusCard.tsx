@@ -27,7 +27,6 @@ import {
   WifiOff,
 } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { DeviceSetupWizard } from './DeviceSetupWizard';
 
 interface DeviceStatusCardProps {
@@ -44,7 +43,6 @@ export function DeviceStatusCard({
   const { devices, hasConnectedDevices, connectedCount, syncDevice } =
     useDeviceManagement();
   const [showSetupWizard, setShowSetupWizard] = useState(false);
-  const navigate = useNavigate();
 
   const getDeviceIcon = (type: string) => {
     switch (type) {
@@ -78,8 +76,13 @@ export function DeviceStatusCard({
   const handleQuickConnect = () => {
     if (globalThis.window !== undefined) {
       globalThis.window.sessionStorage.setItem('open-device-setup', 'true');
+      // Navigate using app's custom navigation system
+      globalThis.window.dispatchEvent(
+        new CustomEvent('navigate', {
+          detail: { feature: 'device-sync' },
+        })
+      );
     }
-    navigate('/device-sync');
   };
 
   if (compact) {
@@ -129,7 +132,15 @@ export function DeviceStatusCard({
                   variant="ghost"
                   size="sm"
                   className="w-full"
-                  onClick={() => navigate('/device-sync')}
+                  onClick={() => {
+                    if (globalThis.window !== undefined) {
+                      globalThis.window.dispatchEvent(
+                        new CustomEvent('navigate', {
+                          detail: { feature: 'device-sync' },
+                        })
+                      );
+                    }
+                  }}
                 >
                   View all {devices.length} devices
                 </Button>
@@ -195,7 +206,13 @@ export function DeviceStatusCard({
                       if (onDeviceClick) {
                         onDeviceClick(device.id);
                       } else {
-                        navigate('/device-sync');
+                        if (globalThis.window !== undefined) {
+                          globalThis.window.dispatchEvent(
+                            new CustomEvent('navigate', {
+                              detail: { feature: 'device-sync' },
+                            })
+                          );
+                        }
                       }
                     }}
                   >
@@ -253,7 +270,15 @@ export function DeviceStatusCard({
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => navigate('/device-sync')}
+                    onClick={() => {
+                      if (globalThis.window !== undefined) {
+                        globalThis.window.dispatchEvent(
+                          new CustomEvent('navigate', {
+                            detail: { feature: 'device-sync' },
+                          })
+                        );
+                      }
+                    }}
                   >
                     Manage Devices
                   </Button>

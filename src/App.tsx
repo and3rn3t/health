@@ -435,6 +435,37 @@ function AppContent() {
     [handleTabChange, announce]
   );
 
+  // Listen for global navigation events
+  useEffect(() => {
+    const handleNavigate = ((event: CustomEvent<{ feature: string }>) => {
+      const featureId = event.detail.feature;
+      const map: Record<string, string> = {
+        insights: 'analytics',
+        analytics: 'analytics',
+        'fall-risk': 'fall-detection',
+        'ai-recommendations': 'advanced-analytics',
+        'realtime-scoring': 'live-monitoring',
+        family: 'caregiver',
+        emergency: 'emergency-contacts',
+        import: 'dashboard',
+        'healthkit-guide': 'device-sync',
+        'system-status': 'dev-diagnostics',
+        'usage-analytics': 'analytics',
+        'usage-predictions': 'advanced-analytics',
+        'device-sync': 'device-sync',
+      };
+      const target = map[featureId] ?? featureId;
+      handleTabChange(target);
+    }) as EventListener;
+
+    if (globalThis.window !== undefined) {
+      globalThis.window.addEventListener('navigate', handleNavigate);
+      return () => {
+        globalThis.window?.removeEventListener('navigate', handleNavigate);
+      };
+    }
+  }, [handleTabChange]);
+
   // Prefetch lazy-loaded modules on hover for snappier navigation
   const preloadById = useCallback((id: string) => {
     switch (id) {

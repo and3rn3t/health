@@ -2,24 +2,23 @@
  * Unit tests for DeviceCapabilityGate component
  */
 
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { DeviceCapabilityGate } from '../DeviceCapabilityGate';
 import { useDeviceManagement } from '@/hooks/useDeviceManagement';
-import { useNavigate } from 'react-router-dom';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DeviceCapabilityGate } from '../DeviceCapabilityGate';
 
 // Mock dependencies
 vi.mock('@/hooks/useDeviceManagement');
-vi.mock('react-router-dom', () => ({
-  useNavigate: vi.fn(),
-}));
 
-const mockNavigate = vi.fn();
+const mockDispatchEvent = vi.fn();
 
 describe('DeviceCapabilityGate', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (useNavigate as any).mockReturnValue(mockNavigate);
+    // Mock window.dispatchEvent
+    if (globalThis.window) {
+      globalThis.window.dispatchEvent = mockDispatchEvent;
+    }
     (useDeviceManagement as any).mockReturnValue({
       devices: [],
     });
@@ -68,9 +67,7 @@ describe('DeviceCapabilityGate', () => {
         </DeviceCapabilityGate>
       );
 
-      expect(
-        screen.getByText('LiDAR capability required')
-      ).toBeInTheDocument();
+      expect(screen.getByText('LiDAR capability required')).toBeInTheDocument();
       expect(screen.getByText('Connect Device')).toBeInTheDocument();
       expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
     });
@@ -112,9 +109,7 @@ describe('DeviceCapabilityGate', () => {
         });
 
         const { unmount } = render(
-          <DeviceCapabilityGate
-            requiredCapability={capability as any}
-          >
+          <DeviceCapabilityGate requiredCapability={capability as any}>
             <div>Content</div>
           </DeviceCapabilityGate>
         );
@@ -223,10 +218,7 @@ describe('DeviceCapabilityGate', () => {
       const connectButton = screen.getByText('Connect Device');
       fireEvent.click(connectButton);
 
-      expect(setItemSpy).toHaveBeenCalledWith(
-        'open-device-setup',
-        'true'
-      );
+      expect(setItemSpy).toHaveBeenCalledWith('open-device-setup', 'true');
     });
 
     it('navigates to device-sync route', () => {
@@ -239,7 +231,12 @@ describe('DeviceCapabilityGate', () => {
       const connectButton = screen.getByText('Connect Device');
       fireEvent.click(connectButton);
 
-      expect(mockNavigate).toHaveBeenCalledWith('/device-sync');
+      expect(mockDispatchEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'navigate',
+          detail: { feature: 'device-sync' },
+        })
+      );
     });
   });
 
