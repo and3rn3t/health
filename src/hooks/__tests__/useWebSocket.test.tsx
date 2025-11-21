@@ -20,13 +20,14 @@ class MockWebSocket {
   constructor(url: string, protocols?: string[]) {
     this.url = url;
     this.protocols = protocols;
-    // Simulate connection after a short delay
+    // Simulate connection immediately (no delay for faster tests)
+    // Use setTimeout with 0 to allow React to process state updates
     setTimeout(() => {
       this.readyState = MockWebSocket.OPEN;
       if (this.onopen) {
         this.onopen(new Event('open'));
       }
-    }, 10);
+    }, 0);
   }
 
   send(data: string) {
@@ -99,9 +100,9 @@ describe('useWebSocket', () => {
       () => {
         expect(result.current.connectionState.isConnecting || result.current.connectionState.isConnected).toBe(true);
       },
-      { timeout: 1000 }
+      { timeout: 500 }
     );
-  }, 10000);
+  });
 
   test('should handle connection success', async () => {
     const onConnect = vi.fn();
@@ -124,11 +125,11 @@ describe('useWebSocket', () => {
       () => {
         expect(result.current.connectionState.isConnected).toBe(true);
       },
-      { timeout: 2000 }
+      { timeout: 1000 }
     );
 
     expect(onConnect).toHaveBeenCalled();
-  }, 10000);
+  });
 
   test('should send messages when connected', async () => {
     const sendSpy = vi.spyOn(MockWebSocket.prototype, 'send');
@@ -147,7 +148,7 @@ describe('useWebSocket', () => {
       () => {
         expect(result.current.connectionState.isConnected).toBe(true);
       },
-      { timeout: 2000 }
+      { timeout: 1000 }
     );
 
     act(() => {
@@ -161,7 +162,7 @@ describe('useWebSocket', () => {
     const sentData = JSON.parse(sendSpy.mock.calls[0][0] as string);
     expect(sentData.type).toBe('test');
     expect(sentData.data).toEqual({ message: 'hello' });
-  }, 10000);
+  });
 
   test('should handle disconnection', async () => {
     const onDisconnect = vi.fn();
@@ -181,7 +182,7 @@ describe('useWebSocket', () => {
       () => {
         expect(result.current.connectionState.isConnected).toBe(true);
       },
-      { timeout: 2000 }
+      { timeout: 1000 }
     );
 
     act(() => {
@@ -192,11 +193,11 @@ describe('useWebSocket', () => {
       () => {
         expect(result.current.connectionState.isConnected).toBe(false);
       },
-      { timeout: 2000 }
+      { timeout: 1000 }
     );
 
     expect(onDisconnect).toHaveBeenCalled();
-  }, 10000);
+  });
 
   test('should handle message handlers', async () => {
     const handler = vi.fn();
@@ -220,7 +221,7 @@ describe('useWebSocket', () => {
       () => {
         expect(result.current.connectionState.isConnected).toBe(true);
       },
-      { timeout: 2000 }
+      { timeout: 1000 }
     );
 
     // Simulate receiving a message
@@ -240,7 +241,7 @@ describe('useWebSocket', () => {
 
     // Handler should be called (if message handling is implemented)
     // This depends on the actual implementation
-  }, 10000);
+  });
 
   test('should disable in development mode by default', () => {
     Object.defineProperty(window, 'location', {
@@ -288,4 +289,3 @@ describe('useWebSocket', () => {
     expect(result.current.connectionState.error).toBeTruthy();
   });
 });
-

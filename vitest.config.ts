@@ -48,10 +48,11 @@ export default defineConfig({
         minForks: process.env.CI ? 1 : 1, // Single fork in CI
       },
     },
-    // Test timeout optimization for faster failure detection
-    testTimeout: process.env.CI ? 10000 : 5000, // Shorter timeouts locally (5s), longer in CI (10s)
-    hookTimeout: process.env.CI ? 5000 : 3000,  // Faster hook timeouts locally
-    teardownTimeout: process.env.CI ? 5000 : 2000, // Faster teardown locally
+    // Test timeout optimization - increased to accommodate tests with multiple waitFor calls
+    // Tests use waitFor with 2-3s timeouts, so we need higher global timeout
+    testTimeout: process.env.CI ? 20000 : 15000, // Increased: 15s locally, 20s in CI
+    hookTimeout: process.env.CI ? 10000 : 5000,  // Increased hook timeouts
+    teardownTimeout: process.env.CI ? 10000 : 5000, // Increased teardown timeout
     // Enable bail mode in CI to fail fast, but not locally for full test coverage
     bail: process.env.CI ? 1 : 0, // Stop after first failure in CI, continue locally
     // Optimize test execution: maximize parallelism in local dev for speed
