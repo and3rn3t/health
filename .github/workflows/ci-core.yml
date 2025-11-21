@@ -209,57 +209,68 @@ jobs:
           name: dist-artifacts
           path: .
         continue-on-error: true
+      - name: Check if dist exists after download
+        id: check-dist
+        run: |
+          if [ -d dist ] && [ "$(ls -A dist 2>/dev/null)" ]; then
+            echo "✅ dist directory exists with contents"
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ dist directory missing or empty"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
       - name: Fallback Build (if artifacts missing)
+        if: steps.check-dist.outputs.exists != 'true'
         env:
           CI: 'true'
           NODE_ENV: 'production'
         run: |
-          if [ ! -d dist ]; then
-            echo "🔨 Building application (fallback)..."
-            echo "📦 Verifying dependencies are installed..."
-            if [ ! -d node_modules ]; then
-              echo "⚠️ node_modules not found, installing dependencies..."
-              pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
-            else
-              echo "✅ Dependencies already installed"
-            fi
-            echo "🏗️ Running build with CI=true and NODE_ENV=production..."
-            echo "📊 Environment variables:"
-            echo "  CI=$CI"
-            echo "  NODE_ENV=$NODE_ENV"
-            # Run build and capture exit code properly
-            set +e  # Don't exit on error, we'll check manually
-            CI=true NODE_ENV=production pnpm run build
-            BUILD_EXIT=$?
-            set -e  # Re-enable exit on error
-            if [ $BUILD_EXIT -ne 0 ]; then
-              echo "❌ Build failed with exit code $BUILD_EXIT"
-              echo "📊 Checking for build errors..."
-              exit 1
-            fi
-            # Verify dist was created
-            if [ ! -d dist ]; then
-              echo "❌ Build completed but dist directory was not created"
-              echo "📊 Current directory contents:"
-              ls -la
-              echo "📊 Checking for alternative output directories:"
-              ls -d */ 2>/dev/null | grep -E "(build|out|output)" || echo "  No alternative output directories found"
-              echo "📊 Checking package.json build script:"
-              grep -A 3 '"build"' package.json || true
-              echo "📊 Checking vite.config.ts for outDir:"
-              grep -i "outdir\|outDir" vite.config.ts || echo "  No outDir found in vite.config.ts"
-              exit 1
-            fi
-            echo "✅ Build successful, dist directory created"
-            echo "📊 Dist directory size:"
-            du -sh dist || true
-            echo "📊 Dist directory contents (first 10 items):"
-            ls -la dist | head -10 || true
+          echo "🔨 Building application (fallback - artifacts not available)..."
+          echo "📦 Verifying dependencies are installed..."
+          if [ ! -d node_modules ]; then
+            echo "⚠️ node_modules not found, installing dependencies..."
+            pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
           else
-            echo "✅ Using downloaded build artifacts"
-            echo "📊 Dist directory size:"
-            du -sh dist || true
+            echo "✅ Dependencies already installed"
           fi
+          echo "🏗️ Running build with CI=true and NODE_ENV=production..."
+          echo "📊 Environment variables:"
+          echo "  CI=$CI"
+          echo "  NODE_ENV=$NODE_ENV"
+          echo "📊 Current working directory: $(pwd)"
+          echo "📊 Checking if vite is available:"
+          pnpm list vite || echo "  vite not found in node_modules"
+          # Run build and capture exit code properly
+          set +e  # Don't exit on error, we'll check manually
+          CI=true NODE_ENV=production pnpm run build 2>&1 | tee build.log
+          BUILD_EXIT=$?
+          set -e  # Re-enable exit on error
+          if [ $BUILD_EXIT -ne 0 ]; then
+            echo "❌ Build failed with exit code $BUILD_EXIT"
+            echo "📊 Build log (last 50 lines):"
+            tail -50 build.log || true
+            exit 1
+          fi
+          # Verify dist was created
+          if [ ! -d dist ]; then
+            echo "❌ Build completed but dist directory was not created"
+            echo "📊 Current directory contents:"
+            ls -la
+            echo "📊 Checking for alternative output directories:"
+            ls -d */ 2>/dev/null | grep -E "(build|out|output)" || echo "  No alternative output directories found"
+            echo "📊 Checking package.json build script:"
+            grep -A 3 '"build"' package.json || true
+            echo "📊 Checking vite.config.ts for outDir:"
+            grep -i "outdir\|outDir" vite.config.ts || echo "  No outDir found in vite.config.ts"
+            echo "📊 Build log (last 50 lines):"
+            tail -50 build.log || true
+            exit 1
+          fi
+          echo "✅ Build successful, dist directory created"
+          echo "📊 Dist directory size:"
+          du -sh dist || true
+          echo "📊 Dist directory contents (first 10 items):"
+          ls -la dist | head -10 || true
       - name: Verify dist directory exists
         run: |
           if [ ! -d dist ]; then
