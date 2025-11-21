@@ -1349,11 +1349,17 @@ jobs:
           name: branding-audit-summary
           path: reports
         continue-on-error: true
-      - name: Download Code Quality Artifacts
+      - name: Download Code Quality Coverage Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: code-quality
+          name: code-quality-coverage
           path: reports/code-quality
+        continue-on-error: true
+      - name: Download Code Quality Delta Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: code-quality-delta
+          path: reports/code-quality-delta
         continue-on-error: true
       - name: Download Code Quality Lint Artifacts
         uses: actions/download-artifact@v4
