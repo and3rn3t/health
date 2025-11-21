@@ -226,10 +226,22 @@ jobs:
           NODE_ENV: 'production'
         run: |
           echo "🔨 Building application (fallback - artifacts not available)..."
+          echo "📊 Current directory: $(pwd)"
+          echo "📊 Directory contents before build:"
+          ls -la | head -20 || true
           echo "📦 Verifying dependencies are installed..."
           if [ ! -d node_modules ]; then
             echo "⚠️ node_modules not found, installing dependencies..."
             pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+            echo "✅ Dependencies installed"
+            echo "📊 Verifying node_modules exists:"
+            if [ -d node_modules ]; then
+              echo "  ✅ node_modules directory created"
+              ls node_modules | head -10 || true
+            else
+              echo "  ❌ node_modules still not found after install"
+              exit 1
+            fi
           else
             echo "✅ Dependencies already installed"
           fi
@@ -275,6 +287,21 @@ jobs:
         run: |
           if [ ! -d dist ]; then
             echo "❌ dist directory not found after build/download"
+            echo "📊 Current directory contents:"
+            ls -la | head -30
+            echo "📊 Checking if fallback build ran:"
+            if [ -f build.log ]; then
+              echo "  Build log exists"
+              tail -20 build.log || true
+            else
+              echo "  Build log not found - fallback build may not have run"
+            fi
+            echo "📊 Checking node_modules:"
+            if [ -d node_modules ]; then
+              echo "  node_modules exists"
+            else
+              echo "  node_modules not found"
+            fi
             exit 1
           fi
           echo "✅ dist directory exists"
@@ -297,6 +324,32 @@ jobs:
           echo "✅ Dist directory cleaned"
           echo "📊 Dist structure:"
           find dist -type f -name "*.js" | head -20 | sed 's/^/   /' || true
+      - name: Verify dist exists before bundle check
+        run: |
+          echo "🔍 Final verification before bundle check..."
+          if [ ! -d dist ]; then
+            echo "❌ dist directory not found before bundle check"
+            echo "📊 Current directory: $(pwd)"
+            echo "📊 Directory contents:"
+            ls -la | head -30
+            echo "📊 Checking if fallback build ran:"
+            if [ -f build.log ]; then
+              echo "  Build log exists:"
+              tail -30 build.log || true
+            else
+              echo "  Build log not found"
+            fi
+            echo "📊 Checking node_modules:"
+            if [ -d node_modules ]; then
+              echo "  ✅ node_modules exists"
+            else
+              echo "  ❌ node_modules not found"
+            fi
+            exit 1
+          fi
+          echo "✅ dist directory verified"
+          echo "📊 Dist contents (first 10):"
+          ls -la dist | head -10 || true
       - name: Bundle Checks (threshold + drift)
         run: |
           pnpm run ci:bundle-threshold
