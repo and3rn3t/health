@@ -3,7 +3,7 @@
  */
 
 import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import PredictiveHealthAlerts from '../PredictiveHealthAlerts';
 
@@ -210,14 +210,66 @@ describe('PredictiveHealthAlerts - Toast Usage', () => {
     render(<PredictiveHealthAlerts healthData={healthData} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Predictive Health Alerts/i)).toBeInTheDocument();
+      // Use getAllByText since there might be multiple instances
+      const elements = screen.getAllByText(/Predictive Health Alerts/i);
+      expect(elements.length).toBeGreaterThan(0);
     });
 
-    // Find and click acknowledge button if it exists
-    const acknowledgeButtons = screen.queryAllByText(/acknowledge/i);
-    if (acknowledgeButtons.length > 0) {
-      // Verify useOnceToast would be called with unique ID
-      expect(mockShowOnce).toHaveBeenCalled();
+    // Wait for alerts to be rendered
+    await waitFor(
+      () => {
+        // Check if alert is displayed
+        const alertElements = screen.queryAllByText(/Test Alert/i);
+        expect(alertElements.length).toBeGreaterThan(0);
+      },
+      { timeout: 3000 }
+    );
+
+    // Find acknowledge button - try multiple ways
+    let acknowledgeButton: HTMLElement | null = null;
+
+    // Try finding by text (case insensitive)
+    const buttonsByText = screen.queryAllByText(/acknowledge/i);
+    if (buttonsByText.length > 0) {
+      acknowledgeButton = buttonsByText[0];
+    } else {
+      // Try finding by role and accessible name
+      const buttonsByRole = screen.queryAllByRole('button');
+      acknowledgeButton =
+        buttonsByRole.find((btn) =>
+          btn.textContent?.toLowerCase().includes('acknowledge')
+        ) || null;
+    }
+
+    if (acknowledgeButton) {
+      // Click the acknowledge button
+      await act(async () => {
+        acknowledgeButton!.click();
+      });
+
+      // Wait for the toast to be called
+      await waitFor(
+        () => {
+          // Verify useOnceToast was called with unique ID for acknowledgment
+          expect(mockShowOnce).toHaveBeenCalledWith(
+            'alert-acknowledged-alert-1',
+            'success',
+            'Alert acknowledged'
+          );
+        },
+        { timeout: 3000 }
+      );
+    } else {
+      // If no acknowledge button found, the alerts might not be displayed
+      // or the component structure changed. In this case, we can't test acknowledgment,
+      // but we should at least verify the component renders with alerts
+      const alertElements = screen.queryAllByText(/Test Alert/i);
+      expect(alertElements.length).toBeGreaterThan(0);
+      // Note: This test requires the acknowledge button to be present
+      // If it's not found, the test scenario cannot be completed
+      throw new Error(
+        'Acknowledge button not found - cannot test acknowledgment toast'
+      );
     }
   });
 });
