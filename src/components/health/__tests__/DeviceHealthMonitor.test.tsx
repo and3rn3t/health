@@ -2,14 +2,16 @@
  * Unit tests for DeviceHealthMonitor component
  */
 
-import { render } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { DeviceHealthMonitor } from '../DeviceHealthMonitor';
 import { useDeviceManagement } from '@/hooks/useDeviceManagement';
+import { useOnceToast } from '@/hooks/useOnceToast';
+import { render } from '@testing-library/react';
 import { toast } from 'sonner';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DeviceHealthMonitor } from '../DeviceHealthMonitor';
 
 // Mock dependencies
 vi.mock('@/hooks/useDeviceManagement');
+vi.mock('@/hooks/useOnceToast');
 vi.mock('sonner', () => ({
   toast: {
     warning: vi.fn(),
@@ -19,7 +21,22 @@ vi.mock('sonner', () => ({
 
 describe('DeviceHealthMonitor', () => {
   beforeEach(() => {
+    // Clear all mocks to reset call history (but keep implementations)
     vi.clearAllMocks();
+
+    // Mock useOnceToast to return a showOnce function that calls the actual toast
+    // Create a fresh mock implementation for each test to avoid state leakage
+    (useOnceToast as any).mockReturnValue({
+      showOnce: vi.fn((id, type, message, options) => {
+        // Call the actual toast function based on type
+        if (type === 'warning') {
+          toast.warning(message, options);
+        } else if (type === 'error') {
+          toast.error(message, options);
+        }
+      }),
+      resetOnce: vi.fn(),
+    });
   });
 
   describe('Low Battery Alerts', () => {
@@ -47,6 +64,9 @@ describe('DeviceHealthMonitor', () => {
     });
 
     it('does not show alert for battery above 20%', () => {
+      // Clear mocks to ensure no previous test calls interfere
+      vi.clearAllMocks();
+
       (useDeviceManagement as any).mockReturnValue({
         devices: [
           {
@@ -64,9 +84,7 @@ describe('DeviceHealthMonitor', () => {
     });
 
     it('clears alert when battery goes above 20%', () => {
-      const { rerender } = render(<DeviceHealthMonitor />);
-
-      // First render with low battery
+      // Mock useDeviceManagement before first render
       (useDeviceManagement as any).mockReturnValue({
         devices: [
           {
@@ -78,10 +96,19 @@ describe('DeviceHealthMonitor', () => {
         ],
       });
 
-      rerender(<DeviceHealthMonitor />);
+      const { rerender } = render(<DeviceHealthMonitor />);
+
+      // First render with low battery should trigger warning
+      expect(toast.warning).toHaveBeenCalledWith(
+        'iPhone battery is low (15%)',
+        expect.objectContaining({
+          description: 'Consider charging your device soon',
+          duration: 5000,
+        })
+      );
       expect(toast.warning).toHaveBeenCalledTimes(1);
 
-      // Second render with good battery
+      // Second render with good battery - should not trigger another warning
       (useDeviceManagement as any).mockReturnValue({
         devices: [
           {
@@ -94,11 +121,14 @@ describe('DeviceHealthMonitor', () => {
       });
 
       rerender(<DeviceHealthMonitor />);
-      // Should not show another warning
+      // Should not show another warning (useOnceToast deduplication prevents it)
       expect(toast.warning).toHaveBeenCalledTimes(1);
     });
 
     it('handles multiple devices with low battery', () => {
+      // Clear mocks before this test to ensure no previous test calls
+      vi.clearAllMocks();
+
       (useDeviceManagement as any).mockReturnValue({
         devices: [
           {
