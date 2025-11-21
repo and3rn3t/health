@@ -163,9 +163,49 @@ const filteredJsFiles = jsFiles.filter((f) => {
   return true;
 });
 
+// Deduplicate files - if multiple builds are included, only count unique files
+// Group by base chunk name (everything before the hash) and keep only the largest file per group
+// This handles cases where multiple builds or cached artifacts are included
+const deduplicatedJsFiles = (() => {
+  const fileGroups = new Map();
+
+  for (const f of filteredJsFiles) {
+    const fileName = path.basename(f);
+    // Extract base chunk name from Vite's naming pattern: chunkname-hash.js
+    // Examples:
+    //   "react-dom-misc-CVrVyzFq.js" -> "react-dom-misc"
+    //   "index-Bz1RSvGw.js" -> "index"
+    //   "vendor-misc-jPvopK8L.js" -> "vendor-misc"
+    // Pattern: match everything up to the last hyphen followed by alphanumeric hash
+    let baseName = fileName.replace(/\.js$/, '');
+
+    // Try to extract base name by finding the hash pattern (typically 8+ alphanumeric chars at the end)
+    const hashMatch = fileName.match(/^(.+)-[A-Za-z0-9]{8,}\.js$/);
+    if (hashMatch) {
+      baseName = hashMatch[1];
+    } else {
+      // Fallback: if no clear hash pattern, use the whole filename (minus extension)
+      // This handles edge cases where files don't follow the standard pattern
+      baseName = fileName.replace(/\.js$/, '');
+    }
+
+    const stats = fs.statSync(f);
+    const size = stats.size;
+    const gzipSizeValue = gzipSize(fs.readFileSync(f));
+
+    // Keep the file with the largest gzipped size for each base chunk name
+    // This ensures we count the most optimized version
+    if (!fileGroups.has(baseName) || fileGroups.get(baseName).gzipSize < gzipSizeValue) {
+      fileGroups.set(baseName, { file: f, size, gzipSize: gzipSizeValue, baseName });
+    }
+  }
+
+  return Array.from(fileGroups.values()).map(g => g.file);
+})();
+
 let jsGzip = 0;
 let cssGzip = 0;
-for (const f of filteredJsFiles) jsGzip += gzipSize(fs.readFileSync(f));
+for (const f of deduplicatedJsFiles) jsGzip += gzipSize(fs.readFileSync(f));
 for (const f of cssFiles) cssGzip += gzipSize(fs.readFileSync(f));
 
 const fmt = (n) => `${(n / 1024).toFixed(1)} KB`;
@@ -173,15 +213,19 @@ const fmt = (n) => `${(n / 1024).toFixed(1)} KB`;
 // Debug output in CI to help diagnose issues
 if (process.env.CI === 'true') {
   console.log('🔍 CI Debug Info:');
-  console.log(`   JS files counted: ${filteredJsFiles.length}`);
+  console.log(`   JS files found: ${filteredJsFiles.length}`);
+  console.log(`   JS files after deduplication: ${deduplicatedJsFiles.length}`);
   console.log(`   CSS files counted: ${cssFiles.length}`);
-  if (filteredJsFiles.length > 0) {
-    const largest = filteredJsFiles
+  if (deduplicatedJsFiles.length > 0) {
+    const largest = deduplicatedJsFiles
       .map(f => ({ name: path.relative(distDir, f), size: gzipSize(fs.readFileSync(f)) }))
       .sort((a, b) => b.size - a.size)
       .slice(0, 5);
     console.log('   Largest JS chunks:');
     largest.forEach(f => console.log(`     ${f.name}: ${fmt(f.size)}`));
+  }
+  if (filteredJsFiles.length > deduplicatedJsFiles.length) {
+    console.log(`   ⚠️  Deduplicated ${filteredJsFiles.length - deduplicatedJsFiles.length} duplicate files`);
   }
 }
 
@@ -193,7 +237,8 @@ const report = {
   directory: distDir,
   totals: { jsGzip, cssGzip },
   limits: { jsMax, cssMax },
-  counts: { js: filteredJsFiles.length, css: cssFiles.length },
+  counts: { js: deduplicatedJsFiles.length, css: cssFiles.length },
+  deduplicated: { from: filteredJsFiles.length, to: deduplicatedJsFiles.length },
   timestamp: new Date().toISOString(),
 };
 fs.mkdirSync('reports', { recursive: true });

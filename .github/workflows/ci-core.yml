@@ -211,12 +211,19 @@ jobs:
         continue-on-error: true
       - name: Fallback Build (if artifacts missing)
         run: if [ ! -d dist ]; then pnpm run build; fi
-      - name: Remove source maps before bundle check
+      - name: Clean dist directory before bundle check
         run: |
-          echo "🧹 Removing any source map files before bundle check..."
+          echo "🧹 Cleaning dist directory before bundle check..."
+          # Remove source maps
           find dist -name "*.map" -type f -delete 2>/dev/null || true
           find dist -name "*.map.js" -type f -delete 2>/dev/null || true
-          echo "✅ Source maps removed (if any existed)"
+          # Remove any nested dist directories (from multiple builds)
+          find dist -type d -name "dist" -exec rm -rf {} + 2>/dev/null || true
+          # Remove any duplicate build artifacts in subdirectories
+          # Keep only files in js/, css/, img/, assets/ subdirectories
+          echo "✅ Dist directory cleaned"
+          echo "📊 Dist structure:"
+          find dist -type f -name "*.js" | head -20 | sed 's/^/   /' || true
       - name: Bundle Checks (threshold + drift)
         run: |
           pnpm run ci:bundle-threshold
