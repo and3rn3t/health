@@ -15,8 +15,8 @@ export default function DeveloperTools() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
-            <Wrench className="text-primary h-6 w-6" />
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
+            <Wrench className="h-6 w-6 text-primary" />
             Developer Tools
           </h2>
           <p className="text-muted-foreground">
@@ -27,7 +27,7 @@ export default function DeveloperTools() {
       </div>
 
       {/* WebSocket Tools */}
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Network className="h-5 w-5" />
@@ -38,13 +38,13 @@ export default function DeveloperTools() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 text-foreground">
-          <div className="p-3 rounded border text-foreground">
+          <div className="rounded border p-3 text-foreground">
             <div className="mb-2 text-sm font-medium text-foreground">
               Device Token & Connection
             </div>
             <WSTokenSettings />
           </div>
-          <div className="p-3 rounded border text-foreground">
+          <div className="rounded border p-3 text-foreground">
             <div className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
               <Wrench className="h-4 w-4" />
               Architecture Guide

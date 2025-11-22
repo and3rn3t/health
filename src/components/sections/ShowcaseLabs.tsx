@@ -88,8 +88,8 @@ export default function ShowcaseLabs() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
-            <FlaskConical className="text-primary h-6 w-6" />
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
+            <FlaskConical className="h-6 w-6 text-primary" />
             Labs & Showcase
           </h2>
           <p className="text-muted-foreground">
@@ -109,7 +109,7 @@ export default function ShowcaseLabs() {
       </Alert>
 
       {/* AI Insights & Recommendations */}
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Brain className="h-5 w-5" />
@@ -120,7 +120,7 @@ export default function ShowcaseLabs() {
             patterns.
           </CardDescription>
         </CardHeader>
-        <CardContent className="md:grid-cols-2 grid gap-6">
+        <CardContent className="grid gap-6 md:grid-cols-2">
           <div>
             <AIInsights healthData={analyticsNow} />
           </div>
@@ -133,7 +133,7 @@ export default function ShowcaseLabs() {
       <Separator />
 
       {/* ML Analytics */}
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Sparkles className="h-5 w-5" />
@@ -152,8 +152,8 @@ export default function ShowcaseLabs() {
       </Card>
 
       {/* Gait & Walking Visualizers */}
-      <div className="md:grid-cols-2 grid gap-6">
-        <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
               <Activity className="h-5 w-5" />
@@ -169,7 +169,7 @@ export default function ShowcaseLabs() {
           </CardContent>
         </Card>
 
-        <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+        <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
               <Activity className="h-5 w-5" />
@@ -186,7 +186,7 @@ export default function ShowcaseLabs() {
       </div>
 
       {/* WebSocket Tools */}
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Network className="h-5 w-5" />
@@ -198,13 +198,13 @@ export default function ShowcaseLabs() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 text-foreground">
-          <div className="p-3 rounded border text-foreground">
+          <div className="rounded border p-3 text-foreground">
             <div className="mb-2 text-sm font-medium text-foreground">
               Device Token & Connection
             </div>
             <WSTokenSettings />
           </div>
-          <div className="p-3 rounded border text-foreground">
+          <div className="rounded border p-3 text-foreground">
             <div className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
               <Wrench className="h-4 w-4" />
               Architecture Guide

@@ -637,8 +637,8 @@ export default function DevDiagnostics() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
-            <Bug className="text-primary h-6 w-6" />
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
+            <Bug className="h-6 w-6 text-primary" />
             Dev Diagnostics
           </h2>
           <p className="text-muted-foreground">
@@ -653,7 +653,7 @@ export default function DevDiagnostics() {
         </div>
       </div>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Gauge className="h-5 w-5" />
@@ -663,24 +663,24 @@ export default function DevDiagnostics() {
             Summary of environment and optional bindings.
           </CardDescription>
         </CardHeader>
-        <CardContent className="md:grid-cols-2 grid gap-4 text-foreground">
+        <CardContent className="grid gap-4 text-foreground md:grid-cols-2">
           <div className="space-y-2">
-            <div className="text-muted-foreground text-sm">Environment</div>
-            <div className="text-foreground text-lg font-medium">
+            <div className="text-sm text-muted-foreground">Environment</div>
+            <div className="text-lg font-medium text-foreground">
               {loading ? 'Loading…' : (diag?.env ?? '—')}
             </div>
-            <div className="text-muted-foreground text-sm">Now</div>
+            <div className="text-sm text-muted-foreground">Now</div>
             <div>{loading ? '—' : diag?.now}</div>
-            <div className="text-muted-foreground text-sm">Log sample rate</div>
+            <div className="text-sm text-muted-foreground">Log sample rate</div>
             <div>{loading ? '—' : (diag?.logSampleRate ?? '(default)')}</div>
-            <div className="text-muted-foreground text-sm">
+            <div className="text-sm text-muted-foreground">
               Per-category sampling
             </div>
             <div className="text-xs text-muted-foreground">
               WS: {diag?.logSampleRates?.ws ?? '(default)'} • ClientError:{' '}
               {diag?.logSampleRates?.clientError ?? '(default)'}
             </div>
-            <div className="text-muted-foreground text-sm">Datasets</div>
+            <div className="text-sm text-muted-foreground">Datasets</div>
             {datasetBadges}
           </div>
           <div className="space-y-2">
@@ -696,8 +696,8 @@ export default function DevDiagnostics() {
               <Shield className="h-4 w-4" /> Rate Limiter:{' '}
               {renderBool('RL', diag?.hasRateLimiter)}
             </div>
-            <div className="text-muted-foreground mt-4 text-sm">Endpoints</div>
-            <ul className="pl-5 list-disc text-sm">
+            <div className="mt-4 text-sm text-muted-foreground">Endpoints</div>
+            <ul className="list-disc pl-5 text-sm">
               {loading ? (
                 <li>—</li>
               ) : (
@@ -729,7 +729,7 @@ export default function DevDiagnostics() {
               )}
             </ul>
             {error && (
-              <div className="text-red-500 mt-2 flex items-center gap-2 text-sm">
+              <div className="mt-2 flex items-center gap-2 text-sm text-red-500">
                 <AlertTriangle className="h-4 w-4" /> {error}
               </div>
             )}
@@ -737,15 +737,17 @@ export default function DevDiagnostics() {
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Wifi className="h-5 w-5" />
             WebSocket Config
           </CardTitle>
-          <CardDescription className="text-muted-foreground">Server-provided connection details.</CardDescription>
+          <CardDescription className="text-muted-foreground">
+            Server-provided connection details.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="gap-3 grid text-foreground">
+        <CardContent className="grid gap-3 text-foreground">
           <div className="flex gap-2">
             <Button size="sm" onClick={onFetchWsInfo}>
               Refresh
@@ -779,7 +781,7 @@ export default function DevDiagnostics() {
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Network className="h-5 w-5" />
@@ -789,7 +791,7 @@ export default function DevDiagnostics() {
             Run common checks against dev-only endpoints.
           </CardDescription>
         </CardHeader>
-        <CardContent className="md:grid-cols-3 grid gap-4">
+        <CardContent className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2">
             <div className="text-sm">Worker Health</div>
             <div className="flex gap-2">
@@ -825,7 +827,7 @@ export default function DevDiagnostics() {
               </Button>
             </div>
             {pingResult && (
-              <div className="text-xs text-muted-foreground break-all">
+              <div className="break-all text-xs text-muted-foreground">
                 {pingResult.ok ? (
                   <>
                     Dataset: {pingResult.dataset ?? '(none)'} • Env:{' '}
@@ -865,7 +867,7 @@ export default function DevDiagnostics() {
               </Button>
             </div>
             {errorResult && (
-              <div className="text-xs text-muted-foreground break-all">
+              <div className="break-all text-xs text-muted-foreground">
                 Status: {errorResult.status} • CorrelationId:{' '}
                 {errorResult.correlationId ?? '—'}
                 {errorResult.correlationId && (
@@ -892,7 +894,7 @@ export default function DevDiagnostics() {
             <div className="flex items-center justify-between gap-2">
               <div className="text-sm">WebSocket Quick Test</div>
               {rawWs && (
-                <div className="bg-teal-700/20 py-0.5 text-teal-400 rounded px-2 text-[10px]">
+                <div className="rounded bg-teal-700/20 px-2 py-0.5 text-[10px] text-teal-400">
                   Coaching Active
                 </div>
               )}
@@ -929,7 +931,7 @@ export default function DevDiagnostics() {
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Gauge className="h-5 w-5" />
@@ -941,7 +943,7 @@ export default function DevDiagnostics() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
-          <div className="gap-3 flex flex-wrap items-center">
+          <div className="flex flex-wrap items-center gap-3">
             <Button size="sm" onClick={onFetchVmEvents} disabled={vmLoading}>
               {vmLoading ? 'Loading…' : 'Fetch Events'}
             </Button>
@@ -979,7 +981,7 @@ export default function DevDiagnostics() {
               </div>
             )}
             {filteredVmEvents && filteredVmEvents.length > 0 && (
-              <div className="gap-3 flex items-center">
+              <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
                   <Button
                     size="sm"
@@ -1054,8 +1056,7 @@ export default function DevDiagnostics() {
                 {diag.analyticsVersionMismatch.maxStored} • Suggested sample:{' '}
                 {diag.analyticsVersionMismatch.clientSampleRate}
                 {typeof (diag.analyticsVersionMismatch as any)
-                  .oldestEventAgeMs === // eslint-disable-line @typescript-eslint/no-explicit-any
-                  'number' && (
+                  .oldestEventAgeMs === 'number' && (
                   <>
                     {' '}
                     • Oldest:{' '}
@@ -1076,17 +1077,17 @@ export default function DevDiagnostics() {
                 )}
                 {sparklineSvg}
                 {vmSparklineBuckets.length > 0 && (
-                  <div className="text-muted-foreground ml-2 flex items-center gap-2 text-[10px]">
+                  <div className="ml-2 flex items-center gap-2 text-[10px] text-muted-foreground">
                     <div className="flex items-center gap-1">
-                      <span className="bg-sky-500 inline-block h-2 w-2 rounded-sm" />
+                      <span className="inline-block h-2 w-2 rounded-sm bg-sky-500" />
                       <span>Gait</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className="bg-rose-500 inline-block h-2 w-2 rounded-sm" />
+                      <span className="inline-block h-2 w-2 rounded-sm bg-rose-500" />
                       <span>Fall</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className="bg-amber-500 inline-block h-2 w-2 rounded-sm" />
+                      <span className="inline-block h-2 w-2 rounded-sm bg-amber-500" />
                       <span>Both</span>
                     </div>
                   </div>
@@ -1095,12 +1096,12 @@ export default function DevDiagnostics() {
             )}
           </div>
           {vmError && (
-            <div className="text-red-500 text-xs flex items-center gap-2">
+            <div className="flex items-center gap-2 text-xs text-red-500">
               <AlertTriangle className="h-4 w-4" /> {vmError}
             </div>
           )}
           {!vmError && vmEvents && vmEvents.length === 0 && !vmLoading && (
-            <div className="text-muted-foreground text-xs">
+            <div className="text-xs text-muted-foreground">
               No events captured.
             </div>
           )}
@@ -1113,7 +1114,7 @@ export default function DevDiagnostics() {
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Wrench className="h-5 w-5" />
@@ -1123,7 +1124,7 @@ export default function DevDiagnostics() {
             Use VS Code tasks for tails and analytics fetches.
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-muted-foreground space-y-2 text-sm">
+        <CardContent className="space-y-2 text-sm text-muted-foreground">
           <div>
             • Tail logs (dev): wrangler-tail-dev
             <Button
@@ -1166,15 +1167,17 @@ export default function DevDiagnostics() {
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <FileText className="h-5 w-5" />
             Audit Events
           </CardTitle>
-          <CardDescription className="text-muted-foreground">Recent audit entries (latest 10).</CardDescription>
+          <CardDescription className="text-muted-foreground">
+            Recent audit entries (latest 10).
+          </CardDescription>
         </CardHeader>
-        <CardContent className="gap-3 grid text-foreground">
+        <CardContent className="grid gap-3 text-foreground">
           <div className="flex gap-2">
             <Button size="sm" onClick={onFetchAudit}>
               Fetch
@@ -1183,7 +1186,7 @@ export default function DevDiagnostics() {
           {auditState && auditState.ok && (
             <div className="text-xs text-muted-foreground">
               Count: {auditState.count}
-              <ul className="pl-5 mt-2 list-disc break-all">
+              <ul className="mt-2 list-disc break-all pl-5">
                 {auditState.events.map((e) => (
                   <li key={e.key}>
                     <span className="text-foreground">{e.key}</span>
@@ -1194,14 +1197,14 @@ export default function DevDiagnostics() {
             </div>
           )}
           {auditState && !auditState.ok && (
-            <div className="text-red-500 text-sm">
+            <div className="text-sm text-red-500">
               Error: {auditState.error}
             </div>
           )}
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Bug className="h-5 w-5" />
@@ -1211,32 +1214,34 @@ export default function DevDiagnostics() {
             Send a synthetic client error event.
           </CardDescription>
         </CardHeader>
-        <CardContent className="gap-3 grid">
+        <CardContent className="grid gap-3">
           <div className="flex gap-2">
             <Button size="sm" variant="destructive" onClick={onSendClientError}>
               Send Test Error
             </Button>
           </div>
           {clientErr && clientErr.ok && (
-            <div className="text-xs text-muted-foreground break-all">
+            <div className="break-all text-xs text-muted-foreground">
               Sent • CorrelationId: {clientErr.correlationId ?? '—'}
             </div>
           )}
           {clientErr && !clientErr.ok && (
-            <div className="text-red-500 text-sm">Error: {clientErr.error}</div>
+            <div className="text-sm text-red-500">Error: {clientErr.error}</div>
           )}
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Globe className="h-5 w-5" />
             Auth0 Health
           </CardTitle>
-          <CardDescription className="text-muted-foreground">Check dev Auth0 endpoints.</CardDescription>
+          <CardDescription className="text-muted-foreground">
+            Check dev Auth0 endpoints.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="gap-3 grid text-foreground">
+        <CardContent className="grid gap-3 text-foreground">
           <div className="flex gap-2">
             <Button size="sm" onClick={onAuth0Health}>
               Check
@@ -1254,13 +1259,15 @@ export default function DevDiagnostics() {
         </CardContent>
       </Card>
 
-      <Card className="ios-26-surface-elevated backdrop-blur-md border-white/10 text-foreground">
+      <Card className="ios-26-surface-elevated border-white/10 text-foreground backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Cpu className="h-5 w-5" />
             Browser & Network
           </CardTitle>
-          <CardDescription className="text-muted-foreground">Local environment snapshot.</CardDescription>
+          <CardDescription className="text-muted-foreground">
+            Local environment snapshot.
+          </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 text-sm text-foreground">
           <div>
@@ -1362,11 +1369,11 @@ const VirtualizedMismatchTable: React.FC<
   return (
     <div
       ref={containerRef}
-      className="border-border/40 max-h-64 relative overflow-auto rounded border [contain:strict]"
+      className="border-border/40 relative max-h-64 overflow-auto rounded border [contain:strict]"
     >
-      <table className="text-xs w-full border-separate border-spacing-0">
+      <table className="w-full border-separate border-spacing-0 text-xs">
         <thead className="sticky top-0 z-10">
-          <tr className="bg-muted/50 backdrop-blur supports-[backdrop-filter]:bg-muted/40 text-left">
+          <tr className="bg-muted/50 supports-[backdrop-filter]:bg-muted/40 text-left backdrop-blur">
             <th className="p-2 font-medium">Time</th>
             <th className="p-2 font-medium">Δ</th>
             <th className="p-2 font-medium">Gait</th>
