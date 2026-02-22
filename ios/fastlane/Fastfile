@@ -1,65 +1,71 @@
-# Fastlane configuration for VitalSense
+# Fastlane configuration for Andernet Posture
 # Requires: bundle install
 # Environment variables (set via CI or shell):
-#   APP_IDENTIFIER (e.g. com.example.vitalsense)
-#   TEAM_ID (Apple Developer Team ID)
-#   FASTLANE_USER (Apple ID email)
-#   MATCH_GIT_URL (if using match)
+#   APP_IDENTIFIER     (e.g. dev.andernet.posture.Andernet-Posture)
+#   TEAM_ID            (Apple Developer Team ID - C8U3P6AJ6L)
+#   FASTLANE_USER      (Apple ID email)
 #   APP_STORE_CONNECT_API_KEY_PATH (optional JSON key for API auth)
 
 fastlane_version '2.220.0'
 
+WORK_DIR = '../Andernet-Posture'.freeze
+PROJECT  = 'Andernet Posture.xcodeproj'.freeze
+SCHEME   = 'Andernet Posture'.freeze
+
 def shared_build_settings
   {
-    workspace: 'VitalSense.xcworkspace',
-    scheme: 'VitalSense',
+    project:       PROJECT,
+    scheme:        SCHEME,
     configuration: 'Release'
   }
 end
 
 def test_settings
   {
-    workspace: 'VitalSense.xcworkspace',
-    scheme: 'VitalSense',
-    testplan: 'VitalSenseTests/VitalSenseTests.xctestplan',
-    devices: ['iPhone 15'],
-    result_bundle: true,
-    buildlog_path: 'fastlane/build_logs',
+    project:          PROJECT,
+    scheme:           SCHEME,
+    devices:          ['iPhone 16 Pro'],
+    result_bundle:    true,
+    buildlog_path:    'fastlane/build_logs',
     output_directory: 'fastlane/test_output'
   }
 end
 
 def archive_output
-  'build/Fastlane-VitalSense.xcarchive'
+  'build/AndernetPosture.xcarchive'
 end
 
 platform :ios do
   desc 'Run unit tests with coverage'
   lane :tests do
-    run_tests(test_settings)
+    Dir.chdir(WORK_DIR) { run_tests(test_settings.merge(only_testing: 'Andernet PostureTests')) }
   end
 
-  desc 'Build (gym) an unsigned archive (CODE_SIGNING_ALLOWED=NO)'
+  desc 'Build an unsigned archive'
   lane :build do
-    gym(shared_build_settings.merge(
-      archive_path: archive_output,
-      skip_codesigning: true,
-      clean: true,
-      output_directory: 'build',
-      output_name: 'VitalSense-unsigned'
-    ))
+    Dir.chdir(WORK_DIR) do
+      gym(shared_build_settings.merge(
+        archive_path:     archive_output,
+        skip_codesigning: true,
+        clean:            true,
+        output_directory: 'build',
+        output_name:      'AndernetPosture-unsigned'
+      ))
+    end
   end
 
   desc 'Archive + export App Store IPA (requires signing & ExportOptions plist)'
   lane :archive do |options|
-    plist = options[:export_options] || 'VitalSense/scripts/ExportOptions-AppStore.plist'
-    gym(shared_build_settings.merge(
-      export_method: 'app-store',
-      export_options: plist,
-      clean: true,
-      output_directory: 'build',
-      output_name: 'VitalSense-AppStore'
-    ))
+    plist = options[:export_options] || 'Andernet Posture/ExportOptions-AppStore.plist'
+    Dir.chdir(WORK_DIR) do
+      gym(shared_build_settings.merge(
+        export_method:    'app-store',
+        export_options:   plist,
+        clean:            true,
+        output_directory: 'build',
+        output_name:      'AndernetPosture-AppStore'
+      ))
+    end
   end
 
   desc 'Sync signing assets with match (optional; set MATCH_GIT_URL)'
@@ -68,59 +74,55 @@ platform :ios do
       UI.important('MATCH_GIT_URL not set; skipping match signing sync')
       next
     end
-    match(type: 'appstore', readonly: false, app_identifier: [ENV['APP_IDENTIFIER']])
+    match(type: 'appstore',    readonly: false, app_identifier: [ENV['APP_IDENTIFIER']])
     match(type: 'development', readonly: false, app_identifier: [ENV['APP_IDENTIFIER']])
   end
 
   desc 'Submit to TestFlight (requires credentials / API key)'
-  lane :beta do |options|
-    # Ensure signing assets
+  lane :beta do |_options|
     sync_signing
-
-    # Build for beta distribution
-    gym(shared_build_settings.merge(
-      export_method: 'app-store',
-      clean: true,
-      output_directory: 'build',
-      output_name: 'VitalSense-Beta'
-    ))
-
+    Dir.chdir(WORK_DIR) do
+      gym(shared_build_settings.merge(
+        export_method:    'app-store',
+        clean:            true,
+        output_directory: 'build',
+        output_name:      'AndernetPosture-Beta'
+      ))
+    end
     if ENV['APP_STORE_CONNECT_API_KEY_PATH']
-      api_key = app_store_connect_api_key(
-        key_filepath: ENV['APP_STORE_CONNECT_API_KEY_PATH']
-      )
+      api_key = app_store_connect_api_key(key_filepath: ENV['APP_STORE_CONNECT_API_KEY_PATH'])
       pilot(api_key: api_key, skip_waiting_for_build_processing: true)
     else
       pilot(skip_waiting_for_build_processing: true)
     end
   end
 
-  desc 'Run pbxproj lint (and SwiftLint if available)'
+  desc 'Run SwiftLint'
   lane :lint do
-    sh 'bash VitalSense/scripts/pbxproj-lint.sh'
-    if File.exist?('.swiftlint.yml') || File.exist?('swiftlint.yml')
-      UI.message('Running SwiftLint')
-      sh 'if which swiftlint >/dev/null; then swiftlint; else echo "SwiftLint not installed"; fi'
+    Dir.chdir(WORK_DIR) do
+      if File.exist?('.swiftlint.yml')
+        sh 'if which swiftlint >/dev/null; then swiftlint --strict; else echo "SwiftLint not installed"; fi'
+      end
     end
   end
 
   desc 'Bump marketing version (type: patch|minor|major) and tag'
   lane :bump_version do |options|
     type = (options[:type] || 'patch').to_s
-    increment_version_number(bump_type: type)
-    version = get_version_number(xcodeproj: 'VitalSense.xcodeproj', target: 'VitalSense')
+    Dir.chdir(WORK_DIR) { increment_version_number(bump_type: type) }
+    version = Dir.chdir(WORK_DIR) { get_version_number(xcodeproj: PROJECT, target: SCHEME) }
     sh 'git add .'
     sh "git commit -m 'chore: bump version to #{version}' || echo 'No changes to commit'"
     sh "git tag v#{version} || echo 'Tag exists'"
     UI.success("Version bumped to #{version}")
   end
 
-  desc 'Upload dSYMs from last archive (zip only)'
+  desc 'Upload dSYMs from last archive'
   lane :upload_symbols do
-    sh "bash VitalSense/scripts/upload-dsyms.sh #{archive_output} build/dSYMs"
+    Dir.chdir(WORK_DIR) { sh "bash scripts/upload-dsyms.sh #{archive_output} build/dSYMs" }
   end
 
-  desc 'Generate coverage (requires slather config if present)'
+  desc 'Generate coverage report via slather'
   lane :coverage do
     tests
     if File.exist?('fastlane/slather.yml')
@@ -130,7 +132,7 @@ platform :ios do
         UI.important("Slather failed: #{e.message}")
       end
     else
-      UI.message('No slather.yml, skipping slather coverage step')
+      UI.message('No slather.yml, skipping coverage step')
     end
   end
 
@@ -141,227 +143,110 @@ platform :ios do
     build
   end
 
-  desc 'Simple test lane to verify Fastfile syntax'
+  desc 'Verify Fastfile syntax'
   lane :test_syntax do
-    UI.success('✅ Fastfile syntax is working correctly!')
+    UI.success('Fastfile syntax OK')
   end
 
   desc 'Diagnostic information for build troubleshooting'
   lane :diagnose do
-    UI.message('🔍 Comprehensive Diagnostic Information')
-    UI.message('======================================')
+    UI.message('Running diagnostics...')
 
-    # Check workspace and scheme
-    UI.message('📁 Checking project files...')
-    if File.exist?('VitalSense.xcworkspace')
-      UI.success('✅ VitalSense.xcworkspace exists')
-    else
-      UI.error('❌ VitalSense.xcworkspace not found')
-      return
-    end
+    xcode_version = sh('xcodebuild -version', log: false)
+    UI.message("Xcode: #{xcode_version}")
 
-    if File.exist?('VitalSense.xcodeproj')
-      UI.success('✅ VitalSense.xcodeproj exists')
-    else
-      UI.error('❌ VitalSense.xcodeproj not found')
-    end
+    Dir.chdir(WORK_DIR) do
+      UI.success("Project exists: #{File.exist?(PROJECT)}")
 
-    # Check Xcode version and SDKs
-    UI.message('🔧 Xcode environment:')
-    begin
-      xcode_version = sh('xcodebuild -version', log: false)
-      UI.message("Xcode Version:\n#{xcode_version}")
-
-      sdks = sh('xcodebuild -showsdks', log: false)
-      UI.message("Available SDKs:\n#{sdks}")
-    rescue => e
-      UI.error("Could not get Xcode environment: #{e.message}")
-    end
-
-    # Check available schemes and build configurations
-    UI.message('📋 Project structure:')
-    begin
-      schemes = sh('xcodebuild -workspace VitalSense.xcworkspace -list', log: false)
-      UI.message("Schemes and Configurations:\n#{schemes}")
-    rescue => e
-      UI.error("Could not list schemes: #{e.message}")
-    end
-
-    # Check for package dependencies
-    UI.message('📦 Swift Package dependencies:')
-    begin
-      if File.exist?('Package.swift') || File.exist?('Package.resolved')
-        UI.message('Package.swift found - checking package resolution...')
-        packages = sh('xcodebuild -resolvePackageDependencies -workspace VitalSense.xcworkspace 2>&1 || echo "Package resolution failed"', log: false)
-        UI.message("Package Resolution:\n#{packages}")
-      else
-        UI.message('No Package.swift found')
+      begin
+        schemes = sh("xcodebuild -project '#{PROJECT}' -list", log: false)
+        UI.message("Schemes:\n#{schemes}")
+      rescue => e
+        UI.error("Could not list schemes: #{e.message}")
       end
-    rescue => e
-      UI.error("Could not check packages: #{e.message}")
+
+      begin
+        sh("xcodebuild -resolvePackageDependencies -project '#{PROJECT}' -scheme '#{SCHEME}' 2>&1 | tail -5", log: true)
+        UI.success('Swift packages resolved')
+      rescue => e
+        UI.important("Package resolution warning: #{e.message}")
+      end
+
+      begin
+        settings = sh("xcodebuild -project '#{PROJECT}' -scheme '#{SCHEME}' -showBuildSettings 2>&1 | head -30", log: false)
+        UI.message("Build Settings (first 30 lines):\n#{settings}")
+      rescue => e
+        UI.important("Could not show build settings: #{e.message}")
+      end
     end
 
-    # Check build settings for VitalSense scheme
-    UI.message('⚙️ Build settings check:')
-    begin
-      settings = sh('xcodebuild -workspace VitalSense.xcworkspace -scheme VitalSense -showBuildSettings 2>&1 | head -50', log: false)
-      UI.message("Build Settings (first 50 lines):\n#{settings}")
-    rescue => e
-      UI.error("Could not get build settings: #{e.message}")
-    end
-
-    # Check destinations
-    UI.message('📱 Available destinations:')
-    begin
-      destinations = sh('xcodebuild -workspace VitalSense.xcworkspace -scheme VitalSense -showdestinations 2>&1 | head -20', log: false)
-      UI.message("Destinations:\n#{destinations}")
-    rescue => e
-      UI.error("Could not get destinations: #{e.message}")
-    end
+    UI.success('Diagnostics complete')
   end
 
-  desc 'Raw Xcode build test without gym wrapper'
-  lane :test_raw_build do
-    UI.message('🧪 Testing raw xcodebuild command...')
-
-    begin
-      # Create build directory
-      sh 'mkdir -p build'
-
-      # Test basic xcodebuild command with minimal options
-      result = sh('xcodebuild -workspace VitalSense.xcworkspace -scheme VitalSense -configuration Release -destination generic/platform=iOS CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build', log: true)
-
-      UI.success('✅ Raw xcodebuild completed successfully!')
-      UI.message(result)
-    rescue => e
-      UI.error("❌ Raw xcodebuild failed: #{e.message}")
-      raise e
-    end
-  end
-
-  desc 'Minimal test build to verify basic functionality'
-  lane :test_build do
-    UI.message('🧪 Testing minimal build configuration...')
-
-    # First try raw build to isolate gym vs xcodebuild issues
-    test_raw_build
-
-    # If that works, try with gym but with absolute minimal configuration
-    begin
-      gym(
-        workspace: 'VitalSense.xcworkspace',
-        scheme: 'VitalSense',
-        configuration: 'Release',
-        skip_archive: true,
-        skip_codesigning: true,
-        buildlog_path: 'fastlane/logs',
-        xcargs: 'CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO'
-      )
-      UI.success('✅ Minimal gym build completed successfully!')
-    rescue => e
-      UI.error("❌ Gym build failed: #{e.message}")
-      raise e
-    end
-  end
-
-  # === PERFORMANCE LANES ===
-
-  desc 'Build with maximum performance optimizations'
+  desc 'Build with optimizations (Release, unsigned)'
   lane :build_optimized do
-    UI.message('🚀 Starting optimized build...')
-
-    # Clean derived data for fresh optimized build
-    begin
-      sh 'rm -rf ~/Library/Developer/Xcode/DerivedData'
-      UI.message('🧹 Cleaned derived data')
-    rescue => e
-      UI.important("Could not clean derived data: #{e.message}")
+    UI.message('Starting optimized build...')
+    sh 'rm -rf ~/Library/Developer/Xcode/DerivedData 2>/dev/null || true'
+    Dir.chdir(WORK_DIR) do
+      gym(shared_build_settings.merge(
+        archive_path:     'build/AndernetPosture-Optimized.xcarchive',
+        skip_codesigning: true,
+        clean:            true,
+        output_directory: 'build',
+        output_name:      'AndernetPosture-Optimized',
+        xcargs:           'CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO SWIFT_WHOLE_MODULE_OPTIMIZATION=YES GCC_OPTIMIZATION_LEVEL=fast'
+      ))
     end
+    UI.success('Optimized build complete!')
+  end
 
-    # Use the same pattern as the working build lane but with optimization flags
-    gym(shared_build_settings.merge(
-      archive_path: 'build/VitalSense-Optimized.xcarchive',
-      skip_codesigning: true,
-      clean: true,
-      output_directory: 'build',
-      output_name: 'VitalSense-Optimized',
-      xcargs: 'CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO SWIFT_WHOLE_MODULE_OPTIMIZATION=YES GCC_OPTIMIZATION_LEVEL=fast'
-    ))
-
-    UI.success('✅ Optimized build completed successfully!')
+  desc 'Build optimized for ARKit/gait analysis workloads'
+  lane :build_posture do
+    UI.message('Building posture analysis optimized version...')
+    Dir.chdir(WORK_DIR) do
+      gym(shared_build_settings.merge(
+        archive_path:     'build/AndernetPosture-Posture.xcarchive',
+        skip_codesigning: true,
+        clean:            true,
+        output_directory: 'build',
+        output_name:      'AndernetPosture-Posture',
+        xcargs:           'CODE_SIGNING_ALLOWED=NO MTL_FAST_MATH=YES GCC_UNROLL_LOOPS=YES GCC_VECTORIZE_LOOPS=YES SWIFT_DETERMINISTIC_HASHING=YES'
+      ))
+    end
+    UI.success('Posture build complete!')
   end
 
   desc 'Performance testing with metrics collection'
   lane :performance_test do
-    # Run performance tests with detailed metrics
-    run_tests(
-      workspace: 'VitalSense.xcworkspace',
-      scheme: 'VitalSense',
-      configuration: 'Release',
-      devices: ['iPhone 15 Pro', 'iPhone 15'],
-      testplan: 'VitalSenseTests/VitalSensePerformanceTests.xctestplan',
-      code_coverage: true,
-      result_bundle: true,
-      output_directory: 'fastlane/performance_results',
-      xcargs: '-enableCodeCoverage YES -parallel-testing-enabled YES -maximum-concurrent-test-device-destinations 2'
-    )
-
-    UI.success('📊 Performance tests completed with metrics!')
+    Dir.chdir(WORK_DIR) do
+      run_tests(test_settings.merge(
+        configuration:    'Release',
+        xcargs:           '-enableCodeCoverage YES -parallel-testing-enabled YES',
+        output_directory: 'fastlane/performance_results'
+      ))
+    end
+    UI.success('Performance tests complete!')
   end
 
-  desc 'Build cache management and optimization'
+  desc 'Clean build caches and re-resolve SPM packages'
   lane :optimize_cache do
-    UI.message('🧹 Cleaning and optimizing build caches...')
-
-    # Clear derived data
-    sh 'rm -rf ~/Library/Developer/Xcode/DerivedData'
-
-    # Reset Swift Package Manager cache
-    sh 'rm -rf ~/Library/Caches/org.swift.swiftpm || true'
-    sh 'rm -rf .build || true'
-
-    # Clear Xcode archives (keep only latest 5) - safer version
-    sh 'find ~/Library/Developer/Xcode/Archives -name "*.xcarchive" -type d 2>/dev/null | head -n -5 | xargs rm -rf || true'
-
-    # Resolve Swift packages with fresh cache
-    sh 'xcodebuild -resolvePackageDependencies -workspace VitalSense.xcworkspace -scheme VitalSense'
-
-    UI.success('✨ Build cache optimized!')
-  end
-
-  desc 'Health monitoring build - optimized for real-time gait analysis'
-  lane :build_health_monitoring do
-    UI.message('💓 Building health monitoring optimized version...')
-
-    # Specialized build for health monitoring with gait analysis optimizations
-    gym(shared_build_settings.merge(
-      archive_path: 'build/VitalSense-HealthMonitoring.xcarchive',
-      skip_codesigning: true,
-      clean: true,
-      output_directory: 'build',
-      output_name: 'VitalSense-HealthMonitoring',
-      xcargs: 'CODE_SIGNING_ALLOWED=NO MTL_FAST_MATH=YES GCC_UNROLL_LOOPS=YES GCC_VECTORIZE_LOOPS=YES SWIFT_DETERMINISTIC_HASHING=YES'
-    ))
-
-    UI.success('💪 Health monitoring build optimized for real-time gait analysis!')
+    UI.message('Cleaning build caches...')
+    sh 'rm -rf ~/Library/Developer/Xcode/DerivedData 2>/dev/null || true'
+    sh 'rm -rf ~/Library/Caches/org.swift.swiftpm 2>/dev/null || true'
+    Dir.chdir(WORK_DIR) do
+      sh 'rm -rf .build 2>/dev/null || true'
+      sh("xcodebuild -resolvePackageDependencies -project '#{PROJECT}' -scheme '#{SCHEME}'")
+    end
+    UI.success('Build cache optimized!')
   end
 
   desc 'Complete performance CI pipeline'
   lane :performance_ci do
-    UI.message('🚀 Starting complete performance CI pipeline...')
-
-    # Step 1: Optimize cache
+    UI.message('Starting performance CI pipeline...')
     optimize_cache
-
-    # Step 2: Run linting
     lint
-
-    # Step 3: Performance tests
     performance_test
-
-    # Step 4: Optimized health monitoring build
-    build_health_monitoring
-
-    UI.success('🎉 Performance CI completed successfully!')
+    build_posture
+    UI.success('Performance CI complete!')
   end
 end

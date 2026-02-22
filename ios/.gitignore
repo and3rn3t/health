@@ -1,5 +1,5 @@
 # Git ignore file optimized for iOS/Swift development
-# VitalSense Monitor specific exclusions
+# Andernet Posture specific exclusions
 
 # Xcode
 *.xcworkspace/xcuserdata/

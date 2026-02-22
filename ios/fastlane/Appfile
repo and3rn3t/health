@@ -1,9 +1,9 @@
 # fastlane/Appfile
 # Basic metadata; override via environment variables in CI if needed.
 
-app_identifier(ENV['APP_IDENTIFIER'] || 'com.example.vitalsense')
+app_identifier(ENV['APP_IDENTIFIER'] || 'dev.andernet.posture.Andernet-Posture')
 apple_id(ENV['FASTLANE_USER'] || 'your-apple-id@example.com')
-team_id(ENV['TEAM_ID'] || 'TEAMID1234')
+team_id(ENV['TEAM_ID'] || 'C8U3P6AJ6L')
 
 # Optional: specify ITC team name/id if different
 # itc_team_id('123456789')

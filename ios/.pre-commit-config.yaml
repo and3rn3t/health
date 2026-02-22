@@ -1,4 +1,4 @@
-# Pre-commit hooks configuration for HealthKit Bridge
+# Pre-commit hooks configuration for Andernet Posture iOS
 # Install with: pip install pre-commit && pre-commit install
 
 repos:
