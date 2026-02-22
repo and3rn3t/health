@@ -1,0 +1,18 @@
+{
+  "recommendations": [
+    // ── Core Swift/Xcode Development ─────────────────────
+    "sweetpad.sweetpad",                          // Full iOS/Swift dev: build, debug, simulators
+    "pvasek.sourcekit-lsp--dev-unofficial",        // SourceKit-LSP: autocompletion, go-to-definition
+    "mariomatheu.syntax-project-pbxproj",          // Syntax highlighting for .pbxproj files
+
+    // ── Linting & Formatting ─────────────────────────────
+    "fnando.linter",                               // Multi-language linter (includes SwiftLint)
+
+    // ── Productivity ─────────────────────────────────────
+    "formulahendry.code-runner",                   // Quick-run scripts in many languages
+    "streetsidesoftware.code-spell-checker",        // Spell checking
+
+    // ── Already installed but good to keep ───────────────
+    "esbenp.prettier-vscode"                       // Formatter for JSON/YAML/MD
+  ]
+}

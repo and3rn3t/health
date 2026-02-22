@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Privacy - Camera Usage -->
+	<key>NSCameraUsageDescription</key>
+	<string>Andernet Posture uses your camera to capture and analyze your posture and gait using advanced body tracking technology. This helps us provide personalized insights and clinical assessments.</string>
+	
+	<!-- Privacy - Health Share -->
+	<key>NSHealthShareUsageDescription</key>
+	<string>We need access to your health data (age, biological sex, height, and weight) to provide personalized posture analysis and compare your metrics against clinical norms appropriate for your demographics.</string>
+	
+	<!-- Privacy - Health Update -->
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>We'd like to save your gait speed, balance metrics, and movement quality data to the Health app so you can track your progress over time and share it with healthcare providers.</string>
+	
+	<!-- Privacy - Motion Usage (if using CoreMotion directly) -->
+	<key>NSMotionUsageDescription</key>
+	<string>Motion sensors help us analyze your movement patterns, detect balance issues, and assess fall risk during gait analysis sessions.</string>
+	
+	<!-- Privacy - Photo Library Usage (if you plan to save captures) -->
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save session captures and analysis results to your photo library for your records or to share with healthcare providers.</string>
+	
+	<!-- App Capabilities -->
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arkit</string>
+		<string>arm64</string>
+	</array>
+	
+	<!-- Supported Interface Orientations -->
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	
+	<!-- Launch Screen (if using storyboard) -->
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	
+	<!-- Enable SwiftUI -->
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+		<key>UISceneConfigurations</key>
+		<dict/>
+	</dict>
+	
+	<!-- Status Bar Style -->
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleDefault</string>
+	
+	<!-- HealthKit Required -->
+	<key>UIRequiresPersistentWiFi</key>
+	<false/>
+	
+	<!-- Background Modes (uncomment if needed for HealthKit background delivery) -->
+	<!--
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+		<string>health</string>
+	</array>
+	-->
+</dict>
+</plist>

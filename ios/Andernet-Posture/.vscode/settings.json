@@ -1,0 +1,133 @@
+{
+    // ── Spell Check ───────────────────────────────────────
+    "cSpell.words": [
+        "Andernet",
+        "xcodebuild",
+        "xcrun",
+        "simctl",
+        "swiftlint",
+        "swiftformat",
+        "xcbeautify",
+        "pbxproj",
+        "DerivedData",
+        "xctest",
+        "xcprivacy"
+    ],
+
+    // ── Swift / Xcode ─────────────────────────────────────
+    "files.associations": {
+        "*.swift": "swift",
+        "*.pbxproj": "plaintext",
+        "*.xcscheme": "xml",
+        "*.xcsettings": "xml",
+        "*.entitlements": "xml",
+        "*.xcprivacy": "xml",
+        "*.plist": "xml",
+        "*.xcstrings": "json",
+        "*.storyboard": "xml",
+        "*.xib": "xml",
+        "*.xcconfig": "properties",
+        "*.modulemap": "c"
+    },
+
+    // ── Editor Settings for Swift ────────────────────────
+    "[swift]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": false,
+        "editor.rulers": [120],
+        "editor.wordWrap": "off",
+        "editor.bracketPairColorization.enabled": true,
+        "editor.guides.bracketPairs": "active",
+        "editor.suggest.snippetsPreventQuickSuggestions": false,
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": false
+        },
+        "editor.minimap.enabled": false,
+        "editor.stickyScroll.enabled": true,
+        "editor.linkedEditing": true
+    },
+
+    // ── XML / Plist Settings ─────────────────────────────
+    "[xml]": {
+        "editor.tabSize": 4,
+        "editor.autoClosingBrackets": "always",
+        "editor.formatOnSave": false
+    },
+
+    // ── Search / Explorer Exclusions ─────────────────────
+    "files.exclude": {
+        "**/.build": true,
+        "**/DerivedData": true,
+        "**/*.xcodeproj/xcuserdata": true,
+        "**/*.xcodeproj/project.xcworkspace/xcuserdata": true,
+        "**/.DS_Store": true,
+        "**/*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm": true
+    },
+    "search.exclude": {
+        "**/.build": true,
+        "**/DerivedData": true,
+        "**/*.xcodeproj/project.pbxproj": true,
+        "**/*.xcodeproj/xcuserdata": true,
+        "**/Assets.xcassets/**/*.json": true,
+        "**/.git": true,
+        "buildServer.json": true
+    },
+    "files.watcherExclude": {
+        "**/.build/**": true,
+        "**/DerivedData/**": true,
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/MLModels/**": true
+    },
+
+    // ── Terminal ──────────────────────────────────────────
+    "terminal.integrated.defaultProfile.osx": "zsh",
+    "terminal.integrated.env.osx": {
+        "DEVELOPER_DIR": "/Applications/Xcode.app/Contents/Developer"
+    },
+    "terminal.integrated.scrollback": 10000,
+    "terminal.integrated.enablePersistentSessions": true,
+    "terminal.integrated.confirmOnExit": "hasChildProcesses",
+    "terminal.integrated.profiles.osx": {
+        "Xcode Shell": {
+            "path": "/bin/zsh",
+            "args": ["-l"],
+            "env": {
+                "DEVELOPER_DIR": "/Applications/Xcode.app/Contents/Developer"
+            },
+            "icon": "hammer"
+        }
+    },
+
+    // ── Problem Matchers ─────────────────────────────────
+    "task.problemMatchers.neverPrompt": {
+        "xcodebuild": true,
+        "swiftlint": true
+    },
+
+    // ── Breadcrumbs / Outline ────────────────────────────
+    "breadcrumbs.enabled": true,
+    "outline.showFunctions": true,
+    "outline.showClasses": true,
+    "outline.showEnums": true,
+    "outline.showInterfaces": true,
+    "outline.showProperties": true,
+    "outline.showVariables": false,
+
+    // ── SweetPad ─────────────────────────────────────────
+    "sweetpad.build.xcbeautifyEnabled": true,
+
+    // ── Git ──────────────────────────────────────────────
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "git.enableSmartCommit": true,
+    "git.inputValidationSubjectLength": 72,
+
+    // ── General ──────────────────────────────────────────
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true
+}

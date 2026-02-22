@@ -1,0 +1,33 @@
+{
+  // ── Xcode-style keybindings ──────────────────────────
+  // Cmd+B → Build (matches Xcode)
+  {
+    "key": "cmd+b",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Xcode: Build"
+  },
+  // Cmd+Shift+B → Clean Build
+  {
+    "key": "cmd+shift+b",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Xcode: Build (Clean)"
+  },
+  // Cmd+U → Run Tests (matches Xcode)
+  {
+    "key": "cmd+u",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Xcode: Run Unit Tests"
+  },
+  // Cmd+Shift+K → Clean (open in Xcode for full clean)
+  {
+    "key": "cmd+shift+k",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Xcode: Open in Xcode"
+  },
+  // Cmd+Shift+L → Lint current file
+  {
+    "key": "cmd+shift+l",
+    "command": "workbench.action.tasks.runTask",
+    "args": "SwiftLint: Current File"
+  }
+}

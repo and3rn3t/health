@@ -1,0 +1,44 @@
+{
+  "configurations" : [
+    {
+      "id" : "accessibility-tests",
+      "name" : "Accessibility Tests",
+      "options" : {
+        "codeCoverage" : false,
+        "commandLineArgumentEntries" : [
+          {
+            "argument" : "UI_TESTING"
+          }
+        ],
+        "environmentVariableEntries" : [
+          {
+            "key" : "IS_UI_TESTING",
+            "value" : "1"
+          }
+        ],
+        "targetForVariableExpansion" : {
+          "containerPath" : "container:Andernet Posture.xcodeproj",
+          "identifier" : "Andernet Posture",
+          "name" : "Andernet Posture"
+        },
+        "testExecutionOrdering" : "random"
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false
+  },
+  "testTargets" : [
+    {
+      "selectedTests" : [
+        "AccessibilityTests"
+      ],
+      "target" : {
+        "containerPath" : "container:Andernet Posture.xcodeproj",
+        "identifier" : "Andernet_PostureUITests",
+        "name" : "Andernet_PostureUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

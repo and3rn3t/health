@@ -1,0 +1,108 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "App display name shown on the home screen",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Andernet Posture"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Andernet Postura"
+          }
+        }
+      }
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Andernet Posture"
+          }
+        }
+      }
+    },
+    "NSCameraUsageDescription" : {
+      "comment" : "System permission dialog — camera and LiDAR access",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This app uses the camera and LiDAR sensor to track your body for real-time posture and gait analysis."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esta aplicación utiliza la cámara y el sensor LiDAR para rastrear la postura corporal y la marcha en tiempo real."
+          }
+        }
+      }
+    },
+    "NSHealthShareUsageDescription" : {
+      "comment" : "System permission dialog — HealthKit read access",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This app reads your health data to display walking metrics, step counts, and historical trends."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esta aplicación lee tus datos de salud para proporcionar información personalizada sobre postura y marcha basada en tu historial de actividad."
+          }
+        }
+      }
+    },
+    "NSHealthUpdateUsageDescription" : {
+      "comment" : "System permission dialog — HealthKit write access",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This app saves posture and gait session summaries to Apple Health so you can track progress over time."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esta aplicación guarda resúmenes de sesiones de postura y marcha en Apple Salud para que puedas seguir tu progreso junto con otros datos de salud."
+          }
+        }
+      }
+    },
+    "NSMotionUsageDescription" : {
+      "comment" : "System permission dialog — motion sensor access",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This app uses motion sensors to supplement body tracking and improve gait analysis accuracy."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esta aplicación utiliza sensores de movimiento para mejorar la precisión del análisis de postura y marcha."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

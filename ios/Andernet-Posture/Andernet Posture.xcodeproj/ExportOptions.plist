@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Method: app-store, ad-hoc, enterprise, development -->
+	<key>method</key>
+	<string>app-store</string>
+	
+	<!-- Team ID from Apple Developer Account -->
+	<key>teamID</key>
+	<string>YOUR_TEAM_ID_HERE</string>
+	
+	<!-- Upload to TestFlight -->
+	<key>uploadBitcode</key>
+	<false/>
+	
+	<!-- Upload symbols for crash reporting -->
+	<key>uploadSymbols</key>
+	<true/>
+	
+	<!-- Compile for App Store submission -->
+	<key>compileBitcode</key>
+	<false/>
+	
+	<!-- Signing style: manual or automatic -->
+	<key>signingStyle</key>
+	<string>automatic</string>
+	
+	<!-- Bundle identifier -->
+	<key>signingCertificate</key>
+	<string>Apple Distribution</string>
+	
+	<!-- Provisioning profiles (if using manual signing) -->
+	<!-- Uncomment and configure if using manual signing
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>dev.andernet.posture</key>
+		<string>YOUR_PROVISIONING_PROFILE_NAME</string>
+	</dict>
+	-->
+	
+	<!-- Thinning: <none>, <thin-for-all-variants>, or device-specific -->
+	<key>thinning</key>
+	<string>&lt;none&gt;</string>
+	
+	<!-- Manage Version and Build Number -->
+	<key>manageAppVersionAndBuildNumber</key>
+	<false/>
+	
+	<!-- Destination -->
+	<key>destination</key>
+	<string>upload</string>
+</dict>
+</plist>

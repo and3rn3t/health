@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Attach to Simulator Process",
+            "type": "lldb",
+            "request": "attach",
+            "program": "",
+            "pid": "${command:pickProcess}",
+            "preLaunchTask": "Xcode: Build"
+        },
+        {
+            "name": "Attach to Process by Name",
+            "type": "lldb",
+            "request": "attach",
+            "program": "",
+            "waitFor": true,
+            "processName": "Andernet Posture"
+        }
+    ]
+}

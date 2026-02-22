@@ -1,0 +1,27 @@
+{
+  "configurations" : [
+    {
+      "id" : "unit-tests",
+      "name" : "Unit Tests",
+      "options" : {
+        "codeCoverage" : false,
+        "testExecutionOrdering" : "random"
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "testExecutionOrdering" : "random"
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:Andernet Posture.xcodeproj",
+        "identifier" : "Andernet_PostureTests",
+        "name" : "Andernet_PostureTests"
+      }
+    }
+  ],
+  "version" : 1
+}

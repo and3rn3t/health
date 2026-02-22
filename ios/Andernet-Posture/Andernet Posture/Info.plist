@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>Andernet Posture</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.healthcare-fitness</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arkit</string>
+		<string>iphone-ipad-minimum-performance-a12</string>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>This app uses the camera and LiDAR sensor to track your body for real-time posture and gait analysis.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>This app uses motion sensors to supplement body tracking and improve gait analysis accuracy.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>This app reads your health data to display walking metrics, step counts, and historical trends.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>This app saves posture and gait session summaries to Apple Health so you can track progress over time.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>dev.andernet.posture</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>andernetposture</string>
+			</array>
+		</dict>
+	</array>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>BackgroundColor</key>
+		<string>LaunchBackground</string>
+	</dict>
+</dict>
+</plist>

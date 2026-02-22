@@ -1,0 +1,215 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  XCODE_VERSION: '15.2'
+  IOS_SIMULATOR: 'iPhone 15 Pro'
+  IOS_VERSION: '17.2'
+
+jobs:
+  smoke-tests:
+    name: Smoke Tests
+    runs-on: macos-14
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Select Xcode version
+      run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+    
+    - name: Show Xcode version
+      run: xcodebuild -version
+    
+    - name: List available simulators
+      run: xcrun simctl list devices available
+    
+    - name: Build and Run Smoke Tests
+      run: |
+        xcodebuild test \
+          -scheme "Andernet Posture" \
+          -testPlan SmokeTests \
+          -destination "platform=iOS Simulator,name=${{ env.IOS_SIMULATOR }},OS=${{ env.IOS_VERSION }}" \
+          -resultBundlePath SmokeTestResults.xcresult \
+          -enableCodeCoverage NO \
+          | xcpretty
+    
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: smoke-test-results
+        path: SmokeTestResults.xcresult
+        retention-days: 7
+
+  full-tests:
+    name: Full Test Suite
+    runs-on: macos-14
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Select Xcode version
+      run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+    
+    - name: Build and Run Full Test Suite
+      run: |
+        xcodebuild test \
+          -scheme "Andernet Posture" \
+          -testPlan FullSuite \
+          -destination "platform=iOS Simulator,name=${{ env.IOS_SIMULATOR }},OS=${{ env.IOS_VERSION }}" \
+          -resultBundlePath FullTestResults.xcresult \
+          -enableCodeCoverage YES \
+          | xcpretty
+    
+    - name: Generate Coverage Report
+      run: |
+        xcrun xccov view --report --json FullTestResults.xcresult > coverage.json
+        xcrun xccov view --report FullTestResults.xcresult
+    
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: full-test-results
+        path: FullTestResults.xcresult
+        retention-days: 30
+    
+    - name: Upload Coverage
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage.json
+        retention-days: 30
+
+  accessibility-tests:
+    name: Accessibility Tests
+    runs-on: macos-14
+    # Run weekly or on accessibility-related changes
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Select Xcode version
+      run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+    
+    - name: Build and Run Accessibility Tests
+      run: |
+        xcodebuild test \
+          -scheme "Andernet Posture" \
+          -testPlan AccessibilityTests \
+          -destination "platform=iOS Simulator,name=${{ env.IOS_SIMULATOR }},OS=${{ env.IOS_VERSION }}" \
+          -resultBundlePath AccessibilityTestResults.xcresult \
+          | xcpretty
+    
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: accessibility-test-results
+        path: AccessibilityTestResults.xcresult
+        retention-days: 30
+
+  lint:
+    name: SwiftLint
+    runs-on: macos-14
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install SwiftLint
+      run: brew install swiftlint
+    
+    - name: Run SwiftLint
+      run: swiftlint lint --reporter github-actions-logging
+
+  build:
+    name: Build App
+    runs-on: macos-14
+    needs: smoke-tests
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Select Xcode version
+      run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+    
+    - name: Build for Release
+      run: |
+        xcodebuild build \
+          -scheme "Andernet Posture" \
+          -configuration Release \
+          -destination "generic/platform=iOS" \
+          CODE_SIGNING_ALLOWED=NO \
+          | xcpretty
+    
+    - name: Archive Build Logs
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs
+        path: ~/Library/Developer/Xcode/DerivedData/*/Logs
+
+  # Uncomment when you're ready to automate TestFlight uploads
+  # deploy-testflight:
+  #   name: Deploy to TestFlight
+  #   runs-on: macos-14
+  #   needs: [full-tests, build]
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
+  #   
+  #   - name: Select Xcode version
+  #     run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+  #   
+  #   - name: Import Code Signing Certificates
+  #     env:
+  #       CERTIFICATES_P12: ${{ secrets.CERTIFICATES_P12 }}
+  #       CERTIFICATES_PASSWORD: ${{ secrets.CERTIFICATES_PASSWORD }}
+  #     run: |
+  #       # Import signing certificates
+  #       echo $CERTIFICATES_P12 | base64 --decode > certificate.p12
+  #       security create-keychain -p "" build.keychain
+  #       security import certificate.p12 -k build.keychain -P $CERTIFICATES_PASSWORD -T /usr/bin/codesign
+  #       security list-keychains -s build.keychain
+  #       security default-keychain -s build.keychain
+  #       security unlock-keychain -p "" build.keychain
+  #       security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+  #   
+  #   - name: Build and Archive
+  #     run: |
+  #       xcodebuild archive \
+  #         -scheme "Andernet Posture" \
+  #         -configuration Release \
+  #         -archivePath build/Andernet\ Posture.xcarchive \
+  #         | xcpretty
+  #   
+  #   - name: Export IPA
+  #     run: |
+  #       xcodebuild -exportArchive \
+  #         -archivePath build/Andernet\ Posture.xcarchive \
+  #         -exportPath build \
+  #         -exportOptionsPlist ExportOptions.plist
+  #   
+  #   - name: Upload to TestFlight
+  #     env:
+  #       APPSTORE_API_KEY: ${{ secrets.APPSTORE_API_KEY }}
+  #     run: |
+  #       xcrun altool --upload-app \
+  #         -f build/Andernet\ Posture.ipa \
+  #         -t ios \
+  #         --apiKey $APPSTORE_API_KEY

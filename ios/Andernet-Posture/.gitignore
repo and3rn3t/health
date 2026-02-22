@@ -1,0 +1,84 @@
+# Xcode
+.DS_Store
+**/.DS_Store
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+*.moved-aside
+
+# User settings
+*.xcuserdatad/
+*.xcuserdata/
+
+# Derived data and build
+DerivedData/
+build/
+Build/
+*.o
+*.LinkFileList
+*.hmap
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# SwiftPM
+.swiftpm/
+.build/
+Package.resolved
+
+# CocoaPods
+Pods/
+*.podspec.json
+
+# Carthage
+Carthage/Build/
+Carthage/Checkouts/
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Swift playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# SPM workspace data
+workspace-state.json
+
+# Index
+*.index
+*.index-db
+*.index-build
+
+# Archives
+*.xcarchive
+
+# Simulator logs
+*.simdevicelog
+
+# Swift Package plugin artifacts
+.artifacts/
+
+# SwiftData / Core Data generated artifacts
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Tuist / XcodeGen
+Tuist/
+Project.swift
+project.yml
+
+# Misc
+*.swp
+*.swo
+*~
+*.profraw
+*.profdata
+*.gcda
+*.gcno
+
+# VS Code / xcode-build-server
+buildServer.json

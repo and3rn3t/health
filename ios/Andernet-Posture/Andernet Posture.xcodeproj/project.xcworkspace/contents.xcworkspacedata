@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "self:">
+   </FileRef>
+   <FileRef
+      location = "group:Andernet Posture.entitlements">
+   </FileRef>
+   <FileRef
+      location = "group:Info.plist">
+   </FileRef>
+   <FileRef
+      location = "group:SmokeTests.xctestplan">
+   </FileRef>
+   <FileRef
+      location = "group:FullSuite.xctestplan">
+   </FileRef>
+   <FileRef
+      location = "group:AccessibilityTests.xctestplan">
+   </FileRef>
+   <FileRef
+      location = "group:MetricsManager.swift">
+   </FileRef>
+   <FileRef
+      location = "group:XCODE_SETUP_GUIDE.md">
+   </FileRef>
+   <FileRef
+      location = "group:Scriptsswiftlint.sh">
+   </FileRef>
+   <FileRef
+      location = "group:Scriptsincrement_build_number.sh">
+   </FileRef>
+   <FileRef
+      location = "group:XCODE_CHECKLIST.md">
+   </FileRef>
+   <FileRef
+      location = "group:ExportOptions.plist">
+   </FileRef>
+   <FileRef
+      location = "group:XCODE_FILES_SUMMARY.md">
+   </FileRef>
+   <FileRef
+      location = "group:PROJECT_STRUCTURE.md">
+   </FileRef>
+   <FileRef
+      location = "group:CLEANUP_LOG.md">
+   </FileRef>
+</Workspace>
