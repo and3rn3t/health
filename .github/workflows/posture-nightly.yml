@@ -1,4 +1,4 @@
-name: Nightly Tests
+name: Posture Nightly Tests
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch: # Allow manual trigger
 
 concurrency:
-  group: nightly-tests
+  group: posture-nightly
   cancel-in-progress: true
 
 env:
@@ -15,6 +15,11 @@ env:
   PROJECT: "Andernet Posture.xcodeproj"
   DESTINATION: "platform=iOS Simulator,name=iPhone 16 Pro,OS=latest"
   XCODE_PATH: /Applications/Xcode_26.2.app/Contents/Developer
+  WORK_DIR: ios/Andernet-Posture
+
+defaults:
+  run:
+    working-directory: ios/Andernet-Posture
 
 jobs:
   # ─── Full suite with sanitizers ───
@@ -34,7 +39,7 @@ jobs:
         with:
           path: |
             ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/*.xcodeproj/project.pbxproj') }}
+          key: ${{ runner.os }}-spm-${{ hashFiles('ios/Andernet-Posture/**/*.xcodeproj/project.pbxproj') }}
           restore-keys: |
             ${{ runner.os }}-spm-
 
@@ -70,7 +75,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: NightlyUnitResults
-          path: NightlyUnitResults.xcresult
+          path: ${{ env.WORK_DIR }}/NightlyUnitResults.xcresult
 
   # ─── Full UI test suite ───
   full-ui-tests:
@@ -89,7 +94,7 @@ jobs:
         with:
           path: |
             ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/*.xcodeproj/project.pbxproj') }}
+          key: ${{ runner.os }}-spm-${{ hashFiles('ios/Andernet-Posture/**/*.xcodeproj/project.pbxproj') }}
           restore-keys: |
             ${{ runner.os }}-spm-
 
@@ -123,7 +128,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: NightlyFullSuiteResults
-          path: NightlyFullSuiteResults.xcresult
+          path: ${{ env.WORK_DIR }}/NightlyFullSuiteResults.xcresult
 
   # ─── Accessibility tests ───
   accessibility-tests:
@@ -142,7 +147,7 @@ jobs:
         with:
           path: |
             ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/*.xcodeproj/project.pbxproj') }}
+          key: ${{ runner.os }}-spm-${{ hashFiles('ios/Andernet-Posture/**/*.xcodeproj/project.pbxproj') }}
           restore-keys: |
             ${{ runner.os }}-spm-
 
@@ -175,4 +180,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: NightlyA11yResults
-          path: NightlyA11yResults.xcresult
+          path: ${{ env.WORK_DIR }}/NightlyA11yResults.xcresult

@@ -1,17 +1,17 @@
-# SwiftLint configuration for VitalSense Monitor
-# This helps maintain consistent code quality and catches potential issues
+# SwiftLint configuration for VitalSense iOS (monorepo root)
+# Note: ios/Andernet-Posture/ has its own .swiftlint.yml which takes precedence
+# when SwiftLint is run from that subdirectory.
 
-# Included rules
+# Only lint VitalSenseCore sources at this level
 included:
-  - HealthKitBridge/
+  - Sources/
 
 # Excluded paths
 excluded:
+  - Andernet-Posture/
   - build/
-  - HealthKitBridgeTests/
-  - HealthKitBridgeUITests/
-  - Pods/
   - .build/
+  - Pods/
 
 # Enabled rules
 opt_in_rules:

@@ -1,10 +1,14 @@
-name: CI
+name: Posture CI
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'ios/Andernet-Posture/**'
   pull_request:
     branches: [main]
+    paths:
+      - 'ios/Andernet-Posture/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -15,6 +19,11 @@ env:
   PROJECT: "Andernet Posture.xcodeproj"
   DESTINATION: "platform=iOS Simulator,name=iPhone 16 Pro,OS=latest"
   XCODE_PATH: /Applications/Xcode_26.2.app/Contents/Developer
+  WORK_DIR: ios/Andernet-Posture
+
+defaults:
+  run:
+    working-directory: ios/Andernet-Posture
 
 jobs:
   # ─── Fast PR feedback: unit tests only (~1-2 min) ───
@@ -34,7 +43,7 @@ jobs:
         with:
           path: |
             ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/*.xcodeproj/project.pbxproj') }}
+          key: ${{ runner.os }}-spm-${{ hashFiles('ios/Andernet-Posture/**/*.xcodeproj/project.pbxproj') }}
           restore-keys: |
             ${{ runner.os }}-spm-
 
@@ -67,7 +76,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: UnitTestResults
-          path: UnitTestResults.xcresult
+          path: ${{ env.WORK_DIR }}/UnitTestResults.xcresult
 
   # ─── PR smoke check: 7 critical UI tests (~2 min) ───
   smoke-ui-tests:
@@ -87,7 +96,7 @@ jobs:
         with:
           path: |
             ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/*.xcodeproj/project.pbxproj') }}
+          key: ${{ runner.os }}-spm-${{ hashFiles('ios/Andernet-Posture/**/*.xcodeproj/project.pbxproj') }}
           restore-keys: |
             ${{ runner.os }}-spm-
 
@@ -120,7 +129,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: SmokeTestResults
-          path: SmokeTestResults.xcresult
+          path: ${{ env.WORK_DIR }}/SmokeTestResults.xcresult
 
   # ─── Main branch: full regression suite with coverage ───
   full-suite:
@@ -140,7 +149,7 @@ jobs:
         with:
           path: |
             ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/*.xcodeproj/project.pbxproj') }}
+          key: ${{ runner.os }}-spm-${{ hashFiles('ios/Andernet-Posture/**/*.xcodeproj/project.pbxproj') }}
           restore-keys: |
             ${{ runner.os }}-spm-
 
@@ -175,7 +184,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: FullSuiteResults
-          path: FullSuiteResults.xcresult
+          path: ${{ env.WORK_DIR }}/FullSuiteResults.xcresult
 
   # ─── Lint (all pushes and PRs) ───
   swiftlint:
