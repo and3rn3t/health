@@ -1,2396 +1,2526 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "🔧 Setup VS Code Workspace",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/powershell/setup-vscode-workspace.ps1",
-        "-All"
-      ],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "icon": { "id": "settings-gear", "color": "terminal.ansiBlue" },
-      "detail": "Configure VS Code workspace with VitalSense settings and extensions"
-    },
-    {
-      "label": "Onboarding: New User Wizard",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/development/onboarding-wizard.js"],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "icon": { "id": "lightbulb", "color": "terminal.ansiYellow" },
-      "detail": "Interactive guided setup with progress tracking"
-    },
-    {
-      "label": "💎 Node: Production Branding Check",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/testing/test-browser-endpoints.js",
-        "--baseUrl=https://health.andernet.dev",
-        "--verbose"
-      ],
-      "group": "test",
-      "icon": { "id": "heart", "color": "terminal.ansiRed" },
-      "detail": "Node rewrite of verify-production-branding.ps1"
-    },
-    {
-      "label": "💎 Node: Local Branding Check",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/branding/verify-production-branding.js",
-        "--url=http://127.0.0.1:8789",
-        "--local"
-      ],
-      "group": "test",
-      "icon": { "id": "heart", "color": "terminal.ansiMagenta" },
-      "detail": "Verify branding against local Worker (port 8789)"
-    },
-    {
-      "label": "🪄 Node: Rebrand Scan",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/branding/verify-vitalsense-rebrand.js"],
-      "group": "test",
-      "icon": { "id": "inspect", "color": "terminal.ansiYellow" },
-      "detail": "Scan repository for leftover HealthGuard references"
-    },
-    {
-      "label": "🌐 Node: Find Worker URL",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/branding/find-worker-url.js"],
-      "group": "test",
-      "icon": { "id": "globe", "color": "terminal.ansiBlue" },
-      "detail": "Probe candidate Cloudflare Worker domains and custom domain"
-    },
-    {
-      "label": "🧾 Node: Branding Audit (Combined)",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/branding/branding-audit.js"],
-      "group": "test",
-      "icon": { "id": "report", "color": "terminal.ansiGreen" },
-      "detail": "Run combined branding + rebrand scan and produce markdown summary"
-    },
-    {
-      "label": "� Node: Auth0 Login Page Test",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/testing/test-auth0-login-page.js"],
-      "group": "test",
-      "icon": { "id": "shield", "color": "terminal.ansiYellow" },
-      "detail": "Node rewrite of Auth0: Test Custom Login Page"
-    },
-    {
-      "label": "🧪 Node: Enhanced Health Processing",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/testing/test-enhanced-health-processing.js",
-        "--baseUrl",
-        "http://127.0.0.1",
-        "--port",
-        "8789"
-      ],
-      "group": "test",
-      "icon": { "id": "beaker", "color": "terminal.ansiGreen" },
-      "detail": "Node rewrite of test-enhanced-health-processing.ps1"
-    },
-    {
-      "label": "🧪 Node: Browser Endpoint Tests",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/testing/test-browser-endpoints.js",
-        "--baseUrl=https://health-app-prod.workers.dev"
-      ],
-      "group": "test",
-      "detail": "Node rewrite of test-browser-endpoints.ps1"
-    },
-    {
-      "label": "🧪 Node: WebSocket Connection",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/testing/test-websocket-connection.js",
-        "--backendUrl=wss://health.andernet.dev/ws"
-      ],
-      "group": "test",
-      "icon": { "id": "broadcast", "color": "terminal.ansiMagenta" },
-      "detail": "Node rewrite of test-websocket-connection.ps1"
-    },
-    {
-      "label": "� Enhanced WebSocket Server",
-      "type": "shell",
-      "command": "node",
-      "args": ["start-enhanced.js"],
-      "options": {
-        "cwd": "${workspaceFolder}/server"
-      },
-      "group": "build",
-      "isBackground": true,
-      "icon": { "id": "server-process", "color": "terminal.ansiGreen" },
-      "detail": "Start enhanced WebSocket server with database persistence and authentication",
-      "problemMatcher": {
-        "pattern": {
-          "regexp": "^(ERROR|WARN|Error):\\s+(.*)$",
-          "severity": 1,
-          "message": 2
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "sweetpad",
+            "action": "build",
+            "problemMatcher": [
+                "$sweetpad-watch",
+                "$sweetpad-xcodebuild-default",
+                "$sweetpad-xcbeautify-errors",
+                "$sweetpad-xcbeautify-warnings"
+            ],
+            "label": "sweetpad: build",
+            "detail": "Build the app",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "silent",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "type": "sweetpad",
+            "action": "launch",
+            "problemMatcher": [
+                "$sweetpad-watch",
+                "$sweetpad-xcodebuild-default",
+                "$sweetpad-xcbeautify-errors",
+                "$sweetpad-xcbeautify-warnings"
+            ],
+            "label": "sweetpad: launch",
+            "detail": "Build and Launch the app",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "type": "sweetpad",
+            "action": "clean",
+            "problemMatcher": [
+                "$sweetpad-watch",
+                "$sweetpad-xcodebuild-default",
+                "$sweetpad-xcbeautify-errors",
+                "$sweetpad-xcbeautify-warnings"
+            ],
+            "label": "sweetpad: clean",
+            "detail": "Clean the app",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "🔧 Setup VS Code Workspace",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "scripts/powershell/setup-vscode-workspace.ps1",
+                "-All"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "icon": {
+                "id": "settings-gear",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Configure VS Code workspace with VitalSense settings and extensions"
+        },
+        {
+            "label": "Onboarding: New User Wizard",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/development/onboarding-wizard.js"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "icon": {
+                "id": "lightbulb",
+                "color": "terminal.ansiYellow"
+            },
+            "detail": "Interactive guided setup with progress tracking"
+        },
+        {
+            "label": "💎 Node: Production Branding Check",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/testing/test-browser-endpoints.js",
+                "--baseUrl=https://health.andernet.dev",
+                "--verbose"
+            ],
+            "group": "test",
+            "icon": {
+                "id": "heart",
+                "color": "terminal.ansiRed"
+            },
+            "detail": "Node rewrite of verify-production-branding.ps1"
+        },
+        {
+            "label": "💎 Node: Local Branding Check",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/branding/verify-production-branding.js",
+                "--url=http://127.0.0.1:8789",
+                "--local"
+            ],
+            "group": "test",
+            "icon": {
+                "id": "heart",
+                "color": "terminal.ansiMagenta"
+            },
+            "detail": "Verify branding against local Worker (port 8789)"
+        },
+        {
+            "label": "🪄 Node: Rebrand Scan",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/branding/verify-vitalsense-rebrand.js"
+            ],
+            "group": "test",
+            "icon": {
+                "id": "inspect",
+                "color": "terminal.ansiYellow"
+            },
+            "detail": "Scan repository for leftover HealthGuard references"
+        },
+        {
+            "label": "🌐 Node: Find Worker URL",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/branding/find-worker-url.js"
+            ],
+            "group": "test",
+            "icon": {
+                "id": "globe",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Probe candidate Cloudflare Worker domains and custom domain"
+        },
+        {
+            "label": "🧾 Node: Branding Audit (Combined)",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/branding/branding-audit.js"
+            ],
+            "group": "test",
+            "icon": {
+                "id": "report",
+                "color": "terminal.ansiGreen"
+            },
+            "detail": "Run combined branding + rebrand scan and produce markdown summary"
+        },
+        {
+            "label": "� Node: Auth0 Login Page Test",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/testing/test-auth0-login-page.js"
+            ],
+            "group": "test",
+            "icon": {
+                "id": "shield",
+                "color": "terminal.ansiYellow"
+            },
+            "detail": "Node rewrite of Auth0: Test Custom Login Page"
+        },
+        {
+            "label": "🧪 Node: Enhanced Health Processing",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/testing/test-enhanced-health-processing.js",
+                "--baseUrl",
+                "http://127.0.0.1",
+                "--port",
+                "8789"
+            ],
+            "group": "test",
+            "icon": {
+                "id": "beaker",
+                "color": "terminal.ansiGreen"
+            },
+            "detail": "Node rewrite of test-enhanced-health-processing.ps1"
+        },
+        {
+            "label": "🧪 Node: Browser Endpoint Tests",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/testing/test-browser-endpoints.js",
+                "--baseUrl=https://health-app-prod.workers.dev"
+            ],
+            "group": "test",
+            "detail": "Node rewrite of test-browser-endpoints.ps1"
+        },
+        {
+            "label": "🧪 Node: WebSocket Connection",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/testing/test-websocket-connection.js",
+                "--backendUrl=wss://health.andernet.dev/ws"
+            ],
+            "group": "test",
+            "icon": {
+                "id": "broadcast",
+                "color": "terminal.ansiMagenta"
+            },
+            "detail": "Node rewrite of test-websocket-connection.ps1"
+        },
+        {
+            "label": "� Enhanced WebSocket Server",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "start-enhanced.js"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/server"
+            },
+            "group": "build",
+            "isBackground": true,
+            "icon": {
+                "id": "server-process",
+                "color": "terminal.ansiGreen"
+            },
+            "detail": "Start enhanced WebSocket server with database persistence and authentication",
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^(ERROR|WARN|Error):\\s+(.*)$",
+                    "severity": 1,
+                    "message": 2
+                }
+            }
+        },
+        {
+            "label": "🔧 Enhanced Server (Dev Mode)",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "run",
+                "dev"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/server",
+                "env": {
+                    "NODE_ENV": "development",
+                    "JWT_SECRET": "dev-local-secret",
+                    "PORT": "3001"
+                }
+            },
+            "group": "build",
+            "isBackground": true,
+            "icon": {
+                "id": "debug-alt",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Start enhanced server in development mode with auto-restart"
+        },
+        {
+            "label": "�🐳 Docker: Up (dev)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "scripts/analysis/bundle-optimization-tester.js"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "server",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Build and start worker + websocket via docker-compose"
+        },
+        {
+            "label": "🐳 Docker: Down",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "docker compose down"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "icon": {
+                "id": "trash",
+                "color": "terminal.ansiRed"
+            },
+            "detail": "Stop and remove containers"
+        },
+        {
+            "label": "🐳 Docker: Logs (worker)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "docker compose logs -f worker"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "🐳 Docker: Logs (websocket)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "docker compose logs -f websocket"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "🐳 Docker: Health (worker)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "try { $r = Invoke-WebRequest 'http://127.0.0.1:8789/health' -TimeoutSec 5; Write-Host 'Worker:' $r.StatusCode } catch { Write-Host 'Worker: ERROR' $_.Exception.Message }"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "🐳 Docker: Health (websocket)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "try { $r = Invoke-WebRequest 'http://127.0.0.1:3001/api/health' -TimeoutSec 5; Write-Host 'WebSocket REST:' $r.StatusCode } catch { Write-Host 'WebSocket REST: ERROR' $_.Exception.Message }"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "VitalSense App: Status (8789 Worker)",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/health/app-status-check.js",
+                "--url",
+                "http://127.0.0.1:8789"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "icon": {
+                "id": "pulse",
+                "color": "terminal.ansiGreen"
+            },
+            "detail": "Check VitalSense branding and content via Worker on port 8789"
+        },
+        {
+            "label": "VitalSense App: Status (5000 Local)",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/health/app-status-check.js",
+                "--url",
+                "http://localhost:5000"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "icon": {
+                "id": "pulse",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Check VitalSense branding and content on local app port 5000"
+        },
+        {
+            "label": "probe-health-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/health/simple-probe.js",
+                "--port",
+                "8787"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "probe-health-8788-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/health/simple-probe.js",
+                "--port",
+                "8788"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "enhanced-probe-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/health/probe.js",
+                "--port",
+                "8787",
+                "--verbose"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "task-runner-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/dev/task-runner.js",
+                "${input:taskType}"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "start-dev-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/dev/start-dev.js"
+            ],
+            "group": "build",
+            "isBackground": true,
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "lint-typescript-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/dev/lint-runner.js",
+                "--typescript"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "lint-all-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/dev/lint-runner.js",
+                "--all"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "🐳 Docker: Dev Workflow (Worker logs)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "Write-Host 'Starting Docker Dev Workflow (Worker logs)...'"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "🐳 Docker: Up (dev)",
+                "🐳 Docker: PS",
+                "🐳 Docker: Health (worker)",
+                "🐳 Docker: Health (websocket)",
+                "🐳 Docker: Logs (worker)"
+            ],
+            "icon": {
+                "id": "rocket",
+                "color": "terminal.ansiGreen"
+            },
+            "detail": "Compose up → status → health checks → tail worker logs"
+        },
+        {
+            "label": "🐳 Docker: Dev Workflow (WebSocket logs)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "Write-Host 'Starting Docker Dev Workflow (WebSocket logs)...'"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "🐳 Docker: Up (dev)",
+                "🐳 Docker: PS",
+                "🐳 Docker: Health (worker)",
+                "🐳 Docker: Health (websocket)",
+                "🐳 Docker: Logs (websocket)"
+            ],
+            "icon": {
+                "id": "rocket",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Compose up → status → health checks → tail websocket logs"
+        },
+        {
+            "label": "🐳 Docker: Dev Workflow (no logs)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "Write-Host 'Starting Docker Dev Workflow (no logs)...'"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "🐳 Docker: Up (dev)",
+                "🐳 Docker: PS",
+                "🐳 Docker: Health (worker)",
+                "🐳 Docker: Health (websocket)"
+            ],
+            "icon": {
+                "id": "server-process",
+                "color": "terminal.ansiGreen"
+            },
+            "detail": "Compose up → status → run both health checks"
+        },
+        {
+            "label": "☁️ Deploy Worker (development)",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/dev/deploy-worker-dev.js"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "cloud-upload",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Publish Cloudflare Worker to development environment"
+        },
+        {
+            "label": "🔗 Enable Auto-Deploy on Push",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/dev/install-git-hook.js"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "link",
+                "color": "terminal.ansiGreen"
+            },
+            "detail": "Install git post-push hook to auto-deploy to development"
+        },
+        {
+            "label": "🧹 Disable Auto-Deploy on Push",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/dev/remove-git-hook.js"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "remove",
+                "color": "terminal.ansiRed"
+            },
+            "detail": "Remove git post-push hook"
+        },
+        {
+            "label": "config-validate-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/utils/config-validator.js",
+                "--verbose"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "test-dev-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/test/test-runner.js",
+                "--dev",
+                "--verbose"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "test-full-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/test/test-runner.js",
+                "--full",
+                "--verbose"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "deploy-platform-dry-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/deploy/platform-deploy.js",
+                "--dry-run",
+                "--verbose"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "deploy-platform-phase1-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/deploy/platform-deploy.js",
+                "--phase",
+                "1"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "dns-setup-dry-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/deploy/dns-setup.js",
+                "--dry-run",
+                "--verbose",
+                "--api-token",
+                "${input:cloudflareApiToken}"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "dns-setup-phase1-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/deploy/dns-setup.js",
+                "--phase",
+                "1",
+                "--api-token",
+                "${input:cloudflareApiToken}"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "📤 Dump Version Mismatch Events",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/analytics/dump-version-mismatch.js",
+                "--out",
+                "mismatch-events.json"
+            ],
+            "group": "test",
+            "icon": {
+                "id": "file",
+                "color": "terminal.ansiYellow"
+            },
+            "detail": "Fetch and store current analytics version mismatch events"
+        },
+        {
+            "label": "🐳 Docker: Restart (worker)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "docker compose restart worker"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "icon": {
+                "id": "refresh",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Restart only the worker service"
+        },
+        {
+            "label": "🐳 Docker: Restart (websocket)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "docker compose restart websocket"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "icon": {
+                "id": "refresh",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Restart only the websocket service"
+        },
+        {
+            "label": "🐳 Docker: Rebuild (worker)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "docker compose build --no-cache worker; docker compose up -d worker"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "icon": {
+                "id": "wrench",
+                "color": "terminal.ansiYellow"
+            },
+            "detail": "Rebuild worker image without cache and restart it"
+        },
+        {
+            "label": "🐳 Docker: Rebuild (websocket)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "docker compose build --no-cache websocket; docker compose up -d websocket"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "icon": {
+                "id": "wrench",
+                "color": "terminal.ansiYellow"
+            },
+            "detail": "Rebuild websocket image without cache and restart it"
+        },
+        {
+            "label": "🐳 Docker: PS",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "docker compose ps"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "icon": {
+                "id": "list-tree",
+                "color": "terminal.ansiGreen"
+            },
+            "detail": "Show compose service status"
+        },
+        {
+            "label": "🐳 Docker: Cleanup (dangling)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "docker image prune -f; docker volume prune -f"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "icon": {
+                "id": "trash",
+                "color": "terminal.ansiRed"
+            },
+            "detail": "Remove dangling images and unused volumes (force)"
+        },
+        {
+            "label": "🚀 Node.js Development Workflow",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/dev/start-dev.js",
+                "--interactive"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "isBackground": true,
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "new",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "Starting development server",
+                    "endsPattern": "Server ready"
+                }
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "pwsh-env-check",
+                "config-validate-nodejs",
+                "lint-quick-nodejs"
+            ],
+            "icon": {
+                "id": "rocket",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Start development server with pre-checks (config validation + quick lint)"
+        },
+        {
+            "label": "pwsh-env-check",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/dev/pwsh-env-check.js"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": false,
+                "reveal": "never",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false
+            }
+        },
+        {
+            "label": "⚡ Quick Health Check",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/test/test-runner.js",
+                "--quick",
+                "--verbose"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "pulse",
+                "color": "terminal.ansiGreen"
+            },
+            "detail": "Fast health check of development environment"
+        },
+        {
+            "label": "🧪 Full Test Suite",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/test/test-runner.js",
+                "--full",
+                "--verbose"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "dependsOn": [
+                "config-validate-nodejs"
+            ],
+            "icon": {
+                "id": "beaker",
+                "color": "terminal.ansiMagenta"
+            },
+            "detail": "Comprehensive test suite with config validation"
+        },
+        {
+            "label": "🔧 Fix All Issues",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/dev/lint-runner.js",
+                "--all",
+                "--fix"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "config-validate-nodejs"
+            ],
+            "icon": {
+                "id": "tools",
+                "color": "terminal.ansiYellow"
+            },
+            "detail": "Auto-fix linting issues and validate configuration"
+        },
+        {
+            "label": "🚀 Deploy (Dry Run)",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/deploy/platform-deploy.js",
+                "--dry-run",
+                "--verbose"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "🧪 Full Test Suite"
+            ],
+            "icon": {
+                "id": "cloud-upload",
+                "color": "terminal.ansiCyan"
+            },
+            "detail": "Preview deployment changes (safe dry-run after full tests)"
+        },
+        {
+            "label": "🌐 DNS Setup (Preview)",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/deploy/dns-setup.js",
+                "--dry-run",
+                "--verbose",
+                "--api-token",
+                "${input:cloudflareApiToken}"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "globe",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Preview DNS configuration changes"
+        },
+        {
+            "label": "💎 VitalSense Deploy",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/deploy/vitalsense-deploy.js",
+                "--verbose"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "🔧 Fix All Issues"
+            ],
+            "icon": {
+                "id": "heart",
+                "color": "terminal.ansiRed"
+            },
+            "detail": "VitalSense branding verification and deployment"
+        },
+        {
+            "label": "🎨 CSS Bundle Optimizer",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/analysis/css/css-optimizer.js"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "paintcan",
+                "color": "terminal.ansiMagenta"
+            },
+            "detail": "Analyze and optimize CSS bundle size (122KB → <50KB target)"
+        },
+        {
+            "label": "⚙️ Build Config Optimizer",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/build-optimizer.js"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "gear",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Generate optimized build configurations for smaller bundles"
+        },
+        {
+            "label": "🧪 Bundle Optimization Tester",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/analysis/bundle-optimization-tester.js"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "🎨 CSS Bundle Optimizer",
+                "⚙️ Build Config Optimizer"
+            ],
+            "icon": {
+                "id": "beaker",
+                "color": "terminal.ansiYellow"
+            },
+            "detail": "Test all optimizations and measure bundle size reduction (1.83MB → <400KB)"
+        },
+        {
+            "label": "🚀 Optimized Build",
+            "type": "shell",
+            "command": "vite",
+            "args": [
+                "build",
+                "--config",
+                "vite.config.optimized.ts",
+                "--mode",
+                "production"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "rocket",
+                "color": "terminal.ansiGreen"
+            },
+            "detail": "Build with optimized configuration for production deployment"
+        },
+        {
+            "label": "lint-quick-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/dev/lint-runner.js",
+                "--typescript",
+                "--quick"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": false,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false
+            },
+            "icon": {
+                "id": "check",
+                "color": "terminal.ansiGreen"
+            },
+            "detail": "Quick TypeScript linting (internal task)"
+        },
+        {
+            "label": "probe-health",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "scripts/simple-probe.ps1",
+                "-Port",
+                "8787"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false,
+                "close": false
+            },
+            "options": {
+                "shell": {
+                    "executable": "pwsh",
+                    "args": [
+                        "-NoProfile",
+                        "-ExecutionPolicy",
+                        "Bypass"
+                    ]
+                }
+            }
+        },
+        {
+            "label": "wrangler-dev-8788",
+            "type": "shell",
+            "command": "wrangler",
+            "args": [
+                "dev",
+                "--env",
+                "development",
+                "--port",
+                "8788"
+            ],
+            "isBackground": true,
+            "problemMatcher": [
+                "$eslint-stylish"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "runOptions": {
+                "instanceLimit": 1
+            }
+        },
+        {
+            "label": "probe-health-8788",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "scripts/simple-probe.ps1",
+                "-Port",
+                "8788"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Enhanced Task Runner",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "scripts/run-task.ps1",
+                "-Task",
+                "${input:taskType}",
+                "-Verbose"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Get Copilot Context",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/dev/simple-context.js"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "🔍 Test Shell Integration",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "scripts/powershell-tools/test-shell-integration.ps1"
+            ],
+            "group": "test",
+            "icon": {
+                "id": "debug-console",
+                "color": "terminal.ansiCyan"
+            },
+            "detail": "Diagnose VS Code shell integration for Copilot terminal output capture",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "🔄 Open VitalSense Terminal",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoLogo",
+                "-NoProfile",
+                "-NoExit",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                ". '${workspaceFolder}\\scripts\\powershell-tools\\terminal-init.ps1' -WorkspaceRoot '${workspaceFolder}' -Verbose"
+            ],
+            "group": "build",
+            "icon": {
+                "id": "terminal",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Open terminal with VitalSense profile and aliases pre-loaded",
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": true,
+                "panel": "new"
+            }
+        },
+        {
+            "label": "probe-health-8788-curl",
+            "type": "shell",
+            "command": "curl.exe",
+            "args": [
+                "-sS",
+                "http://127.0.0.1:8788/health"
+            ]
+        },
+        {
+            "label": "wrangler-dev-8789",
+            "type": "shell",
+            "command": "wrangler",
+            "args": [
+                "dev",
+                "--env",
+                "development",
+                "--port",
+                "8789",
+                "--var",
+                "DEVICE_JWT_SECRET:dev-local"
+            ],
+            "isBackground": true,
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "iOS: Setup Development Tools",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "ios/scripts/setup-ios-dev-windows.ps1",
+                "-All"
+            ],
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/ios"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "iOS: Swift Lint",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "scripts/swift-lint-windows.ps1"
+            ],
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}/ios"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "iOS: Swift Format",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "scripts/swift-format-windows.ps1"
+            ],
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/ios"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "iOS: Check Swift Errors",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "scripts/Check-SwiftErrors.ps1"
+            ],
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}/ios/HealthKitBridge"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "iOS: Format Check (Dry Run)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "scripts/swift-format-windows.ps1",
+                "-DryRun"
+            ],
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}/ios"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "iOS: Build Simulator",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "scripts/ios-build-simulator.ps1"
+            ],
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/ios"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "iOS: Dependency Analysis",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "scripts/swift-dependency-analyzer.ps1",
+                "-ShowGraph"
+            ],
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}/ios"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "iOS: Duplicate Types Scan",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "ios/scripts/swift-duplicate-types-scan.ps1",
+                "-Root",
+                "ios/HealthKitBridge",
+                "-VerboseOutput"
+            ],
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "iOS: Availability Guard Check",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "ios/scripts/swift-availability-guard-check.ps1",
+                "-Root",
+                "ios/HealthKitBridge"
+            ],
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "iOS: Swift Fast Typecheck",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "ios/scripts/swift-fast-typecheck.ps1",
+                "-Root",
+                "ios/HealthKitBridge"
+            ],
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "iOS: Public API Surface (list)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "ios/scripts/swift-public-api-surface.ps1",
+                "-Root",
+                "ios/HealthKitBridge"
+            ],
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "iOS: Import Graph (show)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "ios/scripts/swift-import-graph.ps1",
+                "-Root",
+                "ios/HealthKitBridge",
+                "-ShowGraph"
+            ],
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "iOS: SwiftLint Precheck",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "ios/scripts/swiftlint-precheck.ps1",
+                "-Root",
+                "ios/HealthKitBridge"
+            ],
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "iOS: Performance Analysis",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "scripts/swift-performance-analyzer.ps1",
+                "-Detailed"
+            ],
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}/ios"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "App: Deploy Development",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "scripts/main-app-deploy.ps1",
+                "-Environment",
+                "development",
+                "-Deploy"
+            ],
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/ios"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "App: Deploy Production",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "scripts/main-app-deploy.ps1",
+                "-Environment",
+                "production",
+                "-Deploy"
+            ],
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/ios"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "App: Status Check",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "scripts/main-app-deploy.ps1",
+                "-Status"
+            ],
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}/ios"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "App: Quick Check",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "scripts/main-app-deploy.ps1",
+                "-Quick"
+            ],
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}/ios"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "⚡ iOS: Quick Environment Switch",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "scripts/ios-quick-switch.ps1",
+                "-Interactive",
+                "-ShowPerformance"
+            ],
+            "group": "build",
+            "icon": {
+                "id": "zap",
+                "color": "terminal.ansiCyan"
+            },
+            "detail": "Interactive menu for fast iOS environment switching with performance metrics",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "🔧 iOS: Environment Manager",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "scripts/ios-config-manager.ps1",
+                "-Environment",
+                "${input:iosEnvironment}",
+                "-Validate"
+            ],
+            "group": "build",
+            "icon": {
+                "id": "gear",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Switch iOS configuration with validation and backup",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "🧠 iOS: Smart Configuration",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "scripts/ios-smart-config.ps1",
+                "-AutoOptimize",
+                "-Context",
+                "${input:developmentContext}",
+                "-Verbose"
+            ],
+            "group": "build",
+            "icon": {
+                "id": "lightbulb",
+                "color": "terminal.ansiYellow"
+            },
+            "detail": "Intelligent configuration with auto-optimization and performance insights",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "📊 iOS: Configuration Monitor",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "scripts/ios-config-monitor.ps1",
+                "-StartMonitoring",
+                "-AlertsEnabled",
+                "-Verbose"
+            ],
+            "group": "test",
+            "isBackground": true,
+            "icon": {
+                "id": "pulse",
+                "color": "terminal.ansiMagenta"
+            },
+            "detail": "Continuous monitoring of iOS configuration health with alerts",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Test Enhanced Health Processing",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/test/test-enhanced-health-processing.js",
+                "--baseUrl",
+                "http://127.0.0.1",
+                "--port",
+                "8789"
+            ],
+            "group": "test"
+        },
+        {
+            "label": "Final Test Enhanced Health Processing",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/test/test-enhanced-health-processing.js",
+                "--baseUrl",
+                "http://127.0.0.1",
+                "--port",
+                "8789"
+            ],
+            "group": "test"
+        },
+        {
+            "label": "Auth0: Test Custom Login Page",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "scripts/test-auth0-login-page.ps1"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Auth0: Quick Deploy (Test Mode)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "scripts/quick-deploy-auth0.ps1",
+                "-TestMode"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Auth0: Deploy Custom Login Page",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "scripts/quick-deploy-auth0.ps1"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "🧪 Comprehensive API Testing",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/test/test-all-endpoints.js",
+                "--verbose",
+                "--timeout=${input:testTimeout}",
+                "--save=test-results.json"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "beaker",
+                "color": "terminal.ansiMagenta"
+            },
+            "detail": "Phase 4: Comprehensive API endpoint testing with results export"
+        },
+        {
+            "label": "🔍 Integration Test Suite",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/test/test-integration.js",
+                "--verbose",
+                "--save=integration-results.json"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "pulse",
+                "color": "terminal.ansiCyan"
+            },
+            "detail": "Phase 4: Full system integration testing with health checks"
+        },
+        {
+            "label": "🏗️ Production Infrastructure Setup",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/infrastructure/setup-production-infrastructure.js",
+                "--${input:deploymentMode}",
+                "--verbose"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "cloud-upload",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Phase 4: Complete production infrastructure deployment with safety checks"
+        },
+        {
+            "label": "🔐 Auth0 Configuration Manager",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/auth/auth0-setup.js",
+                "--update-config",
+                "--test",
+                "--verbose"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "shield",
+                "color": "terminal.ansiYellow"
+            },
+            "detail": "Phase 4: Auth0 authentication setup and configuration management"
+        },
+        {
+            "label": "📦 Quick Bundle Check",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/quick-bundle-check.js"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "package",
+                "color": "terminal.ansiCyan"
+            },
+            "detail": "Quick analysis of current bundle sizes with performance recommendations"
+        },
+        {
+            "label": "🔍 Full Bundle Analysis",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/analysis/bundle-analyzer.js",
+                "--save",
+                "--verbose"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "graph",
+                "color": "terminal.ansiBlue"
+            },
+            "detail": "Comprehensive bundle analysis with build and composition details"
+        },
+        {
+            "label": "📊 Performance Monitor",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/performance-monitor.js",
+                "--verbose"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "pulse",
+                "color": "terminal.ansiGreen"
+            },
+            "detail": "Performance monitoring with historical tracking and alerts"
+        },
+        {
+            "label": "🔄 Continuous Performance Monitor",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/performance-monitor.js",
+                "--continuous",
+                "--interval=600000"
+            ],
+            "group": "test",
+            "isBackground": true,
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "sync",
+                "color": "terminal.ansiMagenta"
+            },
+            "detail": "Continuous performance monitoring every 10 minutes"
+        },
+        {
+            "label": "Check VitalSense App Status",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $response.StatusCode; Write-Host 'Content Length:' $response.Content.Length; Write-Host 'Title:' ($response.Content | Select-String '<title>(.*?)</title>').Matches[0].Groups[1].Value } catch { Write-Host 'Error:' $_.Exception.Message }"
+            ]
+        },
+        {
+            "label": "Simple Health Check",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $response.StatusCode; Write-Host 'Content Length:' $response.Content.Length; } catch { Write-Host 'Error:' $_.Exception.Message }"
+            ]
+        },
+        {
+            "label": "VitalSense App Health Check",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "Write-Host '🔍 Checking VitalSense App Status...'; try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 10; Write-Host '✅ Status:' $response.StatusCode; Write-Host '📄 Content Length:' $response.Content.Length 'bytes'; if ($response.Content -like '*VitalSense*') { Write-Host '🎯 VitalSense branding detected' } else { Write-Host '⚠️  VitalSense branding not found' }; if ($response.Content -like '*Health Score*') { Write-Host '💓 Health Score detected' } else { Write-Host '⚠️  Health Score not found' } } catch { Write-Host '❌ Error:' $_.Exception.Message }"
+            ]
+        },
+        {
+            "label": "Quick App Check",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode; Write-Host 'Size:' $r.Content.Length 'bytes' } catch { Write-Host 'Error:' $_.Exception.Message }"
+            ]
+        },
+        {
+            "label": "Final VitalSense Check",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "Write-Host 'VitalSense App Status Check'; Write-Host '========================'; try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status: ✅' $r.StatusCode; Write-Host 'Content: 📄' $r.Content.Length 'bytes'; Write-Host 'App is responding correctly' } catch { Write-Host 'Status: ❌ Error -' $_.Exception.Message }"
+            ]
+        },
+        {
+            "label": "Debug VitalSense Status",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "Write-Host '🔍 VitalSense Development Check'; Write-Host '================================'; try { $response = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host '✅ Status:' $response.StatusCode; Write-Host '📄 Size:' $response.Content.Length 'bytes'; $title = [regex]::Match($response.Content, '<title>(.*?)</title>').Groups[1].Value; if ($title) { Write-Host '📋 Title:' $title } else { Write-Host '⚠️  No title found' }; Write-Host '🎯 App responding correctly' } catch { Write-Host '❌ Connection failed:' $_.Exception.Message }"
+            ]
+        },
+        {
+            "label": "Simple Content Check",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode; Write-Host 'Size:' $r.Content.Length; Write-Host 'First 200 chars:'; Write-Host $r.Content.Substring(0, [Math]::Min(200, $r.Content.Length)) } catch { Write-Host 'Error:' $_.Exception.Message }"
+            ]
+        },
+        {
+            "label": "wrangler-publish-production",
+            "type": "shell",
+            "command": "wrangler",
+            "args": [
+                "deploy",
+                "--env",
+                "production"
+            ],
+            "isBackground": false,
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "lint-quick-nodejs",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/dev/lint-runner.js",
+                "--typescript",
+                "--quick"
+            ],
+            "isBackground": false,
+            "problemMatcher": [
+                "$eslint-stylish"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "analytics-sample-fetch",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/node/analytics/fetch-analytics-sample.js",
+                "HEALTH_ANALYTICS"
+            ],
+            "isBackground": false,
+            "group": "test"
+        },
+        {
+            "label": "probe-error-endpoint-8789",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "try { $r = Invoke-WebRequest 'http://127.0.0.1:8789/api/_error' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode } catch { Write-Host 'Caught:' $_.Exception.Message }"
+            ],
+            "isBackground": false,
+            "group": "test"
+        },
+        {
+            "label": "wrangler-tail-dev",
+            "type": "shell",
+            "command": "wrangler",
+            "args": [
+                "tail",
+                "--env",
+                "development",
+                "--format",
+                "pretty"
+            ],
+            "isBackground": true,
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": false
+            }
+        },
+        {
+            "label": "wrangler-tail-prod",
+            "type": "shell",
+            "command": "wrangler",
+            "args": [
+                "tail",
+                "--env",
+                "production",
+                "--format",
+                "pretty"
+            ],
+            "isBackground": true,
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": false
+            }
+        },
+        {
+            "label": "probe-analytics-ping-8789",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "try { $r = Invoke-WebRequest 'http://127.0.0.1:8789/api/_analytics_ping' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode; Write-Host 'Body:' $r.Content } catch { Write-Host 'Caught:' $_.Exception.Message }"
+            ],
+            "isBackground": false,
+            "group": "test"
+        },
+        {
+            "label": "Run E2E tests",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "run",
+                "test:e2e"
+            ],
+            "isBackground": false,
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "group": "test"
         }
-      }
-    },
-    {
-      "label": "🔧 Enhanced Server (Dev Mode)",
-      "type": "shell",
-      "command": "npm",
-      "args": ["run", "dev"],
-      "options": {
-        "cwd": "${workspaceFolder}/server",
-        "env": {
-          "NODE_ENV": "development",
-          "JWT_SECRET": "dev-local-secret",
-          "PORT": "3001"
-        }
-      },
-      "group": "build",
-      "isBackground": true,
-      "icon": { "id": "debug-alt", "color": "terminal.ansiBlue" },
-      "detail": "Start enhanced server in development mode with auto-restart"
-    },
-    {
-      "label": "�🐳 Docker: Up (dev)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["scripts/analysis/bundle-optimization-tester.js"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "server",
-        "color": "terminal.ansiBlue"
-      },
-      "detail": "Build and start worker + websocket via docker-compose"
-    },
-    {
-      "label": "🐳 Docker: Down",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-Command", "docker compose down"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      },
-      "icon": {
-        "id": "trash",
-        "color": "terminal.ansiRed"
-      },
-      "detail": "Stop and remove containers"
-    },
-    {
-      "label": "🐳 Docker: Logs (worker)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-Command", "docker compose logs -f worker"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      }
-    },
-    {
-      "label": "🐳 Docker: Logs (websocket)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-Command", "docker compose logs -f websocket"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      }
-    },
-    {
-      "label": "🐳 Docker: Health (worker)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-Command",
-        "try { $r = Invoke-WebRequest 'http://127.0.0.1:8789/health' -TimeoutSec 5; Write-Host 'Worker:' $r.StatusCode } catch { Write-Host 'Worker: ERROR' $_.Exception.Message }"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      }
-    },
-    {
-      "label": "🐳 Docker: Health (websocket)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-Command",
-        "try { $r = Invoke-WebRequest 'http://127.0.0.1:3001/api/health' -TimeoutSec 5; Write-Host 'WebSocket REST:' $r.StatusCode } catch { Write-Host 'WebSocket REST: ERROR' $_.Exception.Message }"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      }
-    },
-    {
-      "label": "VitalSense App: Status (8789 Worker)",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/health/app-status-check.js",
-        "--url",
-        "http://127.0.0.1:8789"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      },
-      "icon": {
-        "id": "pulse",
-        "color": "terminal.ansiGreen"
-      },
-      "detail": "Check VitalSense branding and content via Worker on port 8789"
-    },
-    {
-      "label": "VitalSense App: Status (5000 Local)",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/health/app-status-check.js",
-        "--url",
-        "http://localhost:5000"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      },
-      "icon": {
-        "id": "pulse",
-        "color": "terminal.ansiBlue"
-      },
-      "detail": "Check VitalSense branding and content on local app port 5000"
-    },
-    {
-      "label": "probe-health-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/health/simple-probe.js", "--port", "8787"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "probe-health-8788-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/health/simple-probe.js", "--port", "8788"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "enhanced-probe-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/health/probe.js", "--port", "8787", "--verbose"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "task-runner-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/task-runner.js", "${input:taskType}"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "start-dev-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/start-dev.js"],
-      "group": "build",
-      "isBackground": true,
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "lint-typescript-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/lint-runner.js", "--typescript"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "lint-all-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/lint-runner.js", "--all"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "🐳 Docker: Dev Workflow (Worker logs)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-Command",
-        "Write-Host 'Starting Docker Dev Workflow (Worker logs)...'"
-      ],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "dependsOrder": "sequence",
-      "dependsOn": [
-        "🐳 Docker: Up (dev)",
-        "🐳 Docker: PS",
-        "🐳 Docker: Health (worker)",
-        "🐳 Docker: Health (websocket)",
-        "🐳 Docker: Logs (worker)"
-      ],
-      "icon": {
-        "id": "rocket",
-        "color": "terminal.ansiGreen"
-      },
-      "detail": "Compose up → status → health checks → tail worker logs"
-    },
-    {
-      "label": "🐳 Docker: Dev Workflow (WebSocket logs)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-Command",
-        "Write-Host 'Starting Docker Dev Workflow (WebSocket logs)...'"
-      ],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "dependsOrder": "sequence",
-      "dependsOn": [
-        "🐳 Docker: Up (dev)",
-        "🐳 Docker: PS",
-        "🐳 Docker: Health (worker)",
-        "🐳 Docker: Health (websocket)",
-        "🐳 Docker: Logs (websocket)"
-      ],
-      "icon": {
-        "id": "rocket",
-        "color": "terminal.ansiBlue"
-      },
-      "detail": "Compose up → status → health checks → tail websocket logs"
-    },
-    {
-      "label": "🐳 Docker: Dev Workflow (no logs)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-Command",
-        "Write-Host 'Starting Docker Dev Workflow (no logs)...'"
-      ],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "dependsOrder": "sequence",
-      "dependsOn": [
-        "🐳 Docker: Up (dev)",
-        "🐳 Docker: PS",
-        "🐳 Docker: Health (worker)",
-        "🐳 Docker: Health (websocket)"
-      ],
-      "icon": {
-        "id": "server-process",
-        "color": "terminal.ansiGreen"
-      },
-      "detail": "Compose up → status → run both health checks"
-    },
-    {
-      "label": "☁️ Deploy Worker (development)",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/deploy-worker-dev.js"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "cloud-upload",
-        "color": "terminal.ansiBlue"
-      },
-      "detail": "Publish Cloudflare Worker to development environment"
-    },
-    {
-      "label": "🔗 Enable Auto-Deploy on Push",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/install-git-hook.js"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "link",
-        "color": "terminal.ansiGreen"
-      },
-      "detail": "Install git post-push hook to auto-deploy to development"
-    },
-    {
-      "label": "🧹 Disable Auto-Deploy on Push",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/remove-git-hook.js"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "remove",
-        "color": "terminal.ansiRed"
-      },
-      "detail": "Remove git post-push hook"
-    },
-    {
-      "label": "config-validate-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/utils/config-validator.js", "--verbose"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "test-dev-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/test/test-runner.js", "--dev", "--verbose"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "test-full-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/test/test-runner.js", "--full", "--verbose"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "deploy-platform-dry-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/deploy/platform-deploy.js",
-        "--dry-run",
-        "--verbose"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "deploy-platform-phase1-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/deploy/platform-deploy.js", "--phase", "1"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "dns-setup-dry-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/deploy/dns-setup.js",
-        "--dry-run",
-        "--verbose",
-        "--api-token",
-        "${input:cloudflareApiToken}"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "dns-setup-phase1-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/deploy/dns-setup.js",
-        "--phase",
-        "1",
-        "--api-token",
-        "${input:cloudflareApiToken}"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "📤 Dump Version Mismatch Events",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/analytics/dump-version-mismatch.js",
-        "--out",
-        "mismatch-events.json"
-      ],
-      "group": "test",
-      "icon": { "id": "file", "color": "terminal.ansiYellow" },
-      "detail": "Fetch and store current analytics version mismatch events"
-    },
-    {
-      "label": "🐳 Docker: Restart (worker)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-Command", "docker compose restart worker"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      },
-      "icon": {
-        "id": "refresh",
-        "color": "terminal.ansiBlue"
-      },
-      "detail": "Restart only the worker service"
-    },
-    {
-      "label": "🐳 Docker: Restart (websocket)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-Command", "docker compose restart websocket"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      },
-      "icon": {
-        "id": "refresh",
-        "color": "terminal.ansiBlue"
-      },
-      "detail": "Restart only the websocket service"
-    },
-    {
-      "label": "🐳 Docker: Rebuild (worker)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-Command",
-        "docker compose build --no-cache worker; docker compose up -d worker"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      },
-      "icon": {
-        "id": "wrench",
-        "color": "terminal.ansiYellow"
-      },
-      "detail": "Rebuild worker image without cache and restart it"
-    },
-    {
-      "label": "🐳 Docker: Rebuild (websocket)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-Command",
-        "docker compose build --no-cache websocket; docker compose up -d websocket"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      },
-      "icon": {
-        "id": "wrench",
-        "color": "terminal.ansiYellow"
-      },
-      "detail": "Rebuild websocket image without cache and restart it"
-    },
-    {
-      "label": "🐳 Docker: PS",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-Command", "docker compose ps"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      },
-      "icon": {
-        "id": "list-tree",
-        "color": "terminal.ansiGreen"
-      },
-      "detail": "Show compose service status"
-    },
-    {
-      "label": "🐳 Docker: Cleanup (dangling)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-Command",
-        "docker image prune -f; docker volume prune -f"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      },
-      "icon": {
-        "id": "trash",
-        "color": "terminal.ansiRed"
-      },
-      "detail": "Remove dangling images and unused volumes (force)"
-    },
-    {
-      "label": "🚀 Node.js Development Workflow",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/start-dev.js", "--interactive"],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "isBackground": true,
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": true,
-        "panel": "new",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "problemMatcher": {
-        "pattern": {
-          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-          "file": 1,
-          "line": 2,
-          "column": 3,
-          "severity": 4,
-          "message": 5
-        },
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": "Starting development server",
-          "endsPattern": "Server ready"
-        }
-      },
-      "dependsOrder": "sequence",
-      "dependsOn": [
-        "pwsh-env-check",
-        "config-validate-nodejs",
-        "lint-quick-nodejs"
-      ],
-      "icon": {
-        "id": "rocket",
-        "color": "terminal.ansiBlue"
-      },
-      "detail": "Start development server with pre-checks (config validation + quick lint)"
-    },
-    {
-      "label": "pwsh-env-check",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/pwsh-env-check.js"],
-      "group": "build",
-      "presentation": {
-        "echo": false,
-        "reveal": "never",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": false
-      }
-    },
-    {
-      "label": "⚡ Quick Health Check",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/test/test-runner.js", "--quick", "--verbose"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "pulse",
-        "color": "terminal.ansiGreen"
-      },
-      "detail": "Fast health check of development environment"
-    },
-    {
-      "label": "🧪 Full Test Suite",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/test/test-runner.js", "--full", "--verbose"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "dependsOn": ["config-validate-nodejs"],
-      "icon": {
-        "id": "beaker",
-        "color": "terminal.ansiMagenta"
-      },
-      "detail": "Comprehensive test suite with config validation"
-    },
-    {
-      "label": "🔧 Fix All Issues",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/lint-runner.js", "--all", "--fix"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "dependsOrder": "sequence",
-      "dependsOn": ["config-validate-nodejs"],
-      "icon": {
-        "id": "tools",
-        "color": "terminal.ansiYellow"
-      },
-      "detail": "Auto-fix linting issues and validate configuration"
-    },
-    {
-      "label": "🚀 Deploy (Dry Run)",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/deploy/platform-deploy.js",
-        "--dry-run",
-        "--verbose"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "dependsOrder": "sequence",
-      "dependsOn": ["🧪 Full Test Suite"],
-      "icon": {
-        "id": "cloud-upload",
-        "color": "terminal.ansiCyan"
-      },
-      "detail": "Preview deployment changes (safe dry-run after full tests)"
-    },
-    {
-      "label": "🌐 DNS Setup (Preview)",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/deploy/dns-setup.js",
-        "--dry-run",
-        "--verbose",
-        "--api-token",
-        "${input:cloudflareApiToken}"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "globe",
-        "color": "terminal.ansiBlue"
-      },
-      "detail": "Preview DNS configuration changes"
-    },
-    {
-      "label": "💎 VitalSense Deploy",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/deploy/vitalsense-deploy.js", "--verbose"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "dependsOrder": "sequence",
-      "dependsOn": ["🔧 Fix All Issues"],
-      "icon": {
-        "id": "heart",
-        "color": "terminal.ansiRed"
-      },
-      "detail": "VitalSense branding verification and deployment"
-    },
-    {
-      "label": "🎨 CSS Bundle Optimizer",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/analysis/css/css-optimizer.js"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "paintcan",
-        "color": "terminal.ansiMagenta"
-      },
-      "detail": "Analyze and optimize CSS bundle size (122KB → <50KB target)"
-    },
-    {
-      "label": "⚙️ Build Config Optimizer",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/build-optimizer.js"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "gear",
-        "color": "terminal.ansiBlue"
-      },
-      "detail": "Generate optimized build configurations for smaller bundles"
-    },
-    {
-      "label": "🧪 Bundle Optimization Tester",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/analysis/bundle-optimization-tester.js"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "dependsOrder": "sequence",
-      "dependsOn": ["🎨 CSS Bundle Optimizer", "⚙️ Build Config Optimizer"],
-      "icon": {
-        "id": "beaker",
-        "color": "terminal.ansiYellow"
-      },
-      "detail": "Test all optimizations and measure bundle size reduction (1.83MB → <400KB)"
-    },
-    {
-      "label": "🚀 Optimized Build",
-      "type": "shell",
-      "command": "vite",
-      "args": [
-        "build",
-        "--config",
-        "vite.config.optimized.ts",
-        "--mode",
-        "production"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "rocket",
-        "color": "terminal.ansiGreen"
-      },
-      "detail": "Build with optimized configuration for production deployment"
-    },
-    {
-      "label": "lint-quick-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/lint-runner.js", "--typescript", "--quick"],
-      "group": "build",
-      "presentation": {
-        "echo": false,
-        "reveal": "silent",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": false
-      },
-      "icon": {
-        "id": "check",
-        "color": "terminal.ansiGreen"
-      },
-      "detail": "Quick TypeScript linting (internal task)"
-    },
-    {
-      "label": "probe-health",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/simple-probe.ps1",
-        "-Port",
-        "8787"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false,
-        "close": false
-      },
-      "options": {
-        "shell": {
-          "executable": "pwsh",
-          "args": ["-NoProfile", "-ExecutionPolicy", "Bypass"]
-        }
-      }
-    },
-    {
-      "label": "wrangler-dev-8788",
-      "type": "shell",
-      "command": "wrangler",
-      "args": ["dev", "--env", "development", "--port", "8788"],
-      "isBackground": true,
-      "problemMatcher": ["$eslint-stylish"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "dedicated",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
-    },
-    {
-      "label": "probe-health-8788",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/simple-probe.ps1",
-        "-Port",
-        "8788"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Enhanced Task Runner",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/run-task.ps1",
-        "-Task",
-        "${input:taskType}",
-        "-Verbose"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": true,
-        "panel": "dedicated"
-      }
-    },
-    {
-      "label": "Get Copilot Context",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/simple-context.js"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "🔍 Test Shell Integration",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/powershell-tools/test-shell-integration.ps1"
-      ],
-      "group": "test",
-      "icon": { "id": "debug-console", "color": "terminal.ansiCyan" },
-      "detail": "Diagnose VS Code shell integration for Copilot terminal output capture",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": true,
-        "panel": "dedicated"
-      }
-    },
-    {
-      "label": "🔄 Open VitalSense Terminal",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoLogo",
-        "-NoProfile",
-        "-NoExit",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        ". '${workspaceFolder}\\scripts\\powershell-tools\\terminal-init.ps1' -WorkspaceRoot '${workspaceFolder}' -Verbose"
-      ],
-      "group": "build",
-      "icon": { "id": "terminal", "color": "terminal.ansiBlue" },
-      "detail": "Open terminal with VitalSense profile and aliases pre-loaded",
-      "presentation": {
-        "echo": false,
-        "reveal": "always",
-        "focus": true,
-        "panel": "new"
-      }
-    },
-    {
-      "label": "probe-health-8788-curl",
-      "type": "shell",
-      "command": "curl.exe",
-      "args": ["-sS", "http://127.0.0.1:8788/health"]
-    },
-    {
-      "label": "wrangler-dev-8789",
-      "type": "shell",
-      "command": "wrangler",
-      "args": [
-        "dev",
-        "--env",
-        "development",
-        "--port",
-        "8789",
-        "--var",
-        "DEVICE_JWT_SECRET:dev-local"
-      ],
-      "isBackground": true,
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "dedicated",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "iOS: Setup Development Tools",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/setup-ios-dev-windows.ps1",
-        "-All"
-      ],
-      "group": "build",
-      "options": { "cwd": "${workspaceFolder}/ios" },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "iOS: Swift Lint",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-File", "scripts/swift-lint-windows.ps1"],
-      "group": "test",
-      "options": {
-        "cwd": "${workspaceFolder}/ios"
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Swift Format",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-File", "scripts/swift-format-windows.ps1"],
-      "group": "build",
-      "options": {
-        "cwd": "${workspaceFolder}/ios"
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Check Swift Errors",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-File", "scripts/Check-SwiftErrors.ps1"],
-      "group": "test",
-      "options": {
-        "cwd": "${workspaceFolder}/ios/HealthKitBridge"
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Format Check (Dry Run)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/swift-format-windows.ps1",
-        "-DryRun"
-      ],
-      "group": "test",
-      "options": {
-        "cwd": "${workspaceFolder}/ios"
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Build Simulator",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-File", "scripts/ios-build-simulator.ps1"],
-      "group": "build",
-      "options": {
-        "cwd": "${workspaceFolder}/ios"
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Dependency Analysis",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/swift-dependency-analyzer.ps1",
-        "-ShowGraph"
-      ],
-      "group": "test",
-      "options": {
-        "cwd": "${workspaceFolder}/ios"
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Duplicate Types Scan",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/swift-duplicate-types-scan.ps1",
-        "-Root",
-        "ios/HealthKitBridge",
-        "-VerboseOutput"
-      ],
-      "group": "test",
-      "options": { "cwd": "${workspaceFolder}" },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Availability Guard Check",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/swift-availability-guard-check.ps1",
-        "-Root",
-        "ios/HealthKitBridge"
-      ],
-      "group": "test",
-      "options": { "cwd": "${workspaceFolder}" },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Swift Fast Typecheck",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/swift-fast-typecheck.ps1",
-        "-Root",
-        "ios/HealthKitBridge"
-      ],
-      "group": "test",
-      "options": { "cwd": "${workspaceFolder}" },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Public API Surface (list)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/swift-public-api-surface.ps1",
-        "-Root",
-        "ios/HealthKitBridge"
-      ],
-      "group": "test",
-      "options": { "cwd": "${workspaceFolder}" },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Import Graph (show)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/swift-import-graph.ps1",
-        "-Root",
-        "ios/HealthKitBridge",
-        "-ShowGraph"
-      ],
-      "group": "test",
-      "options": { "cwd": "${workspaceFolder}" },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: SwiftLint Precheck",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "ios/scripts/swiftlint-precheck.ps1",
-        "-Root",
-        "ios/HealthKitBridge"
-      ],
-      "group": "test",
-      "options": { "cwd": "${workspaceFolder}" },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "iOS: Performance Analysis",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/swift-performance-analyzer.ps1",
-        "-Detailed"
-      ],
-      "group": "test",
-      "options": {
-        "cwd": "${workspaceFolder}/ios"
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "App: Deploy Development",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/main-app-deploy.ps1",
-        "-Environment",
-        "development",
-        "-Deploy"
-      ],
-      "group": "build",
-      "options": {
-        "cwd": "${workspaceFolder}/ios"
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "App: Deploy Production",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "scripts/main-app-deploy.ps1",
-        "-Environment",
-        "production",
-        "-Deploy"
-      ],
-      "group": "build",
-      "options": {
-        "cwd": "${workspaceFolder}/ios"
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "App: Status Check",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-File", "scripts/main-app-deploy.ps1", "-Status"],
-      "group": "test",
-      "options": {
-        "cwd": "${workspaceFolder}/ios"
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "App: Quick Check",
-      "type": "shell",
-      "command": "pwsh",
-      "args": ["-NoProfile", "-File", "scripts/main-app-deploy.ps1", "-Quick"],
-      "group": "test",
-      "options": {
-        "cwd": "${workspaceFolder}/ios"
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "⚡ iOS: Quick Environment Switch",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/ios-quick-switch.ps1",
-        "-Interactive",
-        "-ShowPerformance"
-      ],
-      "group": "build",
-      "icon": { "id": "zap", "color": "terminal.ansiCyan" },
-      "detail": "Interactive menu for fast iOS environment switching with performance metrics",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": true,
-        "panel": "dedicated",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "🔧 iOS: Environment Manager",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/ios-config-manager.ps1",
-        "-Environment",
-        "${input:iosEnvironment}",
-        "-Validate"
-      ],
-      "group": "build",
-      "icon": { "id": "gear", "color": "terminal.ansiBlue" },
-      "detail": "Switch iOS configuration with validation and backup",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "🧠 iOS: Smart Configuration",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/ios-smart-config.ps1",
-        "-AutoOptimize",
-        "-Context",
-        "${input:developmentContext}",
-        "-Verbose"
-      ],
-      "group": "build",
-      "icon": { "id": "lightbulb", "color": "terminal.ansiYellow" },
-      "detail": "Intelligent configuration with auto-optimization and performance insights",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "📊 iOS: Configuration Monitor",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/ios-config-monitor.ps1",
-        "-StartMonitoring",
-        "-AlertsEnabled",
-        "-Verbose"
-      ],
-      "group": "test",
-      "isBackground": true,
-      "icon": { "id": "pulse", "color": "terminal.ansiMagenta" },
-      "detail": "Continuous monitoring of iOS configuration health with alerts",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "dedicated",
-        "showReuseMessage": false
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Test Enhanced Health Processing",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/test/test-enhanced-health-processing.js",
-        "--baseUrl",
-        "http://127.0.0.1",
-        "--port",
-        "8789"
-      ],
-      "group": "test"
-    },
-    {
-      "label": "Final Test Enhanced Health Processing",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/test/test-enhanced-health-processing.js",
-        "--baseUrl",
-        "http://127.0.0.1",
-        "--port",
-        "8789"
-      ],
-      "group": "test"
-    },
-    {
-      "label": "Auth0: Test Custom Login Page",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/test-auth0-login-page.ps1"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
-      }
-    },
-    {
-      "label": "Auth0: Quick Deploy (Test Mode)",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/quick-deploy-auth0.ps1",
-        "-TestMode"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
-      }
-    },
-    {
-      "label": "Auth0: Deploy Custom Login Page",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "scripts/quick-deploy-auth0.ps1"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
-      }
-    },
-    {
-      "label": "🧪 Comprehensive API Testing",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/test/test-all-endpoints.js",
-        "--verbose",
-        "--timeout=${input:testTimeout}",
-        "--save=test-results.json"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "beaker",
-        "color": "terminal.ansiMagenta"
-      },
-      "detail": "Phase 4: Comprehensive API endpoint testing with results export"
-    },
-    {
-      "label": "🔍 Integration Test Suite",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/test/test-integration.js",
-        "--verbose",
-        "--save=integration-results.json"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "pulse",
-        "color": "terminal.ansiCyan"
-      },
-      "detail": "Phase 4: Full system integration testing with health checks"
-    },
-    {
-      "label": "🏗️ Production Infrastructure Setup",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/infrastructure/setup-production-infrastructure.js",
-        "--${input:deploymentMode}",
-        "--verbose"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "cloud-upload",
-        "color": "terminal.ansiBlue"
-      },
-      "detail": "Phase 4: Complete production infrastructure deployment with safety checks"
-    },
-    {
-      "label": "🔐 Auth0 Configuration Manager",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/auth/auth0-setup.js",
-        "--update-config",
-        "--test",
-        "--verbose"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "shield",
-        "color": "terminal.ansiYellow"
-      },
-      "detail": "Phase 4: Auth0 authentication setup and configuration management"
-    },
-    {
-      "label": "📦 Quick Bundle Check",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/quick-bundle-check.js"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "package",
-        "color": "terminal.ansiCyan"
-      },
-      "detail": "Quick analysis of current bundle sizes with performance recommendations"
-    },
-    {
-      "label": "🔍 Full Bundle Analysis",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/analysis/bundle-analyzer.js",
-        "--save",
-        "--verbose"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "graph",
-        "color": "terminal.ansiBlue"
-      },
-      "detail": "Comprehensive bundle analysis with build and composition details"
-    },
-    {
-      "label": "📊 Performance Monitor",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/performance-monitor.js", "--verbose"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "pulse",
-        "color": "terminal.ansiGreen"
-      },
-      "detail": "Performance monitoring with historical tracking and alerts"
-    },
-    {
-      "label": "🔄 Continuous Performance Monitor",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/performance-monitor.js",
-        "--continuous",
-        "--interval=600000"
-      ],
-      "group": "test",
-      "isBackground": true,
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "dedicated",
-        "showReuseMessage": false,
-        "clear": true
-      },
-      "icon": {
-        "id": "sync",
-        "color": "terminal.ansiMagenta"
-      },
-      "detail": "Continuous performance monitoring every 10 minutes"
-    },
-    {
-      "label": "Check VitalSense App Status",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-Command",
-        "try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $response.StatusCode; Write-Host 'Content Length:' $response.Content.Length; Write-Host 'Title:' ($response.Content | Select-String '<title>(.*?)</title>').Matches[0].Groups[1].Value } catch { Write-Host 'Error:' $_.Exception.Message }"
-      ]
-    },
-    {
-      "label": "Simple Health Check",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-Command",
-        "try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $response.StatusCode; Write-Host 'Content Length:' $response.Content.Length; } catch { Write-Host 'Error:' $_.Exception.Message }"
-      ]
-    },
-    {
-      "label": "VitalSense App Health Check",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-Command",
-        "Write-Host '🔍 Checking VitalSense App Status...'; try { $response = Invoke-WebRequest -Uri 'http://localhost:5000' -TimeoutSec 10; Write-Host '✅ Status:' $response.StatusCode; Write-Host '📄 Content Length:' $response.Content.Length 'bytes'; if ($response.Content -like '*VitalSense*') { Write-Host '🎯 VitalSense branding detected' } else { Write-Host '⚠️  VitalSense branding not found' }; if ($response.Content -like '*Health Score*') { Write-Host '💓 Health Score detected' } else { Write-Host '⚠️  Health Score not found' } } catch { Write-Host '❌ Error:' $_.Exception.Message }"
-      ]
-    },
-    {
-      "label": "Quick App Check",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-Command",
-        "try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode; Write-Host 'Size:' $r.Content.Length 'bytes' } catch { Write-Host 'Error:' $_.Exception.Message }"
-      ]
-    },
-    {
-      "label": "Final VitalSense Check",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-Command",
-        "Write-Host 'VitalSense App Status Check'; Write-Host '========================'; try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status: ✅' $r.StatusCode; Write-Host 'Content: 📄' $r.Content.Length 'bytes'; Write-Host 'App is responding correctly' } catch { Write-Host 'Status: ❌ Error -' $_.Exception.Message }"
-      ]
-    },
-    {
-      "label": "Debug VitalSense Status",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-Command",
-        "Write-Host '🔍 VitalSense Development Check'; Write-Host '================================'; try { $response = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host '✅ Status:' $response.StatusCode; Write-Host '📄 Size:' $response.Content.Length 'bytes'; $title = [regex]::Match($response.Content, '<title>(.*?)</title>').Groups[1].Value; if ($title) { Write-Host '📋 Title:' $title } else { Write-Host '⚠️  No title found' }; Write-Host '🎯 App responding correctly' } catch { Write-Host '❌ Connection failed:' $_.Exception.Message }"
-      ]
-    },
-    {
-      "label": "Simple Content Check",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-Command",
-        "try { $r = Invoke-WebRequest 'http://localhost:5000' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode; Write-Host 'Size:' $r.Content.Length; Write-Host 'First 200 chars:'; Write-Host $r.Content.Substring(0, [Math]::Min(200, $r.Content.Length)) } catch { Write-Host 'Error:' $_.Exception.Message }"
-      ]
-    },
-    {
-      "label": "wrangler-publish-production",
-      "type": "shell",
-      "command": "wrangler",
-      "args": ["deploy", "--env", "production"],
-      "isBackground": false,
-      "problemMatcher": ["$tsc"],
-      "group": "build"
-    },
-
-    {
-      "label": "lint-quick-nodejs",
-      "type": "shell",
-      "command": "node",
-      "args": ["scripts/node/dev/lint-runner.js", "--typescript", "--quick"],
-      "isBackground": false,
-      "problemMatcher": ["$eslint-stylish"],
-      "group": "build"
-    },
-    {
-      "label": "analytics-sample-fetch",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "scripts/node/analytics/fetch-analytics-sample.js",
-        "HEALTH_ANALYTICS"
-      ],
-      "isBackground": false,
-      "group": "test"
-    },
-    {
-      "label": "probe-error-endpoint-8789",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-Command",
-        "try { $r = Invoke-WebRequest 'http://127.0.0.1:8789/api/_error' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode } catch { Write-Host 'Caught:' $_.Exception.Message }"
-      ],
-      "isBackground": false,
-      "group": "test"
-    },
-    {
-      "label": "wrangler-tail-dev",
-      "type": "shell",
-      "command": "wrangler",
-      "args": ["tail", "--env", "development", "--format", "pretty"],
-      "isBackground": true,
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": false
-      }
-    },
-    {
-      "label": "wrangler-tail-prod",
-      "type": "shell",
-      "command": "wrangler",
-      "args": ["tail", "--env", "production", "--format", "pretty"],
-      "isBackground": true,
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared",
-        "clear": false
-      }
-    },
-    {
-      "label": "probe-analytics-ping-8789",
-      "type": "shell",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-Command",
-        "try { $r = Invoke-WebRequest 'http://127.0.0.1:8789/api/_analytics_ping' -TimeoutSec 5; Write-Host 'Status:' $r.StatusCode; Write-Host 'Body:' $r.Content } catch { Write-Host 'Caught:' $_.Exception.Message }"
-      ],
-      "isBackground": false,
-      "group": "test"
-    },
-    {
-      "label": "Run E2E tests",
-      "type": "shell",
-      "command": "npm",
-      "args": ["run", "test:e2e"],
-      "isBackground": false,
-      "problemMatcher": ["$tsc"],
-      "group": "test"
-    }
-  ],
-  "inputs": [
-    {
-      "id": "taskType",
-      "description": "Select development task to run",
-      "type": "pickString",
-      "options": [
-        {
-          "label": "🚀 Development Server - Start local development environment",
-          "value": "dev"
-        },
-        {
-          "label": "🧪 Run Tests - Execute test suite",
-          "value": "test"
-        },
-        {
-          "label": "🔨 Build Project - Compile and bundle application",
-          "value": "build"
-        },
-        {
-          "label": "🔍 Health Probe - Check endpoint health",
-          "value": "probe"
-        },
-        {
-          "label": "🚀 Deploy Application - Deploy to cloud platform",
-          "value": "deploy"
-        },
-        {
-          "label": "🧹 Clean Build - Remove build artifacts and rebuild",
-          "value": "clean"
-        },
-        {
-          "label": "🔧 Fix Issues - Auto-fix linting and formatting issues",
-          "value": "fix"
-        },
-        {
-          "label": "📋 Validate Config - Check all configuration files",
-          "value": "validate"
-        }
-      ]
-    },
-    {
-      "id": "cloudflareApiToken",
-      "description": "🔐 Enter Cloudflare API Token (get from: https://dash.cloudflare.com/profile/api-tokens)",
-      "type": "promptString"
-    },
-    {
-      "id": "deploymentPhase",
-      "description": "Select deployment phase",
-      "type": "pickString",
-      "options": [
-        {
-          "label": "Phase 1 - Core Platform (health.andernet.dev)",
-          "value": "1"
-        },
-        {
-          "label": "Phase 2 - API & WebSocket (api.health, ws.health)",
-          "value": "2"
-        },
-        {
-          "label": "Phase 3 - Emergency & Files (emergency.health, files.health, caregiver.health)",
-          "value": "3"
-        }
-      ]
-    },
-    {
-      "id": "testScope",
-      "description": "Select test scope",
-      "type": "pickString",
-      "options": [
-        {
-          "label": "⚡ Quick - Basic health checks only",
-          "value": "quick"
-        },
-        {
-          "label": "🔍 API - API endpoint testing",
-          "value": "api"
-        },
-        {
-          "label": "🌐 Full - Comprehensive test suite",
-          "value": "full"
-        },
-        {
-          "label": "🏭 Production - Test production endpoints",
-          "value": "prod"
-        }
-      ]
-    },
-    {
-      "id": "lintScope",
-      "description": "Select linting scope",
-      "type": "pickString",
-      "options": [
-        {
-          "label": "📝 TypeScript - TypeScript files only",
-          "value": "typescript"
-        },
-        {
-          "label": "🍎 Swift - iOS Swift files only",
-          "value": "swift"
-        },
-        {
-          "label": "🌍 All - All supported file types",
-          "value": "all"
-        }
-      ]
-    },
-    {
-      "id": "testTimeout",
-      "description": "Test timeout in milliseconds",
-      "type": "pickString",
-      "options": [
-        {
-          "label": "⚡ Fast (5 seconds)",
-          "value": "5000"
-        },
-        {
-          "label": "🔄 Normal (10 seconds)",
-          "value": "10000"
-        },
-        {
-          "label": "🐌 Slow (30 seconds)",
-          "value": "30000"
-        }
-      ]
-    },
-    {
-      "id": "deploymentMode",
-      "description": "Deployment mode",
-      "type": "pickString",
-      "options": [
-        {
-          "label": "🧪 Dry Run (Preview only)",
-          "value": "dry-run"
-        },
-        {
-          "label": "🚀 Deploy All",
-          "value": "all"
-        },
-        {
-          "label": "🏗️ Build Only",
-          "value": "build"
-        },
-        {
-          "label": "🌐 DNS Only",
-          "value": "dns"
-        }
-      ]
-    },
-    {
-      "id": "iosEnvironment",
-      "description": "Select iOS environment configuration",
-      "type": "pickString",
-      "options": [
-        {
-          "label": "🏭 Production - Live backend (health.andernet.dev)",
-          "value": "production"
-        },
-        {
-          "label": "🧪 Development - Local backend (localhost:8789)",
-          "value": "development"
-        },
-        {
-          "label": "🎯 Staging - Pre-production testing",
-          "value": "staging"
-        },
-        {
-          "label": "🧪 Testing - Automated testing environment",
-          "value": "testing"
-        }
-      ]
-    },
-    {
-      "id": "developmentContext",
-      "description": "Select development context for smart configuration",
-      "type": "pickString",
-      "options": [
-        {
-          "label": "🐛 Debugging - Debug mode with enhanced logging",
-          "value": "debugging"
-        },
-        {
-          "label": "🧪 Testing - Testing with mock data",
-          "value": "testing"
-        },
-        {
-          "label": "⚡ Performance - Performance optimization mode",
-          "value": "performance"
-        },
-        {
-          "label": "🚀 Demo - Demo mode with sample data",
-          "value": "demo"
-        },
-        {
-          "label": "🏗️ Development - General development work",
-          "value": "development"
-        }
-      ]
-    }
-  ]
+    ]
 }

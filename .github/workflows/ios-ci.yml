@@ -20,12 +20,12 @@ on:
         type: boolean
 
 env:
-  XCODE_VERSION: '16.4'
-  SCHEME: VitalSense
-  PROJECT: ios/VitalSense.xcodeproj
-  WORKSPACE: ios/VitalSense.xcworkspace
-  ARCHIVE_PATH: ios/build/VitalSense.xcarchive
-  EXPORT_PATH: ios/build/export
+  XCODE_VERSION: '26.2'
+  SCHEME: "Andernet Posture"
+  PROJECT: "Andernet Posture.xcodeproj"
+  WORK_DIR: ios/Andernet-Posture
+  ARCHIVE_PATH: ios/Andernet-Posture/build/AndernetPosture.xcarchive
+  EXPORT_PATH: ios/Andernet-Posture/build/export
 
 permissions:
   contents: read
@@ -51,14 +51,14 @@ jobs:
           path: |
             ~/Library/Caches/Homebrew
             /usr/local/Homebrew
-          key: brew-${{ runner.os }}-${{ hashFiles('ios/.swiftlint.yml') }}
+          key: brew-${{ runner.os }}-${{ hashFiles('ios/Andernet-Posture/.swiftlint.yml') }}
       - name: Install SwiftLint / swift-format
         run: |
           brew install swiftlint || true
           brew install swift-format || true
       - name: Run SwiftLint (fail on errors)
         id: swiftlint
-        working-directory: ios
+        working-directory: ${{ env.WORK_DIR }}
         run: |
           set -e
           echo 'Running SwiftLint strict mode'
@@ -77,7 +77,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: swiftlint-log
-          path: ios/swiftlint.log
+          path: ${{ env.WORK_DIR }}/swiftlint.log
           retention-days: 7
 
   build-test:
@@ -100,43 +100,47 @@ jobs:
             ~/Library/Developer/Xcode/DerivedData
             ~/Library/Caches/org.swift.swiftpm
             ~/.swiftpm
-            ios/build
-          key: dd-${{ runner.os }}-${{ env.XCODE_VERSION }}-${{ hashFiles('ios/Package.swift','ios/VitalSense/**/*.swift') }}
+            ${{ env.WORK_DIR }}/build
+          key: dd-${{ runner.os }}-${{ env.XCODE_VERSION }}-${{ hashFiles('ios/Andernet-Posture/**/*.xcodeproj/project.pbxproj') }}
       - name: Resolve Dependencies
+        working-directory: ${{ env.WORK_DIR }}
         run: |
-          xcodebuild -resolvePackageDependencies -workspace ${{ env.WORKSPACE }} -scheme ${{ env.SCHEME }}
+          xcodebuild -resolvePackageDependencies -project "${{ env.PROJECT }}" -scheme "${{ env.SCHEME }}"
       - name: Build for Testing (Debug)
+        working-directory: ${{ env.WORK_DIR }}
         run: |
           set -e
           xcodebuild build-for-testing \
-            -workspace ${{ env.WORKSPACE }} \
-            -scheme ${{ env.SCHEME }} \
-            -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath ios/build \
+            -project "${{ env.PROJECT }}" \
+            -scheme "${{ env.SCHEME }}" \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest' \
+            -derivedDataPath build \
             -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" ENABLE_BITCODE=NO ONLY_ACTIVE_ARCH=YES
+            -skipPackagePluginValidation \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES
       - name: Run Unit Tests
+        working-directory: ${{ env.WORK_DIR }}
         run: |
           set -e
-            xcodebuild test-without-building \
-              -workspace ${{ env.WORKSPACE }} \
-              -scheme ${{ env.SCHEME }} \
-              -destination 'generic/platform=iOS Simulator' \
-              -derivedDataPath ios/build \
-              -only-testing VitalSenseTests \
-              CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" ENABLE_BITCODE=NO || EXIT_CODE=$?
-            # Allow test failures to still collect artifacts but fail job
-            if [ ! -z "$EXIT_CODE" ]; then
-              echo "Tests reported non-zero exit ($EXIT_CODE)"; exit $EXIT_CODE; fi
+          xcodebuild test-without-building \
+            -project "${{ env.PROJECT }}" \
+            -scheme "${{ env.SCHEME }}" \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest' \
+            -derivedDataPath build \
+            -only-testing "Andernet PostureTests" \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO || EXIT_CODE=$?
+          # Allow test failures to still collect artifacts but fail job
+          if [ ! -z "$EXIT_CODE" ]; then
+            echo "Tests reported non-zero exit ($EXIT_CODE)"; exit $EXIT_CODE; fi
       - name: Extract Coverage (Best Effort)
         id: coverage
         if: always()
         run: |
           set +e
-          RESULT=$(ls ios/build/Logs/Test/*.xcresult 2>/dev/null | head -1)
+          RESULT=$(ls ${{ env.WORK_DIR }}/build/Logs/Test/*.xcresult 2>/dev/null | head -1)
           if [ -z "$RESULT" ]; then echo "No xcresult found"; exit 0; fi
           xcrun xccov view --report --json "$RESULT" > coverage.json 2>/dev/null || { echo "xccov JSON unavailable"; exit 0; }
-          TOTAL=$(python3 -c "import json;\nimport sys;\nimport math;\n\ntry:\n data=json.load(open('coverage.json'));\n cov=[t.get('lineCoverage',0) for t in data.get('targets',[]) if t.get('name')!='VitalSenseUITests'];\n print(round(sum(cov)/len(cov)*100,2) if cov else 0)\nexcept Exception:\n print(0)")
+          TOTAL=$(python3 -c "import json;\nimport sys;\nimport math;\n\ntry:\n data=json.load(open('coverage.json'));\n cov=[t.get('lineCoverage',0) for t in data.get('targets',[]) if t.get('name')!='Andernet PostureUITests'];\n print(round(sum(cov)/len(cov)*100,2) if cov else 0)\nexcept Exception:\n print(0)")
           echo "Line Coverage: ${TOTAL}%"
           echo "coverage_percent=${TOTAL}" >> $GITHUB_OUTPUT
       - name: Upload Coverage JSON
@@ -149,9 +153,9 @@ jobs:
       - name: Coverage Gate (Min 40%)
         if: always()
         run: |
-          RESULT=$(ls ios/build/Logs/Test/*.xcresult 2>/dev/null | head -1)
+          RESULT=$(ls ${{ env.WORK_DIR }}/build/Logs/Test/*.xcresult 2>/dev/null | head -1)
           if [ -z "$RESULT" ]; then echo "Skipping coverage gate (no results)"; exit 0; fi
-          COV=$(xcrun xccov view --report --json "$RESULT" | python3 -c "import sys,json;\n\nimport math;\n\ntry:\n data=json.load(sys.stdin);\n cov=[t.get('lineCoverage',0) for t in data.get('targets',[]) if t.get('name')!='VitalSenseUITests'];\n print(round(sum(cov)/len(cov)*100,2) if cov else 0)\nexcept Exception:\n print(0)")
+          COV=$(xcrun xccov view --report --json "$RESULT" | python3 -c "import sys,json;\n\nimport math;\n\ntry:\n data=json.load(sys.stdin);\n cov=[t.get('lineCoverage',0) for t in data.get('targets',[]) if t.get('name')!='Andernet PostureUITests'];\n print(round(sum(cov)/len(cov)*100,2) if cov else 0)\nexcept Exception:\n print(0)")
           echo "Computed coverage: ${COV}%"
           MIN=40
           awk -v c=$COV -v m=$MIN 'BEGIN { if (c+0 < m) { printf("Coverage %.2f%% below minimum %d%%\n", c, m); exit 1 } }'
@@ -161,7 +165,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-debug
-          path: ios/build/Logs/Test/*.xcresult
+          path: ${{ env.WORK_DIR }}/build/Logs/Test/*.xcresult
           retention-days: 7
 
   archive-release:
@@ -182,23 +186,26 @@ jobs:
             ~/Library/Developer/Xcode/DerivedData
             ~/Library/Caches/org.swift.swiftpm
             ~/.swiftpm
-            ios/build
-          key: archive-${{ runner.os }}-${{ env.XCODE_VERSION }}-${{ hashFiles('ios/Package.swift','ios/VitalSense/**/*.swift') }}
+            ${{ env.WORK_DIR }}/build
+          key: archive-${{ runner.os }}-${{ env.XCODE_VERSION }}-${{ hashFiles('ios/Andernet-Posture/**/*.xcodeproj/project.pbxproj') }}
       - name: Archive (Release)
+        working-directory: ${{ env.WORK_DIR }}
         run: |
           set -e
           xcodebuild archive \
-            -workspace ${{ env.WORKSPACE }} \
-            -scheme ${{ env.SCHEME }} \
+            -project "${{ env.PROJECT }}" \
+            -scheme "${{ env.SCHEME }}" \
             -configuration Release \
-            -archivePath ${{ env.ARCHIVE_PATH }} \
+            -archivePath build/AndernetPosture.xcarchive \
             -destination 'generic/platform=iOS' \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" SKIP_INSTALL=NO ENABLE_BITCODE=NO || EXIT_CODE=$?
-          if [ ! -d "${{ env.ARCHIVE_PATH }}" ]; then echo 'Archive failed'; exit 1; fi
+            -skipPackagePluginValidation \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO SKIP_INSTALL=NO || EXIT_CODE=$?
+          if [ ! -d "build/AndernetPosture.xcarchive" ]; then echo 'Archive failed'; exit 1; fi
       - name: Export IPA (Ad-hoc Unsigned)
+        working-directory: ${{ env.WORK_DIR }}
         run: |
           set -e
-          mkdir -p ${{ env.EXPORT_PATH }}
+          mkdir -p build/export
           cat > exportOptions.plist <<'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -212,8 +219,8 @@ jobs:
           </dict>
           </plist>
           EOF
-          xcodebuild -exportArchive -archivePath ${{ env.ARCHIVE_PATH }} -exportPath ${{ env.EXPORT_PATH }} -exportOptionsPlist exportOptions.plist || echo 'Export may have partial artifacts'
-          ls -la ${{ env.EXPORT_PATH }} || true
+          xcodebuild -exportArchive -archivePath build/AndernetPosture.xcarchive -exportPath build/export -exportOptionsPlist exportOptions.plist || echo 'Export may have partial artifacts'
+          ls -la build/export || true
       - name: Upload Archive Artifacts
         if: always()
         uses: actions/upload-artifact@v4

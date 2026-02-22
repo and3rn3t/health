@@ -1,6 +1,6 @@
 coverage_service: html
-xcodeproj: VitalSense.xcodeproj
-scheme: VitalSense
+xcodeproj: "Andernet-Posture/Andernet Posture.xcodeproj"
+scheme: "Andernet Posture"
 overwrite: true
 ignore:
   - Pods/*

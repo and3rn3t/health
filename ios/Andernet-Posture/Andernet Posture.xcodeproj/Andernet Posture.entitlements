@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- iCloud CloudKit Integration -->
+	<key>com.apple.developer.icloud-container-identifiers</key>
+	<array>
+		<string>iCloud.dev.andernet.posture</string>
+	</array>
+	<key>com.apple.developer.icloud-services</key>
+	<array>
+		<string>CloudKit</string>
+	</array>
+	
+	<!-- iCloud Key-Value Store (for demographics sync) -->
+	<key>com.apple.developer.ubiquity-kvstore-identifier</key>
+	<string>$(TeamIdentifierPrefix)dev.andernet.posture</string>
+	
+	<!-- HealthKit Access -->
+	<key>com.apple.developer.healthkit</key>
+	<true/>
+	<key>com.apple.developer.healthkit.access</key>
+	<array/>
+	
+	<!-- Background Modes for HealthKit syncing (optional - uncomment if needed) -->
+	<!-- 
+	<key>com.apple.developer.healthkit.background-delivery</key>
+	<true/>
+	-->
+</dict>
+</plist>

@@ -1,0 +1,55 @@
+{
+  "configurations" : [
+    {
+      "id" : "smoke-tests",
+      "name" : "Smoke Tests",
+      "options" : {
+        "codeCoverage" : false,
+        "commandLineArgumentEntries" : [
+          {
+            "argument" : "UI_TESTING"
+          }
+        ],
+        "environmentVariableEntries" : [
+          {
+            "key" : "IS_UI_TESTING",
+            "value" : "1"
+          },
+          {
+            "key" : "DISABLE_ANIMATIONS",
+            "value" : "1"
+          }
+        ],
+        "targetForVariableExpansion" : {
+          "containerPath" : "container:Andernet Posture.xcodeproj",
+          "identifier" : "Andernet Posture",
+          "name" : "Andernet Posture"
+        },
+        "testExecutionOrdering" : "random"
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "testExecutionOrdering" : "random"
+  },
+  "testTargets" : [
+    {
+      "selectedTests" : [
+        "Andernet_PostureUITests\/testLaunchPerformance()",
+        "Andernet_PostureUITests\/testAppLaunches()",
+        "Andernet_PostureUITests\/testTabBarExists()",
+        "Andernet_PostureUITests\/testAllTabsExist()",
+        "NavigationTests\/testTabBarExists()",
+        "NavigationTests\/testNavigateToDashboard()",
+        "NavigationTests\/testNavigateToCapture()"
+      ],
+      "target" : {
+        "containerPath" : "container:Andernet Posture.xcodeproj",
+        "identifier" : "Andernet_PostureUITests",
+        "name" : "Andernet_PostureUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

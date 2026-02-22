@@ -1,0 +1,125 @@
+# SwiftLint configuration for Andernet Posture
+
+# Only lint the main app source
+included:
+  - Andernet Posture
+
+excluded:
+  - Andernet Posture/Assets.xcassets
+  - DerivedData
+  - build
+  - .build
+  - Pods
+
+# Rules
+disabled_rules:
+  - trailing_whitespace        # noisy in Xcode-generated files
+  - todo                       # allow TODO/FIXME during development
+  - large_tuple                # clinical analyzers return multi-value tuples
+  - implicit_optional_initialization # @Model properties need explicit nil init
+
+opt_in_rules:
+  - closure_spacing
+  - contains_over_filter_count
+  - empty_count
+  - empty_string
+  - fatal_error_message
+  - first_where
+  - last_where
+  - modifier_order
+  - overridden_super_call
+  - private_action
+  - private_outlet
+  - redundant_nil_coalescing
+  - sorted_first_last
+  - toggle_bool
+  - unowned_variable_capture
+  - vertical_whitespace_closing_braces
+
+# Tuning
+line_length:
+  warning: 160
+  error: 200
+  ignores_comments: true
+  ignores_urls: true
+
+type_body_length:
+  warning: 500
+  error: 800
+
+file_length:
+  warning: 600
+  error: 1000
+
+function_body_length:
+  warning: 100
+  error: 200
+
+function_parameter_count:
+  warning: 8
+  error: 14
+
+cyclomatic_complexity:
+  warning: 15
+  error: 30
+
+large_tuple:
+  warning: 2
+  error: 9
+
+type_name:
+  min_length: 3
+  max_length: 50
+  allowed_symbols:
+    - _
+
+identifier_name:
+  min_length:
+    warning: 2
+    error: 1
+  max_length:
+    warning: 50
+    error: 60
+  excluded:
+    - id
+    - x
+    - y
+    - z
+    - i
+    - dx
+    - dy
+    - dz
+    - dt
+    - lx
+    - ly
+    - lz
+    - rx
+    - ry
+    - rz
+    - t
+    - s
+    - v
+    - p
+    - l
+    - n
+    - k
+    - h
+    - a
+    - b
+    - u
+    - w
+    - j
+    - r
+    - f
+    - c
+    - m
+    - q
+    - e
+    - g
+    - d
+
+nesting:
+  type_level: 2
+  function_level: 3
+
+reporter: xcode

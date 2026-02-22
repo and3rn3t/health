@@ -1,263 +1,299 @@
 {
-  "typescript.preferences.quoteStyle": "single",
-  "typescript.updateImportsOnFileMove.enabled": "always",
-  "typescript.preferences.importModuleSpecifier": "relative",
-  "javascript.preferences.quoteStyle": "single",
-  "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "explicit"
-  },
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.rulers": [80, 120],
-  "editor.tabSize": 2,
-  "editor.insertSpaces": true,
-  "editor.detectIndentation": false,
-  "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true,
-  "files.trimFinalNewlines": true,
-  "files.eol": "\n",
-  "files.associations": {
-    "*.tsx": "typescriptreact",
-    "*.ts": "typescript",
-    "*.plist": "xml",
-    "*.toml": "toml",
-    "scripts/node/**/*.js": "javascript",
-    "scripts/**/*.ps1": "powershell",
-    "wrangler.toml": "toml",
-    ".env*": "properties"
-  },
-  "emmet.includeLanguages": {
-    "typescript": "html",
-    "typescriptreact": "html"
-  },
-  "search.exclude": {
-    "**/node_modules": true,
-    "**/dist": true,
-    "**/dist-worker": true,
-    "**/.wrangler": true,
-    "**/coverage": true,
-    "**/build": true,
-    "**/.build": true,
-    "**/Pods": true,
-    "**/DerivedData": true,
-    "**/*.xcuserdata": true,
-    "**/.cache": true,
-    "**/.tsbuildinfo": true,
-    "**/logs": true,
-    "**/*.log": true
-  },
-  "tailwindCSS.includeLanguages": {
-    "typescript": "html",
-    "typescriptreact": "html"
-  },
-  "tailwindCSS.experimental.classRegex": [
-    "clsx\\(([^)]*)\\)",
-    "cn\\(([^)]*)\\)"
-  ],
-  "[powershell]": {
-    "editor.defaultFormatter": "ms-vscode.powershell",
-    "editor.tabSize": 2
-  },
-  "[swift]": {
-    "editor.defaultFormatter": "vknabel.vscode-apple-swift-format",
-    "editor.tabSize": 2,
+    "typescript.preferences.quoteStyle": "single",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "javascript.preferences.quoteStyle": "single",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
-    }
-  },
-  "[markdown]": {
-    "editor.wordWrap": "on",
-    "files.trimTrailingWhitespace": false
-  },
-  "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[jsonc]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "eslint.workingDirectories": [".", "./ios", "./scripts/node"],
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
-  "git.autofetch": true,
-  "git.confirmSync": false,
-  "terminal.integrated.defaultProfile.windows": "VitalSense Enhanced",
-  "terminal.integrated.automationProfile.windows": {
-    "path": "pwsh.exe",
-    "args": ["-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass"]
-  },
-  "terminal.integrated.profiles.windows": {
-    "VitalSense Enhanced": {
-      "path": "pwsh.exe",
-      "icon": "heart",
-      "color": "terminal.ansiBlue",
-      "args": [
-        "-NoLogo",
-        "-NoExit",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        "$env:VITALSENSE_WORKSPACE_ROOT='${workspaceFolder}'; . '${workspaceFolder}\\scripts\\powershell-tools\\fast-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}'"
-      ]
+        "source.fixAll.eslint": "explicit",
+        "source.organizeImports": "explicit"
     },
-    "Swift Development": {
-      "path": "pwsh.exe",
-      "icon": "symbol-method",
-      "color": "terminal.ansiMagenta",
-      "args": [
-        "-NoLogo",
-        "-NoExit",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        "$env:VITALSENSE_WORKSPACE_ROOT='${workspaceFolder}'; . '${workspaceFolder}\\scripts\\powershell-tools\\enhanced-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}' -SwiftMode"
-      ]
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.rulers": [
+        80,
+        120
+    ],
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.eol": "\n",
+    "files.associations": {
+        "*.tsx": "typescriptreact",
+        "*.ts": "typescript",
+        "*.plist": "xml",
+        "*.toml": "toml",
+        "scripts/node/**/*.js": "javascript",
+        "scripts/**/*.ps1": "powershell",
+        "wrangler.toml": "toml",
+        ".env*": "properties"
     },
-    "Legacy VitalSense": {
-      "path": "pwsh.exe",
-      "icon": "terminal",
-      "args": [
-        "-NoLogo",
-        "-NoExit",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        "$env:VITALSENSE_WORKSPACE_ROOT='${workspaceFolder}'; . '${workspaceFolder}\\scripts\\powershell-tools\\terminal-init.ps1' -WorkspaceRoot '${workspaceFolder}' -Verbose"
-      ]
+    "emmet.includeLanguages": {
+        "typescript": "html",
+        "typescriptreact": "html"
     },
-    "PowerShell 7": {
-      "path": "pwsh.exe",
-      "icon": "terminal-powershell",
-      "args": ["-NoLogo"]
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/dist-worker": true,
+        "**/.wrangler": true,
+        "**/coverage": true,
+        "**/build": true,
+        "**/.build": true,
+        "**/Pods": true,
+        "**/DerivedData": true,
+        "**/*.xcuserdata": true,
+        "**/.cache": true,
+        "**/.tsbuildinfo": true,
+        "**/logs": true,
+        "**/*.log": true
     },
-    "PowerShell 5": {
-      "path": "powershell.exe",
-      "icon": "terminal-powershell",
-      "args": ["-NoLogo", "-NoProfile"]
+    "tailwindCSS.includeLanguages": {
+        "typescript": "html",
+        "typescriptreact": "html"
     },
-    "PowerShell 7 (No Profile)": {
-      "path": "pwsh.exe",
-      "icon": "terminal-powershell",
-      "args": ["-NoLogo", "-NoProfile"]
-    }
-  },
-  "terminal.integrated.commandsToSkipShell": [
-    "workbench.action.terminal.sendSequence"
-  ],
-  "terminal.integrated.enableVisualBell": false,
-  "terminal.integrated.showExitAlert": false,
-  "terminal.integrated.scrollback": 10000,
-  "terminal.integrated.shellIntegration.enabled": true,
-  "terminal.integrated.shellIntegration.decorationsEnabled": "both",
-  "terminal.integrated.shellIntegration.showCommandGuide": true,
-  "terminal.integrated.shellIntegration.suggestEnabled": true,
-  "terminal.integrated.stickyScroll.enabled": true,
-  "terminal.integrated.suggest.enabled": true,
-  "terminal.integrated.suggest.inlineSuggestion": "alwaysOnTop",
-  "terminal.integrated.suggest.showStatusBar": true,
-  "terminal.integrated.shellIntegration.history": 1000,
-  "terminal.integrated.smoothScrolling": true,
-  "terminal.integrated.allowChords": true,
-  "terminal.integrated.tabs.title": "💙 VitalSense (pwsh) • ${cwdBasename}",
-  "terminal.integrated.tabs.description": "${workspaceFolderBasename}",
-  "terminal.integrated.copyOnSelection": true,
-  "terminal.integrated.rightClickBehavior": "copyPaste",
-  "terminal.integrated.confirmOnKill": "never",
-  "terminal.integrated.enableMultiLinePasteWarning": "never",
-  "terminal.integrated.gpuAcceleration": "auto",
-  "terminal.integrated.tabs.enabled": true,
-  "terminal.integrated.env.windows": {
-    "POWERSHELL_TELEMETRY_OPTOUT": "1"
-  },
-  "terminal.integrated.defaultLocation": "editor",
-  "terminal.integrated.drawBoldTextInBrightColors": false,
-  "terminal.integrated.minimumContrastRatio": 4.5,
-  "terminal.integrated.unicodeVersion": "11",
-  "workbench.colorCustomizations": {
-    "terminalCommandDecoration.defaultBackground": "#2563eb",
-    "terminalCommandDecoration.defaultForeground": "#ffffff",
-    "terminalCommandDecoration.successBackground": "#10b981",
-    "terminalCommandDecoration.successForeground": "#0b2a1f",
-    "terminalCommandDecoration.errorBackground": "#ef4444",
-    "terminalCommandDecoration.errorForeground": "#ffffff"
-  },
-  "powershell.codeFormatting.preset": "OTBS",
-  "powershell.codeFormatting.useConstantStrings": true,
-  "powershell.codeFormatting.useCorrectCasing": true,
-  "powershell.integratedConsole.showOnStartup": false,
-  "powershell.debugging.createTemporaryIntegratedConsole": true,
-  "powershell.scriptAnalysis.enable": true,
-  "powershell.scriptAnalysis.settingsPath": ".vscode/PSScriptAnalyzerSettings.psd1",
-  "powershell.powerShellAdditionalExePaths": [
-    {
-      "versionName": "PowerShell 7",
-      "exePath": "C:\\Program Files\\PowerShell\\7\\pwsh.exe"
+    "tailwindCSS.experimental.classRegex": [
+        "clsx\\(([^)]*)\\)",
+        "cn\\(([^)]*)\\)"
+    ],
+    "[powershell]": {
+        "editor.defaultFormatter": "ms-vscode.powershell",
+        "editor.tabSize": 2
     },
-    {
-      "versionName": "PowerShell (Store)",
-      "exePath": "C:\\Users\\and3r\\AppData\\Local\\Microsoft\\WindowsApps\\Microsoft.PowerShell_8wekyb3d8bbwe\\pwsh.exe"
-    }
-  ],
-  "powershell.powerShellDefaultVersion": "PowerShell (Store)",
-  "powershell.codeFormatting.alignPropertyValuePairs": true,
-  "task.verboseLogging": true,
-  "task.allowAutomaticTasks": "on",
-  "task.reconnection": true,
-  "breadcrumbs.enabled": true,
-  "problems.decorations.enabled": true,
-  "problems.showCurrentInStatus": true,
-  "problems.sortOrder": "severity",
-  "sonarlint.rules": {
-    "typescript:S6478": "off",
-    "typescript:S1774": "off",
-    "css:S6803": "off",
-    "typescript:S6596": "off",
-    "typescript:S3504": "off"
-  },
-  "sonarlint.focusOnNewCode": true,
-  "sonarlint.verboseLogging": false,
-  "github.copilot.enable": {
-    "*": true,
-    "yaml": true,
-    "plaintext": true,
-    "markdown": true,
-    "powershell": true,
-    "jsonc": true,
-    "shellscript": true
-  },
-  "github.copilot.editor.enableCodeActions": true,
-  "github.copilot.chat.localeOverride": "en",
-  "github.copilot.advanced": {
-    "debug.overrideEngine": "codex",
-    "debug.testOverrideProxyUrl": "",
-    "debug.overrideProxyUrl": ""
-  },
-  "typescript.suggest.autoImports": true,
-  "typescript.suggest.completeFunctionCalls": true,
-  "typescript.suggest.includeAutomaticOptionalChainCompletions": true,
-  "task.quickOpen.history": 10,
-  "task.quickOpen.detail": true,
-  "task.quickOpen.skip": false,
-  "terminal.integrated.enablePersistentSessions": true,
-  "terminal.integrated.persistentSessionReviveProcess": "onExitAndWindowClose",
-  "files.watcherExclude": {
-    "**/node_modules/**": true,
-    "**/.git/objects/**": true,
-    "**/.git/subtree-cache/**": true,
-    "**/dist/**": true,
-    "**/dist-worker/**": true,
-    "**/.wrangler/**": true
-  },
-  "[dockerfile]": {
-    "editor.defaultFormatter": "ms-azuretools.vscode-containers"
-  },
-  "sonarlint.connectedMode.project": {
-    "connectionId": "and3rn3t",
-    "projectKey": "and3rn3t_health"
-  }
+    "[swift]": {
+        "editor.defaultFormatter": "sweetpad.sweetpad",
+        "editor.formatOnSave": true,
+        "editor.tabSize": 2,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    },
+    "[markdown]": {
+        "editor.wordWrap": "on",
+        "files.trimTrailingWhitespace": false
+    },
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "eslint.workingDirectories": [
+        ".",
+        "./ios",
+        "./scripts/node"
+    ],
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "terminal.integrated.defaultProfile.windows": "VitalSense Enhanced",
+    "terminal.integrated.automationProfile.windows": {
+        "path": "pwsh.exe",
+        "args": [
+            "-NoLogo",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass"
+        ]
+    },
+    "terminal.integrated.profiles.windows": {
+        "VitalSense Enhanced": {
+            "path": "pwsh.exe",
+            "icon": "heart",
+            "color": "terminal.ansiBlue",
+            "args": [
+                "-NoLogo",
+                "-NoExit",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "$env:VITALSENSE_WORKSPACE_ROOT='${workspaceFolder}'; . '${workspaceFolder}\\scripts\\powershell-tools\\fast-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}'"
+            ]
+        },
+        "Swift Development": {
+            "path": "pwsh.exe",
+            "icon": "symbol-method",
+            "color": "terminal.ansiMagenta",
+            "args": [
+                "-NoLogo",
+                "-NoExit",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "$env:VITALSENSE_WORKSPACE_ROOT='${workspaceFolder}'; . '${workspaceFolder}\\scripts\\powershell-tools\\enhanced-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}' -SwiftMode"
+            ]
+        },
+        "Legacy VitalSense": {
+            "path": "pwsh.exe",
+            "icon": "terminal",
+            "args": [
+                "-NoLogo",
+                "-NoExit",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "$env:VITALSENSE_WORKSPACE_ROOT='${workspaceFolder}'; . '${workspaceFolder}\\scripts\\powershell-tools\\terminal-init.ps1' -WorkspaceRoot '${workspaceFolder}' -Verbose"
+            ]
+        },
+        "PowerShell 7": {
+            "path": "pwsh.exe",
+            "icon": "terminal-powershell",
+            "args": [
+                "-NoLogo"
+            ]
+        },
+        "PowerShell 5": {
+            "path": "powershell.exe",
+            "icon": "terminal-powershell",
+            "args": [
+                "-NoLogo",
+                "-NoProfile"
+            ]
+        },
+        "PowerShell 7 (No Profile)": {
+            "path": "pwsh.exe",
+            "icon": "terminal-powershell",
+            "args": [
+                "-NoLogo",
+                "-NoProfile"
+            ]
+        }
+    },
+    "terminal.integrated.commandsToSkipShell": [
+        "workbench.action.terminal.sendSequence"
+    ],
+    "terminal.integrated.enableVisualBell": false,
+    "terminal.integrated.showExitAlert": false,
+    "terminal.integrated.scrollback": 10000,
+    "terminal.integrated.shellIntegration.enabled": true,
+    "terminal.integrated.shellIntegration.decorationsEnabled": "both",
+    "terminal.integrated.shellIntegration.showCommandGuide": true,
+    "terminal.integrated.shellIntegration.suggestEnabled": true,
+    "terminal.integrated.stickyScroll.enabled": true,
+    "terminal.integrated.suggest.enabled": true,
+    "terminal.integrated.suggest.inlineSuggestion": "alwaysOnTop",
+    "terminal.integrated.suggest.showStatusBar": true,
+    "terminal.integrated.shellIntegration.history": 1000,
+    "terminal.integrated.smoothScrolling": true,
+    "terminal.integrated.allowChords": true,
+    "terminal.integrated.tabs.title": "💙 VitalSense (pwsh) • ${cwdBasename}",
+    "terminal.integrated.tabs.description": "${workspaceFolderBasename}",
+    "terminal.integrated.copyOnSelection": true,
+    "terminal.integrated.rightClickBehavior": "copyPaste",
+    "terminal.integrated.confirmOnKill": "never",
+    "terminal.integrated.enableMultiLinePasteWarning": "never",
+    "terminal.integrated.gpuAcceleration": "auto",
+    "terminal.integrated.tabs.enabled": true,
+    "terminal.integrated.env.windows": {
+        "POWERSHELL_TELEMETRY_OPTOUT": "1"
+    },
+    "terminal.integrated.defaultLocation": "editor",
+    "terminal.integrated.drawBoldTextInBrightColors": false,
+    "terminal.integrated.minimumContrastRatio": 4.5,
+    "terminal.integrated.unicodeVersion": "11",
+    "workbench.colorCustomizations": {
+      "terminalCommandDecoration.defaultBackground": "#2563eb",
+      "terminalCommandDecoration.defaultForeground": "#ffffff",
+      "terminalCommandDecoration.successBackground": "#10b981",
+      "terminalCommandDecoration.successForeground": "#0b2a1f",
+      "terminalCommandDecoration.errorBackground": "#ef4444",
+      "terminalCommandDecoration.errorForeground": "#ffffff"
+    },
+    "powershell.codeFormatting.preset": "OTBS",
+    "powershell.codeFormatting.useConstantStrings": true,
+    "powershell.codeFormatting.useCorrectCasing": true,
+    "powershell.integratedConsole.showOnStartup": false,
+    "powershell.debugging.createTemporaryIntegratedConsole": true,
+    "powershell.scriptAnalysis.enable": true,
+    "powershell.scriptAnalysis.settingsPath": ".vscode/PSScriptAnalyzerSettings.psd1",
+    "powershell.powerShellAdditionalExePaths": [
+        {
+            "versionName": "PowerShell 7",
+            "exePath": "C:\\Program Files\\PowerShell\\7\\pwsh.exe"
+        },
+        {
+            "versionName": "PowerShell (Store)",
+            "exePath": "C:\\Users\\and3r\\AppData\\Local\\Microsoft\\WindowsApps\\Microsoft.PowerShell_8wekyb3d8bbwe\\pwsh.exe"
+        }
+    ],
+    "powershell.powerShellDefaultVersion": "PowerShell (Store)",
+    "powershell.codeFormatting.alignPropertyValuePairs": true,
+    "task.verboseLogging": true,
+    "task.allowAutomaticTasks": "on",
+    "task.reconnection": true,
+    "breadcrumbs.enabled": true,
+    "problems.decorations.enabled": true,
+    "problems.showCurrentInStatus": true,
+    "problems.sortOrder": "severity",
+    "sonarlint.rules": {
+        "typescript:S6478": "off",
+        "typescript:S1774": "off",
+        "css:S6803": "off",
+        "typescript:S6596": "off",
+        "typescript:S3504": "off"
+    },
+    "sonarlint.focusOnNewCode": true,
+    "sonarlint.verboseLogging": false,
+    "github.copilot.enable": {
+        "*": true,
+        "yaml": true,
+        "plaintext": true,
+        "markdown": true,
+        "powershell": true,
+        "jsonc": true,
+        "shellscript": true
+    },
+    "github.copilot.editor.enableCodeActions": true,
+    "github.copilot.chat.localeOverride": "en",
+    "github.copilot.advanced": {
+        "debug.overrideEngine": "codex",
+        "debug.testOverrideProxyUrl": "",
+        "debug.overrideProxyUrl": ""
+    },
+    "typescript.suggest.autoImports": true,
+    "typescript.suggest.completeFunctionCalls": true,
+    "typescript.suggest.includeAutomaticOptionalChainCompletions": true,
+    "task.quickOpen.history": 10,
+    "task.quickOpen.detail": true,
+    "task.quickOpen.skip": false,
+    "terminal.integrated.enablePersistentSessions": true,
+    "terminal.integrated.persistentSessionReviveProcess": "onExitAndWindowClose",
+    "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/dist/**": true,
+        "**/dist-worker/**": true,
+        "**/.wrangler/**": true
+    },
+    "[dockerfile]": {
+        "editor.defaultFormatter": "ms-azuretools.vscode-containers"
+    },
+    "sonarlint.connectedMode.project": {
+        "connectionId": "and3rn3t",
+        "projectKey": "and3rn3t_health"
+    },
+    "triggerTaskOnSave.tasks": {
+        "sweetpad: build": [
+            "**/*.swift"
+        ]
+    },
+    "triggerTaskOnSave.on": true,
+    "triggerTaskOnSave.showNotifications": false,
+    "triggerTaskOnSave.restart": true,
+    "triggerTaskOnSave.delay": 1000,
+    "triggerTaskOnSave.resultIndicatorResetTimeout": 5,
+    "sweetpad.format.args": [
+        "--in-place",
+        "--configuration",
+        ".vscode/.swift-format",
+        "${file}"
+    ]
 }

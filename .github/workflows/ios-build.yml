@@ -1,4 +1,4 @@
-name: VitalSense iOS Build
+name: Andernet Posture iOS Build
 
 on:
   workflow_dispatch:
@@ -12,10 +12,8 @@ on:
           - development
           - release
           - performance
-          - health_monitoring
-          - watch_app
-          - widgets
-          - all_targets
+          - posture
+          - all
       run_tests:
         description: 'Run tests'
         required: false
@@ -46,11 +44,19 @@ jobs:
       RUN_TESTS: ${{ github.event.inputs.run_tests != 'false' }}
       UPLOAD_TESTFLIGHT: ${{ github.event.inputs.upload_testflight == 'true' && github.ref == 'refs/heads/main' }}
       SKIP_CODESIGNING: ${{ github.event.inputs.skip_codesigning != 'false' }}
-      APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER || 'dev.andernet.VitalSense' }}
+      APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER || 'dev.andernet.posture.Andernet-Posture' }}
       TEAM_ID: ${{ secrets.TEAM_ID }}
       FASTLANE_USER: ${{ secrets.FASTLANE_USER }}
       FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
       APP_STORE_CONNECT_API_KEY_PATH: ${{ secrets.APP_STORE_CONNECT_API_KEY_PATH }}
+      XCODE_PATH: /Applications/Xcode_26.2.app/Contents/Developer
+      SCHEME: "Andernet Posture"
+      PROJECT: "Andernet Posture.xcodeproj"
+      WORK_DIR: ios/Andernet-Posture
+
+    defaults:
+      run:
+        working-directory: ios/Andernet-Posture
 
     steps:
       - name: Checkout code
@@ -58,10 +64,8 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '16.4'
+      - name: Select Xcode
+        run: sudo xcode-select -s "$XCODE_PATH"
 
       - name: Cache Ruby gems
         uses: actions/cache@v4
@@ -72,8 +76,8 @@ jobs:
             ${{ runner.os }}-ruby-
 
       - name: Install Ruby dependencies
+        working-directory: ios
         run: |
-          cd ios
           bundle config set --local deployment 'false'
           bundle config set --local path 'vendor/bundle'
           bundle install --jobs 4 --retry 3
@@ -82,48 +86,16 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-xcode-${{ hashFiles('ios/**/*.swift', 'ios/**/*.m', 'ios/**/*.h', 'ios/VitalSense.xcodeproj/project.pbxproj') }}
+          key: ${{ runner.os }}-xcode-${{ hashFiles('ios/Andernet-Posture/**/*.xcodeproj/project.pbxproj') }}
           restore-keys: |
             ${{ runner.os }}-xcode-
 
-      - name: Cache Swift packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ios/.build
-            ~/Library/Caches/org.swift.swiftpm
-          key: ${{ runner.os }}-spm-${{ hashFiles('ios/Package.swift', 'ios/Package.resolved') }}
-          restore-keys: |
-            ${{ runner.os }}-spm-
-
-      - name: Environment validation
-        run: |
-          cd ios
-          echo "🔍 Environment Validation"
-          echo "========================"
-          echo "Xcode Version:"
-          xcodebuild -version
-          echo ""
-          echo "Available SDKs:"
-          xcodebuild -showsdks | grep -E "iOS|watchOS" | head -5
-          echo ""
-          echo "Workspace check:"
-          test -f VitalSense.xcworkspace/contents.xcworkspacedata && echo "✅ Workspace exists" || echo "❌ Workspace missing"
-          echo ""
-          echo "Build Configuration:"
-          echo "  Build Type: $BUILD_TYPE"
-          echo "  Run Tests: $RUN_TESTS"
-          echo "  Upload TestFlight: $UPLOAD_TESTFLIGHT"
-          echo "  Skip Code Signing: $SKIP_CODESIGNING"
-
       - name: Resolve Swift packages
         run: |
-          cd ios
-          echo "📦 Resolving Swift package dependencies..."
           xcodebuild -resolvePackageDependencies \
-            -workspace VitalSense.xcworkspace \
-            -scheme VitalSense \
-            -quiet || echo "⚠️ Package resolution completed with warnings"
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -quiet || echo "Package resolution completed with warnings"
 
       - name: Determine build lane
         id: build_lane
@@ -138,25 +110,15 @@ jobs:
               echo "test_lane=tests" >> $GITHUB_OUTPUT
               ;;
             performance)
-              echo "lane=build_health_monitoring" >> $GITHUB_OUTPUT
+              echo "lane=build_posture" >> $GITHUB_OUTPUT
               echo "test_lane=performance_test" >> $GITHUB_OUTPUT
               ;;
-            health_monitoring)
-              echo "lane=build_health_monitoring" >> $GITHUB_OUTPUT
+            posture)
+              echo "lane=build_posture" >> $GITHUB_OUTPUT
               echo "test_lane=tests" >> $GITHUB_OUTPUT
               ;;
-            watch_app)
-              echo "lane=build" >> $GITHUB_OUTPUT
-              echo "test_lane=tests" >> $GITHUB_OUTPUT
-              echo "scheme=VitalSenseWatch Watch App" >> $GITHUB_OUTPUT
-              ;;
-            widgets)
-              echo "lane=build" >> $GITHUB_OUTPUT
-              echo "test_lane=tests" >> $GITHUB_OUTPUT
-              echo "scheme=VitalSenseWidgets" >> $GITHUB_OUTPUT
-              ;;
-            all_targets)
-              echo "lane=build" >> $GITHUB_OUTPUT
+            all)
+              echo "lane=build_optimized" >> $GITHUB_OUTPUT
               echo "test_lane=tests" >> $GITHUB_OUTPUT
               ;;
             *)
@@ -167,50 +129,46 @@ jobs:
 
       - name: Run linting
         continue-on-error: true
+        working-directory: ios
         run: |
-          cd ios
-          echo "🔍 Running code linting..."
-          bundle exec fastlane ios lint || echo "⚠️ Linting completed with warnings"
+          bundle exec fastlane ios lint || echo "Linting completed with warnings"
 
       - name: Build iOS app
         id: build
+        working-directory: ios
         run: |
-          cd ios
-          echo "🏗️ Building VitalSense iOS app..."
+          echo "Building Andernet Posture iOS app..."
           echo "Build Lane: ${{ steps.build_lane.outputs.lane }}"
 
-          set +e  # Don't exit on error, we'll handle it
+          set +e
 
           BUILD_START_TIME=$(date +%s)
 
-          # Try main build first
           if bundle exec fastlane ios ${{ steps.build_lane.outputs.lane }}; then
             BUILD_END_TIME=$(date +%s)
             BUILD_DURATION=$((BUILD_END_TIME - BUILD_START_TIME))
-            echo "✅ Main build successful (${BUILD_DURATION}s)"
+            echo "Build successful (${BUILD_DURATION}s)"
             echo "success=true" >> $GITHUB_OUTPUT
             echo "duration=${BUILD_DURATION}" >> $GITHUB_OUTPUT
           else
             BUILD_EXIT_CODE=$?
-            echo "⚠️ Main build failed (exit $BUILD_EXIT_CODE), trying fallback..."
+            echo "Main build failed (exit $BUILD_EXIT_CODE), trying fallback..."
 
-            # Ensure fallback script exists and is executable
-            if [ -f "./scripts/fallback-build.sh" ]; then
-              chmod +x ./scripts/fallback-build.sh
+            if [ -f "../Andernet-Posture/scripts/fallback-build.sh" ]; then
+              chmod +x "../Andernet-Posture/scripts/fallback-build.sh"
               BUILD_START_TIME=$(date +%s)
-              if ./scripts/fallback-build.sh; then
+              if (cd "../Andernet-Posture" && bash scripts/fallback-build.sh); then
                 BUILD_END_TIME=$(date +%s)
                 BUILD_DURATION=$((BUILD_END_TIME - BUILD_START_TIME))
-                echo "✅ Fallback build successful (${BUILD_DURATION}s)"
+                echo "Fallback build successful (${BUILD_DURATION}s)"
                 echo "success=true" >> $GITHUB_OUTPUT
                 echo "duration=${BUILD_DURATION}" >> $GITHUB_OUTPUT
               else
-                echo "❌ Both main and fallback builds failed"
+                echo "Both main and fallback builds failed"
                 echo "success=false" >> $GITHUB_OUTPUT
                 exit 1
               fi
             else
-              echo "❌ Fallback script not found"
               echo "success=false" >> $GITHUB_OUTPUT
               exit 1
             fi
@@ -219,59 +177,27 @@ jobs:
       - name: Run tests
         if: steps.build.outputs.success == 'true' && env.RUN_TESTS == 'true'
         continue-on-error: true
+        working-directory: ios
         run: |
-          cd ios
-          echo "🧪 Running tests..."
           TEST_START_TIME=$(date +%s)
 
           if bundle exec fastlane ios ${{ steps.build_lane.outputs.test_lane }}; then
             TEST_END_TIME=$(date +%s)
-            TEST_DURATION=$((TEST_END_TIME - TEST_START_TIME))
-            echo "✅ Tests passed (${TEST_DURATION}s)"
+            echo "Tests passed ($((TEST_END_TIME - TEST_START_TIME))s)"
             echo "TEST_SUCCESS=true" >> $GITHUB_ENV
           else
-            echo "⚠️ Tests failed, but continuing..."
+            echo "Tests failed, but continuing..."
             echo "TEST_SUCCESS=false" >> $GITHUB_ENV
           fi
-
-      - name: Build watch app (if all_targets)
-        if: steps.build.outputs.success == 'true' && env.BUILD_TYPE == 'all_targets'
-        continue-on-error: true
-        run: |
-          cd ios
-          echo "⌚ Building Watch app..."
-          xcodebuild build \
-            -workspace VitalSense.xcworkspace \
-            -scheme "VitalSenseWatch Watch App" \
-            -configuration Release \
-            -destination "generic/platform=watchOS" \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            || echo "⚠️ Watch app build failed, continuing..."
-
-      - name: Build widgets (if all_targets)
-        if: steps.build.outputs.success == 'true' && env.BUILD_TYPE == 'all_targets'
-        continue-on-error: true
-        run: |
-          cd ios
-          echo "📱 Building Widgets..."
-          xcodebuild build \
-            -workspace VitalSense.xcworkspace \
-            -scheme VitalSenseWidgets \
-            -configuration Release \
-            -destination "generic/platform=iOS" \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            || echo "⚠️ Widgets build failed, continuing..."
 
       - name: Generate build metrics
         if: always()
         run: |
-          cd ios
           mkdir -p build
-          cat > build_metrics.json << EOF
+          cat > build_metrics.json << JSON
           {
-            "build_type": "${{ env.BUILD_TYPE }}",
+            "app": "Andernet Posture",
+            "build_type": "$BUILD_TYPE",
             "build_success": ${{ steps.build.outputs.success == 'true' }},
             "build_duration_seconds": ${{ steps.build.outputs.duration || 0 }},
             "test_success": ${{ env.TEST_SUCCESS == 'true' }},
@@ -280,53 +206,45 @@ jobs:
             "commit_sha": "${{ github.sha }}",
             "branch": "${{ github.ref_name }}"
           }
-          EOF
+          JSON
           cat build_metrics.json
 
       - name: Verify build artifacts
         if: steps.build.outputs.success == 'true'
         run: |
-          cd ios
-          echo "🔍 Verifying build artifacts..."
           if [ -d "build" ]; then
-            echo "✅ Build directory exists"
-            echo ""
             echo "Build artifacts:"
-            find build -type f -name "*.xcarchive" -o -name "*.ipa" -o -name "*.app" 2>/dev/null | head -10
-            echo ""
+            find build -type f \( -name "*.xcarchive" -o -name "*.ipa" -o -name "*.app" \) 2>/dev/null | head -10
             du -sh build/* 2>/dev/null | head -10 || true
           else
-            echo "⚠️ No build directory found"
+            echo "No build directory found"
           fi
 
       - name: Upload to TestFlight
         if: steps.build.outputs.success == 'true' && env.UPLOAD_TESTFLIGHT == 'true' && github.ref == 'refs/heads/main'
         continue-on-error: true
+        working-directory: ios
         run: |
-          cd ios
-          echo "✈️ Uploading to TestFlight..."
-
           if [ -z "$APP_STORE_CONNECT_API_KEY_PATH" ] && [ -z "$FASTLANE_USER" ]; then
-            echo "⚠️ TestFlight credentials not configured, skipping upload"
+            echo "TestFlight credentials not configured, skipping upload"
             exit 0
           fi
 
-          # Create API key file if provided as secret
           if [ -n "$APP_STORE_CONNECT_API_KEY_PATH" ]; then
             echo "$APP_STORE_CONNECT_API_KEY_PATH" | base64 -d > /tmp/api_key.json
             export APP_STORE_CONNECT_API_KEY_PATH=/tmp/api_key.json
           fi
 
-          bundle exec fastlane ios beta || echo "⚠️ TestFlight upload failed, but build succeeded"
+          bundle exec fastlane ios beta || echo "TestFlight upload failed, but build succeeded"
 
       - name: Upload build artifacts
         if: steps.build.outputs.success == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: vitalsense-build-${{ env.BUILD_TYPE }}-${{ github.sha }}
+          name: andernet-posture-build-${{ env.BUILD_TYPE }}-${{ github.sha }}
           path: |
-            ios/build/
-            ios/build_metrics.json
+            ios/Andernet-Posture/build/
+            ios/Andernet-Posture/build_metrics.json
           retention-days: 30
           if-no-files-found: warn
 
@@ -344,21 +262,12 @@ jobs:
       - name: Build summary
         if: always()
         run: |
-          echo "📊 Build Summary"
-          echo "================"
-          echo "Build Type: ${{ env.BUILD_TYPE }}"
-          echo "Build Status: ${{ steps.build.outputs.success == 'true' && '✅ SUCCESS' || '❌ FAILED' }}"
-          if [ "${{ steps.build.outputs.duration }}" != "" ]; then
-            echo "Build Duration: ${{ steps.build.outputs.duration }}s"
-          fi
-          echo "Test Status: ${{ env.TEST_SUCCESS == 'true' && '✅ PASSED' || env.TEST_SUCCESS == 'false' && '❌ FAILED' || '⏭️ SKIPPED' }}"
-          echo "TestFlight Upload: ${{ env.UPLOAD_TESTFLIGHT == 'true' && '✅ UPLOADED' || '⏭️ SKIPPED' }}"
-          echo "Xcode Version: $(xcodebuild -version | head -1)"
-          echo "Platform: iOS + watchOS"
+          echo "Build Type: $BUILD_TYPE"
+          echo "Build Status: ${{ steps.build.outputs.success == 'true' && 'SUCCESS' || 'FAILED' }}"
+          echo "Test Status: ${{ env.TEST_SUCCESS == 'true' && 'PASSED' || env.TEST_SUCCESS == 'false' && 'FAILED' || 'SKIPPED' }}"
+          echo "TestFlight: ${{ env.UPLOAD_TESTFLIGHT == 'true' && 'UPLOADED' || 'SKIPPED' }}"
+          echo "Xcode: $(xcodebuild -version | head -1)"
           echo "Commit: ${{ github.sha }}"
-          echo "Branch: ${{ github.ref_name }}"
-          echo ""
-          echo "🏁 Workflow completed"
 
   notify-completion:
     needs: build-ios
@@ -367,6 +276,6 @@ jobs:
     steps:
       - name: Build status notification
         run: |
-          echo "VitalSense iOS build completed"
+          echo "Andernet Posture iOS build completed"
           echo "Status: ${{ needs.build-ios.result }}"
-          echo "View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

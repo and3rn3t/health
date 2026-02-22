@@ -1,0 +1,288 @@
+//
+//  ExampleNewTests.swift.template
+//  Andernet PostureUITests
+//
+//  Template for creating new UI test files
+//  Copy this file and rename it, then add your tests
+//
+
+import XCTest
+
+// MARK: - Example Test Suite
+// Rename this class to match your test focus (e.g., SettingsFlowTests)
+final class ExampleTemplateTests: BaseUITest {
+    
+    // MARK: - Additional Setup (Optional)
+    
+    var tabBar: TabBar!
+    
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        
+        // Add any additional setup here
+        tabBar = TabBar(app: app)
+        
+        // Navigate to specific view if needed
+        // tabBar.navigateToSettings()
+    }
+    
+    override func tearDownWithError() throws {
+        // Clean up any test-specific state
+        tabBar = nil
+        
+        try super.tearDownWithError()
+    }
+    
+    // MARK: - Example Tests
+    
+    /// Example: Basic existence test
+    func testExampleViewExists() throws {
+        // Navigate to the view you want to test
+        tabBar.navigateToDashboard()
+        
+        // Get page object
+        let dashboardPage = DashboardPage(app: app)
+        
+        // Assert it exists
+        XCTAssertTrue(dashboardPage.exists(), "Dashboard should be visible")
+        
+        // Take screenshot for documentation
+        takeScreenshot(named: "Dashboard View")
+    }
+    
+    /// Example: Button tap test
+    func testExampleButtonTap() throws {
+        // Navigate to view
+        tabBar.navigateToCapture()
+        
+        // Get page object
+        let capturePage = CapturePage(app: app)
+        
+        // Handle permissions if needed
+        capturePage.handleCameraPermissions()
+        
+        // Find button
+        let startButton = capturePage.startButton
+        
+        // Wait for it to exist
+        waitForElement(startButton)
+        
+        // Verify it's tappable
+        XCTAssertTrue(startButton.isHittable, "Start button should be tappable")
+        
+        // Tap it
+        startButton.tap()
+        
+        // Verify result (this depends on what the button does)
+        // For example, check if recording started
+        // XCTAssertTrue(capturePage.recordingIndicator.exists)
+    }
+    
+    /// Example: Form input test
+    func testExampleFormInput() throws {
+        // This is a template - adjust for your actual forms
+        
+        // Navigate to form view
+        tabBar.navigateToSettings()
+        
+        // Find text field
+        let textField = app.textFields["usernameField"]
+        
+        // Wait and tap
+        waitForElement(textField)
+        textField.tap()
+        
+        // Type text
+        textField.typeText("testuser")
+        
+        // Verify text was entered
+        XCTAssertEqual(textField.value as? String, "testuser")
+        
+        // Dismiss keyboard if needed
+        dismissKeyboard()
+        
+        takeScreenshot(named: "Form Filled")
+    }
+    
+    /// Example: List/Scroll test
+    func testExampleListScrolling() throws {
+        tabBar.navigateToSessions()
+        
+        let sessionsPage = SessionsListPage(app: app)
+        
+        // Check if list exists
+        guard sessionsPage.sessionsList.exists else {
+            throw XCTSkip("Sessions list not available")
+        }
+        
+        // Scroll down
+        sessionsPage.sessionsList.swipeUp()
+        sleep(1)
+        
+        // Scroll back up
+        sessionsPage.sessionsList.swipeDown()
+        
+        // Verify list still exists
+        XCTAssertTrue(sessionsPage.sessionsList.exists)
+        
+        takeScreenshot(named: "List After Scrolling")
+    }
+    
+    /// Example: Navigation test
+    func testExampleNavigationFlow() throws {
+        // Test a complete navigation flow
+        
+        // Step 1: Start at dashboard
+        tabBar.navigateToDashboard()
+        XCTAssertTrue(DashboardPage(app: app).exists())
+        takeScreenshot(named: "Flow Step 1 - Dashboard")
+        
+        // Step 2: Go to sessions
+        tabBar.navigateToSessions()
+        let sessionsPage = SessionsListPage(app: app)
+        XCTAssertTrue(sessionsPage.exists())
+        takeScreenshot(named: "Flow Step 2 - Sessions")
+        
+        // Step 3: If sessions exist, tap one
+        if sessionsPage.sessionCount > 0 {
+            sessionsPage.tapSession(at: 0)
+            
+            let detailPage = SessionDetailPage(app: app)
+            waitForElement(detailPage.navigationBar)
+            XCTAssertTrue(detailPage.exists())
+            takeScreenshot(named: "Flow Step 3 - Detail")
+            
+            // Step 4: Go back
+            detailPage.goBack()
+            waitForElement(sessionsPage.sessionsList)
+            XCTAssertTrue(sessionsPage.exists())
+            takeScreenshot(named: "Flow Step 4 - Back to List")
+        }
+    }
+    
+    /// Example: Accessibility test
+    func testExampleAccessibility() throws {
+        tabBar.navigateToDashboard()
+        
+        // Get a specific element
+        let element = app.buttons["someButton"]
+        
+        if element.exists {
+            // Check if accessible
+            XCTAssertTrue(element.isAccessibilityElement, "Button should be accessible")
+            
+            // Check if it has a label
+            XCTAssertFalse(element.label.isEmpty, "Button should have accessibility label")
+            
+            // Check minimum size
+            let frame = element.frame
+            XCTAssertGreaterThanOrEqual(frame.width, 44.0, "Button should meet minimum width")
+            XCTAssertGreaterThanOrEqual(frame.height, 44.0, "Button should meet minimum height")
+        }
+    }
+    
+    /// Example: Performance test
+    func testExamplePerformance() throws {
+        // Measure performance of an operation
+        
+        measure(metrics: [XCTClockMetric()]) {
+            // Perform the operation you want to measure
+            tabBar.navigateToDashboard()
+            tabBar.navigateToSessions()
+            tabBar.navigateToDashboard()
+        }
+    }
+    
+    /// Example: Error handling test
+    func testExampleErrorState() throws {
+        // Test how the app handles errors
+        
+        // This is just an example structure
+        tabBar.navigateToCapture()
+        
+        let capturePage = CapturePage(app: app)
+        
+        // Deny permissions (would need to be set up properly)
+        // Then verify error state is shown
+        
+        // Example: Check for error message
+        // let errorMessage = app.staticTexts["cameraPermissionError"]
+        // waitForElement(errorMessage)
+        // XCTAssertTrue(errorMessage.exists)
+    }
+    
+    /// Example: Testing with waits
+    func testExampleWithWaits() throws {
+        tabBar.navigateToCapture()
+        
+        // Wait for specific condition
+        let isReady = WaitHelper.waitFor({
+            return CapturePage(app: self.app).startButton.exists
+        }, timeout: 10, description: "Capture view ready")
+        
+        XCTAssertTrue(isReady, "Capture view should be ready")
+    }
+}
+
+// MARK: - Tips for Writing Tests
+
+/*
+ TIPS FOR WRITING EFFECTIVE UI TESTS:
+ 
+ 1. Test User Flows, Not Implementation
+    - Focus on what users do, not how the code works
+    - Test complete workflows
+    - Think from the user's perspective
+ 
+ 2. Keep Tests Independent
+    - Each test should run standalone
+    - Don't rely on test execution order
+    - Clean up state in tearDown if needed
+ 
+ 3. Use Page Objects
+    - Encapsulate UI element queries
+    - Makes tests more maintainable
+    - Easier to update when UI changes
+ 
+ 4. Add Proper Waits
+    - Use waitForElement() not sleep()
+    - Wait for specific conditions
+    - Set reasonable timeouts
+ 
+ 5. Handle System Dialogs
+    - Camera/photo permissions
+    - Notifications
+    - Location access
+    - Use addUIInterruptionMonitor() for system alerts
+ 
+ 6. Take Strategic Screenshots
+    - Capture important states
+    - Help with debugging failures
+    - Document expected UI
+    - Use .keepAlways for persistent evidence
+ 
+ 7. Make Tests Readable
+    - Use descriptive names
+    - Add comments for complex flows
+    - Organize with MARK: comments
+    - Keep tests focused and concise
+ 
+ 8. Test Accessibility
+    - Check labels exist
+    - Verify touch targets
+    - Test VoiceOver navigation
+    - Validate color contrast
+ 
+ 9. Consider Performance
+    - Measure critical operations
+    - Set baselines
+    - Monitor over time
+    - Run on actual devices when possible
+ 
+ 10. Handle Edge Cases
+     - Empty states
+     - Error conditions
+     - Network failures
+     - Permission denials
+     - Offline mode
+ */
