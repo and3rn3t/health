@@ -1110,7 +1110,6 @@ app.get('/ws', async (c) => {
         'connection_established',
         'live_health_update',
         'historical_data_update',
-        'emergency_alert',
         'client_presence',
         'pong',
         'error',
