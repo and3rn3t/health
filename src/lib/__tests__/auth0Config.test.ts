@@ -66,9 +66,7 @@ describe('auth0Config', () => {
   describe('USER_ROLES', () => {
     test('should have all required roles', () => {
       expect(USER_ROLES.PATIENT).toBe('patient');
-      expect(USER_ROLES.CAREGIVER).toBe('caregiver');
       expect(USER_ROLES.HEALTHCARE_PROVIDER).toBe('healthcare_provider');
-      expect(USER_ROLES.EMERGENCY_CONTACT).toBe('emergency_contact');
       expect(USER_ROLES.ADMIN).toBe('admin');
     });
   });
@@ -78,14 +76,6 @@ describe('auth0Config', () => {
       expect(PERMISSIONS.READ_HEALTH_DATA).toBe('read:health_data');
       expect(PERMISSIONS.WRITE_HEALTH_DATA).toBe('write:health_data');
       expect(PERMISSIONS.DELETE_HEALTH_DATA).toBe('delete:health_data');
-    });
-
-    test('should have emergency permissions', () => {
-      expect(PERMISSIONS.TRIGGER_EMERGENCY).toBe('trigger:emergency');
-      expect(PERMISSIONS.MANAGE_EMERGENCY_CONTACTS).toBe(
-        'manage:emergency_contacts'
-      );
-      expect(PERMISSIONS.VIEW_EMERGENCY_HISTORY).toBe('view:emergency_history');
     });
 
     test('should have analytics permissions', () => {

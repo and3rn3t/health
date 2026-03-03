@@ -107,9 +107,7 @@ export const auth0Config = {
 // User roles for role-based access control
 export const USER_ROLES = {
   PATIENT: 'patient',
-  CAREGIVER: 'caregiver',
   HEALTHCARE_PROVIDER: 'healthcare_provider',
-  EMERGENCY_CONTACT: 'emergency_contact',
   ADMIN: 'admin',
 } as const;
 

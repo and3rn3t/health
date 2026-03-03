@@ -222,8 +222,6 @@ export default function UserProfile() {
         return 'destructive';
       case USER_ROLES.HEALTHCARE_PROVIDER:
         return 'default';
-      case USER_ROLES.CAREGIVER:
-        return 'secondary';
       default:
         return 'outline';
     }
