@@ -867,7 +867,7 @@ window.__VITALSENSE_CONFIG__ = ${JSON.stringify({
       redirectUri,
       audience: 'https://vitalsense-health-api',
       scope:
-        'openid profile email read:health_data write:health_data manage:emergency_contacts',
+        'openid profile email read:health_data write:health_data',
     },
     api: {
       baseUrl: baseUrl,
@@ -971,112 +971,6 @@ app.get('/api/ws-live-enabled', (c) => {
   return c.json({ enabled: true });
 });
 
-// User emergency contacts persistence
-// GET returns user's saved emergency contacts (empty array if none)
-app.get('/api/user/emergency-contacts', async (c) => {
-  try {
-    const kv = c.env.HEALTH_KV;
-    if (!kv || typeof kv.get !== 'function') {
-      return c.json({ contacts: [] }, 200);
-    }
-    const auth = c.req.header('Authorization') || '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-    const payload = token ? decodeJwtPayload(token) : null;
-    const sub = (payload?.sub as string | undefined) || null;
-    if (!sub) return c.json({ error: 'unauthorized' }, 401);
-    const key = `user:contacts:${encodeURIComponent(sub)}`;
-    const raw = await kv.get(key);
-    if (!raw) return c.json({ contacts: [], updatedAt: null }, 200);
-
-    // Decrypt if ENC_KEY is configured, otherwise parse JSON
-    const encKeyB64 = c.env.ENC_KEY;
-    let obj: Record<string, unknown> | null = null;
-    try {
-      if (encKeyB64) {
-        const keyObj = await getAesKey(encKeyB64);
-        obj = await decryptJSON<Record<string, unknown>>(keyObj, raw);
-      } else {
-        obj = JSON.parse(raw);
-      }
-    } catch (e) {
-      log.error('contacts_read_parse_failed', { error: (e as Error).message });
-      return c.json({ error: 'contacts_parse_failed' }, 500);
-    }
-    const contacts = Array.isArray(obj?.contacts)
-      ? (obj.contacts as string[])
-      : [];
-    const updatedAt = (obj?.updatedAt as string | undefined) || null;
-    return c.json({ contacts, updatedAt }, 200);
-  } catch (e) {
-    log.error('contacts_read_failed', { error: (e as Error).message });
-    return c.json({ error: 'contacts_read_failed' }, 500);
-  }
-});
-
-// PUT saves user's emergency contacts; requires manage:emergency_contacts permission
-app.put('/api/user/emergency-contacts', async (c) => {
-  try {
-    const kv = c.env.HEALTH_KV;
-    if (!kv || typeof kv.put !== 'function') {
-      return c.json({ error: 'storage_unavailable' }, 503);
-    }
-    const auth = c.req.header('Authorization') || '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-    const payload = token ? decodeJwtPayload(token) : null;
-    const sub = (payload?.sub as string | undefined) || null;
-    if (!sub) return c.json({ error: 'unauthorized' }, 401);
-
-    // Permission check: Auth0 may include permissions[] or scope string
-    const perms = (payload?.permissions as string[] | undefined) || [];
-    const scope = (payload?.scope as string | undefined) || '';
-    const hasManagePerm =
-      perms.includes('manage:emergency_contacts') ||
-      scope.split(' ').includes('manage:emergency_contacts');
-    if (!hasManagePerm) return c.json({ error: 'forbidden' }, 403);
-
-    const body = await c.req.json().catch(() => null as unknown);
-    const schema = z.object({
-      contacts: z.array(z.string().min(1).max(256)).max(50),
-    });
-    const parsed = schema.safeParse(body);
-    if (!parsed.success) {
-      return c.json(
-        { error: 'invalid_body', details: parsed.error.flatten() },
-        400
-      );
-    }
-    // dedupe + normalize whitespace
-    const contacts = Array.from(
-      new Set(parsed.data.contacts.map((s) => s.trim()).filter(Boolean))
-    );
-    const key = `user:contacts:${encodeURIComponent(sub)}`;
-    const valueObj = {
-      version: 1,
-      updatedAt: new Date().toISOString(),
-      contacts,
-    };
-    let toStore: string;
-    const encKeyB64 = c.env.ENC_KEY;
-    if (encKeyB64) {
-      const keyObj = await getAesKey(encKeyB64);
-      toStore = await encryptJSON(keyObj, valueObj);
-    } else {
-      toStore = JSON.stringify(valueObj);
-    }
-    await kv.put(key, toStore);
-    await writeAudit(c.env, {
-      type: 'update_contacts',
-      actor: sub,
-      resource: 'kv:user:contacts',
-      meta: { count: contacts.length },
-    });
-    return c.json({ ok: true, updatedAt: valueObj.updatedAt }, 200);
-  } catch (e) {
-    log.error('contacts_write_failed', { error: (e as Error).message });
-    return c.json({ error: 'contacts_write_failed' }, 500);
-  }
-});
-
 // Two-Factor Authentication (2FA) status helpers
 async function readTwoFactor(c: Context<{ Bindings: Env }>, sub: string) {
   const kv = c.env.HEALTH_KV;
@@ -1155,32 +1049,6 @@ app.post('/api/user/2fa/disable', async (c) => {
   return c.json({ ok, enabled: false });
 });
 
-async function loadContacts(
-  c: Context<{ Bindings: Env }>,
-  key: string
-): Promise<{ contacts: string[]; updatedAt: string | null }> {
-  const kv = c.env.HEALTH_KV;
-  if (!kv || typeof kv.get !== 'function')
-    return { contacts: [], updatedAt: null };
-  const raw = (await kv.get?.(key)) || null;
-  if (!raw) return { contacts: [], updatedAt: null };
-  try {
-    const enc = c.env.ENC_KEY;
-    let obj: { contacts?: unknown; updatedAt?: string } | null = null;
-    if (enc) obj = await decryptJSON(await getAesKey(enc), raw);
-    else obj = JSON.parse(raw);
-    const contacts = Array.isArray(obj?.contacts)
-      ? (obj.contacts as unknown[]).filter(
-          (v): v is string => typeof v === 'string'
-        )
-      : [];
-    const updatedAt = obj?.updatedAt || null;
-    return { contacts, updatedAt };
-  } catch {
-    return { contacts: [], updatedAt: null };
-  }
-}
-
 async function buildUserExport(
   c: Context<{ Bindings: Env }>,
   sub: string
@@ -1189,14 +1057,8 @@ async function buildUserExport(
   exportedAt: string;
   userId: string;
   twoFactor: { enabled: boolean; updatedAt: string | null };
-  emergencyContacts: { contacts: string[]; updatedAt: string | null };
   notes: string;
 }> {
-  const contactsKey = `user:contacts:${encodeURIComponent(sub)}`;
-  const { contacts, updatedAt: contactsUpdatedAt } = await loadContacts(
-    c,
-    contactsKey
-  );
   const twoFactor = await readTwoFactor(c, sub);
 
   return {
@@ -1204,7 +1066,6 @@ async function buildUserExport(
     exportedAt: new Date().toISOString(),
     userId: sub,
     twoFactor,
-    emergencyContacts: { contacts, updatedAt: contactsUpdatedAt },
     notes:
       'This export includes server-held data only. App settings and health analytics are stored client-side and can be exported from the app UI.',
   } as const;
