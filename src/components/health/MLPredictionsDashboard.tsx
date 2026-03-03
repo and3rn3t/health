@@ -253,8 +253,7 @@ function MLPredictionsDashboard({
               <Alert className="border-destructive">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription className="font-medium">
-                  High fall risk detected. Consider immediate intervention and
-                  caregiver notification.
+                  High fall risk detected. Consider immediate intervention.
                 </AlertDescription>
               </Alert>
             )}

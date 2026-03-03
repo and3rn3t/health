@@ -42,7 +42,7 @@ interface CommunityMember {
   id: string;
   name: string;
   email: string;
-  relationship: 'family' | 'healthcare' | 'caregiver' | 'friend';
+  relationship: 'family' | 'healthcare' | 'friend';
   permissions: {
     viewHealthScore: boolean;
     viewFallRisk: boolean;
@@ -57,7 +57,7 @@ interface CommunityMember {
 
 interface HealthReport {
   id: string;
-  type: 'weekly' | 'monthly' | 'emergency' | 'custom';
+  type: 'weekly' | 'monthly' | 'custom';
   title: string;
   summary: string;
   metrics: {
@@ -99,12 +99,10 @@ export default function CommunityShare({
   );
   interface ShareSettings {
     autoShareWeekly: boolean;
-    emergencyAutoShare: boolean;
     publicProfile: boolean;
   }
   const DEFAULT_SHARE_SETTINGS: ShareSettings = {
     autoShareWeekly: false,
-    emergencyAutoShare: true,
     publicProfile: false,
   };
   const [shareSettings, setShareSettings] = useKV<ShareSettings>(
@@ -277,8 +275,6 @@ export default function CommunityShare({
         return 'bg-blue-100 text-blue-800';
       case 'family':
         return 'bg-green-100 text-green-800';
-      case 'caregiver':
-        return 'bg-purple-100 text-purple-800';
       case 'friend':
         return 'bg-orange-100 text-orange-800';
       default:
@@ -358,8 +354,8 @@ export default function CommunityShare({
                   Add Community Member
                 </CardTitle>
                 <CardDescription>
-                  Invite family members, healthcare providers, or caregivers to
-                  view your health progress
+                  Invite family members and healthcare providers to view your
+                  health progress
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -414,7 +410,6 @@ export default function CommunityShare({
                       <SelectItem value="healthcare">
                         Healthcare Provider
                       </SelectItem>
-                      <SelectItem value="caregiver">Caregiver</SelectItem>
                       <SelectItem value="friend">Friend</SelectItem>
                     </SelectContent>
                   </Select>
@@ -779,27 +774,6 @@ export default function CommunityShare({
                         setShareSettings((prev) => {
                           const base = prev ?? DEFAULT_SHARE_SETTINGS;
                           return { ...base, autoShareWeekly: checked };
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="emergency-share">
-                        Emergency Fall Alerts
-                      </Label>
-                      <p className="text-muted-foreground text-sm">
-                        Immediately notify community members of fall incidents
-                      </p>
-                    </div>
-                    <Switch
-                      id="emergency-share"
-                      checked={safeShareSettings.emergencyAutoShare}
-                      onCheckedChange={(checked) =>
-                        setShareSettings((prev) => {
-                          const base = prev ?? DEFAULT_SHARE_SETTINGS;
-                          return { ...base, emergencyAutoShare: checked };
                         })
                       }
                     />
