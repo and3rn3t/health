@@ -54,11 +54,6 @@ export default function UserProfile() {
   const [idTokenExpiry, setIdTokenExpiry] = useState<Date | null>(null);
   const [apiTokenExpiry, setApiTokenExpiry] = useState<Date | null>(null);
   const [now, setNow] = useState(new Date());
-  const [editingContacts, setEditingContacts] = useState<string[]>([]);
-  const [newContact, setNewContact] = useState('');
-  const [contactsLoading, setContactsLoading] = useState(false);
-  const [contactsSaving, setContactsSaving] = useState(false);
-  const initializedContacts = useRef(false);
 
   const initials = useMemo(() => {
     if (!user?.name) return 'U';
@@ -117,89 +112,6 @@ export default function UserProfile() {
       setIsValidating(false);
     }
   }, [validateSession]);
-
-  // Emergency contacts helpers
-  const removeContact = useCallback((index: number) => {
-    setEditingContacts((list) => list.filter((_, i) => i !== index));
-  }, []);
-
-  const addContact = useCallback(() => {
-    const v = newContact.trim();
-    if (!v) return;
-    if (editingContacts.includes(v)) {
-      toast.error('Contact already added');
-      return;
-    }
-    setEditingContacts((list) => [...list, v]);
-    setNewContact('');
-  }, [newContact, editingContacts]);
-
-  const saveContacts = useCallback(async () => {
-    if (!hasPermission('manage:emergency_contacts')) {
-      toast.error('Insufficient permissions');
-      return;
-    }
-    try {
-      setContactsSaving(true);
-      const token = await getAccessToken();
-      const res = await fetch('/api/user/emergency-contacts', {
-        method: 'PUT',
-        headers: {
-          'content-type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : '',
-        },
-        body: JSON.stringify({ contacts: editingContacts }),
-      });
-      if (!res.ok) throw new Error(`save_failed_${res.status}`);
-      const json = (await res.json()) as { ok?: boolean; updatedAt?: string };
-      if (json.ok) toast.success('Contacts saved');
-      else toast.error('Save failed');
-    } catch (err) {
-      logAuthError(
-        err instanceof Error ? err : new Error('save_contacts_failed'),
-        { operation: 'save_contacts' }
-      );
-      toast.error('Save failed');
-    } finally {
-      setContactsSaving(false);
-    }
-  }, [editingContacts, getAccessToken, hasPermission]);
-
-  // Initialize editable contacts when user is available
-  useEffect(() => {
-    const run = async () => {
-      if (!user || initializedContacts.current) return;
-      initializedContacts.current = true;
-      try {
-        setContactsLoading(true);
-        const token = await getAccessToken();
-        const res = await fetch('/api/user/emergency-contacts', {
-          headers: { Authorization: token ? `Bearer ${token}` : '' },
-        });
-        if (res.ok) {
-          const json = (await res.json()) as {
-            contacts?: string[];
-          };
-          const contacts = Array.isArray(json.contacts)
-            ? json.contacts
-            : user.emergencyContacts || [];
-          setEditingContacts([...(contacts || [])]);
-        } else {
-          // fallback to local claims
-          setEditingContacts([...(user.emergencyContacts || [])]);
-        }
-      } catch (err) {
-        logAuthError(
-          err instanceof Error ? err : new Error('load_contacts_failed'),
-          { operation: 'load_contacts' }
-        );
-        setEditingContacts([...(user.emergencyContacts || [])]);
-      } finally {
-        setContactsLoading(false);
-      }
-    };
-    run().catch(() => {});
-  }, [getAccessToken, user]);
 
   // Decode JWT exp
   const decodeJwtExp = (token?: string | undefined): number | null => {
@@ -465,19 +377,6 @@ export default function UserProfile() {
           )}
 
           {/* Emergency Contacts */}
-          {user.emergencyContacts && user.emergencyContacts.length > 0 && (
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-gray-700">
-                Emergency Contacts
-              </h4>
-              <ul className="list-inside list-disc text-sm text-gray-700">
-                {user.emergencyContacts.map((c, idx) => (
-                  <li key={`${c}-${idx}`}>{c}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
           {/* Token Expiry */}
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-gray-700">Token Expiry</h4>
@@ -588,77 +487,6 @@ export default function UserProfile() {
               session will automatically expire after a period of inactivity.
             </AlertDescription>
           </Alert>
-
-          {/* Emergency Contacts (Editable, requires permission) */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-medium text-gray-700">
-              Emergency Contacts
-            </h4>
-            {editingContacts.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {editingContacts.map((c, idx) => (
-                  <span
-                    key={`${c}-${idx}`}
-                    className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs"
-                  >
-                    {c}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-5 w-5 p-0"
-                      onClick={() => removeContact(idx)}
-                      aria-label={`Remove ${c}`}
-                      disabled={!hasPermission('manage:emergency_contacts')}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-muted-foreground text-xs">
-                No contacts added yet.
-              </p>
-            )}
-            <div className="flex items-center gap-2">
-              <Input
-                value={newContact}
-                onChange={(e) => setNewContact(e.target.value)}
-                placeholder="Add contact (email or phone)"
-                className="max-w-xs"
-                disabled={!hasPermission('manage:emergency_contacts')}
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={addContact}
-                disabled={!hasPermission('manage:emergency_contacts')}
-              >
-                <Plus className="h-4 w-4" />
-                Add
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={saveContacts}
-                disabled={
-                  !hasPermission('manage:emergency_contacts') || contactsSaving
-                }
-              >
-                {contactsSaving ? (
-                  <>
-                    <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
-                    <span>Saving…</span>
-                  </>
-                ) : (
-                  'Save'
-                )}
-              </Button>
-            </div>
-            {contactsLoading && (
-              <p className="text-muted-foreground text-xs">Loading contacts…</p>
-            )}
-          </div>
         </CardContent>
       </Card>
     </div>
