@@ -3,7 +3,6 @@
  * Optimized header with breadcrumbs, search, and quick actions
  */
 
-import EmergencyButton from '@/components/health/EmergencyButton';
 import { DeviceStatusIndicator } from '@/components/health/DeviceStatusIndicator';
 import { LiveConnectionStatus } from '@/components/live/LiveConnectionStatus';
 import { AppleSidebarTrigger } from '@/components/nav/AppleSidebar';
@@ -179,11 +178,6 @@ function NavigationHeader({
               <Search className="h-4 w-4" />
             </Button>
 
-            {/* Emergency - highest priority */}
-            <EmergencyButton
-              className="w-24 min-w-[96px] md:w-28 md:min-w-[112px]"
-              onClick={() => onNavigate('emergency')}
-            />
           </div>
 
           {/* Separator for visual balance */}

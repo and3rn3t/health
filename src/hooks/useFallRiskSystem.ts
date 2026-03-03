@@ -5,8 +5,6 @@
 
 import { FallDetectionEvent } from '@/lib/enhanced-fall-detection-engine';
 import { useCallback } from 'react';
-import { useEmergencyContacts } from './useEmergencyContacts';
-import { EmergencyNotificationService, createFallDetectionEvent } from '@/lib/emergencyNotificationService';
 
 interface StoredIntervention {
   id: string;
@@ -16,67 +14,7 @@ interface StoredIntervention {
 }
 
 /**
- * Hook for handling emergency alerts from the fall risk system
  */
-export function useEmergencyAlerts() {
-  const { contacts, settings, addEvent } = useEmergencyContacts();
-
-  const handleEmergencyAlert = useCallback(
-    async (alert: FallDetectionEvent) => {
-      console.log('🚨 Emergency Alert:', alert);
-
-      // Show browser notification if permission granted
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('VitalSense Emergency Alert', {
-          body: `Fall detected with ${alert.severity} severity. Emergency contacts have been notified.`,
-          icon: '/favicon.ico',
-          tag: 'fall-alert',
-        });
-      }
-
-      // Create emergency event
-      // Note: FallDetectionEvent.location is a string, not coordinates
-      // In production, you'd get actual coordinates from geolocation API
-      const event = createFallDetectionEvent(
-        alert.severity === 'critical' ? 'critical' :
-        alert.severity === 'severe' ? 'high' :
-        alert.severity === 'moderate' ? 'moderate' : 'low',
-        undefined // Location would be fetched from geolocation API in production
-      );
-
-      // Send notifications if enabled
-      if (settings.autoNotify && settings.notifyOnFallDetection) {
-        const notificationService = new EmergencyNotificationService(settings);
-        const notifications = await notificationService.sendEmergencyNotifications(
-          event,
-          contacts
-        );
-
-        event.notifications = notifications;
-        event.contactsNotified = notifications.map((n) => n.contactId);
-      }
-
-      // Save event to history
-      addEvent(event);
-
-      return alert;
-    },
-    [contacts, settings, addEvent]
-  );
-
-  const requestNotificationPermission = useCallback(async () => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      const permission = await Notification.requestPermission();
-      return permission === 'granted';
-    }
-    return Notification.permission === 'granted';
-  }, []);
-
-  return {
-    handleEmergencyAlert,
-    requestNotificationPermission,
-  };
-}
 
 /**
  * Hook for handling intervention management
@@ -152,8 +90,14 @@ export function useInterventionManager() {
  * Combined hook for fall risk system integration
  */
 export function useFallRiskSystem() {
-  const { handleEmergencyAlert, requestNotificationPermission } =
-    useEmergencyAlerts();
+  // Emergency handling removed (archived feature)
+  const handleEmergencyAlert = useCallback(async (alert: FallDetectionEvent) => {
+    console.log('Emergency alert (no-op):', alert);
+    return alert;
+  }, []);
+  
+  const requestNotificationPermission = useCallback(async () => false, []);
+
   const {
     handleInterventionStart,
     getActiveInterventions,
@@ -161,7 +105,7 @@ export function useFallRiskSystem() {
   } = useInterventionManager();
 
   return {
-    // Emergency handling
+    // Emergency handling (stubbed)
     handleEmergencyAlert,
     requestNotificationPermission,
 
