@@ -15,16 +15,9 @@ export default function PrivacyControls() {
       icon: Database,
     },
     {
-      id: 'caregiver_access',
-      title: 'Caregiver Access',
-      description: 'Grant authorized caregivers access to your health data',
-      enabled: true,
-      icon: Users,
-    },
-    {
       id: 'location_tracking',
       title: 'Location Services',
-      description: 'Enable location tracking for emergency services',
+      description: 'Enable location tracking for services',
       enabled: true,
       icon: Eye,
     },

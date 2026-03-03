@@ -30,20 +30,6 @@ export const DASHBOARD_PAGES: DashboardPage[] = [
     description: 'Daily activity and exercise monitoring',
   },
   {
-    label: 'Caregiver Dashboard',
-    path: '/caregiver',
-    category: 'Monitoring',
-    icon: 'users',
-    description: 'Family caregiver alerts and insights',
-  },
-  {
-    label: 'Emergency Alerts',
-    path: '/emergency',
-    category: 'Monitoring',
-    icon: 'alert-triangle',
-    description: 'Emergency notification management',
-  },
-  {
     label: 'Health Trends',
     path: '/trends',
     category: 'Analytics',

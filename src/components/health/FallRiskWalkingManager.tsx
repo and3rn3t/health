@@ -35,7 +35,6 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
-  AdvancedCaregiverAlerts,
   EnhancedFallRiskMonitor,
   FallRiskInterventions,
   FallRiskMonitor,
@@ -45,7 +44,6 @@ import {
   LiDARTrainingAssistant,
   WalkingPatternMonitor,
 } from './fall-risk-components';
-// import AdvancedCaregiverAlerts from './AdvancedCaregiverAlerts';
 // import EnhancedFallRiskMonitor from './EnhancedFallRiskMonitor';
 import FallHistory from './FallHistory';
 // import FallRiskInterventions from './FallRiskInterventions';
@@ -80,7 +78,7 @@ interface DashboardStats {
 
 interface QuickAlert {
   id: string;
-  type: 'risk_increase' | 'intervention_due' | 'assessment_due' | 'emergency';
+  type: 'risk_increase' | 'intervention_due' | 'assessment_due';
   severity: 'info' | 'warning' | 'critical';
   title: string;
   message: string;
@@ -310,11 +308,11 @@ function ActionPanel() {
         </Button>
         <Button className="w-full justify-start" variant="outline">
           <Users className="mr-2 h-4 w-4" />
-          Contact Caregiver
+          Contact Support
         </Button>
         <Button className="w-full justify-start" variant="outline">
           <Phone className="mr-2 h-4 w-4" />
-          Emergency Contacts
+          Contacts
         </Button>
         <Button className="w-full justify-start" variant="outline">
           <Download className="mr-2 h-4 w-4" />
@@ -389,7 +387,7 @@ export default function FallRiskWalkingManager({
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm">
             <Users className="mr-2 h-4 w-4" />
-            Share with Caregiver
+            Share Report
           </Button>
           <Button variant="outline" size="sm">
             <Download className="mr-2 h-4 w-4" />
@@ -437,7 +435,6 @@ export default function FallRiskWalkingManager({
           <TabsTrigger value="interventions">Interventions</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
           <TabsTrigger value="enhanced">AI Monitor</TabsTrigger>
-          <TabsTrigger value="caregivers">Caregivers</TabsTrigger>
           <TabsTrigger value="monitor">Live</TabsTrigger>
         </TabsList>
 
@@ -499,10 +496,6 @@ export default function FallRiskWalkingManager({
           <EnhancedFallRiskMonitor />
         </TabsContent>
 
-        <TabsContent value="caregivers" className="space-y-6">
-          <AdvancedCaregiverAlerts />
-        </TabsContent>
-
         <TabsContent value="monitor" className="space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
@@ -536,7 +529,7 @@ export default function FallRiskWalkingManager({
                   Health Integration
                 </CardTitle>
                 <CardDescription>
-                  Connect with healthcare providers and caregivers
+                  Connect with healthcare providers
                 </CardDescription>
               </CardHeader>
               <CardContent>

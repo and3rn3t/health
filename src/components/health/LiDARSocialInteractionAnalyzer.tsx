@@ -1,6 +1,6 @@
 /**
  * LiDAR Social Interaction Analysis
- * Multi-person movement coordination and caregiver interaction assessment
+ * Multi-person movement coordination and interaction assessment
  */
 
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +27,7 @@ import {
 interface ParticipantProfile {
   id: string;
   name: string;
-  role: 'primary' | 'caregiver' | 'family' | 'friend' | 'professional';
+  role: 'primary' | 'family' | 'friend' | 'professional';
   relationship: string;
   isPresent: boolean;
   position: { x: number; y: number; z: number };
@@ -61,7 +61,6 @@ interface SocialInteractionMetrics {
   fallRiskMitigation: number;
   assistanceProvided: number;
   environmentalAwareness: number;
-  emergencyResponse: number;
 }
 
 interface SocialAnalysisConfig {
@@ -91,12 +90,6 @@ interface SocialAnalysisSession {
 }
 
 const SESSION_TYPES = [
-  {
-    id: 'caregiver_assessment',
-    name: 'Caregiver Assessment',
-    duration: 15,
-    description: 'Evaluate caregiver-patient interaction quality',
-  },
   {
     id: 'family_interaction',
     name: 'Family Interaction',
@@ -133,8 +126,8 @@ export const LiDARSocialInteractionAnalyzer =
     ({ onAnalysisComplete: _onAnalysisComplete, className = '' }) => {
       // Configuration and State
       const [config, setConfig] = useState<SocialAnalysisConfig>({
-        sessionType: 'caregiver_assessment',
-        duration: 15,
+        sessionType: 'family_interaction',
+        duration: 20,
         environment: 'home',
         enablePrivacyMode: false,
         enableRealTimeCoaching: true,
@@ -176,8 +169,8 @@ export const LiDARSocialInteractionAnalyzer =
           participants: ParticipantProfile[],
           metrics: SocialInteractionMetrics
         ): Promise<SocialAnalysisSession> => {
-          const caregivers = participants.filter(
-            (p) => p.role === 'caregiver' || p.role === 'professional'
+          const professionalParticipants = participants.filter(
+            (p) => p.role === 'professional'
           );
           const socialParticipants = participants.filter(
             (p) => p.role === 'family' || p.role === 'friend'
@@ -227,11 +220,11 @@ export const LiDARSocialInteractionAnalyzer =
             recommendations.push('Practice coordinated walking exercises');
           }
 
-          if (caregivers.length > 0 && metrics.supportBehaviors > 0.85) {
-            insights.push('High-quality caregiving behaviors demonstrated');
-          } else if (caregivers.length > 0 && metrics.supportBehaviors < 0.6) {
-            insights.push('Opportunities for improved caregiving support');
-            recommendations.push('Consider caregiver training programs');
+          if (professionalParticipants.length > 0 && metrics.supportBehaviors > 0.85) {
+            insights.push('High-quality support behaviors demonstrated');
+          } else if (professionalParticipants.length > 0 && metrics.supportBehaviors < 0.6) {
+            insights.push('Opportunities for improved support');
+            recommendations.push('Consider additional training programs');
           }
 
           if (socialParticipants.length > 0 && metrics.eyeContact < 0.4) {
@@ -318,8 +311,8 @@ export const LiDARSocialInteractionAnalyzer =
             },
             {
               id: 'participant-2',
-              name: 'Caregiver',
-              role: 'caregiver',
+              name: 'Family Member',
+              role: 'family',
               relationship: 'spouse',
               isPresent: true,
               position: { x: 1.2, y: 0.1, z: 0 },
@@ -365,7 +358,6 @@ export const LiDARSocialInteractionAnalyzer =
           fallRiskMitigation: Math.random() * 0.2 + 0.75,
           assistanceProvided: Math.random() * 0.4 + 0.5,
           environmentalAwareness: Math.random() * 0.3 + 0.6,
-          emergencyResponse: Math.random() * 0.2 + 0.8,
         };
 
         setCurrentMetrics(metrics);
@@ -465,7 +457,7 @@ export const LiDARSocialInteractionAnalyzer =
                             variant={(() => {
                               if (participant.role === 'primary')
                                 return 'default';
-                              if (participant.role === 'caregiver')
+                              if (participant.role === 'professional')
                                 return 'secondary';
                               return 'outline';
                             })()}

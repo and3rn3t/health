@@ -544,9 +544,9 @@ export class MovementPatternAnalyzer {
     const interventions: string[] = [];
 
     if (severity === 'critical') {
-      interventions.push('Immediate caregiver notification recommended');
+      interventions.push('Immediate notification recommended');
       interventions.push('Consider supervised mobility only');
-      interventions.push('Emergency contact preparation');
+      interventions.push('Contact preparation');
     }
 
     if (

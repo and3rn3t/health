@@ -810,30 +810,6 @@ export default function CognitiveHealth() {
                     {settings?.reminders ? 'On' : 'Off'}
                   </IOS26Button>
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">Share with Caregivers</div>
-                    <div className="text-sm text-muted-foreground">
-                      Allow caregivers to view results
-                    </div>
-                  </div>
-                  <IOS26Button
-                    variant="tinted"
-                    onClick={() =>
-                      setSettings({
-                        ...(settings ?? {
-                          reminders: false,
-                          assessmentsPerWeek: 3,
-                          shareWithCaregivers: false,
-                        }),
-                        shareWithCaregivers: !settings?.shareWithCaregivers,
-                      })
-                    }
-                  >
-                    {settings?.shareWithCaregivers ? 'Enabled' : 'Disabled'}
-                  </IOS26Button>
-                </div>
               </CardContent>
             </Card>
           </TabsContent>

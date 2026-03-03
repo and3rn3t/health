@@ -74,7 +74,7 @@ export const auth0Config = {
   scope:
     (typeof window !== 'undefined' &&
       window.__VITALSENSE_CONFIG__?.auth0?.scope) ||
-    'openid profile email read:health_data write:health_data manage:emergency_contacts',
+    'openid profile email read:health_data write:health_data',
 
   // Enhanced Security Options
   useRefreshTokens: true,
@@ -107,9 +107,7 @@ export const auth0Config = {
 // User roles for role-based access control
 export const USER_ROLES = {
   PATIENT: 'patient',
-  CAREGIVER: 'caregiver',
   HEALTHCARE_PROVIDER: 'healthcare_provider',
-  EMERGENCY_CONTACT: 'emergency_contact',
   ADMIN: 'admin',
 } as const;
 
@@ -121,11 +119,6 @@ export const PERMISSIONS = {
   READ_HEALTH_DATA: 'read:health_data',
   WRITE_HEALTH_DATA: 'write:health_data',
   DELETE_HEALTH_DATA: 'delete:health_data',
-
-  // Emergency Features
-  TRIGGER_EMERGENCY: 'trigger:emergency',
-  MANAGE_EMERGENCY_CONTACTS: 'manage:emergency_contacts',
-  VIEW_EMERGENCY_HISTORY: 'view:emergency_history',
 
   // Analytics and Insights
   VIEW_ANALYTICS: 'view:analytics',

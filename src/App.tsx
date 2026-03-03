@@ -66,7 +66,6 @@ import {
   Shield,
   Smartphone,
   TrendingUp,
-  Users,
   Wrench,
   X,
 } from '@/lib/icons';
@@ -100,9 +99,6 @@ const ConnectedDevices = lazy(
   () => import('@/components/health/ConnectedDevices')
 );
 const ExportData = lazy(() => import('@/components/health/ExportData'));
-const EmergencyContactsPage = lazy(
-  () => import('@/components/health/EmergencyContactsPage')
-);
 const CognitiveHealth = lazy(
   () => import('@/components/health/CognitiveHealth')
 );
@@ -134,15 +130,6 @@ const NotificationCenter = createLazyComponent(
     title: 'Notification Center',
     message: 'Notification management coming soon.',
     icon: Bell,
-  }
-);
-
-const CaregiverDashboard = createLazyComponent(
-  () => import('@/components/sections/CaregiverDashboard'),
-  {
-    title: 'Caregiver Dashboard',
-    message: 'Caregiver portal coming soon.',
-    icon: Users,
   }
 );
 
@@ -221,13 +208,6 @@ const navigationItems: NavigationItem[] = createNavigationItems([
     priority: 2,
   },
   {
-    id: 'caregiver',
-    label: 'Caregiver Portal',
-    icon: Users,
-    component: CaregiverDashboard,
-    priority: 2,
-  },
-  {
     id: 'brain-health',
     label: 'Cognitive Health',
     icon: Brain,
@@ -253,13 +233,6 @@ const navigationItems: NavigationItem[] = createNavigationItems([
     label: 'LiDAR Advanced',
     icon: Brain,
     component: CompleteLiDARIntegration,
-    priority: 2,
-  },
-  {
-    id: 'emergency-contacts',
-    label: 'Emergency Contacts',
-    icon: AlertTriangle,
-    component: EmergencyContactsPage,
     priority: 2,
   },
 
@@ -412,10 +385,6 @@ function AppContent() {
   const handleQuickAction = useCallback(
     (action: string) => {
       switch (action) {
-        case 'emergency':
-          handleTabChange('emergency-contacts');
-          announce('Emergency contacts opened');
-          break;
         case 'quick-vitals':
           handleTabChange('live-monitoring');
           announce('Live monitoring opened');
@@ -445,8 +414,6 @@ function AppContent() {
         'fall-risk': 'fall-detection',
         'ai-recommendations': 'advanced-analytics',
         'realtime-scoring': 'live-monitoring',
-        family: 'caregiver',
-        emergency: 'emergency-contacts',
         import: 'dashboard',
         'healthkit-guide': 'device-sync',
         'system-status': 'dev-diagnostics',
@@ -481,8 +448,6 @@ function AppContent() {
         return import('@/components/sections/AdvancedAnalytics');
       case 'notifications':
         return import('@/components/sections/NotificationCenter');
-      case 'caregiver':
-        return import('@/components/sections/CaregiverDashboard');
       case 'brain-health':
         return import('@/components/health/CognitiveHealth');
       case 'lidar-ar':
@@ -491,8 +456,6 @@ function AppContent() {
         return import('@/components/health/lidar/EnhancedLiDARIntegration');
       case 'lidar-advanced':
         return import('@/components/health/lidar/CompleteLiDARIntegration');
-      case 'emergency-contacts':
-        return import('@/components/health/EmergencyContactsPage');
       case 'settings':
         return import('@/components/sections/SettingsPanel');
       case 'privacy':
@@ -775,8 +738,6 @@ function AppContent() {
                           'fall-risk': 'fall-detection',
                           'ai-recommendations': 'advanced-analytics',
                           'realtime-scoring': 'live-monitoring',
-                          family: 'caregiver',
-                          emergency: 'emergency-contacts',
                           import: 'dashboard',
                           'healthkit-guide': 'device-sync',
                           'system-status': 'dev-diagnostics',

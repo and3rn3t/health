@@ -49,11 +49,11 @@ const toolingRequirements: ToolingRequirement[] = [
   },
   {
     name: 'iPhone (iOS 14+)',
-    description: 'Data processing hub and emergency communication device',
+    description: 'Data processing hub and communication device',
     status: 'required',
     category: 'hardware',
     implementation:
-      'HealthKit integration for sensor data and emergency calling',
+      'HealthKit integration for sensor data and calling',
     cost: '$429 - $1,199',
   },
   {
@@ -103,8 +103,8 @@ const toolingRequirements: ToolingRequirement[] = [
 
   // Service Requirements
   {
-    name: 'Emergency Services Integration',
-    description: 'Automatic 911 calling and emergency contact notification',
+    name: 'Alert Services Integration',
+    description: 'Automatic 911 calling and contact notification',
     status: 'required',
     category: 'service',
     implementation: 'CallKit framework + SMS/call APIs',
@@ -112,7 +112,7 @@ const toolingRequirements: ToolingRequirement[] = [
   },
   {
     name: 'Real-time Database',
-    description: 'Cloud storage for immediate data sync and emergency alerts',
+    description: 'Cloud storage for immediate data sync and alerts',
     status: 'required',
     category: 'service',
     implementation: 'Firebase Realtime Database or AWS DynamoDB',
@@ -120,7 +120,7 @@ const toolingRequirements: ToolingRequirement[] = [
   },
   {
     name: 'Push Notification Service',
-    description: 'Instant alerts to caregivers and emergency contacts',
+    description: 'Instant alerts to contacts',
     status: 'required',
     category: 'service',
     implementation: 'Apple Push Notification Service (APNs)',
@@ -128,7 +128,7 @@ const toolingRequirements: ToolingRequirement[] = [
   },
   {
     name: 'Location Services',
-    description: 'GPS tracking for emergency responder location accuracy',
+    description: 'GPS tracking for responder location accuracy',
     status: 'required',
     category: 'service',
     implementation: 'Core Location with continuous background updates',
@@ -176,7 +176,7 @@ const monitoringFlow: MonitoringFlow[] = [
     step: 4,
     title: 'Emergency Response',
     description:
-      'If no response, automatically contacts emergency services and caregivers',
+      'If no response, automatically contacts services and contacts',
     technology: 'CallKit + Push Notifications',
     timing: '10-60 seconds delay',
     icon: <Phone className="h-5 w-5" />,
@@ -185,7 +185,7 @@ const monitoringFlow: MonitoringFlow[] = [
     step: 5,
     title: 'Location Sharing',
     description:
-      'Precise GPS coordinates shared with emergency contacts and responders',
+      'Precise GPS coordinates shared with contacts and responders',
     technology: 'Core Location + Cloud Sync',
     timing: 'Immediate',
     icon: <Zap className="h-5 w-5" />,
@@ -421,7 +421,7 @@ export default function FallMonitoringTooling() {
                     <ul className="text-muted-foreground space-y-1 text-sm">
                       <li>• Implement HealthKit permissions</li>
                       <li>• Set up Core Motion monitoring</li>
-                      <li>• Create emergency contact system</li>
+                      <li>• Create contact system</li>
                     </ul>
                   </div>
                   <Badge className="bg-green-100 text-green-800">
