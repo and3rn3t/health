@@ -44,8 +44,7 @@ type NotificationType =
   | 'exercise'
   | 'fall'
   | 'achievement'
-  | 'reminder'
-  | 'emergency';
+  | 'reminder';
 type NotificationPriority = 'low' | 'medium' | 'high' | 'critical';
 type _ActivityType = 'morning' | 'afternoon' | 'evening';
 
@@ -87,7 +86,6 @@ interface NotificationPreferences {
   contactInfo: {
     email: string;
     phone: string;
-    emergencyContacts: string[];
   };
   escalationEnabled: boolean;
   escalationDelay: number;
@@ -147,7 +145,6 @@ export default function SmartNotificationEngine({
     contactInfo: {
       email: '',
       phone: '',
-      emergencyContacts: [],
     },
     escalationEnabled: true,
     escalationDelay: 15,
@@ -645,8 +642,6 @@ export default function SmartNotificationEngine({
         return <CheckCircle className="h-4 w-4 text-purple-500" />;
       case 'reminder':
         return <Clock className="h-4 w-4 text-orange-500" />;
-      case 'emergency':
-        return <AlertTriangle className="h-4 w-4 text-red-600" />;
       default:
         return <Info className="h-4 w-4 text-gray-500" />;
     }
@@ -973,7 +968,7 @@ export default function SmartNotificationEngine({
                   {
                     key: 'familyUpdates',
                     label: 'Family Updates',
-                    desc: 'Share your progress with family members and caregivers',
+                    desc: 'Share your progress with family members',
                   },
                 ].map(({ key, label, desc }) => (
                   <div key={key} className="flex items-center justify-between">
@@ -1312,7 +1307,7 @@ export default function SmartNotificationEngine({
                     </div>
                     <p className="text-muted-foreground mt-2 text-xs">
                       If a critical notification isn't acknowledged within this
-                      time, emergency contacts will be notified
+                      time, escalation protocols will be triggered
                     </p>
                   </div>
                 )}
