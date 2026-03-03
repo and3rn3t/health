@@ -1,51 +1,118 @@
 # Architecture Overview
 
-This app delivers Apple Health insights, fall risk monitoring, and emergency alerts with a React + Cloudflare Workers stack and an optional Node WebSocket bridge for local/edge streaming.
+A learning project exploring iOS development with HealthKit integration and a web-based health dashboard.
 
-## High-level
+## High-Level Architecture
 
-- Frontend: React 19 + Vite (TypeScript), Tailwind v4, Radix UI, GitHub Spark UI.
-- Worker: Cloudflare Workers using Hono for `/health`, `/api/*`, and static serving of `dist/`.
-- Realtime (local/dev): Optional Node bridge in `server/websocket-server.js` (Express + ws).
-- Client storage: `useKV` from `@github/spark/hooks` for local, user-specific UI state.
-- Server storage (planned): Cloudflare KV and R2 via Wrangler bindings.
+```text
+iOS App (Swift/HealthKit) ↔ API (Cloudflare Workers) ↔ Web Dashboard (React)
+```
 
-## Build outputs
+### Components
 
-- App bundle: `dist/` (served as Worker assets via `[assets]` in `wrangler.toml`).
-- Worker bundle: `dist-worker/index.js` (entry: `src/worker.ts`, built via `vite.worker.config.ts`).
+- **iOS Application**: Native Swift app using HealthKit and Core Motion
+- **Web Dashboard**: React 19 + TypeScript single-page application
+- **API Layer**: Cloudflare Workers (serverless edge functions)
+- **Real-time Bridge**: Node.js WebSocket server for live data streaming
+- **Storage**: Cloudflare KV (JSON) and R2 (files)
 
-## Routing and assets
+## Technology Stack
 
-- Worker routes:
-  - GET `/health`: health check with environment echo.
-  - GET `/api/health-data`: placeholder API for future data fetches.
-  - POST `/api/health-data`: placeholder API for future writes.
-  - GET `/*`: static and index fallback via `serveStatic`.
-- Assets: Served from `dist/` via Wrangler `[assets]` binding `ASSETS`.
+### Frontend (Web)
+- React 19 with TypeScript
+- Vite for build tooling
+- Tailwind CSS v4 for styling
+- Radix UI for accessible components
+- TanStack Query for server state
 
-## WebSocket (local bridge)
+### Backend
+- Cloudflare Workers (Hono framework)
+- Node.js WebSocket server
+- Cloudflare KV and R2 for storage
 
-- `server/websocket-server.js` emits messages to web clients:
-  - `connection_established`
-  - `live_health_update`
-  - `historical_data_update`
-  - `emergency_alert`
-- Used in dev or hybrid edge scenarios; production WS may move to Durable Objects/Sockets.
+### iOS
+- Swift 5 with SwiftUI
+- HealthKit framework
+- Core Motion for sensors
+- Network framework for API calls
 
-## Styling and theming
+## Build Outputs
 
-- Tailwind v4 with CSS variables from `theme.json` and `src/styles/theme.css`.
-- Dark mode: Tailwind is configured for `[data-appearance="dark"]`; toggle via `document.documentElement.setAttribute('data-appearance', 'dark' | 'light')`.
+- **Web Bundle**: `dist/` (served as Worker assets)
+- **Worker Bundle**: `dist-worker/index.js` (entry: `src/worker.ts`)
+- **iOS App**: Built via Xcode
 
-## Validation and types
+## API Routes
 
-- Use zod at boundaries (Worker APIs, WS payloads). See `src/schemas/health.ts` for message envelopes and health data shapes.
+The Cloudflare Worker handles:
 
-## Privacy and security
+- `GET /health` - Health check endpoint
+- `GET /api/health-data` - Fetch health metrics
+- `POST /api/health-data` - Store health data
+- `GET /*` - Static asset serving (SPA fallback)
 
-- Treat health data as sensitive. Avoid logging raw personal metrics. Validate inputs, sanitize outputs, and fail closed on parse errors.
+## WebSocket Server
+
+Local development server (`server/websocket-server.js`) provides:
+
+- Real-time health data updates
+- Live sensor streaming
+- Connection status management
+
+**Message Types:**
+- `connection_established` - Initial handshake
+- `live_health_update` - Real-time metrics
+- `historical_data_update` - Batch data sync
+
+## Data Flow
+
+### iOS → Backend
+1. iOS app requests HealthKit permissions
+2. Reads health data from Apple Health
+3. POSTs JSON to Cloudflare Worker API
+4. Worker stores in Cloudflare KV
+
+### Backend → Web
+1. React app fetches data via REST API
+2. Displays charts and visualizations
+3. WebSocket connection for real-time updates
+
+## Storage Strategy
+
+- **Cloudflare KV**: JSON health data records
+- **Cloudflare R2**: File uploads (exports, reports)
+- **Local**: iOS app uses Core Data for offline caching
+
+## Security
+
+- HealthKit data stays private to the device
+- API uses JWT authentication
+- HTTPS/WSS for all network communication
+- No server-side access to raw health records
+
+## Development Workflow
+
+```bash
+# Start all services
+npm run dev          # React dev server (5173)
+npm run cf:dev       # Cloudflare Worker (8787)
+npm run ws:dev       # WebSocket server (3001)
+```
+
+## Deployment
+
+- **Web + Worker**: Cloudflare Pages (automatic via GitHub)
+- **iOS App**: Manual Xcode build for personal device
+- **WebSocket**: Optional for local development only
+
+## Performance Considerations
+
+- Edge computing reduces API latency (<100ms globally)
+- Code splitting keeps initial bundle small (~187KB gzipped)
+- Lazy loading for charts and visualizations
+- WebSocket reconnection for reliable real-time updates
 
 ---
 
-For deeper UX and feature goals, see `docs/PRD.md` and `docs/NEXT_STEPS.md`.
+For detailed API documentation, see [API.md](API.md).  
+For WebSocket protocol details, see [WEBSOCKETS.md](WEBSOCKETS.md).
