@@ -1,7 +1,7 @@
 [
   {
     "name": "DEVICE_JWT_SECRET",
-    "lastRotated": "2025-09-18T00:00:00.000Z",
-    "notes": "Initial tracked rotation entry for development environment. Update after each secret change."
+    "lastRotated": "2026-03-03T00:00:00.000Z",
+    "notes": "Updated for portfolio project - development environment only"
   }
 ]
