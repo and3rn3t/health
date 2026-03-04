@@ -32,15 +32,6 @@ export interface HistoricalDataUpdate {
   count: number;
 }
 
-export interface EmergencyAlert {
-  metric_type: string;
-  alert_level: 'warning' | 'critical';
-  message: string;
-  value: number;
-  timestamp: number;
-  user_id: string;
-}
-
 export interface ClientPresence {
   userId: string;
   clientType: 'ios_app' | 'web_app' | 'watch_app';
@@ -68,7 +59,6 @@ export function useLiveHealthData(_userId: string = 'demo-user') {
   const [latestMetrics, setLatestMetrics] = useState<
     Record<string, LiveHealthMetric>
   >({});
-  const [alerts, setAlerts] = useState<EmergencyAlert[]>([]);
   const [clientPresence, setClientPresence] = useState<
     Record<string, ClientPresence>
   >({});
@@ -95,22 +85,6 @@ export function useLiveHealthData(_userId: string = 'demo-user') {
       setLiveMetrics((prev) =>
         [...(histUpdate.samples || []), ...(prev || [])].slice(0, 1000)
       ); // Keep last 1000
-    }, []),
-
-    onEmergencyAlert: useCallback((data: unknown) => {
-      const alert = data as EmergencyAlert;
-      setAlerts((prev) => [alert, ...(prev || []).slice(0, 19)]); // Keep last 20 alerts
-
-      // Show browser notification for critical alerts
-      if (alert.alert_level === 'critical' && 'Notification' in window) {
-        if (Notification.permission === 'granted') {
-          new Notification(`Health Alert: ${alert.message}`, {
-            body: `${alert.metric_type}: ${alert.value}`,
-            icon: '/health-icon.png',
-            tag: 'health-alert',
-          });
-        }
-      }
     }, []),
 
     onClientPresence: useCallback((data: unknown) => {
@@ -161,13 +135,6 @@ export function useLiveHealthData(_userId: string = 'demo-user') {
     handlers
   );
 
-  // Request notification permission on mount
-  useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  }, []);
-
   const connectToHealthData = useCallback(async () => {
     setIsConnecting(true);
     try {
@@ -211,10 +178,6 @@ export function useLiveHealthData(_userId: string = 'demo-user') {
     [sendMessage]
   );
 
-  const clearAlerts = useCallback(() => {
-    setAlerts([]);
-  }, []);
-
   const getLatestHeartRate = useCallback(() => {
     return latestMetrics.heart_rate;
   }, [latestMetrics]);
@@ -233,10 +196,6 @@ export function useLiveHealthData(_userId: string = 'demo-user') {
         presence.clientType === 'ios_app' && presence.status === 'online'
     );
   }, [clientPresence]);
-
-  const getCriticalAlerts = useCallback(() => {
-    return (alerts || []).filter((alert) => alert.alert_level === 'critical');
-  }, [alerts]);
 
   const getRecentData = useCallback(
     (type: string, limit = 10) => {
@@ -265,7 +224,6 @@ export function useLiveHealthData(_userId: string = 'demo-user') {
     connectionStatus,
     liveMetrics,
     latestMetrics,
-    alerts,
     clientPresence,
     isConnecting,
 
@@ -274,14 +232,12 @@ export function useLiveHealthData(_userId: string = 'demo-user') {
     disconnectFromHealthData,
     subscribeToHealthUpdates,
     requestHistoricalData,
-    clearAlerts,
 
     // Getters
     getLatestHeartRate,
     getLatestWalkingSteadiness,
     getLatestStepCount,
     isIOSConnected,
-    getCriticalAlerts,
     getRecentData,
   };
 }

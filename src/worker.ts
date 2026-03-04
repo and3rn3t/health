@@ -3024,35 +3024,12 @@ app.get('/demo-static', async (c) => {
                     </p>
                 </div>
             </div>
-
-            <div class="demo-card">
-                <h3>👥 Caregiver Dashboard</h3>
-                <div class="demo-metric">
-                    <span>Connected Caregivers</span>
-                    <span class="demo-value">2</span>
-                </div>
-                <div class="demo-metric">
-                    <span>Emergency Contacts</span>
-                    <span class="demo-value">3</span>
-                </div>
-                <div class="demo-metric">
-                    <span>Last Check-in</span>
-                    <span class="demo-value">2 hours ago</span>
-                </div>
-                <div class="demo-metric">
-                    <span>Sharing Status</span>
-                    <span class="demo-value" style="color: #10b981;">Active</span>
-                </div>
-            </div>
         </div>
 
         <div class="demo-actions">
             <h3 style="margin-bottom: 1.5rem; color: var(--vs-primary);">Demo Actions</h3>
             <button class="demo-button" onclick="alert('📱 iOS App integration would sync your Apple Health data here!')">
                 Connect iOS App
-            </button>
-            <button class="demo-button secondary" onclick="alert('🚨 Emergency alert system activated! Caregivers would be notified.')">
-                Test Emergency Alert
             </button>
             <button class="demo-button" onclick="window.location.href='/login'">
                 Exit Demo → Login

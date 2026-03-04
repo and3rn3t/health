@@ -44,7 +44,6 @@ type CognitiveResult = z.infer<typeof cognitiveResultSchema>;
 const cognitiveSettingsSchema = z.object({
   reminders: z.boolean().default(false),
   assessmentsPerWeek: z.number().int().min(1).max(7).default(3),
-  shareWithCaregivers: z.boolean().default(false),
 });
 
 type CognitiveSettings = z.infer<typeof cognitiveSettingsSchema>;
@@ -402,7 +401,6 @@ export default function CognitiveHealth() {
     {
       reminders: false,
       assessmentsPerWeek: 3,
-      shareWithCaregivers: false,
     }
   );
   const [results = [], setResults] = useKV<CognitiveResult[]>(
@@ -416,7 +414,6 @@ export default function CognitiveHealth() {
       setSettings({
         reminders: false,
         assessmentsPerWeek: 3,
-        shareWithCaregivers: false,
       });
     }
     // we intentionally run once on mount

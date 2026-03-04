@@ -106,14 +106,3 @@ export function EnhancedFallRiskMonitor() {
     </div>
   );
 }
-
-export function AdvancedCaregiverAlerts() {
-  return (
-    <div className="rounded-lg border p-4">
-      <h3 className="mb-2 text-lg font-semibold">Advanced Caregiver Alerts</h3>
-      <p className="text-muted-foreground">
-        Advanced alert system coming soon...
-      </p>
-    </div>
-  );
-}

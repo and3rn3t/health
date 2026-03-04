@@ -65,7 +65,6 @@ export interface LiveDataSubscription {
 
 type OutboundMessage = { type: string; [key: string]: unknown };
 type HealthKitEventDetail = { data: LiveHealthMetric; timestamp: string };
-type AlertData = { alert?: { message?: string } } & Record<string, unknown>;
 type EmergencyPayload = {
   triggeredBy: 'user' | 'system';
   timestamp: string;
@@ -266,9 +265,6 @@ export class LiveHealthDataSync {
       case 'client_presence':
         this.onClientPresence(message.data);
         break;
-      case 'emergency_alert':
-        this.onEmergencyAlert(message.data);
-        break;
       case 'error':
         this.onRealtimeError();
         break;
@@ -372,12 +368,6 @@ export class LiveHealthDataSync {
     }
   }
 
-  private onEmergencyAlert(data: unknown) {
-    if (data && typeof data === 'object') {
-      this.handleEmergencyAlert(data as { alert?: { message?: string } });
-    }
-  }
-
   private onRealtimeError() {
     try {
       toast.error('Realtime error');
@@ -401,33 +391,6 @@ export class LiveHealthDataSync {
   private processHistoricalData(data: unknown) {
     // Handle historical data updates
     console.log('Historical data received:', data);
-  }
-
-  private handleEmergencyAlert(data: AlertData) {
-    // Handle emergency alerts
-    console.log('Emergency alert:', data);
-
-    // You could show browser notifications here
-    if (
-      typeof window !== 'undefined' &&
-      'Notification' in window &&
-      Notification.permission === 'granted'
-    ) {
-      new Notification('Health Emergency Alert', {
-        body: data?.alert?.message ?? 'Emergency condition detected',
-        icon: '/health-icon.png',
-        tag: 'health-emergency',
-      });
-    }
-
-    // Dispatch a DOM event for app-level listeners
-    try {
-      window.dispatchEvent(
-        new CustomEvent('health-emergency', { detail: { data } })
-      );
-    } catch {
-      /* noop */
-    }
   }
 
   private passesFilters(

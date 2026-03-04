@@ -23,7 +23,7 @@ import { LiDAREnvironmentalHazardDetector } from './LiDAREnvironmentalHazardDete
 import { LiDARFallPredictionEngine } from './LiDARFallPredictionEngine';
 import { LiDARGaitAnalyzer } from './LiDARGaitAnalyzerClean';
 import { LiDARPostureAnalyzer } from './LiDARPostureAnalyzer';
-import { LiDARSocialInteractionAnalyzer } from './LiDARSocialInteractionAnalyzer';
+
 import { LiDARTrainingAssistant } from './LiDARTrainingAssistant';
 
 // Type aliases for better code organization
@@ -61,13 +61,11 @@ interface LiDARUserPreferences {
     fallPrediction: boolean;
     trainingAssistant: boolean;
     cognitiveAnalysis: boolean;
-    socialInteraction: boolean;
     enhancedVisualizations: boolean;
   };
   analysisFrequency: AnalysisFrequency;
   dataRetention: DataRetention;
   privacyLevel: PrivacyLevel;
-  shareWithCaregivers: boolean;
 }
 
 interface LiDARSystemStats {
@@ -111,13 +109,11 @@ export function LiDARIntegrationManager({
       fallPrediction: true,
       trainingAssistant: true,
       cognitiveAnalysis: true,
-      socialInteraction: true,
       enhancedVisualizations: true,
     },
     analysisFrequency: 'onDemand',
     dataRetention: 'standard',
     privacyLevel: 'medium',
-    shareWithCaregivers: false,
   });
   const [systemStats, setSystemStats] = useKV<LiDARSystemStats>('lidar-stats', {
     totalSessions: 0,
@@ -408,12 +404,7 @@ export function LiDARIntegrationManager({
           >
             Cognitive
           </TabsTrigger>
-          <TabsTrigger
-            value="social"
-            disabled={!userPreferences?.enabledFeatures.socialInteraction}
-          >
-            Social
-          </TabsTrigger>
+
           <TabsTrigger
             value="visualizations"
             disabled={!userPreferences?.enabledFeatures.enhancedVisualizations}
@@ -597,9 +588,7 @@ export function LiDARIntegrationManager({
           <LiDARCognitiveAnalyzer />
         </TabsContent>
 
-        <TabsContent value="social" className="space-y-4">
-          <LiDARSocialInteractionAnalyzer />
-        </TabsContent>
+
 
         <TabsContent value="visualizations" className="space-y-4">
           <LiDAREnhancedVisualizations

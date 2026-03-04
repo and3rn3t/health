@@ -1,4 +1,3 @@
-import { MicroCoachToasts } from '@/components/coaching/MicroCoachToasts';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -926,7 +925,6 @@ export default function DevDiagnostics() {
                 Last RTT: {wsLastRtt} ms
               </div>
             )}
-            {rawWs && <MicroCoachToasts ws={rawWs} />}
           </div>
         </CardContent>
       </Card>

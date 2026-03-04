@@ -3,7 +3,6 @@
  * React hooks for integrating with the enhanced fall risk system
  */
 
-import { FallDetectionEvent } from '@/lib/enhanced-fall-detection-engine';
 import { useCallback } from 'react';
 
 interface StoredIntervention {
@@ -90,14 +89,6 @@ export function useInterventionManager() {
  * Combined hook for fall risk system integration
  */
 export function useFallRiskSystem() {
-  // Emergency handling removed (archived feature)
-  const handleEmergencyAlert = useCallback(async (alert: FallDetectionEvent) => {
-    console.log('Emergency alert (no-op):', alert);
-    return alert;
-  }, []);
-  
-  const requestNotificationPermission = useCallback(async () => false, []);
-
   const {
     handleInterventionStart,
     getActiveInterventions,
@@ -105,10 +96,6 @@ export function useFallRiskSystem() {
   } = useInterventionManager();
 
   return {
-    // Emergency handling (stubbed)
-    handleEmergencyAlert,
-    requestNotificationPermission,
-
     // Intervention management
     handleInterventionStart,
     getActiveInterventions,

@@ -35,15 +35,8 @@ export default function EnhancedFallRiskSystem({
 }: FallRiskSystemProps) {
   // Use the fall risk system hooks for integrated functionality
   const {
-    handleEmergencyAlert: systemEmergencyHandler,
     handleInterventionStart: systemInterventionHandler,
-    requestNotificationPermission,
   } = useFallRiskSystem();
-
-  // Request notification permission on component mount
-  React.useEffect(() => {
-    requestNotificationPermission();
-  }, [requestNotificationPermission]);
 
   // Example sensor data (would come from real sensors in production)
   // Initialize all values before using them to prevent temporal dead zone errors
@@ -86,14 +79,11 @@ export default function EnhancedFallRiskSystem({
 
   const handleEmergencyAlert = React.useCallback(
     (event: FallDetectionEvent) => {
-      // Use provided handler if available, otherwise use system default
       if (onEmergencyAlert) {
         onEmergencyAlert(event);
-      } else {
-        systemEmergencyHandler(event);
       }
     },
-    [onEmergencyAlert, systemEmergencyHandler]
+    [onEmergencyAlert]
   );
 
   const handleInterventionStart = React.useCallback(

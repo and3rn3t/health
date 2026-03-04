@@ -1,4 +1,3 @@
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,12 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLiveHealthData } from '@/hooks/useLiveHealthData';
 import {
   Activity,
-  AlertTriangle,
-  Bell,
-  CheckCircle,
   Clock,
   Download,
-  Eye,
   Heart,
   MapPin,
   Monitor,
@@ -26,88 +21,9 @@ import {
   Smartphone,
   Wifi,
   WifiOff,
-  X,
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
-interface AlertCardProps {
-  id: string;
-  type: string;
-  message: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  timestamp: string;
-  onDismiss: (id: string) => void;
-  onView: (id: string) => void;
-}
-
-function AlertCard({
-  id,
-  type,
-  message,
-  severity,
-  timestamp,
-  onDismiss,
-  onView,
-}: AlertCardProps) {
-  const severityColors = {
-    low: 'border-blue-200 bg-blue-50',
-    medium: 'border-yellow-200 bg-yellow-50',
-    high: 'border-orange-200 bg-orange-50',
-    critical: 'border-red-200 bg-red-50',
-  };
-
-  const severityIcons = {
-    low: <Bell className="h-4 w-4" />,
-    medium: <AlertTriangle className="h-4 w-4" />,
-    high: <AlertTriangle className="h-4 w-4" />,
-    critical: <AlertTriangle className="h-4 w-4" />,
-  };
-
-  return (
-    <Card className={`${severityColors[severity]} border-l-4`}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="space-x-3 flex items-start">
-            <div className="mt-0.5">{severityIcons[severity]}</div>
-            <div className="flex-1">
-              <div className="flex items-center space-x-2">
-                <Badge
-                  variant={
-                    severity === 'critical' ? 'destructive' : 'secondary'
-                  }
-                >
-                  {severity.toUpperCase()}
-                </Badge>
-                <span className="text-xs text-gray-500">{type}</span>
-              </div>
-              <p className="text-gray-800 mt-1 text-sm">{message}</p>
-              <p className="text-xs mt-1 text-gray-500">{timestamp}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onView(id)}
-              className="h-8 w-8 p-0"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDismiss(id)}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 interface DeviceStatusProps {
   devices: Array<{
@@ -199,17 +115,11 @@ export function EnhancedVitalSenseDashboard() {
     connectionStatus,
     liveMetrics,
     latestMetrics,
-    alerts,
     clientPresence,
-    clearAlerts,
     isIOSConnected,
-    getCriticalAlerts,
   } = useLiveHealthData();
 
   const [selectedTab, setSelectedTab] = useState('overview');
-  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(
-    new Set()
-  );
 
   const getDeviceName = (clientType: string) => {
     if (clientType === 'ios_app') return 'iPhone';
@@ -233,14 +143,6 @@ export function EnhancedVitalSenseDashboard() {
     return `${hours}h ago`;
   };
 
-  const handleDismissAlert = (alertId: string) => {
-    setDismissedAlerts((prev) => new Set(prev).add(alertId));
-  };
-
-  const handleViewAlert = (alertId: string) => {
-    toast.info(`Viewing alert details for ${alertId}`);
-  };
-
   // Convert client presence to device format
   const connectedDevices = Object.values(clientPresence).map((presence) => ({
     id: `${presence.userId}-${presence.clientType}`,
@@ -249,11 +151,6 @@ export function EnhancedVitalSenseDashboard() {
     status: presence.status,
     lastSeen: 'Just now',
   }));
-
-  // Filter active alerts
-  const activeAlerts = alerts.filter(
-    (alert) => !dismissedAlerts.has(alert.user_id + alert.timestamp)
-  );
 
   return (
     <div className="space-y-6 p-6">
@@ -297,36 +194,13 @@ export function EnhancedVitalSenseDashboard() {
         onValueChange={setSelectedTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="metrics">Metrics</TabsTrigger>
-          <TabsTrigger value="alerts">Alerts</TabsTrigger>
           <TabsTrigger value="devices">Devices</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          {/* Critical Alerts Banner */}
-          {getCriticalAlerts().length > 0 && (
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription className="flex items-center justify-between">
-                <span>
-                  <strong>
-                    {getCriticalAlerts().length} critical health alert(s)
-                  </strong>{' '}
-                  require attention
-                </span>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setSelectedTab('alerts')}
-                >
-                  View Alerts
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
-
           {/* Health Metrics Grid */}
           <div className="md:grid-cols-2 grid grid-cols-1 gap-4 lg:grid-cols-4">
             {latestMetrics.heart_rate && (
@@ -524,45 +398,6 @@ export function EnhancedVitalSenseDashboard() {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="alerts" className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Health Alerts</h2>
-            <Button onClick={clearAlerts} variant="outline">
-              Clear All Alerts
-            </Button>
-          </div>
-
-          <div className="space-y-4">
-            {activeAlerts.length === 0 ? (
-              <Card>
-                <CardContent className="py-16 flex flex-col items-center justify-center">
-                  <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
-                  <h3 className="mb-2 text-lg font-medium">All Clear!</h3>
-                  <p className="text-muted-foreground text-center">
-                    No active health alerts. Your health metrics are within
-                    normal ranges.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              activeAlerts.map((alert) => (
-                <AlertCard
-                  key={`${alert.user_id}-${alert.timestamp}-${alert.metric_type}`}
-                  id={alert.user_id + alert.timestamp}
-                  type={alert.metric_type}
-                  message={alert.message}
-                  severity={
-                    alert.alert_level as 'low' | 'medium' | 'high' | 'critical'
-                  }
-                  timestamp={formatTimeAgo(alert.timestamp)}
-                  onDismiss={handleDismissAlert}
-                  onView={handleViewAlert}
-                />
-              ))
-            )}
           </div>
         </TabsContent>
 

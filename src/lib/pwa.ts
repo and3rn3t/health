@@ -247,29 +247,6 @@ export class PWAManager {
   }
 
   /**
-   * Queue emergency alert for background sync
-   */
-  async queueEmergencyAlert(alert: EmergencyAlert): Promise<void> {
-    if (!this.swRegistration) {
-      console.error('[PWA] Service worker not registered');
-      return;
-    }
-
-    try {
-      await this.storeForSync('emergency-alert', alert);
-
-      if (
-        'serviceWorker' in navigator &&
-        'sync' in window.ServiceWorkerRegistration.prototype
-      ) {
-        await this.swRegistration.sync.register('emergency-alert-sync');
-      }
-    } catch (error) {
-      console.error('[PWA] Failed to queue emergency alert:', error);
-    }
-  }
-
-  /**
    * Check if device is online
    */
   isOnline(): boolean {
@@ -451,14 +428,12 @@ export class PWAManager {
 
     if (data.type === 'HEALTH_DATA_SYNCED') {
       console.log('[PWA] Health data synced successfully');
-    } else if (data.type === 'EMERGENCY_ALERT_SYNCED') {
-      console.log('[PWA] Emergency alert synced successfully');
     }
   }
 
   private async storeForSync(
     type: string,
-    data: HealthData | EmergencyAlert
+    data: HealthData
   ): Promise<void> {
     // In a real implementation, this would use IndexedDB
     const key = `pending_${type}_${Date.now()}`;
@@ -505,19 +480,6 @@ export interface HealthData {
   };
   source?: string;
   userId?: string;
-}
-
-// Emergency alert interface
-export interface EmergencyAlert {
-  timestamp: number;
-  type: string;
-  message: string;
-  location?: {
-    latitude: number;
-    longitude: number;
-  };
-  userId?: string;
-  severity?: 'low' | 'medium' | 'high' | 'critical';
 }
 
 // BeforeInstallPromptEvent interface for PWA installation

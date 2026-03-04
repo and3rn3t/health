@@ -1,9 +1,3 @@
-import { MicroCoachToasts } from '@/components/coaching/MicroCoachToasts';
-import {
-  loadStreakState,
-  updateDailyMetrics,
-  type StreakState,
-} from '@/lib/coaching/streaks';
 import { WebSocketClient } from '@/lib/websocketClient';
 import React, {
   useCallback,
@@ -44,7 +38,6 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
   const [client, setClient] = useState<WebSocketClient | null>(null);
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [coachingEnabled, setCoachingEnabled] = usePersistedCoaching();
-  const [streaks, setStreaks] = useState<StreakState>(() => loadStreakState());
   const metricsRef = useRef<Record<string, number>>({});
   // metricsRef drives derived state; no forced re-render currently needed
 
@@ -166,35 +159,6 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
     };
   }, []);
 
-  // Daily streak update trigger (simple heuristic using last metrics snapshot at first load or date rollover)
-  useEffect(() => {
-    const applyDaily = () => {
-      const postureAngle = metricsRef.current['posture_angle'];
-      const instabilityIndex = metricsRef.current['instability_index'];
-      const postureOk =
-        typeof postureAngle === 'number' ? postureAngle < 8 : false; // under warn threshold
-      const instabilityOk =
-        typeof instabilityIndex === 'number' ? instabilityIndex < 1.5 : false;
-      const updated = updateDailyMetrics({ postureOk, instabilityOk });
-      setStreaks(updated);
-    };
-    // Run once shortly after mount
-    const t = setTimeout(applyDaily, 4000);
-    // Midnight rollover check
-    const interval = setInterval(() => {
-      const today = new Date().toISOString().slice(0, 10);
-      if (streaks.lastUpdated !== today) applyDaily();
-    }, 60_000 * 15); // every 15 minutes
-    return () => {
-      clearTimeout(t);
-      clearInterval(interval);
-    };
-  }, [streaks.lastUpdated]);
-
-  const refreshStreaks = useCallback(() => {
-    setStreaks(loadStreakState());
-  }, []);
-
   const value: AppWsContextValue = useMemo(
     () => ({
       client,
@@ -202,23 +166,18 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
       coachingEnabled,
       setCoachingEnabled,
       lastMetrics: metricsRef.current,
-      streaks,
-      refreshStreaks,
     }),
     [
       client,
       socket,
       coachingEnabled,
       setCoachingEnabled,
-      streaks,
-      refreshStreaks,
     ]
   );
 
   return (
     <AppWsContext.Provider value={value}>
       {children}
-      {coachingEnabled && socket && <MicroCoachToasts ws={socket} />}
     </AppWsContext.Provider>
   );
 };

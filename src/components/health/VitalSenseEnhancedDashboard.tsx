@@ -1,4 +1,3 @@
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,17 +8,12 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useLiveHealthData } from '@/hooks/useLiveHealthData';
 import { useDeviceManagement } from '@/hooks/useDeviceManagement';
-import { DeviceStatusCard } from './DeviceStatusCard';
-import { DeviceAttributionBadge } from './DeviceAttributionBadge';
+import { useLiveHealthData } from '@/hooks/useLiveHealthData';
 import {
   Activity,
-  AlertTriangle,
-  CheckCircle,
   Clock,
   Download,
-  Eye,
   Heart,
   MapPin,
   Monitor,
@@ -28,82 +22,10 @@ import {
   Smartphone,
   Wifi,
   WifiOff,
-  X,
 } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
-
-interface AlertCardProps {
-  id: string;
-  type: string;
-  message: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  timestamp: string;
-  onDismiss: (id: string) => void;
-  onView: (id: string) => void;
-}
-
-function AlertCard({
-  id,
-  type,
-  message,
-  severity,
-  timestamp,
-  onDismiss,
-  onView,
-}: AlertCardProps) {
-  const severityStyles = {
-    low: 'border-vitalsense-secondary/20 bg-vitalsense-secondary/5',
-    medium: 'border-vitalsense-accent/20 bg-vitalsense-accent/5',
-    high: 'border-vitalsense-error/20 bg-vitalsense-error/5',
-    critical: 'border-red-500/20 bg-red-50',
-  };
-
-  return (
-    <Card
-      className={`${severityStyles[severity]} rounded-md border border-border`}
-    >
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <div className="mb-2 flex items-center gap-2">
-              <AlertTriangle
-                className={`h-4 w-4 ${
-                  severity === 'critical'
-                    ? 'text-red-500'
-                    : severity === 'high'
-                      ? 'text-vitalsense-error'
-                      : severity === 'medium'
-                        ? 'text-vitalsense-accent'
-                        : 'text-vitalsense-secondary'
-                }`}
-              />
-              <span className="text-sm font-medium capitalize">
-                {type.replace('_', ' ')}
-              </span>
-              <Badge
-                variant={severity === 'critical' ? 'destructive' : 'secondary'}
-                className="text-xs"
-              >
-                {severity}
-              </Badge>
-            </div>
-            <p className="text-vitalsense-gray mb-2 text-sm">{message}</p>
-            <p className="text-vitalsense-gray/80 text-xs">{timestamp}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => onView(id)}>
-              <Eye className="h-3 w-3" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => onDismiss(id)}>
-              <X className="h-3 w-3" />
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+import { DeviceAttributionBadge } from './DeviceAttributionBadge';
+import { DeviceStatusCard } from './DeviceStatusCard';
 
 interface DeviceStatusProps {
   devices: Array<{
@@ -198,19 +120,13 @@ export function VitalSenseEnhancedDashboard() {
     connectionStatus,
     liveMetrics,
     latestMetrics,
-    alerts,
     clientPresence,
-    clearAlerts,
     isIOSConnected,
-    getCriticalAlerts,
   } = useLiveHealthData();
 
   const { devices, hasConnectedDevices } = useDeviceManagement();
 
   const [selectedTab, setSelectedTab] = useState('overview');
-  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(
-    new Set()
-  );
 
   const getDeviceName = (clientType: string) => {
     if (clientType === 'ios_app') return 'iPhone';
@@ -234,14 +150,6 @@ export function VitalSenseEnhancedDashboard() {
     return `${hours}h ago`;
   };
 
-  const handleDismissAlert = (alertId: string) => {
-    setDismissedAlerts((prev) => new Set(prev).add(alertId));
-  };
-
-  const handleViewAlert = (alertId: string) => {
-    toast.info(`Viewing alert details for ${alertId}`);
-  };
-
   // Convert client presence to device format
   const connectedDevices = Object.values(clientPresence).map((presence) => ({
     id: `${presence.userId}-${presence.clientType}`,
@@ -250,11 +158,6 @@ export function VitalSenseEnhancedDashboard() {
     status: presence.status,
     lastSeen: 'Just now',
   }));
-
-  // Filter active alerts
-  const activeAlerts = alerts.filter(
-    (alert) => !dismissedAlerts.has(alert.user_id + alert.timestamp)
-  );
 
   return (
     <div className="space-y-4 md:space-y-5">
@@ -305,36 +208,13 @@ export function VitalSenseEnhancedDashboard() {
         onValueChange={setSelectedTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="metrics">Live Metrics</TabsTrigger>
-          <TabsTrigger value="alerts">Health Alerts</TabsTrigger>
           <TabsTrigger value="devices">Devices</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          {/* Critical Alerts Banner */}
-          {getCriticalAlerts().length > 0 && (
-            <Alert className="border-red-200 bg-red-50">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="flex items-center justify-between">
-                <span>
-                  <strong>
-                    {getCriticalAlerts().length} critical health alert(s)
-                  </strong>{' '}
-                  require immediate attention
-                </span>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setSelectedTab('alerts')}
-                >
-                  View Alerts
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
-
           {/* Health Metrics Grid - VitalSense Style */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 md:gap-6">
             {latestMetrics.heart_rate && (
@@ -601,51 +481,6 @@ export function VitalSenseEnhancedDashboard() {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="alerts" className="space-y-6">
-          <div className="py-2">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-vitalsense-primary">
-                Health Alerts
-              </h2>
-              <Button onClick={clearAlerts} variant="outline">
-                Clear All Alerts
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {activeAlerts.length === 0 ? (
-              <Card className="rounded-md border border-border">
-                <CardContent className="flex flex-col items-center justify-center py-16">
-                  <CheckCircle className="mb-4 h-16 w-16 text-vitalsense-success" />
-                  <h3 className="mb-2 text-lg font-medium text-vitalsense-primary">
-                    All Clear!
-                  </h3>
-                  <p className="text-vitalsense-gray text-center">
-                    No active health alerts. Your health metrics are within
-                    normal ranges.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              activeAlerts.map((alert) => (
-                <AlertCard
-                  key={`${alert.user_id}-${alert.timestamp}-${alert.metric_type}`}
-                  id={alert.user_id + alert.timestamp}
-                  type={alert.metric_type}
-                  message={alert.message}
-                  severity={
-                    alert.alert_level as 'low' | 'medium' | 'high' | 'critical'
-                  }
-                  timestamp={formatTimeAgo(alert.timestamp)}
-                  onDismiss={handleDismissAlert}
-                  onView={handleViewAlert}
-                />
-              ))
-            )}
           </div>
         </TabsContent>
 
