@@ -1,6 +1,5 @@
 import { AppToaster } from '@/components/ui/sonner';
 // RUM metrics (must be imported very early before app renders)
-import { CoachingControlPanel } from '@/components/coaching/CoachingControlPanel';
 import { AppWebSocketProvider } from '@/contexts/AppWebSocketProvider';
 import { AuthProvider } from '@/contexts/AuthProvider';
 import '@/polyfills/importMetaEnv';
@@ -244,7 +243,6 @@ try {
         <Suspense fallback={<LoadingFallback />}>
           <AppWebSocketProvider>
             <AppWrapper />
-            <CoachingControlPanel />
           </AppWebSocketProvider>
         </Suspense>
         {/* Disable toasts in development to avoid StrictMode effect loops */}

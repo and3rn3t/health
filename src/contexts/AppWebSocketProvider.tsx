@@ -1,4 +1,3 @@
-import { MicroCoachToasts } from '@/components/coaching/MicroCoachToasts';
 import {
   loadStreakState,
   updateDailyMetrics,

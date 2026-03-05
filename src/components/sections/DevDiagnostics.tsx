@@ -1,4 +1,3 @@
-import { MicroCoachToasts } from '@/components/coaching/MicroCoachToasts';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
