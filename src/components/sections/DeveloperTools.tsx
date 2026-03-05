@@ -1,4 +1,3 @@
-import WebSocketArchitectureGuide from '@/components/health/WebSocketArchitectureGuide';
 import { WSTokenSettings } from '@/components/health/WSTokenSettings';
 import {
   Card,
@@ -49,7 +48,6 @@ export default function DeveloperTools() {
               <Wrench className="h-4 w-4" />
               Architecture Guide
             </div>
-            <WebSocketArchitectureGuide />
           </div>
         </CardContent>
       </Card>

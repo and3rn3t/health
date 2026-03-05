@@ -23,7 +23,6 @@ import {
   LiveDataStream,
 } from './integration-components';
 
-import { EnhancedHealthDataUpload } from './EnhancedHealthDataUpload';
 import MLAnalytics from './MLAnalytics';
 
 interface FeatureCard {
@@ -73,7 +72,6 @@ export default function HealthSystemIntegration({
         'Comprehensive health insights',
         'Automated anomaly detection',
       ],
-      component: EnhancedHealthDataUpload,
     },
     {
       id: 'streaming',

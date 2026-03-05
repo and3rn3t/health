@@ -136,17 +136,7 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
 
   // Daily streak update trigger (simple heuristic using last metrics snapshot at first load or date rollover)
   useEffect(() => {
-    const applyDaily = () => {
-      const postureAngle = metricsRef.current['posture_angle'];
-      const instabilityIndex = metricsRef.current['instability_index'];
-      const postureOk =
-        typeof postureAngle === 'number' ? postureAngle < 8 : false; // under warn threshold
-      const instabilityOk =
-        typeof instabilityIndex === 'number' ? instabilityIndex < 1.5 : false;
-      const updated = updateDailyMetrics({ postureOk, instabilityOk });
-    };
     // Run once shortly after mount
-    const t = setTimeout(applyDaily, 4000);
     // Midnight rollover check removed (was for coaching streaks)
     return () => {
       clearTimeout(t);
