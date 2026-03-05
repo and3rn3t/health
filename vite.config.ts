@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
 const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname;
@@ -35,8 +35,6 @@ export default defineConfig({
     // Better compression in production
     ...(process.env.CI === 'true' && {
       pure: ['console.log', 'console.info', 'console.debug', 'console.warn'],
-      // More aggressive minification in CI
-      minify: true,
       keepNames: false, // Don't keep function names for smaller bundle
     }),
   },
@@ -53,7 +51,7 @@ export default defineConfig({
     cssMinify: 'esbuild',
     outDir: 'dist',
     // Disable source maps in CI/production to reduce bundle size
-    sourcemap: process.env.CI === 'true' ? false : true,
+    sourcemap: process.env.CI !== 'true',
     // Aggressive bundle size optimizations for CI compliance
     rollupOptions: {
       output: {
@@ -333,17 +331,6 @@ export default defineConfig({
     // Report compressed sizes to help with optimization
     reportCompressedSize: true,
 
-    // Enable terser-style minification for better compression
-    terserOptions: process.env.CI === 'true' ? {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug'],
-        passes: 3, // Multiple passes for better optimization
-      },
-      format: {
-        comments: false,
-      },
-    } : undefined,
+
   },
 });

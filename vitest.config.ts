@@ -58,7 +58,7 @@ export default defineConfig({
     // Optimize test execution: maximize parallelism in local dev for speed
     sequence: {
       shuffle: false, // Disable shuffle for faster execution and deterministic order
-      concurrent: true, // Always run concurrently (tests should be isolated anyway)
+      concurrent: false, // Disabled: tests within a file share global state (fetch mocks, window globals, timers)
     },
     // Memory optimization: reduce concurrency to prevent memory exhaustion
     maxConcurrency: process.env.CI ? 1 : 2, // Reduced from 10 to 2 to prevent OOM
