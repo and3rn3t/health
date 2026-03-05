@@ -24,13 +24,37 @@ import {
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { fuseRisks, type FusedRisk } from '@/lib/ai/fusion/riskFusion';
 import {
   assessEnvironmentRisk,
   summarizeSurface,
   type EnvironmentRisk,
 } from '@/lib/lidar/processing';
 import type { Point3D, PointCloud } from '@/lib/lidar/types';
+
+interface FallRiskLike {
+  probability: number;
+  riskLevel: 'low' | 'moderate' | 'high';
+}
+
+export interface FusedRisk extends FallRiskLike {
+  components: { physiological: number; environment: number };
+  explanation: string;
+}
+
+function fuseRisks(
+  physiological: FallRiskLike,
+  environment: EnvironmentRisk,
+  weights = { phys: 0.7, env: 0.3 },
+): FusedRisk {
+  const p = Math.min(1, Math.max(0, weights.phys * physiological.probability + weights.env * environment.probability));
+  const riskLevel: FusedRisk['riskLevel'] = p >= 0.7 ? 'high' : p >= 0.4 ? 'moderate' : 'low';
+  return {
+    probability: p,
+    riskLevel,
+    components: { physiological: physiological.probability, environment: environment.probability },
+    explanation: `Fused risk (phys=${weights.phys}, env=${weights.env})`,
+  };
+}
 import { useKV } from '@/hooks/useCloudflareKV';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { z } from 'zod';
