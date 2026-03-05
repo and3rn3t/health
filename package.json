@@ -166,7 +166,7 @@
   "optionalDependencies": {
     "@parcel/watcher-linux-x64-glibc": "^2.5.1",
     "@parcel/watcher-win32-x64": "^2.5.1",
-    "@rollup/rollup-linux-x64-gnu": "4.50.1",
+    "@rollup/rollup-linux-x64-gnu": "4.59.0",
     "@rollup/rollup-win32-x64-msvc": "4.50.1",
     "@tailwindcss/oxide-linux-x64-gnu": "4.1.13",
     "@tailwindcss/oxide-win32-x64-msvc": "4.1.13",
