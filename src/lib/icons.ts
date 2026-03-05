@@ -26,6 +26,7 @@ export {
   FileJson,
   FileSpreadsheet,
   FileText,
+  Footprints,
   Heart,
   Lightbulb,
   Minus,

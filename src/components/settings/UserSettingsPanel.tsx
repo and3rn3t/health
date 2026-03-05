@@ -45,7 +45,6 @@ function IOSSpinner({ size = 16 }: Readonly<{ size?: number }>) {
 }
 
 export default function UserSettingsPanel() {
-  const { getAccessToken, isAuthenticated, login } = useAuth();
   const [settings, setSettings] = useKV<AllSettings>(
     'user-settings',
     DEFAULT_SETTINGS
@@ -111,28 +110,9 @@ export default function UserSettingsPanel() {
     try {
       setBusy(true);
       setBusyAction('2fa');
-      const isProd =
-        typeof import.meta !== 'undefined' &&
-        typeof (import.meta as { env?: Record<string, unknown> }).env !==
-          'undefined' &&
-        Boolean(
-          (import.meta as { env?: Record<string, unknown> }).env?.PROD === true
-        );
-      if (isProd && !isAuthenticated) {
-        toast.error('Please log in to update security settings.');
-        try {
-          await login();
-        } catch {
-          /* no-op */
-        }
-        return;
-      }
       const enabled = s.privacy.twoFactorEnabled;
       const path = enabled ? '/api/user/2fa/disable' : '/api/user/2fa/enable';
-      // Attach Authorization header if an access token is available
-      const token = await getAccessToken().catch(() => undefined);
       const headers: Record<string, string> = { 'cache-control': 'no-store' };
-      if (token) headers.Authorization = `Bearer ${token}`;
       const res = await fetch(path, { method: 'POST', headers });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const body = (await res.json().catch(() => ({}))) as {
@@ -158,26 +138,7 @@ export default function UserSettingsPanel() {
     try {
       setBusy(true);
       setBusyAction('export');
-      const isProd =
-        typeof import.meta !== 'undefined' &&
-        typeof (import.meta as { env?: Record<string, unknown> }).env !==
-          'undefined' &&
-        Boolean(
-          (import.meta as { env?: Record<string, unknown> }).env?.PROD === true
-        );
-      if (isProd && !isAuthenticated) {
-        toast.error('Please log in to export your data.');
-        try {
-          await login();
-        } catch {
-          /* no-op */
-        }
-        return;
-      }
-      // Attach Authorization header if an access token is available
-      const token = await getAccessToken().catch(() => undefined);
       const headers: Record<string, string> = { 'cache-control': 'no-store' };
-      if (token) headers.Authorization = `Bearer ${token}`;
       const res = await fetch('/api/user/export', { headers });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const blob = await res.blob();

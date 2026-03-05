@@ -6,7 +6,6 @@
 import { DeviceStatusIndicator } from '@/components/health/DeviceStatusIndicator';
 import { LiveConnectionStatus } from '@/components/live/LiveConnectionStatus';
 import { AppleSidebarTrigger } from '@/components/nav/AppleSidebar';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
   Breadcrumb,
@@ -30,8 +29,6 @@ import { isDev } from '@/lib/env';
 import {
   Bell,
   Home,
-  LogIn,
-  LogOut,
   Monitor,
   Moon,
   MoreHorizontal,
@@ -74,20 +71,10 @@ function NavigationHeader({
     _onSidebarToggle ??
     (rest as { onToggleSidebar?: () => void })?.onToggleSidebar;
   const [searchQuery, setSearchQuery] = useState('');
-  const { user, isAuthenticated, isLoading, login, logout } = useAuth();
 
   if (isDev()) {
     console.log('🧭 NavigationHeader rendering...'); // Debug log
   }
-
-  const initials = (name?: string) => {
-    if (!name) return 'U';
-    const parts = name.split(' ').filter(Boolean);
-    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (
-      parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
-    ).toUpperCase();
-  };
 
   const getPageDescription = () => {
     const { category, label } = currentPageInfo;
@@ -232,64 +219,15 @@ function NavigationHeader({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="relative">
-                  {isAuthenticated && user ? (
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage
-                        src={user?.picture ?? undefined}
-                        alt={user?.name || 'User'}
-                      />
-                      <AvatarFallback className="text-xs">
-                        {initials(user?.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                  ) : (
-                    <User className="h-4 w-4" />
-                  )}
+                  <User className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col space-y-1">
-                    {isAuthenticated && user ? (
-                      <>
-                        <p className="text-sm font-medium">
-                          {user?.name || 'Signed in'}
-                        </p>
-                        {user?.email && (
-                          <p className="text-xs text-muted-foreground">
-                            {user?.email}
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-sm font-medium">Not signed in</p>
-                        <p className="text-xs text-muted-foreground">
-                          Sign in to access all features
-                        </p>
-                      </>
-                    )}
-                  </div>
-                </DropdownMenuLabel>
+                <DropdownMenuLabel>VitalSense</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {/* Profile navigation */}
-                <DropdownMenuItem onClick={() => onNavigate('user-profile')}>
-                  <User className="mr-2 h-4 w-4" /> Profile
+                <DropdownMenuItem onClick={() => onNavigate('settings')}>
+                  <Settings className="mr-2 h-4 w-4" /> Settings
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                {!isLoading &&
-                  (isAuthenticated ? (
-                    <DropdownMenuItem
-                      onClick={() => logout()}
-                      className="text-red-600 focus:text-red-600"
-                    >
-                      <LogOut className="mr-2 h-4 w-4" /> Sign out
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem onClick={() => login()}>
-                      <LogIn className="mr-2 h-4 w-4" /> Sign in
-                    </DropdownMenuItem>
-                  ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

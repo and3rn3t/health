@@ -107,7 +107,6 @@
     // Language-specific settings
     "powershell.cwd": "Health App (Root)",
     "typescript.tsdk": "Health App (Root)\\node_modules\\typescript\\lib",
-    "swift.path": "/usr/bin/swift",
     "swift.sourcekit-lsp.serverPath": "/usr/bin/sourcekit-lsp",
 
     // File associations for better syntax highlighting
@@ -139,11 +138,8 @@
   "extensions": {
     "recommendations": [
       "ms-vscode.powershell",
-      "github.copilot",
-      "github.copilot-chat",
       "cloudflare.vscode-cloudflare-workers",
       "ms-vscode.vscode-typescript-next",
-      "sswg.swift-lang",
       "ms-vscode.vscode-json",
       "esbenp.prettier-vscode",
       "bradlc.vscode-tailwindcss",

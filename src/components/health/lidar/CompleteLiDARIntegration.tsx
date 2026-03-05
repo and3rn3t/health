@@ -8,13 +8,10 @@ import {
   Brain,
   Database,
   Download,
-  Eye,
   Settings,
   Zap,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { AROverlayIntegration } from '../ar/AROverlayIntegration';
-import { MLWasmDemo } from '../ml/MLWasmDemo';
 import { AdvancedLiDARAnalytics } from './AdvancedLiDARAnalytics';
 import type { LiDARScanData } from './CleanLiDARComponents';
 import { CleanLiDARPerformanceProvider } from './index';
@@ -55,7 +52,7 @@ export const CompleteLiDARIntegration: React.FC<{
 
   const [scanHistory, setScanHistory] = useState<LiDARScanData[]>([]);
   const [activeTab, setActiveTab] = useState<
-    'realtime' | 'analytics' | 'ar-overlay' | 'ml-wasm' | 'reports' | 'settings'
+    'realtime' | 'analytics' | 'reports' | 'settings'
   >('realtime');
   const [clinicalReports] = useState<ClinicalReportPreview[]>([
     {
@@ -183,13 +180,6 @@ export const CompleteLiDARIntegration: React.FC<{
               label="Advanced Analytics"
             />
             <TabButton
-              active={activeTab === 'ar-overlay'}
-              onClick={() => setActiveTab('ar-overlay')}
-              icon={<Eye className="h-4 w-4" />}
-              label="AR Overlay"
-              badge="New"
-            />
-            <TabButton
               active={activeTab === 'reports'}
               onClick={() => setActiveTab('reports')}
               icon={<Database className="h-4 w-4" />}
@@ -217,17 +207,6 @@ export const CompleteLiDARIntegration: React.FC<{
             {activeTab === 'analytics' && settings.enableAdvancedAnalytics && (
               <AdvancedLiDARAnalytics scanData={scanHistory} />
             )}
-
-            {/* AR Overlay Tab */}
-            {activeTab === 'ar-overlay' && (
-              <AROverlayIntegration
-                scanData={scanHistory}
-                enableRealTimeGuidance={true}
-                enableHazardDetection={true}
-              />
-            )}
-
-            {activeTab === 'ml-wasm' && <MLWasmDemo />}
 
             {/* Clinical Reports Tab (Preview) */}
             {activeTab === 'reports' && (

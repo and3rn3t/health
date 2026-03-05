@@ -135,13 +135,9 @@ export function LoadingFallback() {
   );
 }
 
-// App wrapper component that always includes AuthProvider for compatibility
+// App wrapper component
 export function AppWrapper() {
-  // Always provide AuthProvider to prevent "useAuth must be used within an AuthProvider" errors
-  // The useAuth hook itself handles the auth enabled/disabled logic
-  return (
-      <App />
-  );
+  return <App />;
 }
 
 // Get the root element

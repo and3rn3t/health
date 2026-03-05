@@ -9,7 +9,6 @@ import React, {
   useTransition,
 } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { ComponentErrorBoundary } from '@/components/error/ErrorBoundary';
 import { SafeLogger } from '@/lib/errorHandling';
 
 // Debug logging (only in development)
@@ -18,7 +17,6 @@ if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
 }
 
 // Core components
-import { AnalyticsVersionBadge } from '@/components/analytics/AnalyticsVersionBadge';
 import Footer from '@/components/Footer';
 import NavigationHeader from '@/components/NavigationHeader';
 import { DeviceHealthMonitor } from '@/components/health/DeviceHealthMonitor';
@@ -43,30 +41,20 @@ import {
 import { Button } from '@/components/ui/button';
 import { useKV } from '@/hooks/useCloudflareKV';
 import { useLiveRegion } from '@/hooks/useLiveRegion';
-import { useNavUsage } from '@/hooks/useNavUsage';
 import { useThemeMode } from '@/hooks/useThemeMode';
 import { HealthDataProcessor } from '@/lib/healthDataProcessor';
 import type { AllSettings } from '@/lib/settingsTypes';
 import { cn } from '@/lib/utils';
-import { createLazyComponent, createLazyNamedComponent } from '@/lib/lazyLoading';
+import { createLazyNamedComponent } from '@/lib/lazyLoading';
 import { createNavigationItems, type NavigationItem } from '@/lib/navigationHelpers';
 import type { ProcessedHealthData } from '@/types';
 // Optimized icon imports - individual imports reduce bundle size
 import {
   Activity,
   AlertTriangle,
-  BarChart3,
-  Bell,
-  Brain,
-  Bug,
-  Monitor,
+  Footprints,
   Scan,
   Settings as SettingsIcon,
-  Share,
-  Shield,
-  Smartphone,
-  TrendingUp,
-  Wrench,
   X,
 } from '@/lib/icons';
 
@@ -84,21 +72,6 @@ const LiveHealthMonitoring = createLazyNamedComponent(
 );
 
 const FallDetection = lazy(() => import('@/components/health/FallDetection'));
-const EnhancedFallRiskSystem = lazy(
-  () => import('@/components/health/EnhancedFallRiskSystem')
-);
-const HealthAnalytics = lazy(
-  () => import('@/components/health/HealthAnalytics')
-);
-
-// Newly wired feature pages
-const ConnectedDevices = lazy(
-  () => import('@/components/health/ConnectedDevices')
-);
-const ExportData = lazy(() => import('@/components/health/ExportData'));
-const CognitiveHealth = lazy(
-  () => import('@/components/health/CognitiveHealth')
-);
 
 // LiDAR AR / Gait Dashboard (named export -> default wrapper)
 const GaitDashboard = createLazyNamedComponent(
@@ -111,181 +84,55 @@ const GaitDashboard = createLazyNamedComponent(
   }
 );
 
-// Enhanced LiDAR Performance Integration
-const EnhancedLiDARDashboard = lazy(
-  () => import('@/components/health/lidar/EnhancedLiDARIntegration')
-);
-
-// Complete LiDAR Advanced System (Next Steps Implementation)
+// LiDAR Integration
 const CompleteLiDARIntegration = lazy(
   () => import('@/components/health/lidar/CompleteLiDARIntegration')
 );
 
-const NotificationCenter = createLazyComponent(
-  () => import('@/components/sections/NotificationCenter'),
-  {
-    title: 'Notification Center',
-    message: 'Notification management coming soon.',
-    icon: Bell,
-  }
-);
-
 const SettingsPanel = lazy(() => import('@/components/sections/SettingsPanel'));
-const DeveloperTools = lazy(
-  () => import('@/components/sections/DeveloperTools')
-);
-const AdvancedAnalytics = lazy(
-  () => import('@/components/sections/AdvancedAnalytics')
-);
-const DevDiagnostics = lazy(
-  () => import('@/components/sections/DevDiagnostics')
-);
 
-const PrivacyControls = createLazyComponent(
-  () => import('@/components/sections/PrivacyControls'),
-  {
-    title: 'Privacy Controls',
-    message: 'Privacy settings coming soon.',
-    icon: Shield,
-  }
-);
-
-// Navigation structure with priority levels
+// Navigation structure — focused on posture & gait metrics
 const navigationItems: NavigationItem[] = createNavigationItems([
-  // PRIMARY - Always visible in tabs (top 5)
   {
     id: 'dashboard',
-    label: 'VitalSense Dashboard',
+    label: 'Dashboard',
     icon: Activity,
     component: LiveHealthMonitoring,
     priority: 1,
   },
   {
-    id: 'live-monitoring',
-    label: 'Live Monitoring',
-    icon: Monitor,
-    component: LiveHealthMonitoring,
+    id: 'gait-analysis',
+    label: 'Gait Analysis',
+    icon: Footprints,
+    component: GaitDashboard,
     priority: 1,
   },
   {
-    id: 'fall-detection',
-    label: 'Fall Detection',
-    icon: Shield,
+    id: 'lidar-posture',
+    label: 'LiDAR & Posture',
+    icon: Scan,
+    component: CompleteLiDARIntegration,
+    priority: 1,
+  },
+  {
+    id: 'fall-risk',
+    label: 'Fall Risk',
+    icon: AlertTriangle,
     component: FallDetection,
     priority: 1,
   },
-  {
-    id: 'enhanced-fall-risk',
-    label: 'Enhanced Fall Risk',
-    icon: AlertTriangle,
-    component: EnhancedFallRiskSystem,
-    priority: 1,
-  },
-  {
-    id: 'analytics',
-    label: 'Health Analytics',
-    icon: TrendingUp,
-    component: HealthAnalytics,
-    priority: 1,
-  },
-  {
-    id: 'advanced-analytics',
-    label: 'Advanced Analytics',
-    icon: BarChart3,
-    component: AdvancedAnalytics,
-    priority: 2,
-  },
-
-  // SECONDARY - Extended tabs on larger screens (next 5)
-  {
-    id: 'notifications',
-    label: 'Notifications',
-    icon: Bell,
-    component: NotificationCenter,
-    priority: 2,
-  },
-  {
-    id: 'brain-health',
-    label: 'Cognitive Health',
-    icon: Brain,
-    component: CognitiveHealth,
-    priority: 2,
-  },
-  {
-    id: 'lidar-ar',
-    label: 'LiDAR AR',
-    icon: Scan,
-    component: GaitDashboard,
-    priority: 2,
-  },
-  {
-    id: 'lidar-performance',
-    label: 'LiDAR Performance',
-    icon: Activity,
-    component: EnhancedLiDARDashboard,
-    priority: 2,
-  },
-  {
-    id: 'lidar-advanced',
-    label: 'LiDAR Advanced',
-    icon: Brain,
-    component: CompleteLiDARIntegration,
-    priority: 2,
-  },
-
-  // TERTIARY - Sidebar-only items (remainder)
   {
     id: 'settings',
     label: 'Settings',
     icon: SettingsIcon,
     component: SettingsPanel,
-    priority: 3,
-  },
-  {
-    id: 'privacy',
-    label: 'Privacy Controls',
-    icon: Shield,
-    component: PrivacyControls,
-    priority: 3,
-  },
-  {
-    id: 'device-sync',
-    label: 'Device Sync',
-    icon: Smartphone,
-    component: ConnectedDevices,
-    priority: 3,
-  },
-  {
-    id: 'export-data',
-    label: 'Export Data',
-    icon: Share,
-    component: ExportData,
-    priority: 3,
-  },
-  {
-    id: 'developer-tools',
-    label: 'Developer Tools',
-    icon: Wrench,
-    component: DeveloperTools,
-    priority: 3,
-  },
-  {
-    id: 'dev-diagnostics',
-    label: 'Dev Diagnostics',
-    icon: Bug,
-    component: DevDiagnostics,
-    priority: 3,
+    priority: 2,
   },
 ]);
 
 // Main VitalSense App Component (Inner content inside SidebarProvider)
 function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  // User preference: lock navigation order (disables Quick Access reordering)
-  const [lockNavOrder, setLockNavOrder] = useKV<boolean>(
-    'pref-lock-nav-order',
-    false
-  );
   // User settings for dynamic type scale (read-only here)
   const [userSettings] = useKV<AllSettings | null>('user-settings', null);
   // Apply dynamic type scale to root element when settings change
@@ -316,28 +163,7 @@ function AppContent() {
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     SafeLogger.debug('Mobile forced mode', { isMobileForced: _isMobileForced });
   }
-  // Respect default sidebar behavior; do not force-open on mount.
-  const { recordUse, sortByUsage, hasAnyUsage } = useNavUsage();
   const announce = useLiveRegion();
-
-  const quickAccessIds = React.useMemo(() => {
-    if (lockNavOrder || !hasAnyUsage) return new Set<string>();
-    return new Set(
-      sortByUsage(navigationItems)
-        .slice(0, 4)
-        .map((i) => i.id)
-    );
-  }, [hasAnyUsage, sortByUsage, lockNavOrder]);
-
-  // Navigation item organization
-  const primaryTabs = useMemo(
-    () => navigationItems.filter((item) => item.priority === 1),
-    []
-  );
-  const secondaryTabs = useMemo(
-    () => navigationItems.filter((item) => item.priority === 2),
-    []
-  );
 
   // Find the active component
   const activeComponent = useMemo(() => {
@@ -372,10 +198,8 @@ function AppContent() {
   const handleTabChange = useCallback(
     (tabId: string) => {
       startTransition(() => setActiveTab(tabId));
-      // Sidebar component handles its own sheet/overlay state; no manual close needed
-      recordUse(tabId);
     },
-    [recordUse, startTransition]
+    [startTransition]
   );
 
   // Mobile quick actions handler
@@ -383,16 +207,8 @@ function AppContent() {
     (action: string) => {
       switch (action) {
         case 'quick-vitals':
-          handleTabChange('live-monitoring');
-          announce('Live monitoring opened');
-          break;
-        case 'photo':
-          // Future: open camera or image capture
-          announce('Photo capture feature coming soon');
-          break;
-        case 'note':
-          // Future: open note-taking feature
-          announce('Note taking feature coming soon');
+          handleTabChange('dashboard');
+          announce('Dashboard opened');
           break;
         default:
           break;
@@ -406,17 +222,16 @@ function AppContent() {
     const handleNavigate = ((event: CustomEvent<{ feature: string }>) => {
       const featureId = event.detail.feature;
       const map: Record<string, string> = {
-        insights: 'analytics',
-        analytics: 'analytics',
-        'fall-risk': 'fall-detection',
-        'ai-recommendations': 'advanced-analytics',
-        'realtime-scoring': 'live-monitoring',
+        insights: 'gait-analysis',
+        analytics: 'gait-analysis',
+        'fall-risk': 'fall-risk',
+        'fall-detection': 'fall-risk',
+        'realtime-scoring': 'dashboard',
+        'live-monitoring': 'dashboard',
         import: 'dashboard',
-        'healthkit-guide': 'device-sync',
-        'system-status': 'dev-diagnostics',
-        'usage-analytics': 'analytics',
-        'usage-predictions': 'advanced-analytics',
-        'device-sync': 'device-sync',
+        'device-sync': 'settings',
+        'healthkit-guide': 'settings',
+        'system-status': 'settings',
       };
       const target = map[featureId] ?? featureId;
       handleTabChange(target);
@@ -434,37 +249,15 @@ function AppContent() {
   const preloadById = useCallback((id: string) => {
     switch (id) {
       case 'dashboard':
-        return import('@/components/sections/HealthDashboard');
-      case 'live-monitoring':
-        return import('@/components/health/EnhancedVitalSenseDashboard');
-      case 'fall-detection':
-        return import('@/components/health/FallDetection');
-      case 'analytics':
-        return import('@/components/health/HealthAnalytics');
-      case 'advanced-analytics':
-        return import('@/components/sections/AdvancedAnalytics');
-      case 'notifications':
-        return import('@/components/sections/NotificationCenter');
-      case 'brain-health':
-        return import('@/components/health/CognitiveHealth');
-      case 'lidar-ar':
+        return import('@/components/health/VitalSenseEnhancedDashboard');
+      case 'gait-analysis':
         return import('@/components/health/GaitDashboardClean');
-      case 'lidar-performance':
-        return import('@/components/health/lidar/EnhancedLiDARIntegration');
-      case 'lidar-advanced':
+      case 'lidar-posture':
         return import('@/components/health/lidar/CompleteLiDARIntegration');
+      case 'fall-risk':
+        return import('@/components/health/FallDetection');
       case 'settings':
         return import('@/components/sections/SettingsPanel');
-      case 'privacy':
-        return import('@/components/sections/PrivacyControls');
-      case 'device-sync':
-        return import('@/components/health/ConnectedDevices');
-      case 'export-data':
-        return import('@/components/health/ExportData');
-      case 'developer-tools':
-        return import('@/components/sections/DeveloperTools');
-      case 'dev-diagnostics':
-        return import('@/components/sections/DevDiagnostics');
       default:
         return Promise.resolve();
     }
@@ -533,125 +326,26 @@ function AppContent() {
               </Button>
             </div>
           </AppleSidebarHeader>
-          {/* Quick Access */}
-          {hasAnyUsage && !lockNavOrder && (
-            <AppleSidebarSection>
-              <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
-                Quick Access
-              </div>
-              <AppleSidebarList>
-                {sortByUsage(navigationItems)
-                  .slice(0, 4)
-                  .map((item) => {
-                    const Icon = item.icon;
-                    const isActive = activeTab === item.id;
-                    return (
-                      <AppleSidebarItem
-                        key={`qa-${item.id}`}
-                        active={isActive}
-                        aria-current={isActive ? 'page' : undefined}
-                        data-id={item.id}
-                        onClick={onNavItemClick}
-                        onMouseEnter={onNavItemHover}
-                      >
-                        <Icon className="h-4 w-4" />
-                        {item.label}
-                      </AppleSidebarItem>
-                    );
-                  })}
-              </AppleSidebarList>
-            </AppleSidebarSection>
-          )}
-          {/* Primary */}
+          {/* Navigation */}
           <AppleSidebarSection>
-            <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
-              Primary
-            </div>
             <AppleSidebarList>
-              {primaryTabs
-                .filter((i) => !quickAccessIds.has(i.id))
-                .map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <AppleSidebarItem
-                      key={item.id}
-                      active={isActive}
-                      aria-current={isActive ? 'page' : undefined}
-                      data-id={item.id}
-                      onClick={onNavItemClick}
-                      onMouseEnter={onNavItemHover}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {item.label}
-                    </AppleSidebarItem>
-                  );
-                })}
-            </AppleSidebarList>
-          </AppleSidebarSection>
-          {/* Secondary */}
-          <AppleSidebarSection>
-            <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
-              More
-            </div>
-            <AppleSidebarList>
-              {secondaryTabs
-                .filter((i) => !quickAccessIds.has(i.id))
-                .map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <AppleSidebarItem
-                      key={item.id}
-                      active={isActive}
-                      aria-current={isActive ? 'page' : undefined}
-                      data-id={item.id}
-                      onClick={onNavItemClick}
-                      onMouseEnter={onNavItemHover}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {item.label}
-                    </AppleSidebarItem>
-                  );
-                })}
-            </AppleSidebarList>
-          </AppleSidebarSection>
-          {/* Tertiary */}
-          <AppleSidebarSection>
-            <div className="px-2 pb-2 text-xs font-medium text-muted-foreground">
-              Settings
-            </div>
-            <AppleSidebarList>
-              {navigationItems
-                .filter((i) => i.priority === 3 && !quickAccessIds.has(i.id))
-                .map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <AppleSidebarItem
-                      key={item.id}
-                      active={isActive}
-                      aria-current={isActive ? 'page' : undefined}
-                      data-id={item.id}
-                      onClick={onNavItemClick}
-                      onMouseEnter={onNavItemHover}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {item.label}
-                    </AppleSidebarItem>
-                  );
-                })}
-              <AppleSidebarItem
-                data-id="__lock-nav-order"
-                active={false}
-                onClick={() => setLockNavOrder((v) => !v)}
-                aria-pressed={lockNavOrder}
-                className="h-auto min-h-[36px] justify-start py-1 text-xs"
-              >
-                {lockNavOrder
-                  ? 'Unlock Navigation Order'
-                  : 'Lock Navigation Order'}
-              </AppleSidebarItem>
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <AppleSidebarItem
+                    key={item.id}
+                    active={isActive}
+                    aria-current={isActive ? 'page' : undefined}
+                    data-id={item.id}
+                    onClick={onNavItemClick}
+                    onMouseEnter={onNavItemHover}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </AppleSidebarItem>
+                );
+              })}
             </AppleSidebarList>
           </AppleSidebarSection>
           <div className="mt-auto px-2 py-1.5 text-xs text-muted-foreground">
@@ -682,7 +376,6 @@ function AppContent() {
                 onThemeToggle={toggleThemeMode}
                 onNavigate={handleTabChange}
               />
-              <AnalyticsVersionBadge />
             </div>
           )}
           {/* Remove inner overflow to avoid double scroll; AppleSidebarMain is the scroll container */}
@@ -721,25 +414,15 @@ function AppContent() {
                       }}
                       onNavigateToFeature={(featureId) => {
                         const map: Record<string, string> = {
-                          insights: 'analytics',
-                          analytics: 'analytics',
-                          'fall-risk': 'fall-detection',
-                          'ai-recommendations': 'advanced-analytics',
-                          'realtime-scoring': 'live-monitoring',
+                          insights: 'gait-analysis',
+                          analytics: 'gait-analysis',
+                          'fall-risk': 'fall-risk',
+                          'realtime-scoring': 'dashboard',
                           import: 'dashboard',
-                          'healthkit-guide': 'device-sync',
-                          'system-status': 'dev-diagnostics',
-                          'usage-analytics': 'analytics',
-                          'usage-predictions': 'advanced-analytics',
+                          'healthkit-guide': 'settings',
+                          'system-status': 'settings',
                         };
                         const target = map[featureId] ?? 'dashboard';
-
-                        // If navigating to device-sync from healthkit-guide, set flag to open setup wizard
-                        if (featureId === 'healthkit-guide' && target === 'device-sync') {
-                          if (typeof window !== 'undefined') {
-                            sessionStorage.setItem('open-device-setup', 'true');
-                          }
-                        }
 
                         handleTabChange(target);
                       }}
@@ -754,30 +437,7 @@ function AppContent() {
                         | undefined;
                       if (!ActiveComponent) return null;
 
-                      // Wrap EnhancedFallRiskSystem with error boundary to prevent blank screen
-                      const isEnhancedFallRisk = activeTab === 'enhanced-fall-risk';
-
-                      const component = (
-                        // Provide shared healthData to components that can consume it.
-                        <ActiveComponent healthData={healthData} />
-                      );
-
-                      return isEnhancedFallRisk ? (
-                        <ComponentErrorBoundary
-                          onError={(error, errorInfo) => {
-                            SafeLogger.error('EnhancedFallRiskSystem error', {
-                              errorName: error.name,
-                              errorMessage: error.message,
-                              hasStack: !!error.stack,
-                              componentStack: errorInfo.componentStack,
-                            });
-                          }}
-                        >
-                          {component}
-                        </ComponentErrorBoundary>
-                      ) : (
-                        component
-                      );
+                      return <ActiveComponent healthData={healthData} />;
                     })()
                   )}
                 </div>

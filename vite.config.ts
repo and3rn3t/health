@@ -125,14 +125,6 @@ export default defineConfig({
               return 'state-mgmt';
             }
 
-            // Large ML/Data Visualization Libraries - Split separately (VERY LARGE)
-            // These should ideally be lazy-loaded and not in initial bundle
-            if (id.includes('@tensorflow/tfjs')) {
-              return 'tensorflow'; // TensorFlow is huge (~500KB+) - lazy load in ML features
-            }
-            if (id.includes('three')) {
-              return 'three-js'; // Three.js is large (~200KB+) - lazy load in 3D visualizations
-            }
             // Recharts - force into separate chunk and ensure it's not eagerly loaded
             if (id.includes('recharts')) {
               return 'recharts-lazy'; // Recharts is large (~150KB+) - should be lazy-loaded
@@ -140,9 +132,6 @@ export default defineConfig({
             // Ensure chart component is also in a separate chunk
             if (id.includes('/ui/chart') || id.includes('components/ui/chart')) {
               return 'chart-components'; // Chart wrapper should be separate from recharts
-            }
-            if (id.includes('/d3-') || id.includes('/d3/')) {
-              return 'd3-lib'; // D3 is large (~150KB+) - lazy load for advanced charts
             }
             if (id.includes('framer-motion')) {
               return 'framer-motion'; // Framer Motion is medium-large (~100KB+) - lazy load
@@ -311,7 +300,7 @@ export default defineConfig({
       treeshake: {
         moduleSideEffects: (id) => {
           // Allow side effects for some libraries that need them
-          if (id.includes('@tensorflow') || id.includes('polyfill')) {
+          if (id.includes('polyfill')) {
             return true;
           }
           // Recharts should not have side effects in initial bundle
