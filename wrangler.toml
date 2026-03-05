@@ -71,9 +71,6 @@ binding = "SECURITY_ANALYTICS"
 [[env.production.analytics_engine_datasets]]
 binding = "PERFORMANCE_ANALYTICS"
 
-# Logpush configuration for enhanced logging
-env.production.logpush = false
-
 [env.production.vars]
 ENVIRONMENT = "production"
 ALLOWED_ORIGINS = "https://health.andernet.dev"
@@ -167,88 +164,73 @@ zone_name = "andernet.dev"
 
 # ============================================================================
 # Advanced WebSocket Service Environment (Development)
+# DISABLED: Migration/deployment issues. Re-enable when ready to deploy separately.
 # ============================================================================
-[env.advanced-websocket-dev]
-name = "vitalsense-websocket-advanced-dev"
-# Use TypeScript source directly - Wrangler will compile and preserve exports
-main = "src/workers/vitalsense-websocket-advanced.ts"
-compatibility_date = "2024-01-15"
-
-[env.advanced-websocket-dev.vars]
-ENVIRONMENT = "development"
-# ML configuration
-ML_CONFIDENCE_THRESHOLD = "0.75"
-ANOMALY_DETECTION_SENSITIVITY = "2.5"
-PREDICTION_HORIZON_DAYS = "7"
-MAX_HISTORICAL_RECORDS = "1000"
-
-[[env.advanced-websocket-dev.durable_objects.bindings]]
-name = "VITALSENSE_WEBSOCKET"
-class_name = "VitalSenseAdvancedWebSocketDO"
-
-# Advanced websocket dev migrations (only its own Durable Objects)
-# NOTE: Migration v1 has been applied - removed to prevent re-application errors
-# If you need to add a new migration, uncomment and add a new tag (e.g., v2)
-# [[env.advanced-websocket-dev.migrations]]
-# tag = "v2"
-# new_sqlite_classes = ["NewDurableObjectClass"]
+# [env.advanced-websocket-dev]
+# name = "vitalsense-websocket-advanced-dev"
+# main = "src/workers/vitalsense-websocket-advanced.ts"
+# compatibility_date = "2024-01-15"
+#
+# [env.advanced-websocket-dev.vars]
+# ENVIRONMENT = "development"
+# ML_CONFIDENCE_THRESHOLD = "0.75"
+# ANOMALY_DETECTION_SENSITIVITY = "2.5"
+# PREDICTION_HORIZON_DAYS = "7"
+# MAX_HISTORICAL_RECORDS = "1000"
+#
+# [[env.advanced-websocket-dev.durable_objects.bindings]]
+# name = "VITALSENSE_WEBSOCKET"
+# class_name = "VitalSenseAdvancedWebSocketDO"
 
 # ============================================================================
 # Advanced WebSocket Service Environment (Production)
+# DISABLED: Migration/deployment issues. Re-enable when ready to deploy separately.
 # ============================================================================
-[env.advanced-websocket-prod]
-name = "vitalsense-websocket-advanced-prod"
-# Use TypeScript source directly - Wrangler will compile and preserve exports
-main = "src/workers/vitalsense-websocket-advanced.ts"
-compatibility_date = "2024-01-15"
-
-[env.advanced-websocket-prod.vars]
-ENVIRONMENT = "production"
-# ML configuration
-ML_CONFIDENCE_THRESHOLD = "0.80"
-ANOMALY_DETECTION_SENSITIVITY = "2.0"
-PREDICTION_HORIZON_DAYS = "7"
-MAX_HISTORICAL_RECORDS = "1000"
-
-[[env.advanced-websocket-prod.durable_objects.bindings]]
-name = "VITALSENSE_WEBSOCKET"
-class_name = "VitalSenseAdvancedWebSocketDO"
-
-# Advanced websocket prod migrations (only its own Durable Objects)
-# NOTE: Migration v1 has been applied - removed to prevent re-application errors
-# If you need to add a new migration, uncomment and add a new tag (e.g., v2)
-# [[env.advanced-websocket-prod.migrations]]
-# tag = "v2"
-# new_sqlite_classes = ["NewDurableObjectClass"]
-
-# Advanced websocket prod routes - use ws.health.andernet.dev for WebSocket connections
-[[env.advanced-websocket-prod.routes]]
-pattern = "ws.health.andernet.dev/*"
-zone_name = "andernet.dev"
+# [env.advanced-websocket-prod]
+# name = "vitalsense-websocket-advanced-prod"
+# main = "src/workers/vitalsense-websocket-advanced.ts"
+# compatibility_date = "2024-01-15"
+#
+# [env.advanced-websocket-prod.vars]
+# ENVIRONMENT = "production"
+# ML_CONFIDENCE_THRESHOLD = "0.80"
+# ANOMALY_DETECTION_SENSITIVITY = "2.0"
+# PREDICTION_HORIZON_DAYS = "7"
+# MAX_HISTORICAL_RECORDS = "1000"
+#
+# [[env.advanced-websocket-prod.durable_objects.bindings]]
+# name = "VITALSENSE_WEBSOCKET"
+# class_name = "VitalSenseAdvancedWebSocketDO"
+#
+# [[env.advanced-websocket-prod.routes]]
+# pattern = "ws.health.andernet.dev/*"
+# zone_name = "andernet.dev"
 
 # ============================================================================
 # Enhanced WebSocket Service Environment (Development)
+# DISABLED: Separate worker deployment. Re-enable when ready.
 # ============================================================================
-[env.enhanced-websocket-dev]
-name = "vitalsense-websocket-enhanced-dev"
-main = "src/workers/vitalsense-websocket-clean.ts"
-compatibility_date = "2024-03-08"
-
-[[env.enhanced-websocket-dev.durable_objects.bindings]]
-name = "VITALSENSE_WEBSOCKET"
-class_name = "VitalSenseWebSocketDO"
+# [env.enhanced-websocket-dev]
+# name = "vitalsense-websocket-enhanced-dev"
+# main = "src/workers/vitalsense-websocket-clean.ts"
+# compatibility_date = "2024-03-08"
+#
+# [[env.enhanced-websocket-dev.durable_objects.bindings]]
+# name = "VITALSENSE_WEBSOCKET"
+# class_name = "VitalSenseWebSocketDO"
 
 # ============================================================================
 # Enhanced WebSocket Service Environment (Production)
+# DISABLED: Separate worker deployment. Re-enable when ready.
 # ============================================================================
-[env.enhanced-websocket-prod]
-name = "vitalsense-websocket-enhanced-prod"
-main = "src/workers/vitalsense-websocket-clean.ts"
-compatibility_date = "2024-03-08"
-
-[[env.enhanced-websocket-prod.durable_objects.bindings]]
-name = "VITALSENSE_WEBSOCKET"
-class_name = "VitalSenseWebSocketDO"
+# [env.enhanced-websocket-prod]
+# name = "vitalsense-websocket-enhanced-prod"
+# main = "src/workers/vitalsense-websocket-clean.ts"
+# compatibility_date = "2024-03-08"
+#
+# [[env.enhanced-websocket-prod.durable_objects.bindings]]
+# name = "VITALSENSE_WEBSOCKET"
+# class_name = "VitalSenseWebSocketDO"
 
 # ============================================================================
 # Global Durable Objects (default bindings)

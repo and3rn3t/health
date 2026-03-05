@@ -14,6 +14,7 @@ export default [
       'dist/**',
       'dist-worker/**',
       '.wrangler/**',
+      '.wrangler-test/**',
       'build/**',
       'out/**',
       '.next/**',
@@ -22,10 +23,13 @@ export default [
       'server/**',
       'ios/**',
       'docs/**',
+      'public/**',
       'src/components/_archive/**',
       'src/_archive/**',
       'scripts/**/*.ps1',
       'scripts/**/*.sh',
+      'scripts/**/*.js',
+      'scripts/**/*.mjs',
       '**/*.md',
       '**/*.txt',
 
@@ -61,7 +65,7 @@ export default [
   ...tseslint.configs.recommended,
   // Node-targeted JS (scripts, tools)
   {
-    files: ['scripts/**/*.js', 'server/**/*.js', '**/*.cjs', '**/*.mjs'],
+    files: ['server/**/*.js', '**/*.cjs'],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -109,9 +113,9 @@ export default [
       'no-undef': 'off', // Node globals provided above
     },
   },
-  // Browser-targeted JS inside src
+  // Browser-targeted JS (src, public, runtime config)
   {
-    files: ['src/**/*.js'],
+    files: ['src/**/*.js', 'app-config.js'],
     languageOptions: {
       globals: {
         ...globals.browser,
