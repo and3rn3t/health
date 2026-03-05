@@ -72,9 +72,6 @@ import {
 
 // Lazy loaded components with fallbacks
 const LandingPage = lazy(() => import('@/components/LandingPageOptimized'));
-const OnboardingFlow = lazy(
-  () => import('@/components/onboarding/OnboardingFlow')
-);
 
 const LiveHealthMonitoring = createLazyNamedComponent(
   () => import('@/components/health/VitalSenseEnhancedDashboard'),

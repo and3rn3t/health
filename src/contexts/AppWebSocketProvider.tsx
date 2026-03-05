@@ -1,8 +1,3 @@
-import {
-  loadStreakState,
-  updateDailyMetrics,
-  type StreakState,
-} from '@/lib/coaching/streaks';
 import { WebSocketClient } from '@/lib/websocketClient';
 import React, {
   useCallback,
@@ -13,37 +8,11 @@ import React, {
 } from 'react';
 import { AppWsContext, type AppWsContextValue } from './AppWebSocketContext';
 
-const COACHING_KEY = 'vs_coaching_enabled_v1';
-
-function usePersistedCoaching(): [boolean, (v: boolean) => void] {
-  const [enabled, setEnabled] = useState<boolean>(() => {
-    try {
-      const raw = localStorage.getItem(COACHING_KEY);
-      if (raw === '0') return false;
-      if (raw === '1') return true;
-    } catch {
-      /* noop */
-    }
-    return true;
-  });
-  const update = useCallback((v: boolean) => {
-    setEnabled(v);
-    try {
-      localStorage.setItem(COACHING_KEY, v ? '1' : '0');
-    } catch {
-      /* noop */
-    }
-  }, []);
-  return [enabled, update];
-}
-
 export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
   const [client, setClient] = useState<WebSocketClient | null>(null);
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [coachingEnabled, setCoachingEnabled] = usePersistedCoaching();
-  const [streaks, setStreaks] = useState<StreakState>(() => loadStreakState());
   const metricsRef = useRef<Record<string, number>>({});
   // metricsRef drives derived state; no forced re-render currently needed
 
@@ -175,49 +144,30 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
       const instabilityOk =
         typeof instabilityIndex === 'number' ? instabilityIndex < 1.5 : false;
       const updated = updateDailyMetrics({ postureOk, instabilityOk });
-      setStreaks(updated);
     };
     // Run once shortly after mount
     const t = setTimeout(applyDaily, 4000);
-    // Midnight rollover check
-    const interval = setInterval(() => {
-      const today = new Date().toISOString().slice(0, 10);
-      if (streaks.lastUpdated !== today) applyDaily();
-    }, 60_000 * 15); // every 15 minutes
+    // Midnight rollover check removed (was for coaching streaks)
     return () => {
       clearTimeout(t);
-      clearInterval(interval);
     };
-  }, [streaks.lastUpdated]);
-
-  const refreshStreaks = useCallback(() => {
-    setStreaks(loadStreakState());
   }, []);
 
   const value: AppWsContextValue = useMemo(
     () => ({
       client,
       socket,
-      coachingEnabled,
-      setCoachingEnabled,
       lastMetrics: metricsRef.current,
-      streaks,
-      refreshStreaks,
     }),
     [
       client,
       socket,
-      coachingEnabled,
-      setCoachingEnabled,
-      streaks,
-      refreshStreaks,
     ]
   );
 
   return (
     <AppWsContext.Provider value={value}>
       {children}
-      {coachingEnabled && socket && <MicroCoachToasts ws={socket} />}
     </AppWsContext.Provider>
   );
 };

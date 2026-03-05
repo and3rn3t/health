@@ -925,7 +925,6 @@ export default function DevDiagnostics() {
                 Last RTT: {wsLastRtt} ms
               </div>
             )}
-            {rawWs && <MicroCoachToasts ws={rawWs} />}
           </div>
         </CardContent>
       </Card>
