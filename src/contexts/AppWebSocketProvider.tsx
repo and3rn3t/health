@@ -13,7 +13,7 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
 }) => {
   const [client, setClient] = useState<WebSocketClient | null>(null);
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [coachingEnabled, setCoachingEnabled] = usePersistedCoaching();
+  const [coachingEnabled, setCoachingEnabled] = useState(false);
   const metricsRef = useRef<Record<string, number>>({});
   // metricsRef drives derived state; no forced re-render currently needed
 
