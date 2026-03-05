@@ -160,9 +160,9 @@ export function VitalSenseEnhancedDashboard() {
   }));
 
   return (
-    <div className="space-y-4 md:space-y-5">
+    <div className="space-y-4">
       {/* Header Section - VitalSense Branded */}
-      <div className="py-6">
+      <div className="py-4">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
@@ -216,7 +216,7 @@ export function VitalSenseEnhancedDashboard() {
 
         <TabsContent value="overview" className="space-y-6">
           {/* Health Metrics Grid - VitalSense Style */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 md:gap-6">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 md:gap-4">
             {latestMetrics.heart_rate && (
               <Card
                 className="rounded-md border border-border border-vitalsense-primary/20 bg-gradient-to-br from-vitalsense-primary/5 to-vitalsense-primary/10 cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]"
@@ -350,7 +350,7 @@ export function VitalSenseEnhancedDashboard() {
           </div>
 
           {/* Device Status & Recent Activity Section */}
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <DeviceStatusCard compact={false} showQuickActions={true} />
 
             <Card className="rounded-md border border-border">
@@ -401,7 +401,7 @@ export function VitalSenseEnhancedDashboard() {
         </TabsContent>
 
         <TabsContent value="metrics" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             <Card className="rounded-md border border-border">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg">Live Health Metrics</CardTitle>
@@ -485,7 +485,7 @@ export function VitalSenseEnhancedDashboard() {
         </TabsContent>
 
         <TabsContent value="devices" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             <DeviceStatus devices={connectedDevices} />
 
             <Card className="rounded-md border border-border">

@@ -159,7 +159,7 @@ export function AppleSidebarPanel({
         data-side={side}
         className={cn(
           // Responsive comfort widths on large displays
-          'h-full w-[320px] shrink-0 border-r border-border bg-card text-foreground md:w-[360px] xl:w-[420px] 2xl:w-[520px]',
+          'h-full w-[280px] shrink-0 border-r border-border bg-card text-foreground md:w-[300px] xl:w-[340px] 2xl:w-[380px]',
           className
         )}
         {...props}
@@ -194,7 +194,7 @@ export function AppleSidebarPanel({
   }
 
   // Desktop: static flex item that transitions width. No overlay; main content is never hidden.
-  const expandedWidth = 'w-[320px] md:w-[360px] xl:w-[420px] 2xl:w-[520px]';
+  const expandedWidth = 'w-[280px] md:w-[300px] xl:w-[340px] 2xl:w-[380px]';
   const collapsedWidth =
     collapsible === 'icon' ? 'w-0 md:w-[56px]' : 'w-0 md:w-0';
   const widthClass = state === 'expanded' ? expandedWidth : collapsedWidth;
@@ -207,7 +207,7 @@ export function AppleSidebarPanel({
       data-collapsible={collapsible}
       aria-label="Primary navigation"
       className={cn(
-        'shrink-0 border-r border-border bg-card text-foreground transition-[width] duration-200 ease-linear',
+        'shrink-0 border-r border-border/50 vs-glass-thick text-foreground transition-[width] duration-200 ease-linear',
         widthClass,
         className
       )}

@@ -387,7 +387,7 @@ function AppContent() {
               id="main-content"
               role="main"
               aria-label={activeLabel || 'Main content'}
-              className="flex-1 bg-background px-4 pb-3 pt-2 md:px-6 md:pb-4 md:pt-3"
+              className="flex-1 bg-background px-4 pb-3 pt-2 md:px-6 md:pb-4 md:pt-3 lg:px-10 2xl:px-16"
             >
               <Suspense
                 fallback={
@@ -399,7 +399,12 @@ function AppContent() {
                   </div>
                 }
               >
-                <div className={cn('mx-auto space-y-8', activeTab !== 'dashboard' && 'max-w-7xl')}>
+                <div
+                  key={activeTab}
+                  className={cn('mx-auto max-w-[1600px] space-y-6')}
+                  role="tabpanel"
+                  data-state="active"
+                >
                   <h1 className="sr-only" aria-live="polite">
                     {activeLabel}
                   </h1>

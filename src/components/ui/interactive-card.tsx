@@ -40,8 +40,8 @@ export const InteractiveCard = forwardRef<HTMLDivElement, InteractiveCardProps>(
         onClick={onClick}
         className={cn(
           'vs-tap-target focus-visible:ring-ring/50 focus-visible:ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-          'cursor-pointer select-none rounded-xl transition-colors',
-          'bg-card border-border border shadow-sm hover:shadow-md active:scale-[0.985]',
+          'cursor-pointer select-none rounded-xl transition-all duration-200',
+          'bg-card border-border border vs-elevation-raised hover:vs-elevation-grouped active:scale-[0.98]',
           'data-[active=true]:ring-primary/50 data-[active=true]:ring-2',
           className
         )}

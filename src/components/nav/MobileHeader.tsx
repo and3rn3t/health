@@ -54,13 +54,13 @@ export function MobileHeader({
   return (
     <header
       className={cn(
-        'bg-card/95 supports-[backdrop-filter]:bg-card/85 sticky top-0 z-40 border-b border-border backdrop-blur-sm',
+        'vs-glass-thick sticky top-0 z-40 border-b border-border/50',
         'pt-safe-top',
         className
       )}
     >
       {/* Main header bar */}
-      <div className="flex h-14 items-center justify-between px-4">
+      <div className="flex h-12 items-center justify-between px-4">
         {/* Left: App title or current section */}
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <h1 className="truncate text-lg font-semibold text-foreground">
