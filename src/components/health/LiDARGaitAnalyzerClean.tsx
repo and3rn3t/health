@@ -31,7 +31,7 @@ import {
   type EnvironmentRisk,
 } from '@/lib/lidar/processing';
 import type { Point3D, PointCloud } from '@/lib/lidar/types';
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useCloudflareKV';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { z } from 'zod';
 

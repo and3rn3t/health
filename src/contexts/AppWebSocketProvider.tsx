@@ -8,30 +8,6 @@ import React, {
 } from 'react';
 import { AppWsContext, type AppWsContextValue } from './AppWebSocketContext';
 
-const COACHING_KEY = 'vs_coaching_enabled_v1';
-
-function usePersistedCoaching(): [boolean, (v: boolean) => void] {
-  const [enabled, setEnabled] = useState<boolean>(() => {
-    try {
-      const raw = localStorage.getItem(COACHING_KEY);
-      if (raw === '0') return false;
-      if (raw === '1') return true;
-    } catch {
-      /* noop */
-    }
-    return true;
-  });
-  const update = useCallback((v: boolean) => {
-    setEnabled(v);
-    try {
-      localStorage.setItem(COACHING_KEY, v ? '1' : '0');
-    } catch {
-      /* noop */
-    }
-  }, []);
-  return [enabled, update];
-}
-
 export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
@@ -163,8 +139,6 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
     () => ({
       client,
       socket,
-      coachingEnabled,
-      setCoachingEnabled,
       lastMetrics: metricsRef.current,
     }),
     [

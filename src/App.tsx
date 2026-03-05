@@ -72,9 +72,6 @@ import {
 
 // Lazy loaded components with fallbacks
 const LandingPage = lazy(() => import('@/components/LandingPageOptimized'));
-const OnboardingFlow = lazy(
-  () => import('@/components/onboarding/OnboardingFlow')
-);
 
 const LiveHealthMonitoring = createLazyNamedComponent(
   () => import('@/components/health/VitalSenseEnhancedDashboard'),
@@ -699,15 +696,6 @@ function AppContent() {
               aria-label={activeLabel || 'Main content'}
               className="flex-1 bg-background px-4 pb-3 pt-2 md:px-6 md:pb-4 md:pt-3"
             >
-              {/* Lightweight onboarding banner on dashboard only */}
-              {activeTab === 'dashboard' && (
-                <Suspense fallback={null}>
-                  <OnboardingFlow
-                    onNavigate={handleTabChange}
-                    onHealthDataImported={(d) => setHealthData(d)}
-                  />
-                </Suspense>
-              )}
               <Suspense
                 fallback={
                   <div className="flex h-64 items-center justify-center gap-3">

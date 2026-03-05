@@ -28,7 +28,6 @@ import AIRecommendations from '@/components/health/AIRecommendations';
 import { EnhancedGaitAnalyzer } from '@/components/health/EnhancedGaitAnalyzer';
 import MLAnalytics from '@/components/health/MLAnalytics';
 import { WalkingPatternVisualizer } from '@/components/health/WalkingPatternVisualizerClean';
-import WebSocketArchitectureGuide from '@/components/health/WebSocketArchitectureGuide';
 import { WSTokenSettings } from '@/components/health/WSTokenSettings';
 
 // Minimal mock analytics objects for demos (kept lightweight; not persisted)
@@ -209,7 +208,6 @@ export default function ShowcaseLabs() {
               <Wrench className="h-4 w-4" />
               Architecture Guide
             </div>
-            <WebSocketArchitectureGuide />
           </div>
         </CardContent>
       </Card>

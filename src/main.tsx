@@ -1,6 +1,5 @@
 import { AppToaster } from '@/components/ui/sonner';
 import { AppWebSocketProvider } from '@/contexts/AppWebSocketProvider';
-import { AuthProvider } from '@/contexts/AuthProvider';
 import '@/polyfills/importMetaEnv';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode, Suspense } from 'react';
@@ -141,9 +140,7 @@ export function AppWrapper() {
   // Always provide AuthProvider to prevent "useAuth must be used within an AuthProvider" errors
   // The useAuth hook itself handles the auth enabled/disabled logic
   return (
-    <AuthProvider>
       <App />
-    </AuthProvider>
   );
 }
 
