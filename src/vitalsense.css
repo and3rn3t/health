@@ -25,6 +25,21 @@
   --vitalsense-warning-ios26: color-mix(in oklch, #f59e0b, transparent 0%);
   --vitalsense-error-ios26: color-mix(in oklch, #dc2626, transparent 0%);
 
+  /* iOS 26 Liquid Glass Material Tokens */
+  --vs-glass-blur: 20px;
+  --vs-glass-saturation: 1.8;
+  --vs-glass-bg: rgba(255, 255, 255, 0.72);
+  --vs-glass-bg-thick: rgba(255, 255, 255, 0.85);
+  --vs-glass-border: rgba(255, 255, 255, 0.45);
+  --vs-glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
+  --vs-glass-highlight: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.6);
+
+  /* iOS 26 Layered Elevation System */
+  --vs-elevation-flat: none;
+  --vs-elevation-raised: 0 1px 2px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --vs-elevation-grouped: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.06);
+  --vs-elevation-prominent: 0 2px 6px rgba(0, 0, 0, 0.10), 0 8px 32px rgba(0, 0, 0, 0.10);
+
   /* iOS 26 Adaptive Surface Colors */
   --adaptive-surface: light-dark(#ffffff, #1c1c1e);
   --adaptive-surface-secondary: light-dark(#f2f2f7, #2c2c2e);
@@ -85,6 +100,18 @@
   --border: #334155;
   --input: #334155;
   --ring: #3b82f6;
+
+  /* Liquid Glass - Dark Mode */
+  --vs-glass-bg: rgba(15, 23, 42, 0.68);
+  --vs-glass-bg-thick: rgba(15, 23, 42, 0.82);
+  --vs-glass-border: rgba(255, 255, 255, 0.12);
+  --vs-glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.20), 0 8px 24px rgba(0, 0, 0, 0.16);
+  --vs-glass-highlight: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.08);
+
+  /* Elevation - Dark Mode */
+  --vs-elevation-raised: 0 1px 2px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.12);
+  --vs-elevation-grouped: 0 1px 3px rgba(0, 0, 0, 0.20), 0 4px 16px rgba(0, 0, 0, 0.16);
+  --vs-elevation-prominent: 0 2px 6px rgba(0, 0, 0, 0.24), 0 8px 32px rgba(0, 0, 0, 0.24);
 }
 
 /* === BASE STYLES === */
@@ -427,6 +454,36 @@
   .border-vitalsense-teal {
     border-color: var(--vitalsense-teal);
   }
+
+  /* iOS 26 Liquid Glass Material */
+  .vs-glass {
+    background: var(--vs-glass-bg);
+    backdrop-filter: blur(var(--vs-glass-blur)) saturate(var(--vs-glass-saturation));
+    -webkit-backdrop-filter: blur(var(--vs-glass-blur)) saturate(var(--vs-glass-saturation));
+    border: 1px solid var(--vs-glass-border);
+    box-shadow: var(--vs-glass-shadow), var(--vs-glass-highlight);
+  }
+
+  .vs-glass-thick {
+    background: var(--vs-glass-bg-thick);
+    backdrop-filter: blur(var(--vs-glass-blur)) saturate(var(--vs-glass-saturation));
+    -webkit-backdrop-filter: blur(var(--vs-glass-blur)) saturate(var(--vs-glass-saturation));
+    border: 1px solid var(--vs-glass-border);
+    box-shadow: var(--vs-glass-shadow), var(--vs-glass-highlight);
+  }
+
+  /* iOS 26 Elevation utilities */
+  .vs-elevation-raised {
+    box-shadow: var(--vs-elevation-raised);
+  }
+
+  .vs-elevation-grouped {
+    box-shadow: var(--vs-elevation-grouped);
+  }
+
+  .vs-elevation-prominent {
+    box-shadow: var(--vs-elevation-prominent);
+  }
 }
 
 /* === HEALTH APP SPECIFIC STYLES === */
@@ -481,5 +538,49 @@
 
   .vitalsense-fall-risk--high {
     @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+  }
+}
+
+/* === iOS 26 TRANSITION ANIMATIONS === */
+@keyframes vs-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes vs-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tab content fade-in */
+[data-state='active'][role='tabpanel'],
+[data-slot='card'] {
+  animation: vs-fade-in var(--vs-motion-duration-base, 180ms) var(--vs-motion-ease-standard, cubic-bezier(0.4, 0.2, 0.2, 1)) both;
+}
+
+/* Staggered card appearance within grids */
+.grid > [data-slot='card']:nth-child(1) { animation-delay: 0ms; }
+.grid > [data-slot='card']:nth-child(2) { animation-delay: 40ms; }
+.grid > [data-slot='card']:nth-child(3) { animation-delay: 80ms; }
+.grid > [data-slot='card']:nth-child(4) { animation-delay: 120ms; }
+.grid > [data-slot='card']:nth-child(5) { animation-delay: 160ms; }
+.grid > [data-slot='card']:nth-child(n+6) { animation-delay: 200ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-state='active'][role='tabpanel'],
+  [data-slot='card'] {
+    animation: none;
   }
 }

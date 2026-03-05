@@ -43,12 +43,12 @@ export const layout = {
 
   section: {
     padding: {
-      sm: 'py-6 px-4',
-      md: 'py-8 px-6',
-      lg: 'py-12 px-8',
+      sm: 'py-4 px-4',
+      md: 'py-6 px-6',
+      lg: 'py-8 px-8',
     },
-    gap: 'space-y-8',
-    marginBottom: 'mb-8',
+    gap: 'space-y-6',
+    marginBottom: 'mb-6',
   },
 
   header: {
@@ -100,15 +100,15 @@ export const responsive = {
   },
 
   grid: {
-    responsive: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-    cards: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
-    auto: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+    responsive: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+    cards: 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5',
+    auto: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5',
   },
 
   gap: {
-    responsive: 'gap-4 md:gap-6 lg:gap-8',
-    cards: 'gap-6',
-    sections: 'gap-8',
+    responsive: 'gap-3 md:gap-4 lg:gap-6',
+    cards: 'gap-3 md:gap-4',
+    sections: 'gap-6',
   },
 };
 
@@ -145,7 +145,7 @@ export const designSystem = {
   statusBadge: `${layout.badge.padding} ${layout.badge.gap} rounded-md text-xs font-medium`,
 
   // Layout presets
-  mainContent: `${responsive.container['7xl']} ${responsive.padding.responsive} ${responsive.padding.section}`,
+  mainContent: `max-w-[1600px] mx-auto ${responsive.padding.responsive} ${responsive.padding.section}`,
 
   cardGrid: `grid ${responsive.grid.cards} ${responsive.gap.cards}`,
 

@@ -2,13 +2,19 @@ import { ComponentProps } from 'react';
 
 import { cn } from '@/lib/utils';
 
-function Card({ className, ...props }: ComponentProps<'div'>) {
+type CardVariant = 'default' | 'glass';
+
+function Card({ className, variant = 'default', ...props }: ComponentProps<'div'> & { variant?: CardVariant }) {
   return (
     <div
       data-slot="card"
+      data-variant={variant}
       className={cn(
-        // Base card styling + optimized outer spacing for better mobile experience
-        'my-4 flex flex-col gap-6 rounded-xl border border-border bg-card py-6 text-card-foreground shadow-sm transition-shadow hover:shadow-md md:my-6',
+        // Base card styling — tighter spacing for iOS 26 density
+        'my-3 flex flex-col gap-5 rounded-xl py-5 text-card-foreground transition-all duration-200 md:my-4',
+        variant === 'glass'
+          ? 'vs-glass hover:vs-elevation-grouped'
+          : 'border border-border bg-card vs-elevation-raised hover:vs-elevation-grouped',
         className
       )}
       {...props}

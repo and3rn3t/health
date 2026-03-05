@@ -89,10 +89,10 @@ function Footer({
   ];
 
   return (
-    <footer className="bg-card/50 border-border mt-auto border-t">
-      <div className="md:py-5 px-4 py-4 lg:px-8">
+    <footer className="vs-glass-thick border-border/50 mt-auto border-t">
+      <div className="px-4 py-3 lg:px-8">
         {/* Grid-based Footer Layout */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:items-center">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:items-center">
           {/* Brand & Score */}
           <div className="flex items-center gap-4">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-vitalsense-primary">

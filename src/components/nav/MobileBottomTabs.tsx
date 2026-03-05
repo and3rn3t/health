@@ -66,7 +66,7 @@ export function MobileBottomTabs({
   };
 
   return (
-    <div className="bg-background/95 border-border/50 fixed bottom-0 left-0 right-0 z-50 border-t shadow-lg backdrop-blur-xl">
+    <div className="vs-glass-thick fixed bottom-0 left-0 right-0 z-50 border-t border-border/30">
       <div className="h-18 flex items-center justify-center gap-1 px-2 py-2">
         {primaryTabs.map((item) => {
           const config = mobileTabConfig[item.id] || {
