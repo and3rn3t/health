@@ -105,7 +105,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "4.20251117.0",
+    "@cloudflare/workers-types": "4.20260305.1",
     "@eslint/js": "^9.21.0",
     "@tailwindcss/cli": "4.1.13",
     "@tailwindcss/oxide": "4.1.13",
