@@ -170,9 +170,9 @@ zone_name = "andernet.dev"
 # ============================================================================
 [env.advanced-websocket-dev]
 name = "vitalsense-websocket-advanced-dev"
-# Use TypeScript source directly - Wrangler will compile and preserve exports
 main = "src/workers/vitalsense-websocket-advanced.ts"
-compatibility_date = "2024-01-15"
+compatibility_date = "2024-08-30"
+compatibility_flags = ["nodejs_compat"]
 
 [env.advanced-websocket-dev.vars]
 ENVIRONMENT = "development"
@@ -198,9 +198,9 @@ class_name = "VitalSenseAdvancedWebSocketDO"
 # ============================================================================
 [env.advanced-websocket-prod]
 name = "vitalsense-websocket-advanced-prod"
-# Use TypeScript source directly - Wrangler will compile and preserve exports
 main = "src/workers/vitalsense-websocket-advanced.ts"
-compatibility_date = "2024-01-15"
+compatibility_date = "2024-08-30"
+compatibility_flags = ["nodejs_compat"]
 
 [env.advanced-websocket-prod.vars]
 ENVIRONMENT = "production"

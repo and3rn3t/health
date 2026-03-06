@@ -43,13 +43,6 @@ import { normalizeBatch } from '@/sensors/lidar/normalize';
 import { SimpleHealthWebSocket } from '@/SimpleHealthWebSocket';
 import { z } from 'zod';
 
-// Minimal alias to satisfy type usage for platform-specific WebSocket accept()
-// Cloudflare Workers runtime provides accept(); standard lib typing may not expose it.
-// We model it structurally to avoid bringing in @cloudflare/workers-types dependency here.
-interface _CloudflareWebSocket extends WebSocket {
-  accept(): void;
-}
-
 // In-memory ring buffer for recent client version mismatch events (ephemeral; dev/diagnostics only)
 const VERSION_MISMATCH_BUFFER_SIZE = 50;
 const VERSION_MISMATCH_RETENTION_MS = 30 * 60 * 1000; // 30 minutes
@@ -68,7 +61,7 @@ function pruneMismatchBuffer(now = Date.now()) {
   const toKeep: typeof versionMismatchBuffer = [];
   for (const ev of versionMismatchBuffer) {
     const age = now - Date.parse(ev.ts);
-    if (!(isFinite(age) && age > VERSION_MISMATCH_RETENTION_MS)) {
+    if (!(Number.isFinite(age) && age > VERSION_MISMATCH_RETENTION_MS)) {
       toKeep.push(ev);
     }
   }
@@ -253,7 +246,7 @@ function getAuthSub(c: Context<{ Bindings: Env }>): string | null {
 function shouldSample(c: Context<{ Bindings: Env }>): boolean {
   const env = c.env.ENVIRONMENT || 'development';
   const rateStr = c.env.LOG_SAMPLE_RATE;
-  let rate = 1.0;
+  let rate = 1;
   if (rateStr) {
     const parsed = Number(rateStr);
     if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 1) rate = parsed;
@@ -295,7 +288,7 @@ async function broadcastUserLiveEvent(
 function shouldSampleWithKey(
   c: Context<{ Bindings: Env }>,
   key: keyof Env | 'LOG_WS_SAMPLE_RATE' | 'LOG_CLIENT_ERROR_SAMPLE_RATE',
-  fallbackDev = 1.0,
+  fallbackDev = 1,
   fallbackProd = 0.1
 ): boolean {
   const env = c.env.ENVIRONMENT || 'development';
@@ -600,15 +593,7 @@ app.use('/*', async (c, next) => {
       mutate(h);
       return new Response(res.body, { status: res.status, headers: h });
     };
-    if (env !== 'production') {
-      if (isHtml || isJs || isCss) {
-        return cloneWith((h) => {
-          h.set('Cache-Control', 'no-store, must-revalidate');
-          h.delete('ETag');
-          h.delete('Last-Modified');
-        });
-      }
-    } else {
+    if (env === 'production') {
       if (isHtml) {
         return cloneWith((h) => {
           h.set('Cache-Control', 'no-cache, must-revalidate');
@@ -617,6 +602,14 @@ app.use('/*', async (c, next) => {
       if (isJs || isCss || isFont || isImg) {
         return cloneWith((h) => {
           h.set('Cache-Control', 'public, max-age=31536000, immutable');
+        });
+      }
+    } else {
+      if (isHtml || isJs || isCss) {
+        return cloneWith((h) => {
+          h.set('Cache-Control', 'no-store, must-revalidate');
+          h.delete('ETag');
+          h.delete('Last-Modified');
         });
       }
     }
@@ -741,7 +734,7 @@ app.post('/api/lidar/ingest', async (c) => {
     if (frames.length === 0)
       return c.json({ ok: false, error: 'no_valid_frames' }, 400);
     // Aggregate simple snapshot (last frame) for optional broadcast/coaching later
-    const last = frames[frames.length - 1];
+    const last = frames.at(-1)!;
     const userId = getAuthSub(c);
     if (userId) {
       // Broadcast condensed metrics to user live sessions (best effort)
@@ -866,14 +859,15 @@ window.__VITALSENSE_CONFIG__ = ${JSON.stringify({
       clientId,
       redirectUri,
       audience: 'https://vitalsense-health-api',
-      scope:
-        'openid profile email read:health_data write:health_data',
+      scope: 'openid profile email read:health_data write:health_data',
     },
     api: {
       baseUrl: baseUrl,
       timeout: 10000,
     },
-    wsBaseUrl: c.env.WEBSOCKET_URL || (baseUrl.replace('https://', 'wss://').replace('http://', 'ws://') + '/ws'),
+    wsBaseUrl:
+      c.env.WEBSOCKET_URL ||
+      baseUrl.replace('https://', 'wss://').replace('http://', 'ws://') + '/ws',
     features: {
       enableAuth: (c.env.ENVIRONMENT || 'development') === 'production',
       enableWebSocket: true,
@@ -926,7 +920,9 @@ app.get('/callback', async (c) => {
     return res;
   } catch (_err) {
     try {
-      log.error('callback_handler_error', { error: _err instanceof Error ? _err.message : String(_err) });
+      log.error('callback_handler_error', {
+        error: _err instanceof Error ? _err.message : String(_err),
+      });
     } catch {
       /* noop */
     }
@@ -1080,7 +1076,7 @@ app.get('/api/user/export', async (c) => {
     const headers = new Headers({ 'content-type': 'application/json' });
     const fileName = `vitalsense-export-${new Date()
       .toISOString()
-      .replace(/:/g, '-')}.json`;
+      .replace(/:/g, '-')}.json`;  // eslint-disable-line prefer-string-replace-all
     headers.set('Content-Disposition', `attachment; filename="${fileName}"`);
     return new Response(JSON.stringify(bundle, null, 2), {
       status: 200,
@@ -1150,11 +1146,15 @@ app.get('/ws', async (c) => {
 
     log.info('Forwarding request to Durable Object');
     const response = await obj.fetch(c.req.raw);
-    log.info('Response received from Durable Object', { status: response.status });
+    log.info('Response received from Durable Object', {
+      status: response.status,
+    });
 
     return response;
   } catch (error) {
-    log.error('Error in WebSocket handler', { error: error instanceof Error ? error.message : String(error) });
+    log.error('Error in WebSocket handler', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return c.text(
       `WebSocket error: ${error instanceof Error ? error.message : String(error)}`,
       500
@@ -1681,7 +1681,7 @@ app.post('/api/live/gait/batch', async (c) => {
       }
     }
   }
-  const last = batch.snapshots[batch.snapshots.length - 1];
+  const last = batch.snapshots.at(-1)!;
   try {
     await broadcastUserLiveEvent(c, sub, {
       type: 'live_health_update',
@@ -2238,7 +2238,7 @@ function calculateHealthAnalytics(data: ProcessedHealthData[]) {
 
   const metricTypes = [...new Set(data.map((d) => d.type))];
   const dataQualityAverage =
-    data.length > 0 && data.some((d) => d.dataQuality)
+    data.some((d) => d.dataQuality)
       ? data
           .filter((d) => d.dataQuality)
           .reduce(
@@ -2290,7 +2290,9 @@ app.get('/api/kv/:key', async (c) => {
     const value = await kv.get(key);
     return c.json({ key, value });
   } catch (error) {
-    log.error('KV get error', { error: error instanceof Error ? error.message : String(error) });
+    log.error('KV get error', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return c.json({ error: 'Failed to get value' }, 500);
   }
 });
@@ -2308,7 +2310,9 @@ app.put('/api/kv/:key', async (c) => {
     await kv.put(key, JSON.stringify(body.value));
     return c.json({ success: true, key });
   } catch (error) {
-    log.error('KV put error', { error: error instanceof Error ? error.message : String(error) });
+    log.error('KV put error', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return c.json({ error: 'Failed to save value' }, 500);
   }
 });
@@ -2325,7 +2329,9 @@ app.delete('/api/kv/:key', async (c) => {
     await kv.delete(key);
     return c.json({ success: true, key });
   } catch (error) {
-    log.error('KV delete error', { error: error instanceof Error ? error.message : String(error) });
+    log.error('KV delete error', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return c.json({ error: 'Failed to delete value' }, 500);
   }
 });
@@ -2338,56 +2344,41 @@ function generateDemoHealthData() {
   // Generate last 7 days of demo data
   for (let i = 0; i < 7; i++) {
     const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const ts = date.toISOString();
+    const source = {
+      userId: 'demo-user-vitalsense',
+      deviceId: 'demo-device',
+      appVersion: '1.0.0-demo',
+    };
 
-    demoData.push({
-      id: `demo-heart-rate-${i}`,
-      type: 'heart_rate',
-      // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
-      value: 70 + Math.floor(Math.random() * 10), // NOSONAR
-      unit: 'bpm',
-      timestamp: date.toISOString(),
-      processedAt: date.toISOString(),
-      source: {
-        userId: 'demo-user-vitalsense',
-        deviceId: 'demo-device',
-        appVersion: '1.0.0-demo',
+    demoData.push(
+      {
+        id: `demo-heart-rate-${i}`,
+        type: 'heart_rate',
+        value: 70 + Math.floor(Math.random() * 10), // NOSONAR
+        unit: 'bpm',
+        timestamp: ts,
+        processedAt: ts,
+        source,
+        healthScore: 85 + Math.floor(Math.random() * 10), // NOSONAR
+        fallRisk: 'low',
+        anomalyScore: 0.1 + Math.random() * 0.2, // NOSONAR
+        dataQuality: { completeness: 0.95, accuracy: 0.98, timeliness: 0.92, consistency: 0.96 },
       },
-      // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
-      healthScore: 85 + Math.floor(Math.random() * 10), // NOSONAR
-      fallRisk: 'low',
-      anomalyScore: 0.1 + Math.random() * 0.2, // NOSONAR
-      dataQuality: {
-        completeness: 0.95,
-        accuracy: 0.98,
-        timeliness: 0.92,
-        consistency: 0.96,
-      },
-    });
-
-    demoData.push({
-      id: `demo-steps-${i}`,
-      type: 'steps',
-      // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
-      value: 8000 + Math.floor(Math.random() * 3000), // NOSONAR
-      unit: 'count',
-      timestamp: date.toISOString(),
-      processedAt: date.toISOString(),
-      source: {
-        userId: 'demo-user-vitalsense',
-        deviceId: 'demo-device',
-        appVersion: '1.0.0-demo',
-      },
-      // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
-      healthScore: 88 + Math.floor(Math.random() * 8), // NOSONAR
-      fallRisk: 'low',
-      anomalyScore: 0.05 + Math.random() * 0.15, // NOSONAR
-      dataQuality: {
-        completeness: 0.98,
-        accuracy: 0.95,
-        timeliness: 0.9,
-        consistency: 0.94,
-      },
-    });
+      {
+        id: `demo-steps-${i}`,
+        type: 'steps',
+        value: 8000 + Math.floor(Math.random() * 3000), // NOSONAR
+        unit: 'count',
+        timestamp: ts,
+        processedAt: ts,
+        source,
+        healthScore: 88 + Math.floor(Math.random() * 8), // NOSONAR
+        fallRisk: 'low',
+        anomalyScore: 0.05 + Math.random() * 0.15, // NOSONAR
+        dataQuality: { completeness: 0.98, accuracy: 0.95, timeliness: 0.9, consistency: 0.94 },
+      }
+    );
   }
 
   // Sort data by timestamp (newest first) - create a copy to avoid mutation
@@ -2590,23 +2581,15 @@ app.get('/demo', async (c) => {
       (function() {
         const originalSlice = Array.prototype.slice;
         Array.prototype.slice = function(...args) {
-          // If 'this' is null, undefined, or not array-like, return empty array
           if (this == null || typeof this !== 'object') {
-            // NOSONAR: Client-side debugging - safe for demo mode
-            if (typeof console !== 'undefined') console.warn('slice() called on non-array:', this);
             return [];
           }
-          // If 'this' doesn't have a length property, return empty array
           if (typeof this.length !== 'number') {
-            // NOSONAR: Client-side debugging - safe for demo mode
-            if (typeof console !== 'undefined') console.warn('slice() called on object without length:', this);
             return [];
           }
           try {
             return originalSlice.apply(this, args);
           } catch (e) {
-            // NOSONAR: Client-side debugging - safe for demo mode
-            if (typeof console !== 'undefined') console.warn('slice() failed, returning empty array:', e);
             return [];
           }
         };
@@ -2619,26 +2602,17 @@ app.get('/demo', async (c) => {
       window.vitalsense_demo_user = ${JSON.stringify(demoUser)};
       window.vitalsense_bypass_auth = true;
 
-      // Global error handlers that run before React loads
+      // Global error handler for slice and function errors
       window.addEventListener('error', function(e) {
-        if (e.message && e.message.includes('slice is not a function')) {
-          // NOSONAR: Client-side error handling - safe for demo mode
-          if (typeof console !== 'undefined') console.error('CRITICAL: slice error caught before React:', e);
+        if (e.message && (e.message.includes('slice is not a function') || e.message.includes('is not a function'))) {
           e.preventDefault();
           e.stopPropagation();
           return false;
-        }
-        if (e.message && e.message.includes('is not a function')) {
-          // NOSONAR: Client-side error handling - safe for demo mode
-          if (typeof console !== 'undefined') console.error('CRITICAL: function error caught:', e);
-          // Don't prevent - let React error boundary handle it
         }
       });
 
       window.addEventListener('unhandledrejection', function(e) {
         if (e.reason && e.reason.message && e.reason.message.includes('slice is not a function')) {
-          // NOSONAR: Client-side error handling - safe for demo mode
-          if (typeof console !== 'undefined') console.error('CRITICAL: slice promise rejection caught:', e);
           e.preventDefault();
         }
       });
@@ -2657,66 +2631,25 @@ app.get('/demo', async (c) => {
       };
 
   // Define missing environment variables for demo mode
-  // Provide as both global var and window property for broad compatibility
   var BASE_KV_SERVICE_URL = '/api';
   window.BASE_KV_SERVICE_URL = BASE_KV_SERVICE_URL;
       window.GITHUB_RUNTIME_PERMANENT_NAME = 'vitalsense-demo';
 
-  // Disable WebSocket connections in demo mode (read by client hook)
+  // Disable WebSocket connections in demo mode
   window.VITALSENSE_DISABLE_WEBSOCKET = true;
 
-      // Defensive array helper for .slice() errors
-      window.safeSlice = function(arr, ...args) {
-        if (!Array.isArray(arr)) return [];
-        return arr.slice(...args);
-      };
-
-      // Global error handler for unhandled array issues
-      window.addEventListener('error', function(e) {
-        if (e.message && e.message.includes('slice is not a function')) {
-          // NOSONAR: Client-side error handling - safe for demo mode
-          if (typeof console !== 'undefined') console.warn('Array slice error caught and handled:', e);
-          e.preventDefault();
-          return false;
-        }
-      });
-
-      // Patch Array prototype temporarily for safety
-      const originalArraySlice = Array.prototype.slice;
-      Array.prototype.slice = function(...args) {
-        if (this == null) {
-          // NOSONAR: Client-side debugging - safe for demo mode
-          if (typeof console !== 'undefined') console.warn('slice called on null/undefined, returning empty array');
-          return [];
-        }
-        return originalArraySlice.apply(this, args);
-      };
-
-      // Override WebSocket constructor to prevent connections to localhost
+      // Override WebSocket constructor to prevent connections in demo
       const OriginalWebSocket = window.WebSocket;
-      window.WebSocket = function(url, protocols) {
-        // NOSONAR: Client-side demo mode logging - safe for demo environment
-        if (typeof console !== 'undefined') console.log('🛡️ Demo mode: WebSocket connection blocked to', url);
-        // Return a mock WebSocket that doesn't actually connect
+      window.WebSocket = function(url) {
         const mockWS = new EventTarget();
         mockWS.url = url;
-        mockWS.readyState = 0; // CONNECTING
-        mockWS.send = function() {
-          // NOSONAR: Client-side demo mode logging
-          if (typeof console !== 'undefined') console.log('🛡️ Demo mode: WebSocket.send() blocked');
-        };
-        mockWS.close = function() {
-          // NOSONAR: Client-side demo mode logging
-          if (typeof console !== 'undefined') console.log('🛡️ Demo mode: WebSocket.close() called');
-        };
-
-        // Simulate connection failure after a short delay
+        mockWS.readyState = 0;
+        mockWS.send = function() {};
+        mockWS.close = function() {};
         setTimeout(() => {
-          const errorEvent = new Event('error');
-          mockWS.dispatchEvent(errorEvent);
-          mockWS.readyState = 3; // CLOSED
+          mockWS.dispatchEvent(new Event('error'));
+          mockWS.readyState = 3;
         }, 100);
-
         return mockWS;
       };
 
@@ -2726,31 +2659,23 @@ app.get('/demo', async (c) => {
         localStorage.setItem('vitalsense_demo_user', JSON.stringify(${JSON.stringify(demoUser)}));
         localStorage.setItem('VITALSENSE_DEMO_MODE', 'true');
         localStorage.setItem('auth_bypass', 'demo');
-      } catch(e) {
-        // NOSONAR: Client-side error handling - safe for demo mode
-        if (typeof console !== 'undefined') console.warn('localStorage not available:', e);
-      }
+      } catch(e) { /* localStorage unavailable */ }
 
-      // NOSONAR: Client-side demo mode logging - safe for demo environment
-      if (typeof console !== 'undefined') console.log('🚀 VitalSense Demo Mode Activated!', window.vitalsense_demo_user);
-
-      // Override any auth redirects globally
+      // Override auth redirects
       const originalAssign = Location.prototype.assign;
       const originalReplace = Location.prototype.replace;
 
+      function isAuthUrl(url) {
+        return url.includes('/login') || url.includes('/auth');
+      }
+
       Location.prototype.assign = function(url) {
-        if (url.includes('/login') || url.includes('/auth')) {
-          // NOSONAR: Client-side demo mode logging - safe for demo environment
-          if (typeof console !== 'undefined') console.log('🛡️ Demo mode: blocking auth redirect to', url);
-          return;
-        }
+        if (isAuthUrl(url)) return;
         return originalAssign.call(this, url);
       };
 
       Location.prototype.replace = function(url) {
-        if (url.includes('/login') || url.includes('/auth')) {
-          // NOSONAR: Client-side demo mode logging - safe for demo environment
-          if (typeof console !== 'undefined') console.log('🛡️ Demo mode: blocking auth redirect to', url);
+        if (isAuthUrl(url)) return;
           return;
         }
         return originalReplace.call(this, url);
