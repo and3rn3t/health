@@ -103,6 +103,7 @@ export function registerMiddleware(app: Hono<{ Bindings: Env }>) {
         headers: newHeaders,
       });
     }
+    c.res = resp;
     try {
       if (resp.headers.get('X-Error-Logged') === '1') return resp;
       const urlObj = new URL(c.req.url);
@@ -132,7 +133,6 @@ export function registerMiddleware(app: Hono<{ Bindings: Env }>) {
     } catch {
       // ignore
     }
-    return resp;
   });
 
   // -----------------------------------------------------------------------
