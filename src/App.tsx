@@ -46,7 +46,11 @@ import { HealthDataProcessor } from '@/lib/healthDataProcessor';
 import type { AllSettings } from '@/lib/settingsTypes';
 import { cn } from '@/lib/utils';
 import { createLazyNamedComponent } from '@/lib/lazyLoading';
-import { createNavigationItems, type NavigationItem } from '@/lib/navigationHelpers';
+import {
+  createNavigationItems,
+  FEATURE_TAB_MAP,
+  type NavigationItem,
+} from '@/lib/navigationHelpers';
 import type { ProcessedHealthData } from '@/types';
 // Optimized icon imports - individual imports reduce bundle size
 import {
@@ -148,29 +152,15 @@ function AppContent() {
     'health-data',
     null
   );
-  const [_isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const { themeMode, toggleThemeMode } = useThemeMode();
-  const {
-    toggle: toggleSidebar,
-    isMobile: _isMobile,
-    setOpen: _setOpen,
-    setOpenMobile: _setOpenMobile,
-  } = useAppleSidebar();
-
-  // TEMPORARY: Force mobile mode for testing
-  const _isMobileForced = true;
-  // NOSONAR: Development mode logging
-  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    SafeLogger.debug('Mobile forced mode', { isMobileForced: _isMobileForced });
-  }
+  const { toggle: toggleSidebar, isMobile } = useAppleSidebar();
   const announce = useLiveRegion();
 
   // Find the active component
   const activeComponent = useMemo(() => {
     const item = navigationItems.find((it) => it.id === activeTab);
-    // For the dashboard, prefer LandingPage if available to guide users
-    if (item?.id === 'dashboard')
-      return LandingPage as unknown as typeof item.component;
+    if (item?.id === 'dashboard') return LandingPage;
     return item?.component;
   }, [activeTab]);
 
@@ -221,19 +211,7 @@ function AppContent() {
   useEffect(() => {
     const handleNavigate = ((event: CustomEvent<{ feature: string }>) => {
       const featureId = event.detail.feature;
-      const map: Record<string, string> = {
-        insights: 'gait-analysis',
-        analytics: 'gait-analysis',
-        'fall-risk': 'fall-risk',
-        'fall-detection': 'fall-risk',
-        'realtime-scoring': 'dashboard',
-        'live-monitoring': 'dashboard',
-        import: 'dashboard',
-        'device-sync': 'settings',
-        'healthkit-guide': 'settings',
-        'system-status': 'settings',
-      };
-      const target = map[featureId] ?? featureId;
+      const target = FEATURE_TAB_MAP[featureId] ?? featureId;
       handleTabChange(target);
     }) as EventListener;
 
@@ -282,7 +260,7 @@ function AppContent() {
   return (
     <>
       {/* Mobile-specific overlays */}
-      {_isMobileForced && (
+      {isMobile && (
         <>
           {/* Mobile Bottom Navigation */}
           <MobileBottomTabs
@@ -299,7 +277,7 @@ function AppContent() {
       <div
         className={cn(
           'pt-safe-top pb-safe-bottom flex min-h-screen bg-background text-foreground',
-          _isMobileForced ? 'mobile-forced flex-col pb-20' : 'flex-row' // Mobile: column layout with padding, Desktop: row layout
+          isMobile ? 'mobile-forced flex-col pb-20' : 'flex-row'
         )}
       >
         {/* Unified Sidebar (Apple HIG style) - hidden on mobile except for overflow */}
@@ -309,7 +287,7 @@ function AppContent() {
           collapsible="offcanvas"
           variant="inset"
           withSpacer={true}
-          className={cn(_isMobileForced && 'hidden')}
+          className={cn(isMobile && 'hidden')}
         >
           <AppleSidebarHeader>
             <div className="flex h-12 items-center justify-between px-3 py-2">
@@ -356,9 +334,9 @@ function AppContent() {
         {/* Main Content Area within SidebarInset (must be immediate sibling of the peer sidebar) */}
         <AppleSidebarMain
           bumper="none"
-          className={cn('flex flex-1 flex-col', _isMobileForced && 'w-full')}
+          className={cn('flex flex-1 flex-col', isMobile && 'w-full')}
         >
-          {_isMobileForced ? (
+          {isMobile ? (
             <MobileHeader
               activeTab={activeTab}
               activeLabel={activeLabel}
@@ -418,38 +396,23 @@ function AppContent() {
                         setHealthData(data);
                       }}
                       onNavigateToFeature={(featureId) => {
-                        const map: Record<string, string> = {
-                          insights: 'gait-analysis',
-                          analytics: 'gait-analysis',
-                          'fall-risk': 'fall-risk',
-                          'realtime-scoring': 'dashboard',
-                          import: 'dashboard',
-                          'healthkit-guide': 'settings',
-                          'system-status': 'settings',
-                        };
-                        const target = map[featureId] ?? 'dashboard';
-
-                        handleTabChange(target);
+                        handleTabChange(
+                          FEATURE_TAB_MAP[featureId] ?? 'dashboard'
+                        );
                       }}
                     />
                   ) : (
-                    (() => {
-                      type WithOptionalHealthData = {
-                        healthData?: unknown;
-                      };
-                      const ActiveComponent = activeComponent as unknown as
-                        | React.ComponentType<WithOptionalHealthData>
-                        | undefined;
-                      if (!ActiveComponent) return null;
-
-                      return <ActiveComponent healthData={healthData} />;
-                    })()
+                    activeComponent
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      ? React.createElement(activeComponent as React.ComponentType<any>, { healthData })
+                      : null
                   )}
                 </div>
               </Suspense>
             </main>
           </ErrorBoundary>
           <Footer onNavigate={handleTabChange} />
+          {/* Always mounted: monitors battery/disconnect alerts globally */}
           <DeviceHealthMonitor />
         </AppleSidebarMain>
 
