@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Import WebSocket-related utilities
-import { messageEnvelopeSchema } from '../../lib/schemas';
+import { messageEnvelopeSchema } from '@/schemas/health';
 
 describe('VitalSense WebSocket System', () => {
   let mockWebSocket: any;
