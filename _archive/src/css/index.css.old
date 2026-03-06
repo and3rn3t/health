@@ -1,0 +1,146 @@
+@import 'tw-animate-css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+}
+
+:root {
+  /* VitalSense Brand Theme - Light Mode */
+  --background: #f8fafc; /* Light blue-grey background */
+  --foreground: #1e293b; /* Dark slate text */
+
+  --card: #ffffff; /* Pure white cards */
+  --card-foreground: #1e293b; /* Dark slate on cards */
+  --popover: #ffffff; /* White popover */
+  --popover-foreground: #1e293b; /* Dark slate on popover */
+
+  --primary: #2563eb; /* VitalSense Primary Blue */
+  --primary-foreground: #ffffff; /* White text on primary */
+  --secondary: #e2e8f0; /* Light blue-grey secondary */
+  --secondary-foreground: #475569; /* Slate text on secondary */
+  --accent: #0891b2; /* VitalSense Teal accent */
+  --accent-foreground: #ffffff; /* White text on accent */
+
+  --destructive: #dc2626; /* VitalSense Error Red */
+  --destructive-foreground: #ffffff; /* White text on destructive */
+
+  --muted: #f1f5f9; /* Very light blue background */
+  --muted-foreground: #64748b; /* Muted slate text */
+
+  --border: #cbd5e1; /* Light slate border */
+  --input: #e2e8f0; /* Light blue-grey input */
+  --ring: #2563eb; /* VitalSense Primary Blue focus ring */
+
+  --radius: 0.5rem;
+}
+
+[data-appearance='dark'] {
+  /* VitalSense Brand Theme - Dark Mode */
+  --background: #0f172a; /* Dark slate background */
+  --foreground: #f8fafc; /* Light blue-grey text */
+
+  --card: #1e293b; /* Dark slate cards */
+  --card-foreground: #f8fafc; /* Light text on cards */
+  --popover: #1e293b; /* Dark slate popover */
+  --popover-foreground: #f8fafc; /* Light text on popover */
+
+  --primary: #3b82f6; /* Lighter VitalSense Blue for dark mode */
+  --primary-foreground: #ffffff; /* White text on primary */
+  --secondary: #334155; /* Dark slate secondary */
+  --secondary-foreground: #cbd5e1; /* Light slate text */
+  --accent: #0891b2; /* VitalSense Teal accent */
+  --accent-foreground: #ffffff; /* White text on accent */
+
+  --destructive: #ef4444; /* Brighter red for dark mode */
+  --destructive-foreground: #ffffff; /* White text on destructive */
+
+  --muted: #1e293b; /* Dark slate muted */
+  --muted-foreground: #94a3b8; /* Light slate muted text */
+
+  --border: #475569; /* Medium slate border */
+  --input: #334155; /* Dark slate input */
+  --ring: #3b82f6; /* Lighter VitalSense Blue focus ring */
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) * 1.5);
+  --radius-xl: calc(var(--radius) * 2);
+  --radius-2xl: calc(var(--radius) * 3);
+  --radius-full: 9999px;
+
+  --font-family-sans: 'Inter', system-ui, sans-serif;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Smooth scrolling for the entire app */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(0.6 0.02 250 / 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.5 0.02 250 / 0.5);
+}
+
+/* Dark mode scrollbar */
+[data-appearance='dark'] ::-webkit-scrollbar-thumb {
+  background: oklch(0.8 0.02 250 / 0.3);
+}
+
+[data-appearance='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.8 0.02 250 / 0.5);
+}
+
+/* Hide scrollbar for horizontal scroll but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}

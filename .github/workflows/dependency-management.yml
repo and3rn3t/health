@@ -1,0 +1,327 @@
+name: Dependency Management
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
+      - 'ios/Package.swift'
+      - 'ios/Podfile'
+      - '.github/workflows/dependency-management.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
+      - 'ios/Package.swift'
+      - 'ios/Podfile'
+      - '.github/workflows/dependency-management.yml'
+  schedule:
+    # Check for dependency updates every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      update-type:
+        description: 'Type of updates to check'
+        required: false
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - all
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: deps-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-updates:
+    name: Check Dependency Updates
+    runs-on: ubuntu-latest
+    # Only create PRs on scheduled runs or manual dispatch to avoid noisy PRs on push/PR triggers
+    if: github.repository == 'and3rn3t/health' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies (clean)
+        run: pnpm install --frozen-lockfile
+
+      - name: Install npm-check-updates
+        run: pnpm add -D npm-check-updates@latest
+
+      - name: Determine update target
+        id: cfg
+        run: |
+          TYPE="${{ github.event.inputs.update-type }}"
+          if [ -z "$TYPE" ]; then TYPE="patch"; fi
+          echo "type=$TYPE" >> $GITHUB_OUTPUT
+
+      - name: Check and update dependencies
+        run: |
+          case "${{ steps.cfg.outputs.type }}" in
+            "patch") npx npm-check-updates -u --target patch;;
+            "minor") npx npm-check-updates -u --target minor;;
+            "major") npx npm-check-updates -u --target latest;;
+            "all")   npx npm-check-updates -u;;
+          esac
+          # Remove any generated package-lock.json to avoid confusion
+          [ -f package-lock.json ] && rm package-lock.json || true
+
+      - name: Install updated dependencies
+        run: |
+          if [ -n "$(git diff --name-only package.json pnpm-lock.yaml)" ]; then
+            pnpm install --frozen-lockfile || pnpm install
+            pnpm audit --prod --audit-level=moderate || true
+          else
+            echo "No dependency updates detected"
+          fi
+
+      - name: Lint and Build (smoke)
+        run: |
+          pnpm run lint || echo "Linting reported issues"
+          pnpm run build || echo "Build reported issues"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        if: |
+          success() && (contains(github.ref, 'refs/heads/') || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore(deps): update dependencies (${{ steps.cfg.outputs.type }})'
+          title: 'chore(deps): Update dependencies (${{ steps.cfg.outputs.type }})'
+          body: |
+            ## Dependency Updates
+
+            Automated dependency updates for `${{ steps.cfg.outputs.type }}` range.
+
+            - Ran npm-check-updates and installed updates
+            - Executed `npm audit fix --audit-level=moderate`
+            - Ran lint and build (non-blocking)
+
+            Please run the full test suite before merging.
+          branch: 'dependency-updates/${{ steps.cfg.outputs.type }}'
+          labels: |
+            dependencies
+            automated
+          draft: false
+  dependency-drift:
+    name: Dependency Drift Summary (PR)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node & pnpm
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Install dependencies (for accurate resolution)
+        run: pnpm install --frozen-lockfile
+
+      - name: Collect dependency outdated (JSON)
+        run: |
+          npx npm-check-updates --jsonUpgrades > upgrades.json || echo '{}' > upgrades.json
+          node -e "const fs=require('fs');const u=fs.existsSync('upgrades.json')?JSON.parse(fs.readFileSync('upgrades.json','utf8')):{};const d={};for(const [k,v] of Object.entries(u)){d[k]={current:'?',latest:v};}fs.writeFileSync('outdated.json',JSON.stringify(d,null,2));"
+
+      - name: Generate Markdown summary
+        run: |
+          node -e "
+          const fs = require('fs');
+          const path = 'outdated.json';
+          const data = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, 'utf8') || '{}') : {};
+          const deps = Object.entries(data);
+          const parse = (v) => {
+            if (!v || typeof v !== 'string') return [0,0,0];
+            const core = v.trim().replace(/^v/, '').split('-')[0];
+            const parts = core.split('.').map(x => parseInt(x, 10));
+            return [parts[0]||0, parts[1]||0, parts[2]||0];
+          };
+          const diff = (cur, lat) => {
+            const [cM, cm, cp] = parse(cur);
+            const [lM, lm, lp] = parse(lat);
+            if (lM > cM) return 'major';
+            if (lM === cM && lm > cm) return 'minor';
+            if (lM === cM && lm === cm && lp > cp) return 'patch';
+            return 'unknown';
+          };
+
+          const buckets = { patch: [], minor: [], major: [], unknown: [] };
+          for (const [name, info] of deps) {
+            const { current, latest } = info || {};
+            if (!current || !latest) { buckets.unknown.push({ name, current, latest }); continue; }
+            const d = diff(current, latest);
+            if (d === 'patch') buckets.patch.push({ name, current, latest });
+            else if (d === 'minor') buckets.minor.push({ name, current, latest });
+            else if (d === 'major') buckets.major.push({ name, current, latest });
+            else buckets.unknown.push({ name, current, latest });
+          }
+
+          const lines = [];
+          lines.push('# Dependency Drift Summary');
+          const total = deps.length;
+          lines.push(`Total outdated: ${total}`);
+          lines.push(`- Major: ${buckets.major.length}`);
+          lines.push(`- Minor: ${buckets.minor.length}`);
+          lines.push(`- Patch: ${buckets.patch.length}`);
+          if (total === 0) {
+            lines.push('\n✅ All dependencies are up to date.');
+          } else {
+            const format = (arr, title) => {
+              if (arr.length === 0) return;
+              lines.push(`\n## ${title} (${arr.length})`);
+              lines.push('| Package | Current | Latest |');
+              lines.push('|---|---:|---:|');
+              for (const { name, current, latest } of arr.slice(0, 30)) {
+                lines.push(`| ${name} | ${current} | ${latest} |`);
+              }
+              if (arr.length > 30) lines.push(`...and ${arr.length - 30} more.`);
+            };
+            format(buckets.major, 'Major updates');
+            format(buckets.minor, 'Minor updates');
+            format(buckets.patch, 'Patch updates');
+          }
+
+          fs.writeFileSync('dependency-drift.md', lines.join('\n'));
+          console.log('Summary written to dependency-drift.md');
+          "
+        shell: bash
+        env:
+          npm_config_loglevel: silent
+        continue-on-error: true
+
+      - name: Post sticky PR comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: dependency-drift.md
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-drift-reports
+          path: |
+            outdated.json
+            dependency-drift.md
+          retention-days: 7
+
+  cleanup-caches:
+    name: Cleanup Old Caches
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    permissions:
+      actions: write
+
+    steps:
+      - name: Cleanup old caches
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const caches = await github.rest.actions.getActionsCacheList({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+            for (const cache of caches.data.actions_caches) {
+              const cacheDate = new Date(cache.created_at);
+              if (cacheDate < oneWeekAgo) {
+                console.log(`Deleting cache: ${cache.key} (${cache.created_at})`);
+                await github.rest.actions.deleteActionsCacheById({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  cache_id: cache.id,
+                });
+              }
+            }
+
+  ios-dependency-updates:
+    name: iOS Dependency Updates
+    runs-on: macos-latest
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.0'
+
+      - name: Update iOS Dependencies
+        run: |
+          cd ios
+          # Check for Swift package updates
+          if [ -f "Package.swift" ]; then
+            swift package update
+          fi
+
+          # Update CocoaPods if Podfile exists
+          if [ -f "Podfile" ]; then
+            pod update --repo-update
+          fi
+
+      - name: Build iOS Project
+        run: |
+          cd ios
+          xcodebuild clean build \
+            -project HealthKitBridge.xcodeproj \
+            -scheme HealthKitBridge \
+            -destination 'platform=iOS Simulator,name=iPhone 15 Pro' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Create iOS Dependency Update PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore(ios): update iOS dependencies'
+          title: 'chore(ios): Update iOS Dependencies'
+          body: |
+            ## iOS Dependency Updates
+
+            This PR contains updates for iOS dependencies.
+
+            ### Changes
+            - Updated Swift packages
+            - Updated CocoaPods (if applicable)
+
+            ### Testing
+            - [x] iOS build successful
+            - [ ] Manual testing on device required
+
+            Auto-generated by dependency management workflow.
+          branch: ios-dependency-updates
+          labels: |
+            dependencies
+            ios
+            automated

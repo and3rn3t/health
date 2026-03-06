@@ -1,0 +1,27 @@
+version: '3.8'
+
+# CI/CD optimized docker-compose
+# Usage: docker-compose -f docker-compose.ci.yml up
+
+services:
+  build:
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    image: vitalsense:ci-build
+    volumes:
+      # Mount cache for faster rebuilds
+      - build-cache:/root/.cache
+      # Output artifacts
+      - ./artifacts:/build-output
+    environment:
+      - CI=true
+      - NODE_ENV=production
+    command: sh -c "echo 'Build complete' && ls -la /build-output"
+
+volumes:
+  build-cache:
+    driver: local
+

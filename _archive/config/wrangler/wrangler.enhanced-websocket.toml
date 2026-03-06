@@ -1,0 +1,29 @@
+name = "vitalsense-websocket-enhanced"
+main = "src/workers/vitalsense-websocket-clean.ts"
+compatibility_date = "2024-03-08"
+
+[[durable_objects.bindings]]
+name = "VITALSENSE_WEBSOCKET"
+class_name = "VitalSenseWebSocketDO"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["VitalSenseWebSocketDO"]
+
+[env.development]
+name = "vitalsense-websocket-enhanced-dev"
+
+[[env.development.durable_objects.bindings]]
+name = "VITALSENSE_WEBSOCKET"
+class_name = "VitalSenseWebSocketDO"
+
+[env.production]
+name = "vitalsense-websocket-enhanced-prod"
+
+[[env.production.durable_objects.bindings]]
+name = "VITALSENSE_WEBSOCKET"
+class_name = "VitalSenseWebSocketDO"
+
+# CPU limits not available on free plan
+# [limits]
+# cpu_ms = 30000

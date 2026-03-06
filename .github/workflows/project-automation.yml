@@ -1,0 +1,148 @@
+name: Project Automation
+
+on:
+  issues:
+    types: [opened, reopened, edited, labeled, unlabeled, assigned, closed]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  sync-to-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PROJECT_TOKEN
+        if: ${{ !github.event.issue.pull_request }}
+        run: |
+          if [ -z "${{ secrets.PROJECT_TOKEN }}" ]; then
+            echo "PROJECT_TOKEN secret is not set. Create a PAT (classic) with scopes: repo, project, read:org (if org project) and add it as PROJECT_TOKEN."
+            exit 1
+          fi
+
+      - name: Ensure issue is from this repo
+        if: ${{ !github.event.issue.pull_request }}
+        run: echo "Processing issue #${{ github.event.issue.number }}"
+
+      - name: Add to Project and set Status
+        if: ${{ !github.event.issue.pull_request }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+        env:
+          PROJECT_OWNER: and3rn3t
+          PROJECT_TITLE: Health Roadmap
+          script: |
+            const owner = process.env.PROJECT_OWNER;
+            const title = process.env.PROJECT_TITLE;
+            const issueNodeId = context.payload.issue.node_id;
+            const action = context.payload.action;
+            const labels = (context.payload.issue.labels || []).map(l => typeof l === 'string' ? l : l.name);
+            const isClosed = context.payload.issue.state === 'closed';
+
+            // GraphQL helpers
+            const gql = String.raw;
+            async function getProject() {
+              const q = gql`
+                query($owner: String!, $title: String!) {
+                  user(login: $owner) {
+                    projectV2(title: $title) {
+                      id
+                      title
+                      fields(first: 50) {
+                        nodes { ... on ProjectV2FieldCommon { id name } }
+                      }
+                    }
+                  }
+                  organization(login: $owner) {
+                    projectV2(title: $title) { id title fields(first: 50) { nodes { ... on ProjectV2FieldCommon { id name } } } }
+                  }
+                }
+              `;
+              const data = await github.graphql(q, { owner, title });
+              return (data.user?.projectV2 || data.organization?.projectV2) ?? null;
+            }
+
+            async function addItem(projectId, contentId) {
+              const m = gql`mutation($projectId: ID!, $contentId: ID!) {
+                addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) { item { id } }
+              }`;
+              const res = await github.graphql(m, { projectId, contentId });
+              return res.addProjectV2ItemById.item.id;
+            }
+
+            async function getItem(projectId, contentId) {
+              const q = gql`query($projectId: ID!, $contentId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    items(first: 100, query: "") {
+                      nodes {
+                        id
+                        content { ... on Issue { id } }
+                      }
+                    }
+                  }
+                }
+              }`;
+              const data = await github.graphql(q, { projectId, contentId });
+              return data.node.items.nodes.find(n => n.content?.id === contentId)?.id || null;
+            }
+
+            async function setStatus(projectId, itemId, statusFieldId, valueName) {
+              // Get option id for valueName
+              const q = gql`query($projectId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    fields(first: 50) {
+                      nodes {
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options { id name }
+                        }
+                      }
+                    }
+                  }
+                }
+              }`;
+              const data = await github.graphql(q, { projectId });
+              const statusField = data.node.fields.nodes.find(f => f && f.name === 'Status');
+              if (!statusField) return;
+              const opt = statusField.options.find(o => o.name.toLowerCase() === valueName.toLowerCase());
+              if (!opt) return;
+              const m = gql`mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $projectId,
+                  itemId: $itemId,
+                  fieldId: $fieldId,
+                  value: { singleSelectOptionId: $optionId }
+                }) { projectV2Item { id } }
+              }`;
+              await github.graphql(m, { projectId, itemId, fieldId: statusField.id, optionId: opt.id });
+            }
+
+            const project = await getProject();
+            if (!project) {
+              core.setFailed(`Project "${title}" not found for owner "${owner}". Create it first.`);
+              return;
+            }
+            const projectId = project.id;
+
+            let itemId = await getItem(projectId, issueNodeId);
+            if (!itemId) {
+              try {
+                itemId = await addItem(projectId, issueNodeId);
+              } catch (e) {
+                core.warning(`Failed to add item to project: ${e.message}`);
+              }
+            }
+            if (!itemId) return;
+
+            // Determine desired Status
+            let desired = 'Todo';
+            if (isClosed) desired = 'Done';
+            if (labels.includes('Status: In Progress')) desired = 'In Progress';
+            if (labels.includes('Status: Blocked')) desired = 'Blocked';
+
+            await setStatus(projectId, itemId, null, desired);

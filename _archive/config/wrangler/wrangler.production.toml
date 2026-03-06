@@ -1,0 +1,105 @@
+name = "vitalsense-health-prod"
+main = "dist-worker/index.js"
+compatibility_date = "2024-08-30"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+
+[build]
+command = "npm run build:worker"
+cwd = "."
+watch_dir = "src"
+
+# Assets configuration for React app
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# Production environment with full observability
+[env.production]
+name = "vitalsense-health-prod"
+
+# Observability & Analytics Configuration
+# Health metrics analytics
+[[env.production.analytics_engine_datasets]]
+binding = "HEALTH_ANALYTICS"
+
+# Security events analytics
+[[env.production.analytics_engine_datasets]]
+binding = "SECURITY_ANALYTICS"
+
+# Performance metrics analytics
+[[env.production.analytics_engine_datasets]]
+binding = "PERFORMANCE_ANALYTICS"
+
+# Logpush configuration for enhanced logging
+env.production.logpush = false
+
+# Production environment variables
+[env.production.vars]
+ENVIRONMENT = "production"
+ALLOWED_ORIGINS = "https://health.andernet.dev,https://vitalsense.andernet.dev"
+BASE_URL = "https://health.andernet.dev"
+API_BASE_URL = "https://health.andernet.dev/api"
+WEBSOCKET_URL = "wss://health.andernet.dev/ws"
+FILES_BASE_URL = "https://health.andernet.dev/files"
+LOG_LEVEL = "info"
+LOG_SAMPLE_RATE = "0.1"
+FALL_DETECTION_THRESHOLD = "0.85"
+EMERGENCY_RESPONSE_DELAY = "30"
+MAX_FILE_SIZE = "500MB"
+SESSION_TIMEOUT = "12h"
+ENABLE_ANALYTICS = "true"
+ENABLE_SECURITY_LOGGING = "true"
+ENABLE_PERFORMANCE_MONITORING = "true"
+ # Auth0 (set your tenant domain and SPA client ID before deploying)
+ AUTH0_DOMAIN = "dev-qjdpc81dzr7xrnlu.us.auth0.com"
+ AUTH0_CLIENT_ID = "YyCHkHZ11713YG7QsB518lHrCFE3bW1s"
+
+# Production KV namespaces
+[[env.production.kv_namespaces]]
+binding = "HEALTH_KV"
+id = "c3501957dd2540ccb6f624a78df59936"
+
+# Session storage KV
+[[env.production.kv_namespaces]]
+binding = "SESSION_KV"
+id = "92783e42b1f54805be49a882bc0ef525"
+
+[[env.production.kv_namespaces]]
+binding = "CACHE_KV"
+id = "327f94aec89b473db9a4d90baa9a2923"
+
+# Production R2 buckets for file storage
+[[env.production.r2_buckets]]
+binding = "HEALTH_FILES"
+bucket_name = "vitalsense-health-files"
+
+# Audit log storage with Object Lock
+[[env.production.r2_buckets]]
+binding = "AUDIT_LOGS"
+bucket_name = "vitalsense-audit-logs"
+
+# Production routes with zone configuration
+[[env.production.routes]]
+pattern = "health.andernet.dev/*"
+zone_name = "andernet.dev"
+
+[[env.production.routes]]
+pattern = "vitalsense.andernet.dev/*"
+zone_name = "andernet.dev"
+
+# Durable Objects for real-time features (scoped to env.production)
+[[env.production.durable_objects.bindings]]
+name = "HEALTH_WEBSOCKET"
+class_name = "HealthWebSocket"
+
+[[env.production.durable_objects.bindings]]
+name = "RATE_LIMITER"
+class_name = "RateLimiter"
+
+# Migrations for Durable Objects
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RateLimiter", "HealthWebSocket"]
+
+# Note: Removed custom rules block not supported by Wrangler TOML

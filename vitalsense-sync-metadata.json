@@ -1,0 +1,15 @@
+{
+  "AppName": "VitalSense Sync",
+  "Subtitle": "Health Data Bridge",
+  "BundleId": "dev.andernet.vitalsense.sync",
+  "Version": "1.0.0",
+  "BuildNumber": "1",
+  "Category": "Medical",
+  "SecondaryCategory": "Utilities",
+  "Keywords": "health sync,HealthKit,medical data,health monitoring,emergency detection,clinical,healthcare,data bridge",
+  "SupportURL": "https://health.andernet.dev/support",
+  "PrivacyURL": "https://health.andernet.dev/privacy",
+  "TermsURL": "https://health.andernet.dev/terms",
+  "Description": "VitalSense Sync seamlessly bridges your Apple Health data with the VitalSense monitoring platform, providing secure health data synchronization and basic emergency detection.\n\n🔄 SEAMLESS DATA SYNC\n• Automatic Apple Health data synchronization\n• Real-time health metric streaming\n• Secure encrypted data transmission\n• Background monitoring and updates\n\n🚨 BASIC EMERGENCY DETECTION\n• Fall detection algorithm\n• Emergency contact notifications\n• Location sharing during emergencies\n• Incident logging and tracking\n\n🔒 PRIVACY & SECURITY FIRST\n• End-to-end encryption for all health data\n• Local-first data processing\n• HIPAA-compliant data handling\n• Full user control over data sharing\n\n📊 HEALTH DATA INTEGRATION\n• Heart rate and rhythm analysis\n• Walking steadiness monitoring\n• Sleep pattern tracking\n• Activity and exercise metrics\n\nCOMPANION APP\nVitalSense Sync works with the VitalSense web platform to provide comprehensive health monitoring. Use VitalSense Sync to securely sync your health data, then access detailed insights and analytics through the web dashboard.\n\nDownload VitalSense Sync to start secure health data monitoring today.",
+  "ReviewNotes": "HEALTH DATA TESTING:\nThis app requires HealthKit permissions to function properly. For testing:\n\n1. Grant all HealthKit permissions when prompted\n2. The app will display sync status and basic monitoring\n3. Health data synchronizes with backend platform\n4. Fall detection requires motion sensors (test on physical device)\n\nPRIVACY COMPLIANCE:\n- All health data is encrypted and stored securely\n- No personal health information is transmitted to third parties\n- Users maintain full control over data sharing\n- Complies with HIPAA privacy requirements\n\nTESTING NOTES:\n- Emergency features can be tested in Demo Mode\n- Fall detection has built-in false positive prevention\n- App works as companion to web platform at health.andernet.dev"
+}

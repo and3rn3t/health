@@ -1,0 +1,30 @@
+/* VitalSense Minimal CSS - Phase 5 Final Optimization */
+@import './vitalsense-minimal.css';
+
+/* Import minimal Tailwind utilities only */
+@tailwind utilities;
+
+/* Custom VitalSense animations and effects */
+@keyframes vitalsense-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+.vitalsense-animate-pulse {
+  animation: vitalsense-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Additional component classes for complex patterns */
+.vitalsense-health-card {
+  background: linear-gradient(135deg, #007AFF 0%, #34C759 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgb(0 122 255 / 0.2);
+}
+
+.vitalsense-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}

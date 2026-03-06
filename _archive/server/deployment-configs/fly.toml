@@ -1,0 +1,29 @@
+app = "vitalsense-websocket"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3001"
+  ALLOWED_ORIGINS = "https://health.andernet.dev,https://vitalsense.app,wss://health.andernet.dev"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+[[http_service.checks]]
+  grace_period = "1s"
+  interval = "15s"
+  restart_limit = 3
+  timeout = "2s"
+  method = "get"
+  path = "/api"
+
+[experimental]
+  enable_consul = true
