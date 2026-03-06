@@ -392,18 +392,4 @@ export class HealthDataProcessor {
   }
 }
 
-/**
- * Real Apple Health XML parsing would happen here
- * This is a placeholder for the actual implementation
- */
-export async function parseAppleHealthXML(xmlContent: string): Promise<any> {
-  // TODO: Implement actual XML parsing
-  // Would extract HKQuantityTypeIdentifier records for:
-  // - HKQuantityTypeIdentifierStepCount
-  // - HKQuantityTypeIdentifierHeartRate
-  // - HKQuantityTypeIdentifierAppleWalkingSteadiness
-  // - HKQuantityTypeIdentifierSleepAnalysis
-  // - etc.
 
-  throw new Error('Apple Health XML parsing not yet implemented');
-}

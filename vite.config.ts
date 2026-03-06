@@ -119,10 +119,6 @@ export default defineConfig({
             if (id.includes('@tanstack/react-query')) {
               return 'react-query';
             }
-            if (id.includes('zustand') || id.includes('jotai')) {
-              return 'state-mgmt';
-            }
-
             // Recharts - force into separate chunk and ensure it's not eagerly loaded
             if (id.includes('recharts')) {
               return 'recharts-lazy'; // Recharts is large (~150KB+) - should be lazy-loaded
@@ -140,28 +136,11 @@ export default defineConfig({
             if (id.includes('lucide-react')) {
               return 'lucide-icons'; // ~100KB+ - should use individual imports
             }
-            if (id.includes('@phosphor-icons')) {
-              return 'phosphor-icons'; // Large - consider removing if not used
-            }
-            if (id.includes('react-icons')) {
-              return 'react-icons'; // Very large - consider removing if not used
-            }
-            if (id.includes('@heroicons/react')) {
-              return 'heroicons'; // Large - consider individual imports
-            }
-
             // Utilities
-            if (
-              id.includes('date-fns') ||
-              id.includes('moment') ||
-              id.includes('dayjs')
-            ) {
+            if (id.includes('date-fns')) {
               return 'date-utils';
             }
-            if (id.includes('lodash') || id.includes('ramda')) {
-              return 'fp-utils';
-            }
-            if (id.includes('zod') || id.includes('yup')) {
+            if (id.includes('zod')) {
               return 'validation';
             }
 

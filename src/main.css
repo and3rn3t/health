@@ -252,23 +252,6 @@
     display: none;
   }
 
-  /* Safe area utilities for mobile notches */
-  .pt-safe-top {
-    padding-top: env(safe-area-inset-top);
-  }
-
-  .pb-safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  .px-safe-x {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-
-  .h-safe-bottom {
-    height: env(safe-area-inset-bottom);
-  }
 }
 
 /* Mobile-forced override styles */
