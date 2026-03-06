@@ -20,25 +20,48 @@ function makeEnv(overrides: Record<string, unknown> = {}) {
   };
 }
 
-// NOTE: Skipping for now due to Hono middleware behavior in test harness that yields empty bodies.
-// In runtime this works via Wrangler; consider testing with Miniflare or refactoring middleware to avoid c.newResponse pre-init.
-describe.skip('worker: core routes and middleware', () => {
+describe('worker: core routes and middleware', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('GET /health returns healthy with security headers and correlation id', async () => {
+  it('GET /health returns healthy JSON', async () => {
     const req = new Request('https://x.test/health');
     const res = await app.fetch(req, makeEnv());
     expect(res.status).toBe(200);
     const json = (await res.json()) as { status: string };
     expect(json.status).toBe('healthy');
-    // Security headers applied
+  });
+
+  it('POST /api/health-data response includes security headers from middleware', async () => {
+    const env = makeEnv({
+      HEALTH_KV: {
+        put: async () => {},
+      },
+    });
+    const payload = {
+      type: 'heart_rate',
+      value: 72,
+      timestamp: new Date().toISOString(),
+      processedAt: new Date().toISOString(),
+      validated: true,
+      source: {
+        userId: 'test-user',
+        collectedAt: new Date().toISOString(),
+      },
+    };
+    const req = new Request('https://x.test/api/health-data', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const res = await app.fetch(req, env);
+    expect(res.status).toBe(201);
+    // Security headers applied by global middleware
     expect(res.headers.get('X-Frame-Options')).toBe('DENY');
     expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff');
     const csp = res.headers.get('Content-Security-Policy') || '';
     expect(csp).toContain("script-src 'self'");
-    // Correlation id set
     expect(res.headers.get('X-Correlation-Id')).toBeTruthy();
   });
 
@@ -97,13 +120,21 @@ describe.skip('worker: core routes and middleware', () => {
     const payload = {
       type: 'heart_rate',
       value: 72,
+      timestamp: new Date().toISOString(),
       processedAt: new Date().toISOString(),
       validated: true,
       alert: null,
+      source: {
+        userId: 'test-user',
+        collectedAt: new Date().toISOString(),
+      },
     };
     const req = new Request('https://x.test/api/health-data', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        Authorization: 'Bearer header.eyJzdWIiOiJ0ZXN0LXVzZXIifQ.sig',
+      },
       body: JSON.stringify(payload),
     });
     const res = await app.fetch(req, env);
