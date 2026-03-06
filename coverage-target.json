@@ -1,5 +1,0 @@
-{
-  "min": 9,
-  "reason": "Temporary threshold adjustment - coverage is 9.32%, just below 10% threshold. Will be raised as test coverage improves.",
-  "updated": "2025-01-20"
-}
