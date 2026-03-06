@@ -20,12 +20,9 @@ export default [
       '.next/**',
 
       // Development and tooling files that don't need linting
-      'server/**',
       'ios/**',
       'docs/**',
       'public/**',
-      'src/components/_archive/**',
-      'src/_archive/**',
       'scripts/**/*.ps1',
       'scripts/**/*.sh',
       'scripts/**/*.js',

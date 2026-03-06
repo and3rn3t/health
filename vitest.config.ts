@@ -79,8 +79,6 @@ export default defineConfig({
       all: false, // Reduces memory usage by not processing untested files
       // Exclude large, non-runtime or archival areas to raise meaningful signal
       exclude: [
-        'src/_archive/**',
-        'src/components/_archive/**',
         'src/components/**/experimental/**',
         'src/components/**/infrastructure/**',
         'src/components/**/unused-health/**',
