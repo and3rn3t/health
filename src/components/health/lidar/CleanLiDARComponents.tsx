@@ -4,7 +4,7 @@
  */
 
 import React, { memo, useCallback, useMemo } from 'react';
-import { usePerformanceMonitor } from '../../../lib/performance/LiDARPerformanceHooks';
+import { usePerformanceMetrics } from '../../../lib/performance/CleanLiDARPerformanceOptimizer';
 
 // Types for LiDAR data structures
 export interface LiDARDataPoint {
@@ -43,7 +43,7 @@ const CleanLiDARScanItem = memo<{
   index: number;
   onClick?: (scan: LiDARScanData) => void;
 }>(({ scan, index, onClick }) => {
-  const { measureRender } = usePerformanceMonitor();
+  const { measureRender } = usePerformanceMetrics();
 
   const formatTimestamp = useMemo(() => {
     return new Date(scan.timestamp).toLocaleTimeString();
@@ -151,7 +151,7 @@ export const CleanLiDARList: React.FC<CleanLiDARListProps> = ({
   className = '',
   maxItems = 100,
 }) => {
-  const { recordMemoryUsage } = usePerformanceMonitor();
+  const { recordMemoryUsage } = usePerformanceMetrics();
 
   // Limit items for performance
   const displayData = useMemo(() => {
@@ -228,7 +228,7 @@ export const CleanLiDARList: React.FC<CleanLiDARListProps> = ({
   );
 };
 
-// Local implementations to avoid broken VirtualizedLiDARComponents
+// LiDAR data summary component
 export const LiDARDataSummary: React.FC<{
   data: LiDARScanData[];
   className?: string;
