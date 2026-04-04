@@ -27,13 +27,26 @@ function readPackageEngine() {
 }
 
 function simpleSatisfies(actual, range) {
-  // We only need to enforce ^20.18.0 style here. Keep it minimal to avoid pulling semver.
+  // Minimal semver check — handles ^x.y.z, >=x.y.z, and exact matches.
   if (!range) return true;
-  if (!range.startsWith('^')) return actual.startsWith(range.replace(/^v/, ''));
-  const base = range.slice(1); // e.g. 20.18.0
-  const [majReq, minReq] = base.split('.').map(Number);
-  const [majAct, minAct] = actual.replace(/^v/, '').split('.').map(Number);
-  return majAct === majReq && minAct >= minReq;
+  const [majAct, minAct, patchAct] = actual.replace(/^v/, '').split('.').map(Number);
+
+  if (range.startsWith('>=')) {
+    const base = range.slice(2);
+    const [majReq, minReq, patchReq = 0] = base.split('.').map(Number);
+    if (majAct !== majReq) return majAct > majReq;
+    if (minAct !== minReq) return minAct > minReq;
+    return patchAct >= patchReq;
+  }
+
+  if (range.startsWith('^')) {
+    const base = range.slice(1);
+    const [majReq, minReq] = base.split('.').map(Number);
+    return majAct === majReq && minAct >= minReq;
+  }
+
+  // Exact or prefix match
+  return actual.replace(/^v/, '').startsWith(range.replace(/^v/, ''));
 }
 
 const nodeVersion = process.version; // e.g. v20.18.1
@@ -62,7 +75,7 @@ if (!ok) {
   console.error('\u274c Node version check failed');
   for (const m of messages) console.error(' - ' + m);
   console.error('\nRemediation:');
-  console.error('  1. Install Node 20.18.x (nvm use 20.18.1 OR download LTS)');
+  console.error(`  1. Install matching Node version (nvm use ${nvmrc || 'lts'} OR check .nvmrc)`);
   console.error('  2. Remove node_modules and reinstall (pnpm install or npm ci)');
   process.exit(1);
 } else {
