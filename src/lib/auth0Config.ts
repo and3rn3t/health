@@ -9,21 +9,6 @@
  * - Session management with automatic logout
  */
 
-declare global {
-  interface Window {
-    __VITALSENSE_CONFIG__?: {
-      environment?: string;
-      auth0?: {
-        domain?: string;
-        clientId?: string;
-        redirectUri?: string;
-        audience?: string;
-        scope?: string;
-      };
-    };
-  }
-}
-
 // Safely read a Vite env var without assuming import.meta.env exists at runtime
 const safeGetViteEnv = (key: string): string | undefined => {
   try {
