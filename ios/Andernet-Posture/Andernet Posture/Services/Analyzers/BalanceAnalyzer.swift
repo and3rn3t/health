@@ -138,14 +138,23 @@ final class DefaultBalanceAnalyzer: BalanceAnalyzer {
         set { _imuSwayMetrics = newValue }
     }
 
+    /// Frame counter for throttling expensive PCA computation.
+    private var balanceFrameCount: Int = 0
+    /// Cached metrics from last full computation.
+    private var cachedMetrics: BalanceMetrics?
+
     // MARK: - Process Frame
 
     func processFrame(rootPosition: SIMD3<Float>, timestamp: TimeInterval) -> BalanceMetrics {
         let timed = TimedPosition(position: rootPosition, timestamp: timestamp)
         positions.append(timed)
 
-        // Trim to window
-        positions = positions.filter { timestamp - $0.timestamp <= swayWindowSec }
+        // Trim to window (batch removal instead of creating new array)
+        if let cutoff = positions.firstIndex(where: { timestamp - $0.timestamp <= swayWindowSec }) {
+            if cutoff > 0 { positions.removeSubrange(0..<cutoff) }
+        } else if !positions.isEmpty {
+            positions.removeAll()
+        }
 
         // Record for Romberg if active
         switch rombergPhase {
@@ -165,7 +174,12 @@ final class DefaultBalanceAnalyzer: BalanceAnalyzer {
                                  apRangeMM: 0, mlRangeMM: 0, apMlRatio: 1, meanSwayDistanceMM: 0)
         }
 
-        return computeMetrics(from: positions)
+        // Throttle full PCA computation to every 5th frame; use cached result otherwise
+        balanceFrameCount += 1
+        if balanceFrameCount % 5 == 0 || cachedMetrics == nil {
+            cachedMetrics = computeMetrics(from: positions)
+        }
+        return cachedMetrics!
     }
 
     // MARK: - Romberg
@@ -217,8 +231,12 @@ final class DefaultBalanceAnalyzer: BalanceAnalyzer {
         let sample = IMUAccelSample(timestamp: timestamp, ml: userAccelerationX, ap: userAccelerationZ)
         imuSamples.append(sample)
 
-        // Trim to window
-        imuSamples = imuSamples.filter { timestamp - $0.timestamp <= imuSwayWindowSec }
+        // Trim to window (batch removal)
+        if let cutoff = imuSamples.firstIndex(where: { timestamp - $0.timestamp <= imuSwayWindowSec }) {
+            if cutoff > 0 { imuSamples.removeSubrange(0..<cutoff) }
+        } else if !imuSamples.isEmpty {
+            imuSamples.removeAll()
+        }
 
         // Compute IMU sway metrics when standing (or always, let caller decide)
         guard imuSamples.count >= minIMUSamples else {
@@ -285,6 +303,8 @@ final class DefaultBalanceAnalyzer: BalanceAnalyzer {
         eyesClosedPositions.removeAll()
         imuSamples.removeAll()
         _imuSwayMetrics = nil
+        balanceFrameCount = 0
+        cachedMetrics = nil
     }
 
     // MARK: - Private Helpers

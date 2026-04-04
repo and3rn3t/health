@@ -484,19 +484,25 @@ final class CaptureViewModel {
         var currentPosture: PostureMetrics?
         if let postureMetrics = PerformanceMonitor.measure(.postureAnalysis, body: { posturePipeline.processPosture(joints: joints) }) {
             currentPosture = postureMetrics
-            trunkLeanDeg = postureMetrics.sagittalTrunkLeanDeg
-            lateralLeanDeg = postureMetrics.frontalTrunkLeanDeg
-            headForwardDeg = postureMetrics.headForwardDeg
-            postureScore = postureMetrics.postureScore
-            craniovertebralAngleDeg = postureMetrics.craniovertebralAngleDeg
-            sagittalVerticalAxisCm = postureMetrics.sagittalVerticalAxisCm
-            thoracicKyphosisDeg = postureMetrics.thoracicKyphosisDeg
-            lumbarLordosisDeg = postureMetrics.lumbarLordosisDeg
-            shoulderAsymmetryCm = postureMetrics.shoulderAsymmetryCm
-            pelvicObliquityDeg = postureMetrics.pelvicObliquityDeg
-            kendallType = postureMetrics.posturalType
-            nyprScore = postureMetrics.nyprScore
-            severities = postureMetrics.severities
+
+            // Throttle @Observable posture property writes to every 2nd frame.
+            // 15 fps UI updates are perceptually identical to 30 fps, and this
+            // halves observation tracking overhead for ~13 posture properties.
+            if frameIndex % 2 == 0 {
+                trunkLeanDeg = postureMetrics.sagittalTrunkLeanDeg
+                lateralLeanDeg = postureMetrics.frontalTrunkLeanDeg
+                headForwardDeg = postureMetrics.headForwardDeg
+                postureScore = postureMetrics.postureScore
+                craniovertebralAngleDeg = postureMetrics.craniovertebralAngleDeg
+                sagittalVerticalAxisCm = postureMetrics.sagittalVerticalAxisCm
+                thoracicKyphosisDeg = postureMetrics.thoracicKyphosisDeg
+                lumbarLordosisDeg = postureMetrics.lumbarLordosisDeg
+                shoulderAsymmetryCm = postureMetrics.shoulderAsymmetryCm
+                pelvicObliquityDeg = postureMetrics.pelvicObliquityDeg
+                kendallType = postureMetrics.posturalType
+                nyprScore = postureMetrics.nyprScore
+                severities = postureMetrics.severities
+            }
 
             // ── Haptic alert for poor posture ──
             if hapticEnabled && postureMetrics.postureScore < 40 && frameIndex - lastHapticFrame > 120 {

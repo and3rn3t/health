@@ -70,6 +70,24 @@ final class DefaultInsightsEngine: InsightsEngine {
 
     private let calendar = Calendar.current
 
+    /// Pre-computed session slices to avoid repeated filtering across generators.
+    private struct PrecomputedSlices {
+        let sorted: [GaitSession]
+        let thisWeekPosture: [GaitSession]
+        let lastWeekPosture: [GaitSession]
+        let withSpeed: [GaitSession]
+        let withCVA: [GaitSession]
+        let withFatigue: [GaitSession]
+        let withRisk: [GaitSession]
+        let withSymmetry: [GaitSession]
+        let withReba: [GaitSession]
+        let withSVA: [GaitSession]
+        let withKyphosis: [GaitSession]
+        let withShoulder: [GaitSession]
+        let withPelvic: [GaitSession]
+        let withLean: [GaitSession]
+    }
+
     func generateInsights(from sessions: [GaitSession]) -> [Insight] {
         let insightToken = PerformanceMonitor.begin(.insightsGeneration)
         defer { PerformanceMonitor.end(insightToken) }
@@ -77,30 +95,88 @@ final class DefaultInsightsEngine: InsightsEngine {
         guard !sessions.isEmpty else { return [] }
 
         let sorted = sessions.sorted { $0.date < $1.date }
+
+        // Pre-compute common date boundaries and filtered slices (single pass)
+        let now = Date()
+        let oneWeekAgo = calendar.date(byAdding: .day, value: -7, to: now) ?? now
+        let twoWeeksAgo = calendar.date(byAdding: .day, value: -14, to: now) ?? now
+
+        var withSpeed: [GaitSession] = []
+        var withCVA: [GaitSession] = []
+        var withFatigue: [GaitSession] = []
+        var withRisk: [GaitSession] = []
+        var withSymmetry: [GaitSession] = []
+        var withReba: [GaitSession] = []
+        var withSVA: [GaitSession] = []
+        var withKyphosis: [GaitSession] = []
+        var withShoulder: [GaitSession] = []
+        var withPelvic: [GaitSession] = []
+        var withLean: [GaitSession] = []
+        var thisWeekPosture: [GaitSession] = []
+        var lastWeekPosture: [GaitSession] = []
+
+        for s in sorted {
+            if s.averageWalkingSpeedMPS != nil { withSpeed.append(s) }
+            if s.averageCVADeg != nil { withCVA.append(s) }
+            if s.fatigueIndex != nil && s.duration > 0 { withFatigue.append(s) }
+            if s.fallRiskLevel != nil { withRisk.append(s) }
+            if s.gaitAsymmetryPercent != nil { withSymmetry.append(s) }
+            if s.rebaScore != nil { withReba.append(s) }
+            if s.averageSVACm != nil { withSVA.append(s) }
+            if s.averageThoracicKyphosisDeg != nil { withKyphosis.append(s) }
+            if s.averageShoulderAsymmetryCm != nil { withShoulder.append(s) }
+            if s.averagePelvicObliquityDeg != nil { withPelvic.append(s) }
+            if s.averageTrunkLeanDeg != nil { withLean.append(s) }
+            if s.postureScore != nil {
+                if s.date >= oneWeekAgo {
+                    thisWeekPosture.append(s)
+                } else if s.date >= twoWeeksAgo {
+                    lastWeekPosture.append(s)
+                }
+            }
+        }
+
+        let slices = PrecomputedSlices(
+            sorted: sorted,
+            thisWeekPosture: thisWeekPosture,
+            lastWeekPosture: lastWeekPosture,
+            withSpeed: withSpeed,
+            withCVA: withCVA,
+            withFatigue: withFatigue,
+            withRisk: withRisk,
+            withSymmetry: withSymmetry,
+            withReba: withReba,
+            withSVA: withSVA,
+            withKyphosis: withKyphosis,
+            withShoulder: withShoulder,
+            withPelvic: withPelvic,
+            withLean: withLean
+        )
+
         var insights: [Insight] = []
 
         // 1. Posture trend (last 7 days vs prior 7 days)
-        if let insight = postureTrendInsight(sorted) {
+        if let insight = postureTrendInsight(slices) {
             insights.append(insight)
         }
 
         // 2. Walking speed — sarcopenia threshold
-        if let insight = walkingSpeedInsight(sorted) {
+        if let insight = walkingSpeedInsight(slices) {
             insights.append(insight)
         }
 
         // 3. CVA deterioration
-        if let insight = cvaDeteriorationInsight(sorted) {
+        if let insight = cvaDeteriorationInsight(slices) {
             insights.append(insight)
         }
 
         // 4. Fall risk escalation
-        if let insight = fallRiskEscalationInsight(sorted) {
+        if let insight = fallRiskEscalationInsight(slices) {
             insights.append(insight)
         }
 
         // 5. Fatigue pattern
-        if let insight = fatiguePatternInsight(sorted) {
+        if let insight = fatiguePatternInsight(slices) {
             insights.append(insight)
         }
 
@@ -110,17 +186,17 @@ final class DefaultInsightsEngine: InsightsEngine {
         }
 
         // 7. Stride symmetry
-        if let insight = strideSymmetryInsight(sorted) {
+        if let insight = strideSymmetryInsight(slices) {
             insights.append(insight)
         }
 
         // 8. REBA improvement
-        if let insight = rebaImprovementInsight(sorted) {
+        if let insight = rebaImprovementInsight(slices) {
             insights.append(insight)
         }
 
         // 9. CVA-based recommendation
-        if let insight = cvaRecommendationInsight(sorted) {
+        if let insight = cvaRecommendationInsight(slices) {
             insights.append(insight)
         }
 
@@ -130,22 +206,22 @@ final class DefaultInsightsEngine: InsightsEngine {
         }
 
         // 11. SVA / Sagittal imbalance
-        if let insight = svaInsight(sorted) {
+        if let insight = svaInsight(slices) {
             insights.append(insight)
         }
 
         // 12. Thoracic kyphosis
-        if let insight = kyphosisInsight(sorted) {
+        if let insight = kyphosisInsight(slices) {
             insights.append(insight)
         }
 
         // 13. Shoulder / Pelvic asymmetry
-        if let insight = asymmetryInsight(sorted) {
+        if let insight = asymmetryInsight(slices) {
             insights.append(insight)
         }
 
         // 14. Trunk forward lean
-        if let insight = trunkLeanInsight(sorted) {
+        if let insight = trunkLeanInsight(slices) {
             insights.append(insight)
         }
 
@@ -184,13 +260,9 @@ final class DefaultInsightsEngine: InsightsEngine {
     // MARK: - Individual Insight Generators
 
     // 1. Posture trend — compare last 7 days vs prior 7 days
-    private func postureTrendInsight(_ sessions: [GaitSession]) -> Insight? {
-        let now = Date()
-        guard let oneWeekAgo = calendar.date(byAdding: .day, value: -7, to: now),
-              let twoWeeksAgo = calendar.date(byAdding: .day, value: -14, to: now) else { return nil }
-
-        let thisWeek = sessions.filter { $0.date >= oneWeekAgo && $0.postureScore != nil }
-        let lastWeek = sessions.filter { $0.date >= twoWeeksAgo && $0.date < oneWeekAgo && $0.postureScore != nil }
+    private func postureTrendInsight(_ slices: PrecomputedSlices) -> Insight? {
+        let thisWeek = slices.thisWeekPosture
+        let lastWeek = slices.lastWeekPosture
 
         guard !thisWeek.isEmpty, !lastWeek.isEmpty else { return nil }
 
@@ -217,8 +289,8 @@ final class DefaultInsightsEngine: InsightsEngine {
     }
 
     // 2. Walking speed — sarcopenia cutoff at 0.8 m/s
-    private func walkingSpeedInsight(_ sessions: [GaitSession]) -> Insight? {
-        let withSpeed = sessions.filter { $0.averageWalkingSpeedMPS != nil }
+    private func walkingSpeedInsight(_ slices: PrecomputedSlices) -> Insight? {
+        let withSpeed = slices.withSpeed
         guard let latest = withSpeed.last, let speed = latest.averageWalkingSpeedMPS else { return nil }
 
         if speed < 0.8 {
@@ -263,8 +335,8 @@ final class DefaultInsightsEngine: InsightsEngine {
     }
 
     // 3. CVA deterioration over last 5 sessions
-    private func cvaDeteriorationInsight(_ sessions: [GaitSession]) -> Insight? {
-        let withCVA = sessions.filter { $0.averageCVADeg != nil }
+    private func cvaDeteriorationInsight(_ slices: PrecomputedSlices) -> Insight? {
+        let withCVA = slices.withCVA
         guard withCVA.count >= 5 else { return nil }
 
         let recent = withCVA.suffix(5)
@@ -299,8 +371,8 @@ final class DefaultInsightsEngine: InsightsEngine {
     }
 
     // 4. Fall risk escalation
-    private func fallRiskEscalationInsight(_ sessions: [GaitSession]) -> Insight? {
-        let withRisk = sessions.filter { $0.fallRiskLevel != nil }
+    private func fallRiskEscalationInsight(_ slices: PrecomputedSlices) -> Insight? {
+        let withRisk = slices.withRisk
         guard withRisk.count >= 2 else { return nil }
 
         let recent = Array(withRisk.suffix(2))
@@ -336,8 +408,8 @@ final class DefaultInsightsEngine: InsightsEngine {
     }
 
     // 5. Fatigue pattern
-    private func fatiguePatternInsight(_ sessions: [GaitSession]) -> Insight? {
-        let withFatigue = sessions.filter { $0.fatigueIndex != nil && $0.duration > 0 }
+    private func fatiguePatternInsight(_ slices: PrecomputedSlices) -> Insight? {
+        let withFatigue = slices.withFatigue
         guard withFatigue.count >= 3 else { return nil }
 
         let durations = withFatigue.compactMap { session -> Double? in
@@ -400,8 +472,8 @@ final class DefaultInsightsEngine: InsightsEngine {
     }
 
     // 7. Stride symmetry
-    private func strideSymmetryInsight(_ sessions: [GaitSession]) -> Insight? {
-        let withSymmetry = sessions.filter { $0.gaitAsymmetryPercent != nil }
+    private func strideSymmetryInsight(_ slices: PrecomputedSlices) -> Insight? {
+        let withSymmetry = slices.withSymmetry
         guard let latest = withSymmetry.last, let asymmetry = latest.gaitAsymmetryPercent else { return nil }
 
         if asymmetry > 10 {
@@ -423,11 +495,11 @@ final class DefaultInsightsEngine: InsightsEngine {
     }
 
     // 8. REBA improvement
-    private func rebaImprovementInsight(_ sessions: [GaitSession]) -> Insight? {
+    private func rebaImprovementInsight(_ slices: PrecomputedSlices) -> Insight? {
         let now = Date()
         guard let oneMonthAgo = calendar.date(byAdding: .month, value: -1, to: now) else { return nil }
 
-        let withReba = sessions.filter { $0.rebaScore != nil }
+        let withReba = slices.withReba
         let oldSessions = withReba.filter { $0.date < oneMonthAgo }
         let recentSessions = withReba.filter { $0.date >= oneMonthAgo }
 
@@ -461,8 +533,8 @@ final class DefaultInsightsEngine: InsightsEngine {
     }
 
     // 9. CVA-based recommendation
-    private func cvaRecommendationInsight(_ sessions: [GaitSession]) -> Insight? {
-        let withCVA = sessions.filter { $0.averageCVADeg != nil }
+    private func cvaRecommendationInsight(_ slices: PrecomputedSlices) -> Insight? {
+        let withCVA = slices.withCVA
         guard let latest = withCVA.last, let cva = latest.averageCVADeg else { return nil }
 
         if cva < 40 {
@@ -513,8 +585,8 @@ final class DefaultInsightsEngine: InsightsEngine {
     }
 
     // 11. SVA / Sagittal imbalance
-    private func svaInsight(_ sessions: [GaitSession]) -> Insight? {
-        let withSVA = sessions.filter { $0.averageSVACm != nil }
+    private func svaInsight(_ slices: PrecomputedSlices) -> Insight? {
+        let withSVA = slices.withSVA
         guard let latest = withSVA.last, let sva = latest.averageSVACm else { return nil }
 
         let absSVA = abs(sva)
@@ -550,8 +622,8 @@ final class DefaultInsightsEngine: InsightsEngine {
     }
 
     // 12. Thoracic kyphosis
-    private func kyphosisInsight(_ sessions: [GaitSession]) -> Insight? {
-        let withKyphosis = sessions.filter { $0.averageThoracicKyphosisDeg != nil }
+    private func kyphosisInsight(_ slices: PrecomputedSlices) -> Insight? {
+        let withKyphosis = slices.withKyphosis
         guard let latest = withKyphosis.last, let kyphosis = latest.averageThoracicKyphosisDeg else { return nil }
 
         if kyphosis > 55 {
@@ -587,9 +659,9 @@ final class DefaultInsightsEngine: InsightsEngine {
     }
 
     // 13. Shoulder / Pelvic asymmetry
-    private func asymmetryInsight(_ sessions: [GaitSession]) -> Insight? {
-        let withShoulder = sessions.filter { $0.averageShoulderAsymmetryCm != nil }
-        let withPelvic = sessions.filter { $0.averagePelvicObliquityDeg != nil }
+    private func asymmetryInsight(_ slices: PrecomputedSlices) -> Insight? {
+        let withShoulder = slices.withShoulder
+        let withPelvic = slices.withPelvic
 
         // Check shoulder asymmetry first
         if let latest = withShoulder.last, let shoulderCm = latest.averageShoulderAsymmetryCm, shoulderCm > 3.0 {
@@ -629,8 +701,8 @@ final class DefaultInsightsEngine: InsightsEngine {
     }
 
     // 14. Trunk forward lean (posture-related, distinct from SVA)
-    private func trunkLeanInsight(_ sessions: [GaitSession]) -> Insight? {
-        let withLean = sessions.filter { $0.averageTrunkLeanDeg != nil }
+    private func trunkLeanInsight(_ slices: PrecomputedSlices) -> Insight? {
+        let withLean = slices.withLean
         guard let latest = withLean.last, let lean = latest.averageTrunkLeanDeg else { return nil }
 
         let absLean = abs(lean)

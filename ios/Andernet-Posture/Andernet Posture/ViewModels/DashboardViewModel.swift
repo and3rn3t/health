@@ -11,7 +11,7 @@ import Observation
 
 /// Data point for trend charts on the dashboard.
 struct TrendPoint: Identifiable {
-    let id = UUID()
+    let id: Int
     let date: Date
     let value: Double
 }
@@ -139,43 +139,35 @@ final class DashboardViewModel {
 
         totalWalkingTime = sessions.reduce(0) { $0 + $1.duration }
 
-        // Trends (last 30 sessions, oldest first)
+        // Trends (last 30 sessions, oldest first) — single-pass build
         let trendSessions = Array(sorted.prefix(30).reversed())
 
-        postureScoreTrend = trendSessions.compactMap { s in
-            guard let score = s.postureScore else { return nil }
-            return TrendPoint(date: s.date, value: score)
+        var posture: [TrendPoint] = []
+        var cadence: [TrendPoint] = []
+        var stride: [TrendPoint] = []
+        var speed: [TrendPoint] = []
+        var cva: [TrendPoint] = []
+        var risk: [TrendPoint] = []
+        var fatigue: [TrendPoint] = []
+
+        for (i, s) in trendSessions.enumerated() {
+            let date = s.date
+            if let v = s.postureScore { posture.append(TrendPoint(id: i, date: date, value: v)) }
+            if let v = s.averageCadenceSPM { cadence.append(TrendPoint(id: i, date: date, value: v)) }
+            if let v = s.averageStrideLengthM { stride.append(TrendPoint(id: i, date: date, value: v)) }
+            if let v = s.averageWalkingSpeedMPS { speed.append(TrendPoint(id: i, date: date, value: v)) }
+            if let v = s.averageCVADeg { cva.append(TrendPoint(id: i, date: date, value: v)) }
+            if let v = s.fallRiskScore { risk.append(TrendPoint(id: i, date: date, value: v)) }
+            if let v = s.fatigueIndex { fatigue.append(TrendPoint(id: i, date: date, value: v)) }
         }
 
-        cadenceTrend = trendSessions.compactMap { s in
-            guard let cadence = s.averageCadenceSPM else { return nil }
-            return TrendPoint(date: s.date, value: cadence)
-        }
-
-        strideLengthTrend = trendSessions.compactMap { s in
-            guard let stride = s.averageStrideLengthM else { return nil }
-            return TrendPoint(date: s.date, value: stride)
-        }
-
-        walkingSpeedTrend = trendSessions.compactMap { s in
-            guard let speed = s.averageWalkingSpeedMPS else { return nil }
-            return TrendPoint(date: s.date, value: speed)
-        }
-
-        cvaTrend = trendSessions.compactMap { s in
-            guard let cva = s.averageCVADeg else { return nil }
-            return TrendPoint(date: s.date, value: cva)
-        }
-
-        fallRiskTrend = trendSessions.compactMap { s in
-            guard let risk = s.fallRiskScore else { return nil }
-            return TrendPoint(date: s.date, value: risk)
-        }
-
-        fatigueTrend = trendSessions.compactMap { s in
-            guard let fi = s.fatigueIndex else { return nil }
-            return TrendPoint(date: s.date, value: fi)
-        }
+        postureScoreTrend = posture
+        cadenceTrend = cadence
+        strideLengthTrend = stride
+        walkingSpeedTrend = speed
+        cvaTrend = cva
+        fallRiskTrend = risk
+        fatigueTrend = fatigue
 
         // Generate clinical insights
         insights = insightsEngine.generateInsights(from: sessions)
