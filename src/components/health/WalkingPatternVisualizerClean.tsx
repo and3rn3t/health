@@ -54,15 +54,15 @@ export function WalkingPatternVisualizer() {
     if (!isTracking) return;
 
     const interval = setInterval(() => {
-      setCurrentMetrics((prev) => ({
-        stepCount: prev.stepCount + Math.floor(Math.random() * 3) + 1,
+      setCurrentMetrics((prev) => ({ // NOSONAR: Simulated walking data - Math.random() acceptable
+        stepCount: prev.stepCount + Math.floor(Math.random() * 3) + 1, // NOSONAR
         distance: parseFloat(
-          (prev.distance + Math.random() * 0.1 + 0.05).toFixed(2)
+          (prev.distance + Math.random() * 0.1 + 0.05).toFixed(2) // NOSONAR
         ),
-        speed: parseFloat((1.2 + Math.random() * 0.8).toFixed(1)), // 1.2-2.0 m/s
-        rhythm: Math.floor(85 + Math.random() * 30), // 85-115 steps/min
-        symmetry: Math.floor(70 + Math.random() * 25), // 70-95%
-        stability: Math.floor(65 + Math.random() * 30), // 65-95%
+        speed: parseFloat((1.2 + Math.random() * 0.8).toFixed(1)), // NOSONAR 1.2-2.0 m/s
+        rhythm: Math.floor(85 + Math.random() * 30), // NOSONAR 85-115 steps/min
+        symmetry: Math.floor(70 + Math.random() * 25), // NOSONAR 70-95%
+        stability: Math.floor(65 + Math.random() * 30), // NOSONAR 65-95%
       }));
 
       setTrackingDuration((prev) => prev + 1);

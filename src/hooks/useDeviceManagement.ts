@@ -243,7 +243,7 @@ export function useDeviceManagement(userId?: string) {
         return;
       }
 
-      const deviceId = `manual-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+      const deviceId = `manual-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
       const detected = detectionService.addManualDevice({
         id: deviceId,
         name: config.name,

@@ -31,7 +31,7 @@ app.post('/<endpoint>', async (c) => {
   const body = await c.req.json();
   const parsed = RequestSchema.safeParse(body);
   if (!parsed.success) {
-    return c.json({ error: 'Invalid request', details: parsed.error.flatten() }, 400);
+    return c.json({ error: 'Invalid request' }, 400);
   }
   // Business logic using c.env for bindings
   return c.json({ data: result }, 200);

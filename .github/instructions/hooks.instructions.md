@@ -11,7 +11,7 @@ applyTo: "src/hooks/**/*.ts"
 - Explicit return types — no implicit `any`.
 
 ## State Management
-- `useKV` for lightweight client persistence (from `@github/spark/hooks`).
+- Prefer `useCloudflareKV` (or the repo's local KV wrapper) for KV-backed persistence; only use `useKV` from `@github/spark/hooks` when maintaining existing legacy Spark-based code or when a file already depends on it for strictly local client persistence.
 - `@tanstack/react-query` for server state — co-locate query keys with hooks.
 - `useMemo` / `useCallback` for expensive computations or stable references.
 

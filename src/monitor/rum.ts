@@ -37,7 +37,7 @@ if (!window.__vitalsenseRUM) {
   let sampleRate = parseFloat(sampleRateStr || '1');
   if (!Number.isFinite(sampleRate) || sampleRate <= 0) sampleRate = 0;
   else if (sampleRate > 1) sampleRate = 1;
-  if (Math.random() > sampleRate) {
+  if (Math.random() > sampleRate) { // NOSONAR: RUM sampling, not security-sensitive
     window.__vitalsenseRUM = true; // mark to avoid re-init; but abort instrumentation
   } else {
     window.__vitalsenseRUM = true;
