@@ -476,7 +476,7 @@ app.post('/api/audit/log', async (c) => {
   try {
     const auditEvent = await c.req.json();
     const timestamp = Date.now();
-    const auditKey = `audit/${timestamp}-${Math.random().toString(36).substring(2, 11)}.json`;
+    const auditKey = `audit/${timestamp}-${crypto.randomUUID()}.json`;
 
     const auditData = {
       ...auditEvent,

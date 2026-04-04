@@ -105,11 +105,11 @@ class LiDARAnalyticsEngine {
     // Simulate gait analysis from point cloud data
     const accuracy = scan.metadata.accuracy;
 
-    return {
-      strideLength: 0.7 + Math.random() * 0.3 * accuracy,
-      cadence: 110 + Math.random() * 20 * accuracy,
-      symmetry: 0.85 + Math.random() * 0.1 * accuracy,
-      stability: 0.8 + Math.random() * 0.15 * accuracy,
+    return { // NOSONAR: Demo simulation data - Math.random() acceptable
+      strideLength: 0.7 + Math.random() * 0.3 * accuracy, // NOSONAR
+      cadence: 110 + Math.random() * 20 * accuracy, // NOSONAR
+      symmetry: 0.85 + Math.random() * 0.1 * accuracy, // NOSONAR
+      stability: 0.8 + Math.random() * 0.15 * accuracy, // NOSONAR
     };
   }
 

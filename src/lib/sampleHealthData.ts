@@ -19,21 +19,21 @@ export function generateSampleHealthData(): ProcessedHealthData {
       date: new Date(now.getTime() - (29 - i) * 24 * 60 * 60 * 1000)
         .toISOString()
         .split('T')[0],
-      value: Math.max(0, baseValue + (Math.random() - 0.5) * variance),
+      value: Math.max(0, baseValue + (Math.random() - 0.5) * variance), // NOSONAR: Sample data
     }));
 
     const weeklyData = Array.from({ length: 12 }, (_, i) => ({
       date: new Date(now.getTime() - (11 - i) * 7 * 24 * 60 * 60 * 1000)
         .toISOString()
         .split('T')[0],
-      value: Math.max(0, baseValue + (Math.random() - 0.5) * variance * 1.5),
+      value: Math.max(0, baseValue + (Math.random() - 0.5) * variance * 1.5), // NOSONAR
     }));
 
     const monthlyData = Array.from({ length: 6 }, (_, i) => ({
       date: new Date(now.getTime() - (5 - i) * 30 * 24 * 60 * 60 * 1000)
         .toISOString()
         .split('T')[0],
-      value: Math.max(0, baseValue + (Math.random() - 0.5) * variance * 2),
+      value: Math.max(0, baseValue + (Math.random() - 0.5) * variance * 2), // NOSONAR
     }));
 
     return {
@@ -43,18 +43,18 @@ export function generateSampleHealthData(): ProcessedHealthData {
       average: baseValue,
       trend,
       variability: variance / baseValue,
-      reliability: 0.8 + Math.random() * 0.2,
+      reliability: 0.8 + Math.random() * 0.2, // NOSONAR
       lastValue: dailyData[dailyData.length - 1].value,
-      percentileRank: 50 + (Math.random() - 0.5) * 40,
+      percentileRank: 50 + (Math.random() - 0.5) * 40, // NOSONAR
     };
   };
 
   return {
     lastUpdated: now.toISOString(),
     dataQuality: {
-      completeness: 0.85 + Math.random() * 0.15,
-      consistency: 0.8 + Math.random() * 0.2,
-      recency: 0.9 + Math.random() * 0.1,
+      completeness: 0.85 + Math.random() * 0.15, // NOSONAR
+      consistency: 0.8 + Math.random() * 0.2, // NOSONAR
+      recency: 0.9 + Math.random() * 0.1, // NOSONAR
       overall: 'good' as const,
     },
     metrics: {
@@ -96,7 +96,7 @@ export function generateSampleHealthData(): ProcessedHealthData {
           'Home safety assessment shows good lighting and clear pathways',
       },
     ],
-    healthScore: 78 + Math.round(Math.random() * 15),
+    healthScore: 78 + Math.round(Math.random() * 15), // NOSONAR
   };
 }
 
@@ -152,7 +152,7 @@ export function generateHighRiskSampleData(): ProcessedHealthData {
           'Eye examination recommended - vision changes affect fall risk',
       },
     ],
-    healthScore: 45 + Math.round(Math.random() * 10), // Lower health score
+    healthScore: 45 + Math.round(Math.random() * 10), // NOSONAR: Lower health score
     insights: [
       '⚠️ Walking steadiness has declined significantly over the past month',
       '⚠️ Multiple fall risk factors have been identified',

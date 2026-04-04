@@ -1316,24 +1316,24 @@ export function LiDARGaitAnalyzer({
   );
   const generateMockMetrics = useCallback(
     (sessionId: string): LiDARGaitMetrics => {
-      const baseMetrics = {
+      const baseMetrics = { // NOSONAR: Mock gait data - Math.random() acceptable throughout
         sessionId,
         spatialMetrics: {
-          stepWidth: Math.round(8 + Math.random() * 4), // 8-12 cm
-          stepLength: Math.round(55 + Math.random() * 15), // 55-70 cm
-          strideLength: Math.round(110 + Math.random() * 30), // 110-140 cm
-          footClearance: Math.round(2 + Math.random() * 3), // 2-5 cm
+          stepWidth: Math.round(8 + Math.random() * 4), // NOSONAR 8-12 cm
+          stepLength: Math.round(55 + Math.random() * 15), // NOSONAR 55-70 cm
+          strideLength: Math.round(110 + Math.random() * 30), // NOSONAR 110-140 cm
+          footClearance: Math.round(2 + Math.random() * 3), // NOSONAR 2-5 cm
         },
         temporalMetrics: {
-          cadence: Math.round(95 + Math.random() * 20), // 95-115 steps/min
-          swingTime: Math.round(35 + Math.random() * 10), // 35-45% of gait cycle
-          stanceTime: Math.round(55 + Math.random() * 10), // 55-65% of gait cycle
-          doubleSupportTime: Math.round(10 + Math.random() * 5), // 10-15% of gait cycle
+          cadence: Math.round(95 + Math.random() * 20), // NOSONAR 95-115 steps/min
+          swingTime: Math.round(35 + Math.random() * 10), // NOSONAR 35-45% of gait cycle
+          stanceTime: Math.round(55 + Math.random() * 10), // NOSONAR 55-65% of gait cycle
+          doubleSupportTime: Math.round(10 + Math.random() * 5), // NOSONAR 10-15% of gait cycle
         },
         stabilityMetrics: {
-          lateralVariability: Math.round(1 + Math.random() * 2), // 1-3 cm
-          postureStability: Math.round(75 + Math.random() * 20), // 75-95%
-          balanceScore: Math.round(70 + Math.random() * 25), // 70-95%
+          lateralVariability: Math.round(1 + Math.random() * 2), // NOSONAR 1-3 cm
+          postureStability: Math.round(75 + Math.random() * 20), // NOSONAR 75-95%
+          balanceScore: Math.round(70 + Math.random() * 25), // NOSONAR 70-95%
         },
         recommendations: [] as readonly string[],
         analysisTimestamp: new Date(),
@@ -1387,7 +1387,7 @@ export function LiDARGaitAnalyzer({
     setCurrentSession(newSession);
     setRecordingProgress(0);
     // Initialize live cadence baseline
-    const base = Math.round(95 + Math.random() * 20);
+    const base = Math.round(95 + Math.random() * 20); // NOSONAR: Demo simulation
     liveCadenceBaseRef.current = base;
     setLiveCadence(base);
     showMessage(
@@ -1409,7 +1409,7 @@ export function LiDARGaitAnalyzer({
       // Update live cadence with small jitter
       setLiveCadence((prev) => {
         const baseCad = liveCadenceBaseRef.current ?? 100;
-        const jitter = Math.round((Math.random() - 0.5) * 6); // -3..+3
+        const jitter = Math.round((Math.random() - 0.5) * 6); // NOSONAR -3..+3
         const candidate = (prev ?? baseCad) + jitter;
         return Math.min(140, Math.max(80, candidate));
       });
@@ -1420,8 +1420,8 @@ export function LiDARGaitAnalyzer({
   // --- Synthetic environment and gait risk helpers ---
   function gaussianNoise(mean: number, std: number): number {
     // Box-Muller transform
-    const u1 = Math.random();
-    const u2 = Math.random();
+    const u1 = Math.random(); // NOSONAR: Box-Muller transform for simulation
+    const u2 = Math.random(); // NOSONAR
     const r = Math.sqrt(-2.0 * Math.log(Math.max(1e-12, u1)));
     const theta = 2.0 * Math.PI * u2;
     return mean + std * r * Math.cos(theta);
@@ -1438,23 +1438,23 @@ export function LiDARGaitAnalyzer({
       let slopeY: number;
       let rough: number; // meters std
       let obstacleRate: number; // fraction of cells with a bump
-      if (env === 'outdoor') {
-        slopeX = ((Math.random() * 6) / 180) * Math.PI; // up to ~6°
-        slopeY = ((Math.random() * 4) / 180) * Math.PI; // up to ~4°
-        rough = 0.008 + Math.random() * 0.007; // 8-15mm
-        obstacleRate = 0.06 + Math.random() * 0.09; // 0.06-0.15
+      if (env === 'outdoor') { // NOSONAR: Synthetic environment generation - Math.random() acceptable
+        slopeX = ((Math.random() * 6) / 180) * Math.PI; // NOSONAR up to ~6°
+        slopeY = ((Math.random() * 4) / 180) * Math.PI; // NOSONAR up to ~4°
+        rough = 0.008 + Math.random() * 0.007; // NOSONAR 8-15mm
+        obstacleRate = 0.06 + Math.random() * 0.09; // NOSONAR 0.06-0.15
       } else {
-        slopeX = ((Math.random() * 2) / 180) * Math.PI; // up to ~2°
-        slopeY = ((Math.random() * 1) / 180) * Math.PI; // up to ~1°
-        rough = 0.001 + Math.random() * 0.003; // 1-4mm
-        obstacleRate = 0.01 + Math.random() * 0.03; // 0.01-0.04
+        slopeX = ((Math.random() * 2) / 180) * Math.PI; // NOSONAR up to ~2°
+        slopeY = ((Math.random() * 1) / 180) * Math.PI; // NOSONAR up to ~1°
+        rough = 0.001 + Math.random() * 0.003; // NOSONAR 1-4mm
+        obstacleRate = 0.01 + Math.random() * 0.03; // NOSONAR 0.01-0.04
       }
       // Random bumps for obstacles
       const bumps = new Set<number>();
       const totalCells = nx * ny;
       const numBumps = Math.floor(totalCells * obstacleRate);
       while (bumps.size < numBumps)
-        bumps.add(Math.floor(Math.random() * totalCells));
+        bumps.add(Math.floor(Math.random() * totalCells)); // NOSONAR
       for (let iy = 0; iy < ny; iy++) {
         for (let ix = 0; ix < nx; ix++) {
           const idx = iy * nx + ix;
@@ -1465,7 +1465,7 @@ export function LiDARGaitAnalyzer({
           // Roughness noise
           z += gaussianNoise(0, rough);
           // Occasional obstacle bump (~2-6cm)
-          if (bumps.has(idx)) z += 0.02 + Math.random() * 0.04;
+          if (bumps.has(idx)) z += 0.02 + Math.random() * 0.04; // NOSONAR
           points.push({ x, y, z });
         }
       }

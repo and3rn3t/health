@@ -90,7 +90,8 @@ export default function LiveConnectionDashboard() {
       console.log('Live health update received:', data);
       if (data.metrics && Array.isArray(data.metrics)) {
         const newMetrics = data.metrics.map((metric: any) => ({
-          id: `${metric.type}-${Date.now()}-${Math.random()}`,
+          id: `${metric.type}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
+
           type: metric.type,
           value: metric.value,
           unit: metric.unit || '',
@@ -279,7 +280,7 @@ export default function LiveConnectionDashboard() {
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   // Format uptime

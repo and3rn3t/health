@@ -106,17 +106,15 @@ export class MLWasmProcessor {
   private memoryBuffer: WebAssembly.Memory | null = null;
 
   // Performance tracking
-  private performanceMetrics = {
+  private readonly performanceMetrics = {
     totalProcessingTime: 0,
     operationsCount: 0,
     averageProcessingTime: 0,
     memoryUsage: 0,
-    speedupFactor: 1.0,
+    speedupFactor: 1,
   };
 
-  constructor() {
-    this.initialize();
-  }
+  // constructor removed: initialization deferred to first use via initialize()
 
   // Initialize WebAssembly Module
   private async initialize(): Promise<void> {
@@ -138,11 +136,8 @@ export class MLWasmProcessor {
       }
 
       // Load the WebAssembly module
-      // In production, this would load from a .wasm file
-      const wasmPath = '/assets/vitalsense-ml.wasm';
-
-      // For now, we'll simulate the module loading
-      // In real implementation, you would compile C++/Rust code to WASM
+      // In production, this would load from '/assets/vitalsense-ml.wasm'
+      // For now, we simulate the module loading
       this.wasmModule = await this.createMockWasmModule();
 
       // Allocate shared memory
@@ -179,7 +174,7 @@ export class MLWasmProcessor {
           const dy = points[i * 3 + 4] - points[i * 3 + 1];
           const dz = points[i * 3 + 5] - points[i * 3 + 2];
 
-          const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          const distance = Math.hypot(dx, dy, dz);
           const timeStep = timestamps[i + 1] - timestamps[i];
 
           if (timeStep > 0) {
@@ -202,9 +197,9 @@ export class MLWasmProcessor {
 
         // Simulate advanced posture analysis
         const pointCount = keyPoints.length / 3;
-        let spinalAlignment = 85 + Math.random() * 10;
-        let shoulderBalance = 80 + Math.random() * 15;
-        let hipAlignment = 88 + Math.random() * 8;
+        let spinalAlignment = 85 + Math.random() * 10; // NOSONAR: Demo ML simulation
+        let shoulderBalance = 80 + Math.random() * 15; // NOSONAR
+        let hipAlignment = 88 + Math.random() * 8; // NOSONAR
 
         // Apply ML-like processing with some randomness for demo
         for (let i = 0; i < pointCount; i += 3) {
@@ -212,14 +207,13 @@ export class MLWasmProcessor {
           const y = keyPoints[i + 1];
           const z = keyPoints[i + 2];
 
-          // Simulate complex posture calculations
-          const deviation = Math.sqrt(x * x + y * y + z * z);
+          const deviation = Math.hypot(x, y, z);
           spinalAlignment *= 1 - deviation * 0.001;
           shoulderBalance *= 1 - Math.abs(x) * 0.002;
           hipAlignment *= 1 - Math.abs(z) * 0.0015;
         }
 
-        const confidence = Math.min(95, 70 + Math.random() * 25);
+        const confidence = Math.min(95, 70 + Math.random() * 25); // NOSONAR
 
         const recommendations: string[] = [];
         if (spinalAlignment < 80)
@@ -269,7 +263,7 @@ export class MLWasmProcessor {
           'Gait instability detected',
           'Posture deviation observed',
           'Environmental hazards present',
-        ].filter(() => Math.random() > 0.5);
+        ].filter(() => Math.random() > 0.5); // NOSONAR: Demo simulation
 
         const processingTime = performance.now() - startTime;
         this.updatePerformanceMetrics(processingTime);
@@ -278,7 +272,7 @@ export class MLWasmProcessor {
           riskScore,
           riskLevel,
           contributingFactors,
-          confidence: 85 + Math.random() * 10,
+          confidence: 85 + Math.random() * 10, // NOSONAR
           timeToNextAssessment: 24 * 60 * 60 * 1000, // 24 hours
         };
       },
@@ -287,18 +281,18 @@ export class MLWasmProcessor {
         const startTime = performance.now();
 
         const anomalies: AnomalyDetection[] = [];
-        const threshold = 2.0; // Standard deviations
+        const threshold = 2; // Standard deviations
 
         // Calculate mean and standard deviation
         let sum = 0;
-        for (let i = 0; i < healthMetrics.length; i++) {
-          sum += healthMetrics[i];
+        for (const val of healthMetrics) {
+          sum += val;
         }
         const mean = sum / healthMetrics.length;
 
         let sumSquaredDiff = 0;
-        for (let i = 0; i < healthMetrics.length; i++) {
-          const diff = healthMetrics[i] - mean;
+        for (const val of healthMetrics) {
+          const diff = val - mean;
           sumSquaredDiff += diff * diff;
         }
         const stdDev = Math.sqrt(sumSquaredDiff / healthMetrics.length);
@@ -311,10 +305,10 @@ export class MLWasmProcessor {
             anomalies.push({
               type: this.getAnomalyType(i, healthMetrics.length),
               severity: Math.min(10, deviation),
-              location: {
-                x: Math.random() * 2 - 1,
-                y: Math.random() * 2 - 1,
-                z: Math.random() * 2 - 1,
+              location: { // NOSONAR: Simulated anomaly positions
+                x: Math.random() * 2 - 1, // NOSONAR
+                y: Math.random() * 2 - 1, // NOSONAR
+                z: Math.random() * 2 - 1, // NOSONAR
               },
               timestamp: Date.now(),
               description: `Anomaly detected with ${deviation.toFixed(2)}σ deviation`,
@@ -402,37 +396,26 @@ export class MLWasmProcessor {
         // Simulate real-time health stream processing
         const processedPoints = Math.min(bufferSize, buffer.length / 3);
 
-        const gaitMetrics: GaitMetrics = {
-          stepLength: 0.65 + Math.random() * 0.2,
-          stepWidth: 0.15 + Math.random() * 0.1,
-          cadence: 110 + Math.random() * 20,
-          symmetry: 85 + Math.random() * 10,
-          stability: 80 + Math.random() * 15,
+        const gaitMetrics: GaitMetrics = { // NOSONAR: Demo simulation data
+          stepLength: 0.65 + Math.random() * 0.2, // NOSONAR
+          stepWidth: 0.15 + Math.random() * 0.1, // NOSONAR
+          cadence: 110 + Math.random() * 20, // NOSONAR
+          symmetry: 85 + Math.random() * 10, // NOSONAR
+          stability: 80 + Math.random() * 15, // NOSONAR
         };
 
         const postureMetrics: PostureMetrics = {
-      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
-      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
-      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
-          headPosition: 88 + Math.random() * 8,
-      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
-      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
-      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
-          shoulderAngle: 2 + Math.random() * 4,
-      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
-      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
-      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
-          spineAlignment: 85 + Math.random() * 10,
-      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
-      // NOSONAR: Non-security use - Math.random() acceptable for demo/test/UI
-          weightDistribution: 48 + Math.random() * 4,
+          headPosition: 88 + Math.random() * 8, // NOSONAR
+          shoulderAngle: 2 + Math.random() * 4, // NOSONAR
+          spineAlignment: 85 + Math.random() * 10, // NOSONAR
+          weightDistribution: 48 + Math.random() * 4, // NOSONAR
         };
 
         const environmentalFactors: EnvironmentalFactors = {
-          surfaceStability: 90 + Math.random() * 8,
-          obstacleCount: Math.floor(Math.random() * 3),
-          lightingConditions: 75 + Math.random() * 20,
-          noiseLevel: 20 + Math.random() * 30,
+          surfaceStability: 90 + Math.random() * 8, // NOSONAR
+          obstacleCount: Math.floor(Math.random() * 3), // NOSONAR
+          lightingConditions: 75 + Math.random() * 20, // NOSONAR
+          noiseLevel: 20 + Math.random() * 30, // NOSONAR
         };
 
         const processingTime = performance.now() - startTime;
@@ -447,9 +430,9 @@ export class MLWasmProcessor {
         };
       },
 
-      allocateBuffer: (size: number): number => {
+      allocateBuffer: (_size: number): number => {
         // Simulate memory allocation (return mock pointer)
-        return Math.floor(Math.random() * 1000000);
+        return Math.floor(Math.random() * 1000000); // NOSONAR: Mock memory pointer
       },
 
       freeBuffer: (_pointer: number): void => {
@@ -488,7 +471,7 @@ export class MLWasmProcessor {
       this.performanceMetrics.operationsCount;
 
     // Simulate 90% speed improvement (as targeted in docs)
-    this.performanceMetrics.speedupFactor = 10.0; // 10x faster = 90% improvement
+    this.performanceMetrics.speedupFactor = 10; // 10x faster = 90% improvement
   }
 
   // Public API Methods

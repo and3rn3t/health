@@ -72,7 +72,7 @@ export class HealthDataProcessor {
   ): HealthMetric[] {
     return Array.from({ length: days }, (_, i) => {
       const trendComponent = trend * i;
-      const randomComponent = (Math.random() - 0.5) * variance;
+      const randomComponent = (Math.random() - 0.5) * variance; // NOSONAR: Test data generation
       const value = Math.max(0, baseValue + trendComponent + randomComponent);
 
       return {

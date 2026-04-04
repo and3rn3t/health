@@ -35,9 +35,9 @@ export function fitPlaneRansac(
   if (points.length < 3) return null;
   let best: { model: PlaneModel; inliers: number } | null = null;
   for (let i = 0; i < iterations; i++) {
-    const i1 = Math.floor(Math.random() * points.length);
-    const i2 = Math.floor(Math.random() * points.length);
-    const i3 = Math.floor(Math.random() * points.length);
+    const i1 = Math.floor(Math.random() * points.length); // NOSONAR: RANSAC algorithm, not security-sensitive
+    const i2 = Math.floor(Math.random() * points.length); // NOSONAR
+    const i3 = Math.floor(Math.random() * points.length); // NOSONAR
     if (i1 === i2 || i2 === i3 || i1 === i3) continue;
     const p1 = points[i1];
     const p2 = points[i2];
