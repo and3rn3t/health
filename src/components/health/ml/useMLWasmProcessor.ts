@@ -65,7 +65,7 @@ export function useMLWasmProcessor(options: MLWasmOptions = {}) {
       totalProcessingTime: 0,
       operationsCount: 0,
       averageProcessingTime: 0,
-      speedupFactor: 1.0,
+      speedupFactor: 1,
     },
     memoryStats: null,
   });

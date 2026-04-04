@@ -1,9 +1,10 @@
-import { z } from 'zod';
+import { secureRandomFloat } from '@/lib/secureRandom';
 import {
   messageEnvelopeSchema,
   processedHealthDataSchema,
   type MessageEnvelope,
 } from '@/schemas/health';
+import { z } from 'zod';
 
 const historicalPageSchema = z.object({
   items: z.array(processedHealthDataSchema),
@@ -91,7 +92,7 @@ export function createWSClient(opts: WSClientOptions) {
       clearInterval(heartbeat);
       opts.onClose?.(ev);
       const backoff = Math.min(
-        2 ** retry * 250 + Math.random() * 250,
+        2 ** retry * 250 + secureRandomFloat(0, 250),
         opts.maxBackoffMs ?? 10_000
       );
       retry += 1;

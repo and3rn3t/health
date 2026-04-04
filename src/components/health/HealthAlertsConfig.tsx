@@ -106,7 +106,7 @@ const HEALTH_METRICS = [
     value: 'walking_speed',
     label: 'Walking Speed',
     unit: 'mph',
-    normalRange: [2.5, 4.0],
+    normalRange: [2.5, 4],
   },
   {
     value: 'balance_score',
@@ -310,7 +310,7 @@ export default function HealthAlertsConfig({
     // Add the smart alerts
     smartAlerts.forEach((alertTemplate) => {
       const alert: HealthAlert = {
-        id: `alert_${Date.now()}_${Math.random()}`,
+        id: `alert_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`,
         name: alertTemplate.name!,
         metric: alertTemplate.metric!,
         condition: alertTemplate.condition!,
@@ -524,7 +524,7 @@ export default function HealthAlertsConfig({
                       onChange={(e) =>
                         setNewAlert((prev) => ({
                           ...prev,
-                          threshold: parseFloat(e.target.value),
+                          threshold: Number.parseFloat(e.target.value),
                         }))
                       }
                     />
@@ -544,7 +544,7 @@ export default function HealthAlertsConfig({
                         onChange={(e) =>
                           setNewAlert((prev) => ({
                             ...prev,
-                            thresholdMax: parseFloat(e.target.value),
+                            thresholdMax: Number.parseFloat(e.target.value),
                           }))
                         }
                       />
@@ -864,7 +864,7 @@ export default function HealthAlertsConfig({
                   onChange={(e) =>
                     setGlobalSettings({
                       ...globalSettings,
-                      maxAlertsPerDay: parseInt(e.target.value),
+                      maxAlertsPerDay: Number.parseInt(e.target.value),
                     })
                   }
                 />

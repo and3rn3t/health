@@ -182,9 +182,9 @@ export function EnhancedHealthDataUpload() {
     const selectedMetricConfig = METRIC_TYPES.find(
       (m) => m.value === selectedMetric
     );
-    const value = parseFloat(metricValue);
+    const value = Number.parseFloat(metricValue);
 
-    if (isNaN(value)) {
+    if (Number.isNaN(value)) {
       toast.error('Please enter a valid number');
       return;
     }

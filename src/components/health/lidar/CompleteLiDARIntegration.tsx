@@ -75,11 +75,11 @@ export const CompleteLiDARIntegration: React.FC<{
           timestamp: Date.now(),
           points: [], // Mock empty points array
           metadata: {
-            duration: 35 + Math.random() * 30,
-            pointCount: Math.floor(12000 + Math.random() * 8000),
-            accuracy: 0.92 + Math.random() * 0.08,
+            duration: 35 + Math.random() * 30, // NOSONAR: Demo simulation data
+            pointCount: Math.floor(12000 + Math.random() * 8000), // NOSONAR
+            accuracy: 0.92 + Math.random() * 0.08, // NOSONAR
             roomId: ['living-room', 'bedroom', 'kitchen'][
-              Math.floor(Math.random() * 3)
+              Math.floor(Math.random() * 3) // NOSONAR
             ],
           },
         };

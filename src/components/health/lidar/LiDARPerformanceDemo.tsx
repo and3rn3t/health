@@ -20,31 +20,31 @@ import {
 } from './SimpleLiDARComponents';
 
 // Mock data generator for demonstration
-const generateMockLiDARData = (count: number): LiDARScanData[] => {
+const generateMockLiDARData = (count: number): LiDARScanData[] => { // NOSONAR: Demo simulation data - Math.random() acceptable throughout
   return Array.from({ length: count }, (_, i) => ({
     id: `scan-${i + 1}`,
     timestamp: Date.now() - i * 60000, // One scan per minute
     points: Array.from(
-      { length: Math.floor(Math.random() * 1000) + 500 },
+      { length: Math.floor(Math.random() * 1000) + 500 }, // NOSONAR
       (_, j) => ({
         id: `point-${i}-${j}`,
         timestamp: Date.now(),
-        x: (Math.random() - 0.5) * 10,
-        y: (Math.random() - 0.5) * 10,
-        z: Math.random() * 3,
-        intensity: Math.random() * 255,
+        x: (Math.random() - 0.5) * 10, // NOSONAR
+        y: (Math.random() - 0.5) * 10, // NOSONAR
+        z: Math.random() * 3, // NOSONAR
+        intensity: Math.random() * 255, // NOSONAR
         classification: ['floor', 'wall', 'furniture', 'person'][
-          Math.floor(Math.random() * 4)
+          Math.floor(Math.random() * 4) // NOSONAR
         ],
-        confidence: 0.7 + Math.random() * 0.3,
+        confidence: 0.7 + Math.random() * 0.3, // NOSONAR
       })
     ),
     metadata: {
-      duration: 2000 + Math.random() * 3000,
-      pointCount: Math.floor(Math.random() * 1000) + 500,
-      accuracy: 0.6 + Math.random() * 0.4,
+      duration: 2000 + Math.random() * 3000, // NOSONAR
+      pointCount: Math.floor(Math.random() * 1000) + 500, // NOSONAR
+      accuracy: 0.6 + Math.random() * 0.4, // NOSONAR
       roomId: ['living-room', 'bedroom', 'kitchen'][
-        Math.floor(Math.random() * 3)
+        Math.floor(Math.random() * 3) // NOSONAR
       ],
     },
   }));

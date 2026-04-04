@@ -172,14 +172,14 @@ export const RealDataLiDARIntegration: React.FC<{
           timestamp: Date.now(),
           sensorType: 'iPhone_14_Pro',
           rawPointCloud: new Float32Array(15000), // Mock point cloud
-          processedMetrics: {
-            gaitStability: 0.85 + Math.random() * 0.1,
-            postureScore: 0.82 + Math.random() * 0.15,
-            fallRiskLevel: Math.random() > 0.8 ? 'medium' : 'low',
-            movementConfidence: 0.9 + Math.random() * 0.1,
+          processedMetrics: { // NOSONAR: Mock fallback data - Math.random() acceptable
+            gaitStability: 0.85 + Math.random() * 0.1, // NOSONAR
+            postureScore: 0.82 + Math.random() * 0.15, // NOSONAR
+            fallRiskLevel: Math.random() > 0.8 ? 'medium' : 'low', // NOSONAR
+            movementConfidence: 0.9 + Math.random() * 0.1, // NOSONAR
             environmentalSafety: 0.95,
           },
-          accuracy: 0.95 + Math.random() * 0.05,
+          accuracy: 0.95 + Math.random() * 0.05, // NOSONAR
           environmentalContext: 'living-room',
         };
 
