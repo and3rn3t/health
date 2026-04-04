@@ -17,9 +17,10 @@ applyTo: "src/worker/**/*.ts"
 - Use middleware from `src/worker/middleware.ts` for auth, CORS, logging.
 
 ## Auth
-- JWT verification via Auth0 (JWKS + HS256 fallback).
+- JWT verification via Auth0 must use an explicit algorithm allowlist: RS256 with JWKS only (no HS256 fallback).
+- Require server-side validation of token issuer (`iss`) and audience (`aud`) against expected Auth0 configuration.
 - Config in `src/lib/auth0Config.ts` and `wrangler.toml`.
-- All `/api/*` routes must validate JWT tokens server-side.
+- All protected `/api/*` routes must validate JWT tokens server-side; explicitly exempt intentionally public endpoints (for example, health checks).
 
 ## Durable Objects
 - `HealthWebSocket`: Auth-gated WebSocket upgrade with heartbeat/ping.
