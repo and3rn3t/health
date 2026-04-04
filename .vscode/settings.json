@@ -199,12 +199,12 @@
     "terminal.integrated.minimumContrastRatio": 4.5,
     "terminal.integrated.unicodeVersion": "11",
     "workbench.colorCustomizations": {
-        "terminalCommandDecoration.defaultBackground": "#2563eb",
-        "terminalCommandDecoration.defaultForeground": "#ffffff",
-        "terminalCommandDecoration.successBackground": "#10b981",
-        "terminalCommandDecoration.successForeground": "#0b2a1f",
-        "terminalCommandDecoration.errorBackground": "#ef4444",
-        "terminalCommandDecoration.errorForeground": "#ffffff"
+      "terminalCommandDecoration.defaultBackground": "#2563eb",
+      "terminalCommandDecoration.defaultForeground": "#ffffff",
+      "terminalCommandDecoration.successBackground": "#10b981",
+      "terminalCommandDecoration.successForeground": "#0b2a1f",
+      "terminalCommandDecoration.errorBackground": "#ef4444",
+      "terminalCommandDecoration.errorForeground": "#ffffff"
     },
     "powershell.codeFormatting.preset": "OTBS",
     "powershell.codeFormatting.useConstantStrings": true,
