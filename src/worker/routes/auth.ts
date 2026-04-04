@@ -120,7 +120,8 @@ route.get('/api/user/export', async (c) => {
     const headers = new Headers({ 'content-type': 'application/json' });
     const fileName = `vitalsense-export-${new Date()
       .toISOString()
-      .replaceAll(':', '-')}.json`;
+      .split(':')
+      .join('-')}.json`;
     headers.set('Content-Disposition', `attachment; filename="${fileName}"`);
     return new Response(JSON.stringify(bundle, null, 2), {
       status: 200,

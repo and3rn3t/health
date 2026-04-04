@@ -2,9 +2,10 @@
  * Authentication hook - separated for Fast Refresh compatibility
  */
 
-import { AuthContext } from '@/contexts/AuthProvider';
 import type { AuthContextType } from '@/lib/authTypes';
-import { useContext } from 'react';
+import { createContext, useContext } from 'react';
+
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);

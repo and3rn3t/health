@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import Footer from '../../components/Footer';
 import { AppleSidebarProvider } from '../../components/nav/AppleSidebar';
 import NavigationHeader from '../../components/NavigationHeader';
-import { AuthContext } from '../../contexts/AuthProvider';
+import { AuthContext } from '../../hooks/useAuth';
 import type { AuthContextType } from '../../lib/authTypes';
 import { VitalSenseColors } from '../../lib/vitalsense-colors';
 
