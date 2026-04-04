@@ -26,6 +26,7 @@ import {
   broadcastUserLiveEvent,
   deriveRateLimitKey,
   getAuthSub,
+  getVerifiedAuthSub,
   log,
   rateLimitDO,
   shouldSample,
@@ -68,9 +69,8 @@ route.post('/api/live/gait', async (c) => {
   }
   if (shouldSample(c))
     log.info('live_gait_snapshot', {
-      speed: data.speed,
-      sf: data.stepFrequency,
-      asym: data.asymmetry,
+      userId: '[redacted]',
+      capturedAt: data.capturedAt,
     });
   try {
     await broadcastUserLiveEvent(c, sub, {
@@ -159,9 +159,7 @@ route.post('/api/live/balance/progress', async (c) => {
   const data = { ...parsed.data, userId: parsed.data.userId || sub };
   if (shouldSample(c))
     log.info('balance_progress', {
-      pct: data.percent,
-      stab: data.instantaneousStability,
-      user: data.userId,
+      capturedAt: data.capturedAt,
     });
   try {
     await broadcastUserLiveEvent(c, sub, {
@@ -212,7 +210,7 @@ route.post('/api/live/balance/result', async (c) => {
     }
   }
   if (shouldSample(c))
-    log.info('balance_result', { score: data.overallScore });
+    log.info('balance_result', { capturedAt: data.capturedAt });
   try {
     await broadcastUserLiveEvent(c, sub, {
       type: 'live_health_update',
@@ -530,10 +528,14 @@ route.get('/api/health-data/analytics/:userId', async (c) => {
   if (!userId) {
     return c.json({ error: 'user_id_required' }, 400);
   }
-  const referer = c.req.header('Referer') || '';
-  const isDemoRequest =
-    referer.includes('/demo') || c.req.header('X-Demo-Mode') === 'true';
-  if (isDemoRequest && userId === 'demo-user-vitalsense') {
+
+  // Demo bypass only in non-production
+  const isProduction = c.env.ENVIRONMENT === 'production';
+  if (!isProduction) {
+    const referer = c.req.header('Referer') || '';
+    const isDemoRequest =
+      referer.includes('/demo') || c.req.header('X-Demo-Mode') === 'true';
+    if (isDemoRequest && userId === 'demo-user-vitalsense') {
     const demoAnalytics = {
       totalDataPoints: 42,
       last24Hours: 8,
@@ -546,7 +548,15 @@ route.get('/api/health-data/analytics/:userId', async (c) => {
       lastUpdated: new Date().toISOString(),
     };
     return c.json({ ok: true, analytics: demoAnalytics });
+    }
   }
+
+  // Ownership check: authenticated user can only access their own analytics
+  const sub = await getVerifiedAuthSub(c);
+  if (!sub || sub !== userId) {
+    return c.json({ error: 'forbidden' }, 403);
+  }
+
   try {
     const kv = c.env.HEALTH_KV;
     if (!kv || typeof kv.list !== 'function' || typeof kv.get !== 'function') {
@@ -696,18 +706,35 @@ function calculateHealthAnalytics(data: ProcessedHealthData[]) {
 }
 
 // ---------------------------------------------------------------------------
-// KV CRUD
+// KV CRUD (user-scoped settings)
 // ---------------------------------------------------------------------------
+
+const kvPutBodySchema = z.object({
+  value: z.unknown(),
+});
+
+const ALLOWED_KV_KEYS = new Set([
+  'preferences',
+  'dashboard-layout',
+  'alert-settings',
+  'theme',
+  'notification-settings',
+]);
 
 route.get('/api/kv/:key', async (c) => {
   try {
-    const key = c.req.param('key');
+    const sub = await getVerifiedAuthSub(c);
+    if (!sub) return c.json({ error: 'unauthorized' }, 401);
+    const rawKey = c.req.param('key');
+    if (!ALLOWED_KV_KEYS.has(rawKey))
+      return c.json({ error: 'invalid_key' }, 400);
+    const key = `user-settings:${sub}:${rawKey}`;
     const kv = c.env.HEALTH_KV;
     if (!kv?.get) {
       return c.json({ error: 'KV storage not available' }, 503);
     }
     const value = await kv.get(key);
-    return c.json({ key, value });
+    return c.json({ key: rawKey, value });
   } catch (error) {
     log.error('KV get error', {
       error: error instanceof Error ? error.message : String(error),
@@ -718,14 +745,30 @@ route.get('/api/kv/:key', async (c) => {
 
 route.put('/api/kv/:key', async (c) => {
   try {
-    const key = c.req.param('key');
-    const body = await c.req.json();
+    const sub = await getVerifiedAuthSub(c);
+    if (!sub) return c.json({ error: 'unauthorized' }, 401);
+    const rawKey = c.req.param('key');
+    if (!ALLOWED_KV_KEYS.has(rawKey))
+      return c.json({ error: 'invalid_key' }, 400);
+    let body: unknown;
+    try {
+      body = await c.req.json();
+    } catch {
+      return c.json({ error: 'invalid_json' }, 400);
+    }
+    const parsed = kvPutBodySchema.safeParse(body);
+    if (!parsed.success)
+      return c.json(
+        { error: 'validation_error', details: parsed.error.flatten() },
+        400
+      );
+    const key = `user-settings:${sub}:${rawKey}`;
     const kv = c.env.HEALTH_KV;
     if (!kv) {
       return c.json({ error: 'KV storage not available' }, 503);
     }
-    await kv.put(key, JSON.stringify(body.value));
-    return c.json({ success: true, key });
+    await kv.put(key, JSON.stringify(parsed.data.value));
+    return c.json({ success: true, key: rawKey });
   } catch (error) {
     log.error('KV put error', {
       error: error instanceof Error ? error.message : String(error),
@@ -736,13 +779,18 @@ route.put('/api/kv/:key', async (c) => {
 
 route.delete('/api/kv/:key', async (c) => {
   try {
-    const key = c.req.param('key');
+    const sub = await getVerifiedAuthSub(c);
+    if (!sub) return c.json({ error: 'unauthorized' }, 401);
+    const rawKey = c.req.param('key');
+    if (!ALLOWED_KV_KEYS.has(rawKey))
+      return c.json({ error: 'invalid_key' }, 400);
+    const key = `user-settings:${sub}:${rawKey}`;
     const kv = c.env.HEALTH_KV;
     if (!kv?.delete) {
       return c.json({ error: 'KV storage not available' }, 503);
     }
     await kv.delete(key);
-    return c.json({ success: true, key });
+    return c.json({ success: true, key: rawKey });
   } catch (error) {
     log.error('KV delete error', {
       error: error instanceof Error ? error.message : String(error),

@@ -32,12 +32,16 @@ route.get('/ws', async (c) => {
         fallRisk: FALL_RISK_ANALYTICS_VERSION,
       },
       timestamp: new Date().toISOString(),
-      // Debug info
-      debug: {
-        hasWebSocketBinding: !!c.env.HEALTH_WEBSOCKET,
-        environment: c.env.ENVIRONMENT,
-        webSocketPairAvailable: typeof WebSocketPair !== 'undefined',
-      },
+      // Debug info – only in non-production
+      ...(c.env.ENVIRONMENT && c.env.ENVIRONMENT !== 'production'
+        ? {
+            debug: {
+              hasWebSocketBinding: !!c.env.HEALTH_WEBSOCKET,
+              environment: c.env.ENVIRONMENT,
+              webSocketPairAvailable: typeof WebSocketPair !== 'undefined',
+            },
+          }
+        : {}),
     };
     const res = c.json(body, 200);
     // Strengthen caching semantics: this is informational & near-real-time (contains timestamp) so disable caching

@@ -42,13 +42,20 @@ export function registerMiddleware(app: Hono<{ Bindings: Env }>) {
     const isDemoPage = path === '/demo' || path.startsWith('/demo/');
 
     let csp: string;
+    const auth0DomainRaw =
+      (c.env && (c.env as { AUTH0_DOMAIN?: string }).AUTH0_DOMAIN) || '';
+    const auth0Origin = auth0DomainRaw
+      ? `https://${auth0DomainRaw}`
+      : 'https://*.auth0.com';
+    const baseOrigin = c.env?.BASE_URL || new URL(c.req.url).origin;
+    const wssOrigin = baseOrigin.replace(/^http/, 'ws');
     if (isLoginPage) {
       csp = [
         "default-src 'self'",
         "img-src 'self' data: https:",
         "style-src 'self' 'unsafe-inline'",
         "script-src 'self' 'unsafe-inline' https://cdn.auth0.com",
-        "connect-src 'self' https: wss:",
+        `connect-src 'self' ${auth0Origin} ${wssOrigin}`,
         "frame-ancestors 'none'",
       ].join('; ');
     } else if (isDemoPage) {
@@ -58,23 +65,18 @@ export function registerMiddleware(app: Hono<{ Bindings: Env }>) {
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "script-src 'self' 'unsafe-inline'",
-        "connect-src 'self' https: wss:",
+        `connect-src 'self' ${wssOrigin}`,
         "frame-ancestors 'none'",
       ].join('; ');
     } else {
-      const auth0Domain =
-        (c.env && (c.env as { AUTH0_DOMAIN?: string }).AUTH0_DOMAIN) || '';
-      const auth0 = auth0Domain
-        ? `https://${auth0Domain}`
-        : 'https://*.auth0.com';
       csp = [
         "default-src 'self'",
         "img-src 'self' data: https:",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "script-src 'self'",
-        "connect-src 'self' https: wss:",
-        `frame-src 'self' ${auth0} https://*.auth0.com`,
+        `connect-src 'self' ${auth0Origin} ${wssOrigin}`,
+        `frame-src 'self' ${auth0Origin} https://*.auth0.com`,
         "frame-ancestors 'none'",
       ].join('; ');
     }

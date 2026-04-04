@@ -10,7 +10,7 @@ import {
   verifyJwtWithJwks,
   writeAudit,
 } from '@/lib/security';
-import { getAuthSub, log } from '../helpers';
+import { getAuthSub, getVerifiedAuthSub, log } from '../helpers';
 import type { Env } from '../types';
 
 const route = new Hono<{ Bindings: Env }>();
@@ -128,8 +128,9 @@ route.get('/api/user/export', async (c) => {
       headers,
     });
   } catch (e) {
+    log.error('export_failed', { error: (e as Error).message });
     return c.json(
-      { error: 'export_failed', message: (e as Error).message },
+      { error: 'export_failed' },
       500
     );
   }
@@ -204,6 +205,14 @@ route.post('/api/device/auth', async (c) => {
       error: (error as Error).message,
     });
     return c.json({ error: 'invalid_json' }, 400);
+  }
+
+  // In production, the caller must be authenticated and can only mint tokens for themselves
+  if (c.env.ENVIRONMENT === 'production') {
+    const callerSub = await getVerifiedAuthSub(c);
+    if (!callerSub || callerSub !== parsed.userId) {
+      return c.json({ error: 'forbidden' }, 403);
+    }
   }
 
   const now = Math.floor(Date.now() / 1000);
@@ -371,17 +380,21 @@ route.get('/login', async (c) => {
         </div>
     </div>
 
-    <script src="https://cdn.auth0.com/js/auth0/9.23.2/auth0.min.js"></script>
+    <script src="https://cdn.auth0.com/js/auth0/9.23.2/auth0.min.js" integrity="sha384-..." crossorigin="anonymous"></script>
     <script>
+        const _auth0Domain = ${JSON.stringify(auth0Domain)};
+        const _auth0ClientId = ${JSON.stringify(auth0ClientId)};
+        const _redirectUri = ${JSON.stringify(redirectUri)};
+
         function initializeAuth0() {
             if (typeof auth0 === 'undefined') {
                 setTimeout(initializeAuth0, 100);
                 return;
             }
             window.vitalsenseAuth = new auth0.WebAuth({
-                domain: '${auth0Domain}',
-                clientID: '${auth0ClientId}',
-                redirectUri: '${redirectUri}',
+                domain: _auth0Domain,
+                clientID: _auth0ClientId,
+                redirectUri: _redirectUri,
                 responseType: 'code',
                 scope: 'openid profile email'
             });
@@ -390,11 +403,9 @@ route.get('/login', async (c) => {
         initializeAuth0();
 
     function loginWithAuth0() {
-      const domain = '${auth0Domain}';
-      const clientId = '${auth0ClientId}';
-      if (!domain || !clientId) { loginDemo(); return; }
+      if (!_auth0Domain || !_auth0ClientId) { loginDemo(); return; }
       if (!window.vitalsenseAuth) { loginDemo(); return; }
-      fetch('https://' + domain + '/.well-known/openid-configuration')
+      fetch('https://' + _auth0Domain + '/.well-known/openid-configuration')
         .then(response => {
           if (response.ok) { window.vitalsenseAuth.authorize(); }
           else { loginDemo(); }

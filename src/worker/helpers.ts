@@ -102,15 +102,67 @@ export function getAuthSub(c: Context<{ Bindings: Env }>): string | null {
   }
 }
 
+/** Verified auth sub cache scoped to a request (avoids double JWKS calls). */
+const verifiedSubCache = new WeakMap<Request, string | null>();
+
+/**
+ * Return the `sub` claim only after cryptographic JWT verification.
+ * Falls back to unverified decode in non-production environments.
+ */
+export async function getVerifiedAuthSub(
+  c: Context<{ Bindings: Env }>
+): Promise<string | null> {
+  const cached = verifiedSubCache.get(c.req.raw);
+  if (cached !== undefined) return cached;
+
+  const auth = c.req.header('Authorization') || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (!token) {
+    verifiedSubCache.set(c.req.raw, null);
+    return null;
+  }
+
+  // Non-production: allow unverified decode for local dev/testing
+  if (c.env.ENVIRONMENT !== 'production') {
+    const sub = getAuthSub(c);
+    verifiedSubCache.set(c.req.raw, sub);
+    return sub;
+  }
+
+  const jwksUrl =
+    c.env.API_JWKS_URL ||
+    (c.env.AUTH0_DOMAIN
+      ? `https://${c.env.AUTH0_DOMAIN}/.well-known/jwks.json`
+      : undefined);
+  if (!jwksUrl) {
+    verifiedSubCache.set(c.req.raw, null);
+    return null;
+  }
+
+  try {
+    const result = await verifyJwtWithJwks(token, {
+      iss:
+        c.env.API_ISS ||
+        (c.env.AUTH0_DOMAIN ? `https://${c.env.AUTH0_DOMAIN}/` : undefined),
+      aud: c.env.API_AUD,
+      jwksUrl,
+    });
+    const sub = result.ok ? (result.sub as string) ?? null : null;
+    verifiedSubCache.set(c.req.raw, sub);
+    return sub;
+  } catch {
+    verifiedSubCache.set(c.req.raw, null);
+    return null;
+  }
+}
+
 export async function requireAuth(
   c: Context<{ Bindings: Env }>
 ): Promise<boolean> {
   if (!c.env) return true;
-  const referer = c.req.header('Referer') || '';
-  const isDemoRequest =
-    referer.includes('/demo') || c.req.header('X-Demo-Mode') === 'true';
 
-  if (c.env.ENVIRONMENT !== 'production' || isDemoRequest) return true;
+  // Skip auth only in non-production environments
+  if (c.env.ENVIRONMENT !== 'production') return true;
 
   const auth = c.req.header('Authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -120,21 +172,13 @@ export async function requireAuth(
     (c.env.AUTH0_DOMAIN
       ? `https://${c.env.AUTH0_DOMAIN}/.well-known/jwks.json`
       : undefined);
-  if (jwksUrl) {
-    const check = await verifyJwtWithJwks(token, {
-      iss:
-        c.env.API_ISS ||
-        (c.env.AUTH0_DOMAIN ? `https://${c.env.AUTH0_DOMAIN}/` : undefined),
-      aud: c.env.API_AUD,
-      jwksUrl,
-    });
-    return check.ok;
-  }
-  const check = await validateBearerJWT(token, {
+  if (!jwksUrl) return false;
+  const check = await verifyJwtWithJwks(token, {
     iss:
       c.env.API_ISS ||
       (c.env.AUTH0_DOMAIN ? `https://${c.env.AUTH0_DOMAIN}/` : undefined),
     aud: c.env.API_AUD,
+    jwksUrl,
   });
   return check.ok;
 }

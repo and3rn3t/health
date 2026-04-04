@@ -1,4 +1,13 @@
 // Simple WebSocket Durable Object for testing
+import { z } from 'zod';
+
+const wsMessageSchema = z
+  .object({
+    type: z.string().max(64),
+    timestamp: z.string().optional(),
+  })
+  .passthrough();
+
 export class SimpleHealthWebSocket {
   private readonly state: DurableObjectState;
   private readonly sessions: Map<
@@ -46,12 +55,11 @@ export class SimpleHealthWebSocket {
         connectedAt: new Date(),
       });
 
-      // Send welcome message
+      // Send welcome message (do not echo userId back to client)
       server.send(
         JSON.stringify({
           type: 'connection_established',
           message: 'Connected to VitalSense WebSocket',
-          userId,
           serverTime: new Date().toISOString(),
           sessionId: crypto.randomUUID(),
         })
@@ -60,7 +68,18 @@ export class SimpleHealthWebSocket {
       // Handle messages
       server.addEventListener('message', (event) => {
         try {
-          const data = JSON.parse(event.data);
+          const raw = JSON.parse(event.data);
+          const parsed = wsMessageSchema.safeParse(raw);
+          if (!parsed.success) {
+            server.send(
+              JSON.stringify({
+                type: 'error',
+                message: 'Invalid message format',
+              })
+            );
+            return;
+          }
+          const data = parsed.data;
           if (data.type === 'ping') {
             server.send(
               JSON.stringify({
@@ -90,12 +109,9 @@ export class SimpleHealthWebSocket {
       });
     } catch (error) {
       console.error('WebSocket error:', error);
-      const err = error instanceof Error ? error : new Error(String(error));
       return new Response(
         JSON.stringify({
           error: 'WebSocket connection failed',
-          message: err.message,
-          stack: err.stack,
         }),
         {
           status: 500,
