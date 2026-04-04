@@ -194,15 +194,7 @@ export function registerMiddleware(app: Hono<{ Bindings: Env }>) {
         mutate(h);
         return new Response(res.body, { status: res.status, headers: h });
       };
-      if (env !== 'production') {
-        if (isHtml || isJs || isCss) {
-          return cloneWith((h) => {
-            h.set('Cache-Control', 'no-store, must-revalidate');
-            h.delete('ETag');
-            h.delete('Last-Modified');
-          });
-        }
-      } else {
+      if (env === 'production') {
         if (isHtml) {
           return cloneWith((h) => {
             h.set('Cache-Control', 'no-cache, must-revalidate');
@@ -213,6 +205,12 @@ export function registerMiddleware(app: Hono<{ Bindings: Env }>) {
             h.set('Cache-Control', 'public, max-age=31536000, immutable');
           });
         }
+      } else if (isHtml || isJs || isCss) {
+        return cloneWith((h) => {
+          h.set('Cache-Control', 'no-store, must-revalidate');
+          h.delete('ETag');
+          h.delete('Last-Modified');
+        });
       }
     } catch {
       // fall through with original response

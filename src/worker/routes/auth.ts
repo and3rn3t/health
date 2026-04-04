@@ -1,13 +1,10 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import {
-  decodeJwtPayload,
   decryptJSON,
   encryptJSON,
   getAesKey,
   signJwtHS256,
-  validateBearerJWT,
-  verifyJwtWithJwks,
   writeAudit,
 } from '@/lib/security';
 import { getAuthSub, getVerifiedAuthSub, log } from '../helpers';

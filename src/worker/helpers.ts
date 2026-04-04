@@ -1,9 +1,7 @@
 import type { Context } from 'hono';
 import {
-  corsHeaders,
   decodeJwtPayload,
   log,
-  validateBearerJWT,
   verifyJwtWithJwks,
 } from '@/lib/security';
 import { z } from 'zod';
@@ -312,7 +310,7 @@ export async function broadcastUserLiveEvent(
 // CORS helper (re-export)
 // ---------------------------------------------------------------------------
 
-export { corsHeaders, log };
+export { corsHeaders, log } from '@/lib/security';
 
 // ---------------------------------------------------------------------------
 // Version mismatch buffer (in-memory, ephemeral)

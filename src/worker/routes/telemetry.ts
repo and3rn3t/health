@@ -38,7 +38,7 @@ route.post('/api/_perf_ingest', async (c) => {
     const allowed = ['lcp', 'ttfb', 'hydration', 'wsConnect', 'cls', 'inp'];
     const clean: Record<string, number> = {};
     for (const k of allowed) {
-      const val = (candidate as Record<string, unknown>)[k];
+      const val = candidate[k];
       if (numeric(val)) clean[k] = Number(val);
     }
     if (Object.keys(clean).length === 0) {
@@ -89,7 +89,7 @@ route.post('/api/lidar/ingest', async (c) => {
       string,
       unknown
     >;
-    const framesRaw = (raw as Record<string, unknown>).frames || [];
+    const framesRaw = raw.frames || [];
     const frames = normalizeBatch(framesRaw as unknown[]);
     if (frames.length === 0)
       return c.json({ ok: false, error: 'no_valid_frames' }, 400);

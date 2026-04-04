@@ -1,7 +1,7 @@
 import { Hono, type Context } from 'hono';
 import { z } from 'zod';
 import { HealthDataProcessor } from '@/lib/enhancedHealthProcessor';
-import { getTtlSecondsForType, type KVNamespaceLite } from '@/lib/retention';
+import { getTtlSecondsForType } from '@/lib/retention';
 import {
   decryptJSON,
   encryptJSON,
@@ -667,7 +667,7 @@ function calculateHealthAnalytics(data: ProcessedHealthData[]) {
   };
   const metricTypes = [...new Set(data.map((d) => d.type))];
   const dataQualityAverage =
-    data.length > 0 && data.some((d) => d.dataQuality)
+    data.some((d) => d.dataQuality)
       ? data
           .filter((d) => d.dataQuality)
           .reduce(
@@ -808,54 +808,56 @@ function generateDemoHealthData() {
   const demoData = [];
   for (let i = 0; i < 7; i++) {
     const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-    demoData.push({
-      id: `demo-heart-rate-${i}`,
-      type: 'heart_rate',
-      // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
-      value: 70 + Math.floor(Math.random() * 10), // NOSONAR
-      unit: 'bpm',
-      timestamp: date.toISOString(),
-      processedAt: date.toISOString(),
-      source: {
-        userId: 'demo-user-vitalsense',
-        deviceId: 'demo-device',
-        appVersion: '1.0.0-demo',
+    demoData.push(
+      {
+        id: `demo-heart-rate-${i}`,
+        type: 'heart_rate',
+        // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
+        value: 70 + Math.floor(Math.random() * 10), // NOSONAR
+        unit: 'bpm',
+        timestamp: date.toISOString(),
+        processedAt: date.toISOString(),
+        source: {
+          userId: 'demo-user-vitalsense',
+          deviceId: 'demo-device',
+          appVersion: '1.0.0-demo',
+        },
+        // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
+        healthScore: 85 + Math.floor(Math.random() * 10), // NOSONAR
+        fallRisk: 'low',
+        anomalyScore: 0.1 + Math.random() * 0.2, // NOSONAR
+        dataQuality: {
+          completeness: 0.95,
+          accuracy: 0.98,
+          timeliness: 0.92,
+          consistency: 0.96,
+        },
       },
-      // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
-      healthScore: 85 + Math.floor(Math.random() * 10), // NOSONAR
-      fallRisk: 'low',
-      anomalyScore: 0.1 + Math.random() * 0.2, // NOSONAR
-      dataQuality: {
-        completeness: 0.95,
-        accuracy: 0.98,
-        timeliness: 0.92,
-        consistency: 0.96,
+      {
+        id: `demo-steps-${i}`,
+        type: 'steps',
+        // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
+        value: 8000 + Math.floor(Math.random() * 3000), // NOSONAR
+        unit: 'count',
+        timestamp: date.toISOString(),
+        processedAt: date.toISOString(),
+        source: {
+          userId: 'demo-user-vitalsense',
+          deviceId: 'demo-device',
+          appVersion: '1.0.0-demo',
+        },
+        // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
+        healthScore: 88 + Math.floor(Math.random() * 8), // NOSONAR
+        fallRisk: 'low',
+        anomalyScore: 0.05 + Math.random() * 0.15, // NOSONAR
+        dataQuality: {
+          completeness: 0.98,
+          accuracy: 0.95,
+          timeliness: 0.9,
+          consistency: 0.94,
+        },
       },
-    });
-    demoData.push({
-      id: `demo-steps-${i}`,
-      type: 'steps',
-      // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
-      value: 8000 + Math.floor(Math.random() * 3000), // NOSONAR
-      unit: 'count',
-      timestamp: date.toISOString(),
-      processedAt: date.toISOString(),
-      source: {
-        userId: 'demo-user-vitalsense',
-        deviceId: 'demo-device',
-        appVersion: '1.0.0-demo',
-      },
-      // NOSONAR: Demo data generation - Math.random() is acceptable for non-security use
-      healthScore: 88 + Math.floor(Math.random() * 8), // NOSONAR
-      fallRisk: 'low',
-      anomalyScore: 0.05 + Math.random() * 0.15, // NOSONAR
-      dataQuality: {
-        completeness: 0.98,
-        accuracy: 0.95,
-        timeliness: 0.9,
-        consistency: 0.94,
-      },
-    });
+    );
   }
   const sortedData = [...demoData].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
