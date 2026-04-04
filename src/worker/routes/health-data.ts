@@ -24,8 +24,10 @@ import {
 import { summarizeGaitSnapshots } from '@/lib/liveGaitSummaries';
 import {
   broadcastUserLiveEvent,
+  deriveRateLimitKey,
   getAuthSub,
   log,
+  rateLimitDO,
   shouldSample,
 } from '../helpers';
 import type { BroadKV, Env } from '../types';
@@ -39,6 +41,9 @@ const route = new Hono<{ Bindings: Env }>();
 route.post('/api/live/gait', async (c) => {
   const sub = getAuthSub(c);
   if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  const rlKey = deriveRateLimitKey(c);
+  if (!(await rateLimitDO(c, `gait:${rlKey}`, 120)))
+    return c.json({ error: 'rate_limited' }, 429);
   let body: unknown;
   try {
     body = await c.req.json();
@@ -84,6 +89,9 @@ route.post('/api/live/gait', async (c) => {
 route.post('/api/live/gait/batch', async (c) => {
   const sub = getAuthSub(c);
   if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  const rlKey = deriveRateLimitKey(c);
+  if (!(await rateLimitDO(c, `gait-batch:${rlKey}`, 30)))
+    return c.json({ error: 'rate_limited' }, 429);
   let body: unknown;
   try {
     body = await c.req.json();
@@ -100,19 +108,17 @@ route.post('/api/live/gait/batch', async (c) => {
   const kv = c.env.HEALTH_KV;
   let stored = 0;
   if (kv) {
-    for (const snap of batch.snapshots) {
-      const key = `live:gait:${sub}:${snap.capturedAt}`;
-      try {
-        await kv.put(key, JSON.stringify({ ...snap, userId: sub }), {
+    const results = await Promise.allSettled(
+      batch.snapshots.map((snap) => {
+        const key = `live:gait:${sub}:${snap.capturedAt}`;
+        return kv.put(key, JSON.stringify({ ...snap, userId: sub }), {
           expirationTtl: 3600,
         });
-        stored += 1;
-      } catch (e) {
-        log.warn('kv_put_live_gait_batch_failed', {
-          error: (e as Error).message,
-        });
-      }
-    }
+      })
+    );
+    stored = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.filter((r) => r.status === 'rejected').length;
+    if (failed > 0) log.warn('kv_put_live_gait_batch_failed', { failed });
   }
   const last = batch.snapshots[batch.snapshots.length - 1];
   try {
@@ -135,6 +141,9 @@ route.post('/api/live/gait/batch', async (c) => {
 route.post('/api/live/balance/progress', async (c) => {
   const sub = getAuthSub(c);
   if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  const rlKey = deriveRateLimitKey(c);
+  if (!(await rateLimitDO(c, `balance:${rlKey}`, 120)))
+    return c.json({ error: 'rate_limited' }, 429);
   let body: unknown;
   try {
     body = await c.req.json();
@@ -173,6 +182,9 @@ route.post('/api/live/balance/progress', async (c) => {
 route.post('/api/live/balance/result', async (c) => {
   const sub = getAuthSub(c);
   if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  const rlKey = deriveRateLimitKey(c);
+  if (!(await rateLimitDO(c, `balance-result:${rlKey}`, 30)))
+    return c.json({ error: 'rate_limited' }, 429);
   let body: unknown;
   try {
     body = await c.req.json();
@@ -302,6 +314,9 @@ route.get('/api/live/balance/recent', async (c) => {
 // ---------------------------------------------------------------------------
 
 route.post('/api/health-data/process', async (c) => {
+  const rlKey = deriveRateLimitKey(c);
+  if (!(await rateLimitDO(c, `hd-process:${rlKey}`, 60)))
+    return c.json({ error: 'rate_limited' }, 429);
   let body: unknown;
   try {
     body = await c.req.json();
@@ -373,6 +388,9 @@ route.post('/api/health-data/process', async (c) => {
 
 // Process batch of health metrics
 route.post('/api/health-data/batch', async (c) => {
+  const rlKey = deriveRateLimitKey(c);
+  if (!(await rateLimitDO(c, `hd-batch:${rlKey}`, 20)))
+    return c.json({ error: 'rate_limited' }, 429);
   let body: unknown;
   try {
     body = await c.req.json();
@@ -387,10 +405,8 @@ route.post('/api/health-data/batch', async (c) => {
     );
   }
   try {
-    const batchResults: ProcessedHealthData[] = [];
-    const errors: string[] = [];
-    for (const metric of parsed.data.metrics) {
-      try {
+    const results = await Promise.allSettled(
+      parsed.data.metrics.map(async (metric) => {
         const historicalData = await getHistoricalData(
           c,
           metric.type,
@@ -413,9 +429,19 @@ route.post('/api/health-data/batch', async (c) => {
           );
           await kv.put(key, payload, { expirationTtl: ttl });
         }
-        batchResults.push(processedData);
-      } catch (metricError) {
-        errors.push(`${metric.type}: ${(metricError as Error).message}`);
+        return processedData;
+      })
+    );
+    const batchResults: ProcessedHealthData[] = [];
+    const errors: string[] = [];
+    for (let i = 0; i < results.length; i++) {
+      const r = results[i];
+      if (r.status === 'fulfilled') {
+        batchResults.push(r.value);
+      } else {
+        errors.push(
+          `${parsed.data.metrics[i].type}: ${r.reason instanceof Error ? r.reason.message : String(r.reason)}`
+        );
       }
     }
     const corr = c.res.headers.get('X-Correlation-Id') || '';

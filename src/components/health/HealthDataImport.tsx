@@ -128,7 +128,7 @@ export default function HealthDataImport({
             {isProcessing && (
               <div className="space-y-3">
                 <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                  <Brain className="animate-Activity h-4 w-4" />
+                  <Brain className="animate-pulse h-4 w-4" />
                   {processingStage}
                 </div>
                 <Progress value={processingProgress} className="w-full" />

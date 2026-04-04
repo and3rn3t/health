@@ -1,8 +1,4 @@
-/*
- * VitalSense CSS - iOS 26 HIG Enhanced (2025)
- * Apple Health Insights & Fall Risk Monitor
- * Updated for iOS 26 design standards and enhanced accessibility
- */
+/*\n * VitalSense CSS - iOS 26 HIG Enhanced (2025)\n * Apple Health Insights & Fall Risk Monitor\n * Updated for iOS 26 design standards and enhanced accessibility\n *\n * NOTE: @tailwind directives are required per-file for PostCSS/Tailwind v3.\n * Token values below are aligned with main.css for WCAG AA compliance.\n */
 
 @tailwind base;
 @tailwind components;
@@ -77,7 +73,7 @@
   --radius: 0.5rem;
 }
 
-/* VitalSense Dark Mode */
+/* VitalSense Dark Mode — aligned with main.css WCAG AA tokens */
 [data-appearance='dark'] {
   --background: #0f172a;
   --foreground: #f8fafc;
@@ -86,13 +82,13 @@
   --popover: #1e293b;
   --popover-foreground: #f8fafc;
 
-  --primary: #3b82f6;
+  --primary: #2563eb;
   --primary-foreground: #ffffff;
   --secondary: #334155;
   --secondary-foreground: #cbd5e1;
-  --accent: #06b6d4;
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
+  --accent: #0ea5e9;
+  --accent-foreground: #333333;
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
 
   --muted: #1e293b;

@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { GAIT_ANALYTICS_VERSION } from '@/lib/gaitConfig';
 import { FALL_RISK_ANALYTICS_VERSION } from '@/lib/fallRiskConfig';
-import { log } from '../helpers';
+import { getAuthSub, log } from '../helpers';
 import type { Env } from '../types';
 
 const route = new Hono<{ Bindings: Env }>();
@@ -53,8 +53,16 @@ route.get('/ws', async (c) => {
   }
 
   try {
+    // Authenticate: require a valid sub in production, fall back to IP for non-prod
+    const sub = getAuthSub(c);
+    const isProduction = c.env.ENVIRONMENT === 'production';
+    if (isProduction && !sub) {
+      return c.text('Unauthorized – provide a valid Bearer token', 401);
+    }
+    const identity = sub || c.req.header('CF-Connecting-IP') || 'anon';
+
     log.info('Creating Durable Object instance');
-    const id = c.env.HEALTH_WEBSOCKET.newUniqueId();
+    const id = c.env.HEALTH_WEBSOCKET.idFromName(identity);
     log.info('Durable Object ID created', { id: id.toString() });
 
     const obj = c.env.HEALTH_WEBSOCKET.get(id);

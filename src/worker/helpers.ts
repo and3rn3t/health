@@ -14,12 +14,28 @@ import type { Env } from './types';
 // ---------------------------------------------------------------------------
 
 const buckets = new Map<string, { tokens: number; last: number }>();
+const BUCKET_MAX_SIZE = 10_000;
+
+function pruneBuckets(): void {
+  if (buckets.size <= BUCKET_MAX_SIZE) return;
+  const now = Date.now();
+  for (const [key, b] of buckets) {
+    if (now - b.last > 120_000) buckets.delete(key);
+  }
+  // If still over limit after time-based pruning, drop oldest entries
+  if (buckets.size > BUCKET_MAX_SIZE) {
+    const sorted = [...buckets.entries()].sort((a, b) => a[1].last - b[1].last);
+    const toRemove = sorted.slice(0, buckets.size - BUCKET_MAX_SIZE);
+    for (const [key] of toRemove) buckets.delete(key);
+  }
+}
 
 export function rateLimit(
   ip: string,
   limit = 60,
   intervalMs = 60_000
 ): boolean {
+  pruneBuckets();
   const now = Date.now();
   const b = buckets.get(ip) || { tokens: limit, last: now };
   const elapsed = now - b.last;

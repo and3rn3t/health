@@ -62,7 +62,6 @@ route.get('/demo', async (c) => {
       window.VITALSENSE_DEMO_USER = ${JSON.stringify(demoUser)};
       window.vitalsense_demo_mode = true;
       window.vitalsense_demo_user = ${JSON.stringify(demoUser)};
-      window.vitalsense_bypass_auth = true;
 
       window.addEventListener('error', function(e) {
         if (e.message && e.message.includes('slice is not a function')) {
@@ -147,7 +146,6 @@ route.get('/demo', async (c) => {
         localStorage.setItem('vitalsense_demo_mode', 'true');
         localStorage.setItem('vitalsense_demo_user', JSON.stringify(${JSON.stringify(demoUser)}));
         localStorage.setItem('VITALSENSE_DEMO_MODE', 'true');
-        localStorage.setItem('auth_bypass', 'demo');
       } catch(e) {
         if (typeof console !== 'undefined') console.warn('localStorage not available:', e);
       }

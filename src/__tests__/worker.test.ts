@@ -91,7 +91,7 @@ describe('worker: core routes and middleware', () => {
     });
     const req = new Request(
       'https://x.test/api/health-data?from=2020-01-01T00:00:00.000Z',
-      { headers: { Authorization: 'Bearer x.y.z' } }
+      { headers: { Authorization: 'Bearer test.test.fake' } } // gitguardian:ignore
     );
     const res = await app.fetch(req, env);
     expect(res.status).toBe(429);
@@ -133,7 +133,7 @@ describe('worker: core routes and middleware', () => {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        Authorization: 'Bearer header.eyJzdWIiOiJ0ZXN0LXVzZXIifQ.sig',
+        Authorization: `Bearer fake.${btoa(JSON.stringify({ sub: 'test-user' }))}.nosig`, // gitguardian:ignore
       },
       body: JSON.stringify(payload),
     });
