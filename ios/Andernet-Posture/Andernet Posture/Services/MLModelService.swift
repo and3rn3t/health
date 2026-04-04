@@ -157,10 +157,26 @@ final class MLModelService {
     }
 
     /// Pre-warm all available models on a background thread.
+    /// Loads models off the MainActor to avoid blocking the UI; only caches on MainActor.
     func warmUp() {
-        Task.detached(priority: .utility) { [weak self] in
+        Task.detached(priority: .utility) {
             for identifier in MLModelIdentifier.allCases {
-                _ = await MainActor.run { self?.loadModel(identifier) }
+                guard let url = Bundle.main.url(
+                    forResource: identifier.rawValue,
+                    withExtension: "mlmodelc"
+                ) else { continue }
+
+                let config = MLModelConfiguration()
+                config.computeUnits = .cpuAndNeuralEngine
+                do {
+                    let model = try MLModel(contentsOf: url, configuration: config)
+                    await MainActor.run { [weak self] in
+                        self?.loadedModels[identifier] = model
+                    }
+                    logger.info("Warm-up loaded: \(identifier.rawValue)")
+                } catch {
+                    logger.error("Warm-up failed for '\(identifier.rawValue)': \(error.localizedDescription)")
+                }
             }
             logger.info("Model warm-up complete.")
         }

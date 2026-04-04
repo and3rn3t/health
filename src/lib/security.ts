@@ -44,6 +44,27 @@ function safeMeta(meta?: Record<string, unknown>) {
       'name',
       'email',
       'phone',
+      // Health metric fields
+      'speed',
+      'stepFrequency',
+      'asymmetry',
+      'stability',
+      'instantaneousStability',
+      'overallScore',
+      'score',
+      'heartRate',
+      'bloodPressure',
+      'glucose',
+      'weight',
+      'bmi',
+      'percent',
+      'userId',
+      'ssn',
+      'dob',
+      'dateOfBirth',
+      'address',
+      'diagnosis',
+      'medication',
     ];
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(meta)) {

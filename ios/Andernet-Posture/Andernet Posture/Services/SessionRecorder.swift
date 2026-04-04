@@ -8,6 +8,7 @@
 import Foundation
 import simd
 import os.log
+import os
 
 /// Recording state machine states.
 enum RecordingState: Sendable {
@@ -58,8 +59,11 @@ final class DefaultSessionRecorder: SessionRecorder {
     /// Backing storage for state — always access via `state` computed property.
     private var _state: RecordingState = .idle
 
+    /// Lightweight lock for cached counters — avoids DispatchQueue.sync overhead on hot-path reads.
+    private let counterLock = OSAllocatedUnfairLock(initialState: (state: RecordingState.idle, frames: 0, steps: 0))
+
     var state: RecordingState {
-        recordingQueue.sync { _state }
+        counterLock.withLock { $0.state }
     }
 
     /// Serial queue for thread-safe access to recorded data arrays and state.
@@ -92,8 +96,8 @@ final class DefaultSessionRecorder: SessionRecorder {
         }
     }
 
-    var frameCount: Int { recordingQueue.sync { frames.count } }
-    var stepCount: Int { recordingQueue.sync { steps.count } }
+    var frameCount: Int { counterLock.withLock { $0.frames } }
+    var stepCount: Int { counterLock.withLock { $0.steps } }
 
     // MARK: State transitions
 
@@ -101,6 +105,7 @@ final class DefaultSessionRecorder: SessionRecorder {
         recordingQueue.sync {
             guard _state == .idle else { return }
             _state = .calibrating
+            counterLock.withLock { $0.state = .calibrating }
         }
         AppLogger.recorder.info("Calibration started")
     }
@@ -109,6 +114,7 @@ final class DefaultSessionRecorder: SessionRecorder {
         recordingQueue.sync {
             guard _state == .calibrating || _state == .idle else { return }
             _state = .recording
+            counterLock.withLock { $0.state = .recording }
             startDate = Date()
             accumulatedPause = 0
             // Pre-allocate arrays to reduce heap churn during recording.
@@ -122,6 +128,7 @@ final class DefaultSessionRecorder: SessionRecorder {
         recordingQueue.sync {
             guard _state == .recording else { return }
             _state = .paused
+            counterLock.withLock { $0.state = .paused }
             pauseDate = Date()
         }
     }
@@ -132,6 +139,7 @@ final class DefaultSessionRecorder: SessionRecorder {
             accumulatedPause += Date().timeIntervalSince(pd)
             pauseDate = nil
             _state = .recording
+            counterLock.withLock { $0.state = .recording }
         }
     }
 
@@ -142,6 +150,7 @@ final class DefaultSessionRecorder: SessionRecorder {
                 pauseDate = Date()
             }
             _state = .finished
+            counterLock.withLock { $0.state = .finished }
             AppLogger.recorder.info("Recording stopped — \(self.frames.count) frames, \(self.steps.count) steps")
         }
     }
@@ -155,6 +164,7 @@ final class DefaultSessionRecorder: SessionRecorder {
             frames.removeAll()
             steps.removeAll()
             motionFrames.removeAll()
+            counterLock.withLock { $0 = (.idle, 0, 0) }
         }
         AppLogger.recorder.debug("Recorder reset")
     }
@@ -180,6 +190,7 @@ final class DefaultSessionRecorder: SessionRecorder {
                 frames = decimated
             }
             frames.append(frame)
+            counterLock.withLock { $0.frames = frames.count }
         }
     }
 
@@ -187,6 +198,7 @@ final class DefaultSessionRecorder: SessionRecorder {
         recordingQueue.async { [self] in
             guard _state == .recording else { return }
             steps.append(step)
+            counterLock.withLock { $0.steps = steps.count }
         }
     }
 

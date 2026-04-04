@@ -21,7 +21,7 @@ const route = new Hono<{ Bindings: Env }>();
 // ---------------------------------------------------------------------------
 
 route.get('/api/_selftest', async (c) => {
-  if (c.env.ENVIRONMENT === 'production')
+  if (!c.env.ENVIRONMENT || c.env.ENVIRONMENT === 'production')
     return c.json({ error: 'not_available' }, 404);
   const results: Record<string, unknown> = {};
   try {
@@ -62,7 +62,7 @@ route.get('/api/_selftest', async (c) => {
 
 // Dev-only: intentional error endpoint to test error handling and analytics sampling
 route.get('/api/_error', (c) => {
-  if (c.env.ENVIRONMENT === 'production') {
+  if (!c.env.ENVIRONMENT || c.env.ENVIRONMENT === 'production') {
     return c.json({ error: 'not_available' }, 404);
   }
   throw new Error('intentional_test_error');
@@ -70,7 +70,7 @@ route.get('/api/_error', (c) => {
 
 // Dev-only: analytics ping endpoint to verify Analytics Engine writes
 route.get('/api/_analytics_ping', async (c) => {
-  if (c.env.ENVIRONMENT === 'production') {
+  if (!c.env.ENVIRONMENT || c.env.ENVIRONMENT === 'production') {
     return c.json({ error: 'not_available' }, 404);
   }
   const env = c.env.ENVIRONMENT || 'development';
@@ -94,7 +94,7 @@ route.get('/api/_analytics_ping', async (c) => {
 
 // Dev-only: diagnostics snapshot for UI (bindings, env, sampling)
 route.get('/api/_diagnostics', (c) => {
-  if (c.env.ENVIRONMENT === 'production') {
+  if (!c.env.ENVIRONMENT || c.env.ENVIRONMENT === 'production') {
     return c.json({ error: 'not_available' }, 404);
   }
   const env = c.env.ENVIRONMENT || 'development';
@@ -154,7 +154,7 @@ route.get('/api/_diagnostics', (c) => {
 
 // Dev-only: rate limit remaining probe (does not consume)
 route.get('/api/_ratelimit', async (c) => {
-  if (c.env.ENVIRONMENT === 'production')
+  if (!c.env.ENVIRONMENT || c.env.ENVIRONMENT === 'production')
     return c.json({ error: 'not_available' }, 404);
   const key =
     new URL(c.req.url).searchParams.get('key') || deriveRateLimitKey(c);

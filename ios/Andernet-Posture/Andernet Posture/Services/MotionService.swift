@@ -24,6 +24,15 @@ final class CoreMotionService: MotionService {
     private let motionManager = CMMotionManager()
     private let updateInterval: TimeInterval = 1.0 / 60.0  // 60 Hz
 
+    /// Dedicated queue for CoreMotion processing — keeps 60 Hz callbacks off the main run loop.
+    private let motionQueue: OperationQueue = {
+        let queue = OperationQueue()
+        queue.name = "com.andernet.posture.motion"
+        queue.maxConcurrentOperationCount = 1
+        queue.qualityOfService = .userInteractive
+        return queue
+    }()
+
     var isAvailable: Bool {
         motionManager.isDeviceMotionAvailable
     }
@@ -40,11 +49,13 @@ final class CoreMotionService: MotionService {
         motionManager.deviceMotionUpdateInterval = updateInterval
         motionManager.startDeviceMotionUpdates(
             using: .xArbitraryZVertical,
-            to: .main
+            to: motionQueue
         ) { [weak self] motion, _ in
             guard let motion else { return }
             let frame = MotionFrame(from: motion)
-            self?.onMotionUpdate?(frame)
+            DispatchQueue.main.async {
+                self?.onMotionUpdate?(frame)
+            }
         }
     }
 

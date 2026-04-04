@@ -9,6 +9,8 @@
  * - Session management with automatic logout
  */
 
+// Window.__VITALSENSE_CONFIG__ type is declared in src/types/global.d.ts
+
 // Safely read a Vite env var without assuming import.meta.env exists at runtime
 const safeGetViteEnv = (key: string): string | undefined => {
   try {

@@ -7,7 +7,6 @@
  */
 import { Hono } from 'hono';
 import { purgeOldHealthData, type KVNamespaceLite } from '@/lib/retention';
-import { SimpleHealthWebSocket } from '@/SimpleHealthWebSocket';
 
 import type { Env } from './worker/types';
 import { registerMiddleware } from './worker/middleware';
@@ -145,4 +144,4 @@ export class RateLimiter {
 }
 
 // Export the simple WebSocket implementation
-export { SimpleHealthWebSocket as HealthWebSocket };
+export { SimpleHealthWebSocket as HealthWebSocket } from '@/SimpleHealthWebSocket';

@@ -178,18 +178,24 @@ final class DefaultGaitAnalyzer: GaitAnalyzer {
         leftAnkleSamples.append(TimedSample(position: filteredLeftFoot, timestamp: timestamp))
         rightAnkleSamples.append(TimedSample(position: filteredRightFoot, timestamp: timestamp))
 
-        // Trim samples outside window duration (efficient: remove oldest until within window)
-        while let first = leftAnkleSamples.first, timestamp - first.timestamp > windowDurationSec * 2 {
-            leftAnkleSamples.removeFirst()
+        // Trim samples outside window duration (batch removal instead of per-element)
+        if let cutoff = leftAnkleSamples.firstIndex(where: { timestamp - $0.timestamp <= windowDurationSec * 2 }) {
+            if cutoff > 0 { leftAnkleSamples.removeSubrange(0..<cutoff) }
+        } else if !leftAnkleSamples.isEmpty {
+            leftAnkleSamples.removeAll()
         }
-        while let first = rightAnkleSamples.first, timestamp - first.timestamp > windowDurationSec * 2 {
-            rightAnkleSamples.removeFirst()
+        if let cutoff = rightAnkleSamples.firstIndex(where: { timestamp - $0.timestamp <= windowDurationSec * 2 }) {
+            if cutoff > 0 { rightAnkleSamples.removeSubrange(0..<cutoff) }
+        } else if !rightAnkleSamples.isEmpty {
+            rightAnkleSamples.removeAll()
         }
 
         // Track root position for walking speed
         recentPositions.append((pos: root, time: timestamp))
-        while let first = recentPositions.first, timestamp - first.time > speedWindowSec {
-            recentPositions.removeFirst()
+        if let cutoff = recentPositions.firstIndex(where: { timestamp - $0.time <= speedWindowSec }) {
+            if cutoff > 0 { recentPositions.removeSubrange(0..<cutoff) }
+        } else if !recentPositions.isEmpty {
+            recentPositions.removeAll()
         }
 
         // Track max foot height during swing for clearance (use filtered values)
@@ -248,8 +254,10 @@ final class DefaultGaitAnalyzer: GaitAnalyzer {
         }
 
         // Cadence
-        while let first = stepTimestamps.first, timestamp - first > cadenceWindowSec {
-            stepTimestamps.removeFirst()
+        if let cutoff = stepTimestamps.firstIndex(where: { timestamp - $0 <= cadenceWindowSec }) {
+            if cutoff > 0 { stepTimestamps.removeSubrange(0..<cutoff) }
+        } else if !stepTimestamps.isEmpty {
+            stepTimestamps.removeAll()
         }
         let cadence = computeCadence()
 
