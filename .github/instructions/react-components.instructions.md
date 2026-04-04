@@ -18,7 +18,7 @@ applyTo: "src/components/**/*.{ts,tsx}"
 
 ## UI Primitives
 - Compose from existing `src/components/ui/*` (Radix-based).
-- Icons: `lucide-react` via `src/lib/icons.ts`, or `@phosphor-icons/react`.
+- Icons: use the standardized `src/lib/icons.ts` import pathway.
 - Do NOT create new UI primitives that duplicate existing ones in `ui/`.
 
 ## State & Data
