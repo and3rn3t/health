@@ -57,4 +57,7 @@ enum AppLogger {
     
     /// Local notifications (reminders, alerts)
     static let notifications = Logger(subsystem: subsystem, category: "Notifications")
+
+    /// WebSocket bridge to Cloudflare Workers
+    static let webSocket = Logger(subsystem: subsystem, category: "WebSocket")
 }

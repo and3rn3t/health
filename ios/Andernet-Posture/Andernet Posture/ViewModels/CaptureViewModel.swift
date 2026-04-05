@@ -25,6 +25,7 @@ final class CaptureViewModel {
     private let sensorPipeline: SensorPipeline
     private let recorder: any SessionRecorder
     private let healthKitService: any HealthKitService
+    private var webSocketBridge: WebSocketBridge?
 
     // MARK: - Published state
 
@@ -127,13 +128,15 @@ final class CaptureViewModel {
         gaitPipeline: GaitPipeline = GaitPipeline(),
         sensorPipeline: SensorPipeline = SensorPipeline(),
         recorder: any SessionRecorder = DefaultSessionRecorder(),
-        healthKitService: any HealthKitService = DefaultHealthKitService()
+        healthKitService: any HealthKitService = DefaultHealthKitService(),
+        webSocketBridge: WebSocketBridge? = nil
     ) {
         self.posturePipeline = posturePipeline
         self.gaitPipeline = gaitPipeline
         self.sensorPipeline = sensorPipeline
         self.recorder = recorder
         self.healthKitService = healthKitService
+        self.webSocketBridge = webSocketBridge
 
         setupCallbacks()
     }
@@ -360,6 +363,7 @@ final class CaptureViewModel {
             let speed = session.averageWalkingSpeedMPS
             let stride = session.averageStrideLengthM
             let asymmetry = session.gaitAsymmetryPercent.map { $0 / 100.0 }
+            let dsp = session.averageDoubleSupportPercent
             let distance = session.totalDistanceM   // Now tracked from sensors
             let start = session.date.addingTimeInterval(-session.duration)
             let end = session.date
@@ -370,6 +374,7 @@ final class CaptureViewModel {
                         walkingSpeed: speed,
                         strideLength: stride,
                         asymmetry: asymmetry,
+                        doubleSupportPercent: dsp,
                         distance: distance,
                         start: start,
                         end: end
@@ -379,6 +384,11 @@ final class CaptureViewModel {
                     AppLogger.healthKit.error("HealthKit session auto-save failed: \(error.localizedDescription)")
                 }
             }
+        }
+
+        // WebSocket sync — send session summary to web dashboard
+        if FeatureFlags.shared.isEnabled(.webSocketSync) {
+            webSocketBridge?.sendSessionSummary(session)
         }
 
         recorder.reset()

@@ -19,6 +19,7 @@ struct Andernet_PostureApp: App {
     @State private var cloudSyncService = CloudSyncService()
     @State private var mlModelService = MLModelService.shared
     @State private var deepLinkHandler = DeepLinkHandler()
+    @State private var webSocketBridge = WebSocketBridge()
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -106,6 +107,7 @@ struct Andernet_PostureApp: App {
         .environment(cloudSyncService)
         .environment(mlModelService)
         .environment(deepLinkHandler)
+        .environment(webSocketBridge)
         .onChange(of: scenePhase) { oldPhase, newPhase in
             handleScenePhaseChange(from: oldPhase, to: newPhase)
         }
@@ -118,12 +120,16 @@ struct Andernet_PostureApp: App {
         case .active:
             logger.info("App became active")
             // CloudSyncService will check for stale syncs via its own notification observer
+            if FeatureFlags.shared.isEnabled(.webSocketSync) {
+                webSocketBridge.connect()
+            }
             
         case .inactive:
             logger.debug("App became inactive")
             
         case .background:
             logger.info("App entered background")
+            webSocketBridge.disconnect()
             // Save any pending changes (SwiftData auto-saves, but be explicit)
             do {
                 try sharedModelContainer.mainContext.save()

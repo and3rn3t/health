@@ -34,6 +34,7 @@ enum Feature: String, CaseIterable, Identifiable, Sendable {
     // Sync
     case cloudSync                = "feature.cloudSync"
     case healthKitSync            = "feature.healthKitSync"
+    case webSocketSync            = "feature.webSocketSync"
 
     // Clinical
     case clinicalTests            = "feature.clinicalTests"
@@ -58,6 +59,7 @@ enum Feature: String, CaseIterable, Identifiable, Sendable {
         case .multiSessionExport:     return String(localized: "Multi-Session Export")
         case .cloudSync:              return String(localized: "iCloud Sync")
         case .healthKitSync:          return String(localized: "Apple Health Sync")
+        case .webSocketSync:          return String(localized: "Live Dashboard Sync")
         case .clinicalTests:          return String(localized: "Clinical Tests")
         case .sixMinuteWalkTest:      return String(localized: "6-Minute Walk Test")
         case .arOverlay:              return String(localized: "AR Skeleton Overlay")
@@ -78,6 +80,7 @@ enum Feature: String, CaseIterable, Identifiable, Sendable {
         case .multiSessionExport:     return String(localized: "Export multiple sessions at once")
         case .cloudSync:              return String(localized: "Sync session data across devices via iCloud")
         case .healthKitSync:          return String(localized: "Auto-save session data to Apple Health")
+        case .webSocketSync:          return String(localized: "Sync live metrics and sessions to the web dashboard")
         case .clinicalTests:          return String(localized: "Access guided clinical test protocols")
         case .sixMinuteWalkTest:      return String(localized: "Full 6MWT protocol with ATS/ERS guidelines")
         case .arOverlay:              return String(localized: "Show skeleton overlay during AR capture")
@@ -98,6 +101,7 @@ enum Feature: String, CaseIterable, Identifiable, Sendable {
         case .multiSessionExport:     return true
         case .cloudSync:              return true
         case .healthKitSync:          return false   // Requires explicit consent
+        case .webSocketSync:          return false   // Opt-in — requires network
         case .clinicalTests:          return true
         case .sixMinuteWalkTest:      return true
         case .arOverlay:              return true

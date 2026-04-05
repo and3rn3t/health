@@ -56,6 +56,7 @@ protocol HealthKitService {
         walkingSpeed: Double?,    // m/s
         strideLength: Double?,    // m
         asymmetry: Double?,       // 0–1 (percentage / 100)
+        doubleSupportPercent: Double?, // 0–100
         distance: Double?,        // meters
         start: Date,
         end: Date
@@ -143,6 +144,7 @@ final class DefaultHealthKitService: HealthKitService {
         walkingSpeed: Double?,
         strideLength: Double?,
         asymmetry: Double?,
+        doubleSupportPercent: Double?,
         distance: Double?,
         start: Date,
         end: Date
@@ -175,6 +177,11 @@ final class DefaultHealthKitService: HealthKitService {
         if let asym = asymmetry, asym > 0 {
             let qty = HKQuantity(unit: .percent(), doubleValue: asym * 100)
             samples.append(HKQuantitySample(type: .init(.walkingAsymmetryPercentage), quantity: qty, start: start, end: end))
+        }
+
+        if let dsp = doubleSupportPercent, dsp > 0 {
+            let qty = HKQuantity(unit: .percent(), doubleValue: dsp)
+            samples.append(HKQuantitySample(type: .init(.walkingDoubleSupportPercentage), quantity: qty, start: start, end: end))
         }
 
         guard !samples.isEmpty else { return }

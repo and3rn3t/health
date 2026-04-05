@@ -233,6 +233,7 @@ final class SensorOnlyCaptureViewModel {
                         walkingSpeed: walkSpeed,
                         strideLength: stride,
                         asymmetry: nil,
+                        doubleSupportPercent: nil,
                         distance: dist,
                         start: start,
                         end: end

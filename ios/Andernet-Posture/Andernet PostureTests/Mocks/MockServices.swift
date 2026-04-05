@@ -314,7 +314,8 @@ final class MockHealthKitService: HealthKitService {
     func requestAuthorization() async throws { requestAuthCallCount += 1 }
 
     func saveSession(steps: Int, walkingSpeed: Double?, strideLength: Double?,
-                     asymmetry: Double?, distance: Double?,
+                     asymmetry: Double?, doubleSupportPercent: Double?,
+                     distance: Double?,
                      start: Date, end: Date) async throws {
         saveSessionCallCount += 1
     }
