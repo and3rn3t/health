@@ -90,7 +90,7 @@ final class SessionDetailViewModel {
         let frames = session.decodedFrames
         let steps = session.decodedStepEvents
 
-        guard !frames.isEmpty else {
+        guard let firstFrame = frames.first else {
             buildSummary()
             buildClinicalSections()
             sessionAnalysis = PerformanceMonitor.measure(.sessionAnalysis) {
@@ -98,7 +98,7 @@ final class SessionDetailViewModel {
             }
             return
         }
-        let startTime = frames.first!.timestamp
+        let startTime = firstFrame.timestamp
 
         // Down-sample to ~2 pts/sec for chart performance
         let targetInterval = 0.5

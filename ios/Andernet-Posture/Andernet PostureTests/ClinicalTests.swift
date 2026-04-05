@@ -303,7 +303,7 @@ struct PainRiskEngineTests {
             "Forward head should generate neck-region alert"
         )
         #expect(
-            neckAlerts.first!.riskScore > 20,
+            (neckAlerts.first?.riskScore ?? 0) > 20,
             "Neck risk score should be elevated with low CVA"
         )
     }

@@ -122,8 +122,8 @@ final class CorePedometerService: PedometerService {
             )
 
             self.lock.withLock { self.latestSnapshotBacking = snapshot }
-            DispatchQueue.main.async {
-                self.onPedometerUpdate?(snapshot)
+            Task { @MainActor [weak self] in
+                self?.onPedometerUpdate?(snapshot)
             }
         }
     }

@@ -53,7 +53,7 @@ final class CoreMotionService: MotionService {
         ) { [weak self] motion, _ in
             guard let motion else { return }
             let frame = MotionFrame(from: motion)
-            DispatchQueue.main.async {
+            Task { @MainActor [weak self] in
                 self?.onMotionUpdate?(frame)
             }
         }
