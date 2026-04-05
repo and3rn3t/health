@@ -229,6 +229,13 @@ export function shouldSampleWithKey(
 // Analytics
 // ---------------------------------------------------------------------------
 
+/** Resolve the first available Analytics Engine dataset from env bindings. */
+export function getAnalyticsDataset(
+  env: Env
+): AnalyticsEngineDataset | undefined {
+  return env.ANALYTICS || env.HEALTH_ANALYTICS || env.PERFORMANCE_ANALYTICS || env.SECURITY_ANALYTICS;
+}
+
 export async function pushAnalytics(
   c: Context<{ Bindings: Env }>,
   data: {
@@ -241,11 +248,7 @@ export async function pushAnalytics(
   }
 ): Promise<void> {
   try {
-    const ds =
-      c.env.ANALYTICS ||
-      c.env.HEALTH_ANALYTICS ||
-      c.env.PERFORMANCE_ANALYTICS ||
-      c.env.SECURITY_ANALYTICS;
+    const ds = getAnalyticsDataset(c.env);
     if (!ds) return;
     ds.writeDataPoint({
       blobs: [
@@ -269,11 +272,7 @@ export function writeAnalyticsPoint(
   doubles: number[]
 ): boolean {
   try {
-    const ds =
-      c.env.ANALYTICS ||
-      c.env.HEALTH_ANALYTICS ||
-      c.env.PERFORMANCE_ANALYTICS ||
-      c.env.SECURITY_ANALYTICS;
+    const ds = getAnalyticsDataset(c.env);
     if (!ds) return false;
     const safeBlobs = blobs.map((b) => (b ?? '').toString().slice(0, 512));
     const safeDoubles = doubles.map((n) => (Number.isFinite(n) ? n : -1));

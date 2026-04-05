@@ -100,28 +100,6 @@ route.get('/demo', async (c) => {
 
   window.VITALSENSE_DISABLE_WEBSOCKET = true;
 
-      window.safeSlice = function(arr, ...args) {
-        if (!Array.isArray(arr)) return [];
-        return arr.slice(...args);
-      };
-
-      window.addEventListener('error', function(e) {
-        if (e.message && e.message.includes('slice is not a function')) {
-          if (typeof console !== 'undefined') console.warn('Array slice error caught and handled:', e);
-          e.preventDefault();
-          return false;
-        }
-      });
-
-      const originalArraySlice = Array.prototype.slice;
-      Array.prototype.slice = function(...args) {
-        if (this == null) {
-          if (typeof console !== 'undefined') console.warn('slice called on null/undefined, returning empty array');
-          return [];
-        }
-        return originalArraySlice.apply(this, args);
-      };
-
       const OriginalWebSocket = window.WebSocket;
       window.WebSocket = function(url, protocols) {
         if (typeof console !== 'undefined') console.log('🛡️ Demo mode: WebSocket connection blocked to', url);

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { normalizeBatch } from '@/sensors/lidar/normalize';
 import {
   broadcastUserLiveEvent,
+  getAnalyticsDataset,
   getAuthSub,
   log,
   pushVersionMismatch,
@@ -103,10 +104,7 @@ route.post('/api/lidar/ingest', async (c) => {
       });
     }
     try {
-      const ds =
-        c.env.PERFORMANCE_ANALYTICS ||
-        c.env.ANALYTICS ||
-        c.env.HEALTH_ANALYTICS;
+      const ds = c.env.PERFORMANCE_ANALYTICS || getAnalyticsDataset(c.env);
       if (ds) {
         const m = last.metrics;
         const ingestInterval =
@@ -148,10 +146,7 @@ route.post('/api/client-analytics/version-mismatch', async (c) => {
       pushVersionMismatch(rec);
     }
     try {
-      const ds =
-        c.env.SECURITY_ANALYTICS ||
-        c.env.ANALYTICS ||
-        c.env.PERFORMANCE_ANALYTICS;
+      const ds = c.env.SECURITY_ANALYTICS || getAnalyticsDataset(c.env);
       if (ds) {
         ds.writeDataPoint({
           blobs: [
@@ -188,21 +183,22 @@ route.get('/api/_debug/version-mismatch-events', (c) => {
 });
 
 // Client-side error telemetry
+const clientErrorSchema = z.object({
+  message: z.string().min(1).max(2000),
+  source: z
+    .enum(['window.onerror', 'unhandledrejection', 'console.error'])
+    .default('window.onerror'),
+  route: z.string().max(512).optional(),
+  sessionId: z.string().max(128).optional(),
+  ua: z.string().max(512).optional(),
+  stack: z.string().max(4000).optional(),
+  meta: z.record(z.string().max(256)).optional(),
+});
+
 route.post('/api/client-error', async (c) => {
   try {
-    const schema = z.object({
-      message: z.string().min(1).max(2000),
-      source: z
-        .enum(['window.onerror', 'unhandledrejection', 'console.error'])
-        .default('window.onerror'),
-      route: z.string().max(512).optional(),
-      sessionId: z.string().max(128).optional(),
-      ua: z.string().max(512).optional(),
-      stack: z.string().max(4000).optional(),
-      meta: z.record(z.string().max(256)).optional(),
-    });
     const body = await c.req.json().catch(() => null as unknown);
-    const parsed = schema.safeParse(body);
+    const parsed = clientErrorSchema.safeParse(body);
     if (!parsed.success) {
       return c.json(
         { error: 'validation_error', details: parsed.error.flatten() },
@@ -258,30 +254,31 @@ route.post('/api/client-error', async (c) => {
 });
 
 // WebSocket telemetry ingestion (client-reported)
+const wsTelemetrySchema = z.object({
+  event: z.enum([
+    'connect_start',
+    'connect_success',
+    'connect_error',
+    'close',
+    'retry',
+    'ping_timeout',
+    'pong_received',
+    'message_error',
+  ]),
+  url: z.string().max(2048).optional(),
+  attempt: z.number().int().min(0).max(100).optional(),
+  code: z.number().int().min(0).max(6000).optional(),
+  reason: z.string().max(500).optional(),
+  backoffMs: z.number().int().min(0).max(600000).optional(),
+  sinceMs: z.number().int().min(0).max(600000).optional(),
+  rttMs: z.number().int().min(0).max(120000).optional(),
+  readyState: z.number().int().min(0).max(3).optional(),
+});
+
 route.post('/api/ws-telemetry', async (c) => {
   try {
-    const schema = z.object({
-      event: z.enum([
-        'connect_start',
-        'connect_success',
-        'connect_error',
-        'close',
-        'retry',
-        'ping_timeout',
-        'pong_received',
-        'message_error',
-      ]),
-      url: z.string().max(2048).optional(),
-      attempt: z.number().int().min(0).max(100).optional(),
-      code: z.number().int().min(0).max(6000).optional(),
-      reason: z.string().max(500).optional(),
-      backoffMs: z.number().int().min(0).max(600000).optional(),
-      sinceMs: z.number().int().min(0).max(600000).optional(),
-      rttMs: z.number().int().min(0).max(120000).optional(),
-      readyState: z.number().int().min(0).max(3).optional(),
-    });
     const body = await c.req.json().catch(() => null as unknown);
-    const parsed = schema.safeParse(body);
+    const parsed = wsTelemetrySchema.safeParse(body);
     if (!parsed.success) {
       return c.json(
         { error: 'validation_error', details: parsed.error.flatten() },

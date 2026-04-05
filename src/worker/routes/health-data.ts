@@ -233,19 +233,19 @@ route.post('/api/live/balance/result', async (c) => {
 async function fetchGaitSnapshots(kv: BroadKV, sub: string, limit: number) {
   if (!kv.list) return [] as LiveGaitSnapshot[];
   const list = await kv.list({ prefix: `live:gait:${sub}:`, limit });
-  const out: LiveGaitSnapshot[] = [];
-  if (!kv.get) return out;
-  for (const k of list.keys) {
-    try {
-      const raw = await kv.get(k.name);
-      if (!raw) continue;
+  if (!kv.get) return [] as LiveGaitSnapshot[];
+  const results = await Promise.allSettled(
+    list.keys.map(async (k) => {
+      const raw = await kv.get!(k.name);
+      if (!raw) return null;
       const parsed = JSON.parse(raw) as LiveGaitSnapshot;
-      if (parsed && typeof parsed.capturedAt === 'string') out.push(parsed);
-    } catch (e) {
-      log.warn('kv_get_gait_failed', { error: (e as Error).message });
-    }
-  }
-  return out;
+      return parsed && typeof parsed.capturedAt === 'string' ? parsed : null;
+    })
+  );
+  return results
+    .filter((r): r is PromiseFulfilledResult<LiveGaitSnapshot | null> => r.status === 'fulfilled')
+    .map((r) => r.value)
+    .filter((v): v is LiveGaitSnapshot => v !== null);
 }
 
 route.get('/api/live/gait/recent', async (c) => {
@@ -276,19 +276,19 @@ async function fetchBalanceResults(kv: BroadKV, sub: string, limit: number) {
     prefix: `live:balance_result:${sub}:`,
     limit,
   });
-  const out: LiveBalanceResult[] = [];
-  if (!kv.get) return out;
-  for (const k of list.keys) {
-    try {
-      const raw = await kv.get(k.name);
-      if (!raw) continue;
+  if (!kv.get) return [] as LiveBalanceResult[];
+  const results = await Promise.allSettled(
+    list.keys.map(async (k) => {
+      const raw = await kv.get!(k.name);
+      if (!raw) return null;
       const parsed = JSON.parse(raw) as LiveBalanceResult;
-      if (parsed && typeof parsed.capturedAt === 'string') out.push(parsed);
-    } catch (e) {
-      log.warn('kv_get_balance_failed', { error: (e as Error).message });
-    }
-  }
-  return out;
+      return parsed && typeof parsed.capturedAt === 'string' ? parsed : null;
+    })
+  );
+  return results
+    .filter((r): r is PromiseFulfilledResult<LiveBalanceResult | null> => r.status === 'fulfilled')
+    .map((r) => r.value)
+    .filter((v): v is LiveBalanceResult => v !== null);
 }
 
 route.get('/api/live/balance/recent', async (c) => {
@@ -506,20 +506,21 @@ async function fetchUserHealthData(
   }
   const prefix = 'health:';
   const listing = await kv.list({ prefix, limit: 100 });
-  const recentData: ProcessedHealthData[] = [];
-  for (const k of listing.keys) {
-    const raw = await kv.get(k.name);
-    if (!raw) continue;
-    const objUnknown = await parseKVData(raw, keyObj);
-    if (!objUnknown) continue;
-    const parsedRow = processedHealthDataSchema.safeParse(objUnknown);
-    if (!parsedRow.success) continue;
-    const obj = parsedRow.data;
-    if (obj.source.userId === userId) {
-      recentData.push(obj);
-    }
-  }
-  return recentData;
+  const results = await Promise.allSettled(
+    listing.keys.map(async (k) => {
+      const raw = await kv.get!(k.name);
+      if (!raw) return null;
+      const objUnknown = await parseKVData(raw, keyObj);
+      if (!objUnknown) return null;
+      const parsedRow = processedHealthDataSchema.safeParse(objUnknown);
+      if (!parsedRow.success) return null;
+      return parsedRow.data.source.userId === userId ? parsedRow.data : null;
+    })
+  );
+  return results
+    .filter((r): r is PromiseFulfilledResult<ProcessedHealthData | null> => r.status === 'fulfilled')
+    .map((r) => r.value)
+    .filter((v): v is ProcessedHealthData => v !== null);
 }
 
 // Health analytics summary
@@ -598,33 +599,21 @@ async function getHistoricalData(
     const listing = await kv.list({ prefix, limit: 30 });
     const encKeyB64 = c.env.ENC_KEY;
     const keyObj = encKeyB64 ? await getAesKey(encKeyB64) : null;
-    const historicalData: ProcessedHealthData[] = [];
-    for (const k of listing.keys) {
-      const raw = await kv.get(k.name);
-      if (!raw) continue;
-      const objUnknown = keyObj
-        ? await (async () => {
-            try {
-              return await decryptJSON<unknown>(keyObj, raw);
-            } catch {
-              return null;
-            }
-          })()
-        : (() => {
-            try {
-              return JSON.parse(raw) as unknown;
-            } catch {
-              return null;
-            }
-          })();
-      if (!objUnknown) continue;
-      const parsedRow = processedHealthDataSchema.safeParse(objUnknown);
-      if (!parsedRow.success) continue;
-      const obj = parsedRow.data;
-      if (obj.source.userId === userId) {
-        historicalData.push(obj);
-      }
-    }
+    const results = await Promise.allSettled(
+      listing.keys.map(async (k) => {
+        const raw = await kv.get!(k.name);
+        if (!raw) return null;
+        const objUnknown = await parseKVData(raw, keyObj);
+        if (!objUnknown) return null;
+        const parsedRow = processedHealthDataSchema.safeParse(objUnknown);
+        if (!parsedRow.success) return null;
+        return parsedRow.data.source.userId === userId ? parsedRow.data : null;
+      })
+    );
+    const historicalData = results
+      .filter((r): r is PromiseFulfilledResult<ProcessedHealthData | null> => r.status === 'fulfilled')
+      .map((r) => r.value)
+      .filter((v): v is ProcessedHealthData => v !== null);
     return historicalData.sort(
       (a, b) =>
         new Date(b.processedAt).getTime() - new Date(a.processedAt).getTime()
@@ -638,70 +627,76 @@ async function getHistoricalData(
 // Health analytics calculator
 // ---------------------------------------------------------------------------
 
+function accumulateMetric(
+  d: ProcessedHealthData,
+  acc: {
+    last24h: number; last7d: number;
+    healthScoreSum: number; healthScoreCount: number;
+    criticalAlerts: number; warningAlerts: number;
+    fallRisk: Record<string, number>;
+    metricTypeSet: Set<string>;
+    dqSum: number; dqCount: number;
+    latestTime: number; latestProcessedAt: string | null;
+  },
+  now: number
+) {
+  const DAY_MS = 86_400_000;
+  const age = now - new Date(d.processedAt).getTime();
+  if (age < DAY_MS) acc.last24h++;
+  if (age < 7 * DAY_MS) acc.last7d++;
+  if (d.healthScore !== undefined) {
+    acc.healthScoreSum += d.healthScore || 0;
+    acc.healthScoreCount++;
+  }
+  if (d.alert?.level === 'critical') acc.criticalAlerts++;
+  else if (d.alert?.level === 'warning') acc.warningAlerts++;
+  if (d.fallRisk && d.fallRisk in acc.fallRisk) acc.fallRisk[d.fallRisk]++;
+  acc.metricTypeSet.add(d.type);
+  if (d.dataQuality) {
+    acc.dqSum +=
+      (d.dataQuality.completeness + d.dataQuality.accuracy +
+       d.dataQuality.timeliness + d.dataQuality.consistency) / 4;
+    acc.dqCount++;
+  }
+  const t = new Date(d.processedAt).getTime();
+  if (t > acc.latestTime) {
+    acc.latestTime = t;
+    acc.latestProcessedAt = d.processedAt;
+  }
+}
+
 function calculateHealthAnalytics(data: ProcessedHealthData[]) {
   const now = Date.now();
-  const last24h = data.filter(
-    (d) => now - new Date(d.processedAt).getTime() < 24 * 60 * 60 * 1000
-  );
-  const last7d = data.filter(
-    (d) => now - new Date(d.processedAt).getTime() < 7 * 24 * 60 * 60 * 1000
-  );
-  const averageHealthScore =
-    data.length > 0
-      ? data
-          .filter((d) => d.healthScore !== undefined)
-          .reduce((sum, d) => sum + (d.healthScore || 0), 0) /
-        data.filter((d) => d.healthScore !== undefined).length
-      : 0;
-  const criticalAlerts = data.filter(
-    (d) => d.alert?.level === 'critical'
-  ).length;
-  const warningAlerts = data.filter(
-    (d) => d.alert?.level === 'warning'
-  ).length;
-  const fallRiskDistribution = {
-    low: data.filter((d) => d.fallRisk === 'low').length,
-    moderate: data.filter((d) => d.fallRisk === 'moderate').length,
-    high: data.filter((d) => d.fallRisk === 'high').length,
-    critical: data.filter((d) => d.fallRisk === 'critical').length,
+  const acc = {
+    last24h: 0, last7d: 0,
+    healthScoreSum: 0, healthScoreCount: 0,
+    criticalAlerts: 0, warningAlerts: 0,
+    fallRisk: { low: 0, moderate: 0, high: 0, critical: 0 } as Record<string, number>,
+    metricTypeSet: new Set<string>(),
+    dqSum: 0, dqCount: 0,
+    latestTime: 0, latestProcessedAt: null as string | null,
   };
-  const metricTypes = [...new Set(data.map((d) => d.type))];
-  const dataQualityAverage =
-    data.some((d) => d.dataQuality)
-      ? data
-          .filter((d) => d.dataQuality)
-          .reduce(
-            (sum, d) =>
-              sum +
-              (d.dataQuality!.completeness +
-                d.dataQuality!.accuracy +
-                d.dataQuality!.timeliness +
-                d.dataQuality!.consistency) /
-                4,
-            0
-          ) / data.filter((d) => d.dataQuality).length
-      : 0;
+
+  for (const d of data) accumulateMetric(d, acc, now);
+
+  const averageHealthScore =
+    acc.healthScoreCount > 0 ? acc.healthScoreSum / acc.healthScoreCount : 0;
+
   return {
     totalDataPoints: data.length,
-    last24Hours: last24h.length,
-    last7Days: last7d.length,
+    last24Hours: acc.last24h,
+    last7Days: acc.last7d,
     averageHealthScore: Math.round(averageHealthScore * 10) / 10,
     alerts: {
-      critical: criticalAlerts,
-      warning: warningAlerts,
-      total: criticalAlerts + warningAlerts,
+      critical: acc.criticalAlerts,
+      warning: acc.warningAlerts,
+      total: acc.criticalAlerts + acc.warningAlerts,
     },
-    fallRiskDistribution,
-    metricTypes,
-    dataQualityScore: Math.round(dataQualityAverage * 10) / 10,
-    lastUpdated:
-      data.length > 0
-        ? [...data].sort(
-            (a, b) =>
-              new Date(b.processedAt).getTime() -
-              new Date(a.processedAt).getTime()
-          )[0].processedAt
-        : null,
+    fallRiskDistribution: acc.fallRisk,
+    metricTypes: [...acc.metricTypeSet],
+    dataQualityScore:
+      acc.dqCount > 0 ? Math.round((acc.dqSum / acc.dqCount) * 10) / 10 : 0,
+    lastUpdated: acc.latestProcessedAt,
   };
 }
 
