@@ -57,7 +57,7 @@ protocol SessionRecorder {
 final class DefaultSessionRecorder: SessionRecorder {
 
     /// Backing storage for state — always access via `state` computed property.
-    private var _state: RecordingState = .idle
+    private var stateBacking: RecordingState = .idle
 
     /// Lightweight lock for cached counters — avoids DispatchQueue.sync overhead on hot-path reads.
     private let counterLock = OSAllocatedUnfairLock(initialState: (state: RecordingState.idle, frames: 0, steps: 0))
@@ -103,8 +103,8 @@ final class DefaultSessionRecorder: SessionRecorder {
 
     func startCalibration() {
         recordingQueue.sync {
-            guard _state == .idle else { return }
-            _state = .calibrating
+            guard stateBacking == .idle else { return }
+            stateBacking = .calibrating
             counterLock.withLock { $0.state = .calibrating }
         }
         AppLogger.recorder.info("Calibration started")
@@ -112,8 +112,8 @@ final class DefaultSessionRecorder: SessionRecorder {
 
     func startRecording() {
         recordingQueue.sync {
-            guard _state == .calibrating || _state == .idle else { return }
-            _state = .recording
+            guard stateBacking == .calibrating || stateBacking == .idle else { return }
+            stateBacking = .recording
             counterLock.withLock { $0.state = .recording }
             startDate = Date()
             accumulatedPause = 0
@@ -126,8 +126,8 @@ final class DefaultSessionRecorder: SessionRecorder {
 
     func pause() {
         recordingQueue.sync {
-            guard _state == .recording else { return }
-            _state = .paused
+            guard stateBacking == .recording else { return }
+            stateBacking = .paused
             counterLock.withLock { $0.state = .paused }
             pauseDate = Date()
         }
@@ -135,21 +135,21 @@ final class DefaultSessionRecorder: SessionRecorder {
 
     func resume() {
         recordingQueue.sync {
-            guard _state == .paused, let pd = pauseDate else { return }
+            guard stateBacking == .paused, let pd = pauseDate else { return }
             accumulatedPause += Date().timeIntervalSince(pd)
             pauseDate = nil
-            _state = .recording
+            stateBacking = .recording
             counterLock.withLock { $0.state = .recording }
         }
     }
 
     func stop() {
         recordingQueue.sync {
-            guard _state == .recording || _state == .paused else { return }
-            if _state == .recording {
+            guard stateBacking == .recording || stateBacking == .paused else { return }
+            if stateBacking == .recording {
                 pauseDate = Date()
             }
-            _state = .finished
+            stateBacking = .finished
             counterLock.withLock { $0.state = .finished }
             AppLogger.recorder.info("Recording stopped — \(self.frames.count) frames, \(self.steps.count) steps")
         }
@@ -157,7 +157,7 @@ final class DefaultSessionRecorder: SessionRecorder {
 
     func reset() {
         recordingQueue.sync {
-            _state = .idle
+            stateBacking = .idle
             startDate = nil
             pauseDate = nil
             accumulatedPause = 0
@@ -173,7 +173,7 @@ final class DefaultSessionRecorder: SessionRecorder {
 
     func recordFrame(_ frame: BodyFrame) {
         recordingQueue.async { [self] in
-            guard _state == .recording else { return }
+            guard stateBacking == .recording else { return }
             // Decimation strategy: when the buffer hits maxFrameCapacity, keep
             // every other frame from the first half (effectively halving temporal
             // resolution for older data) then continue appending new frames.
@@ -196,7 +196,7 @@ final class DefaultSessionRecorder: SessionRecorder {
 
     func recordStep(_ step: StepEvent) {
         recordingQueue.async { [self] in
-            guard _state == .recording else { return }
+            guard stateBacking == .recording else { return }
             steps.append(step)
             counterLock.withLock { $0.steps = steps.count }
         }
@@ -204,7 +204,7 @@ final class DefaultSessionRecorder: SessionRecorder {
 
     func recordMotionFrame(_ frame: MotionFrame) {
         recordingQueue.async { [self] in
-            guard _state == .recording else { return }
+            guard stateBacking == .recording else { return }
             motionFrames.append(frame)
         }
     }

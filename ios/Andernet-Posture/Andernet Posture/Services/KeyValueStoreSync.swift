@@ -85,7 +85,6 @@ final class KeyValueStoreSync: ObservableObject {
 
         default:
             logger.debug("Unknown KVS change reason: \(reason)")
-            break
         }
         
         // Update last successful sync timestamp

@@ -91,7 +91,7 @@ final class AROverlayRenderer {
 
     // MARK: - Cleanup
 
-    private func cleanUpOverlays(bodyAnchorEntity: Entity?) {
+    private func cleanUpOverlays(bodyAnchorEntity _: Entity?) {
         for (_, entity) in angleTextEntities {
             entity.removeFromParent()
         }

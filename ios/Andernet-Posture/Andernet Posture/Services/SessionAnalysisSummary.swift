@@ -479,8 +479,14 @@ private extension SessionAnalysisEngine {
     ) {
         if let fallRisk = s.fallRiskScore, let level = s.fallRiskLevel {
             total += 1
-            let sev: ClinicalSeverity = level == "low"
-                ? .normal : level == "moderate" ? .moderate : .severe
+            let sev: ClinicalSeverity
+            if level == "low" {
+                sev = .normal
+            } else if level == "moderate" {
+                sev = .moderate
+            } else {
+                sev = .severe
+            }
             if sev != .normal {
                 findings.append(AbnormalFinding(
                     metric: "Fall Risk",
@@ -502,8 +508,16 @@ private extension SessionAnalysisEngine {
 
         if let fatigue = s.fatigueIndex {
             total += 1
-            let sev: ClinicalSeverity = fatigue < 25 ? .normal
-                : fatigue < 50 ? .mild : fatigue < 75 ? .moderate : .severe
+            let sev: ClinicalSeverity
+            if fatigue < 25 {
+                sev = .normal
+            } else if fatigue < 50 {
+                sev = .mild
+            } else if fatigue < 75 {
+                sev = .moderate
+            } else {
+                sev = .severe
+            }
             if sev != .normal {
                 findings.append(AbnormalFinding(
                     metric: "Fatigue Index",
@@ -525,8 +539,14 @@ private extension SessionAnalysisEngine {
 
         if let reba = s.rebaScore {
             total += 1
-            let sev: ClinicalSeverity = reba <= 3 ? .normal
-                : reba <= 7 ? .moderate : .severe
+            let sev: ClinicalSeverity
+            if reba <= 3 {
+                sev = .normal
+            } else if reba <= 7 {
+                sev = .moderate
+            } else {
+                sev = .severe
+            }
             if sev != .normal {
                 findings.append(AbnormalFinding(
                     metric: "REBA Score (Ergonomic Risk)",
@@ -557,8 +577,14 @@ private extension SessionAnalysisEngine {
     ) {
         if let tug = s.tugTimeSec {
             total += 1
-            let sev: ClinicalSeverity = tug <= 10
-                ? .normal : tug <= GaitThresholds.tugFallRisk ? .mild : .severe
+            let sev: ClinicalSeverity
+            if tug <= 10 {
+                sev = .normal
+            } else if tug <= GaitThresholds.tugFallRisk {
+                sev = .mild
+            } else {
+                sev = .severe
+            }
             if sev != .normal {
                 findings.append(AbnormalFinding(
                     metric: "Timed Up & Go",
@@ -606,7 +632,7 @@ private extension SessionAnalysisEngine {
 
     static func generateOverallAssessment(
         findings: [AbnormalFinding],
-        normalCount: Int,
+        normalCount _: Int,
         totalEvaluated: Int
     ) -> String {
         if findings.isEmpty {

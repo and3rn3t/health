@@ -33,4 +33,6 @@ runs:
     - name: Install Dependencies
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: ${{ inputs.install-command }}
+      env:
+        INSTALL_CMD: ${{ inputs.install-command }}
+      run: $INSTALL_CMD

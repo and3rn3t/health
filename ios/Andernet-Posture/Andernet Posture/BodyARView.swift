@@ -45,12 +45,12 @@ struct BodyARView: UIViewRepresentable {
         return arView
     }
 
-    func updateUIView(_ uiView: ARView, context: Context) {
+    func updateUIView(_: ARView, context: Context) {
         context.coordinator.showSkeleton = showSkeleton
         context.coordinator.samplingRate = samplingRate
     }
 
-    static func dismantleUIView(_ uiView: ARView, coordinator: Coordinator) {
+    static func dismantleUIView(_ uiView: ARView, coordinator _: Coordinator) {
         uiView.session.pause()
     }
 }
@@ -160,7 +160,7 @@ extension BodyARView {
             }
         }
 
-        nonisolated func session(_ session: ARSession, didFailWithError error: Error) {
+        nonisolated func session(_: ARSession, didFailWithError error: Error) {
             AppLogger.arTracking.error("AR session failed: \(error.localizedDescription)")
             let message = error.localizedDescription
             Task { @MainActor [weak self] in

@@ -10,8 +10,10 @@ runs:
   steps:
     - name: Use working directory
       shell: bash
+      env:
+        WORK_DIR: ${{ inputs.working-directory }}
       run: |
-        echo "Working directory: ${{ inputs.working-directory }}"
+        echo "Working directory: $WORK_DIR"
     - name: Setup Node (actions/setup-node)
       uses: actions/setup-node@v4
       with:

@@ -27,9 +27,6 @@ env:
   ARCHIVE_PATH: ios/Andernet-Posture/build/AndernetPosture.xcarchive
   EXPORT_PATH: ios/Andernet-Posture/build/export
 
-permissions:
-  contents: read
-
 concurrency:
   group: ios-ci-${{ github.ref }}
   cancel-in-progress: true
@@ -38,6 +35,8 @@ jobs:
   lint:
     name: SwiftLint (strict)
     runs-on: macos-15
+    permissions:
+      contents: read
     if: github.event.inputs.skip_lint != 'true'
     steps:
       - uses: actions/checkout@v4
@@ -83,6 +82,8 @@ jobs:
   build-test:
     name: Build & Test (Debug)
     runs-on: macos-15
+    permissions:
+      contents: read
     needs: lint
     if: always() && (needs.lint.result == 'success' || needs.lint.result == 'skipped') && github.event.inputs.skip_tests != 'true'
     outputs:
@@ -171,6 +172,8 @@ jobs:
   archive-release:
     name: Archive & Export (Release IPA)
     runs-on: macos-15
+    permissions:
+      contents: read
     needs: build-test
     if: always() && (needs.build-test.result == 'success' || needs.build-test.result == 'skipped') && github.event.inputs.skip_archive != 'true'
     steps:
@@ -233,6 +236,8 @@ jobs:
 
   summary:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: [lint, build-test, archive-release]
     if: always()
     outputs:

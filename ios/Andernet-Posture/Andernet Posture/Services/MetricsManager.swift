@@ -80,22 +80,20 @@ final class MetricsManager: NSObject, MXMetricManagerSubscriber {
         }
 
         // Launch
-        if let launch = payload.applicationLaunchMetrics {
-            if let resumeMs = approximateAverage(from: launch.histogrammedApplicationResumeTime)?
+        if let launch = payload.applicationLaunchMetrics,
+           let resumeMs = approximateAverage(from: launch.histogrammedApplicationResumeTime)?
                 .converted(to: .milliseconds).value {
-                AppLogger.performance.info("Average resume time: \(resumeMs, format: .fixed(precision: 1))ms")
-            }
+            AppLogger.performance.info("Average resume time: \(resumeMs, format: .fixed(precision: 1))ms")
         }
 
         // Responsiveness (main-thread hangs)
-        if let resp = payload.applicationResponsivenessMetrics {
-            if let hangMs = approximateAverage(from: resp.histogrammedApplicationHangTime)?
+        if let resp = payload.applicationResponsivenessMetrics,
+           let hangMs = approximateAverage(from: resp.histogrammedApplicationHangTime)?
                 .converted(to: .milliseconds).value {
-                if hangMs > 250 {
-                    AppLogger.performance.warning("Average hang time elevated: \(hangMs, format: .fixed(precision: 1))ms")
-                } else {
-                    AppLogger.performance.info("Average hang time: \(hangMs, format: .fixed(precision: 1))ms")
-                }
+            if hangMs > 250 {
+                AppLogger.performance.warning("Average hang time elevated: \(hangMs, format: .fixed(precision: 1))ms")
+            } else {
+                AppLogger.performance.info("Average hang time: \(hangMs, format: .fixed(precision: 1))ms")
             }
         }
 

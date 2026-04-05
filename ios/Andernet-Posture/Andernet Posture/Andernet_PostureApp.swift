@@ -115,7 +115,7 @@ struct Andernet_PostureApp: App {
     
     // MARK: - Scene Phase Handling
     
-    private func handleScenePhaseChange(from oldPhase: ScenePhase, to newPhase: ScenePhase) {
+    private func handleScenePhaseChange(from _: ScenePhase, to newPhase: ScenePhase) {
         switch newPhase {
         case .active:
             logger.info("App became active")

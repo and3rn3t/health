@@ -132,10 +132,10 @@ final class DefaultBalanceAnalyzer: BalanceAnalyzer {
     private var imuSamples: [IMUAccelSample] = []
     private let imuSwayWindowSec: TimeInterval = 5.0
     private let minIMUSamples = 30  // ~0.5 sec at 60 Hz
-    private var _imuSwayMetrics: IMUSwayMetrics?
+    private var imuSwayMetricsBacking: IMUSwayMetrics?
     private(set) var imuSwayMetrics: IMUSwayMetrics? {
-        get { _imuSwayMetrics }
-        set { _imuSwayMetrics = newValue }
+        get { imuSwayMetricsBacking }
+        set { imuSwayMetricsBacking = newValue }
     }
 
     /// Frame counter for throttling expensive PCA computation.
@@ -225,7 +225,7 @@ final class DefaultBalanceAnalyzer: BalanceAnalyzer {
     func processIMUFrame(
         timestamp: TimeInterval,
         userAccelerationX: Double,
-        userAccelerationY: Double,
+        userAccelerationY _: Double,
         userAccelerationZ: Double
     ) {
         let sample = IMUAccelSample(timestamp: timestamp, ml: userAccelerationX, ap: userAccelerationZ)
@@ -240,11 +240,11 @@ final class DefaultBalanceAnalyzer: BalanceAnalyzer {
 
         // Compute IMU sway metrics when standing (or always, let caller decide)
         guard imuSamples.count >= minIMUSamples else {
-            _imuSwayMetrics = nil
+            imuSwayMetricsBacking = nil
             return
         }
 
-        _imuSwayMetrics = computeIMUSwayMetrics()
+        imuSwayMetricsBacking = computeIMUSwayMetrics()
     }
 
     private func computeIMUSwayMetrics() -> IMUSwayMetrics {
@@ -302,7 +302,7 @@ final class DefaultBalanceAnalyzer: BalanceAnalyzer {
         eyesOpenPositions.removeAll()
         eyesClosedPositions.removeAll()
         imuSamples.removeAll()
-        _imuSwayMetrics = nil
+        imuSwayMetricsBacking = nil
         balanceFrameCount = 0
         cachedMetrics = nil
     }

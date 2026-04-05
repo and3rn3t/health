@@ -214,7 +214,8 @@ final class DefaultSmoothnessAnalyzer: SmoothnessAnalyzer {
     private func computeDFTMagnitudes(signal: [Double], n: Int, nfft: Int, maxBin: Int) -> [Double] {
         var spectrum: [Double] = []
         for k in 0...min(maxBin, nfft / 2) {
-            var real = 0.0, imag = 0.0
+            var real = 0.0
+            var imag = 0.0
             for i in 0..<n {
                 let angle = -2.0 * Double.pi * Double(k) * Double(i) / Double(nfft)
                 real += signal[i] * cos(angle)
@@ -250,7 +251,8 @@ final class DefaultSmoothnessAnalyzer: SmoothnessAnalyzer {
             let k = Int(round(targetFreq / binSize))
             guard k < n / 2 else { break }
 
-            var real = 0.0, imag = 0.0
+            var real = 0.0
+            var imag = 0.0
             for i in 0..<n {
                 let angle = -2.0 * Double.pi * Double(k) * Double(i) / Double(n)
                 real += signal[i] * cos(angle)
@@ -260,7 +262,8 @@ final class DefaultSmoothnessAnalyzer: SmoothnessAnalyzer {
         }
 
         // Even harmonics sum (h=2,4,6...) and odd harmonics sum (h=1,3,5...)
-        var evenSum = 0.0, oddSum = 0.0
+        var evenSum = 0.0
+        var oddSum = 0.0
         for i in 0..<nHarmonics {
             if (i + 1) % 2 == 0 {
                 evenSum += harmonicMags[i]
@@ -295,7 +298,8 @@ final class DefaultSmoothnessAnalyzer: SmoothnessAnalyzer {
         var peakBin = Int(1.0 / binSize)  // default to 1 Hz
 
         for k in minBin...maxBin {
-            var real = 0.0, imag = 0.0
+            var real = 0.0
+            var imag = 0.0
             for i in 0..<n {
                 let angle = -2.0 * Double.pi * Double(k) * Double(i) / Double(n)
                 real += signal[i] * cos(angle)

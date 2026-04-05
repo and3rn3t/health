@@ -78,7 +78,7 @@ final class CorePedometerService: PedometerService {
     private let pedometer = CMPedometer()
     private let queue = DispatchQueue(label: "com.andernet.posture.pedometer", qos: .userInitiated)
 
-    private var _latestSnapshot: PedometerSnapshot?
+    private var latestSnapshotBacking: PedometerSnapshot?
     private let lock = NSLock()
 
     var isStepCountingAvailable: Bool { CMPedometer.isStepCountingAvailable() }
@@ -90,7 +90,7 @@ final class CorePedometerService: PedometerService {
     var onPedometerUpdate: ((PedometerSnapshot) -> Void)?
 
     var latestSnapshot: PedometerSnapshot? {
-        lock.withLock { _latestSnapshot }
+        lock.withLock { latestSnapshotBacking }
     }
 
     func startLiveUpdates() {
@@ -121,7 +121,7 @@ final class CorePedometerService: PedometerService {
                 averageActivePaceSPM: data.averageActivePace?.doubleValue
             )
 
-            self.lock.withLock { self._latestSnapshot = snapshot }
+            self.lock.withLock { self.latestSnapshotBacking = snapshot }
             DispatchQueue.main.async {
                 self.onPedometerUpdate?(snapshot)
             }

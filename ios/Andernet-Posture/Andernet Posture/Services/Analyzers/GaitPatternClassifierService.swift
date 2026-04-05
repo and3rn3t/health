@@ -156,10 +156,9 @@ final class DefaultGaitPatternClassifier: GaitPatternClassifying {
             waddlingScore += 0.3
         }
         // Bilateral = symmetric stance times (unlike unilateral Trendelenburg)
-        if let stL = stanceTimeLeftPercent, let stR = stanceTimeRightPercent {
-            if abs(stL - stR) < 3 && (stL > 63 || stR > 63) {
-                waddlingScore += 0.2
-            }
+        if let stL = stanceTimeLeftPercent, let stR = stanceTimeRightPercent,
+           abs(stL - stR) < 3, stL > 63 || stR > 63 {
+            waddlingScore += 0.2
         }
         scores[.waddling] = min(1.0, waddlingScore)
 

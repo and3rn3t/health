@@ -410,7 +410,7 @@ extension ExportService {
 private extension ExportService {
 
     @MainActor
-    static func drawHeader(session: GaitSession, in ctx: UIGraphicsPDFRendererContext) -> CGFloat {
+    static func drawHeader(session: GaitSession, in _: UIGraphicsPDFRendererContext) -> CGFloat {
         var y = PDF.margin
 
         let title = "Andernet Posture Report"
@@ -446,7 +446,7 @@ private extension ExportService {
     static func drawSummaryTable(
         session s: GaitSession,
         startY: CGFloat,
-        in ctx: UIGraphicsPDFRendererContext
+        in _: UIGraphicsPDFRendererContext
     ) -> CGFloat {
         var y = startY
         let heading = "Summary"
@@ -524,7 +524,7 @@ private extension ExportService {
         title: String,
         items: [(String, String, ClinicalSeverity?, String?)],
         startY: CGFloat,
-        in ctx: UIGraphicsPDFRendererContext
+        in _: UIGraphicsPDFRendererContext
     ) -> CGFloat {
         var y = startY
         title.draw(
@@ -547,7 +547,7 @@ private extension ExportService {
     static func drawPainAlerts(
         session: GaitSession,
         startY: CGFloat,
-        in ctx: UIGraphicsPDFRendererContext
+        in _: UIGraphicsPDFRendererContext
     ) -> CGFloat {
         guard let data = session.painRiskAlertsData,
               let alerts = try? JSONDecoder().decode([PainRiskAlert].self, from: data),
@@ -594,7 +594,7 @@ private extension ExportService {
     }
 
     @MainActor
-    static func drawFooter(page: Int, in ctx: UIGraphicsPDFRendererContext) {
+    static func drawFooter(page: Int, in _: UIGraphicsPDFRendererContext) {
         let disclaimer = "Screening tool only — not for clinical diagnosis."
         let attr: [NSAttributedString.Key: Any] = [
             .font: PDF.disclaimerFont,
@@ -937,10 +937,16 @@ private extension ExportService {
     ) -> [(String, String, ClinicalSeverity?, String?)] {
         var items: [(String, String, ClinicalSeverity?, String?)] = []
         if let v = s.fallRiskScore {
-            let sev: ClinicalSeverity = v < 30 ? .normal
-                : v < 50 ? .mild
-                : v < 70 ? .moderate
-                : .severe
+            let sev: ClinicalSeverity
+            if v < 30 {
+                sev = .normal
+            } else if v < 50 {
+                sev = .mild
+            } else if v < 70 {
+                sev = .moderate
+            } else {
+                sev = .severe
+            }
             items.append(pdfItem("Fall Risk", String(format: "%.0f", v), sev))
         }
         if let l = s.fallRiskLevel {
@@ -950,10 +956,16 @@ private extension ExportService {
             items.append(pdfItem("Fatigue Index", String(format: "%.2f", v)))
         }
         if let v = s.rebaScore {
-            let sev: ClinicalSeverity = v <= 3 ? .normal
-                : v <= 7 ? .mild
-                : v <= 10 ? .moderate
-                : .severe
+            let sev: ClinicalSeverity
+            if v <= 3 {
+                sev = .normal
+            } else if v <= 7 {
+                sev = .mild
+            } else if v <= 10 {
+                sev = .moderate
+            } else {
+                sev = .severe
+            }
             items.append(pdfItem("REBA Score", "\(v)", sev))
         }
         if let v = s.sparcScore {
@@ -963,9 +975,14 @@ private extension ExportService {
             items.append(pdfItem("Harmonic Ratio", String(format: "%.2f", v)))
         }
         if let v = s.frailtyScore {
-            let sev: ClinicalSeverity = v == 0 ? .normal
-                : v <= 2 ? .mild
-                : .severe
+            let sev: ClinicalSeverity
+            if v == 0 {
+                sev = .normal
+            } else if v <= 2 {
+                sev = .mild
+            } else {
+                sev = .severe
+            }
             items.append(pdfItem("Frailty Score", "\(v)", sev))
         }
         if let v = s.upperCrossedScore {
@@ -978,10 +995,16 @@ private extension ExportService {
             items.append(pdfItem("Estimated MET", String(format: "%.1f", v)))
         }
         if let v = s.tugTimeSec {
-            let sev: ClinicalSeverity = v < 10 ? .normal
-                : v < 14 ? .mild
-                : v < 20 ? .moderate
-                : .severe
+            let sev: ClinicalSeverity
+            if v < 10 {
+                sev = .normal
+            } else if v < 14 {
+                sev = .mild
+            } else if v < 20 {
+                sev = .moderate
+            } else {
+                sev = .severe
+            }
             items.append(pdfItem("TUG Time", String(format: "%.1f s", v), sev))
         }
         if let v = s.sixMinuteWalkDistanceM {

@@ -232,7 +232,7 @@ final class DefaultROMAnalyzer: ROMAnalyzer {
     }
 
     /// Pelvic tilt in sagittal plane. Positive = anterior tilt.
-    private func computePelvicTilt(root: SIMD3<Float>?, hips: SIMD3<Float>?, spine1: SIMD3<Float>?) -> Double {
+    private func computePelvicTilt(root: SIMD3<Float>?, hips _: SIMD3<Float>?, spine1: SIMD3<Float>?) -> Double {
         guard let root = root, let spine1 = spine1 else { return 0 }
         let pelvisVec = spine1 - root
         // Sagittal-plane angle from vertical
@@ -252,7 +252,7 @@ final class DefaultROMAnalyzer: ROMAnalyzer {
     }
 
     /// Arm swing: sagittal-plane angle of upper arm relative to trunk vertical.
-    private func computeArmSwing(shoulder: SIMD3<Float>?, elbow: SIMD3<Float>?, trunk: SIMD3<Float>?) -> Double {
+    private func computeArmSwing(shoulder: SIMD3<Float>?, elbow: SIMD3<Float>?, trunk _: SIMD3<Float>?) -> Double {
         guard let shoulder = shoulder, let elbow = elbow else { return 0 }
         let armVec = elbow - shoulder
         return Double(armVec.sagittalAngleFromVerticalDeg())

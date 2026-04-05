@@ -141,19 +141,19 @@ final class GaitSession {
     // MARK: - Transient Caches
 
     /// Cached decoded frames — not persisted by SwiftData.
-    @Transient private var _cachedFrames: [BodyFrame]?
-    @Transient private var _cachedSteps: [StepEvent]?
-    @Transient private var _cachedMotion: [MotionFrame]?
+    @Transient private var cachedFramesBacking: [BodyFrame]?
+    @Transient private var cachedStepsBacking: [StepEvent]?
+    @Transient private var cachedMotionBacking: [MotionFrame]?
 
     // MARK: - Computed Properties
 
     /// Lazily decode body frames from stored JSON (cached after first access).
     var decodedFrames: [BodyFrame] {
-        if let cached = _cachedFrames { return cached }
+        if let cached = cachedFramesBacking { return cached }
         guard let data = framesData else { return [] }
         do {
             let decoded = try JSONDecoder().decode([BodyFrame].self, from: data)
-            _cachedFrames = decoded
+            cachedFramesBacking = decoded
             return decoded
         } catch {
             AppLogger.persistence.error("Failed to decode BodyFrames (\(data.count) bytes): \(error.localizedDescription)")
@@ -163,11 +163,11 @@ final class GaitSession {
 
     /// Lazily decode step events from stored JSON (cached after first access).
     var decodedStepEvents: [StepEvent] {
-        if let cached = _cachedSteps { return cached }
+        if let cached = cachedStepsBacking { return cached }
         guard let data = stepEventsData else { return [] }
         do {
             let decoded = try JSONDecoder().decode([StepEvent].self, from: data)
-            _cachedSteps = decoded
+            cachedStepsBacking = decoded
             return decoded
         } catch {
             AppLogger.persistence.error("Failed to decode StepEvents (\(data.count) bytes): \(error.localizedDescription)")
@@ -177,11 +177,11 @@ final class GaitSession {
 
     /// Lazily decode motion frames from stored JSON (cached after first access).
     var decodedMotionFrames: [MotionFrame] {
-        if let cached = _cachedMotion { return cached }
+        if let cached = cachedMotionBacking { return cached }
         guard let data = motionFramesData else { return [] }
         do {
             let decoded = try JSONDecoder().decode([MotionFrame].self, from: data)
-            _cachedMotion = decoded
+            cachedMotionBacking = decoded
             return decoded
         } catch {
             AppLogger.persistence.error("Failed to decode MotionFrames (\(data.count) bytes): \(error.localizedDescription)")

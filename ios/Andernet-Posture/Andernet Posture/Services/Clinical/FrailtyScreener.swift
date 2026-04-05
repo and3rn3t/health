@@ -78,8 +78,8 @@ final class DefaultFrailtyScreener: FrailtyScreener {
         walkingSpeedMPS: Double?,
         heightM: Double?,
         sexIsMale: Bool?,
-        age: Int?,
-        sixMinuteWalkDistanceM: Double?,
+        age _: Int?,
+        sixMinuteWalkDistanceM _: Double?,
         dailyStepCount: Double?,
         postureVariabilitySD: Double?,
         strideTimeCVPercent: Double?

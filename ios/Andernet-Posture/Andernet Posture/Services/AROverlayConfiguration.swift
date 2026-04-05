@@ -119,10 +119,7 @@ final class AROverlayConfig {
 
     /// Whether bones should be visible in the current mode.
     var showBones: Bool {
-        switch mode {
-        case .minimal: return false
-        default:       return true
-        }
+        mode != .minimal
     }
 
     // MARK: Color helpers

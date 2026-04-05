@@ -7,7 +7,7 @@
 # Script name: "Auto-increment Build Number"
 
 # Only increment for Release builds
-if [ "$CONFIGURATION" == "Release" ]; then
+if [[ "$CONFIGURATION" == "Release" ]]; then
     buildNumber=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion" "${INFOPLIST_FILE}")
     buildNumber=$((buildNumber + 1))
     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $buildNumber" "${INFOPLIST_FILE}"

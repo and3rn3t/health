@@ -178,7 +178,7 @@ final class DefaultCardioEstimator: CardioEstimator {
 
     // MARK: - TUG Evaluation
 
-    func evaluateTUG(timeSec: Double, age: Int?) -> TUGResult {
+    func evaluateTUG(timeSec: Double, age _: Int?) -> TUGResult {
         // Shumway-Cook A et al., Phys Ther, 2000
         let fallRisk: FallRiskLevel
         if timeSec > GaitThresholds.tugFallRisk {

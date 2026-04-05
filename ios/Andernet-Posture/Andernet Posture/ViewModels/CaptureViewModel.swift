@@ -553,14 +553,12 @@ final class CaptureViewModel {
         }
 
         // ── Balance analysis (via SensorPipeline, every 2nd frame) ──
-        if frameIndex % 2 == 0 {
-            if let root = joints[.root] {
-                let balanceMetrics = PerformanceMonitor.measure(.balanceAnalysis) {
-                    sensorPipeline.processARKitBalance(rootPosition: root, timestamp: timestamp)
-                }
-                swayVelocityMMS = balanceMetrics.swayVelocityMMS
-                isStanding = sensorPipeline.isStanding
+        if frameIndex % 2 == 0, let root = joints[.root] {
+            let balanceMetrics = PerformanceMonitor.measure(.balanceAnalysis) {
+                sensorPipeline.processARKitBalance(rootPosition: root, timestamp: timestamp)
             }
+            swayVelocityMMS = balanceMetrics.swayVelocityMMS
+            isStanding = sensorPipeline.isStanding
         }
 
         // ── REBA (via PosturePipeline, throttled — every 10th frame) ──

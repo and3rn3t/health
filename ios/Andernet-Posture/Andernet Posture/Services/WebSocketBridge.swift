@@ -312,9 +312,9 @@ final class WebSocketBridge: NSObject {
 
 extension WebSocketBridge: URLSessionWebSocketDelegate {
     nonisolated func urlSession(
-        _ session: URLSession,
-        webSocketTask: URLSessionWebSocketTask,
-        didOpenWithProtocol protocol: String?
+        _: URLSession,
+        webSocketTask _: URLSessionWebSocketTask,
+        didOpenWithProtocol _: String?
     ) {
         Task { @MainActor in
             connectionState = .connected
@@ -324,10 +324,10 @@ extension WebSocketBridge: URLSessionWebSocketDelegate {
     }
 
     nonisolated func urlSession(
-        _ session: URLSession,
-        webSocketTask: URLSessionWebSocketTask,
+        _: URLSession,
+        webSocketTask _: URLSessionWebSocketTask,
         didCloseWith closeCode: URLSessionWebSocketTask.CloseCode,
-        reason: Data?
+        reason _: Data?
     ) {
         Task { @MainActor in
             logger.info("WebSocket closed: \(closeCode.rawValue)")

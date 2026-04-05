@@ -96,8 +96,8 @@
           var isLocal =
             location.hostname === 'localhost' || location.hostname === '127.0.0.1';
           if (isLocal) {
-            window.VITALSENSE_DISABLE_WEBSOCKET = true;
-            window.VITALSENSE_LIVE_DISABLED = true;
+            globalThis.VITALSENSE_DISABLE_WEBSOCKET = true;
+            globalThis.VITALSENSE_LIVE_DISABLED = true;
           }
         } catch {}
       })();
@@ -105,11 +105,11 @@
     <script>
       (function () {
         try {
-          var u = new URL(window.location.href);
+          var u = new URL(globalThis.location.href);
           var hasCode = u.searchParams.has('code');
           var hasState = u.searchParams.has('state');
           if ((hasCode || hasState) && u.pathname !== '/callback') {
-            window.location.replace('/callback' + u.search);
+            globalThis.location.replace('/callback' + u.search);
           }
         } catch (e) {
           // swallow early redirect normalization errors but log
@@ -147,12 +147,12 @@
           // Prefer local KV mode by default; /app-config.js may override
           // eslint-disable-next-line no-var
           var BASE_KV_SERVICE_URL = '';
-          // Expose on window for libraries that read from globals
-          window.BASE_KV_SERVICE_URL = BASE_KV_SERVICE_URL;
-          window.__VITALSENSE_KV_MODE = 'local';
+          // Expose on globalThis for libraries that read from globals
+          globalThis.BASE_KV_SERVICE_URL = BASE_KV_SERVICE_URL;
+          globalThis.__VITALSENSE_KV_MODE = 'local';
           // Auto-disable WS on demo routes
           if (location.pathname.indexOf('/demo') === 0) {
-            window.VITALSENSE_DISABLE_WEBSOCKET = true;
+            globalThis.VITALSENSE_DISABLE_WEBSOCKET = true;
           }
         } catch (e) {
           try {

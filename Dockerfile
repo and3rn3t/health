@@ -45,13 +45,11 @@ WORKDIR /app
 ENV NODE_ENV=development \
   PORT=8789
 
-# Install runtime deps for workerd used by wrangler dev
+# Install runtime deps for workerd used by wrangler dev, and wrangler itself
 RUN apt-get update && \
   apt-get install -y --no-install-recommends libc++1 ca-certificates && \
-  rm -rf /var/lib/apt/lists/*
-
-# Install wrangler for local dev
-RUN npm i -g wrangler@4.33.1
+  rm -rf /var/lib/apt/lists/* && \
+  npm i -g wrangler@4.33.1
 
 # Copy built worker and minimal files
 COPY --from=base /app/package.json ./package.json

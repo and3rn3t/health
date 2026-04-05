@@ -130,8 +130,8 @@ final class DefaultIMUStepDetector: IMUStepDetector {
     func processSample(
         timestamp: TimeInterval,
         userAccelerationY: Double,
-        userAccelerationX: Double,
-        userAccelerationZ: Double
+        userAccelerationX _: Double,
+        userAccelerationZ _: Double
     ) -> IMUStepEvent? {
         // Compute vertical acceleration magnitude (primarily Y in .xArbitraryZVertical)
         let verticalMag = abs(userAccelerationY)

@@ -94,6 +94,7 @@ enum SchemaV1: VersionedSchema {
         @Attribute(.externalStorage) var stepEventsData: Data?
         @Attribute(.externalStorage) var motionFramesData: Data?
 
+        /// SwiftData @Model requires a default memberwise initializer for persistence.
         init() {}
     }
 
@@ -105,6 +106,7 @@ enum SchemaV1: VersionedSchema {
         var targetCadence: Double = 110
         var lastModified: Date = Date.now
 
+        /// SwiftData @Model requires a default memberwise initializer for persistence.
         init() {}
     }
 }
