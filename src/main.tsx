@@ -8,7 +8,6 @@ import { ErrorBoundary } from 'react-error-boundary';
 import App from './App';
 import './lib/pwa'; // Initialize PWA functionality
 import './main.css';
-import './vitalsense.css'; // VitalSense iOS 26 enhanced styles
 import './monitor/rum';
 import './types/global.d.ts';
 

@@ -27,7 +27,6 @@
     "deploy:prod": "wrangler deploy --env production"
   },
   "dependencies": {
-
     "@radix-ui/colors": "^3.0.0",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-alert-dialog": "^1.1.6",
@@ -61,7 +60,6 @@
     "cmdk": "^1.1.1",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.5.2",
-    "framer-motion": "^12.6.2",
     "hono": "^4.9.9",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.484.0",
@@ -69,7 +67,6 @@
     "react-day-picker": "^9.6.7",
     "react-dom": "^19.0.0",
     "react-error-boundary": "^6.0.0",
-    "react-resizable-panels": "^2.1.7",
     "recharts": "^2.15.1",
     "sonner": "^2.0.1",
     "tailwind-merge": "^3.0.2",
