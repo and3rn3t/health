@@ -199,7 +199,7 @@ route.post('/api/client-error', async (c) => {
       sessionId: z.string().max(128).optional(),
       ua: z.string().max(512).optional(),
       stack: z.string().max(4000).optional(),
-      meta: z.record(z.any()).optional(),
+      meta: z.record(z.string().max(256)).optional(),
     });
     const body = await c.req.json().catch(() => null as unknown);
     const parsed = schema.safeParse(body);
@@ -356,7 +356,9 @@ route.get('/api/ws-url', (c) => {
   });
 });
 
-route.get('/api/ws-device-token', (c) => {
+route.get('/api/ws-device-token', async (c) => {
+  const sub = getAuthSub(c);
+  if (!sub) return c.json({ error: 'unauthorized' }, 401);
   const referer = c.req.header('Referer') || '';
   if (referer.includes('/demo')) {
     return c.json({ token: 'demo-device-token' }); // NOSONAR

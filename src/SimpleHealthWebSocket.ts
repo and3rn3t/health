@@ -1,12 +1,11 @@
 // Simple WebSocket Durable Object for testing
 import { z } from 'zod';
 
-const wsMessageSchema = z
-  .object({
-    type: z.string().max(64),
-    timestamp: z.string().optional(),
-  })
-  .passthrough();
+const wsMessageSchema = z.object({
+  type: z.string().max(64),
+  timestamp: z.string().optional(),
+  payload: z.record(z.unknown()).optional(),
+});
 
 export class SimpleHealthWebSocket {
   private readonly state: DurableObjectState;

@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { GAIT_ANALYTICS_VERSION } from '@/lib/gaitConfig';
 import { FALL_RISK_ANALYTICS_VERSION } from '@/lib/fallRiskConfig';
-import { getAuthSub, log } from '../helpers';
+import { getVerifiedAuthSub, log } from '../helpers';
 import type { Env } from '../types';
 
 const route = new Hono<{ Bindings: Env }>();
@@ -57,8 +57,8 @@ route.get('/ws', async (c) => {
   }
 
   try {
-    // Authenticate: require a valid sub in production, fall back to IP for non-prod
-    const sub = getAuthSub(c);
+    // Authenticate: require a verified sub in production, fall back to IP for non-prod
+    const sub = await getVerifiedAuthSub(c);
     const isProduction = c.env.ENVIRONMENT === 'production';
     if (isProduction && !sub) {
       return c.text('Unauthorized – provide a valid Bearer token', 401);
@@ -83,10 +83,7 @@ route.get('/ws', async (c) => {
     log.error('Error in WebSocket handler', {
       error: error instanceof Error ? error.message : String(error),
     });
-    return c.text(
-      `WebSocket error: ${error instanceof Error ? error.message : String(error)}`,
-      500
-    );
+    return c.text('WebSocket connection failed', 500);
   }
 });
 

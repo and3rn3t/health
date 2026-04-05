@@ -7,7 +7,7 @@ import {
   signJwtHS256,
   writeAudit,
 } from '@/lib/security';
-import { getAuthSub, getVerifiedAuthSub, log } from '../helpers';
+import { getVerifiedAuthSub, log } from '../helpers';
 import type { Env } from '../types';
 
 const route = new Hono<{ Bindings: Env }>();
@@ -71,7 +71,7 @@ async function writeTwoFactor(
 
 // 2FA: status
 route.get('/api/user/2fa/status', async (c) => {
-  const sub = getAuthSub(c);
+  const sub = await getVerifiedAuthSub(c);
   if (!sub) return c.json({ error: 'unauthorized' }, 401);
   const s = await readTwoFactor(c, sub);
   return c.json({ enabled: s.enabled, updatedAt: s.updatedAt });
@@ -79,7 +79,7 @@ route.get('/api/user/2fa/status', async (c) => {
 
 // 2FA: enable
 route.post('/api/user/2fa/enable', async (c) => {
-  const sub = getAuthSub(c);
+  const sub = await getVerifiedAuthSub(c);
   if (!sub) return c.json({ error: 'unauthorized' }, 401);
   const ok = await writeTwoFactor(c, sub, true);
   return c.json({ ok, enabled: true });
@@ -87,7 +87,7 @@ route.post('/api/user/2fa/enable', async (c) => {
 
 // 2FA: disable
 route.post('/api/user/2fa/disable', async (c) => {
-  const sub = getAuthSub(c);
+  const sub = await getVerifiedAuthSub(c);
   if (!sub) return c.json({ error: 'unauthorized' }, 401);
   const ok = await writeTwoFactor(c, sub, false);
   return c.json({ ok, enabled: false });
@@ -110,7 +110,7 @@ async function buildUserExport(c: { env: Env }, sub: string) {
 }
 
 route.get('/api/user/export', async (c) => {
-  const sub = getAuthSub(c);
+  const sub = await getVerifiedAuthSub(c);
   if (!sub) return c.json({ error: 'unauthorized' }, 401);
   try {
     const bundle = await buildUserExport(c, sub);

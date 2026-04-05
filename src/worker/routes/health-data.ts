@@ -26,7 +26,6 @@ import { summarizeGaitSnapshots } from '@/lib/liveGaitSummaries';
 import {
   broadcastUserLiveEvent,
   deriveRateLimitKey,
-  getAuthSub,
   getVerifiedAuthSub,
   log,
   rateLimitDO,
@@ -41,7 +40,7 @@ const route = new Hono<{ Bindings: Env }>();
 // ---------------------------------------------------------------------------
 
 route.post('/api/live/gait', async (c) => {
-  const sub = getAuthSub(c);
+  const sub = await getVerifiedAuthSub(c);
   if (!sub) return c.json({ error: 'unauthorized' }, 401);
   const rlKey = deriveRateLimitKey(c);
   if (!(await rateLimitDO(c, `gait:${rlKey}`, 120)))
@@ -88,7 +87,7 @@ route.post('/api/live/gait', async (c) => {
 
 // Batched gait snapshots
 route.post('/api/live/gait/batch', async (c) => {
-  const sub = getAuthSub(c);
+  const sub = await getVerifiedAuthSub(c);
   if (!sub) return c.json({ error: 'unauthorized' }, 401);
   const rlKey = deriveRateLimitKey(c);
   if (!(await rateLimitDO(c, `gait-batch:${rlKey}`, 30)))
@@ -140,7 +139,7 @@ route.post('/api/live/gait/batch', async (c) => {
 
 // Balance progress (live stream)
 route.post('/api/live/balance/progress', async (c) => {
-  const sub = getAuthSub(c);
+  const sub = await getVerifiedAuthSub(c);
   if (!sub) return c.json({ error: 'unauthorized' }, 401);
   const rlKey = deriveRateLimitKey(c);
   if (!(await rateLimitDO(c, `balance:${rlKey}`, 120)))
@@ -179,7 +178,7 @@ route.post('/api/live/balance/progress', async (c) => {
 
 // Balance result (final score)
 route.post('/api/live/balance/result', async (c) => {
-  const sub = getAuthSub(c);
+  const sub = await getVerifiedAuthSub(c);
   if (!sub) return c.json({ error: 'unauthorized' }, 401);
   const rlKey = deriveRateLimitKey(c);
   if (!(await rateLimitDO(c, `balance-result:${rlKey}`, 30)))
@@ -250,7 +249,7 @@ async function fetchGaitSnapshots(kv: BroadKV, sub: string, limit: number) {
 }
 
 route.get('/api/live/gait/recent', async (c) => {
-  const sub = getAuthSub(c);
+  const sub = await getVerifiedAuthSub(c);
   if (!sub) return c.json({ error: 'unauthorized' }, 401);
   const kv = c.env.HEALTH_KV as BroadKV | undefined;
   if (!kv) return c.json({ error: 'kv_unavailable' }, 503);
@@ -293,7 +292,7 @@ async function fetchBalanceResults(kv: BroadKV, sub: string, limit: number) {
 }
 
 route.get('/api/live/balance/recent', async (c) => {
-  const sub = getAuthSub(c);
+  const sub = await getVerifiedAuthSub(c);
   if (!sub) return c.json({ error: 'unauthorized' }, 401);
   const kv = c.env.HEALTH_KV as BroadKV | undefined;
   if (!kv) return c.json({ error: 'kv_unavailable' }, 503);
