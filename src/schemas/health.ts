@@ -63,7 +63,7 @@ export const healthMetricSchema = z.object({
 
 // Batch upload for multiple metrics
 export const healthMetricBatchSchema = z.object({
-  metrics: z.array(healthMetricSchema),
+  metrics: z.array(healthMetricSchema).min(1).max(100),
   uploadedAt: z.string().datetime(),
   deviceInfo: z
     .object({

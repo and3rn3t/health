@@ -82,14 +82,21 @@ final class WebSocketBridge: NSObject {
     /// Base URL for the WebSocket endpoint (configured via AppConfig or environment).
     private let baseURL: String
 
-    private let logger = AppLogger.cloudSync
+    /// Tracks whether `disconnect()` has been called to prevent reconnect after teardown.
+    private var isShutDown = false
+
+    private let logger = AppLogger.webSocket
     private let encoder = JSONEncoder()
+    private let iso8601Formatter: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.timeZone = TimeZone(secondsFromGMT: 0)
+        return f
+    }()
 
     init(baseURL: String? = nil) {
-        // Default to production endpoint; override in debug builds
         self.baseURL = baseURL ?? {
             #if DEBUG
-            return "wss://health-app.andernet.dev/ws"
+            return "wss://localhost:8789/ws"
             #else
             return "wss://health-app.andernet.dev/ws"
             #endif
@@ -98,41 +105,54 @@ final class WebSocketBridge: NSObject {
         encoder.dateEncodingStrategy = .iso8601
     }
 
+    deinit {
+        reconnectTask?.cancel()
+        pingTimer?.invalidate()
+        webSocket?.cancel(with: .normalClosure, reason: nil)
+        session?.invalidateAndCancel()
+    }
+
     // MARK: - Lifecycle
 
     func connect(deviceToken: String? = nil) {
         guard case .disconnected = connectionState else { return }
+        isShutDown = false
 
         connectionState = .connecting
         logger.info("WebSocket connecting to \(self.baseURL)")
 
-        var urlString = baseURL
-        if let token = deviceToken {
-            urlString += "?token=\(token)"
-        }
-
-        guard let url = URL(string: urlString) else {
-            logger.error("Invalid WebSocket URL: \(urlString)")
+        guard let url = URL(string: baseURL) else {
+            logger.error("Invalid WebSocket URL: \(self.baseURL)")
             connectionState = .disconnected
             return
         }
 
+        var request = URLRequest(url: url)
+        if let token = deviceToken, !token.isEmpty {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
         let config = URLSessionConfiguration.default
         config.waitsForConnectivity = true
+        // Invalidate any prior session to avoid delegate retention.
+        session?.invalidateAndCancel()
         session = URLSession(configuration: config, delegate: self, delegateQueue: nil)
 
-        webSocket = session?.webSocketTask(with: url)
+        webSocket = session?.webSocketTask(with: request)
         webSocket?.resume()
         startReceiving()
     }
 
     func disconnect() {
+        isShutDown = true
         reconnectTask?.cancel()
         reconnectTask = nil
         pingTimer?.invalidate()
         pingTimer = nil
         webSocket?.cancel(with: .normalClosure, reason: nil)
         webSocket = nil
+        session?.invalidateAndCancel()
+        session = nil
         connectionState = .disconnected
         logger.info("WebSocket disconnected")
     }
@@ -179,7 +199,7 @@ final class WebSocketBridge: NSObject {
 
         let message = WSMessage(
             type: type,
-            timestamp: ISO8601DateFormatter().string(from: Date()),
+            timestamp: iso8601Formatter.string(from: .now),
             data: data
         )
 
@@ -263,6 +283,7 @@ final class WebSocketBridge: NSObject {
     }
 
     private func scheduleReconnect(attempt: Int) {
+        guard !isShutDown else { return }
         guard attempt <= Self.maxReconnectAttempts else {
             logger.warning("WebSocket max reconnect attempts reached")
             connectionState = .disconnected
@@ -279,7 +300,7 @@ final class WebSocketBridge: NSObject {
             try? await Task.sleep(for: .seconds(delay))
             guard !Task.isCancelled else { return }
             await MainActor.run {
-                guard let self else { return }
+                guard let self, !self.isShutDown else { return }
                 self.connectionState = .disconnected
                 self.connect()
             }

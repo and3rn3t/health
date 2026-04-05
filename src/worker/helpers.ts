@@ -69,7 +69,11 @@ export async function rateLimitDO(
       ok?: boolean;
     };
     return Boolean(body.ok);
-  } catch {
+  } catch (err) {
+    log.warn('rate_limiter_do_error', {
+      error: err instanceof Error ? err.message : String(err),
+      key,
+    });
     return rateLimit(key, limit, intervalMs);
   }
 }

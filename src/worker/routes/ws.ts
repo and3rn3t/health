@@ -63,7 +63,7 @@ route.get('/ws', async (c) => {
     if (isProduction && !sub) {
       return c.text('Unauthorized – provide a valid Bearer token', 401);
     }
-    const identity = sub || c.req.header('CF-Connecting-IP') || 'anon';
+    const identity = sub || `dev-${c.req.header('CF-Connecting-IP') || 'local'}`;
 
     log.info('Creating Durable Object instance');
     const id = c.env.HEALTH_WEBSOCKET.idFromName(identity);
