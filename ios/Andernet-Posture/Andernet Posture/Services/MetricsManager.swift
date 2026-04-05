@@ -39,8 +39,9 @@ final class MetricsManager: NSObject, MXMetricManagerSubscriber {
 
     /// Called when new metric payloads are available (typically once daily).
     nonisolated func didReceive(_ payloads: [MXMetricPayload]) {
-        Task { @MainActor in
-            for payload in payloads {
+        let captured = payloads
+        Task { @MainActor [captured] in
+            for payload in captured {
                 processMetricPayload(payload)
             }
         }
@@ -48,8 +49,9 @@ final class MetricsManager: NSObject, MXMetricManagerSubscriber {
 
     /// Called when diagnostic payloads are available (crashes, hangs, etc.).
     nonisolated func didReceive(_ payloads: [MXDiagnosticPayload]) {
-        Task { @MainActor in
-            for payload in payloads {
+        let captured = payloads
+        Task { @MainActor [captured] in
+            for payload in captured {
                 processDiagnosticPayload(payload)
             }
         }

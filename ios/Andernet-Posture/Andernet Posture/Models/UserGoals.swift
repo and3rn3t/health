@@ -37,16 +37,6 @@ final class UserGoals {
 
 // MARK: - Legacy Migration Type
 
-/// The old Codable struct used by @AppStorage("goalsJSON").
-/// Defined at file scope so its Codable conformance is nonisolated
-/// (not inherited from the @Model @MainActor context).
-private struct LegacyGoalConfig: Codable {
-    var sessionsPerWeek: Int
-    var targetPostureScore: Double
-    var targetWalkingSpeed: Double
-    var targetCadence: Double
-}
-
 // MARK: - Migration Helper
 
 extension UserGoals {
@@ -55,14 +45,18 @@ extension UserGoals {
     static func fromLegacyJSON(_ json: String) -> UserGoals? {
         guard !json.isEmpty,
               let data = json.data(using: .utf8),
-              let legacy = try? JSONDecoder().decode(LegacyGoalConfig.self, from: data) else {
+              let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let sessionsPerWeek = dict["sessionsPerWeek"] as? Int,
+              let targetPostureScore = dict["targetPostureScore"] as? Double,
+              let targetWalkingSpeed = dict["targetWalkingSpeed"] as? Double,
+              let targetCadence = dict["targetCadence"] as? Double else {
             return nil
         }
         return UserGoals(
-            sessionsPerWeek: legacy.sessionsPerWeek,
-            targetPostureScore: legacy.targetPostureScore,
-            targetWalkingSpeed: legacy.targetWalkingSpeed,
-            targetCadence: legacy.targetCadence
+            sessionsPerWeek: sessionsPerWeek,
+            targetPostureScore: targetPostureScore,
+            targetWalkingSpeed: targetWalkingSpeed,
+            targetCadence: targetCadence
         )
     }
 }

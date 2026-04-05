@@ -15,7 +15,7 @@ import Foundation
 import CoreML
 import os.log
 
-private nonisolated(unsafe) let logger = AppLogger.ml
+private let logger = AppLogger.ml
 
 // MARK: - Model Identifier
 

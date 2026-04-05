@@ -243,15 +243,25 @@ final class CloudSyncService {
     /// If some records succeeded, mark sync as successful. If all failed
     /// with permanent errors, show appropriate message.
     private func handlePartialFailure(_ error: NSError) {
-        guard let partialErrors = error.userInfo[CKPartialErrorsByItemIDKey] as? [AnyHashable: Error] else {
-            logger.warning("Partial failure without error details — treating as transient")
-            consecutiveTransientErrors += 1
-            if consecutiveTransientErrors <= Self.maxTransientRetries {
-                status = .syncing
-            } else {
-                status = .failed(String(localized: "Some items failed to sync"))
+        // CloudKit partial failures may use CKPartialErrorsByItemIDKey (record-level)
+        // or nest per-zone errors in the userInfo dictionary (zone-level, e.g. setup failures).
+        let partialErrors: [AnyHashable: Error]
+        if let byItem = error.userInfo[CKPartialErrorsByItemIDKey] as? [AnyHashable: Error] {
+            partialErrors = byItem
+        } else {
+            // Fallback: scan userInfo for any nested CKError values (zone-level failures)
+            let nested = error.userInfo.compactMapValues { $0 as? Error }
+            if nested.isEmpty {
+                logger.warning("Partial failure without error details — treating as transient")
+                consecutiveTransientErrors += 1
+                if consecutiveTransientErrors <= Self.maxTransientRetries {
+                    status = .syncing
+                } else {
+                    status = .failed(String(localized: "Some items failed to sync"))
+                }
+                return
             }
-            return
+            partialErrors = nested
         }
 
         // Analyze individual errors

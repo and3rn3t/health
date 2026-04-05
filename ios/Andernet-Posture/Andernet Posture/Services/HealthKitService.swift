@@ -88,7 +88,7 @@ protocol HealthKitService {
 
 final class DefaultHealthKitService: HealthKitService {
 
-    private nonisolated(unsafe) let store = HKHealthStore()
+    private let store = HKHealthStore()
 
     var isAvailable: Bool {
         HKHealthStore.isHealthDataAvailable()
@@ -260,6 +260,7 @@ final class DefaultHealthKitService: HealthKitService {
         let type = HKQuantityType(.walkingSpeed)
         let predicate = HKQuery.predicateForSamples(withStart: start, end: end)
         let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+        let store = self.store
 
         return try await withCheckedThrowingContinuation { cont in
             let query = HKSampleQuery(

@@ -73,9 +73,9 @@ final class ProgressHistoryViewModel {
 
     /// (date, value) pairs for the selected metric within the time range.
     var trendPoints: [TrendPoint] {
-        filteredSessions.compactMap { session -> TrendPoint? in
+        filteredSessions.enumerated().compactMap { index, session -> TrendPoint? in
             guard let value = selectedMetric.extractor(session) else { return nil }
-            return TrendPoint(date: session.date, value: value)
+            return TrendPoint(id: index, date: session.date, value: value)
         }
     }
 
