@@ -873,6 +873,13 @@
         observer.observe(previewElement, { childList: true, characterData: true, subtree: true });
       }
 
+      // Escape text for safe insertion into the DOM
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+      }
+
       async function fetchJson(url) {
         const r = await fetch(url);
         if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -1106,10 +1113,10 @@
         const style = document.getElementById('tileStyle').value || 'default';
         const z = 5, x = 16, y = 12;
         const viewer = document.getElementById('tileViewer');
-        viewer.innerHTML = '<p>Loading tile...</p>';
+        viewer.textContent = 'Loading tile...';
         try {
           const start = Date.now();
-          const url = `/tiles/raster/${z}/${x}/${y}?style=${style}`;
+          const url = `/tiles/raster/${z}/${x}/${y}?style=${encodeURIComponent(style)}`;
           const r = await fetch(url);
           if (!r.ok) {
             const errorText = await r.text();
@@ -1118,22 +1125,41 @@
           const data = await r.json();
           const elapsed = Date.now() - start;
 
-          viewer.innerHTML = `
-            <div style="text-align:center;">
-              <img src="${data.imageData}" alt="Tile ${z}/${x}/${y}" style="max-width:256px; max-height:256px; border:1px solid #000;" />
-              <div style="margin-top:0.5rem; font-size:0.9em;">
-                <div>Tile: ${z}/${x}/${y}</div>
-                <div>Style: ${style}</div>
-                <div>Bounds: [${data.bounds.minX.toFixed(4)}, ${data.bounds.minY.toFixed(4)}, ${data.bounds.maxX.toFixed(4)}, ${data.bounds.maxY.toFixed(4)}]</div>
-                <div>Color: ${data.color}</div>
-                <div>${data.cached ? '✅ Cached' : '🔄 Generated'} | ${elapsed}ms</div>
-              </div>
-            </div>
-          `;
+          viewer.textContent = '';
+          const wrapper = document.createElement('div');
+          wrapper.style.textAlign = 'center';
+
+          const img = document.createElement('img');
+          img.src = data.imageData;
+          img.alt = `Tile ${z}/${x}/${y}`;
+          img.style.cssText = 'max-width:256px; max-height:256px; border:1px solid #000;';
+          wrapper.appendChild(img);
+
+          const info = document.createElement('div');
+          info.style.cssText = 'margin-top:0.5rem; font-size:0.9em;';
+          const lines = [
+            `Tile: ${z}/${x}/${y}`,
+            `Style: ${escapeHtml(style)}`,
+            `Bounds: [${Number(data.bounds.minX).toFixed(4)}, ${Number(data.bounds.minY).toFixed(4)}, ${Number(data.bounds.maxX).toFixed(4)}, ${Number(data.bounds.maxY).toFixed(4)}]`,
+            `Color: ${escapeHtml(data.color)}`,
+            `${data.cached ? '✅ Cached' : '🔄 Generated'} | ${elapsed}ms`,
+          ];
+          lines.forEach(text => {
+            const d = document.createElement('div');
+            d.textContent = text;
+            info.appendChild(d);
+          });
+          wrapper.appendChild(info);
+          viewer.appendChild(wrapper);
+
           document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
         } catch (e) {
           const errorMsg = e.message || 'Unknown error';
-          viewer.innerHTML = `<p style="color:red;">Error loading tile: ${errorMsg}</p>`;
+          viewer.textContent = '';
+          const p = document.createElement('p');
+          p.style.color = 'red';
+          p.textContent = 'Error loading tile: ' + errorMsg;
+          viewer.appendChild(p);
           console.error('Tile loading error:', e);
         }
       };
@@ -1331,32 +1357,61 @@
         const format = document.getElementById('tile3dFormat').value || 'json';
         const z = 5, x = 16, y = 12;
         const viewer = document.getElementById('tile3dViewer');
-        viewer.innerHTML = '<p>Loading 3D tile...</p>';
+        viewer.textContent = 'Loading 3D tile...';
         try {
-          const r = await fetch(`/tiles/3d/${z}/${x}/${y}?format=${format}`);
+          const r = await fetch(`/tiles/3d/${z}/${x}/${y}?format=${encodeURIComponent(format)}`);
           if (!r.ok) {
             throw new Error(`HTTP ${r.status}`);
           }
           if (format === 'pcd') {
             const text = await r.text();
-            viewer.innerHTML = `<pre style="font-size:0.8em; white-space:pre-wrap;">${text.substring(0, 2000)}${text.length > 2000 ? '\n... (truncated)' : ''}</pre>`;
+            viewer.textContent = '';
+            const pre = document.createElement('pre');
+            pre.style.cssText = 'font-size:0.8em; white-space:pre-wrap;';
+            pre.textContent = text.substring(0, 2000) + (text.length > 2000 ? '\n... (truncated)' : '');
+            viewer.appendChild(pre);
             document.getElementById('preview').textContent = text;
           } else {
             const data = await r.json();
-            viewer.innerHTML = `
-              <div>
-                <div><strong>Tile:</strong> ${z}/${x}/${y}</div>
-                <div><strong>Format:</strong> ${data.format}</div>
-                <div><strong>Point Count:</strong> ${data.count}</div>
-                <div><strong>Bounds:</strong> [${data.bounds.minX.toFixed(4)}, ${data.bounds.minY.toFixed(4)}, ${data.bounds.maxX.toFixed(4)}, ${data.bounds.maxY.toFixed(4)}]</div>
-                <div style="margin-top:0.5rem;"><strong>Sample Points (first 5):</strong></div>
-                <pre style="font-size:0.8em; background:#fff; padding:0.5rem; border:1px solid #ddd; max-height:200px; overflow:auto;">${JSON.stringify(data.points.slice(0, 5), null, 2)}</pre>
-              </div>
-            `;
+            viewer.textContent = '';
+            const container = document.createElement('div');
+
+            const fields = [
+              ['Tile:', `${z}/${x}/${y}`],
+              ['Format:', String(data.format)],
+              ['Point Count:', String(data.count)],
+              ['Bounds:', `[${Number(data.bounds.minX).toFixed(4)}, ${Number(data.bounds.minY).toFixed(4)}, ${Number(data.bounds.maxX).toFixed(4)}, ${Number(data.bounds.maxY).toFixed(4)}]`],
+            ];
+            fields.forEach(([label, value]) => {
+              const d = document.createElement('div');
+              const b = document.createElement('strong');
+              b.textContent = label + ' ';
+              d.appendChild(b);
+              d.appendChild(document.createTextNode(value));
+              container.appendChild(d);
+            });
+
+            const sampleLabel = document.createElement('div');
+            sampleLabel.style.marginTop = '0.5rem';
+            const sampleB = document.createElement('strong');
+            sampleB.textContent = 'Sample Points (first 5):';
+            sampleLabel.appendChild(sampleB);
+            container.appendChild(sampleLabel);
+
+            const pre = document.createElement('pre');
+            pre.style.cssText = 'font-size:0.8em; background:#fff; padding:0.5rem; border:1px solid #ddd; max-height:200px; overflow:auto;';
+            pre.textContent = JSON.stringify(data.points.slice(0, 5), null, 2);
+            container.appendChild(pre);
+
+            viewer.appendChild(container);
             document.getElementById('preview').textContent = JSON.stringify(data, null, 2);
           }
         } catch (e) {
-          viewer.innerHTML = `<p style="color:red;">Error loading 3D tile: ${e.message}</p>`;
+          viewer.textContent = '';
+          const p = document.createElement('p');
+          p.style.color = 'red';
+          p.textContent = 'Error loading 3D tile: ' + (e.message || 'Unknown error');
+          viewer.appendChild(p);
         }
       };
       // Phase 4 handlers

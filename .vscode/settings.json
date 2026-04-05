@@ -237,7 +237,7 @@
         "typescript:S1774": "off",
         "css:S6803": "off",
         "typescript:S6596": "off",
-        "typescript:S3504": "off"
+        "typescript:S3504": "on"
     },
     "sonarlint.focusOnNewCode": true,
     "sonarlint.verboseLogging": false,

@@ -72,7 +72,7 @@ export default defineConfig({
       // succeeds; previously only 'json' produced coverage-final.json causing gate failure.
       // In CI, use minimal reporters to reduce memory usage (json-summary is sufficient for gate)
       reporter: process.env.CI
-        ? ['json-summary', 'json'] // Minimal reporters in CI to reduce memory overhead
+        ? ['json-summary', 'json', 'lcov'] // lcov needed for SonarCloud coverage import
         : ['text', 'json', 'json-summary', 'lcov'], // Full reporters when coverage is enabled
       reportsDirectory: 'coverage',
       // Memory optimization: only collect coverage for tested files (not all source files)
