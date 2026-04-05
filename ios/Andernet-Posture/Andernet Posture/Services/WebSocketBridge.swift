@@ -8,6 +8,7 @@
 
 import Foundation
 import os.log
+import SwiftData
 
 // MARK: - WebSocket Message Types
 
@@ -71,10 +72,10 @@ final class WebSocketBridge: NSObject {
 
     private(set) var connectionState: WSConnectionState = .disconnected
 
-    private var webSocket: URLSessionWebSocketTask?
-    private var session: URLSession?
-    private var pingTimer: Timer?
-    private var reconnectTask: Task<Void, Never>?
+    private nonisolated(unsafe) var webSocket: URLSessionWebSocketTask?
+    private nonisolated(unsafe) var session: URLSession?
+    private nonisolated(unsafe) var pingTimer: Timer?
+    private nonisolated(unsafe) var reconnectTask: Task<Void, Never>?
 
     /// Maximum reconnect attempts before giving up.
     private static let maxReconnectAttempts = 10
