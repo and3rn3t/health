@@ -251,17 +251,17 @@ final class CloudSyncService {
         } else {
             // Fallback: scan userInfo for any nested CKError values (zone-level failures)
             let nested = error.userInfo.compactMapValues { $0 as? Error }
-            if nested.isEmpty {
-                logger.warning("Partial failure without error details — treating as transient")
-                consecutiveTransientErrors += 1
-                if consecutiveTransientErrors <= Self.maxTransientRetries {
-                    status = .syncing
-                } else {
-                    status = .failed(String(localized: "Some items failed to sync"))
-                }
+            if !nested.isEmpty {
+                partialErrors = nested
+            } else {
+                // NSPersistentCloudKitContainer sometimes synthesises a bare
+                // CKError.partialFailure with no nested details.  Classify as
+                // a configuration / permission issue when CloudKit is returning
+                // "Invalid bundle ID for container" — this is permanent, not transient.
+                logger.warning("Partial failure without error details — check CloudKit container configuration in Apple Developer portal")
+                status = .failed(String(localized: "iCloud configuration error"))
                 return
             }
-            partialErrors = nested
         }
 
         // Analyze individual errors
