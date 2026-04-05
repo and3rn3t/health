@@ -190,7 +190,7 @@ final class DefaultSixMWTProtocol: SixMWTProtocol {
 
     private var config = SixMWTConfiguration.standard
     private var testStartTime: Date?
-    private var timer: Timer?
+    private nonisolated(unsafe) var timer: Timer?
 
     // Distance tracking
     private var pedometerDistanceM: Double = 0
@@ -254,20 +254,19 @@ final class DefaultSixMWTProtocol: SixMWTProtocol {
         self.config = config
         resetState()
 
-        // Countdown
-        var countdown = 3
-        phase = .countdown(seconds: countdown)
-        onPhaseChange?(.countdown(seconds: countdown))
+        // Countdown using Task to avoid mutable captured var in @Sendable closure
+        phase = .countdown(seconds: 3)
+        onPhaseChange?(.countdown(seconds: 3))
 
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] t in
-            countdown -= 1
-            if countdown <= 0 {
-                t.invalidate()
-                self?.beginWalking()
-            } else {
-                self?.phase = .countdown(seconds: countdown)
-                self?.onPhaseChange?(.countdown(seconds: countdown))
+        Task { [weak self] in
+            for remaining in [2, 1] {
+                try? await Task.sleep(for: .seconds(1))
+                guard let self else { return }
+                self.phase = .countdown(seconds: remaining)
+                self.onPhaseChange?(.countdown(seconds: remaining))
             }
+            try? await Task.sleep(for: .seconds(1))
+            self?.beginWalking()
         }
     }
 
@@ -286,7 +285,9 @@ final class DefaultSixMWTProtocol: SixMWTProtocol {
 
         // Start update timer (10 Hz for smooth UI updates)
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            self?.updateMetrics()
+            Task { @MainActor [weak self] in
+                self?.updateMetrics()
+            }
         }
 
         AppLogger.clinicalTests.info("6MWT walking phase started")

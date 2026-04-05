@@ -186,16 +186,24 @@ final class DefaultSmoothnessAnalyzer: SmoothnessAnalyzer {
         var imagp = [Double](repeating: 0, count: halfN)
 
         // Convert to split complex
-        padded.withUnsafeBufferPointer { ptr in
-            ptr.baseAddress!.withMemoryRebound(to: DSPDoubleComplex.self, capacity: halfN) { complexPtr in
-                var splitComplex = DSPDoubleSplitComplex(realp: &realp, imagp: &imagp)
-                vDSP_ctozD(complexPtr, 2, &splitComplex, 1, vDSP_Length(halfN))
+        realp.withUnsafeMutableBufferPointer { realBuf in
+            imagp.withUnsafeMutableBufferPointer { imagBuf in
+                padded.withUnsafeBufferPointer { ptr in
+                    ptr.baseAddress!.withMemoryRebound(to: DSPDoubleComplex.self, capacity: halfN) { complexPtr in
+                        var splitComplex = DSPDoubleSplitComplex(realp: realBuf.baseAddress!, imagp: imagBuf.baseAddress!)
+                        vDSP_ctozD(complexPtr, 2, &splitComplex, 1, vDSP_Length(halfN))
+                    }
+                }
             }
         }
 
         // Perform FFT
-        var splitComplex = DSPDoubleSplitComplex(realp: &realp, imagp: &imagp)
-        vDSP_fft_zripD(fftSetup, &splitComplex, 1, vDSP_Length(log2(Double(nfft))), FFTDirection(FFT_FORWARD))
+        realp.withUnsafeMutableBufferPointer { realBuf in
+            imagp.withUnsafeMutableBufferPointer { imagBuf in
+                var splitComplex = DSPDoubleSplitComplex(realp: realBuf.baseAddress!, imagp: imagBuf.baseAddress!)
+                vDSP_fft_zripD(fftSetup, &splitComplex, 1, vDSP_Length(log2(Double(nfft))), FFTDirection(FFT_FORWARD))
+            }
+        }
 
         // Extract magnitudes for bins 0..maxBin
         let binCount = min(maxBin + 1, halfN)

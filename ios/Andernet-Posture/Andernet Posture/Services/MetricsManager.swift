@@ -9,7 +9,7 @@
 //
 
 import Foundation
-import MetricKit
+@preconcurrency import MetricKit
 import os.log
 
 /// Collects and reports app performance metrics in production using MetricKit.

@@ -35,6 +35,18 @@ final class UserGoals {
     }
 }
 
+// MARK: - Legacy Migration Type
+
+/// The old Codable struct used by @AppStorage("goalsJSON").
+/// Defined at file scope so its Codable conformance is nonisolated
+/// (not inherited from the @Model @MainActor context).
+private struct LegacyGoalConfig: Codable {
+    var sessionsPerWeek: Int
+    var targetPostureScore: Double
+    var targetWalkingSpeed: Double
+    var targetCadence: Double
+}
+
 // MARK: - Migration Helper
 
 extension UserGoals {
@@ -52,13 +64,5 @@ extension UserGoals {
             targetWalkingSpeed: legacy.targetWalkingSpeed,
             targetCadence: legacy.targetCadence
         )
-    }
-
-    /// The old Codable struct used by @AppStorage("goalsJSON").
-    private struct LegacyGoalConfig: Codable {
-        var sessionsPerWeek: Int
-        var targetPostureScore: Double
-        var targetWalkingSpeed: Double
-        var targetCadence: Double
     }
 }

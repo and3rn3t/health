@@ -88,7 +88,7 @@ protocol HealthKitService {
 
 final class DefaultHealthKitService: HealthKitService {
 
-    private let store = HKHealthStore()
+    private nonisolated(unsafe) let store = HKHealthStore()
 
     var isAvailable: Bool {
         HKHealthStore.isHealthDataAvailable()
@@ -186,16 +186,19 @@ final class DefaultHealthKitService: HealthKitService {
 
         guard !samples.isEmpty else { return }
 
+        // Capture as immutable for safe use in @Sendable closures
+        let samplesToSave = samples
+
         // Add timeout to prevent hanging indefinitely
         try await withThrowingTaskGroup(of: Void.self) { group in
-            group.addTask {
+            group.addTask { [store = self.store] in
                 try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
-                    self.store.save(samples) { _, error in
+                    store.save(samplesToSave) { _, error in
                         if let error {
                             AppLogger.healthKit.error("Failed to save HealthKit samples: \(error.localizedDescription)")
                             cont.resume(throwing: error)
                         } else {
-                            AppLogger.healthKit.info("Saved \(samples.count) HealthKit sample(s)")
+                            AppLogger.healthKit.info("Saved \(samplesToSave.count) HealthKit sample(s)")
                             cont.resume()
                         }
                     }
@@ -224,7 +227,7 @@ final class DefaultHealthKitService: HealthKitService {
         let predicate = HKQuery.predicateForSamples(withStart: start, end: end)
 
         return try await withThrowingTaskGroup(of: Double.self) { group in
-            group.addTask {
+            group.addTask { [store = self.store] in
                 try await withCheckedThrowingContinuation { cont in
                     let query = HKStatisticsQuery(
                         quantityType: type,
@@ -235,7 +238,7 @@ final class DefaultHealthKitService: HealthKitService {
                         let sum = result?.sumQuantity()?.doubleValue(for: .count()) ?? 0
                         cont.resume(returning: sum)
                     }
-                    self.store.execute(query)
+                    store.execute(query)
                 }
             }
             
