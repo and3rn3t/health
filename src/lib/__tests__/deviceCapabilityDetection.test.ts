@@ -25,8 +25,8 @@ describe('Device Capability Detection', () => {
     });
 
     // Mock DeviceMotionEvent and DeviceOrientationEvent for motion sensor detection
-    (global as any).DeviceMotionEvent = class DeviceMotionEvent {};
-    (global as any).DeviceOrientationEvent = class DeviceOrientationEvent {};
+    (global as Record<string, unknown>).DeviceMotionEvent = class DeviceMotionEvent {};
+    (global as Record<string, unknown>).DeviceOrientationEvent = class DeviceOrientationEvent {};
 
     const deviceInfo = detectDeviceCapabilities();
     expect(deviceInfo.type).toBe('iphone');
@@ -47,8 +47,8 @@ describe('Device Capability Detection', () => {
 
   it('detects motion sensors', () => {
     // Mock DeviceMotionEvent
-    (global as any).DeviceMotionEvent = class DeviceMotionEvent {};
-    (global as any).DeviceOrientationEvent = class DeviceOrientationEvent {};
+    (global as Record<string, unknown>).DeviceMotionEvent = class DeviceMotionEvent {};
+    (global as Record<string, unknown>).DeviceOrientationEvent = class DeviceOrientationEvent {};
 
     Object.defineProperty(navigator, 'userAgent', {
       writable: true,
@@ -77,7 +77,7 @@ describe('Device Capability Detection', () => {
 
   it('handles motion permission request', async () => {
     // Mock DeviceMotionEvent with requestPermission
-    (global as any).DeviceMotionEvent = class DeviceMotionEvent {
+    (global as Record<string, unknown>).DeviceMotionEvent = class DeviceMotionEvent {
       static requestPermission = vi.fn(() => Promise.resolve('granted'));
     };
 
@@ -87,7 +87,7 @@ describe('Device Capability Detection', () => {
 
   it('handles missing motion permission API', async () => {
     // Mock DeviceMotionEvent without requestPermission
-    (global as any).DeviceMotionEvent = class DeviceMotionEvent {};
+    (global as Record<string, unknown>).DeviceMotionEvent = class DeviceMotionEvent {};
 
     const granted = await requestMotionPermissions();
     // Should return true if permission API not available (assumes granted)

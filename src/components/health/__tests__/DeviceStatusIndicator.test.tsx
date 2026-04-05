@@ -24,30 +24,30 @@ describe('DeviceStatusIndicator', () => {
 
   describe('Rendering', () => {
     it('renders with connected devices', () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         hasConnectedDevices: true,
         connectedCount: 2,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusIndicator />);
       expect(screen.getByText('2')).toBeInTheDocument();
     });
 
     it('renders with no connected devices', () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         hasConnectedDevices: false,
         connectedCount: 0,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusIndicator />);
       expect(screen.getByText('0')).toBeInTheDocument();
     });
 
     it('shows Bluetooth icon when devices connected', () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         hasConnectedDevices: true,
         connectedCount: 1,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusIndicator />);
       const button = screen.getByRole('button');
@@ -55,10 +55,10 @@ describe('DeviceStatusIndicator', () => {
     });
 
     it('shows WifiOff icon when no devices connected', () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         hasConnectedDevices: false,
         connectedCount: 0,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusIndicator />);
       const button = screen.getByRole('button');
@@ -68,10 +68,10 @@ describe('DeviceStatusIndicator', () => {
 
   describe('Interactions', () => {
     it('opens popover when clicked', async () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         hasConnectedDevices: true,
         connectedCount: 2,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusIndicator />);
 
@@ -84,10 +84,10 @@ describe('DeviceStatusIndicator', () => {
     });
 
     it('shows full device status card in popover', async () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         hasConnectedDevices: true,
         connectedCount: 1,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusIndicator />);
 
@@ -104,10 +104,10 @@ describe('DeviceStatusIndicator', () => {
 
   describe('Badge Variants', () => {
     it('shows default badge when devices connected', () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         hasConnectedDevices: true,
         connectedCount: 3,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusIndicator />);
       const badge = screen.getByText('3');
@@ -115,10 +115,10 @@ describe('DeviceStatusIndicator', () => {
     });
 
     it('shows secondary badge when no devices connected', () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         hasConnectedDevices: false,
         connectedCount: 0,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusIndicator />);
       const badge = screen.getByText('0');
@@ -128,10 +128,10 @@ describe('DeviceStatusIndicator', () => {
 
   describe('Tooltips', () => {
     it('shows correct tooltip for single device', () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         hasConnectedDevices: true,
         connectedCount: 1,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusIndicator />);
       const button = screen.getByRole('button');
@@ -139,10 +139,10 @@ describe('DeviceStatusIndicator', () => {
     });
 
     it('shows correct tooltip for multiple devices', () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         hasConnectedDevices: true,
         connectedCount: 5,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusIndicator />);
       const button = screen.getByRole('button');
@@ -150,10 +150,10 @@ describe('DeviceStatusIndicator', () => {
     });
 
     it('shows correct tooltip when no devices', () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         hasConnectedDevices: false,
         connectedCount: 0,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusIndicator />);
       const button = screen.getByRole('button');

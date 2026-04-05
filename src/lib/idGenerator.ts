@@ -3,8 +3,6 @@
  * Uses crypto.getRandomValues() for cryptographically secure ID generation
  */
 
-import { secureRandom } from './secureRandom';
-
 /**
  * Generate a secure random ID using crypto.getRandomValues()
  * Format: prefix-timestamp-randomString

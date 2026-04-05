@@ -30,7 +30,7 @@ class MockWebSocket {
     }, 0);
   }
 
-  send(data: string) {
+  send(_data: string) {
     // Mock send
   }
 
@@ -53,9 +53,9 @@ class MockWebSocket {
 describe('useWebSocket', () => {
   beforeEach(() => {
     // Reset window flags
-    delete (window as any).VITALSENSE_DISABLE_WEBSOCKET;
-    delete (window as any).VITALSENSE_LIVE_DISABLED;
-    delete (window as any).__VITALSENSE_KV_MODE;
+    delete (window as Window & { VITALSENSE_DISABLE_WEBSOCKET?: boolean }).VITALSENSE_DISABLE_WEBSOCKET;
+    delete (window as Window & { VITALSENSE_LIVE_DISABLED?: boolean }).VITALSENSE_LIVE_DISABLED;
+    delete (window as Window & { __VITALSENSE_KV_MODE?: unknown }).__VITALSENSE_KV_MODE;
     // Mock window.location
     Object.defineProperty(window, 'location', {
       value: {
@@ -64,7 +64,7 @@ describe('useWebSocket', () => {
       writable: true,
     });
     // Mock WebSocket
-    global.WebSocket = MockWebSocket as any;
+    global.WebSocket = MockWebSocket as unknown as typeof WebSocket;
     // Use real timers for WebSocket tests
   });
 
@@ -225,10 +225,10 @@ describe('useWebSocket', () => {
     );
 
     // Simulate receiving a message
-    const ws = (result.current as any).wsRef?.current;
+    const ws = (result.current as unknown as { wsRef?: { current?: WebSocket } }).wsRef?.current;
     if (ws && ws.onmessage) {
       act(() => {
-        ws.onmessage(
+        ws.onmessage!(
           new MessageEvent('message', {
             data: JSON.stringify({
               type: 'test_message',
@@ -264,7 +264,7 @@ describe('useWebSocket', () => {
   });
 
   test('should respect demo mode flag', () => {
-    (window as any).VITALSENSE_DISABLE_WEBSOCKET = true;
+    (window as Window & { VITALSENSE_DISABLE_WEBSOCKET?: boolean }).VITALSENSE_DISABLE_WEBSOCKET = true;
 
     const { result } = renderHook(() =>
       useWebSocket({
@@ -277,7 +277,7 @@ describe('useWebSocket', () => {
   });
 
   test('should respect live disabled flag', () => {
-    (window as any).VITALSENSE_LIVE_DISABLED = true;
+    (window as Window & { VITALSENSE_LIVE_DISABLED?: boolean }).VITALSENSE_LIVE_DISABLED = true;
 
     const { result } = renderHook(() =>
       useWebSocket({

@@ -24,9 +24,9 @@ describe('regexUtils', () => {
     });
 
     test('should throw error for non-string input', () => {
-      expect(() => sanitizeRegexInput(null as any)).toThrow(TypeError);
-      expect(() => sanitizeRegexInput(123 as any)).toThrow(TypeError);
-      expect(() => sanitizeRegexInput({} as any)).toThrow(TypeError);
+      expect(() => sanitizeRegexInput(null as unknown as string)).toThrow(TypeError);
+      expect(() => sanitizeRegexInput(123 as unknown as string)).toThrow(TypeError);
+      expect(() => sanitizeRegexInput({} as unknown as string)).toThrow(TypeError);
     });
 
     test('should throw error for input exceeding max length', () => {

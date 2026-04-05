@@ -6,17 +6,17 @@ on:
       skip_lint:
         description: 'Skip linting step'
         required: false
-        default: 'false'
+        default: false
         type: boolean
       skip_tests:
         description: 'Skip tests'
         required: false
-        default: 'false'
+        default: false
         type: boolean
       skip_archive:
         description: 'Skip archive step'
         required: false
-        default: 'false'
+        default: false
         type: boolean
 
 env:

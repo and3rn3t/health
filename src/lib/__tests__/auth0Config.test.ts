@@ -10,7 +10,7 @@ import {
 describe('auth0Config', () => {
   beforeEach(() => {
     // Reset window object
-    delete (window as any).__VITALSENSE_CONFIG__;
+    delete (window as Window & { __VITALSENSE_CONFIG__?: Record<string, unknown> }).__VITALSENSE_CONFIG__;
     // Mock import.meta.env
     vi.stubGlobal('import', {
       meta: {
@@ -34,7 +34,7 @@ describe('auth0Config', () => {
     });
 
     test('should use window config when available', () => {
-      (window as any).__VITALSENSE_CONFIG__ = {
+      (window as Window & { __VITALSENSE_CONFIG__?: Record<string, unknown> }).__VITALSENSE_CONFIG__ = {
         auth0: {
           domain: 'test.auth0.com',
           clientId: 'test-client-id',
@@ -100,7 +100,7 @@ describe('auth0Config', () => {
     });
 
     test('should return true when valid config is provided via window', () => {
-      (window as any).__VITALSENSE_CONFIG__ = {
+      (window as Window & { __VITALSENSE_CONFIG__?: Record<string, unknown> }).__VITALSENSE_CONFIG__ = {
         auth0: {
           domain: 'custom.auth0.com',
           clientId: 'custom-client-id',
@@ -116,7 +116,7 @@ describe('auth0Config', () => {
 
   describe('getAuth0ConfigForEnvironment', () => {
     test('should return base config for development', () => {
-      delete (window as any).__VITALSENSE_CONFIG__;
+      delete (window as Window & { __VITALSENSE_CONFIG__?: Record<string, unknown> }).__VITALSENSE_CONFIG__;
       const config = getAuth0ConfigForEnvironment();
 
       expect(config).toHaveProperty('domain');
@@ -125,7 +125,7 @@ describe('auth0Config', () => {
     });
 
     test('should return production config when environment is production', () => {
-      (window as any).__VITALSENSE_CONFIG__ = {
+      (window as Window & { __VITALSENSE_CONFIG__?: Record<string, unknown> }).__VITALSENSE_CONFIG__ = {
         environment: 'production',
       };
       const config = getAuth0ConfigForEnvironment();
@@ -136,7 +136,7 @@ describe('auth0Config', () => {
     });
 
     test('should return staging config when environment is staging', () => {
-      (window as any).__VITALSENSE_CONFIG__ = {
+      (window as Window & { __VITALSENSE_CONFIG__?: Record<string, unknown> }).__VITALSENSE_CONFIG__ = {
         environment: 'staging',
       };
       const config = getAuth0ConfigForEnvironment();
@@ -147,7 +147,7 @@ describe('auth0Config', () => {
     test('should use VITE_ENVIRONMENT when window config is not available', () => {
       // This would require mocking import.meta.env
       // For now, we test the default behavior
-      delete (window as any).__VITALSENSE_CONFIG__;
+      delete (window as Window & { __VITALSENSE_CONFIG__?: Record<string, unknown> }).__VITALSENSE_CONFIG__;
       const config = getAuth0ConfigForEnvironment();
 
       expect(config).toBeDefined();

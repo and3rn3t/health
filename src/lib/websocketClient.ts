@@ -338,8 +338,8 @@ export class WebSocketClient {
    * Convenience helper for micro coaching events. Consumers still get raw event shape
    * coming from server (coaching engine). This avoids hardcoding event shape elsewhere.
    */
-  onMicroCoach(handler: (ev: any) => void) {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
+  onMicroCoach(handler: (ev: Record<string, unknown>) => void) {
+     
     return this.subscribe('micro_coach', handler);
   }
 }

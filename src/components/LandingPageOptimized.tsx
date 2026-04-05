@@ -21,7 +21,6 @@ import { useLiveRegion } from '@/hooks/useLiveRegion';
 import { ProcessedHealthData } from '@/types';
 import {
   Activity,
-  AlertTriangle,
   BarChart3,
   Brain,
   ChevronRight,
@@ -32,7 +31,6 @@ import {
   Smartphone,
   Sparkles,
   Target,
-  Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -76,7 +74,7 @@ export default function LandingPageOptimized({
   );
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { hasConnectedDevices, devices } = useDeviceManagement();
+  const { hasConnectedDevices } = useDeviceManagement();
 
   // Live region for screen readers
   const _announceToScreenReader = useLiveRegion();

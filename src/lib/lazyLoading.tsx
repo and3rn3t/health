@@ -5,16 +5,10 @@
 import { ComponentType, lazy, LazyExoticComponent } from 'react';
 import { LucideIcon } from 'lucide-react';
 
-interface LazyFallbackProps {
-  title: string;
-  message: string;
-  icon: LucideIcon;
-}
-
 /**
  * Creates a lazy-loaded component with a consistent fallback UI
  */
-export function createLazyComponent<T extends ComponentType<any>>(
+export function createLazyComponent<T extends ComponentType<Record<string, unknown>>>(
   importFn: () => Promise<{ default: T }>,
   fallbackConfig: {
     title: string;
@@ -47,7 +41,7 @@ export function createLazyComponent<T extends ComponentType<any>>(
 /**
  * Creates a lazy component with a named export (for components that export named exports)
  */
-export function createLazyNamedComponent<T extends ComponentType<any>>(
+export function createLazyNamedComponent<T extends ComponentType<Record<string, unknown>>>(
   importFn: () => Promise<Record<string, T>>,
   exportName: string,
   fallbackConfig: {

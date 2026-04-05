@@ -10,7 +10,7 @@ export interface ExtractedFeature {
   area: number
   height: number
   confidence: number
-  properties: Record<string, any>
+  properties: Record<string, unknown>
 }
 
 /**
@@ -21,7 +21,7 @@ export function extractBuildings(
   chm: { grid: number[][]; bbox: { minX: number; minY: number; maxX: number; maxY: number }; cellSize: number; width: number; height: number },
   minHeight = 2.5,
   minArea = 20.0,
-  maxSlope = 15.0
+  _maxSlope = 15.0
 ): ExtractedFeature[] {
   const features: ExtractedFeature[] = []
   const visited = new Set<string>()

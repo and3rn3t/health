@@ -90,7 +90,7 @@ function detectLiDARCapability(): boolean {
   const isIPadPro = /iPad/.test(userAgent);
 
   // Check for ARKit availability (LiDAR requires ARKit)
-  if (typeof (window as any).ARKit !== 'undefined') {
+  if (typeof (window as Window & { ARKit?: unknown }).ARKit !== 'undefined') {
     return true;
   }
 
@@ -111,12 +111,12 @@ function detectMotionSensors(): boolean {
   if (typeof window === 'undefined') return false;
 
   // Check for DeviceMotionEvent (accelerometer, gyroscope)
-  if (typeof (window as any).DeviceMotionEvent !== 'undefined') {
+  if (typeof (window as Window & { DeviceMotionEvent?: unknown }).DeviceMotionEvent !== 'undefined') {
     return true;
   }
 
   // Check for DeviceOrientationEvent
-  if (typeof (window as any).DeviceOrientationEvent !== 'undefined') {
+  if (typeof (window as Window & { DeviceOrientationEvent?: unknown }).DeviceOrientationEvent !== 'undefined') {
     return true;
   }
 
@@ -130,7 +130,7 @@ function detectARKitCapability(): boolean {
   if (typeof window === 'undefined') return false;
 
   // Check for WebXR (AR support)
-  if (typeof (navigator as any).xr !== 'undefined') {
+  if (typeof (navigator as Navigator & { xr?: unknown }).xr !== 'undefined') {
     return true;
   }
 
@@ -152,12 +152,12 @@ export async function requestMotionPermissions(): Promise<boolean> {
 
   try {
     // Request permission for DeviceMotionEvent
-    if (typeof (window as any).DeviceMotionEvent !== 'undefined') {
+    if (typeof (window as Window & { DeviceMotionEvent?: unknown }).DeviceMotionEvent !== 'undefined') {
       // iOS 13+ requires permission request
       if (
-        typeof (DeviceMotionEvent as any).requestPermission === 'function'
+        typeof (DeviceMotionEvent as unknown as { requestPermission?: () => Promise<string> }).requestPermission === 'function'
       ) {
-        const permission = await (DeviceMotionEvent as any).requestPermission();
+        const permission = await (DeviceMotionEvent as unknown as { requestPermission: () => Promise<string> }).requestPermission();
         return permission === 'granted';
       }
     }

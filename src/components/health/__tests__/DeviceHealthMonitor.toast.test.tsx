@@ -33,22 +33,24 @@ describe('DeviceHealthMonitor - Toast Deduplication', () => {
   });
 
   it('should use useOnceToast for battery alerts with unique device IDs', () => {
-    (useDeviceManagement as any).mockReturnValue({
+    vi.mocked(useDeviceManagement).mockReturnValue({
       devices: [
         {
           id: 'device-1',
           name: 'iPhone',
+          type: 'iphone' as const,
           battery: 15,
           status: 'connected',
         },
         {
           id: 'device-2',
           name: 'Apple Watch',
+          type: 'apple_watch' as const,
           battery: 10,
           status: 'connected',
         },
       ],
-    });
+    } as unknown as ReturnType<typeof useDeviceManagement>);
 
     render(<DeviceHealthMonitor />);
 
@@ -78,15 +80,16 @@ describe('DeviceHealthMonitor - Toast Deduplication', () => {
   });
 
   it('should use useOnceToast for disconnection alerts', () => {
-    (useDeviceManagement as any).mockReturnValue({
+    vi.mocked(useDeviceManagement).mockReturnValue({
       devices: [
         {
           id: 'device-1',
           name: 'iPhone',
+          type: 'iphone' as const,
           status: 'disconnected',
         },
       ],
-    });
+    } as unknown as ReturnType<typeof useDeviceManagement>);
 
     render(<DeviceHealthMonitor />);
 
@@ -104,15 +107,16 @@ describe('DeviceHealthMonitor - Toast Deduplication', () => {
   });
 
   it('should use useOnceToast for error status alerts', () => {
-    (useDeviceManagement as any).mockReturnValue({
+    vi.mocked(useDeviceManagement).mockReturnValue({
       devices: [
         {
           id: 'device-1',
           name: 'iPhone',
+          type: 'iphone' as const,
           status: 'error',
         },
       ],
-    });
+    } as unknown as ReturnType<typeof useDeviceManagement>);
 
     render(<DeviceHealthMonitor />);
 
@@ -132,19 +136,20 @@ describe('DeviceHealthMonitor - Toast Deduplication', () => {
   it('should prevent duplicate alerts on re-render with same device state', () => {
     const { rerender } = render(<DeviceHealthMonitor />);
 
-    (useDeviceManagement as any).mockReturnValue({
+    vi.mocked(useDeviceManagement).mockReturnValue({
       devices: [
         {
           id: 'device-1',
           name: 'iPhone',
+          type: 'iphone' as const,
           battery: 15,
           status: 'connected',
         },
       ],
-    });
+    } as unknown as ReturnType<typeof useDeviceManagement>);
 
     rerender(<DeviceHealthMonitor />);
-    const firstCallCount = mockShowOnce.mock.calls.length;
+    const _firstCallCount = mockShowOnce.mock.calls.length;
 
     // Re-render with same state
     rerender(<DeviceHealthMonitor />);

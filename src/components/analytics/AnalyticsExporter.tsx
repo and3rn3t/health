@@ -169,7 +169,7 @@ export default function AnalyticsExporter({
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Export Format</label>
-            <Select value={format} onValueChange={(value) => setFormat(value as any)}>
+            <Select value={format} onValueChange={(value) => setFormat(value as 'pdf' | 'csv' | 'json')}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

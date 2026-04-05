@@ -70,7 +70,7 @@ export default function LiveConnectionDashboard() {
   // Get WebSocket URL from window globals or use default
   const getWebSocketUrl = () => {
     if (typeof window !== 'undefined') {
-      const customUrl = (window as any).__WS_URL__;
+      const customUrl = (window as Window & { __WS_URL__?: string }).__WS_URL__;
       if (customUrl) return customUrl;
     }
     return 'ws://localhost:3001';
@@ -78,7 +78,7 @@ export default function LiveConnectionDashboard() {
 
   // WebSocket message handlers
   const messageHandlers = {
-    connection_established: (data: any) => {
+    connection_established: (data: unknown) => {
       console.log('Connected to VitalSense WebSocket:', data);
       setConnectionMetrics((prev) => ({
         ...prev,
@@ -86,18 +86,19 @@ export default function LiveConnectionDashboard() {
       }));
     },
 
-    live_health_update: (data: any) => {
-      console.log('Live health update received:', data);
-      if (data.metrics && Array.isArray(data.metrics)) {
-        const newMetrics = data.metrics.map((metric: any) => ({
+    live_health_update: (data: unknown) => {
+      const d = data as Record<string, unknown>;
+      console.log('Live health update received:', d);
+      if (d.metrics && Array.isArray(d.metrics)) {
+        const newMetrics = d.metrics.map((metric: Record<string, unknown>) => ({
           id: `${metric.type}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
 
-          type: metric.type,
-          value: metric.value,
-          unit: metric.unit || '',
-          timestamp: metric.timestamp || new Date().toISOString(),
-          deviceId: data.deviceId || 'unknown',
-          quality: determineDataQuality(metric.value, metric.type),
+          type: metric.type as LiveMetric['type'],
+          value: metric.value as number,
+          unit: (metric.unit as string) || '',
+          timestamp: (metric.timestamp as string) || new Date().toISOString(),
+          deviceId: (d.deviceId as string) || 'unknown',
+          quality: determineDataQuality(metric.value as number, metric.type as string),
         }));
 
         setLiveMetrics((prev) => [...newMetrics, ...prev.slice(0, 99)]); // Keep last 100
@@ -105,23 +106,23 @@ export default function LiveConnectionDashboard() {
         setConnectionMetrics((prev) => ({
           ...prev,
           totalMessages: prev.totalMessages + newMetrics.length,
-          bytesTransferred: prev.bytesTransferred + JSON.stringify(data).length,
+          bytesTransferred: prev.bytesTransferred + JSON.stringify(d).length,
           lastHeartbeat: new Date().toISOString(),
         }));
       }
     },
 
-    historical_data_update: (data: any) => {
+    historical_data_update: (data: unknown) => {
       console.log('Historical data update:', data);
       // Handle historical data updates if needed
     },
 
-    emergency_alert: (data: any) => {
+    emergency_alert: (data: unknown) => {
       console.log('Emergency alert:', data);
       // Handle emergency alerts
     },
 
-    error: (data: any) => {
+    error: (data: unknown) => {
       console.error('WebSocket error:', data);
     },
 

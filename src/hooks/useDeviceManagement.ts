@@ -534,8 +534,8 @@ export function useDeviceManagement(userId?: string) {
             value: 0,
             deviceId,
             confidence: 1,
-            source: 'web_dashboard',
-          } as any);
+            source: 'apple_watch',
+          });
         }
 
         // Wait for sync to complete (device will send data back)

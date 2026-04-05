@@ -117,7 +117,7 @@ export const useAccessibilityEnhanced = (
   const {
     role = 'status',
     keyboardNav = 'enhanced',
-    announceChanges = true,
+    announceChanges: _announceChanges = true,
     criticalContent = false,
   } = options;
 

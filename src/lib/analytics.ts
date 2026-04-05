@@ -519,7 +519,7 @@ export function generateAnalyticsSummary(
     const older = healthScores.slice(0, -7);
     const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
     const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
-    const change = ((recentAvg - olderAvg) / olderAvg) * 100;
+    const _change = ((recentAvg - olderAvg) / olderAvg) * 100;
     // Trend calculation would go here
   }
 

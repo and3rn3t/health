@@ -291,7 +291,7 @@ This guidance is informational and not medical advice. Consult healthcare provid
     }
   };
 
-  const insightsByCategory = useMemo(() => {
+  const _insightsByCategory = useMemo(() => {
     const categories: Record<string, AIInsight[]> = {};
     insights.forEach((insight) => {
       const category = insight.category || 'other';

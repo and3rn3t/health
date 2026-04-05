@@ -15,9 +15,9 @@ const mockGetDevice = vi.fn();
 describe('DeviceAttributionBadge', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (useDeviceManagement as any).mockReturnValue({
+    vi.mocked(useDeviceManagement).mockReturnValue({
       getDevice: mockGetDevice,
-    });
+    } as unknown as ReturnType<typeof useDeviceManagement>);
   });
 
   describe('Rendering', () => {

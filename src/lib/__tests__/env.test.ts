@@ -17,7 +17,8 @@ describe('env', () => {
 
     test('should return undefined for empty string values', () => {
       // Mock import.meta.env
-      const originalMeta = (globalThis as any).import?.meta;
+      const importObj = (globalThis as Record<string, unknown>).import as Record<string, unknown> | undefined;
+      const originalMeta = importObj?.meta as Record<string, unknown> | undefined;
       if (originalMeta) {
         originalMeta.env = { VITE_EMPTY: '' };
         expect(safeGetViteEnv('VITE_EMPTY')).toBeUndefined();
@@ -117,7 +118,7 @@ describe('env', () => {
       // Note: import.meta.env.DEV is compile-time and can't be mocked at runtime
       // In test environment, it may be true, so we test the fallback behavior
       const originalWindow = globalThis.window;
-      delete (globalThis as any).window;
+      delete (globalThis as Record<string, unknown>).window;
 
       const result = isDev();
       // If import.meta.env.DEV is true (test environment), result will be true

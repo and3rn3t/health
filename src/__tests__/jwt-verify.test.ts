@@ -59,7 +59,7 @@ describe('verifyJwtWithJwks (positive path)', () => {
 
     // Mock fetch to return our JWKS containing the matching public key
     const jwks = { keys: [publicJwk] };
-    vi.spyOn(globalThis, 'fetch' as any).mockResolvedValue({
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
       json: async () => jwks,
     } as Response);

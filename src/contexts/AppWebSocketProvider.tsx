@@ -1,6 +1,5 @@
 import { WebSocketClient } from '@/lib/websocketClient';
 import React, {
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -13,7 +12,6 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
 }) => {
   const [client, setClient] = useState<WebSocketClient | null>(null);
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [coachingEnabled, setCoachingEnabled] = useState(false);
   const metricsRef = useRef<Record<string, number>>({});
   // metricsRef drives derived state; no forced re-render currently needed
 
@@ -24,21 +22,21 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
       // Check if WebSocket is disabled via window flags
       if (
         typeof window !== 'undefined' &&
-        ((window as any).VITALSENSE_DISABLE_WEBSOCKET ||
-          (window as any).VITALSENSE_LIVE_DISABLED)
+        ((window as Window & { VITALSENSE_DISABLE_WEBSOCKET?: boolean; VITALSENSE_LIVE_DISABLED?: boolean }).VITALSENSE_DISABLE_WEBSOCKET ||
+          (window as Window & { VITALSENSE_DISABLE_WEBSOCKET?: boolean; VITALSENSE_LIVE_DISABLED?: boolean }).VITALSENSE_LIVE_DISABLED)
       ) {
         return; // Skip WebSocket connection
       }
 
       const cfg =
         (typeof window !== 'undefined'
-          ? (window as any).__VITALSENSE_CONFIG__
+          ? (window as Window & { __VITALSENSE_CONFIG__?: Record<string, unknown> }).__VITALSENSE_CONFIG__
           : null) || null;
       const wsUrl: string | undefined =
         (cfg && typeof cfg.wsBaseUrl === 'string' && cfg.wsBaseUrl) || undefined;
 
       // Check if auth is required but not enabled
-      const authRequired =
+      const _authRequired =
         cfg?.features?.enableAuth !== false &&
         cfg?.auth0?.domain &&
         cfg.auth0.domain !== 'vitalsense-health.auth0.com' &&
@@ -65,7 +63,7 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
       await c.open().catch(() => void 0);
       // Grab underlying internal socket (private) – acceptable internal access; fallback to message subscription if fails
       try {
-        const raw = (c as any).ws as WebSocket | undefined; // eslint-disable-line @typescript-eslint/no-explicit-any
+        const raw = (c as unknown as { ws?: WebSocket }).ws;  
         if (!cancelled && raw) setSocket(raw);
         const lidarEnabled = (() => {
           try {
@@ -80,8 +78,8 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
           return true;
         })();
 
-        function handleMetricLike(obj: any) {
-          // eslint-disable-line @typescript-eslint/no-explicit-any
+        function handleMetricLike(obj: Record<string, unknown>) {
+           
           if (
             obj &&
             typeof obj.metric === 'string' &&
@@ -90,14 +88,14 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
             metricsRef.current[obj.metric] = obj.value;
           }
         }
-        function handleHealthBatch(obj: any) {
-          // eslint-disable-line @typescript-eslint/no-explicit-any
+        function handleHealthBatch(obj: Record<string, unknown>) {
+           
           if (Array.isArray(obj.items)) {
-            for (const it of obj.items) handleMetricLike(it);
+            for (const it of obj.items) handleMetricLike(it as Record<string, unknown>);
           }
         }
-        function handleLidar(obj: any) {
-          // eslint-disable-line @typescript-eslint/no-explicit-any
+        function handleLidar(obj: Record<string, unknown>) {
+           
           if (!lidarEnabled) return;
           const copyKeys = [
             'obstacle_distance_min',
@@ -113,16 +111,17 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
         }
         if (raw) {
           raw.addEventListener('message', (ev) => {
-            let data: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+            let data: unknown;
             try {
               data = JSON.parse(ev.data);
             } catch {
               return;
             }
             if (!data || typeof data !== 'object') return;
-            if (data.metric) handleMetricLike(data);
-            else if (data.type === 'health_batch') handleHealthBatch(data);
-            else if (data.type === 'lidar_metrics') handleLidar(data);
+            const msg = data as Record<string, unknown>;
+            if (msg.metric) handleMetricLike(msg);
+            else if (msg.type === 'health_batch') handleHealthBatch(msg);
+            else if (msg.type === 'lidar_metrics') handleLidar(msg);
           });
         }
       } catch {
@@ -144,8 +143,6 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
     [
       client,
       socket,
-      coachingEnabled,
-      setCoachingEnabled,
     ]
   );
 

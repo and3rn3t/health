@@ -1,4 +1,3 @@
-/// <reference types="vitest" />
 import { describe, it, expect } from 'vitest';
 import {
   getAesKey,
@@ -28,7 +27,7 @@ describe('security utils', () => {
   });
 
   it('zod boundary rejects invalid health data', () => {
-    const invalid: any = { type: 'unknown', processedAt: 'not-a-date' };
+    const invalid: Record<string, unknown> = { type: 'unknown', processedAt: 'not-a-date' };
     const parsed = processedHealthDataSchema.safeParse(invalid);
     expect(parsed.success).toBe(false);
   });

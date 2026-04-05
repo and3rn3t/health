@@ -17,7 +17,7 @@ export interface Schedule {
   nextRunAt?: string
   lastRunAt?: string
   runCount: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface NotificationConfig {
@@ -35,7 +35,7 @@ export interface ScheduledJob {
   runAt: string
   startedAt?: string
   completedAt?: string
-  result?: any
+  result?: unknown
   error?: string
 }
 
@@ -143,7 +143,7 @@ class Scheduler {
   updateJobStatus(
     id: string,
     status: ScheduledJob['status'],
-    result?: any,
+    result?: unknown,
     error?: string
   ): ScheduledJob {
     const job = this.jobs.get(id)
@@ -164,18 +164,18 @@ class Scheduler {
     return job
   }
 
-  private calculateNextRun(schedule: Schedule): string {
+  private calculateNextRun(schedule: Schedule): string | undefined {
     if (!schedule.enabled) {
-      return undefined as any
+      return undefined
     }
 
     const now = new Date()
-    let next = new Date(now)
+    const next = new Date(now)
 
     switch (schedule.scheduleType) {
       case 'once':
         // Already ran or invalid
-        return undefined as any
+        return undefined
       case 'daily':
         next.setDate(next.getDate() + 1)
         next.setHours(0, 0, 0, 0)
@@ -218,7 +218,7 @@ export const scheduler = new Scheduler()
 export async function sendNotification(
   config: NotificationConfig,
   event: string,
-  data: Record<string, any>
+  data: Record<string, unknown>
 ): Promise<void> {
   // Webhooks
   if (config.webhooks) {

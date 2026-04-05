@@ -3,7 +3,6 @@ import { Home } from 'lucide-react';
 import {
   createNavigationItem,
   createNavigationItems,
-  type NavigationItem,
 } from '../navigationHelpers';
 
 // Mock component for testing

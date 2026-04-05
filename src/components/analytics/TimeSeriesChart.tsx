@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import React, { useMemo } from 'react';
-import type { TimeSeriesDataPoint, TrendAnalysis } from '@/lib/analytics';
+import type { TimeSeriesDataPoint } from '@/lib/analytics';
 import { calculateTrend } from '@/lib/analytics';
 
 interface TimeSeriesChartProps {
@@ -48,7 +48,7 @@ export default function TimeSeriesChart({
 
   const minDate = data[0]?.date || new Date();
   const maxDate = data[data.length - 1]?.date || new Date();
-  const dateRange = maxDate.getTime() - minDate.getTime() || 1;
+  const _dateRange = maxDate.getTime() - minDate.getTime() || 1;
 
   // Generate path
   const points = data.map((point, i) => {

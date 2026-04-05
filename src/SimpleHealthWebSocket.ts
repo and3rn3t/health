@@ -88,7 +88,7 @@ export class SimpleHealthWebSocket {
               })
             );
           }
-        } catch (e) {
+        } catch (_e) {
           server.send(
             JSON.stringify({
               type: 'error',

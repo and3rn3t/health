@@ -10,7 +10,7 @@ import { DeviceStatusCard } from '../DeviceStatusCard';
 // Mock dependencies
 vi.mock('@/hooks/useDeviceManagement');
 vi.mock('../DeviceSetupWizard', () => ({
-  DeviceSetupWizard: ({ onComplete, onCancel }: any) => (
+  DeviceSetupWizard: ({ onComplete, onCancel }: { onComplete: () => void; onCancel: () => void }) => (
     <div data-testid="device-setup-wizard">
       <button onClick={onComplete}>Complete</button>
       <button onClick={onCancel}>Cancel</button>
@@ -25,7 +25,7 @@ const mockDevices = [
   {
     id: 'device-1',
     name: 'iPhone 15 Pro',
-    type: 'iphone',
+    type: 'iphone' as const,
     status: 'connected' as const,
     battery: 85,
     capabilities: {
@@ -37,7 +37,7 @@ const mockDevices = [
   {
     id: 'device-2',
     name: 'Apple Watch Series 9',
-    type: 'apple_watch',
+    type: 'apple_watch' as const,
     status: 'connected' as const,
     battery: 75,
     capabilities: {
@@ -55,12 +55,12 @@ describe('DeviceStatusCard', () => {
     if (globalThis.window) {
       globalThis.window.dispatchEvent = mockDispatchEvent;
     }
-    (useDeviceManagement as any).mockReturnValue({
+    vi.mocked(useDeviceManagement).mockReturnValue({
       devices: [],
       hasConnectedDevices: false,
       connectedCount: 0,
       syncDevice: mockSyncDevice,
-    });
+    } as unknown as ReturnType<typeof useDeviceManagement>);
   });
 
   describe('Rendering', () => {
@@ -75,24 +75,24 @@ describe('DeviceStatusCard', () => {
     });
 
     it('shows device count correctly', () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         devices: mockDevices,
         hasConnectedDevices: true,
         connectedCount: 2,
         syncDevice: mockSyncDevice,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusCard compact={false} />);
       expect(screen.getByText('2 devices connected')).toBeInTheDocument();
     });
 
     it('displays connected devices with status indicators', () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         devices: mockDevices,
         hasConnectedDevices: true,
         connectedCount: 2,
         syncDevice: mockSyncDevice,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusCard compact={false} />);
       expect(screen.getByText('iPhone 15 Pro')).toBeInTheDocument();
@@ -106,12 +106,12 @@ describe('DeviceStatusCard', () => {
     });
 
     it('displays battery levels when available', () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         devices: mockDevices,
         hasConnectedDevices: true,
         connectedCount: 2,
         syncDevice: mockSyncDevice,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusCard compact={false} />);
       expect(screen.getByText('85%')).toBeInTheDocument();
@@ -145,12 +145,12 @@ describe('DeviceStatusCard', () => {
 
     it('calls onDeviceClick callback when device clicked', () => {
       const onDeviceClick = vi.fn();
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         devices: mockDevices,
         hasConnectedDevices: true,
         connectedCount: 2,
         syncDevice: mockSyncDevice,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(
         <DeviceStatusCard compact={false} onDeviceClick={onDeviceClick} />
@@ -163,12 +163,12 @@ describe('DeviceStatusCard', () => {
     });
 
     it('syncs device when sync button clicked', () => {
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         devices: mockDevices,
         hasConnectedDevices: true,
         connectedCount: 2,
         syncDevice: mockSyncDevice,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusCard compact={false} />);
 
@@ -183,16 +183,16 @@ describe('DeviceStatusCard', () => {
       const manyDevices = Array.from({ length: 5 }, (_, i) => ({
         id: `device-${i}`,
         name: `Device ${i}`,
-        type: 'health_app',
+        type: 'health_app' as const,
         status: 'connected' as const,
       }));
 
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         devices: manyDevices,
         hasConnectedDevices: true,
         connectedCount: 5,
         syncDevice: mockSyncDevice,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusCard compact={true} />);
       expect(screen.getByText(/View all 5 devices/)).toBeInTheDocument();
@@ -225,17 +225,17 @@ describe('DeviceStatusCard', () => {
         {
           id: 'device-1',
           name: 'Device 1',
-          type: 'health_app',
+          type: 'health_app' as const,
           status: 'connected' as const,
         },
       ];
 
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         devices: devicesWithoutBattery,
         hasConnectedDevices: true,
         connectedCount: 1,
         syncDevice: mockSyncDevice,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusCard compact={false} />);
       expect(screen.getByText('Device 1')).toBeInTheDocument();
@@ -246,17 +246,17 @@ describe('DeviceStatusCard', () => {
         {
           id: 'device-1',
           name: 'Device 1',
-          type: 'health_app',
+          type: 'health_app' as const,
           status: undefined,
         },
       ];
 
-      (useDeviceManagement as any).mockReturnValue({
+      vi.mocked(useDeviceManagement).mockReturnValue({
         devices: devicesWithUndefinedStatus,
         hasConnectedDevices: true,
         connectedCount: 1,
         syncDevice: mockSyncDevice,
-      });
+      } as unknown as ReturnType<typeof useDeviceManagement>);
 
       render(<DeviceStatusCard compact={false} />);
       // Should not crash

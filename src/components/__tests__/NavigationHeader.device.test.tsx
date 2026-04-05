@@ -31,13 +31,13 @@ vi.mock('@/components/live/LiveConnectionStatus', () => ({
 describe('NavigationHeader Device Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (useDeviceManagement as any).mockReturnValue({
+    vi.mocked(useDeviceManagement).mockReturnValue({
       hasConnectedDevices: true,
       connectedCount: 2,
-    });
+    } as unknown as ReturnType<typeof useDeviceManagement>);
   });
 
-  const renderWithProvider = (props: any) => {
+  const renderWithProvider = (props: Record<string, unknown>) => {
     return render(
       <AppleSidebarProvider>
         <NavigationHeader {...props} />

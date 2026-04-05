@@ -42,7 +42,7 @@ describe('useAuth', () => {
 
   test('should throw error when context is not provided and auth is enabled', () => {
     // Clear window config
-    delete (window as any).__VITALSENSE_CONFIG__;
+    delete (window as Window & { __VITALSENSE_CONFIG__?: Record<string, unknown> }).__VITALSENSE_CONFIG__;
 
     // Suppress console.error for this test
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -58,7 +58,7 @@ describe('useAuth', () => {
   });
 
   test('should return mock values when auth is disabled', () => {
-    (window as any).__VITALSENSE_CONFIG__ = {
+    (window as Window & { __VITALSENSE_CONFIG__?: Record<string, unknown> }).__VITALSENSE_CONFIG__ = {
       features: {
         enableAuth: false,
       },
@@ -76,14 +76,14 @@ describe('useAuth', () => {
   });
 
   test('should handle null context when auth is disabled', () => {
-    (window as any).__VITALSENSE_CONFIG__ = {
+    (window as Window & { __VITALSENSE_CONFIG__?: Record<string, unknown> }).__VITALSENSE_CONFIG__ = {
       features: {
         enableAuth: false,
       },
     };
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthContext.Provider value={null as any}>{children}</AuthContext.Provider>
+      <AuthContext.Provider value={null as unknown as React.ContextType<typeof AuthContext>}>{children}</AuthContext.Provider>
     );
 
     const { result } = renderHook(() => useAuth(), { wrapper });

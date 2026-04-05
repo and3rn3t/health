@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import React, { useMemo } from 'react';
 import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
-import type { MetricComparison } from '@/lib/analytics';
 import { comparePeriods, extractTimeSeries } from '@/lib/analytics';
 
 interface MetricComparisonCardProps {

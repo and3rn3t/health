@@ -4,8 +4,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { messageEnvelopeSchema } from '@/schemas/health';
 
 describe('VitalSense WebSocket System', () => {
-  let mockWebSocket: any;
-  let originalWebSocket: any;
+  let mockWebSocket: {
+    readyState: number;
+    url: string;
+    send: ReturnType<typeof vi.fn>;
+    close: ReturnType<typeof vi.fn>;
+    addEventListener: ReturnType<typeof vi.fn>;
+    removeEventListener: ReturnType<typeof vi.fn>;
+  };
+  let originalWebSocket: typeof WebSocket | undefined;
 
   beforeEach(() => {
     // Save original WebSocket
@@ -22,12 +29,12 @@ describe('VitalSense WebSocket System', () => {
     };
 
     // Mock WebSocket constructor
-    global.WebSocket = vi.fn(() => mockWebSocket) as any;
+    global.WebSocket = vi.fn(() => mockWebSocket) as unknown as typeof WebSocket;
   });
 
   afterEach(() => {
     // Restore original WebSocket
-    global.WebSocket = originalWebSocket;
+    global.WebSocket = originalWebSocket!;
   });
 
   describe('Message Envelope Validation', () => {
@@ -114,7 +121,7 @@ describe('VitalSense WebSocket System', () => {
     it('should reject messages with invalid type enum', () => {
       const badMessage = {
         type: 'not_allowed',
-      } as any;
+      } as unknown as Record<string, unknown>;
 
       const result = messageEnvelopeSchema.safeParse(badMessage);
       expect(result.success).toBe(false);
@@ -174,7 +181,7 @@ describe('VitalSense WebSocket System', () => {
 
       if (result.success) {
         expect(result.data.type).toBe('live_health_update');
-        expect((result.data.data as any).metric).toBe('heart_rate');
+        expect((result.data.data as Record<string, unknown>).metric).toBe('heart_rate');
       }
     });
 

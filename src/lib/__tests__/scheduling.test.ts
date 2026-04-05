@@ -97,7 +97,7 @@ describe('Scheduling', () => {
     })
 
     const job1 = scheduler.createJob(schedule.id, new Date().toISOString())
-    const job2 = scheduler.createJob(schedule.id, new Date().toISOString())
+    scheduler.createJob(schedule.id, new Date().toISOString())
     scheduler.updateJobStatus(job1.id, 'completed')
 
     const completedJobs = scheduler.listJobs(schedule.id, 'completed')

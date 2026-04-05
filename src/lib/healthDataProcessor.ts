@@ -135,7 +135,7 @@ export class HealthDataProcessor {
 
   private static processMetric(
     daily: HealthMetric[],
-    metricName: string
+    _metricName: string
   ): MetricData {
     const average = daily.reduce((sum, d) => sum + d.value, 0) / daily.length;
     const trend = this.calculateTrend(daily);
@@ -346,7 +346,7 @@ export class HealthDataProcessor {
   /**
    * Main processing function that converts raw data into structured analytics
    */
-  static async processHealthData(file?: File): Promise<ProcessedHealthData> {
+  static async processHealthData(_file?: File): Promise<ProcessedHealthData> {
     // For now, generate realistic mock data
     // In a real implementation, this would parse the actual Apple Health XML
 

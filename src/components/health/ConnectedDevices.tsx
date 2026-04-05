@@ -45,7 +45,6 @@ export function ConnectedDevices() {
     disconnectDevice,
     removeDevice,
     syncDevice,
-    hasConnectedDevices,
   } = useDeviceManagement();
 
   // Check if we should auto-open the setup wizard (from Setup button)

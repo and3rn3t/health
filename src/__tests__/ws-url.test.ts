@@ -13,25 +13,25 @@ describe('WebSocketClient', () => {
       json: async () => ({ url: 'wss://example/ws' }),
     }));
     // Stub WebSocket constructor to avoid real connections
-    const wsOpenHandlers: any[] = [];
+    const wsOpenHandlers: ((ev: Event) => void)[] = [];
     class WSStub {
       readyState = 0;
-      addEventListener(ev: string, cb: any) {
+      addEventListener(ev: string, cb: (ev: Event) => void) {
         if (ev === 'open') wsOpenHandlers.push(cb);
       }
       send() {}
       close() {}
     }
-    vi.stubGlobal('WebSocket', WSStub as any);
+    vi.stubGlobal('WebSocket', WSStub as unknown as typeof WebSocket);
     const client = new WebSocketClient();
     const p = client.open();
     // trigger open
-    for (const h of wsOpenHandlers) h();
+    for (const h of wsOpenHandlers) h(new Event('open'));
     await p;
     // The client may call /api/ws-telemetry first, then /api/ws-url
     // Check all fetch calls, not just the first one
-    const fetchCalls = (fetch as any).mock.calls.map((call: any[]) => call[0]);
-    const hasWsUrl = fetchCalls.some((url: string) => url && url.includes('/api/ws-url'));
+    const fetchCalls = vi.mocked(fetch).mock.calls.map((call: unknown[]) => call[0]);
+    const hasWsUrl = fetchCalls.some((url: unknown) => typeof url === 'string' && url.includes('/api/ws-url'));
     expect(hasWsUrl).toBe(true);
   });
 });

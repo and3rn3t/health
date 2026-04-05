@@ -42,7 +42,7 @@ export function MobileBottomTabs({
   activeTab,
   onTabChange,
   navigationItems,
-  className,
+  className: _className,
 }: MobileBottomTabsProps) {
   // Show only the most important 4-5 tabs on mobile bottom bar
   const primaryTabs = navigationItems

@@ -106,7 +106,7 @@ export function DeviceSetupWizard({
     setStep('connecting');
   };
 
-  const handleConnect = async () => {
+  const _handleConnect = async () => {
     if (!selectedDevice) return;
 
     setConnectionProgress(0);
