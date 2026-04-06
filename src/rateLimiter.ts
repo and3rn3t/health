@@ -10,24 +10,36 @@ export class RateLimiter {
     const key = url.searchParams.get('key') || 'anon';
     const limit = Number(url.searchParams.get('limit') || 60);
     const interval = Number(url.searchParams.get('intervalMs') || 60_000);
+    const probe = url.searchParams.get('probe') === '1';
 
     const now = Date.now();
-    const record = (await this.storage.get<{ tokens: number; last: number }>(
-      key
-    )) || { tokens: limit, last: now };
+    let record: { tokens: number; last: number };
+    try {
+      const saved = await this.storage.get<{ tokens: number; last: number }>(key);
+      record = saved && typeof saved.tokens === 'number' && typeof saved.last === 'number'
+        ? { tokens: saved.tokens, last: saved.last }
+        : { tokens: limit, last: now };
+    } catch {
+      // Storage read failed — start fresh to avoid blocking requests
+      record = { tokens: limit, last: now };
+    }
+
     const elapsed = now - record.last;
     const refill = Math.floor(elapsed / interval) * limit;
     record.tokens = Math.min(limit, record.tokens + refill);
     record.last = now;
-    if (record.tokens <= 0) {
-      await this.storage.put(key, record);
+
+    if (!probe && record.tokens <= 0) {
+      await this.storage.put(key, record).catch(() => void 0);
       return new Response(JSON.stringify({ ok: false }), {
         status: 429,
         headers: { 'content-type': 'application/json' },
       });
     }
-    record.tokens -= 1;
-    await this.storage.put(key, record);
+    if (!probe) {
+      record.tokens -= 1;
+      await this.storage.put(key, record).catch(() => void 0);
+    }
     return new Response(
       JSON.stringify({ ok: true, remaining: record.tokens }),
       { status: 200, headers: { 'content-type': 'application/json' } }

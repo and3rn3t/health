@@ -44,7 +44,7 @@ export interface WsClientOptions {
   onPong?: (rttMs: number) => void;
 }
 
-export type MessageHandler = (data: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+export type MessageHandler<T = unknown> = (data: T) => void;
 
 export class WebSocketClient {
   private url: string | null = null;
@@ -327,11 +327,11 @@ export class WebSocketClient {
     return false;
   }
 
-  subscribe(type: string, handler: MessageHandler): () => void {
+  subscribe<T = unknown>(type: string, handler: MessageHandler<T>): () => void {
     if (!this.listeners.has(type)) this.listeners.set(type, new Set());
     const set = this.listeners.get(type)!;
-    set.add(handler);
-    return () => set.delete(handler);
+    set.add(handler as MessageHandler);
+    return () => set.delete(handler as MessageHandler);
   }
 
   /**

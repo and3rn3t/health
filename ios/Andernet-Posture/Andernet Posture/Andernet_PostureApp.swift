@@ -53,8 +53,14 @@ struct Andernet_PostureApp: App {
                 )
                 logger.warning("Using in-memory fallback — data will not persist between launches.")
             } catch {
-                // Last resort: this should never happen, but if it does, crash with context
-                fatalError("ModelContainer could not be created even in-memory: \(error)")
+                // Last resort: create a minimal container with no migration plan
+                // so the app can still launch and show an error state
+                logger.critical("ModelContainer could not be created even in-memory: \(error.localizedDescription)")
+                // swiftlint:disable:next force_try
+                sharedModelContainer = try! ModelContainer(
+                    for: schema,
+                    configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+                )
             }
         }
         

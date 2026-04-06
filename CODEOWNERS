@@ -1,0 +1,19 @@
+# VitalSense Code Owners
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+* @and3rn3t
+
+# Web application
+src/ @and3rn3t
+.github/workflows/ci-core.yml @and3rn3t
+
+# iOS application
+ios/ @and3rn3t
+.github/workflows/ios-ci.yml @and3rn3t
+.github/workflows/posture-ci.yml @and3rn3t
+
+# Security-sensitive files
+SECURITY.md @and3rn3t
+wrangler.toml @and3rn3t
+docs/security/ @and3rn3t

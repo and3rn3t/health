@@ -506,21 +506,28 @@ async function fetchUserHealthData(
   }
   const prefix = 'health:';
   const listing = await kv.list({ prefix, limit: 100 });
-  const results = await Promise.allSettled(
-    listing.keys.map(async (k) => {
-      const raw = await kv.get!(k.name);
-      if (!raw) return null;
-      const objUnknown = await parseKVData(raw, keyObj);
-      if (!objUnknown) return null;
-      const parsedRow = processedHealthDataSchema.safeParse(objUnknown);
-      if (!parsedRow.success) return null;
-      return parsedRow.data.source.userId === userId ? parsedRow.data : null;
-    })
-  );
-  return results
-    .filter((r): r is PromiseFulfilledResult<ProcessedHealthData | null> => r.status === 'fulfilled')
-    .map((r) => r.value)
-    .filter((v): v is ProcessedHealthData => v !== null);
+
+  // Batch KV reads with concurrency limit to avoid N+1 pattern
+  const CONCURRENCY = 5;
+  const allResults: (ProcessedHealthData | null)[] = [];
+  for (let i = 0; i < listing.keys.length; i += CONCURRENCY) {
+    const batch = listing.keys.slice(i, i + CONCURRENCY);
+    const results = await Promise.allSettled(
+      batch.map(async (k) => {
+        const raw = await kv.get!(k.name);
+        if (!raw) return null;
+        const objUnknown = await parseKVData(raw, keyObj);
+        if (!objUnknown) return null;
+        const parsedRow = processedHealthDataSchema.safeParse(objUnknown);
+        if (!parsedRow.success) return null;
+        return parsedRow.data.source.userId === userId ? parsedRow.data : null;
+      })
+    );
+    for (const r of results) {
+      allResults.push(r.status === 'fulfilled' ? r.value : null);
+    }
+  }
+  return allResults.filter((v): v is ProcessedHealthData => v !== null);
 }
 
 // Health analytics summary
@@ -567,7 +574,9 @@ route.get('/api/health-data/analytics/:userId', async (c) => {
     const keyObj = encKeyB64 ? await getAesKey(encKeyB64) : null;
     const recentData = await fetchUserHealthData(kv, userId, keyObj);
     const analytics = calculateHealthAnalytics(recentData);
-    return c.json({ ok: true, analytics });
+    const res = c.json({ ok: true, analytics });
+    res.headers.set('Cache-Control', 'private, max-age=60');
+    return res;
   } catch (error) {
     log.error('Analytics calculation failed', {
       error: (error as Error).message,
@@ -599,21 +608,28 @@ async function getHistoricalData(
     const listing = await kv.list({ prefix, limit: 30 });
     const encKeyB64 = c.env.ENC_KEY;
     const keyObj = encKeyB64 ? await getAesKey(encKeyB64) : null;
-    const results = await Promise.allSettled(
-      listing.keys.map(async (k) => {
-        const raw = await kv.get!(k.name);
-        if (!raw) return null;
-        const objUnknown = await parseKVData(raw, keyObj);
-        if (!objUnknown) return null;
-        const parsedRow = processedHealthDataSchema.safeParse(objUnknown);
-        if (!parsedRow.success) return null;
-        return parsedRow.data.source.userId === userId ? parsedRow.data : null;
-      })
-    );
-    const historicalData = results
-      .filter((r): r is PromiseFulfilledResult<ProcessedHealthData | null> => r.status === 'fulfilled')
-      .map((r) => r.value)
-      .filter((v): v is ProcessedHealthData => v !== null);
+
+    // Batch KV reads with concurrency limit
+    const CONCURRENCY = 5;
+    const allResults: (ProcessedHealthData | null)[] = [];
+    for (let i = 0; i < listing.keys.length; i += CONCURRENCY) {
+      const batch = listing.keys.slice(i, i + CONCURRENCY);
+      const results = await Promise.allSettled(
+        batch.map(async (k) => {
+          const raw = await kv.get!(k.name);
+          if (!raw) return null;
+          const objUnknown = await parseKVData(raw, keyObj);
+          if (!objUnknown) return null;
+          const parsedRow = processedHealthDataSchema.safeParse(objUnknown);
+          if (!parsedRow.success) return null;
+          return parsedRow.data.source.userId === userId ? parsedRow.data : null;
+        })
+      );
+      for (const r of results) {
+        allResults.push(r.status === 'fulfilled' ? r.value : null);
+      }
+    }
+    const historicalData = allResults.filter((v): v is ProcessedHealthData => v !== null);
     return historicalData.sort(
       (a, b) =>
         new Date(b.processedAt).getTime() - new Date(a.processedAt).getTime()

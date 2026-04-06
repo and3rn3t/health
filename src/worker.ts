@@ -91,57 +91,10 @@ export async function scheduled(
 }
 
 // ---------------------------------------------------------------------------
-// Durable Object: RateLimiter (exported for Wrangler binding)
+// Durable Object: RateLimiter (re-exported for Wrangler binding)
 // ---------------------------------------------------------------------------
 
-type DOStorage = {
-  get: (key: string) => Promise<unknown>;
-  put: (key: string, value: unknown) => Promise<void>;
-};
-type DurableObjectState = { storage: DOStorage };
-export class RateLimiter {
-  private readonly storage: DOStorage;
-  constructor(state: DurableObjectState) {
-    this.storage = state.storage;
-  }
-  async fetch(request: Request): Promise<Response> {
-    const url = new URL(request.url);
-    const key = url.searchParams.get('key') || 'anon';
-    const limit = Number(url.searchParams.get('limit') || 60);
-    const interval = Number(url.searchParams.get('intervalMs') || 60_000);
-    const probe = url.searchParams.get('probe') === '1';
-
-    const now = Date.now();
-    const saved = (await this.storage.get(key)) as
-      | { tokens: number; last: number }
-      | undefined;
-    const record: { tokens: number; last: number } =
-      saved &&
-      typeof saved.tokens === 'number' &&
-      typeof saved.last === 'number'
-        ? { tokens: saved.tokens, last: saved.last }
-        : { tokens: limit, last: now };
-    const elapsed = now - record.last;
-    const refill = Math.floor(elapsed / interval) * limit;
-    record.tokens = Math.min(limit, record.tokens + refill);
-    record.last = now;
-    if (!probe && record.tokens <= 0) {
-      await this.storage.put(key, record);
-      return new Response(JSON.stringify({ ok: false }), {
-        status: 429,
-        headers: { 'content-type': 'application/json' },
-      });
-    }
-    if (!probe) {
-      record.tokens -= 1;
-      await this.storage.put(key, record);
-    }
-    return new Response(
-      JSON.stringify({ ok: true, remaining: record.tokens }),
-      { status: 200, headers: { 'content-type': 'application/json' } }
-    );
-  }
-}
+export { RateLimiter } from '@/rateLimiter';
 
 // Export the simple WebSocket implementation
 export { SimpleHealthWebSocket as HealthWebSocket } from '@/SimpleHealthWebSocket';

@@ -73,16 +73,22 @@ route.get('/ws', async (c) => {
     log.info('Durable Object instance obtained');
 
     log.info('Forwarding request to Durable Object');
-    const response = await obj.fetch(c.req.raw);
+    const response = await Promise.race([
+      obj.fetch(c.req.raw),
+      new Promise<Response>((_, reject) =>
+        setTimeout(() => reject(new Error('DO_TIMEOUT')), 5000)
+      ),
+    ]);
     log.info('Response received from Durable Object', {
       status: response.status,
     });
-
     return response;
   } catch (error) {
-    log.error('Error in WebSocket handler', {
-      error: error instanceof Error ? error.message : String(error),
-    });
+    const msg = error instanceof Error ? error.message : String(error);
+    log.error('Error in WebSocket handler', { error: msg });
+    if (msg === 'DO_TIMEOUT') {
+      return c.text('WebSocket service timed out', 504);
+    }
     return c.text('WebSocket connection failed', 500);
   }
 });

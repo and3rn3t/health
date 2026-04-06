@@ -72,10 +72,10 @@ final class WebSocketBridge: NSObject {
 
     private(set) var connectionState: WSConnectionState = .disconnected
 
-    private nonisolated(unsafe) var webSocket: URLSessionWebSocketTask?
-    private nonisolated(unsafe) var session: URLSession?
-    private nonisolated(unsafe) var pingTimer: Timer?
-    private nonisolated(unsafe) var reconnectTask: Task<Void, Never>?
+    private var webSocket: URLSessionWebSocketTask?
+    private var urlSessionInstance: URLSession?
+    private var pingTimer: Timer?
+    private var reconnectTask: Task<Void, Never>?
 
     /// Maximum reconnect attempts before giving up.
     private static let maxReconnectAttempts = 10
@@ -110,7 +110,7 @@ final class WebSocketBridge: NSObject {
         reconnectTask?.cancel()
         pingTimer?.invalidate()
         webSocket?.cancel(with: .normalClosure, reason: nil)
-        session?.invalidateAndCancel()
+        urlSessionInstance?.invalidateAndCancel()
     }
 
     // MARK: - Lifecycle
@@ -136,10 +136,10 @@ final class WebSocketBridge: NSObject {
         let config = URLSessionConfiguration.default
         config.waitsForConnectivity = true
         // Invalidate any prior session to avoid delegate retention.
-        session?.invalidateAndCancel()
-        session = URLSession(configuration: config, delegate: self, delegateQueue: nil)
+        urlSessionInstance?.invalidateAndCancel()
+        urlSessionInstance = URLSession(configuration: config, delegate: self, delegateQueue: nil)
 
-        webSocket = session?.webSocketTask(with: request)
+        webSocket = urlSessionInstance?.webSocketTask(with: request)
         webSocket?.resume()
         startReceiving()
     }
@@ -152,8 +152,8 @@ final class WebSocketBridge: NSObject {
         pingTimer = nil
         webSocket?.cancel(with: .normalClosure, reason: nil)
         webSocket = nil
-        session?.invalidateAndCancel()
-        session = nil
+        urlSessionInstance?.invalidateAndCancel()
+        urlSessionInstance = nil
         connectionState = .disconnected
         logger.info("WebSocket disconnected")
     }

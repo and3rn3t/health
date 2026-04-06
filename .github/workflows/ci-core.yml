@@ -28,6 +28,9 @@ jobs:
       - name: Lint
         run: pnpm run lint
 
+      - name: Security audit
+        run: pnpm audit --audit-level=moderate || echo "::warning::Audit found vulnerabilities"
+
       - name: Type Check
         run: pnpm run type-check
 

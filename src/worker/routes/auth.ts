@@ -28,6 +28,9 @@ async function readTwoFactor(
   if (!raw) return { enabled: false, updatedAt: null as string | null };
   try {
     const encKeyB64 = c.env.ENC_KEY;
+    if (!encKeyB64 && c.env.ENVIRONMENT === 'production') {
+      return { enabled: false, updatedAt: null as string | null };
+    }
     let obj: { enabled?: boolean; updatedAt?: string } | null = null;
     if (encKeyB64) {
       const k = await getAesKey(encKeyB64);
@@ -53,6 +56,9 @@ async function writeTwoFactor(
   const key = `user:2fa:${encodeURIComponent(sub)}`;
   const value = { version: 1, enabled, updatedAt: new Date().toISOString() };
   const encKeyB64 = c.env.ENC_KEY;
+  if (!encKeyB64 && c.env.ENVIRONMENT === 'production') {
+    return false;
+  }
   let toStore: string;
   if (encKeyB64) {
     const k = await getAesKey(encKeyB64);
@@ -446,6 +452,10 @@ route.get('/login', async (c) => {
 // ---------------------------------------------------------------------------
 
 route.get('/api/auth0/health', async (c) => {
+  if (c.env.ENVIRONMENT === 'production') {
+    const sub = await getVerifiedAuthSub(c);
+    if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  }
   const domain = c.env.AUTH0_DOMAIN || '';
   const clientId = c.env.AUTH0_CLIENT_ID || '';
   const issuerUrl = domain ? `https://${domain}/` : null;
@@ -486,8 +496,12 @@ route.get('/api/auth0/health', async (c) => {
   }
 });
 
-// Public auth0 health (non-API, no auth middleware)
+// Auth0 health (auth-gated in production)
 route.get('/auth0/health', async (c) => {
+  if (c.env.ENVIRONMENT === 'production') {
+    const sub = await getVerifiedAuthSub(c);
+    if (!sub) return c.json({ error: 'unauthorized' }, 401);
+  }
   const domain = c.env.AUTH0_DOMAIN || '';
   const clientId = c.env.AUTH0_CLIENT_ID || '';
   const issuerUrl = domain ? `https://${domain}/` : null;
