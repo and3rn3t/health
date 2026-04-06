@@ -17,7 +17,10 @@ import { telemetryRoutes } from './worker/routes/telemetry';
 import { authRoutes } from './worker/routes/auth';
 import { wsRoutes } from './worker/routes/ws';
 import { diagnosticsRoutes } from './worker/routes/diagnostics';
-import { healthDataRoutes } from './worker/routes/health-data';
+import { liveRoutes } from './worker/routes/health-data-live';
+import { batchRoutes } from './worker/routes/health-data-batch';
+import { analyticsRoutes } from './worker/routes/health-data-analytics';
+import { kvRoutes } from './worker/routes/health-data-kv';
 import { demoRoutes } from './worker/routes/demo';
 
 // ---------------------------------------------------------------------------
@@ -39,7 +42,10 @@ app.route('/', telemetryRoutes);
 app.route('/', authRoutes);
 app.route('/', wsRoutes);
 app.route('/', diagnosticsRoutes);
-app.route('/', healthDataRoutes);
+app.route('/', liveRoutes);
+app.route('/', batchRoutes);
+app.route('/', analyticsRoutes);
+app.route('/', kvRoutes);
 app.route('/', demoRoutes);
 
 // ---------------------------------------------------------------------------

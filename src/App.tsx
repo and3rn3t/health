@@ -42,7 +42,6 @@ import { Button } from '@/components/ui/button';
 import { useKV } from '@/hooks/useCloudflareKV';
 import { useLiveRegion } from '@/hooks/useLiveRegion';
 import { useThemeMode } from '@/hooks/useThemeMode';
-import { HealthDataProcessor } from '@/lib/healthDataProcessor';
 import type { AllSettings } from '@/lib/settingsTypes';
 import { cn } from '@/lib/utils';
 import { createLazyNamedComponent } from '@/lib/lazyLoading';
@@ -51,7 +50,7 @@ import {
   FEATURE_TAB_MAP,
   type NavigationItem,
 } from '@/lib/navigationHelpers';
-import type { ProcessedHealthData } from '@/types';
+import { HealthDataProvider, useHealthData } from '@/contexts/HealthDataContext';
 // Optimized icon imports - individual imports reduce bundle size
 import {
   Activity,
@@ -147,30 +146,20 @@ function AppContent() {
       String(scale)
     );
   }, [userSettings?.preferences?.dynamicTypeScale]);
-  // Persisted health data shared across pages and onboarding
-  const [healthData, setHealthData] = useKV<ProcessedHealthData | null>(
-    'health-data',
-    null
-  );
+  const { healthData, fallRiskScore, refreshData } = useHealthData();
   const [, startTransition] = useTransition();
   const { themeMode, toggleThemeMode } = useThemeMode();
   const { toggle: toggleSidebar, isMobile } = useAppleSidebar();
   const announce = useLiveRegion();
 
-  // Find the active component
+  // Find the active component (LandingPage handled separately via ternary)
   const activeComponent = useMemo(() => {
     const item = navigationItems.find((it) => it.id === activeTab);
-    if (item?.id === 'dashboard') return LandingPage;
+    if (item?.id === 'dashboard') return undefined;
     return item?.component;
   }, [activeTab]);
 
-  // Derive a lightweight fall risk score (0..4) from walking steadiness as a simple proxy
-  const derivedFallRiskScore = useMemo(() => {
-    const ws = healthData?.metrics.walkingSteadiness?.average;
-    if (ws == null) return 0;
-    const score = (100 - ws) / 25; // 100% steadiness -> 0 risk, 0% -> 4
-    return Math.max(0, Math.min(4, Math.round(score * 10) / 10));
-  }, [healthData?.metrics.walkingSteadiness?.average]);
+
 
   // Update document title to reflect the current section for better usability
   const activeLabel = useMemo(
@@ -388,13 +377,9 @@ function AppContent() {
                   </h1>
                   {activeTab === 'dashboard' ? (
                     <LandingPage
-                      healthData={healthData ?? null}
-                      fallRiskScore={derivedFallRiskScore}
-                      onRefreshData={async () => {
-                        const data =
-                          await HealthDataProcessor.processHealthData();
-                        setHealthData(data);
-                      }}
+                      healthData={healthData}
+                      fallRiskScore={fallRiskScore}
+                      onRefreshData={refreshData}
                       onNavigateToFeature={(featureId) => {
                         handleTabChange(
                           FEATURE_TAB_MAP[featureId] ?? 'dashboard'
@@ -403,8 +388,7 @@ function AppContent() {
                     />
                   ) : (
                     activeComponent
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      ? React.createElement(activeComponent as React.ComponentType<any>, { healthData })
+                      ? React.createElement(activeComponent)
                       : null
                   )}
                 </div>
@@ -424,8 +408,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AppleSidebarProvider defaultOpen={false}>
-      <AppContent />
-    </AppleSidebarProvider>
+    <HealthDataProvider>
+      <AppleSidebarProvider defaultOpen={false}>
+        <AppContent />
+      </AppleSidebarProvider>
+    </HealthDataProvider>
   );
 }

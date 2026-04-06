@@ -23,6 +23,8 @@
     "clean:all": "rm -rf dist dist-worker node_modules",
     "preinstall": "node scripts/ci/ensure-node-version.mjs",
     "build:worker": "node scripts/build/build-worker.js",
+    "build:all": "vite build && node scripts/build/build-worker.js",
+    "validate": "tsc --noEmit && eslint . --ext ts,tsx && vitest run",
     "test:coverage": "vitest run --coverage || exit 0",
     "deploy:prod": "wrangler deploy --env production"
   },

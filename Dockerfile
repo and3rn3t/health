@@ -59,8 +59,16 @@ COPY --from=base /app/wrangler.toml ./wrangler.toml
 COPY --from=base /app/app-config.js ./app-config.js
 COPY --from=base /app/scripts ./scripts
 
+# Run as non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser -d /app appuser \
+  && chown -R appuser:appuser /app
+USER appuser
+
 # Port used by wrangler dev in docker-compose
 EXPOSE 8789
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "fetch('http://localhost:8789/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
 
 # Default command runs worker in dev mode locally, binding to 0.0.0.0 for external access
 CMD ["wrangler", "dev", "--local", "--env", "development", "--port", "8789", "--host", "0.0.0.0"]

@@ -80,6 +80,15 @@ final class WebSocketBridge: NSObject {
     /// Maximum reconnect attempts before giving up.
     private static let maxReconnectAttempts = 10
 
+    /// Maximum number of messages to hold in the offline queue.
+    private static let maxQueueSize = 50
+
+    /// Minimum interval between queued message sends (backpressure).
+    private static let queueDrainInterval: TimeInterval = 0.1
+
+    /// Offline message queue — messages are buffered when disconnected and replayed on reconnect.
+    private var messageQueue: [String] = []
+
     /// Base URL for the WebSocket endpoint (configured via AppConfig or environment).
     private let baseURL: String
 
@@ -154,6 +163,7 @@ final class WebSocketBridge: NSObject {
         webSocket = nil
         urlSessionInstance?.invalidateAndCancel()
         urlSessionInstance = nil
+        messageQueue.removeAll()
         connectionState = .disconnected
         logger.info("WebSocket disconnected")
     }
@@ -196,8 +206,6 @@ final class WebSocketBridge: NSObject {
     // MARK: - Private
 
     private func send(type: String, data: WSMessageData) {
-        guard case .connected = connectionState else { return }
-
         let message = WSMessage(
             type: type,
             timestamp: iso8601Formatter.string(from: .now),
@@ -207,6 +215,12 @@ final class WebSocketBridge: NSObject {
         do {
             let jsonData = try encoder.encode(message)
             guard let jsonString = String(data: jsonData, encoding: .utf8) else { return }
+
+            guard case .connected = connectionState else {
+                enqueue(jsonString)
+                return
+            }
+
             webSocket?.send(.string(jsonString)) { [weak self] error in
                 if let error {
                     self?.logger.error("WebSocket send failed: \(error.localizedDescription)")
@@ -214,6 +228,34 @@ final class WebSocketBridge: NSObject {
             }
         } catch {
             logger.error("WebSocket encode failed: \(error.localizedDescription)")
+        }
+    }
+
+    private func enqueue(_ jsonString: String) {
+        if messageQueue.count >= Self.maxQueueSize {
+            messageQueue.removeFirst()
+            logger.debug("Offline queue full — dropped oldest message")
+        }
+        messageQueue.append(jsonString)
+        logger.debug("Message queued (count: \(self.messageQueue.count))")
+    }
+
+    private func flushQueue() {
+        guard !messageQueue.isEmpty else { return }
+        let pending = messageQueue
+        messageQueue.removeAll()
+        logger.info("Flushing \(pending.count) queued messages")
+
+        Task { @MainActor [weak self] in
+            for jsonString in pending {
+                guard let self, case .connected = self.connectionState else { break }
+                self.webSocket?.send(.string(jsonString)) { [weak self] error in
+                    if let error {
+                        self?.logger.error("Queue flush send failed: \(error.localizedDescription)")
+                    }
+                }
+                try? await Task.sleep(for: .seconds(Self.queueDrainInterval))
+            }
         }
     }
 
@@ -321,6 +363,7 @@ extension WebSocketBridge: URLSessionWebSocketDelegate {
             connectionState = .connected
             logger.info("WebSocket connected")
             startPingTimer()
+            flushQueue()
         }
     }
 

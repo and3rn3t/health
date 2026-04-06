@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useReducer } from 'react';
 import { useWebSocket, type MessageHandlers } from './useWebSocket';
 
 export interface LiveHealthMetric {
@@ -46,81 +46,143 @@ export interface ConnectionStatus {
   dataQuality: 'realtime' | 'delayed' | 'offline';
 }
 
-export function useLiveHealthData(_userId: string = 'demo-user') {
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
+// ---------------------------------------------------------------------------
+// Consolidated state + reducer
+// ---------------------------------------------------------------------------
+
+interface LiveHealthState {
+  connectionStatus: ConnectionStatus;
+  liveMetrics: LiveHealthMetric[];
+  latestMetrics: Record<string, LiveHealthMetric>;
+  clientPresence: Record<string, ClientPresence>;
+  isConnecting: boolean;
+}
+
+type LiveHealthAction =
+  | { type: 'LIVE_METRIC'; metric: LiveHealthMetric }
+  | { type: 'HISTORICAL_UPDATE'; samples: LiveHealthMetric[] }
+  | { type: 'CLIENT_PRESENCE'; presence: ClientPresence }
+  | { type: 'CONNECTED' }
+  | { type: 'DISCONNECTED' }
+  | { type: 'ERROR' }
+  | { type: 'CONNECTING' }
+  | { type: 'CONNECT_FAILED' }
+  | { type: 'RECONNECT_ATTEMPTS'; count: number };
+
+const initialState: LiveHealthState = {
+  connectionStatus: {
     connected: false,
     lastHeartbeat: '',
     reconnectAttempts: 0,
     latency: 0,
     dataQuality: 'offline',
-  });
+  },
+  liveMetrics: [],
+  latestMetrics: {},
+  clientPresence: {},
+  isConnecting: false,
+};
 
-  const [liveMetrics, setLiveMetrics] = useState<LiveHealthMetric[]>([]);
-  const [latestMetrics, setLatestMetrics] = useState<
-    Record<string, LiveHealthMetric>
-  >({});
-  const [clientPresence, setClientPresence] = useState<
-    Record<string, ClientPresence>
-  >({});
-  const [isConnecting, setIsConnecting] = useState(false);
+function reducer(state: LiveHealthState, action: LiveHealthAction): LiveHealthState {
+  switch (action.type) {
+    case 'LIVE_METRIC': {
+      const m = action.metric;
+      return {
+        ...state,
+        liveMetrics: [...state.liveMetrics.slice(-99), m],
+        latestMetrics: { ...state.latestMetrics, [m.metricType]: m },
+        connectionStatus: {
+          ...state.connectionStatus,
+          connected: true,
+          lastHeartbeat: new Date().toISOString(),
+          dataQuality: 'realtime',
+        },
+      };
+    }
+    case 'HISTORICAL_UPDATE':
+      return {
+        ...state,
+        liveMetrics: [...(action.samples || []), ...state.liveMetrics].slice(0, 1000),
+      };
+    case 'CLIENT_PRESENCE': {
+      const p = action.presence;
+      return {
+        ...state,
+        clientPresence: {
+          ...state.clientPresence,
+          [`${p.userId}-${p.clientType}`]: p,
+        },
+      };
+    }
+    case 'CONNECTED':
+      return {
+        ...state,
+        isConnecting: false,
+        connectionStatus: {
+          ...state.connectionStatus,
+          connected: true,
+          lastHeartbeat: new Date().toISOString(),
+          reconnectAttempts: 0,
+          dataQuality: 'realtime',
+        },
+      };
+    case 'DISCONNECTED':
+      return {
+        ...state,
+        connectionStatus: {
+          ...state.connectionStatus,
+          connected: false,
+          dataQuality: 'offline',
+        },
+      };
+    case 'ERROR':
+      return {
+        ...state,
+        connectionStatus: { ...state.connectionStatus, dataQuality: 'offline' },
+      };
+    case 'CONNECTING':
+      return { ...state, isConnecting: true };
+    case 'CONNECT_FAILED':
+      return { ...state, isConnecting: false };
+    case 'RECONNECT_ATTEMPTS':
+      return {
+        ...state,
+        connectionStatus: {
+          ...state.connectionStatus,
+          reconnectAttempts: action.count,
+        },
+      };
+  }
+}
+
+export function useLiveHealthData(_userId: string = 'demo-user') {
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const handlers: MessageHandlers = {
     onLiveHealthUpdate: useCallback((data: unknown) => {
-      const healthData = data as LiveHealthMetric;
-      setLiveMetrics((prev) => [...(prev || []).slice(-99), healthData]); // Keep last 100 metrics
-      setLatestMetrics((prev) => ({
-        ...prev,
-        [healthData.metricType]: healthData,
-      }));
-      setConnectionStatus((prev) => ({
-        ...prev,
-        connected: true,
-        lastHeartbeat: new Date().toISOString(),
-        dataQuality: 'realtime',
-      }));
+      dispatch({ type: 'LIVE_METRIC', metric: data as LiveHealthMetric });
     }, []),
 
     onHistoricalDataUpdate: useCallback((data: unknown) => {
       const histUpdate = data as HistoricalDataUpdate;
-      setLiveMetrics((prev) =>
-        [...(histUpdate.samples || []), ...(prev || [])].slice(0, 1000)
-      ); // Keep last 1000
+      dispatch({ type: 'HISTORICAL_UPDATE', samples: histUpdate.samples || [] });
     }, []),
 
     onClientPresence: useCallback((data: unknown) => {
-      const presence = data as ClientPresence;
-      setClientPresence((prev) => ({
-        ...prev,
-        [`${presence.userId}-${presence.clientType}`]: presence,
-      }));
+      dispatch({ type: 'CLIENT_PRESENCE', presence: data as ClientPresence });
     }, []),
 
     onConnect: useCallback(() => {
-      setConnectionStatus((prev) => ({
-        ...prev,
-        connected: true,
-        lastHeartbeat: new Date().toISOString(),
-        reconnectAttempts: 0,
-        dataQuality: 'realtime',
-      }));
-      setIsConnecting(false);
+      dispatch({ type: 'CONNECTED' });
     }, []),
 
     onDisconnect: useCallback(() => {
-      setConnectionStatus((prev) => ({
-        ...prev,
-        connected: false,
-        dataQuality: 'offline',
-      }));
+      dispatch({ type: 'DISCONNECTED' });
     }, []),
 
     onError: useCallback((data: unknown) => {
-      const error = data as string;
-      console.error('Live health data error:', error);
-      setConnectionStatus((prev) => ({
-        ...prev,
-        dataQuality: 'offline',
-      }));
+      console.error('Live health data error:', data);
+      dispatch({ type: 'ERROR' });
     }, []),
   };
 
@@ -136,24 +198,20 @@ export function useLiveHealthData(_userId: string = 'demo-user') {
   );
 
   const connectToHealthData = useCallback(async () => {
-    setIsConnecting(true);
+    dispatch({ type: 'CONNECTING' });
     try {
       connect();
       return true;
     } catch (error) {
       console.error('Failed to connect to health data:', error);
-      setIsConnecting(false);
+      dispatch({ type: 'CONNECT_FAILED' });
       return false;
     }
   }, [connect]);
 
   const disconnectFromHealthData = useCallback(() => {
     disconnect();
-    setConnectionStatus((prev) => ({
-      ...prev,
-      connected: false,
-      dataQuality: 'offline',
-    }));
+    dispatch({ type: 'DISCONNECTED' });
   }, [disconnect]);
 
   const subscribeToHealthUpdates = useCallback(
@@ -179,31 +237,31 @@ export function useLiveHealthData(_userId: string = 'demo-user') {
   );
 
   const getLatestHeartRate = useCallback(() => {
-    return latestMetrics.heart_rate;
-  }, [latestMetrics]);
+    return state.latestMetrics.heart_rate;
+  }, [state.latestMetrics]);
 
   const getLatestWalkingSteadiness = useCallback(() => {
-    return latestMetrics.walking_steadiness;
-  }, [latestMetrics]);
+    return state.latestMetrics.walking_steadiness;
+  }, [state.latestMetrics]);
 
   const getLatestStepCount = useCallback(() => {
-    return latestMetrics.step_count;
-  }, [latestMetrics]);
+    return state.latestMetrics.step_count;
+  }, [state.latestMetrics]);
 
   const isIOSConnected = useCallback(() => {
-    return Object.values(clientPresence).some(
+    return Object.values(state.clientPresence).some(
       (presence) =>
         presence.clientType === 'ios_app' && presence.status === 'online'
     );
-  }, [clientPresence]);
+  }, [state.clientPresence]);
 
   const getRecentData = useCallback(
     (type: string, limit = 10) => {
-      return (liveMetrics || [])
+      return (state.liveMetrics || [])
         .filter((data) => data.metricType === type)
         .slice(0, limit);
     },
-    [liveMetrics]
+    [state.liveMetrics]
   );
 
   // Auto-connect on mount
@@ -213,19 +271,16 @@ export function useLiveHealthData(_userId: string = 'demo-user') {
 
   // Update reconnect attempts from WebSocket state
   useEffect(() => {
-    setConnectionStatus((prev) => ({
-      ...prev,
-      reconnectAttempts: connectionState.reconnectAttempts,
-    }));
+    dispatch({ type: 'RECONNECT_ATTEMPTS', count: connectionState.reconnectAttempts });
   }, [connectionState.reconnectAttempts]);
 
   return {
     // State
-    connectionStatus,
-    liveMetrics,
-    latestMetrics,
-    clientPresence,
-    isConnecting,
+    connectionStatus: state.connectionStatus,
+    liveMetrics: state.liveMetrics,
+    latestMetrics: state.latestMetrics,
+    clientPresence: state.clientPresence,
+    isConnecting: state.isConnecting,
 
     // Actions
     connectToHealthData,
