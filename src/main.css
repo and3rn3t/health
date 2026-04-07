@@ -354,16 +354,16 @@
   /* iOS 26 Liquid Glass Material */
   .vs-glass {
     background: var(--vs-glass-bg);
-    backdrop-filter: blur(var(--vs-glass-blur)) saturate(var(--vs-glass-saturation));
     -webkit-backdrop-filter: blur(var(--vs-glass-blur)) saturate(var(--vs-glass-saturation));
+    backdrop-filter: blur(var(--vs-glass-blur)) saturate(var(--vs-glass-saturation));
     border: 1px solid var(--vs-glass-border);
     box-shadow: var(--vs-glass-shadow), var(--vs-glass-highlight);
   }
 
   .vs-glass-thick {
     background: var(--vs-glass-bg-thick);
-    backdrop-filter: blur(var(--vs-glass-blur)) saturate(var(--vs-glass-saturation));
     -webkit-backdrop-filter: blur(var(--vs-glass-blur)) saturate(var(--vs-glass-saturation));
+    backdrop-filter: blur(var(--vs-glass-blur)) saturate(var(--vs-glass-saturation));
     border: 1px solid var(--vs-glass-border);
     box-shadow: var(--vs-glass-shadow), var(--vs-glass-highlight);
   }

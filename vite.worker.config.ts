@@ -1,21 +1,21 @@
 import { defineConfig, type Plugin } from 'vite';
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 
 // Plugin to exclude client-side files from worker build
 function excludeClientFiles(): Plugin {
   const excludedPatterns = [
-    /[\/\\]App\.tsx$/,
-    /[\/\\]main\.tsx$/,
-    /[\/\\]lazyLoading\.(ts|tsx)$/,
-    /[\/\\]navigationHelpers\.(ts|tsx)$/,
-    /[\/\\]components[\/\\]/,
-    /[\/\\]hooks[\/\\]/,
+    /[/\\]App\.tsx$/,
+    /[/\\]main\.tsx$/,
+    /[/\\]lazyLoading\.(ts|tsx)$/,
+    /[/\\]navigationHelpers\.(ts|tsx)$/,
+    /[/\\]components[/\\]/,
+    /[/\\]hooks[/\\]/,
     /\.tsx$/, // Exclude all .tsx files - worker should only use .ts
   ];
 
   function shouldExclude(id: string): boolean {
     // Handle both relative and absolute paths
-    const normalizedId = id.replace(/\\/g, '/');
+    const normalizedId = id.replaceAll('\\', '/');
     // Check if it's an absolute path and extract the relevant part
     const pathPart = normalizedId.includes('/src/')
       ? normalizedId.substring(normalizedId.indexOf('/src/'))
@@ -28,7 +28,7 @@ function excludeClientFiles(): Plugin {
     enforce: 'pre',
     resolveId(id, importer) {
       const resolvedId = id.startsWith('.') && importer
-        ? resolve(importer, '..', id).replace(/\\/g, '/')
+        ? resolve(importer, '..', id).replaceAll('\\', '/')
         : id;
 
       if (shouldExclude(resolvedId) || shouldExclude(id)) {
@@ -118,24 +118,16 @@ export default defineConfig({
     // Worker shouldn't have JSX - completely disable JSX processing
     // This will cause an error if JSX is found, which helps catch issues early
     jsx: 'preserve',
-    // Exclude all .tsx files - worker should only use .ts
-    exclude: [
-      '**/*.tsx', // Exclude all .tsx files
-    ],
   },
   // Use esbuild for faster builds, but configure it properly
   optimizeDeps: {
-    exclude: ['react', 'react-dom'],
-    esbuildOptions: {
-      // Exclude client-side files from optimization
-      exclude: [
-        'src/App.tsx',
-        'src/main.tsx',
-        'src/lib/lazyLoading.ts',
-        'src/lib/navigationHelpers.ts',
-        'src/components/**',
-        'src/hooks/**',
-      ],
-    },
+    exclude: [
+      'react',
+      'react-dom',
+      'src/App.tsx',
+      'src/main.tsx',
+      'src/lib/lazyLoading.ts',
+      'src/lib/navigationHelpers.ts',
+    ],
   },
 });

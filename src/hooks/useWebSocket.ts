@@ -48,19 +48,19 @@ export function useWebSocket(
   };
   // Check if we're in development mode and if WebSocket should be enabled
   const isDevelopment =
-    typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1');
+    globalThis.window !== undefined &&
+    (globalThis.location.hostname === 'localhost' ||
+      globalThis.location.hostname === '127.0.0.1');
   // Demo mode flag injected by Worker for /demo route
   type WindowWithDemo = Window & { VITALSENSE_DISABLE_WEBSOCKET?: boolean };
   const isDemoMode =
-    typeof window !== 'undefined' &&
-    (window as WindowWithDemo).VITALSENSE_DISABLE_WEBSOCKET === true;
+    globalThis.window !== undefined &&
+    (globalThis as unknown as WindowWithDemo).VITALSENSE_DISABLE_WEBSOCKET === true;
   // User-controlled live toggle
   type WindowWithLive = Window & { VITALSENSE_LIVE_DISABLED?: boolean };
   const isLiveDisabled =
-    typeof window !== 'undefined' &&
-    (window as WindowWithLive).VITALSENSE_LIVE_DISABLED === true;
+    globalThis.window !== undefined &&
+    (globalThis as unknown as WindowWithLive).VITALSENSE_LIVE_DISABLED === true;
   const enableInDev = config.enableInDevelopment ?? false;
 
   // Respect demo/live-disabled flags; allow in production by default, and in dev only when explicitly enabled
@@ -174,7 +174,7 @@ export function useWebSocket(
         const bumpHeartbeat = () => {
           try {
             (
-              window as unknown as {
+              globalThis as unknown as {
                 __WS_CONNECTION__?: {
                   connected: boolean;
                   lastHeartbeat?: string;
@@ -277,9 +277,11 @@ export function useWebSocket(
           reconnectDelay * Math.pow(2, reconnectAttemptsRef.current),
           30000
         );
-        console.log(
-          `Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/${maxReconnectAttempts})`
-        );
+        if (import.meta.env.DEV) {
+          console.log(
+            `Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/${maxReconnectAttempts})`
+          );
+        }
         scheduleReconnect(delay);
       } else if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
         console.error('Max reconnection attempts reached');
@@ -331,12 +333,12 @@ export function useWebSocket(
 
     // If the app is configured to require a device token, avoid connecting without one
     try {
-      const w = window as unknown as WindowWithKvMode & {
+      const w = globalThis as unknown as WindowWithKvMode & {
         __WS_DEVICE_TOKEN__?: string;
       };
       const token = w.__WS_DEVICE_TOKEN__ || '';
       // Heuristic: if a token is expected but missing, skip connect to avoid server 401 noise
-      if (token === '' && typeof w.__VITALSENSE_KV_MODE !== 'undefined') {
+      if (token === '' && w.__VITALSENSE_KV_MODE !== undefined) {
         // In production we default to KV local mode; device token-less connects can be skipped
         console.info('WebSocket connect skipped (no device token present)');
         return;
@@ -377,9 +379,9 @@ export function useWebSocket(
     try {
       // Default to same-origin /ws in production if no URL provided
       let url = config.url;
-      if (!url && typeof window !== 'undefined') {
-        const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
-        url = `${proto}://${window.location.host}/ws`;
+      if (!url && globalThis.window !== undefined) {
+        const proto = globalThis.location.protocol === 'https:' ? 'wss' : 'ws';
+        url = `${proto}://${globalThis.location.host}/ws`;
       }
       const ws = new WebSocket(url, config.protocols);
       wsRef.current = ws;

@@ -43,9 +43,9 @@ export interface ScheduledJob {
  * Simple in-memory scheduler (in production, use proper job queue like Bull/BullMQ)
  */
 class Scheduler {
-  private schedules: Map<string, Schedule> = new Map()
-  private jobs: Map<string, ScheduledJob> = new Map()
-  private notificationConfigs: Map<string, NotificationConfig> = new Map()
+  private readonly schedules: Map<string, Schedule> = new Map()
+  private readonly jobs: Map<string, ScheduledJob> = new Map()
+  private readonly notificationConfigs: Map<string, NotificationConfig> = new Map()
 
   createSchedule(schedule: Omit<Schedule, 'id' | 'runCount'>): Schedule {
     const id = `schedule-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(11)), b => b.toString(36)).join('').slice(0, 7)}`

@@ -35,7 +35,7 @@ export class PWAManager {
           }
         )) as ServiceWorkerRegistrationWithSync;
 
-        console.log('[PWA] Service Worker registered successfully');
+        if (import.meta.env.DEV) console.log('[PWA] Service Worker registered successfully');
 
         // Listen for updates
         this.swRegistration?.addEventListener('updatefound', () => {
@@ -63,7 +63,7 @@ export class PWAManager {
     }
 
     // Handle install prompt
-    window.addEventListener('beforeinstallprompt', (e: Event) => {
+    globalThis.addEventListener('beforeinstallprompt', (e: Event) => {
       // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
       // Stash the event so it can be triggered later.
@@ -71,25 +71,25 @@ export class PWAManager {
     });
 
     // Handle app installation
-    window.addEventListener('appinstalled', () => {
-      console.log('[PWA] App installed successfully');
+    globalThis.addEventListener('appinstalled', () => {
+      if (import.meta.env.DEV) console.log('[PWA] App installed successfully');
       this.hideInstallButton();
       this.deferredPrompt = null;
     });
 
     // Handle online/offline status
-    window.addEventListener('online', () => {
+    globalThis.addEventListener('online', () => {
       this.handleOnline();
     });
 
-    window.addEventListener('offline', () => {
+    globalThis.addEventListener('offline', () => {
       this.handleOffline();
     });
 
     // Register for background sync if available
     if (
       'serviceWorker' in navigator &&
-      'sync' in window.ServiceWorkerRegistration.prototype
+      'sync' in globalThis.ServiceWorkerRegistration.prototype
     ) {
       this.setupBackgroundSync();
     }
@@ -103,7 +103,7 @@ export class PWAManager {
    */
   async installPWA(): Promise<boolean> {
     if (!this.deferredPrompt) {
-      console.log('[PWA] Install prompt not available');
+      if (import.meta.env.DEV) console.log('[PWA] Install prompt not available');
       return false;
     }
 
@@ -111,7 +111,7 @@ export class PWAManager {
       this.deferredPrompt.prompt();
       const { outcome } = await this.deferredPrompt.userChoice;
 
-      console.log('[PWA] Install prompt result:', outcome);
+      if (import.meta.env.DEV) console.log('[PWA] Install prompt result:', outcome);
 
       if (outcome === 'accepted') {
         this.deferredPrompt = null;
@@ -139,7 +139,7 @@ export class PWAManager {
 
       // Reload the page after update
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        window.location.reload();
+        globalThis.location.reload();
       });
     }
   }
@@ -156,9 +156,9 @@ export class PWAManager {
    */
   isPWA(): boolean {
     return (
-      window.matchMedia('(display-mode: standalone)').matches ||
-      ('standalone' in window.navigator &&
-        (window.navigator as Navigator & { standalone?: boolean })
+      globalThis.matchMedia('(display-mode: standalone)').matches ||
+      ('standalone' in globalThis.navigator &&
+        (globalThis.navigator as Navigator & { standalone?: boolean })
           .standalone === true) ||
       document.referrer.includes('android-app://')
     );
@@ -168,8 +168,8 @@ export class PWAManager {
    * Request push notification permission
    */
   async requestNotificationPermission(): Promise<NotificationPermission> {
-    if (!('Notification' in window)) {
-      console.log('[PWA] Notifications not supported');
+    if (!('Notification' in globalThis)) {
+      if (import.meta.env.DEV) console.log('[PWA] Notifications not supported');
       return 'denied';
     }
 
@@ -197,7 +197,7 @@ export class PWAManager {
     try {
       const permission = await this.requestNotificationPermission();
       if (permission !== 'granted') {
-        console.log('[PWA] Notification permission denied');
+        if (import.meta.env.DEV) console.log('[PWA] Notification permission denied');
         return null;
       }
 
@@ -209,7 +209,7 @@ export class PWAManager {
         applicationServerKey: this.urlB64ToUint8Array(vapidPublicKey),
       });
 
-      console.log('[PWA] Push subscription created');
+      if (import.meta.env.DEV) console.log('[PWA] Push subscription created');
 
       // Send subscription to server
       await this.sendSubscriptionToServer(subscription);
@@ -237,7 +237,7 @@ export class PWAManager {
       // Request background sync
       if (
         'serviceWorker' in navigator &&
-        'sync' in window.ServiceWorkerRegistration.prototype
+        'sync' in globalThis.ServiceWorkerRegistration.prototype
       ) {
         await this.swRegistration.sync.register('health-data-sync');
       }
@@ -260,7 +260,7 @@ export class PWAManager {
     return {
       name: 'VitalSense',
       description: 'Apple Health Insights & Fall Risk Monitor',
-      url: window.location.origin,
+      url: globalThis.location.origin,
       isPWA: this.isPWA(),
       isInstallable: this.isInstallable(),
       isOnline: this.isOnline(),
@@ -312,8 +312,8 @@ export class PWAManager {
     updateButton.className = 'px-3 py-1 bg-white text-blue-600 rounded text-sm font-medium';
     updateButton.textContent = 'Update';
     updateButton.addEventListener('click', () => {
-      if (window.pwaManager) {
-        window.pwaManager.updateSW();
+      if (globalThis.pwaManager) {
+        globalThis.pwaManager.updateSW();
       }
     });
 
@@ -342,7 +342,7 @@ export class PWAManager {
   }
 
   private handleOnline(): void {
-    console.log('[PWA] Connection restored');
+    if (import.meta.env.DEV) console.log('[PWA] Connection restored');
 
     // Update UI to show online status
     this.updateConnectivityUI(true);
@@ -350,7 +350,7 @@ export class PWAManager {
     // Trigger background sync
     if (
       this.swRegistration &&
-      'sync' in window.ServiceWorkerRegistration.prototype
+      'sync' in globalThis.ServiceWorkerRegistration.prototype
     ) {
       this.swRegistration.sync.register('health-data-sync');
       this.swRegistration.sync.register('emergency-alert-sync');
@@ -358,7 +358,7 @@ export class PWAManager {
   }
 
   private handleOffline(): void {
-    console.log('[PWA] Connection lost');
+    if (import.meta.env.DEV) console.log('[PWA] Connection lost');
 
     // Update UI to show offline status
     this.updateConnectivityUI(false);
@@ -373,12 +373,12 @@ export class PWAManager {
   }
 
   private async setupBackgroundSync(): Promise<void> {
-    console.log('[PWA] Background sync available');
+    if (import.meta.env.DEV) console.log('[PWA] Background sync available');
     // Background sync setup is handled in service worker
   }
 
   private async setupPushNotifications(): Promise<void> {
-    console.log('[PWA] Setting up push notifications');
+    if (import.meta.env.DEV) console.log('[PWA] Setting up push notifications');
     // Push notifications can be set up later when user opts in
   }
 
@@ -386,7 +386,7 @@ export class PWAManager {
     const { data } = event;
 
     if (data.type === 'HEALTH_DATA_SYNCED') {
-      console.log('[PWA] Health data synced successfully');
+      if (import.meta.env.DEV) console.log('[PWA] Health data synced successfully');
     }
   }
 
@@ -418,14 +418,14 @@ export class PWAManager {
   private urlB64ToUint8Array(base64String: string): Uint8Array {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding)
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
+      .replaceAll('-', '+')
+      .replaceAll('_', '/');
 
-    const rawData = window.atob(base64);
+    const rawData = globalThis.atob(base64);
     const outputArray = new Uint8Array(rawData.length);
 
     for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
+      outputArray[i] = rawData.codePointAt(i) ?? 0;
     }
     return outputArray;
   }
@@ -454,10 +454,16 @@ interface ServiceWorkerRegistrationWithSync extends ServiceWorkerRegistration {
   };
 }
 
+// Extend globalThis for PWA manager
+declare global {
+   
+  var pwaManager: PWAManager | undefined;
+}
+
 // Initialize PWA manager when DOM is ready
-if (typeof window !== 'undefined') {
-  window.addEventListener('DOMContentLoaded', async () => {
-    window.pwaManager = new PWAManager();
-    await window.pwaManager.initialize();
+if (globalThis.window !== undefined) {
+  globalThis.addEventListener('DOMContentLoaded', async () => {
+    globalThis.pwaManager = new PWAManager();
+    await globalThis.pwaManager.initialize();
   });
 }

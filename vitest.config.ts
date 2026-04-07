@@ -1,4 +1,4 @@
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -9,8 +9,6 @@ export default defineConfig({
     treeShaking: true,
     // Faster compilation with sourcemaps disabled in tests
     sourcemap: false,
-    // Optimize for speed over size in tests
-    minify: false,
   },
   test: {
     environment: 'jsdom', // For React component testing

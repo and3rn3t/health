@@ -67,7 +67,11 @@ export function MobileBottomTabs({
 
   return (
     <div className="vs-glass-thick fixed bottom-0 left-0 right-0 z-50 border-t border-border/30">
-      <div className="h-18 flex items-center justify-center gap-1 px-2 py-2">
+      <div
+        className="h-18 flex items-center justify-center gap-1 px-2 py-2"
+        role="tablist"
+        aria-label="Main navigation"
+      >
         {primaryTabs.map((item) => {
           const config = mobileTabConfig[item.id] || {
             icon: item.icon,
@@ -80,7 +84,7 @@ export function MobileBottomTabs({
             <button
               key={item.id}
               role="tab"
-              aria-selected={isActive}
+              aria-selected={isActive ? 'true' : 'false'}
               aria-label={`${config.label} tab`}
               onClick={() => handleTabClick(item.id)}
               className={cn(

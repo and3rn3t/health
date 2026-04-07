@@ -219,11 +219,11 @@ export function VitalSenseEnhancedDashboard() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 md:gap-4">
             {latestMetrics.heart_rate && (
               <Card
-                className="rounded-md border border-border border-vitalsense-primary/20 bg-gradient-to-br from-vitalsense-primary/5 to-vitalsense-primary/10 cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]"
+                className="rounded-md border border-vitalsense-primary/20 bg-gradient-to-br from-vitalsense-primary/5 to-vitalsense-primary/10 cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]"
                 onClick={() => {
                   // Navigate to analytics or detailed heart rate view
-                  if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'analytics', metric: 'heartRate' } }));
+                  if (globalThis.window !== undefined) {
+                    globalThis.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'analytics', metric: 'heartRate' } }));
                   }
                 }}
                 role="button"
@@ -231,8 +231,8 @@ export function VitalSenseEnhancedDashboard() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    if (typeof window !== 'undefined') {
-                      window.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'analytics', metric: 'heartRate' } }));
+                    if (globalThis.window !== undefined) {
+                      globalThis.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'analytics', metric: 'heartRate' } }));
                     }
                   }
                 }}
@@ -256,11 +256,11 @@ export function VitalSenseEnhancedDashboard() {
 
             {latestMetrics.walking_steadiness && (
               <Card
-                className="rounded-md border border-border border-vitalsense-secondary/20 bg-gradient-to-br from-vitalsense-secondary/5 to-vitalsense-secondary/10 cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]"
+                className="rounded-md border border-vitalsense-secondary/20 bg-gradient-to-br from-vitalsense-secondary/5 to-vitalsense-secondary/10 cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]"
                 onClick={() => {
                   // Navigate to fall risk or gait analysis
-                  if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'fall-detection', metric: 'walkingSteadiness' } }));
+                  if (globalThis.window !== undefined) {
+                    globalThis.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'fall-detection', metric: 'walkingSteadiness' } }));
                   }
                 }}
                 role="button"
@@ -268,8 +268,8 @@ export function VitalSenseEnhancedDashboard() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    if (typeof window !== 'undefined') {
-                      window.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'fall-detection', metric: 'walkingSteadiness' } }));
+                    if (globalThis.window !== undefined) {
+                      globalThis.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'fall-detection', metric: 'walkingSteadiness' } }));
                     }
                   }
                 }}
@@ -294,11 +294,11 @@ export function VitalSenseEnhancedDashboard() {
 
             {latestMetrics.step_count && (
               <Card
-                className="from-vitalsense-accent/5 to-vitalsense-accent/10 border-vitalsense-accent/20 rounded-md border border-border bg-gradient-to-br cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]"
+                className="from-vitalsense-accent/5 to-vitalsense-accent/10 border-vitalsense-accent/20 rounded-md border bg-gradient-to-br cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]"
                 onClick={() => {
                   // Navigate to analytics
-                  if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'analytics', metric: 'steps' } }));
+                  if (globalThis.window !== undefined) {
+                    globalThis.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'analytics', metric: 'steps' } }));
                   }
                 }}
                 role="button"
@@ -306,8 +306,8 @@ export function VitalSenseEnhancedDashboard() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    if (typeof window !== 'undefined') {
-                      window.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'analytics', metric: 'steps' } }));
+                    if (globalThis.window !== undefined) {
+                      globalThis.dispatchEvent(new CustomEvent('navigate', { detail: { feature: 'analytics', metric: 'steps' } }));
                     }
                   }
                 }}
@@ -331,7 +331,7 @@ export function VitalSenseEnhancedDashboard() {
               </Card>
             )}
 
-            <Card className="rounded-md border border-border border-vitalsense-success/20 bg-gradient-to-br from-vitalsense-success/5 to-vitalsense-success/10">
+            <Card className="rounded-md border border-vitalsense-success/20 bg-gradient-to-br from-vitalsense-success/5 to-vitalsense-success/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                 <CardTitle className="text-sm font-medium">
                   System Status
@@ -363,7 +363,7 @@ export function VitalSenseEnhancedDashboard() {
                   Live health data updates
                   {hasConnectedDevices && (
                     <span className="ml-2 text-xs">
-                      from {devices.length} device{devices.length !== 1 ? 's' : ''}
+                      from {devices.length} device{devices.length === 1 ? '' : 's'}
                     </span>
                   )}
                 </CardDescription>
