@@ -79,7 +79,7 @@ export default function LiveConnectionDashboard() {
   // WebSocket message handlers
   const messageHandlers = {
     connection_established: (data: unknown) => {
-      console.log('Connected to VitalSense WebSocket:', data);
+      console.debug('Connected to VitalSense WebSocket:', data);
       setConnectionMetrics((prev) => ({
         ...prev,
         lastHeartbeat: new Date().toISOString(),
@@ -88,7 +88,7 @@ export default function LiveConnectionDashboard() {
 
     live_health_update: (data: unknown) => {
       const d = data as Record<string, unknown>;
-      console.log('Live health update received:', d);
+      console.debug('Live health update received:', d);
       if (d.metrics && Array.isArray(d.metrics)) {
         const newMetrics = d.metrics.map((metric: Record<string, unknown>) => ({
           id: `${metric.type}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
@@ -113,12 +113,12 @@ export default function LiveConnectionDashboard() {
     },
 
     historical_data_update: (data: unknown) => {
-      console.log('Historical data update:', data);
+      console.debug('Historical data update:', data);
       // Handle historical data updates if needed
     },
 
     emergency_alert: (data: unknown) => {
-      console.log('Emergency alert:', data);
+      console.debug('Emergency alert:', data);
       // Handle emergency alerts
     },
 
@@ -143,7 +143,7 @@ export default function LiveConnectionDashboard() {
       reconnectDelay: 1000,
       pingInterval: 30000,
       onConnect: () => {
-        console.log('Live connection established');
+        console.debug('Live connection established');
         // Send client identification
         sendMessage({
           type: 'client_identification',
@@ -156,7 +156,7 @@ export default function LiveConnectionDashboard() {
         });
       },
       onDisconnect: () => {
-        console.log('Live connection lost');
+        console.debug('Live connection lost');
         setConnectionMetrics((prev) => ({
           ...prev,
           reconnections: prev.reconnections + 1,

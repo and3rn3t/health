@@ -11,7 +11,7 @@ import './main.css';
 import './monitor/rum';
 import './types/global.d.ts';
 
-console.log('🚀 main.tsx: Starting app initialization...');
+if (import.meta.env.DEV) console.log('🚀 main.tsx: Starting app initialization...');
 
 // Global error handler for ALL errors
 window.addEventListener('error', (event) => {
@@ -226,7 +226,7 @@ function initClientErrorReporter() {
 }
 initClientErrorReporter();
 
-console.log('🎯 main.tsx: About to render React app...');
+if (import.meta.env.DEV) console.log('🎯 main.tsx: About to render React app...');
 try {
   const AppTree = (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
@@ -248,7 +248,7 @@ try {
   } else {
     root.render(<StrictMode>{AppTree}</StrictMode>);
   }
-  console.log('✅ main.tsx: React app rendered successfully!');
+  if (import.meta.env.DEV) console.log('✅ main.tsx: React app rendered successfully!');
 } catch (error) {
   console.error('❌ main.tsx: React render failed:', error);
 }

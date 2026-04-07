@@ -78,17 +78,10 @@ export default defineConfig({
       },
       // Exclude large, non-runtime or archival areas to raise meaningful signal
       exclude: [
-        'src/components/**/experimental/**',
-        'src/components/**/infrastructure/**',
-        'src/components/**/unused-health/**',
-        'src/components/**/ML*',
         'src/components/**/AI*',
-        'src/lib/**/test-*',
         // Exclude server / websocket simulation & infra scripts not part of unit test scope
         'server/**',
         'src/server/**',
-        'src/**/test-*.ts',
-        'src/**/simulate-*.ts',
         // Active UI components excluded from coverage (integration-heavy, pending test harness)
         'src/components/**/WalkingPatternVisualizerClean.tsx',
         'src/components/**/LiveConnectionStatus.tsx',
