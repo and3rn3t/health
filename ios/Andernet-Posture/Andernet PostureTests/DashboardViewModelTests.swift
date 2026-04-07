@@ -90,14 +90,14 @@ struct DashboardViewModelTests {
         for i in 0..<40 {
             sessions.append(makeSession(
                 date: Date.now.addingTimeInterval(Double(-i) * 3600),
-                postureScore: Double(50 + i)
+                postureScore: Double(90 - i)
             ))
         }
 
         vm.refresh(sessions: sessions)
 
         #expect(vm.postureScoreTrend.count == 30)
-        // Oldest should be first
+        // Oldest should be first (ascending scores when newer = higher)
         #expect(vm.postureScoreTrend.first!.value < vm.postureScoreTrend.last!.value)
     }
 
