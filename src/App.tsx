@@ -51,6 +51,7 @@ import {
   type NavigationItem,
 } from '@/lib/navigationHelpers';
 import { HealthDataProvider, useHealthData } from '@/contexts/HealthDataContext';
+import { DashboardSkeleton } from '@/components/ui/DashboardSkeleton';
 // Optimized icon imports - individual imports reduce bundle size
 import {
   Activity,
@@ -356,16 +357,7 @@ function AppContent() {
               aria-label={activeLabel || 'Main content'}
               className="flex-1 bg-background px-4 pb-3 pt-2 md:px-6 md:pb-4 md:pt-3 lg:px-10 2xl:px-16"
             >
-              <Suspense
-                fallback={
-                  <div className="flex h-64 items-center justify-center gap-3">
-                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-teal-600"></div>
-                    <span className="text-muted-foreground">
-                      Loading VitalSense...
-                    </span>
-                  </div>
-                }
-              >
+              <Suspense fallback={<DashboardSkeleton />}>
                 <div
                   key={activeTab}
                   className={cn('mx-auto max-w-[1600px] space-y-6')}

@@ -24,7 +24,7 @@ import {
   TrendingUp,
   Zap,
 } from 'lucide-react';
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useOnceToast } from '@/hooks/useOnceToast';
 import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { calculateTrend, extractTimeSeries } from '@/lib/analytics';
@@ -291,15 +291,7 @@ This guidance is informational and not medical advice. Consult healthcare provid
     }
   };
 
-  const _insightsByCategory = useMemo(() => {
-    const categories: Record<string, AIInsight[]> = {};
-    insights.forEach((insight) => {
-      const category = insight.category || 'other';
-      if (!categories[category]) categories[category] = [];
-      categories[category].push(insight);
-    });
-    return categories;
-  }, [insights]);
+  // insightsByCategory removed — not yet consumed by the UI
 
   if (!healthData) {
     return (

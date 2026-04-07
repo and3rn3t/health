@@ -9,7 +9,6 @@
  *  - getHistoricalData
  */
 import { Hono, type Context } from 'hono';
-import { generateDemoHealthData } from '@/lib/demo-data';
 import { decryptJSON, getAesKey } from '@/lib/security';
 import {
   processedHealthDataSchema,

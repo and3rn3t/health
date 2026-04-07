@@ -205,9 +205,9 @@ final class DefaultHealthKitService: HealthKitService {
                 }
             }
             
-            // Timeout after 30 seconds
+            // Timeout to prevent hanging indefinitely
             group.addTask {
-                try await Task.sleep(for: .seconds(30))
+                try await Task.sleep(for: .seconds(AppConfig.HealthKit.saveTimeout))
                 throw HealthKitError.timeout
             }
             
@@ -242,9 +242,9 @@ final class DefaultHealthKitService: HealthKitService {
                 }
             }
             
-            // Timeout after 15 seconds
+            // Timeout to prevent hanging indefinitely
             group.addTask {
-                try await Task.sleep(for: .seconds(15))
+                try await Task.sleep(for: .seconds(AppConfig.HealthKit.fetchTimeout))
                 throw HealthKitError.timeout
             }
             

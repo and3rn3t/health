@@ -39,8 +39,6 @@ export function DeviceSetupWizard({
 }: DeviceSetupWizardProps) {
   const {
     scanForDevices,
-    connectDevice,
-    connectBluetoothDevice,
     addManualDevice,
     isScanning,
     scanResults,
@@ -71,7 +69,7 @@ export function DeviceSetupWizard({
   const [selectedDevice, setSelectedDevice] = useState<DeviceScanResult | null>(
     null
   );
-  const [connectionProgress, setConnectionProgress] = useState(0);
+  const [connectionProgress] = useState(0);
   const [manualDeviceName, setManualDeviceName] = useState('');
   const [manualDeviceType, setManualDeviceType] =
     useState<DeviceType>('health_app');
@@ -104,49 +102,6 @@ export function DeviceSetupWizard({
   const handleSelectDevice = (device: DeviceScanResult) => {
     setSelectedDevice(device);
     setStep('connecting');
-  };
-
-  const _handleConnect = async () => {
-    if (!selectedDevice) return;
-
-    setConnectionProgress(0);
-    const progressInterval = setInterval(() => {
-      setConnectionProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return 90;
-        }
-        return prev + 10;
-      });
-    }, 200);
-
-    try {
-      // Check if this is a Bluetooth device that needs direct connection
-      const isBluetoothDevice =
-        selectedDevice.type !== 'iphone' &&
-        selectedDevice.type !== 'apple_watch' &&
-        selectedDevice.type !== 'ipad';
-
-      if (isBluetoothDevice && connectBluetoothDevice) {
-        await connectBluetoothDevice(selectedDevice.id);
-      } else {
-        await connectDevice(selectedDevice);
-      }
-
-      setConnectionProgress(100);
-      setTimeout(() => {
-        setStep('complete');
-        if (onComplete && skipOnComplete) {
-          onComplete();
-        }
-      }, 500);
-    } catch (error) {
-      console.error('Connection error:', error);
-      setStep('selecting');
-      setSelectedDevice(null);
-    } finally {
-      clearInterval(progressInterval);
-    }
   };
 
   const handleAddManual = () => {
@@ -484,10 +439,11 @@ export function DeviceSetupWizard({
 
             <div className="space-y-4">
               <div>
-                <label className="mb-2 block text-sm font-medium">
+                <label htmlFor="manual-device-name" className="mb-2 block text-sm font-medium">
                   Device Name
                 </label>
                 <input
+                  id="manual-device-name"
                   type="text"
                   value={manualDeviceName}
                   onChange={(e) => setManualDeviceName(e.target.value)}
@@ -497,10 +453,11 @@ export function DeviceSetupWizard({
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium">
+                <label htmlFor="manual-device-type" className="mb-2 block text-sm font-medium">
                   Device Type
                 </label>
                 <select
+                  id="manual-device-type"
                   value={manualDeviceType}
                   onChange={(e) =>
                     setManualDeviceType(e.target.value as DeviceType)

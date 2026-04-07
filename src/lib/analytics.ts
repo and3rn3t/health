@@ -513,15 +513,7 @@ export function generateAnalyticsSummary(
     ? healthScores.reduce((a, b) => a + b, 0) / healthScores.length
     : 0;
 
-  // Calculate health score trend
-  if (healthScores.length >= 2) {
-    const recent = healthScores.slice(-7);
-    const older = healthScores.slice(0, -7);
-    const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
-    const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
-    const _change = ((recentAvg - olderAvg) / olderAvg) * 100;
-    // Trend calculation would go here
-  }
+  // TODO: Calculate health score trend from healthScores
 
   return {
     timeRange,

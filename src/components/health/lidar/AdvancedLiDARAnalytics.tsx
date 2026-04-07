@@ -51,8 +51,6 @@ export interface TrendData {
 
 // Advanced Analytics Engine
 class LiDARAnalyticsEngine {
-  private readonly analysisHistory: Map<string, GaitPattern[]> = new Map();
-  private readonly riskAssessments: Map<string, FallRiskAssessment> = new Map();
 
   // Detect gait patterns from LiDAR data
   detectGaitPatterns(data: LiDARScanData[]): GaitPattern[] {

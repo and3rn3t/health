@@ -6,7 +6,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, TrendingUp } from 'lucide-react';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import type { PatternDetection } from '@/lib/analytics';
 import { detectPatterns, extractTimeSeries } from '@/lib/analytics';

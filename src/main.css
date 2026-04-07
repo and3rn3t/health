@@ -181,6 +181,31 @@
     min-height: 100vh;
     overflow: visible;
   }
+
+  /* Global focus-visible ring for keyboard navigation accessibility */
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Skip link for keyboard users */
+  .sr-only:focus-visible {
+    position: fixed;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 9999;
+    padding: 0.5rem 1rem;
+    background: var(--card);
+    color: var(--card-foreground);
+    border: 2px solid var(--primary);
+    border-radius: 0.375rem;
+    font-weight: 600;
+    clip: auto;
+    width: auto;
+    height: auto;
+    overflow: visible;
+  }
 }
 
 @layer components {

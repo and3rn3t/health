@@ -8,14 +8,12 @@ const wsMessageSchema = z.object({
 });
 
 export class SimpleHealthWebSocket {
-  private readonly state: DurableObjectState;
   private readonly sessions: Map<
     WebSocket,
     { userId: string; connectedAt: Date }
   >;
 
-  constructor(state: DurableObjectState) {
-    this.state = state;
+  constructor(_state: DurableObjectState) {
     this.sessions = new Map();
   }
 

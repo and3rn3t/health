@@ -27,7 +27,7 @@ describe('DeviceHealthMonitor', () => {
     // Mock useOnceToast to return a showOnce function that calls the actual toast
     // Create a fresh mock implementation for each test to avoid state leakage
     vi.mocked(useOnceToast).mockReturnValue({
-      showOnce: vi.fn((id, type, message, options) => {
+      showOnce: vi.fn((_id, type, message, options) => {
         // Call the actual toast function based on type
         if (type === 'warning') {
           toast.warning(message, options);

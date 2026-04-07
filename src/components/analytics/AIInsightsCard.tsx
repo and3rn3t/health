@@ -31,7 +31,7 @@ import {
   TrendingUp,
   Zap,
 } from 'lucide-react';
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useOnceToast } from '@/hooks/useOnceToast';
 import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { calculateTrend, extractTimeSeries } from '@/lib/analytics';

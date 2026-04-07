@@ -22,7 +22,7 @@ protocol MotionService: AnyObject {
 final class CoreMotionService: MotionService {
 
     private let motionManager = CMMotionManager()
-    private let updateInterval: TimeInterval = 1.0 / 60.0  // 60 Hz
+    private let updateInterval: TimeInterval = AppConfig.Motion.updateInterval
 
     /// Dedicated queue for CoreMotion processing — keeps 60 Hz callbacks off the main run loop.
     private let motionQueue: OperationQueue = {

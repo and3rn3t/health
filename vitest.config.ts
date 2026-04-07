@@ -77,6 +77,13 @@ export default defineConfig({
       reportsDirectory: 'coverage',
       // Memory optimization: only collect coverage for tested files (not all source files)
       all: false, // Reduces memory usage by not processing untested files
+      // Regression guard: fail if overall coverage drops below these floors
+      thresholds: {
+        lines: 30,
+        branches: 25,
+        functions: 30,
+        statements: 30,
+      },
       // Exclude large, non-runtime or archival areas to raise meaningful signal
       exclude: [
         'src/components/**/experimental/**',

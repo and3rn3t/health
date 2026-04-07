@@ -600,13 +600,13 @@ export default function LiveConnectionDashboard() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">WebSocket URL</label>
+                  <span className="text-sm font-medium">WebSocket URL</span>
                   <p className="rounded bg-muted p-2 font-mono text-sm">
                     {getWebSocketUrl()}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Ready State</label>
+                  <span className="text-sm font-medium">Ready State</span>
                   <p className="rounded bg-muted p-2 font-mono text-sm">
                     {connectionState.isConnected
                       ? 'OPEN (1)'

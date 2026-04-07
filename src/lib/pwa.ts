@@ -334,52 +334,11 @@ export class PWAManager {
     return banner;
   }
 
-  private showInstallButton(): void {
-    const installButton = document.getElementById('pwa-install-button');
-    if (installButton) {
-      installButton.style.display = 'block';
-    } else {
-      this.createInstallButton();
-    }
-  }
-
   private hideInstallButton(): void {
     const installButton = document.getElementById('pwa-install-button');
     if (installButton) {
       installButton.style.display = 'none';
     }
-  }
-
-  private createInstallButton(): void {
-    const button = document.createElement('button');
-    button.id = 'pwa-install-button';
-    button.className =
-      'fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-
-    // Create inner div
-    const innerDiv = document.createElement('div');
-    innerDiv.className = 'flex items-center space-x-2';
-
-    // Create SVG icon
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('class', 'w-5 h-5');
-    svg.setAttribute('fill', 'currentColor');
-    svg.setAttribute('viewBox', '0 0 20 20');
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('fill-rule', 'evenodd');
-    path.setAttribute('d', 'M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z');
-    path.setAttribute('clip-rule', 'evenodd');
-    svg.appendChild(path);
-
-    const span = document.createElement('span');
-    span.textContent = 'Install App';
-
-    innerDiv.appendChild(svg);
-    innerDiv.appendChild(span);
-    button.appendChild(innerDiv);
-
-    button.addEventListener('click', () => this.installPWA());
-    document.body.appendChild(button);
   }
 
   private handleOnline(): void {

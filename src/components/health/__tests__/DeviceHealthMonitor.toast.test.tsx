@@ -149,7 +149,6 @@ describe('DeviceHealthMonitor - Toast Deduplication', () => {
     } as unknown as ReturnType<typeof useDeviceManagement>);
 
     rerender(<DeviceHealthMonitor />);
-    const _firstCallCount = mockShowOnce.mock.calls.length;
 
     // Re-render with same state
     rerender(<DeviceHealthMonitor />);

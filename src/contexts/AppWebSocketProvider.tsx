@@ -35,14 +35,6 @@ export const AppWebSocketProvider: React.FC<React.PropsWithChildren> = ({
       const wsUrl: string | undefined =
         (cfg && typeof cfg.wsBaseUrl === 'string' && cfg.wsBaseUrl) || undefined;
 
-      // Check if auth is required but not enabled
-      const _authRequired =
-        cfg?.features?.enableAuth !== false &&
-        cfg?.auth0?.domain &&
-        cfg.auth0.domain !== 'vitalsense-health.auth0.com' &&
-        cfg.auth0.clientId &&
-        cfg.auth0.clientId !== 'your-client-id';
-
       // If auth is required, check if we're authenticated
       // For now, we'll still try to connect but the retry limit will prevent infinite loops
       const c = new WebSocketClient({

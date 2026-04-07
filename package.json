@@ -26,7 +26,14 @@
     "build:all": "vite build && node scripts/build/build-worker.js",
     "validate": "tsc --noEmit && eslint . --ext ts,tsx && vitest run",
     "test:coverage": "vitest run --coverage || exit 0",
-    "deploy:prod": "wrangler deploy --env production"
+    "deploy:prod": "wrangler deploy --env production",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "bash -c 'tsc --noEmit'"
+    ]
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.3",
@@ -93,11 +100,14 @@
     "autoprefixer": "10.4.21",
     "esbuild": "^0.25.10",
     "eslint": "^9.28.0",
+    "eslint-plugin-jsx-a11y": "6.10.2",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "husky": "9.1.7",
     "jsdom": "26.1.0",
     "lightningcss": "1.30.2",
+    "lint-staged": "16.4.0",
     "miniflare": "^3.2024.11.0",
     "msw": "2.11.1",
     "postcss": "8.5.6",

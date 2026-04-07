@@ -24,12 +24,15 @@ import {
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useKV } from '@/hooks/useCloudflareKV';
 import {
   assessEnvironmentRisk,
   summarizeSurface,
   type EnvironmentRisk,
 } from '@/lib/lidar/processing';
 import type { Point3D, PointCloud } from '@/lib/lidar/types';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { z } from 'zod';
 
 interface FallRiskLike {
   probability: number;
@@ -44,20 +47,28 @@ export interface FusedRisk extends FallRiskLike {
 function fuseRisks(
   physiological: FallRiskLike,
   environment: EnvironmentRisk,
-  weights = { phys: 0.7, env: 0.3 },
+  weights = { phys: 0.7, env: 0.3 }
 ): FusedRisk {
-  const p = Math.min(1, Math.max(0, weights.phys * physiological.probability + weights.env * environment.probability));
-  const riskLevel: FusedRisk['riskLevel'] = p >= 0.7 ? 'high' : p >= 0.4 ? 'moderate' : 'low';
+  const p = Math.min(
+    1,
+    Math.max(
+      0,
+      weights.phys * physiological.probability +
+        weights.env * environment.probability
+    )
+  );
+  const riskLevel: FusedRisk['riskLevel'] =
+    p >= 0.7 ? 'high' : p >= 0.4 ? 'moderate' : 'low';
   return {
     probability: p,
     riskLevel,
-    components: { physiological: physiological.probability, environment: environment.probability },
+    components: {
+      physiological: physiological.probability,
+      environment: environment.probability,
+    },
     explanation: `Fused risk (phys=${weights.phys}, env=${weights.env})`,
   };
 }
-import { useKV } from '@/hooks/useCloudflareKV';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { z } from 'zod';
 
 // Minimal Navigator XR surface to avoid 'any' while keeping code portable
 type XRNavigator = Navigator & {
@@ -361,9 +372,9 @@ function LiDARControls(props: Readonly<ControlsProps>) {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Guided Protocols */}
-        <div className="gap-3 flex flex-wrap items-center">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">Protocol:</span>
+            <span className="text-sm text-muted-foreground">Protocol:</span>
             <div className="flex gap-1">
               <Button
                 variant={selectedProtocol === 'none' ? 'default' : 'outline'}
@@ -398,9 +409,9 @@ function LiDARControls(props: Readonly<ControlsProps>) {
         </div>
 
         {/* Preferences */}
-        <div className="gap-3 flex flex-wrap items-center">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">Mode:</span>
+            <span className="text-sm text-muted-foreground">Mode:</span>
             <div className="flex gap-1">
               <Button
                 variant={preferences?.simulate ? 'outline' : 'default'}
@@ -439,7 +450,7 @@ function LiDARControls(props: Readonly<ControlsProps>) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">Environment:</span>
+            <span className="text-sm text-muted-foreground">Environment:</span>
             <div className="flex gap-1">
               <Button
                 variant={
@@ -480,7 +491,7 @@ function LiDARControls(props: Readonly<ControlsProps>) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">Duration:</span>
+            <span className="text-sm text-muted-foreground">Duration:</span>
             <div className="flex gap-1">
               <Button
                 variant={preferences?.demoDurations ? 'default' : 'outline'}
@@ -520,7 +531,7 @@ function LiDARControls(props: Readonly<ControlsProps>) {
 
         {/* Protocol Instructions */}
         {selectedProtocol !== 'none' && (
-          <div className="border-muted bg-muted/30 p-3 rounded border text-sm">
+          <div className="bg-muted/30 rounded border border-muted p-3 text-sm">
             {selectedProtocol === 'TUG' && (
               <p>
                 Timed Up and Go: Start seated, stand up, walk 3 meters, turn,
@@ -566,7 +577,7 @@ function LiDARControls(props: Readonly<ControlsProps>) {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Recording Progress</span>
-              <span className="text-muted-foreground text-sm">
+              <span className="text-sm text-muted-foreground">
                 {Math.round(recordingProgress)}%
               </span>
             </div>
@@ -577,7 +588,7 @@ function LiDARControls(props: Readonly<ControlsProps>) {
                 <span className="font-mono">{Math.round(liveCadence)} spm</span>
               </div>
             )}
-            <div className="text-xs text-muted-foreground flex items-center justify-between">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Target: {targetLabel}</span>
               <Button
                 variant="outline"
@@ -589,7 +600,7 @@ function LiDARControls(props: Readonly<ControlsProps>) {
                 End Session Now
               </Button>
             </div>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               Keep walking naturally. The LiDAR sensor is analyzing your
               movement patterns.
             </p>
@@ -724,7 +735,7 @@ function LiDAROverview(props: Readonly<OverviewProps>) {
           })()}
         {/* Compare to previous */}
         {sessionHistory.length > 0 && (
-          <div className="p-3 mt-4 rounded border">
+          <div className="mt-4 rounded border p-3">
             <p className="mb-2 text-sm font-medium">Change vs. last session</p>
             {renderChangeVsPrevious(currentSession, sessionHistory)}
           </div>
@@ -740,7 +751,7 @@ function LiDAROverview(props: Readonly<OverviewProps>) {
                   try {
                     const json = JSON.stringify(
                       currentSession,
-                      (k, v) => (v instanceof Date ? v.toISOString() : v),
+                      (_k, v) => (v instanceof Date ? v.toISOString() : v),
                       2
                     );
                     setContent(json);
@@ -761,7 +772,7 @@ function LiDAROverview(props: Readonly<OverviewProps>) {
                   Exact JSON for this session (timestamps in ISO)
                 </DialogDescription>
               </DialogHeader>
-              <pre className="bg-muted p-3 text-xs max-h-[320px] overflow-auto whitespace-pre-wrap rounded">
+              <pre className="max-h-[320px] overflow-auto whitespace-pre-wrap rounded bg-muted p-3 text-xs">
                 {content}
               </pre>
               <DialogFooter>
@@ -879,7 +890,7 @@ function LiDARHistory(props: Readonly<HistoryProps>) {
                     try {
                       const json = JSON.stringify(
                         sessionHistoryRaw,
-                        (k, v) => (v instanceof Date ? v.toISOString() : v),
+                        (_k, v) => (v instanceof Date ? v.toISOString() : v),
                         2
                       );
                       setContent(json);
@@ -900,7 +911,7 @@ function LiDARHistory(props: Readonly<HistoryProps>) {
                     Exportable JSON for recent sessions (timestamps in ISO)
                   </DialogDescription>
                 </DialogHeader>
-                <pre className="bg-muted p-3 text-xs max-h-[320px] overflow-auto whitespace-pre-wrap rounded">
+                <pre className="max-h-[320px] overflow-auto whitespace-pre-wrap rounded bg-muted p-3 text-xs">
                   {content}
                 </pre>
                 <DialogFooter>
@@ -944,7 +955,7 @@ function LiDARHistory(props: Readonly<HistoryProps>) {
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground">Filter:</span>
             <button
-              className={`text-xs rounded border px-2 py-1 ${selectedTag === null ? 'bg-muted' : ''}`}
+              className={`rounded border px-2 py-1 text-xs ${selectedTag === null ? 'bg-muted' : ''}`}
               onClick={() => setSelectedTag(null)}
             >
               All
@@ -952,7 +963,7 @@ function LiDARHistory(props: Readonly<HistoryProps>) {
             {availableTags.map((t) => (
               <button
                 key={t}
-                className={`text-xs rounded border px-2 py-1 ${selectedTag === t ? 'bg-muted' : ''}`}
+                className={`rounded border px-2 py-1 text-xs ${selectedTag === t ? 'bg-muted' : ''}`}
                 onClick={() => setSelectedTag(t)}
               >
                 {t}
@@ -973,12 +984,12 @@ function LiDARHistory(props: Readonly<HistoryProps>) {
                   {session.analysisType === 'quick' ? 'Quick' : 'Comprehensive'}{' '}
                   Analysis
                 </p>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs text-muted-foreground">
                   {session.startTime.toLocaleDateString()} at{' '}
                   {session.startTime.toLocaleTimeString()}
                 </p>
                 {session.protocol && (
-                  <p className="text-muted-foreground text-xs">
+                  <p className="text-xs text-muted-foreground">
                     Protocol: {session.protocol}
                   </p>
                 )}
@@ -987,7 +998,7 @@ function LiDARHistory(props: Readonly<HistoryProps>) {
                     {session.tags.slice(0, 6).map((t) => (
                       <span
                         key={`${session.id}-${t}`}
-                        className="bg-muted px-1.5 py-0.5 rounded text-[10px]"
+                        className="rounded bg-muted px-1.5 py-0.5 text-[10px]"
                       >
                         {t}
                       </span>
@@ -1011,7 +1022,8 @@ function LiDARHistory(props: Readonly<HistoryProps>) {
                         try {
                           const json = JSON.stringify(
                             session,
-                            (k, v) => (v instanceof Date ? v.toISOString() : v),
+                            (_k, v) =>
+                              v instanceof Date ? v.toISOString() : v,
                             2
                           );
                           setItemContent(json);
@@ -1032,7 +1044,7 @@ function LiDARHistory(props: Readonly<HistoryProps>) {
                         Exact JSON for this session (timestamps in ISO)
                       </DialogDescription>
                     </DialogHeader>
-                    <pre className="bg-muted p-3 text-xs max-h-[320px] overflow-auto whitespace-pre-wrap rounded">
+                    <pre className="max-h-[320px] overflow-auto whitespace-pre-wrap rounded bg-muted p-3 text-xs">
                       {itemContent}
                     </pre>
                     <DialogFooter>
@@ -1146,20 +1158,20 @@ function renderChangeVsPrevious(
     prevMetrics.stabilityMetrics.balanceScore;
   const F = (n: number) => (n > 0 ? `+${n}` : `${n}`);
   return (
-    <div className="gap-3 text-xs grid grid-cols-3">
-      <div className="bg-muted rounded p-2">
+    <div className="grid grid-cols-3 gap-3 text-xs">
+      <div className="rounded bg-muted p-2">
         <div className="text-muted-foreground">Step Length</div>
         <div className={dLen >= 0 ? 'text-green-600' : 'text-red-600'}>
           {F(Math.round(dLen))} cm
         </div>
       </div>
-      <div className="bg-muted rounded p-2">
+      <div className="rounded bg-muted p-2">
         <div className="text-muted-foreground">Cadence</div>
         <div className={dCad >= 0 ? 'text-green-600' : 'text-red-600'}>
           {F(Math.round(dCad))} spm
         </div>
       </div>
-      <div className="bg-muted rounded p-2">
+      <div className="rounded bg-muted p-2">
         <div className="text-muted-foreground">Balance</div>
         <div className={dBal >= 0 ? 'text-green-600' : 'text-red-600'}>
           {F(Math.round(dBal))} %
@@ -1316,7 +1328,8 @@ export function LiDARGaitAnalyzer({
   );
   const generateMockMetrics = useCallback(
     (sessionId: string): LiDARGaitMetrics => {
-      const baseMetrics = { // NOSONAR: Mock gait data - Math.random() acceptable throughout
+      const baseMetrics = {
+        // NOSONAR: Mock gait data - Math.random() acceptable throughout
         sessionId,
         spatialMetrics: {
           stepWidth: Math.round(8 + Math.random() * 4), // NOSONAR 8-12 cm
@@ -1438,7 +1451,8 @@ export function LiDARGaitAnalyzer({
       let slopeY: number;
       let rough: number; // meters std
       let obstacleRate: number; // fraction of cells with a bump
-      if (env === 'outdoor') { // NOSONAR: Synthetic environment generation - Math.random() acceptable
+      if (env === 'outdoor') {
+        // NOSONAR: Synthetic environment generation - Math.random() acceptable
         slopeX = ((Math.random() * 6) / 180) * Math.PI; // NOSONAR up to ~6°
         slopeY = ((Math.random() * 4) / 180) * Math.PI; // NOSONAR up to ~4°
         rough = 0.008 + Math.random() * 0.007; // NOSONAR 8-15mm
@@ -1574,7 +1588,7 @@ export function LiDARGaitAnalyzer({
     return (
       <Card className="text-center">
         <CardContent className="pt-6">
-          <div className="h-12 w-12 bg-gray-200 text-gray-400 mx-auto mb-4 flex items-center justify-center rounded-full text-xl">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-xl text-gray-400">
             🎯
           </div>
           <h3 className="mb-2 text-lg font-semibold">LiDAR Not Available</h3>
@@ -1605,7 +1619,7 @@ export function LiDARGaitAnalyzer({
             </CardDescription>
           </CardHeader>
           <CardContent className="flex items-center justify-between gap-4">
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               Calibration ensures accurate step length, cadence, and balance
               measurements.
             </p>
@@ -1637,10 +1651,10 @@ export function LiDARGaitAnalyzer({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
             <span
               aria-hidden="true"
-              className="text-primary mr-1 select-none text-xl"
+              className="mr-1 select-none text-xl text-primary"
             >
               🎯
             </span>
@@ -1735,7 +1749,7 @@ export function LiDARGaitAnalyzer({
             </TabsContent>
 
             <TabsContent value="metrics" className="space-y-4">
-              <div className="md:grid-cols-4 grid gap-4">
+              <div className="grid gap-4 md:grid-cols-4">
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">
@@ -1898,7 +1912,7 @@ export function LiDARGaitAnalyzer({
                         </div>
                       </>
                     ) : (
-                      <p className="text-muted-foreground text-sm">
+                      <p className="text-sm text-muted-foreground">
                         No environment risk computed.
                       </p>
                     )}
@@ -1932,7 +1946,7 @@ export function LiDARGaitAnalyzer({
                     <div className="mt-4 space-y-2">
                       <p className="text-sm font-medium">Session Notes</p>
                       <textarea
-                        className="bg-background w-full rounded border p-2 text-sm"
+                        className="w-full rounded border bg-background p-2 text-sm"
                         rows={3}
                         placeholder="Add any observations or context..."
                         value={notes}
@@ -1965,11 +1979,11 @@ export function LiDARGaitAnalyzer({
                         {(currentSession?.tags ?? []).map((t) => (
                           <span
                             key={t}
-                            className="bg-muted text-xs rounded px-2 py-1"
+                            className="rounded bg-muted px-2 py-1 text-xs"
                           >
                             {t}
                             <button
-                              className="text-muted-foreground hover:text-foreground ml-2"
+                              className="ml-2 text-muted-foreground hover:text-foreground"
                               onClick={() => {
                                 if (!currentSession) return;
                                 const updated: LiDARSession = {
@@ -1992,7 +2006,7 @@ export function LiDARGaitAnalyzer({
                         <input
                           value={newTag}
                           onChange={(e) => setNewTag(e.target.value)}
-                          className="bg-background flex-1 rounded border px-2 py-1 text-sm"
+                          className="flex-1 rounded border bg-background px-2 py-1 text-sm"
                           placeholder="Add a tag (e.g., morning, outdoor)"
                         />
                         <Button

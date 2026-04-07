@@ -201,12 +201,28 @@ export function DeviceStatusCard({
                 return (
                   <div
                     key={device.id}
+                    role="button"
+                    tabIndex={0}
                     className="hover:bg-muted/50 flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors"
                     onClick={() => {
                       if (onDeviceClick) {
                         onDeviceClick(device.id);
                       } else {
                         if (globalThis.window !== undefined) {
+                          globalThis.window.dispatchEvent(
+                            new CustomEvent('navigate', {
+                              detail: { feature: 'device-sync' },
+                            })
+                          );
+                        }
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        if (onDeviceClick) {
+                          onDeviceClick(device.id);
+                        } else if (globalThis.window !== undefined) {
                           globalThis.window.dispatchEvent(
                             new CustomEvent('navigate', {
                               detail: { feature: 'device-sync' },

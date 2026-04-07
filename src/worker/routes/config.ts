@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import {
   FALL_RISK_ANALYTICS_VERSION,
   fallRiskConfig,
@@ -7,6 +7,24 @@ import { GAIT_ANALYTICS_VERSION, gaitConfig } from '@/lib/gaitConfig';
 import type { Env } from '../types';
 
 const route = new Hono<{ Bindings: Env }>();
+
+/** ETag derived from the combined analytics config versions. */
+const CONFIG_ETAG = `"cfg-${GAIT_ANALYTICS_VERSION}-${FALL_RISK_ANALYTICS_VERSION}"`;
+
+/**
+ * Return a cached JSON response with ETag / Cache-Control.
+ * Responds 304 if the client already has the latest version.
+ */
+function cachedJson(c: Context<{ Bindings: Env }>, data: unknown) {
+  const ifNoneMatch = c.req.header('If-None-Match');
+  if (ifNoneMatch === CONFIG_ETAG) {
+    return new Response(null, { status: 304 });
+  }
+  return c.json(data, 200, {
+    'ETag': CONFIG_ETAG,
+    'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
+  });
+}
 
 // Health check
 route.get('/health', (c) => {
@@ -19,7 +37,7 @@ route.get('/health', (c) => {
 
 // Gait analytics configuration version (read-only)
 route.get('/api/gait-config-version', (c) => {
-  return c.json({
+  return cachedJson(c, {
     version: GAIT_ANALYTICS_VERSION,
     config: gaitConfig,
   });
@@ -27,7 +45,7 @@ route.get('/api/gait-config-version', (c) => {
 
 // Fall risk analytics configuration version (read-only)
 route.get('/api/fall-risk-config-version', (c) => {
-  return c.json({
+  return cachedJson(c, {
     version: FALL_RISK_ANALYTICS_VERSION,
     config: fallRiskConfig,
   });
@@ -35,7 +53,7 @@ route.get('/api/fall-risk-config-version', (c) => {
 
 // Combined analytics versions for single round-trip parity checks
 route.get('/api/analytics-config-versions', (c) => {
-  return c.json({
+  return cachedJson(c, {
     gait: { version: GAIT_ANALYTICS_VERSION, config: gaitConfig },
     fallRisk: { version: FALL_RISK_ANALYTICS_VERSION, config: fallRiskConfig },
   });

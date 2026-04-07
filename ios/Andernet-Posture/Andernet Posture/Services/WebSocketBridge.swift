@@ -78,13 +78,13 @@ final class WebSocketBridge: NSObject {
     private var reconnectTask: Task<Void, Never>?
 
     /// Maximum reconnect attempts before giving up.
-    private static let maxReconnectAttempts = 10
+    private static let maxReconnectAttempts = AppConfig.WebSocket.maxReconnectAttempts
 
     /// Maximum number of messages to hold in the offline queue.
-    private static let maxQueueSize = 50
+    private static let maxQueueSize = AppConfig.WebSocket.maxMessageQueueSize
 
     /// Minimum interval between queued message sends (backpressure).
-    private static let queueDrainInterval: TimeInterval = 0.1
+    private static let queueDrainInterval: TimeInterval = AppConfig.WebSocket.queueDrainInterval
 
     /// Offline message queue — messages are buffered when disconnected and replayed on reconnect.
     private var messageQueue: [String] = []
@@ -104,13 +104,7 @@ final class WebSocketBridge: NSObject {
     }()
 
     init(baseURL: String? = nil) {
-        self.baseURL = baseURL ?? {
-            #if DEBUG
-            return "wss://localhost:8789/ws"
-            #else
-            return "wss://health-app.andernet.dev/ws"
-            #endif
-        }()
+        self.baseURL = baseURL ?? AppConfig.WebSocket.url
         super.init()
         encoder.dateEncodingStrategy = .iso8601
     }
@@ -302,7 +296,7 @@ final class WebSocketBridge: NSObject {
 
     private func startPingTimer() {
         pingTimer?.invalidate()
-        pingTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+        pingTimer = Timer.scheduledTimer(withTimeInterval: AppConfig.WebSocket.pingInterval, repeats: true) { [weak self] _ in
             self?.webSocket?.sendPing { error in
                 if let error {
                     self?.logger.warning("Ping failed: \(error.localizedDescription)")

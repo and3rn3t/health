@@ -76,8 +76,8 @@ export default function LandingPageOptimized({
   const [currentTime, setCurrentTime] = useState(new Date());
   const { hasConnectedDevices } = useDeviceManagement();
 
-  // Live region for screen readers
-  const _announceToScreenReader = useLiveRegion();
+  // Live region hook kept active for screen-reader side effects
+  useLiveRegion();
 
   // Update time every minute
   useEffect(() => {

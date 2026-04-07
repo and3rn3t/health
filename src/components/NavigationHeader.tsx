@@ -64,12 +64,7 @@ function NavigationHeader({
   sidebarCollapsed: _sidebarCollapsed = false,
   healthScore = 85,
   hasAlerts = false,
-  ...rest
-}: Readonly<NavigationHeaderProps> & { onToggleSidebar?: () => void }) {
-  // Back-compat: support older prop name onToggleSidebar
-  const _unusedOnSidebarToggle =
-    _onSidebarToggle ??
-    (rest as { onToggleSidebar?: () => void })?.onToggleSidebar;
+}: Readonly<NavigationHeaderProps>) {
   const [searchQuery, setSearchQuery] = useState('');
 
   if (isDev()) {

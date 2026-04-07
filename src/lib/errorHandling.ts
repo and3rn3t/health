@@ -587,7 +587,7 @@ export class CircuitBreaker {
   constructor(
     private threshold: number = 5,
     private timeout: number = 60000, // 1 minute
-    private resetTimeout: number = 30000 // 30 seconds
+    _resetTimeout: number = 30000 // 30 seconds
   ) {}
 
   async execute<T>(operation: () => Promise<T>): Promise<T> {

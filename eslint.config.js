@@ -1,6 +1,7 @@
 // Minimal ESLint flat config for TS + React + Vite
 // More permissive rules for development
 import js from '@eslint/js';
+import eslintPluginJsxA11y from 'eslint-plugin-jsx-a11y';
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks';
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh';
 import globals from 'globals';
@@ -141,6 +142,7 @@ export default [
       },
     },
     plugins: {
+      'jsx-a11y': eslintPluginJsxA11y,
       'react-hooks': eslintPluginReactHooks,
       'react-refresh': eslintPluginReactRefresh,
     },
@@ -148,6 +150,7 @@ export default [
       // TS files use the TS compiler for globals; disable base no-undef
       'no-undef': 'off',
       ...eslintPluginReactHooks.configs.recommended.rules,
+      ...eslintPluginJsxA11y.configs.recommended.rules,
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
