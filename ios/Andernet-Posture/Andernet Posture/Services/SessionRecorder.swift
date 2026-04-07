@@ -11,7 +11,7 @@ import os.log
 import os
 
 /// Recording state machine states.
-enum RecordingState: Sendable {
+enum RecordingState: Sendable, Equatable {
     case idle
     case calibrating
     case recording

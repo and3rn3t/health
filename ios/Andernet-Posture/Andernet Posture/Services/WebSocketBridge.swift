@@ -72,12 +72,10 @@ final class WebSocketBridge: NSObject {
 
     private(set) var connectionState: WSConnectionState = .disconnected
 
-    // nonisolated: removes @MainActor isolation so deinit can tear these down.
-    // All runtime mutation is on @MainActor; deinit is the sole nonisolated reader.
-    private nonisolated var webSocket: URLSessionWebSocketTask?
-    private nonisolated var urlSessionInstance: URLSession?
-    private nonisolated var pingTimer: Timer?
-    private nonisolated var reconnectTask: Task<Void, Never>?
+    private var webSocket: URLSessionWebSocketTask?
+    private var urlSessionInstance: URLSession?
+    private var pingTimer: Timer?
+    private var reconnectTask: Task<Void, Never>?
 
     /// Maximum reconnect attempts before giving up.
     private static let maxReconnectAttempts = AppConfig.WebSocket.maxReconnectAttempts
@@ -112,10 +110,12 @@ final class WebSocketBridge: NSObject {
     }
 
     deinit {
-        reconnectTask?.cancel()
-        pingTimer?.invalidate()
-        webSocket?.cancel(with: .normalClosure, reason: nil)
-        urlSessionInstance?.invalidateAndCancel()
+        MainActor.assumeIsolated {
+            reconnectTask?.cancel()
+            pingTimer?.invalidate()
+            webSocket?.cancel(with: .normalClosure, reason: nil)
+            urlSessionInstance?.invalidateAndCancel()
+        }
     }
 
     // MARK: - Lifecycle

@@ -112,9 +112,11 @@ final class ClinicalTestViewModel {
         } else if currentStep == instructions.count {
             // Start countdown
             startCountdown {
-                self.testStartTime = Date()
-                self.testState = .running(phaseLabel: "Stand, walk 3m, turn, return, sit")
-                self.startTimer()
+                MainActor.assumeIsolated {
+                    self.testStartTime = Date()
+                    self.testState = .running(phaseLabel: "Stand, walk 3m, turn, return, sit")
+                    self.startTimer()
+                }
             }
         }
     }
@@ -148,21 +150,27 @@ final class ClinicalTestViewModel {
             // Eyes open phase
             balanceAnalyzer.startRombergEyesOpen()
             startCountdown {
-                self.testState = .running(phaseLabel: "Eyes Open — Stand Still (30s)")
-                self.phaseStartTime = Date()
-                self.startPhaseTimer(duration: 30) {
-                    // Transition to eyes closed
-                    self.balanceAnalyzer.startRombergEyesClosed()
-                    self.testState = .transitioning(instruction: "Now close your eyes. Keep standing still.")
-                    Task { @MainActor [weak self] in
-                        try? await Task.sleep(for: .seconds(3))
-                        guard let self else { return }
-                        self.testState = .running(phaseLabel: "Eyes Closed — Stand Still (30s)")
-                        self.phaseStartTime = Date()
-                        self.startPhaseTimer(duration: 30) {
-                            // Complete
-                            self.rombergResult = self.balanceAnalyzer.completeRomberg()
-                            self.testState = .completed
+                MainActor.assumeIsolated {
+                    self.testState = .running(phaseLabel: "Eyes Open — Stand Still (30s)")
+                    self.phaseStartTime = Date()
+                    self.startPhaseTimer(duration: 30) {
+                        MainActor.assumeIsolated {
+                            // Transition to eyes closed
+                            self.balanceAnalyzer.startRombergEyesClosed()
+                            self.testState = .transitioning(instruction: "Now close your eyes. Keep standing still.")
+                            Task { @MainActor [weak self] in
+                                try? await Task.sleep(for: .seconds(3))
+                                guard let self else { return }
+                                self.testState = .running(phaseLabel: "Eyes Closed — Stand Still (30s)")
+                                self.phaseStartTime = Date()
+                                self.startPhaseTimer(duration: 30) {
+                                    MainActor.assumeIsolated {
+                                        // Complete
+                                        self.rombergResult = self.balanceAnalyzer.completeRomberg()
+                                        self.testState = .completed
+                                    }
+                                }
+                            }
                         }
                     }
                 }

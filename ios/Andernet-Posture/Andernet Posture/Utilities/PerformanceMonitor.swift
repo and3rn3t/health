@@ -184,14 +184,13 @@ enum PerformanceMonitor {
     // MARK: - Private State
 
     /// Signpost log for Instruments integration.
-    /// nonisolated(unsafe): OSLog is thread-safe but not formally Sendable.
-    nonisolated(unsafe) private static let signpostLog = OSLog(
+    private static let signpostLog = OSLog(
         subsystem: "dev.andernet.posture",
         category: "Performance"
     )
 
     /// Logger for performance warnings.
-    nonisolated(unsafe) private static let logger = Logger(
+    private static let logger = Logger(
         subsystem: "dev.andernet.posture",
         category: "Performance"
     )

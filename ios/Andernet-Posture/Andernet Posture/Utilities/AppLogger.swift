@@ -10,59 +10,53 @@ import os.log
 
 /// Centralized logger definitions for structured logging throughout the app.
 /// Usage: `AppLogger.capture.info("Frame processed")`
-///
-/// Note: Uses a hardcoded subsystem string instead of `Bundle.main.bundleIdentifier`
-/// to keep all static properties nonisolated (Bundle.main is @MainActor in Swift 6).
-/// `nonisolated(unsafe)`: Logger is thread-safe but not formally Sendable in this SDK,
-/// so we opt out of isolation inference on each property.
 enum AppLogger {
-    private static let subsystem = "dev.andernet.posture"
 
     /// App lifecycle, ModelContainer, startup
-    nonisolated(unsafe) static let app = Logger(subsystem: subsystem, category: "App")
+    static let app = Logger(subsystem: "dev.andernet.posture", category: "App")
 
     /// ARKit body tracking, skeleton overlay
-    nonisolated(unsafe) static let arTracking = Logger(subsystem: subsystem, category: "ARTracking")
+    static let arTracking = Logger(subsystem: "dev.andernet.posture", category: "ARTracking")
 
     /// Capture session lifecycle and frame processing
-    nonisolated(unsafe) static let capture = Logger(subsystem: subsystem, category: "Capture")
+    static let capture = Logger(subsystem: "dev.andernet.posture", category: "Capture")
 
     /// Session recording (frame collection, state machine)
-    nonisolated(unsafe) static let recorder = Logger(subsystem: subsystem, category: "Recorder")
+    static let recorder = Logger(subsystem: "dev.andernet.posture", category: "Recorder")
 
     /// Clinical analyzers (posture, gait, balance, etc.)
-    nonisolated(unsafe) static let analysis = Logger(subsystem: subsystem, category: "Analysis")
+    static let analysis = Logger(subsystem: "dev.andernet.posture", category: "Analysis")
 
     /// HealthKit reads and writes
-    nonisolated(unsafe) static let healthKit = Logger(subsystem: subsystem, category: "HealthKit")
+    static let healthKit = Logger(subsystem: "dev.andernet.posture", category: "HealthKit")
 
     /// CoreMotion service
-    nonisolated(unsafe) static let motion = Logger(subsystem: subsystem, category: "Motion")
+    static let motion = Logger(subsystem: "dev.andernet.posture", category: "Motion")
 
     /// SwiftData persistence
-    nonisolated(unsafe) static let persistence = Logger(subsystem: subsystem, category: "Persistence")
+    static let persistence = Logger(subsystem: "dev.andernet.posture", category: "Persistence")
 
     /// Clinical test protocols (TUG, Romberg, 6MWT)
-    nonisolated(unsafe) static let clinicalTests = Logger(subsystem: subsystem, category: "ClinicalTests")
+    static let clinicalTests = Logger(subsystem: "dev.andernet.posture", category: "ClinicalTests")
 
     /// Performance monitoring and profiling
-    nonisolated(unsafe) static let performance = Logger(subsystem: subsystem, category: "Performance")
+    static let performance = Logger(subsystem: "dev.andernet.posture", category: "Performance")
 
     /// Export & sharing (CSV, PDF, file I/O)
-    nonisolated(unsafe) static let export = Logger(subsystem: subsystem, category: "Export")
+    static let export = Logger(subsystem: "dev.andernet.posture", category: "Export")
 
     /// CloudKit sync (NSPersistentCloudKitContainer)
-    nonisolated(unsafe) static let cloudSync = Logger(subsystem: subsystem, category: "CloudSync")
+    static let cloudSync = Logger(subsystem: "dev.andernet.posture", category: "CloudSync")
 
     /// CoreML model loading and inference
-    nonisolated(unsafe) static let ml = Logger(subsystem: subsystem, category: "ML")
+    static let ml = Logger(subsystem: "dev.andernet.posture", category: "ML")
 
     /// iCloud Key-Value Store sync
-    nonisolated(unsafe) static let kvSync = Logger(subsystem: subsystem, category: "KVSync")
+    static let kvSync = Logger(subsystem: "dev.andernet.posture", category: "KVSync")
 
     /// Local notifications (reminders, alerts)
-    nonisolated(unsafe) static let notifications = Logger(subsystem: subsystem, category: "Notifications")
+    static let notifications = Logger(subsystem: "dev.andernet.posture", category: "Notifications")
 
     /// WebSocket bridge to Cloudflare Workers
-    nonisolated(unsafe) static let webSocket = Logger(subsystem: subsystem, category: "WebSocket")
+    static let webSocket = Logger(subsystem: "dev.andernet.posture", category: "WebSocket")
 }
