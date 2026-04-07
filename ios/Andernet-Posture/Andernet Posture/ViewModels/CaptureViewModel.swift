@@ -654,7 +654,9 @@ final class CaptureViewModel {
     private func startTimer() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            self?.elapsedTime = self?.recorder.elapsedTime ?? 0
+            MainActor.assumeIsolated {
+                self?.elapsedTime = self?.recorder.elapsedTime ?? 0
+            }
         }
     }
 

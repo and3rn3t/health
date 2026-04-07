@@ -156,18 +156,16 @@ struct ExportView: View {
         selectedFormat = format
         let dateSuffix = fileDateSuffix(session.date)
 
-        Task.detached {
-            let (data, filename) = await buildExport(
+        Task {
+            let (data, filename) = buildExport(
                 format: format,
                 session: session,
                 dateSuffix: dateSuffix
             )
             let url = ExportService.shareURL(for: data, filename: filename)
-            await MainActor.run {
-                generatedURL = url
-                generating = false
-                showShareSheet = true
-            }
+            generatedURL = url
+            generating = false
+            showShareSheet = true
         }
     }
 

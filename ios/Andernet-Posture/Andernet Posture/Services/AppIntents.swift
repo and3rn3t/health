@@ -14,12 +14,12 @@ import Foundation
 // MARK: - Show Posture Score
 
 struct ShowPostureScoreIntent: AppIntent {
-    static var title: LocalizedStringResource = "Show Posture Score"
-    static var description = IntentDescription(
+    static let title: LocalizedStringResource = "Show Posture Score"
+    static let description = IntentDescription(
         "Shows your most recent posture score from Andernet Posture.",
         categoryName: "Health"
     )
-    static var openAppWhenRun = false
+    static let openAppWhenRun = false
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
@@ -56,12 +56,12 @@ struct ShowPostureScoreIntent: AppIntent {
 // MARK: - Show Fall Risk
 
 struct ShowFallRiskIntent: AppIntent {
-    static var title: LocalizedStringResource = "Show Fall Risk"
-    static var description = IntentDescription(
+    static let title: LocalizedStringResource = "Show Fall Risk"
+    static let description = IntentDescription(
         "Shows your most recent fall risk assessment.",
         categoryName: "Health"
     )
-    static var openAppWhenRun = false
+    static let openAppWhenRun = false
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
@@ -90,12 +90,12 @@ struct ShowFallRiskIntent: AppIntent {
 // MARK: - Start Capture Session
 
 struct StartCaptureIntent: AppIntent {
-    static var title: LocalizedStringResource = "Start Posture Capture"
-    static var description = IntentDescription(
+    static let title: LocalizedStringResource = "Start Posture Capture"
+    static let description = IntentDescription(
         "Opens the app and starts a new posture and gait capture session.",
         categoryName: "Health"
     )
-    static var openAppWhenRun = true
+    static let openAppWhenRun = true
 
     @MainActor
     func perform() async throws -> some IntentResult {
@@ -110,12 +110,12 @@ struct StartCaptureIntent: AppIntent {
 // MARK: - Show Sessions
 
 struct ShowSessionsIntent: AppIntent {
-    static var title: LocalizedStringResource = "Show Recent Sessions"
-    static var description = IntentDescription(
+    static let title: LocalizedStringResource = "Show Recent Sessions"
+    static let description = IntentDescription(
         "Shows a summary of your recent posture and gait sessions.",
         categoryName: "Health"
     )
-    static var openAppWhenRun = false
+    static let openAppWhenRun = false
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
@@ -147,12 +147,12 @@ struct ShowSessionsIntent: AppIntent {
 // MARK: - Open Dashboard
 
 struct OpenDashboardIntent: AppIntent {
-    static var title: LocalizedStringResource = "Open Dashboard"
-    static var description = IntentDescription(
+    static let title: LocalizedStringResource = "Open Dashboard"
+    static let description = IntentDescription(
         "Opens the Andernet Posture dashboard.",
         categoryName: "Health"
     )
-    static var openAppWhenRun = true
+    static let openAppWhenRun = true
 
     @MainActor
     func perform() async throws -> some IntentResult {

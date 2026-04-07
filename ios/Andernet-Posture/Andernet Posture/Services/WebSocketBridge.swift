@@ -72,12 +72,10 @@ final class WebSocketBridge: NSObject {
 
     private(set) var connectionState: WSConnectionState = .disconnected
 
-    // nonisolated(unsafe): All runtime access is via @MainActor methods.
-    // deinit is the only nonisolated reader and is safe (sole owner at that point).
-    private nonisolated(unsafe) var webSocket: URLSessionWebSocketTask?
-    private nonisolated(unsafe) var urlSessionInstance: URLSession?
-    private nonisolated(unsafe) var pingTimer: Timer?
-    private nonisolated(unsafe) var reconnectTask: Task<Void, Never>?
+    private var webSocket: URLSessionWebSocketTask?
+    private var urlSessionInstance: URLSession?
+    private var pingTimer: Timer?
+    private var reconnectTask: Task<Void, Never>?
 
     /// Maximum reconnect attempts before giving up.
     private static let maxReconnectAttempts = AppConfig.WebSocket.maxReconnectAttempts

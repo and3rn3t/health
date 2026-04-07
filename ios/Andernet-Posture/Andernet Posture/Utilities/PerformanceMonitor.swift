@@ -184,14 +184,15 @@ enum PerformanceMonitor {
     // MARK: - Private State
 
     /// Signpost log for Instruments integration.
+    /// Note: Hardcoded subsystem avoids Bundle.main (@MainActor in Swift 6).
     private static let signpostLog = OSLog(
-        subsystem: Bundle.main.bundleIdentifier ?? "dev.andernet.posture",
+        subsystem: "dev.andernet.posture",
         category: "Performance"
     )
 
     /// Logger for performance warnings.
     private static let logger = Logger(
-        subsystem: Bundle.main.bundleIdentifier ?? "dev.andernet.posture",
+        subsystem: "dev.andernet.posture",
         category: "Performance"
     )
 
@@ -241,12 +242,14 @@ enum PerformanceMonitor {
     }()
 
     /// Throttle budget-exceeded warnings to avoid log spam (per-operation).
-    private static var lastWarningTime: [Operation: TimeInterval] = [:]
+    /// nonisolated(unsafe): Protected by warningLock; safe for concurrent access.
+    nonisolated(unsafe) private static var lastWarningTime: [Operation: TimeInterval] = [:]
     private static let warningLock = NSLock()
     private static let warningThrottleInterval: TimeInterval = 5.0 // seconds
 
     /// Master switch — disable all monitoring for release builds if desired.
-    static var isEnabled: Bool = true
+    /// nonisolated(unsafe): Atomic-width Bool; racy reads are acceptable for a perf toggle.
+    nonisolated(unsafe) static var isEnabled: Bool = true
 
     // MARK: - Public API
 

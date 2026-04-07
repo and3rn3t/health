@@ -21,7 +21,7 @@ import os.log
 /// Usage: initialized once at app startup via `_ = MetricsManager.shared`
 /// (guarded by `#if !DEBUG` in `Andernet_PostureApp.init`).
 @MainActor
-final class MetricsManager: NSObject, MXMetricManagerSubscriber {
+final class MetricsManager: NSObject, @preconcurrency MXMetricManagerSubscriber {
 
     static let shared = MetricsManager()
 
@@ -39,9 +39,8 @@ final class MetricsManager: NSObject, MXMetricManagerSubscriber {
 
     /// Called when new metric payloads are available (typically once daily).
     nonisolated func didReceive(_ payloads: [MXMetricPayload]) {
-        let captured = payloads
-        Task { @MainActor [captured] in
-            for payload in captured {
+        Task { @MainActor in
+            for payload in payloads {
                 processMetricPayload(payload)
             }
         }
@@ -49,9 +48,8 @@ final class MetricsManager: NSObject, MXMetricManagerSubscriber {
 
     /// Called when diagnostic payloads are available (crashes, hangs, etc.).
     nonisolated func didReceive(_ payloads: [MXDiagnosticPayload]) {
-        let captured = payloads
-        Task { @MainActor [captured] in
-            for payload in captured {
+        Task { @MainActor in
+            for payload in payloads {
                 processDiagnosticPayload(payload)
             }
         }

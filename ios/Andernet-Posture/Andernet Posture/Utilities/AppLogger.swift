@@ -10,8 +10,11 @@ import os.log
 
 /// Centralized logger definitions for structured logging throughout the app.
 /// Usage: `AppLogger.capture.info("Frame processed")`
+///
+/// Note: Uses a hardcoded subsystem string instead of `Bundle.main.bundleIdentifier`
+/// to keep all static properties nonisolated (Bundle.main is @MainActor in Swift 6).
 enum AppLogger {
-    private static let subsystem = Bundle.main.bundleIdentifier ?? "dev.andernet.posture"
+    private static let subsystem = "dev.andernet.posture"
 
     /// App lifecycle, ModelContainer, startup
     static let app = Logger(subsystem: subsystem, category: "App")

@@ -267,7 +267,9 @@ struct SessionPlaybackView: View {
             withTimeInterval: 0.5,
             repeats: true
         ) { _ in
-            advanceFrame()
+            MainActor.assumeIsolated {
+                advanceFrame()
+            }
         }
     }
 

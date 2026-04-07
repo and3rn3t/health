@@ -54,7 +54,8 @@ protocol SessionRecorder {
 
 // MARK: - Default Implementation
 
-final class DefaultSessionRecorder: SessionRecorder {
+/// @unchecked Sendable: All mutable state is serialized through `recordingQueue`.
+final class DefaultSessionRecorder: SessionRecorder, @unchecked Sendable {
 
     /// Backing storage for state — always access via `state` computed property.
     private var stateBacking: RecordingState = .idle

@@ -343,12 +343,14 @@ final class ClinicalTestViewModel {
         var remaining = 3
         testState = .countdown(seconds: remaining)
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] t in
-            remaining -= 1
-            if remaining <= 0 {
-                t.invalidate()
-                completion()
-            } else {
-                self?.testState = .countdown(seconds: remaining)
+            MainActor.assumeIsolated {
+                remaining -= 1
+                if remaining <= 0 {
+                    t.invalidate()
+                    completion()
+                } else {
+                    self?.testState = .countdown(seconds: remaining)
+                }
             }
         }
     }
@@ -357,8 +359,10 @@ final class ClinicalTestViewModel {
         testStartTime = Date()
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            guard let start = self?.testStartTime else { return }
-            self?.elapsedTime = Date().timeIntervalSince(start)
+            MainActor.assumeIsolated {
+                guard let start = self?.testStartTime else { return }
+                self?.elapsedTime = Date().timeIntervalSince(start)
+            }
         }
     }
 
@@ -366,11 +370,13 @@ final class ClinicalTestViewModel {
         var elapsed: TimeInterval = 0
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] t in
-            elapsed += 0.5
-            self?.phaseElapsedTime = elapsed
-            if elapsed >= duration {
-                t.invalidate()
-                completion()
+            MainActor.assumeIsolated {
+                elapsed += 0.5
+                self?.phaseElapsedTime = elapsed
+                if elapsed >= duration {
+                    t.invalidate()
+                    completion()
+                }
             }
         }
     }

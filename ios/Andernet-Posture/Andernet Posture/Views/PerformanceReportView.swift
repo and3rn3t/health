@@ -38,7 +38,9 @@ struct PerformanceReportView: View {
                 .onChange(of: autoRefresh) { _, on in
                     if on {
                         timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { _ in
-                            refreshID = UUID()
+                            MainActor.assumeIsolated {
+                                refreshID = UUID()
+                            }
                         }
                     } else {
                         timer?.invalidate()

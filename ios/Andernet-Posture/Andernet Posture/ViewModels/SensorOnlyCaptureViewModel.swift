@@ -328,29 +328,31 @@ final class SensorOnlyCaptureViewModel {
     private func startTimer() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            guard let self, let start = self.startDate else { return }
-            self.elapsedTime = Date().timeIntervalSince(start)
+            MainActor.assumeIsolated {
+                guard let self, let start = self.startDate else { return }
+                self.elapsedTime = Date().timeIntervalSince(start)
 
-            // Update walking speed periodically
-            let now = Date()
-            if let lastCheck = self.lastSpeedCheckTime,
-               now.timeIntervalSince(lastCheck) >= self.speedCheckInterval {
-                let dt = now.timeIntervalSince(lastCheck)
-                let dd = self.distanceM - self.lastSpeedCheckDistance
-                self.walkingSpeedMPS = max(0, dd / dt)
-                self.lastSpeedCheckDistance = self.distanceM
-                self.lastSpeedCheckTime = now
+                // Update walking speed periodically
+                let now = Date()
+                if let lastCheck = self.lastSpeedCheckTime,
+                   now.timeIntervalSince(lastCheck) >= self.speedCheckInterval {
+                    let dt = now.timeIntervalSince(lastCheck)
+                    let dd = self.distanceM - self.lastSpeedCheckDistance
+                    self.walkingSpeedMPS = max(0, dd / dt)
+                    self.lastSpeedCheckDistance = self.distanceM
+                    self.lastSpeedCheckTime = now
 
-                // MET estimate from speed
-                let cardio = self.cardioEstimator.estimate(
-                    walkingSpeedMPS: self.walkingSpeedMPS,
-                    cadenceSPM: self.cadenceSPM,
-                    strideLengthM: self.stepCount > 0 ? self.distanceM / Double(self.stepCount) * 2 : 0
-                )
-                self.estimatedMET = cardio.estimatedMET
-            } else if self.lastSpeedCheckTime == nil {
-                self.lastSpeedCheckTime = now
-                self.lastSpeedCheckDistance = self.distanceM
+                    // MET estimate from speed
+                    let cardio = self.cardioEstimator.estimate(
+                        walkingSpeedMPS: self.walkingSpeedMPS,
+                        cadenceSPM: self.cadenceSPM,
+                        strideLengthM: self.stepCount > 0 ? self.distanceM / Double(self.stepCount) * 2 : 0
+                    )
+                    self.estimatedMET = cardio.estimatedMET
+                } else if self.lastSpeedCheckTime == nil {
+                    self.lastSpeedCheckTime = now
+                    self.lastSpeedCheckDistance = self.distanceM
+                }
             }
         }
     }
