@@ -5,6 +5,7 @@ import {
 } from '../lib/liveHealthDataSync';
 
 class MockWebSocket {
+  static OPEN = 1;
   static lastInstance: MockWebSocket | null = null;
   readyState = MockWebSocket.OPEN;
   onopen: (() => void) | null = null;
@@ -13,7 +14,6 @@ class MockWebSocket {
   onerror: ((err: unknown) => void) | null = null;
   sent: string[] = [];
   url: string;
-  static OPEN = 1;
   constructor(url: string) {
     this.url = url;
     MockWebSocket.lastInstance = this;

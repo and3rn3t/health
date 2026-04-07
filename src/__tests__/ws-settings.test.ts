@@ -8,12 +8,12 @@ import {
 import { LiveHealthDataSync } from '../lib/liveHealthDataSync';
 
 class MockWebSocket {
+  static readonly OPEN = 1;
   static readonly last: MockWebSocket | null = null;
   readyState = MockWebSocket.OPEN;
   onopen: (() => void) | null = null;
   sent: string[] = [];
   url: string;
-  static readonly OPEN = 1;
   constructor(url: string) {
     this.url = url;
     (MockWebSocket as unknown as { last: MockWebSocket | null }).last = this;
