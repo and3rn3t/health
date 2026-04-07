@@ -5,10 +5,13 @@ on:
     branches: [main]
     paths:
       - 'ios/Andernet-Posture/**'
+      - '.github/workflows/posture-ci.yml'
   pull_request:
     branches: [main]
     paths:
       - 'ios/Andernet-Posture/**'
+      - '.github/workflows/posture-ci.yml'
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
