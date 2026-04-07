@@ -29,6 +29,28 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       codeCoverageEnabled = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3D93D5AC2F39439F00291F26"
+               BuildableName = "Andernet PostureTests.xctest"
+               BlueprintName = "Andernet PostureTests"
+               ReferencedContainer = "container:Andernet Posture.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3D93D5B62F39439F00291F26"
+               BuildableName = "Andernet PostureUITests.xctest"
+               BlueprintName = "Andernet PostureUITests"
+               ReferencedContainer = "container:Andernet Posture.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
       <TestPlans>
          <TestPlanReference
             reference = "container:UnitTests.xctestplan"

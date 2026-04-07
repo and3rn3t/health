@@ -38,6 +38,10 @@ jobs:
         run: pnpm run test:coverage
 
       - name: SonarCloud Scan
+        # TODO: Disable Automatic Analysis in SonarCloud dashboard:
+        # https://sonarcloud.io/project/analysis_method?id=and3rn3t_health
+        # Once disabled, remove continue-on-error below.
+        continue-on-error: true
         uses: SonarSource/sonarcloud-github-action@v3
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
