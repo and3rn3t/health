@@ -8,7 +8,7 @@
 	
 	<!-- Team ID from Apple Developer Account -->
 	<key>teamID</key>
-	<string>YOUR_TEAM_ID_HERE</string>
+	<string>C8U3P6AJ6L</string>
 	
 	<!-- Upload to TestFlight -->
 	<key>uploadBitcode</key>

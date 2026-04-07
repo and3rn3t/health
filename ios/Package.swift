@@ -4,9 +4,9 @@ import PackageDescription
 let package = Package(
     name: "VitalSense",
     platforms: [
-        .iOS(.v16),
-        .watchOS(.v9),
-        .macOS(.v13)
+        .iOS(.v26),
+        .watchOS(.v11),
+        .macOS(.v15)
     ],
     products: [
         .library(name: "VitalSenseCore", targets: ["VitalSenseCore"])
