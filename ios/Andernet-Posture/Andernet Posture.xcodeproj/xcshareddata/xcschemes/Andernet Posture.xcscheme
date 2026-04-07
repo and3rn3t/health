@@ -28,32 +28,22 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
-      codeCoverageEnabled = "YES"
-      shouldAutocreateTestPlan = "YES">
-      <Testables>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "3D93D5AC2F39439F00291F26"
-               BuildableName = "Andernet PostureTests.xctest"
-               BlueprintName = "Andernet PostureTests"
-               ReferencedContainer = "container:Andernet Posture.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "3D93D5B62F39439F00291F26"
-               BuildableName = "Andernet PostureUITests.xctest"
-               BlueprintName = "Andernet PostureUITests"
-               ReferencedContainer = "container:Andernet Posture.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-      </Testables>
+      codeCoverageEnabled = "YES">
+      <TestPlans>
+         <TestPlanReference
+            reference = "container:Andernet Posture.xcodeproj/UnitTests.xctestplan"
+            default = "YES">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Andernet Posture.xcodeproj/FullSuite.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Andernet Posture.xcodeproj/SmokeTests.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Andernet Posture.xcodeproj/AccessibilityTests.xctestplan">
+         </TestPlanReference>
+      </TestPlans>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"

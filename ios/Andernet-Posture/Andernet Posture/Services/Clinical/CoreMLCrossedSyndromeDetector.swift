@@ -63,12 +63,12 @@ final class CoreMLCrossedSyndromeDetector: CrossedSyndromeDetecting {
         do {
             let provider = try MLDictionaryFeatureProvider(dictionary: [
                 "craniovertebralAngleDeg": MLFeatureValue(double: craniovertebralAngleDeg),
-                "shoulderProtractionCm":   MLFeatureValue(double: shoulderProtractionCm),
-                "thoracicKyphosisDeg":     MLFeatureValue(double: thoracicKyphosisDeg),
-                "cervicalLordosisDeg":     MLFeatureValue(double: cervicalLordosisDeg ?? sentinel),
-                "pelvicTiltDeg":           MLFeatureValue(double: pelvicTiltDeg),
-                "lumbarLordosisDeg":       MLFeatureValue(double: lumbarLordosisDeg),
-                "hipFlexionRestDeg":       MLFeatureValue(double: hipFlexionRestDeg ?? sentinel)
+                "shoulderProtractionCm": MLFeatureValue(double: shoulderProtractionCm),
+                "thoracicKyphosisDeg": MLFeatureValue(double: thoracicKyphosisDeg),
+                "cervicalLordosisDeg": MLFeatureValue(double: cervicalLordosisDeg ?? sentinel),
+                "pelvicTiltDeg": MLFeatureValue(double: pelvicTiltDeg),
+                "lumbarLordosisDeg": MLFeatureValue(double: lumbarLordosisDeg),
+                "hipFlexionRestDeg": MLFeatureValue(double: hipFlexionRestDeg ?? sentinel)
             ])
 
             // Upper crossed score from the primary model

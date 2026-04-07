@@ -56,15 +56,15 @@ final class CoreMLPostureAnalyzer: PostureAnalyzer {
 
         do {
             let provider = try MLDictionaryFeatureProvider(dictionary: [
-                "f_cva":         MLFeatureValue(double: fCVA),
-                "f_sva":         MLFeatureValue(double: fSVA),
-                "f_trunkLean":   MLFeatureValue(double: fTrunkLean),
+                "f_cva": MLFeatureValue(double: fCVA),
+                "f_sva": MLFeatureValue(double: fSVA),
+                "f_trunkLean": MLFeatureValue(double: fTrunkLean),
                 "f_lateralLean": MLFeatureValue(double: fLateralLean),
                 "f_shoulderAsym": MLFeatureValue(double: fShoulderAsym),
-                "f_kyphosis":    MLFeatureValue(double: fKyphosis),
+                "f_kyphosis": MLFeatureValue(double: fKyphosis),
                 "f_pelvicObliq": MLFeatureValue(double: fPelvicObliq),
-                "f_lordosis":    MLFeatureValue(double: fLordosis),
-                "f_coronalDev":  MLFeatureValue(double: fCoronalDev)
+                "f_lordosis": MLFeatureValue(double: fLordosis),
+                "f_coronalDev": MLFeatureValue(double: fCoronalDev)
             ])
             let prediction = try model.prediction(from: provider)
 

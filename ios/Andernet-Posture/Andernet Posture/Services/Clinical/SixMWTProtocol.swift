@@ -112,41 +112,23 @@ struct SixMWTLiveMetrics: Sendable {
 
 /// Complete 6MWT result with all clinical data.
 struct SixMWTCompleteResult: Codable, Sendable {
-    /// Total distance walked (meters).
     let distanceM: Double
-    /// Test duration (seconds) — should be ~360.
     let durationSec: TimeInterval
-    /// Number of laps completed.
     let lapsCompleted: Int
-    /// Rest stops during the test.
     let restStops: [RestStop]
-    /// Total rest time (seconds).
     let totalRestTimeSec: TimeInterval
-    /// Total step count.
     let totalSteps: Int
-    /// Average walking speed (m/s).
     let averageSpeedMPS: Double
-    /// Average cadence (steps/min).
     let averageCadenceSPM: Double
-    /// Borg dyspnea scale (0-10, user-reported). Nil if not collected.
     let borgDyspneaScale: Int?
-    /// Borg fatigue scale (0-10, user-reported). Nil if not collected.
     let borgFatigueScale: Int?
-    /// Predicted distance (if demographics available).
     let predictedDistanceM: Double?
-    /// Percent of predicted.
     let percentPredicted: Double?
-    /// Functional classification.
     let classification: String
-    /// MET estimate from walking speed.
     let estimatedMET: Double
-    /// Distance split by minute (6 values for fatigue analysis).
     let distanceByMinuteM: [Double]
-    /// Fatigue index: (minute 1 distance - minute 6 distance) / minute 1 distance × 100.
     let fatigueIndexPercent: Double?
-    /// Floors ascended (from barometer).
     let floorsAscended: Int?
-    /// Floors descended (from barometer).
     let floorsDescended: Int?
 }
 
@@ -190,7 +172,7 @@ final class DefaultSixMWTProtocol: SixMWTProtocol {
 
     private var config = SixMWTConfiguration.standard
     private var testStartTime: Date?
-    private nonisolated(unsafe) var timer: Timer?
+    nonisolated(unsafe) private var timer: Timer?
 
     // Distance tracking
     private var pedometerDistanceM: Double = 0
@@ -426,8 +408,10 @@ final class DefaultSixMWTProtocol: SixMWTProtocol {
         onPhaseChange?(.completed)
 
         let restStopCount = restStops.count
+        let distStr = String(format: "%.1f", totalDistance)
+        let durStr = String(format: "%.0f", duration)
         AppLogger.clinicalTests.info(
-            "6MWT completed: \(String(format: "%.1f", totalDistance))m in \(String(format: "%.0f", duration))s, \(totalSteps) steps, \(restStopCount) rest stops"
+            "6MWT completed: \(distStr)m in \(durStr)s, \(totalSteps) steps, \(restStopCount) rest stops"
         )
 
         return result
