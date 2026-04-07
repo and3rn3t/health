@@ -51,21 +51,6 @@
             </BuildableReference>
          </TestableReference>
       </Testables>
-      <TestPlans>
-         <TestPlanReference
-            reference = "container:UnitTests.xctestplan"
-            default = "YES">
-         </TestPlanReference>
-         <TestPlanReference
-            reference = "container:FullSuite.xctestplan">
-         </TestPlanReference>
-         <TestPlanReference
-            reference = "container:SmokeTests.xctestplan">
-         </TestPlanReference>
-         <TestPlanReference
-            reference = "container:AccessibilityTests.xctestplan">
-         </TestPlanReference>
-      </TestPlans>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
