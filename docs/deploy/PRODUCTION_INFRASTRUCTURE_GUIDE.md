@@ -290,7 +290,7 @@ ORDER BY avg_response_time DESC
 
 1. **DNS Not Resolving**
 
-   ```powershell
+   ```bash
    # Check DNS configuration
    nslookup health.andernet.dev
    # Should return Cloudflare IPs
@@ -298,14 +298,14 @@ ORDER BY avg_response_time DESC
 
 2. **Analytics Not Recording**
 
-   ```powershell
+   ```bash
    # Verify datasets exist
    wrangler analytics-engine list-datasets --env production
    ```
 
 3. **High Error Rates**
 
-   ```powershell
+   ```bash
    # Check Worker logs
    wrangler tail --env production
    ```
@@ -319,8 +319,8 @@ ORDER BY avg_response_time DESC
 2. **Optimize Bundle Size**
 
    ```bash
-   # Analyze bundle
-   pnpm build:analyze
+   pnpm build
+   # Check dist/ output size
    ```
 
 3. **Monitor Core Web Vitals**

@@ -7,9 +7,9 @@ Welcome to VitalSense - your comprehensive health monitoring platform! This guid
 ### Prerequisites
 
 - **Development Environment**: VS Code with recommended extensions
-- **Node.js**: Version 18 or later
+- **Node.js**: Version 22.21.1 or later (see `engines` in `package.json`)
+- **pnpm**: Version 10.16+ (via Corepack)
 - **Git**: For version control
-- **PowerShell 7** (Windows) or **Terminal** (macOS/Linux)
 
 ### 1. Clone and Setup
 
@@ -69,4 +69,4 @@ pnpm cf:dev
 ---
 
 **Time to Value**: ⚡ 15 minutes to working development environment  
-**Next Step**: Choose your path - [Web Development](#) | [iOS Development](../ios/) | [API Development](../architecture/)
+**Next Step**: Choose your path - [Web Development](SETUP_GUIDE.md) | [iOS Development](../../ios/docs/INDEX.md) | [API Development](../architecture/API.md)

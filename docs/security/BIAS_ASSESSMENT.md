@@ -169,7 +169,7 @@ Threshold for acceptable disparity: false positive rate difference ≤ 5 percent
 1. **Do no harm**: health risk scores are informational only; no automated clinical decisions are made without human oversight.
 2. **Transparency**: model cards and limitations are disclosed in-app and in documentation.
 3. **Equity**: periodic bias audits are required before any model promotion to general availability.
-4. **Privacy by design**: no PII is used as a model feature without explicit user consent; see `PII_CHECKLIST.md`.
+4. **Privacy by design**: no PII is used as a model feature without explicit user consent; see the [Security Baseline](SECURITY_BASELINE.md).
 5. **Contestability**: users can dismiss or ignore any risk alert; no alert triggers an irreversible automated action.
 
 ---

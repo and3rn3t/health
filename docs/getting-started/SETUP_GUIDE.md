@@ -19,7 +19,6 @@ Install these extensions for the best development experience:
 # Core extensions
 code --install-extension ms-vscode.vscode-typescript-next
 code --install-extension bradlc.vscode-tailwindcss
-code --install-extension ms-vscode.powershell
 
 # Additional helpful extensions
 code --install-extension GitHub.copilot
@@ -197,9 +196,9 @@ For complete deployment setup, see [Deployment Guide](../deploy/README.md).
 
 ### Common Issues
 
-1. **Port Conflicts**: Use `Kill-Port 5173` (Windows) or `lsof -ti:5173 | xargs kill` (macOS/Linux)
-2. **Permission Errors**: Run PowerShell as Administrator (Windows)
-3. **Node Version**: Use `nvm use 18` to switch Node.js versions
+1. **Port Conflicts**: `lsof -ti:5173 | xargs kill` (macOS/Linux)
+2. **Permission Errors**: Check file permissions or run with elevated privileges
+3. **Node Version**: Run `node -v` — must be ≥22.21.1 (see `package.json engines`)
 4. **Build Errors**: Clear cache with `pnpm clean`
 
 ### Getting Help

@@ -13,10 +13,10 @@ VitalSense is a health monitoring platform that integrates with Apple Health (He
 
 With your explicit permission, the app may access:
 
-- **Heart Rate Data**: For data visualization experiments
-- **Step Count**: For activity tracking examples
-- **Walking Data**: For gait analysis exploration
-- **Sleep Data**: For health pattern visualization
+- **Heart Rate Data**: For health trend visualization and anomaly detection
+- **Step Count**: For activity tracking and gait analysis
+- **Walking Data**: For gait analysis and fall risk scoring
+- **Sleep Data**: For health pattern analysis
 
 ### Sensor Data
 

@@ -54,14 +54,12 @@ Tracks:
 
 - Rate limiting violations trigger `429` responses and are logged to `SECURITY_ANALYTICS`.
 - Fall detection events emit to `HEALTH_ANALYTICS` and trigger the emergency alert flow.
-- Bundle size and latency are validated in CI via `pnpm ci:perf-slo`.
 
 ## Related
 
 - [Security Baseline](../security/SECURITY_BASELINE.md) — audit logging requirements
 - [Production Infrastructure Guide](../deploy/PRODUCTION_INFRASTRUCTURE_GUIDE.md) — full observability setup
 - [Troubleshooting](../TROUBLESHOOTING.md) — debugging Worker issues
-- Analysis timing for analysis endpoints
 
 ## Key Metrics to Monitor
 
@@ -71,9 +69,7 @@ Tracks:
 4. **Health Data Sync**: Events tracked in `HEALTH_ANALYTICS`
 5. **Security Events**: Auth failures and rate limit violations in `SECURITY_ANALYTICS`
 
-### Alerts
-
-Recommended alerts:
+## Recommended Alerts
 
 - Error rate > 5%
 - P95 response time > 1000ms

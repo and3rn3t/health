@@ -38,9 +38,9 @@ This guide covers the development and deployment setup for VitalSense using Clou
 
 ## Build Commands
 
-- `pnpm build` - Build both React app and Cloudflare Worker
 - `pnpm build` - Build the React application
 - `pnpm build:worker` - Build the Cloudflare Worker
+- `pnpm build:all` - Build both React app and Cloudflare Worker
 - `pnpm format` - Format code with Prettier
 - `pnpm lint` - Run ESLint
 
