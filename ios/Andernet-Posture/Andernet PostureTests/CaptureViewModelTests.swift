@@ -180,10 +180,10 @@ struct CaptureViewModelTests {
         #expect(vm.recordingState == .calibrating)
         #expect(vm.calibrationCountdown == 3)
 
-        // Frame at t=1.5 — still calibrating
+        // Frame at t=1.5 — still calibrating (ceil of 1.5s remaining = 2)
         vm.handleBodyFrame(joints: stubJoints(), timestamp: 1.5)
         #expect(vm.recordingState == .calibrating)
-        #expect(vm.calibrationCountdown == 1)
+        #expect(vm.calibrationCountdown == 2)
 
         // Frame at t=3.1 — should transition to recording
         vm.handleBodyFrame(joints: stubJoints(), timestamp: 3.1)

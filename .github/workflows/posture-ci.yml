@@ -64,8 +64,7 @@ jobs:
             -resultBundlePath UnitTestResults.xcresult \
             -skipPackagePluginValidation \
             CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            2>&1 | tee build.log | tail -100
+            CODE_SIGNING_REQUIRED=NO
 
       - name: Upload unit test results
         if: failure()
@@ -157,8 +156,7 @@ jobs:
             -resultBundlePath FullSuiteResults.xcresult \
             -skipPackagePluginValidation \
             CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            2>&1 | tee build.log | tail -100
+            CODE_SIGNING_REQUIRED=NO
 
       - name: Upload test results & coverage
         if: always()
