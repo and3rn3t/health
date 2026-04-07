@@ -8,37 +8,42 @@
 import XCTest
 
 /// Base class for all UI tests with common setup and utilities
+@MainActor
 class BaseUITest: XCTestCase {
     
     var app: XCUIApplication!
     
-    override func setUpWithError() throws {
+    nonisolated override func setUpWithError() throws {
         try super.setUpWithError()
         
-        // Stop immediately when a failure occurs
-        continueAfterFailure = false
-        
-        // Initialize app
-        app = XCUIApplication()
-        
-        // Set launch arguments for testing
-        app.launchArguments = ["UI_TESTING"]
-        
-        // Set launch environment for testing
-        app.launchEnvironment = [
-            "IS_UI_TESTING": "1",
-            "DISABLE_ANIMATIONS": "1" // Speed up tests
-        ]
-        
-        // Launch the application
-        app.launch()
-        
-        // Wait for splash screen to complete (if present)
-        waitForSplashToComplete()
+        MainActor.assumeIsolated {
+            // Stop immediately when a failure occurs
+            continueAfterFailure = false
+            
+            // Initialize app
+            app = XCUIApplication()
+            
+            // Set launch arguments for testing
+            app.launchArguments = ["UI_TESTING"]
+            
+            // Set launch environment for testing
+            app.launchEnvironment = [
+                "IS_UI_TESTING": "1",
+                "DISABLE_ANIMATIONS": "1" // Speed up tests
+            ]
+            
+            // Launch the application
+            app.launch()
+            
+            // Wait for splash screen to complete (if present)
+            waitForSplashToComplete()
+        }
     }
     
-    override func tearDownWithError() throws {
-        app = nil
+    nonisolated override func tearDownWithError() throws {
+        MainActor.assumeIsolated {
+            app = nil
+        }
         try super.tearDownWithError()
     }
     

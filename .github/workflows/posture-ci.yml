@@ -17,7 +17,7 @@ concurrency:
 env:
   SCHEME: "Andernet Posture"
   PROJECT: "Andernet Posture.xcodeproj"
-  DESTINATION: "platform=iOS Simulator,name=iPhone 16 Pro,OS=latest"
+  DESTINATION: "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
   XCODE_PATH: /Applications/Xcode_26.2.app/Contents/Developer
   WORK_DIR: ios/Andernet-Posture
 

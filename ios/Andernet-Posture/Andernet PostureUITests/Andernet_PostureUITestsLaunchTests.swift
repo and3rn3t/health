@@ -10,11 +10,11 @@ import XCTest
 /// Launch tests that run for each target application UI configuration
 final class Andernet_PostureUITestsLaunchTests: XCTestCase {
 
-    override class var runsForEachTargetApplicationUIConfiguration: Bool {
+    nonisolated override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
     }
 
-    override func setUpWithError() throws {
+    nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
     }
 

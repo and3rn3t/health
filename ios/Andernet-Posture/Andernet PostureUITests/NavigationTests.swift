@@ -11,9 +11,11 @@ final class NavigationTests: BaseUITest {
     
     var tabBar: TabBar!
     
-    override func setUpWithError() throws {
+    nonisolated override func setUpWithError() throws {
         try super.setUpWithError()
-        tabBar = TabBar(app: app)
+        MainActor.assumeIsolated {
+            tabBar = TabBar(app: app)
+        }
     }
     
     // MARK: - Tab Bar Tests
