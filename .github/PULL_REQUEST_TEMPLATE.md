@@ -23,18 +23,12 @@ Steps to validate.
 
 Mandatory gates (mark ALL that apply):
 
-- [ ] Builds locally (`npm run build`)
-- [ ] Type checks (`npx tsc --noEmit`)
-- [ ] Lint passes / no new warnings (`npm run lint`)
-- [ ] Unit tests pass (`npm test`)
-- [ ] Bundle thresholds pass (`npm run ci:bundle-threshold`)
-- [ ] Bundle drift acceptable (`npm run ci:bundle-drift`)
-- [ ] Branding audit passes (`npm run branding:audit:local` or prod)
-- [ ] Privacy guard clean (`npm run ci:privacy`)
-- [ ] WebSocket resilience test (if live features touched)
-- [ ] Secret rotation policy satisfied (no >90d secrets)
-- [ ] WebSocket schema drift check passes (`npm run ci:ws-schema` if realtime touched)
-- [ ] Performance SLO probe reviewed (`npm run ci:perf-slo` if bundle changes)
+- [ ] Builds locally (`pnpm build`)
+- [ ] Type checks (`pnpm type-check`)
+- [ ] Lint passes / no new warnings (`pnpm lint`)
+- [ ] Unit tests pass (`pnpm test`)
+- [ ] Full validation (`pnpm validate`)
+- [ ] No PII or raw health data in logs
 - [ ] Docs updated (API / WS / security / deployment) if applicable
 - [ ] No sensitive data or raw health metrics logged
 

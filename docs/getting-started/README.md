@@ -19,7 +19,7 @@ git clone https://github.com/and3rn3t/health.git
 cd health
 
 # Install dependencies
-npm install
+pnpm install
 
 # Copy environment configuration
 cp .env.example .env.local
@@ -37,10 +37,10 @@ cp .env.example .env.local
 
 ```bash
 # Start the development server
-npm run dev
+pnpm dev
 
-# In another terminal, start the WebSocket server
-npm run ws:dev
+# In another terminal, start the Cloudflare Worker
+pnpm cf:dev
 ```
 
 ### 3. Verify Installation
@@ -55,16 +55,15 @@ npm run ws:dev
 2. **Health Dashboard**: View sample health metrics and insights
 3. **Fall Risk Assessment**: See the fall detection algorithms in action
 
-## 🎯 What's Next?
+## What's Next?
 
 - **For Development**: See [Development Setup Guide](SETUP_GUIDE.md)
-- **For iOS**: Check [iOS Development Guide](../ios/README.md)
+- **For iOS**: Check [iOS Development Guide](../../ios/docs/INDEX.md)
 - **For Deployment**: Review [Deployment Guide](../deploy/README.md)
 
-## 🆘 Need Help?
+## Need Help?
 
-- **Issues**: Check [Troubleshooting Guide](../troubleshooting/README.md)
-- **Questions**: See [Problem Solutions Database](../troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md)
+- **Issues**: Check [Troubleshooting Guide](../TROUBLESHOOTING.md)
 - **Documentation**: Browse [Complete Documentation Index](../DOCUMENTATION_INDEX.md)
 
 ---

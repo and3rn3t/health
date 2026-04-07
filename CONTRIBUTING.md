@@ -4,15 +4,15 @@ Thanks for helping improve this project. Please follow these guidelines to keep 
 
 ## Prereqs
 
-- Node 20 LTS, pnpm or npm
+- Node ≥22.21.1, pnpm 10.16+
 - Wrangler CLI for Workers dev
 
 ## Setup
 
-- Install deps: `npm i`
+- Install deps: `pnpm install`
 - Dev servers:
-  - Frontend+Worker: `npm run dev`
-  - Local WebSocket bridge: `npm run server`
+  - Frontend: `pnpm dev`
+  - Worker: `pnpm cf:dev`
 
 ## Branching and PRs
 
@@ -30,18 +30,14 @@ Thanks for helping improve this project. Please follow these guidelines to keep 
 
 Before opening or updating a PR run:
 
-| Category       | Command                                                                                        | Purpose                                 |
-| -------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------- |
-| Type check     | `npx tsc --noEmit`                                                                             | Surface TS errors early                 |
-| Lint           | `npm run lint`                                                                                 | Code style + obvious issues             |
-| Unit tests     | `npm test`                                                                                     | Core logic validation                   |
-| Bundle budget  | `npm run build && npm run ci:bundle-threshold`                                                 | Enforce JS/CSS gzip size ceilings       |
-| Branding       | `npm run branding:audit:local` (dev worker running)                                            | VitalSense branding + no legacy residue |
-| Smoke (worker) | `npm run ci:smoke`                                                                             | Health endpoint + minimal probes        |
-| WebSocket      | `node scripts/node/test/test-websocket-reconnect.js --backendUrl=wss://health.andernet.dev/ws` | Reconnect resilience                    |
-| Perf SLO       | `npm run ci:perf-slo`                                                                          | Snapshot bundle + latency status        |
-
-Bundle gzip thresholds (defaults): JS < 400KB, CSS < 60KB. Adjust via `--js-max` / `--css-max` flags only with prior discussion.
+| Category | Command | Purpose |
+|----------|---------|--------|
+| Type check | `pnpm type-check` | Surface TS errors early |
+| Lint | `pnpm lint` | Code style + obvious issues |
+| Unit tests | `pnpm test` | Core logic validation |
+| Full validation | `pnpm validate` | type-check + lint + test in one pass |
+| E2E tests | `pnpm test:e2e` | End-to-end Playwright tests |
+| Build | `pnpm build` | Ensure production build succeeds |
 
 If you change public behavior or WebSocket message shapes, update/add Vitest tests under `src/__tests__` and adjust docs in `docs/architecture/WEBSOCKETS.md`.
 
@@ -52,14 +48,11 @@ If you change public behavior or WebSocket message shapes, update/add Vitest tes
 
 ## PR Checklist (copy into description)
 
-- [ ] TypeScript passes (`npx tsc --noEmit`)
+- [ ] TypeScript passes (`pnpm type-check`)
 - [ ] Lint passes (no new warnings preferred)
-- [ ] Unit tests pass / updated
-- [ ] Bundle budgets pass (`npm run ci:bundle-threshold`)
-- [ ] Branding audit passes (`npm run branding:audit:local` or prod)
-- [ ] Privacy guard passes (`npm run ci:privacy`)
-- [ ] WebSocket resilience test ok (if touching live sync / schemas)
+- [ ] Unit tests pass / updated (`pnpm test`)
+- [ ] Branding uses **VitalSense** in user-facing text
+- [ ] No PII or raw health data in logs
 - [ ] Docs updated (schemas / APIs / deployment) if applicable
-- [ ] Performance SLO probe reviewed (if bundle / runtime init changed)
 
-See `docs/ARCHITECTURE.md` and `docs/WEBSOCKETS.md` for more background.
+See [Architecture](docs/architecture/ARCHITECTURE.md) and [WebSockets](docs/architecture/WEBSOCKETS.md) for more background.

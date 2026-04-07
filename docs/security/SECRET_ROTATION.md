@@ -1,38 +1,6 @@
 # Secret Rotation Playbook
 
-This document defines how VitalSense secrets are rotated, tracked, and enforced.
-
-## Scope
-
-Current tracked secrets:
-
-| Name | Location | Purpose | Notes |
-|------|----------|---------|-------|
-| `DEVICE_JWT_SECRET` | Cloudflare Worker env var (`wrangler secret put`) | Signs device / iOS integration JWTs | Dev secret stored locally, prod managed via Cloudflare |
-
-## Rotation Cadence
-
-- Standard: every 90 days (max age enforced in CI).
-- Early rotation triggers: suspected leak, role change, scope change, incident.
-
-## Procedure (Cloudflare Workers)
-
-1. Generate new value (32+ random bytes base64 or hex):
-
-```bash
-openssl rand -hex 32
-```
-
-1. Set secret for target environment:
-
-```bash
-wrangler secret put DEVICE_JWT_SECRET --env production
-```
-
-1. (If multi-env) Repeat for development / staging.
-1. Update rotation metadata file `.secrets/rotation.json` with new ISO timestamp.
-1. Deploy Worker (`wrangler deploy --env production`).
-1. Monitor logs for auth errors for 15 minutes.
+> **Consolidated**: This content has been merged into [SECRET_MANAGEMENT.md](SECRET_MANAGEMENT.md#rotation). See the Rotation section there for the complete playbook including cadence, procedure, CI enforcement, and emergency rotation.
 
 ## Metadata Tracking
 

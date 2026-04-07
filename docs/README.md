@@ -1,103 +1,34 @@
-# 🏥 VitalSense Health App - Documentation Hub
+# VitalSense — Documentation Hub
 
-> **Apple Health Insights & Fall Risk Monitor** - A comprehensive health data analysis platform that transforms Apple Health data into actionable insights while providing proactive fall risk monitoring and emergency response capabilities.
+> Health monitoring platform: Apple Health insights, fall risk detection, emergency alerts, caregiver dashboards.
 
-## 📚 Complete Documentation Index
+**[Full Documentation Index →](DOCUMENTATION_INDEX.md)**
 
-**➡️ [View Complete Documentation Index](DOCUMENTATION_INDEX.md)** - Comprehensive index of all documentation
+## Quick Navigation
 
-**🎉 Recently Reorganized**: Documentation cleaned up and consolidated (September 2025, January 2025)
+| I want to… | Go to |
+|-------------|-------|
+| Get started quickly | [Quick Start](getting-started/README.md) |
+| Set up my dev environment | [Setup Guide](getting-started/SETUP_GUIDE.md) |
+| Understand the architecture | [Architecture](architecture/ARCHITECTURE.md) |
+| Read the API docs | [API](architecture/API.md) |
+| Deploy to production | [Production Guide](deploy/PRODUCTION_INFRASTRUCTURE_GUIDE.md) |
+| Fix an issue | [Troubleshooting](TROUBLESHOOTING.md) |
+| Work on iOS | [iOS Docs](../ios/docs/INDEX.md) |
 
-## 🏃‍♂️ Quick Navigation
+## Documentation Structure
 
-**New to VitalSense?** → Start with [Getting Started](getting-started/)  
-**Setting up development?** → See [Setup Guide](getting-started/SETUP_GUIDE.md)  
-**Having issues?** → Check [Troubleshooting](troubleshooting/)  
-**Need API docs?** → Browse [Architecture](architecture/)
-
-## 📁 Main Documentation Structure
-
-The documentation is organized into topic-based folders for easy navigation:
-
-### 🚀 [Getting Started](getting-started/)
-
-**Start here!** Quick setup and onboarding guides.
-
-- **[Quick Start Guide](getting-started/README.md)** - 15-minute complete setup
-- **[Setup Guide](getting-started/SETUP_GUIDE.md)** - Detailed development environment configuration
-
-### 🏗️ [Architecture & Design](architecture/)
-
-System design, APIs, and technical specifications.
-
-- **[Architecture Overview](architecture/ARCHITECTURE.md)** - System design and technical stack
-- **[API Documentation](architecture/API.md)** - REST endpoints and data schemas
-- **[WebSocket Guide](architecture/WEBSOCKETS.md)** - Real-time communication patterns
-- **[Product Requirements](architecture/PRD.md)** - Features, goals, and user experience design
-
-### � [Development](develop/)
-
-Active development guides and workflows.
-
-- **[PowerShell-VS Code Integration](develop/POWERSHELL_VSCODE_INTEGRATION.md)** - Complete Windows development setup
-- **[Enhanced Health Features](develop/enhanced-health-data-features.md)** - Advanced health data processing
-- **[Performance Optimizations](develop/performance-optimizations.md)** - Platform optimization strategies
-
-### 📱 [iOS Development](ios/)
-
-Complete iOS development, deployment, and tooling guides.
-
-- **[iOS Development on Windows](ios/IOS_DEVELOPMENT_WINDOWS.md)** - Windows-specific setup and tools
-- **[Apple Watch Integration](ios/AppleWatchHealthKitIntegration.md)** - HealthKit and Watch development
-- **[iOS Production Setup](ios/iOS-PRODUCTION-READY.md)** - Production deployment readiness
-
-### 🔐 [Authentication](auth/)
-
-Authentication setup and security integration.
-
-- **[Auth0 Custom Branding Guide](auth/AUTH0_CUSTOM_BRANDING_GUIDE.md)** - Complete VitalSense-branded Auth0 setup
-- **[Auth0 Integration](auth/AUTH0_INTEGRATION.md)** - Technical integration documentation
-
-### 🔧 [Troubleshooting](troubleshooting/)
-
-Problem solving and debugging guides.
-
-- **[Problem Solutions Database](troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md)** - 50+ documented issues and fixes
-- **[VitalSense Branding Quick Reference](troubleshooting/VITALSENSE_BRANDING_QUICK_REFERENCE.md)** - Branding issue fixes
-- **[Build Troubleshooting](troubleshooting/BUILD_TROUBLESHOOTING.md)** - Swift and TypeScript build errors
-
-### 🚀 [Deployment](deploy/)
-
-Production deployment and infrastructure management.
-
-- **[Main App Deployment](deploy/MAIN_APP_DEPLOYMENT.md)** - Primary deployment workflow
-- **[Infrastructure Hardening](deploy/INFRA_HARDENING.md)** - Production-ready infrastructure setup
-
-### �️ [Security](security/)
-
-Security implementation and privacy policies.
-
-- **[Security Baseline](security/SECURITY_BASELINE.md)** - Security implementation and best practices
-- **[Retention Policy](security/RETENTION_POLICY.md)** - Data lifecycle and privacy compliance
-
-- **[Development Guides](develop/)** - Development environment and workflow
-
-### 📊 [Project Management](project-management/)
-
-Project roadmap, lessons learned, and tracking.
-
-- **[Next Steps](project-management/NEXT_STEPS.md)** - Strategic roadmap and priorities
-- **[Lessons Learned](project-management/LESSONS_LEARNED.md)** - Project insights and best practices
-- **[Implementation Checklist](project-management/IMPLEMENTATION_CHECKLIST.md)** - Development task tracking
-- **[Documentation Cleanup 2025](project-management/DOCUMENTATION_CLEANUP_2025.md)** - Documentation cleanup and consolidation summary
-
-## 🎯 Quick Access by User Type
-
-### 👩‍💻 **New Developers**
-
-1. **[Getting Started](getting-started/)** → **[Quick Start Guide](getting-started/README.md)**
-2. **[Development](develop/)** → Browse development guides
-3. **[Troubleshooting](troubleshooting/)** → **[Problem Solutions Database](troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md)**
+```
+docs/
+├── getting-started/     — Quick start, setup guide, onboarding wizard
+├── architecture/        — System design, API, WebSockets, PRD, ADRs
+├── develop/             — Dev workflow, scripts reference, testing
+├── deploy/              — Production deployment, DNS, go-live config
+├── security/            — Security baseline, retention, secrets, bias assessment
+├── project-management/  — Roadmap
+├── TROUBLESHOOTING.md   — Common issues and fixes
+└── CHANGELOG.md         — Release history
+```
 
 ### 📱 **iOS Developers**
 

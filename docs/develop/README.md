@@ -1,19 +1,18 @@
-# 💻 Development
+# Development
 
-Development workflows, tools, and AI-assisted development patterns.
+Development workflows, testing, and tooling reference.
 
-## 📖 Documents in this folder
+## Documents
 
-### [DEVELOPMENT.md](DEVELOPMENT.md)
+| File | Description |
+|------|-------------|
+| [DEVELOPMENT.md](DEVELOPMENT.md) | Development environment setup and workflow |
+| [SCRIPTS_REFERENCE.md](SCRIPTS_REFERENCE.md) | Complete reference for all pnpm scripts |
+| [testing.md](testing.md) | Testing strategy: Vitest, Playwright, XCTest |
+| [observability.md](observability.md) | Logging, metrics, and health checks |
 
-**⚙️ Development workflow** - Complete development environment setup and best practices.
+## Related
 
-### [COPILOT_PROMPTS.md](COPILOT_PROMPTS.md)
-
-**🤖 AI development patterns** - GitHub Copilot optimization and prompt engineering.
-
-## 🔗 Related Documentation
-
-- **Getting Started**: [`../getting-started/`](../getting-started/) for initial setup
-- **Troubleshooting**: [`../troubleshooting/`](../troubleshooting/) for development issues
-- **Architecture**: [`../architecture/`](../architecture/) for system understanding
+- [Getting started](../getting-started/) — initial setup
+- [Troubleshooting](../TROUBLESHOOTING.md) — common dev issues
+- [Architecture](../architecture/) — system design

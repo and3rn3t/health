@@ -1,24 +1,24 @@
-# Development Setup Guide
+# VitalSense Development Setup Guide
 
-This guide covers the complete development and deployment setup for the Health App using Cloudflare Workers.
+This guide covers the development and deployment setup for VitalSense using Cloudflare Workers.
 
 ## Quick Start
 
 1. **Install dependencies:**
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. **Start development server:**
 
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
 3. **Start Cloudflare Workers development:**
    ```bash
-   npm run cf:dev
+   pnpm cf:dev
    ```
 
 ## Environment Configuration
@@ -38,24 +38,24 @@ This guide covers the complete development and deployment setup for the Health A
 
 ## Build Commands
 
-- `npm run build` - Build both React app and Cloudflare Worker
-- `npm run build:app` - Build only the React application
-- `npm run build:worker` - Build only the Cloudflare Worker
-- `npm run format` - Format code with Prettier
-- `npm run lint` - Run ESLint
+- `pnpm build` - Build both React app and Cloudflare Worker
+- `pnpm build` - Build the React application
+- `pnpm build:worker` - Build the Cloudflare Worker
+- `pnpm format` - Format code with Prettier
+- `pnpm lint` - Run ESLint
 
 ## Deployment
 
 ### Development Deployment
 
 ```bash
-npm run deploy:dev
+pnpm cf:deploy
 ```
 
 ### Production Deployment
 
 ```bash
-npm run deploy:prod
+pnpm deploy:prod
 ```
 
 ### Automatic Deployment

@@ -6,10 +6,10 @@ Complete guide for setting up your VitalSense development environment across all
 
 ### Required Software
 
-- **Node.js 18+**: [Download from nodejs.org](https://nodejs.org/)
+- **Node.js 22.21.1+**: [Download from nodejs.org](https://nodejs.org/) (enforced by `engines` in `package.json`)
+- **pnpm 10.16+**: [Install via Corepack](https://pnpm.io/installation) (`corepack enable && corepack prepare`)
 - **Git**: [Download from git-scm.com](https://git-scm.com/)
 - **VS Code**: [Download from code.visualstudio.com](https://code.visualstudio.com/)
-- **PowerShell 7** (Windows): [Install from Microsoft Store](https://aka.ms/PowerShell)
 
 ### Recommended VS Code Extensions
 
@@ -41,7 +41,7 @@ code --install-extension ms-vscode.vscode-json
 2. **Install Dependencies**
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Environment Configuration**
@@ -58,30 +58,23 @@ code --install-extension ms-vscode.vscode-json
 
    ```bash
    # Primary development server
-   npm run dev
+   pnpm dev
 
-   # API server (in separate terminal)
-   npm run api:dev
-
-   # WebSocket server (in separate terminal)
-   npm run ws:dev
+   # Cloudflare Worker (in separate terminal)
+   pnpm cf:dev
    ```
 
-### iOS Development Setup (Windows)
+### iOS Development Setup
 
-1. **Install iOS Development Tools**
+1. **Prerequisites**: macOS with Xcode 26.2 installed (see `ios/.xcode-version`)
 
-   ```powershell
-   # Run the iOS setup script
-   .\ios\scripts\setup-ios-dev-windows.ps1 -All
-   ```
-
-2. **Configure Xcode Project**
+2. **Open Xcode Project**
 
    ```bash
-   cd ios
-   # Open the project
-   open HealthKitBridge.xcodeproj
+   # From repo root
+   pnpm ios:open
+   # Or manually:
+   open ios/Andernet-Posture/Andernet\ Posture.xcodeproj
    ```
 
 3. **Setup Device Testing**
@@ -89,7 +82,7 @@ code --install-extension ms-vscode.vscode-json
    - Enable Developer Mode in iOS Settings
    - Trust your development certificate
 
-For detailed iOS setup, see [iOS Development Guide](../ios/IOS_DEVELOPMENT_WINDOWS.md).
+For detailed iOS setup, see the [iOS docs](../../ios/docs/INDEX.md).
 
 ## 🔐 Authentication Setup
 
@@ -102,17 +95,14 @@ For detailed iOS setup, see [iOS Development Guide](../ios/IOS_DEVELOPMENT_WINDO
    - Allowed Callback URLs: `http://localhost:5173/callback`
    - Allowed Logout URLs: `http://localhost:5173`
 
-3. **Deploy Custom Login Page**
+3. **Set Secrets via Wrangler**
 
-   ```powershell
-   # Test deployment
-   .\scripts\quick-deploy-auth0.ps1 -TestMode
-
-   # Deploy to production
-   .\scripts\quick-deploy-auth0.ps1
+   ```bash
+   wrangler secret put AUTH0_CLIENT_SECRET
+   wrangler secret put DEVICE_JWT_SECRET
    ```
 
-For complete Auth0 setup, see [Auth0 Integration Guide](../auth/AUTH0_CUSTOM_BRANDING_GUIDE.md).
+Auth0 configuration is documented in the [Security Baseline](../security/SECURITY_BASELINE.md) and [Architecture](../architecture/ARCHITECTURE.md) guides.
 
 ## 🏗️ Development Workflow
 
@@ -131,17 +121,14 @@ Access via `Ctrl+Shift+P` → "Tasks: Run Task"
 
 ```bash
 # Development
-npm run dev              # Start web development server
-npm run build           # Build for production
-npm run test            # Run test suite
+pnpm dev              # Start web development server
+pnpm build            # Build for production
+pnpm test             # Run test suite
 
-# API Development
-npm run api:dev         # Start API server
-npm run api:build       # Build API for deployment
-
-# iOS Development
-npm run ios:build       # Build iOS app
-npm run ios:test        # Run iOS tests
+# Worker Development
+pnpm cf:dev           # Start Cloudflare Worker locally
+pnpm build:worker     # Build Worker for deployment
+pnpm deploy:prod      # Deploy to production
 ```
 
 ## 🔧 Configuration Files
@@ -170,57 +157,41 @@ VITE_API_BASE_URL=http://localhost:8787
 NODE_ENV=development
 ```
 
-## 🧪 Testing Setup
+## Testing Setup
 
 ### Web Application Testing
 
 ```bash
 # Unit tests
-npm run test
+pnpm test
 
 # E2E tests
-npm run test:e2e
-
-# Health check all endpoints
-npm run test:api
+pnpm test:e2e
 ```
 
 ### iOS Testing
 
 ```bash
-# Unit tests
-npm run ios:test
-
-# UI tests
-npm run ios:test:ui
-
-# Device testing
-npm run ios:test:device
+# From ios/ directory
+make test              # Unit tests
+make lint              # SwiftLint
 ```
 
-## 🚀 Deployment Setup
+## Deployment Setup
 
 ### Development Deployment
 
 ```bash
-# Deploy to development environment
-npm run deploy:dev
-
-# Deploy with health checks
-npm run deploy:dev:safe
+pnpm cf:deploy
 ```
 
 ### Production Deployment
 
 ```bash
-# Deploy to production
-npm run deploy:prod
-
-# Deploy with full validation
-npm run deploy:prod:safe
+pnpm deploy:prod
 ```
 
-For complete deployment setup, see [Deployment Guide](../deploy/MAIN_APP_DEPLOYMENT.md).
+For complete deployment setup, see [Deployment Guide](../deploy/README.md).
 
 ## 🆘 Troubleshooting
 
@@ -229,24 +200,22 @@ For complete deployment setup, see [Deployment Guide](../deploy/MAIN_APP_DEPLOYM
 1. **Port Conflicts**: Use `Kill-Port 5173` (Windows) or `lsof -ti:5173 | xargs kill` (macOS/Linux)
 2. **Permission Errors**: Run PowerShell as Administrator (Windows)
 3. **Node Version**: Use `nvm use 18` to switch Node.js versions
-4. **Build Errors**: Clear cache with `npm run clean`
+4. **Build Errors**: Clear cache with `pnpm clean`
 
 ### Getting Help
 
-- **Build Issues**: [Build Troubleshooting Guide](../troubleshooting/BUILD_TROUBLESHOOTING.md)
-- **Branding Issues**: [VitalSense Branding Quick Reference](../troubleshooting/VITALSENSE_BRANDING_QUICK_REFERENCE.md)
-- **All Problems**: [Problem Solutions Database](../troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md)
+- **Common Issues**: [Troubleshooting](../TROUBLESHOOTING.md)
+- **Full Docs**: [Documentation Index](../DOCUMENTATION_INDEX.md)
 
 ## 🎯 Next Steps
 
 After setup, explore:
 
 1. **Web Development**: [Architecture Documentation](../architecture/)
-2. **iOS Development**: [iOS Development Guide](../ios/)
+2. **iOS Development**: [iOS Docs](../../ios/docs/INDEX.md)
 3. **API Development**: [API Documentation](../architecture/API.md)
 4. **Deployment**: [Deployment Workflow](../deploy/)
 
 ---
 
-**Setup Time**: 30-45 minutes for complete environment  
-**Support**: Available in [Troubleshooting Documentation](../troubleshooting/)
+**Support**: [Troubleshooting](../TROUBLESHOOTING.md)

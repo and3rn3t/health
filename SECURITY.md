@@ -52,7 +52,7 @@ This policy covers:
 
 ### Dependencies
 
-- `npm audit` runs in CI to catch vulnerable packages.
+- `pnpm audit` runs in CI to catch vulnerable packages.
 - `eslint-plugin-security` warnings are reviewed.
 - Dependabot / Renovate keep dependencies current.
 

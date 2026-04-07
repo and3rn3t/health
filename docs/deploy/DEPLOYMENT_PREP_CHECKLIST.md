@@ -24,7 +24,7 @@ wrangler kv namespace create HEALTH_KV --preview --env development
 ```bash
 # Essential secrets for full functionality
 wrangler secret put DEVICE_JWT_SECRET --env development
-# Value: "dev-local-secret-key-2025"
+# Generate a strong value: openssl rand -hex 32
 
 wrangler secret put ENC_KEY --env development
 # Generate: openssl rand -base64 32
@@ -44,35 +44,27 @@ wrangler secret put API_JWKS_URL --env development
 
 ### 4. **iOS Device Testing**
 
-```bash
-# Build for iOS Simulator
-npm run ios:build-sim
+Build and test via Xcode or the iOS Makefile:
 
-# Test on physical device (requires Apple Developer account)
-npm run ios:deploy:device
+```bash
+cd ios && make build && make test
 ```
 
 ### 5. **Integration Testing**
 
 ```bash
-# Run full integration tests
-npm run test
+# Run full test suite
+pnpm test
 
-# Test worker probe
-npm run probe:dev
-
-# Test WebSocket connectivity
-node server/test-ws.js
+# E2E tests
+pnpm test:e2e
 ```
 
 ### 6. **Performance & Monitoring**
 
 ```bash
-# iOS performance analysis
-npm run ios:perf-detail
-
-# Worker performance monitoring
-npm run cf:tail
+# Worker log tailing
+wrangler tail
 ```
 
 ### 7. **Security Validation**
@@ -94,11 +86,11 @@ npm run cf:tail
 ### 9. **Deployment Pipeline Testing**
 
 ```bash
-# Test staging deployment
-npm run app:deploy:staging
+# Deploy to development
+pnpm cf:deploy
 
-# Test production deployment (dry run)
-npm run app:deploy:prod --dry-run
+# Deploy to production
+pnpm deploy:prod
 ```
 
 ### 10. **Documentation & Monitoring**

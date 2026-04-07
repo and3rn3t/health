@@ -1,27 +1,15 @@
-# 📊 Project Management
+# Project Management
 
-Project roadmap, lessons learned, and development tracking.
+Roadmap and project tracking.
 
-## 📖 Documents in this folder
+## Documents
 
-### [NEXT_STEPS.md](NEXT_STEPS.md)
+| File | Description |
+|------|-------------|
+| [ROADMAP.md](ROADMAP.md) | Product roadmap and strategic priorities |
 
-**🎯 Project roadmap** - Strategic priorities, timelines, and development phases.
+## Related
 
-### [LESSONS_LEARNED.md](LESSONS_LEARNED.md)
-
-**💡 Project insights** - Key takeaways and best practices from development experience.
-
-### [IMPLEMENTATION_CHECKLIST.md](IMPLEMENTATION_CHECKLIST.md)
-
-**✅ Development tracking** - Task management and completion tracking.
-
-### [PROJECT_CLEANUP_SUMMARY.md](PROJECT_CLEANUP_SUMMARY.md)
-
-**🧹 Cleanup documentation** - Summary of project organization and documentation improvements.
-
-## 🔗 Related Documentation
-
-- **Getting Started**: [`../getting-started/`](../getting-started/) for immediate next steps
-- **Development**: [`../development/`](../development/) for technical implementation guides
-- **Architecture**: [`../architecture/`](../architecture/) for design decisions context
+- [Architecture](../architecture/) — system design and ADRs
+- [Development](../develop/) — development workflow
+- [Changelog](../CHANGELOG.md) — release history

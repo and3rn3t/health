@@ -4,33 +4,24 @@ Welcome to VitalSense! This quick "walk me through" guide helps you set up the p
 
 ## What you'll do
 
-- Run the interactive onboarding wizard with progress
-- Ensure prerequisites (Node, Git, Wrangler, optional Docker)
-- Create your `.env` automatically
-- Install dependencies, validate config, and quick‑lint
-- Start the Worker and check health
+- Ensure prerequisites (Node 22.21.1+, pnpm, Git, Wrangler)
+- Install dependencies and configure environment
+- Start the Worker and verify the health endpoint
+- Run tests
 
-## 1) Run the onboarding wizard
+## 1) Install and configure
 
-From VS Code:
-
-- Press Ctrl+Shift+P → Tasks: Run Task → "Onboarding: New User Wizard"
-- Or run in a terminal:
-
-```pwsh
-node scripts/node/dev/onboarding-wizard.js
+```bash
+git clone https://github.com/and3rn3t/health.git
+cd health
+pnpm install
+cp .env.example .env.local   # then edit with your Auth0 credentials
 ```
-
-Flags:
-- `--yes` or `-y`: non‑interactive defaults
-- `--dry-run`: show steps without making changes
-
-Progress will be written to `.onboarding-progress.json` in the repo root.
 
 ## 2) Start development services
 
 - Start the Worker:
-  - Tasks → `wrangler-dev-8789` (runs on http://127.0.0.1:8789)
+  - Tasks → `wrangler-dev-8789` (runs on <http://127.0.0.1:8789>)
 - Optional WebSocket + Docker services:
   - Tasks → `🐳 Docker: Dev Workflow (no logs)`
 
@@ -51,6 +42,6 @@ Progress will be written to `.onboarding-progress.json` in the repo root.
 
 - If Wrangler is missing, install globally: `npm i -g wrangler`
 - If Docker isn't available, you can skip the WebSocket container and use only the Worker while developing
-- See `docs/troubleshooting/` for more
+- See [Troubleshooting](../TROUBLESHOOTING.md) for more
 
 Happy building with VitalSense!

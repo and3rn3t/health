@@ -1,35 +1,26 @@
-# 🏗️ Architecture & Design
+# Architecture & Design
 
 System architecture, API documentation, and design specifications.
 
-## 📖 Documents in this folder
+## Documents
 
-### [ARCHITECTURE.md](ARCHITECTURE.md)
+| File | Description |
+|------|-------------|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | High-level system architecture and tech stack |
+| [API.md](API.md) | REST API endpoint documentation and schemas |
+| [WEBSOCKETS.md](WEBSOCKETS.md) | WebSocket protocol, message contracts, and auth |
+| [PRD.md](PRD.md) | Product requirements and experience design |
+| [DOCKER.md](DOCKER.md) | Docker local development setup |
 
-**🏗️ System overview** - High-level architecture and technical decisions.
+### Architecture Decision Records
 
-### [API.md](API.md)
+| ADR | Status | Summary |
+|-----|--------|---------|  
+| [ADR-0001](adr/ADR-0001-node-version-governance.md) | Accepted | Node version governance and preinstall enforcement (updated to ≥22.21.1) |
+| [ADR-0002](adr/ADR-0002-staged-healthkit-permissions.md) | Accepted | Progressive HealthKit permission disclosure |
 
-**🔌 REST API** - Complete API endpoint documentation and schemas.
+## Related
 
-### [WEBSOCKETS.md](WEBSOCKETS.md)
-
-**🌐 Real-time communication** - WebSocket implementation and message patterns.
-
-### [PRD.md](PRD.md)
-
-**📋 Product Requirements** - Features, goals, and user experience design.
-
-### [VitalSense-Advanced-ML-WebSocket-Complete.md](VitalSense-Advanced-ML-WebSocket-Complete.md)
-
-**🧠 Advanced ML WebSocket** - Complete guide to the ML-powered WebSocket service with predictive analytics and anomaly detection.
-
-### [VitalSense-Enhanced-WebSocket-Complete.md](VitalSense-Enhanced-WebSocket-Complete.md)
-
-**🌐 Enhanced WebSocket** - Complete implementation guide for the enhanced WebSocket server with VitalSense-specific health monitoring processes.
-
-## 🔗 Related Documentation
-
-- **Getting Started**: [`../getting-started/`](../getting-started/) for quick setup
-- **Development**: [`../development/`](../development/) for implementation guides
-- **Security**: [`../security/`](../security/) for security architecture details
+- [Getting started](../getting-started/) — quick setup
+- [Development](../develop/) — dev workflow and testing
+- [Security](../security/) — security architecture

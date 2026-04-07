@@ -2,7 +2,11 @@
 
 ## Status
 
-Accepted
+Accepted (baseline updated to Node ≥22.21.1 — see addendum below)
+
+## Addendum — July 2025
+
+The baseline runtime has been upgraded from Node 20.19.0 to `>=22.21.1` in `package.json engines`. The governance principles in this ADR still apply: changes to the engine constraint require updating `.nvmrc`, `engines`, running full CI, and documenting the rationale. The original decision text below is preserved for historical context.
 
 ## Context
 

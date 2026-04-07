@@ -18,7 +18,7 @@
     "ios:open": "open ios/Andernet-Posture/*.xcodeproj",
     "gait:sync": "node scripts/analysis/gait/sync-gait-config.js",
     "fallrisk:sync": "node scripts/analysis/fall/sync-fall-risk-config.js",
-    "analytics:sync": "npm run gait:sync && npm run fallrisk:sync",
+    "analytics:sync": "pnpm gait:sync && pnpm fallrisk:sync",
     "clean": "rm -rf dist dist-worker node_modules/.vite",
     "clean:all": "rm -rf dist dist-worker node_modules",
     "preinstall": "node scripts/ci/ensure-node-version.mjs",

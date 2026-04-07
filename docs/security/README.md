@@ -1,31 +1,18 @@
-# 🔐 Security & Privacy
+# Security & Privacy
 
-Security implementation, privacy policies, and data protection.
+Security baselines, data retention, secret management, and algorithmic fairness.
 
-## 📖 Documents in this folder
+## Documents
 
-### [SECURITY_BASELINE.md](SECURITY_BASELINE.md)
+| File | Description |
+|------|-------------|
+| [SECURITY_BASELINE.md](SECURITY_BASELINE.md) | HIPAA-aligned security baseline (admin, physical, technical safeguards) |
+| [RETENTION_POLICY.md](RETENTION_POLICY.md) | Data retention targets by record type |
+| [SECRET_MANAGEMENT.md](SECRET_MANAGEMENT.md) | Secret storage, rotation playbook, and CI enforcement |
+| [BIAS_ASSESSMENT.md](BIAS_ASSESSMENT.md) | Algorithmic bias assessment for fall risk, gait, and anomaly models |
 
-**🔒 Security implementation** - Comprehensive security measures and best practices.
+## Related
 
-### [RETENTION_POLICY.md](RETENTION_POLICY.md)
-
-**📅 Data lifecycle** - Data retention policies and privacy compliance.
-
-### [PII_CHECKLIST.md](PII_CHECKLIST.md)
-
-**🗂️ PII inventory** - Complete checklist of all Personally Identifiable Information (PII) and Protected Health Information (PHI) fields, storage locations, retention periods, and compliance controls.
-
-### [BIAS_ASSESSMENT.md](BIAS_ASSESSMENT.md)
-
-**⚖️ Algorithmic fairness** - Bias assessment report for health algorithms including fall risk model, gait analytics, and anomaly detection. Covers protected attributes, findings, and mitigation priorities.
-
-### [RED_TEAM_NOTES.md](RED_TEAM_NOTES.md)
-
-**🔴 Adversarial review** - Red-team threat scenarios, findings, and a prioritised risk register covering authentication, data injection, emergency alert abuse, supply chain, and device security.
-
-## 🔗 Related Documentation
-
-- **Architecture**: [`../architecture/`](../architecture/) for security architecture design
-- **Deployment**: [`../deployment/`](../deployment/) for infrastructure security
-- **Troubleshooting**: [`../troubleshooting/`](../troubleshooting/) for security-related issues
+- [Architecture](../architecture/) — security architecture context
+- [Deployment](../deploy/) — infrastructure security
+- [Troubleshooting](../TROUBLESHOOTING.md) — auth and security issues

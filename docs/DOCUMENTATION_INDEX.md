@@ -1,135 +1,112 @@
-# VitalSense Health App - Complete Documentation Index
+# VitalSense — Documentation Index
 
-This document provides a comprehensive index of all documentation in the project, organized by category.
+Complete index of all project documentation. Links point only to files that exist in this repository.
 
-**📊 Status**: Recently reorganized and consolidated (September 2025)  
-**📁 Total Active Documents**: ~50 active files (+ archived completed documents)
+**Last verified**: April 2026
 
-## 📚 Main Documentation Directories
+---
 
-### 🚀 Getting Started
+## Getting Started
 
-- [`getting-started/`](./getting-started/) - **Start here!** Quick setup and onboarding
-  - [`README.md`](./getting-started/README.md) - 15-minute quick start guide
-  - [`SETUP_GUIDE.md`](./getting-started/SETUP_GUIDE.md) - Complete development environment setup
-- [`NEW_USER_TUTORIAL.md`](./getting-started/NEW_USER_TUTORIAL.md) - New User Onboarding Wizard + setup path
+Start here for setup and onboarding.
 
-### 🏗️ Architecture & Design
+| Document | Description |
+|----------|-------------|
+| [getting-started/README.md](getting-started/README.md) | 15-minute quick start guide |
+| [getting-started/SETUP_GUIDE.md](getting-started/SETUP_GUIDE.md) | Full development environment setup |
+| [getting-started/NEW_USER_TUTORIAL.md](getting-started/NEW_USER_TUTORIAL.md) | Interactive onboarding wizard |
 
-- [`architecture/`](./architecture/) - System architecture, API specs, and design documents
-  - [`API.md`](./architecture/API.md) - Complete API documentation
-  - [`ARCHITECTURE.md`](./architecture/ARCHITECTURE.md) - System architecture overview
-  - [`PRD.md`](./architecture/PRD.md) - Product Requirements Document
-  - [`WEBSOCKETS.md`](./architecture/WEBSOCKETS.md) - WebSocket protocol specification
-  - [`VitalSense-Advanced-ML-WebSocket-Complete.md`](./architecture/VitalSense-Advanced-ML-WebSocket-Complete.md) - Advanced ML WebSocket service guide
-  - [`VitalSense-Enhanced-WebSocket-Complete.md`](./architecture/VitalSense-Enhanced-WebSocket-Complete.md) - Enhanced WebSocket implementation guide
+## Architecture & Design
 
-### 💻 Development
+System architecture, API specs, and design decisions.
 
-- [`develop/`](./develop/) - Active development guides and workflows
-  - [`POWERSHELL_VSCODE_INTEGRATION.md`](./develop/POWERSHELL_VSCODE_INTEGRATION.md) - PowerShell-VS Code integration
-  - [`endpoint-test-plan.md`](./develop/endpoint-test-plan.md) - API endpoint testing plan
-  - [`enhanced-health-data-features.md`](./develop/enhanced-health-data-features.md) - Advanced health features
-  - [`performance-optimizations.md`](./develop/performance-optimizations.md) - Performance improvements
-  - [`PERFORMANCE_SLO.md`](./develop/PERFORMANCE_SLO.md) - Performance SLOs & governance
+| Document | Description |
+|----------|-------------|
+| [architecture/ARCHITECTURE.md](architecture/ARCHITECTURE.md) | High-level system architecture |
+| [architecture/API.md](architecture/API.md) | REST API endpoint documentation |
+| [architecture/WEBSOCKETS.md](architecture/WEBSOCKETS.md) | WebSocket protocol and message contracts |
+| [architecture/PRD.md](architecture/PRD.md) | Product requirements document |
+| [architecture/DOCKER.md](architecture/DOCKER.md) | Docker local development setup |
+| [architecture/adr/ADR-0001-node-version-governance.md](architecture/adr/ADR-0001-node-version-governance.md) | ADR: Node version governance |
+| [architecture/adr/ADR-0002-staged-healthkit-permissions.md](architecture/adr/ADR-0002-staged-healthkit-permissions.md) | ADR: Staged HealthKit permission strategy |
 
-### 📱 iOS Development
+## Development
 
-- [`ios/`](./ios/) - Complete iOS development documentation
-  - [`IOS_DEVELOPMENT_WINDOWS.md`](./ios/IOS_DEVELOPMENT_WINDOWS.md) - iOS development on Windows
-  - [`IOS_TESTING_CONFIG.md`](./ios/IOS_TESTING_CONFIG.md) - iOS testing configuration
-  - [`IOS_PRODUCTION_CONFIG_COMPLETE.md`](./ios/IOS_PRODUCTION_CONFIG_COMPLETE.md) - Production configuration
-  - [`AppleWatchHealthKitIntegration.md`](./ios/AppleWatchHealthKitIntegration.md) - Apple Watch integration
-  - [`iOS-WEBSOCKET-TESTING.md`](./ios/iOS-WEBSOCKET-TESTING.md) - iOS WebSocket testing
-  - [`iOS-PRODUCTION-READY.md`](./ios/iOS-PRODUCTION-READY.md) - Production readiness
+Development workflows, testing, and tooling.
 
-### 🔐 Authentication
+| Document | Description |
+|----------|-------------|
+| [develop/DEVELOPMENT.md](develop/DEVELOPMENT.md) | Development setup and workflow guide |
+| [develop/SCRIPTS_REFERENCE.md](develop/SCRIPTS_REFERENCE.md) | Complete pnpm scripts reference |
+| [develop/testing.md](develop/testing.md) | Testing strategy (Vitest, Playwright, XCTest) |
+| [develop/observability.md](develop/observability.md) | Logging, metrics, and health checks |
 
-- [`auth/`](./auth/) - Authentication and authorization documentation
-  - [`AUTH0_CUSTOM_BRANDING_GUIDE.md`](./auth/AUTH0_CUSTOM_BRANDING_GUIDE.md) - Complete Auth0 setup with VitalSense branding
-  - [`AUTH0_INTEGRATION.md`](./auth/AUTH0_INTEGRATION.md) - Technical Auth0 integration
+## Deployment & Infrastructure
 
-### 🚀 Deployment & Infrastructure
+Production deployment and Cloudflare configuration.
 
-- [`deploy/`](./deploy/) - Deployment guides and infrastructure setup
-  - [`MAIN_APP_DEPLOYMENT.md`](./deploy/MAIN_APP_DEPLOYMENT.md) - Primary deployment workflow
-  - [`CLOUDFLARE_DNS_SETUP.md`](./deploy/CLOUDFLARE_DNS_SETUP.md) - DNS configuration
-  - [`INFRA_HARDENING.md`](./deploy/INFRA_HARDENING.md) - Infrastructure security hardening
-  - [`API_SUBDOMAIN_STRATEGY.md`](./deploy/API_SUBDOMAIN_STRATEGY.md) - API subdomain strategy
-  - [`DNS_RESOLUTION_PLAN.md`](./deploy/DNS_RESOLUTION_PLAN.md) - DNS issues resolution plan
-  - Release Notes: [`RELEASE_NOTES__prod-rollback-2025-09-12.md`](./deploy/RELEASE_NOTES__prod-rollback-2025-09-12.md)
+| Document | Description |
+|----------|-------------|
+| [deploy/PRODUCTION_INFRASTRUCTURE_GUIDE.md](deploy/PRODUCTION_INFRASTRUCTURE_GUIDE.md) | Full production deployment guide with observability |
+| [deploy/CLOUDFLARE_DNS_SETUP.md](deploy/CLOUDFLARE_DNS_SETUP.md) | DNS records and subdomain strategy |
+| [deploy/go-live-config.md](deploy/go-live-config.md) | Go-live runtime configuration checklist |
+| [deploy/DEPLOYMENT_PREP_CHECKLIST.md](deploy/DEPLOYMENT_PREP_CHECKLIST.md) | Environment setup checklist (KV, secrets, testing) |
 
-### 🛡️ Security
+## Security & Privacy
 
-- [`security/`](./security/) - Security documentation and policies
-  - [`SECURITY_BASELINE.md`](./security/SECURITY_BASELINE.md) - Security baseline requirements
-  - [`RETENTION_POLICY.md`](./security/RETENTION_POLICY.md) - Data retention policy
+Security baselines, data retention, and secret management.
 
-### 🔧 Troubleshooting
+| Document | Description |
+|----------|-------------|
+| [security/SECURITY_BASELINE.md](security/SECURITY_BASELINE.md) | HIPAA-aligned security baseline |
+| [security/RETENTION_POLICY.md](security/RETENTION_POLICY.md) | Data retention policy by record type |
+| [security/SECRET_MANAGEMENT.md](security/SECRET_MANAGEMENT.md) | Secret storage, rotation, and CI enforcement |
+| [security/BIAS_ASSESSMENT.md](security/BIAS_ASSESSMENT.md) | Algorithmic bias assessment for health models |
 
-- [`TROUBLESHOOTING.md`](../TROUBLESHOOTING.md) - **Start here!** Quick-reference guide for common issues across Web, Worker, iOS, Docker, and CI
-- [`troubleshooting/`](./troubleshooting/) - Deep-dive problem databases and historical fixes
-  - [`PROBLEM_SOLUTIONS_DATABASE.md`](./troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md) - Comprehensive problem database for AI-assisted development
-  - [`BUILD_TROUBLESHOOTING.md`](./troubleshooting/BUILD_TROUBLESHOOTING.md) - Build and compilation troubleshooting
-  - [`FIXES_SUMMARY.md`](./troubleshooting/FIXES_SUMMARY.md) - Compilation fixes summary
-  - [`TERMINAL_FIXES_SUMMARY.md`](./troubleshooting/TERMINAL_FIXES_SUMMARY.md) - Terminal enhancement fixes
-  - [`VITALSENSE_BRANDING_LESSONS_LEARNED.md`](./troubleshooting/VITALSENSE_BRANDING_LESSONS_LEARNED.md) - Complete branding implementation guide
-  - [`VITALSENSE_BRANDING_QUICK_REFERENCE.md`](./troubleshooting/VITALSENSE_BRANDING_QUICK_REFERENCE.md) - Quick branding fixes
+## Troubleshooting
 
-### 📋 Project Management
+| Document | Description |
+|----------|-------------|
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Common issues across Web, Worker, iOS, Docker, and CI |
 
-- [`project-management/`](./project-management/) - Project management and planning
-  - [`LESSONS_LEARNED.md`](./project-management/LESSONS_LEARNED.md) - Project lessons learned
-  - [`NEXT_STEPS.md`](./project-management/NEXT_STEPS.md) - Development roadmap
-  - [`IMPLEMENTATION_CHECKLIST.md`](./project-management/IMPLEMENTATION_CHECKLIST.md) - Implementation tracking
-  - [`DOCUMENTATION_CLEANUP_2025.md`](./project-management/DOCUMENTATION_CLEANUP_2025.md) - Documentation cleanup and consolidation summary
-  - [`STRUCTURE_OPTIMIZATION_ANALYSIS.md`](./project-management/STRUCTURE_OPTIMIZATION_ANALYSIS.md) - Project structure optimization analysis
-  - [`PHASE1_CONSOLIDATION_COMPLETE.md`](./project-management/PHASE1_CONSOLIDATION_COMPLETE.md) - Phase 1 consolidation summary
-  - [`PHASE2_CONSOLIDATION_COMPLETE.md`](./project-management/PHASE2_CONSOLIDATION_COMPLETE.md) - Phase 2 consolidation summary
+## Project Management
 
-## 🗂️ Archived Documentation
+| Document | Description |
+|----------|-------------|
+| [project-management/ROADMAP.md](project-management/ROADMAP.md) | Product roadmap and priorities |
+| [CHANGELOG.md](CHANGELOG.md) | Release history and production rollbacks |
 
-- [`../_archive/`](../_archive/) - Consolidated project archives
-  - All archived components, scripts, docs, and configs
-  - See [`../_archive/README.md`](../_archive/README.md) for structure
-  - Historical project phases and completed migrations
+## iOS Development
 
-## 🔍 Additional Navigation Aids
+iOS documentation lives in the [`ios/docs/`](../ios/docs/) directory within the iOS workspace. Key documents:
 
-### By Purpose
+| Document | Description |
+|----------|-------------|
+| [ios/docs/INDEX.md](../ios/docs/INDEX.md) | iOS documentation index |
+| [ios/docs/MODEL_TRAINING.md](../ios/docs/MODEL_TRAINING.md) | CoreML training pipeline |
+| [ios/docs/XCODE_PROJECT_SETUP.md](../ios/docs/XCODE_PROJECT_SETUP.md) | Xcode project configuration |
 
-- **Getting Started**: Start with [`getting-started/`](./getting-started/)
-- **Development Setup**: See [`getting-started/SETUP_GUIDE.md`](./getting-started/SETUP_GUIDE.md)
-- **API Development**: Check [`architecture/API.md`](./architecture/API.md)
-- **iOS Development**: Browse [`ios/`](./ios/) folder, see [`MODEL_TRAINING.md`](../ios/docs/MODEL_TRAINING.md) for CoreML workflow
-- **Deployment**: Look in [`deploy/`](./deploy/) folder
-- **Troubleshooting**: Visit [`troubleshooting/`](./troubleshooting/) folder
+## Quick Navigation
 
-### By Platform (Extended)
+| I want to… | Go to |
+|-------------|-------|
+| Set up my dev environment | [Getting Started](getting-started/README.md) |
+| Understand the API | [API docs](architecture/API.md) |
+| Deploy to production | [Production guide](deploy/PRODUCTION_INFRASTRUCTURE_GUIDE.md) |
+| Fix a build error | [Troubleshooting](TROUBLESHOOTING.md) |
+| Work on iOS | [iOS docs](../ios/docs/INDEX.md) |
+| Manage secrets | [Secret management](security/SECRET_MANAGEMENT.md) |
 
-- **Web/React**: [`architecture/`](./architecture/), [`develop/`](./develop/)
-- **iOS**: [`ios/`](./ios/) - comprehensive iOS documentation
-- **Infrastructure**: [`deploy/`](./deploy/), [`security/`](./security/)
-- **Authentication**: [`auth/`](./auth/) - Auth0 and security
+## Recent Updates
 
-### By Development Phase (Extended)
+### April 2026 — Documentation Cleanup
 
-- **Planning**: [`project-management/`](./project-management/), [`architecture/PRD.md`](./architecture/PRD.md)
-- **Development**: [`getting-started/`](./getting-started/), [`develop/`](./develop/), [`ios/`](./ios/)
-- **Testing**: [`troubleshooting/`](./troubleshooting/), various test documentation
-- **Deployment**: [`deploy/`](./deploy/) folder
-
-## ✨ Recent Updates
-
-### January 2025 - Structure Optimization (Phases 1-3)
-
-- **Phase 1**: Consolidated WebSocket servers (67% reduction), Wrangler configs (80% reduction)
-- **Phase 2**: Removed 15 duplicate scripts, consolidated 6 archive directories, archived 3 deployment configs
-- **Phase 3**: Documentation organization and script reference guides
-- **Moved root-level documentation** to appropriate sections (troubleshooting, architecture, deploy)
-- **Consolidated cleanup documentation** into single comprehensive summary
-- **Updated all README files** with accurate file locations
-- **Fixed cross-references** in moved documentation files
+- Rewritten scripts reference to match actual 27 pnpm scripts
+- Fixed Node version references (≥22.21.1 per `package.json engines`)
+- Removed stale geospatial/STAC/LiDAR content from roadmap, testing, and observability docs
+- Consolidated `npm run` → `pnpm` across all docs, PR template, and CONTRIBUTING guide
+- Updated privacy policy to VitalSense branding
+- Removed references to non-existent scripts and setup PowerShell files
 - **Archived historical cleanup documents** for reference
 
 ### September 2025 - Major Reorganization

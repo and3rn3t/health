@@ -19,24 +19,25 @@ This guide walks you through deploying VitalSense to production with comprehensi
 1. **Cloudflare Account** with Workers Paid plan ($5/month minimum)
 2. **Domain** configured in Cloudflare (andernet.dev)
 3. **Auth0 Production Tenant** set up
-4. **Node.js 18+** and **npm** installed
+4. **Node.js 22.21.1+** and **pnpm 10.16+** installed
 5. **Wrangler CLI** authenticated
 
 ## 🚀 Quick Start (15 Minutes)
 
-### Step 1: Run the Setup Script
+### Step 1: Deploy the Worker
 
-```powershell
-# Run the complete infrastructure setup
-./scripts/setup-production-infrastructure.ps1 -All
+```bash
+# Build and deploy
+pnpm build:all
+pnpm deploy:prod
 
-# Or run individual components:
-./scripts/setup-production-infrastructure.ps1 -EnableObservability -Deploy
+# Verify deployment
+curl https://health.andernet.dev/health
 ```
 
 ### Step 2: Configure Production Secrets
 
-```powershell
+```bash
 # Set up Auth0 production secrets
 wrangler secret put AUTH0_CLIENT_SECRET --env production
 # Enter your Auth0 production client secret
@@ -50,7 +51,7 @@ wrangler secret put ENCRYPTION_KEY --env production
 
 ### Step 3: Update DNS Records
 
-The script automatically creates DNS records, but verify in Cloudflare Dashboard:
+Verify in the Cloudflare Dashboard:
 
 - `health.andernet.dev` → Points to your Worker
 - `vitalsense.andernet.dev` → Alternative domain
@@ -58,10 +59,7 @@ The script automatically creates DNS records, but verify in Cloudflare Dashboard
 
 ### Step 4: Verify Deployment
 
-```powershell
-# Test all endpoints
-./scripts/setup-production-infrastructure.ps1 -Verify
-
+```bash
 # Check specific endpoints
 curl https://health.andernet.dev/health
 curl https://health.andernet.dev/api/health
@@ -306,6 +304,7 @@ ORDER BY avg_response_time DESC
    ```
 
 3. **High Error Rates**
+
    ```powershell
    # Check Worker logs
    wrangler tail --env production
@@ -319,9 +318,9 @@ ORDER BY avg_response_time DESC
 
 2. **Optimize Bundle Size**
 
-   ```powershell
+   ```bash
    # Analyze bundle
-   npm run build:analyze
+   pnpm build:analyze
    ```
 
 3. **Monitor Core Web Vitals**
@@ -342,17 +341,17 @@ After successful production deployment:
 
 ### 24/7 Monitoring URLs
 
-- **Main App**: https://health.andernet.dev
-- **Health Check**: https://health.andernet.dev/health
-- **API Status**: https://health.andernet.dev/api/health
-- **Monitoring Dashboard**: https://health.andernet.dev/monitoring
+- **Main App**: <https://health.andernet.dev>
+- **Health Check**: <https://health.andernet.dev/health>
+- **API Status**: <https://health.andernet.dev/api/health>
+- **Monitoring Dashboard**: <https://health.andernet.dev/monitoring>
 
 ### Cloudflare Dashboard Links
 
-- **Workers**: https://dash.cloudflare.com → Workers & Pages
-- **Analytics**: https://dash.cloudflare.com → Analytics & Logs
-- **Security**: https://dash.cloudflare.com → Security
-- **R2 Storage**: https://dash.cloudflare.com → R2 Object Storage
+- **Workers**: <https://dash.cloudflare.com> → Workers & Pages
+- **Analytics**: <https://dash.cloudflare.com> → Analytics & Logs
+- **Security**: <https://dash.cloudflare.com> → Security
+- **R2 Storage**: <https://dash.cloudflare.com> → R2 Object Storage
 
 ## 🎉 Success Criteria
 

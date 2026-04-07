@@ -1,13 +1,11 @@
-# Privacy Policy - Health & LiDAR Explorer
+# Privacy Policy — VitalSense
 
-**Effective Date**: March 3, 2026  
+**Effective Date**: March 3, 2026
 **Last Updated**: March 3, 2026
 
 ## Overview
 
-This is a personal portfolio/learning project exploring iOS development with HealthKit and LiDAR sensors. This privacy policy explains how health data is handled in this experimental application.
-
-**⚠️ Important**: This is not a production application. It is a learning project and should not be used for actual health monitoring or medical purposes.
+VitalSense is a health monitoring platform that integrates with Apple Health (HealthKit) to provide health insights, fall risk detection, and caregiver dashboards. This privacy policy explains how health data is handled.
 
 ## Health Data Collection
 
@@ -22,48 +20,47 @@ With your explicit permission, the app may access:
 
 ### Sensor Data
 
-- **Motion Sensors**: Core Motion data for gait analysis
-- **LiDAR Data**: Depth sensing for posture detection experiments
-- **Camera Data**: For computer vision features (when enabled)
+- **Motion Sensors**: Core Motion data for gait analysis and fall detection
+- **Camera Data**: For posture detection features (when enabled)
 
 ## How Data Is Used
 
-### Learning & Experimentation
-- Explore iOS HealthKit APIs
-- Test data visualization techniques
-- Experiment with real-time sensor processing
-- Practice secure data handling
+### Health Monitoring
+
+- Visualize health metrics in the web dashboard
+- Calculate fall risk scores from gait and balance data
+- Detect anomalies and trends in health metrics
+- Display real-time sensor data via WebSocket
 
 ### Dashboard Display
+
 - Visualize health metrics in web interface
-- Display real-time sensor data
-- Create charts and graphs for learning
+- Display charts, trends, and alerts
+- Caregiver monitoring (with explicit consent)
 
 ## Data Storage
 
 ### Local Storage
+
 - Health data is primarily stored locally on your device
 - Uses iOS secure storage mechanisms
 - No permanent server-side storage
 
 ### Temporary Storage
-- Development/testing may use Cloudflare KV for experimentation
-- Data is not permanently retained
-- Can be cleared at any time
 
-### No Cloud Backup
-- This is a development project, not a production service
-- No long-term cloud storage or backups
-- Data may be lost between development iterations
+- Cloudflare KV stores health data with configurable retention TTLs
+- Data retention follows the policy in `docs/security/RETENTION_POLICY.md`
 
 ## Security
 
 ### Encryption
+
 - Uses iOS standard encryption for local storage
 - HTTPS/WSS for network communication
 - API authentication via JWT tokens
 
 ### Access
+
 - Only you have access to your data
 - No third-party integrations
 - No data sharing or selling
@@ -71,11 +68,13 @@ With your explicit permission, the app may access:
 ## Your Rights
 
 ### Control Your Data
+
 - Grant/revoke HealthKit permissions in iOS Settings
 - Delete app to remove all local data
 - Request deletion of any development server data
 
 ### Transparency
+
 - All code is open source (see GitHub repository)
 - You can inspect exactly what the app does
 - No hidden data collection
@@ -83,21 +82,21 @@ With your explicit permission, the app may access:
 ## Limitations
 
 ### Not for Medical Use
-- This is a learning/portfolio project only
-- Not intended for actual health monitoring
+
 - Not FDA approved or clinically validated
 - Not a substitute for medical advice
+- Fall risk scores are informational only
 
 ### No Warranty
-- Provided "as is" for educational purposes
+
+- Provided "as is"
 - No guarantees of accuracy or reliability
-- May contain bugs or incomplete features
 
 ## Contact
 
 This is a personal project by Matt (and3rn3t).
 
-- **GitHub**: https://github.com/and3rn3t/health
+- **GitHub**: <https://github.com/and3rn3t/health>
 - **Issues**: Report via GitHub Issues
 
 ## Changes to This Policy
@@ -106,4 +105,4 @@ This privacy policy may be updated as the project evolves. Check the repository 
 
 ---
 
-**By using this experimental application, you acknowledge that it is a learning project and not a production health monitoring service.**
+**By using VitalSense, you acknowledge that it is not a medical device and should not be relied upon for medical decisions.**

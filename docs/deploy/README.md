@@ -1,27 +1,18 @@
-# 🚀 Deployment & Infrastructure
+# Deployment & Infrastructure
 
-Production deployment guides and infrastructure management.
+Production deployment guides and Cloudflare configuration.
 
-## 📖 Documents in this folder
+## Documents
 
-### [MAIN_APP_DEPLOYMENT.md](MAIN_APP_DEPLOYMENT.md)
+| File | Description |
+|------|-------------|
+| [PRODUCTION_INFRASTRUCTURE_GUIDE.md](PRODUCTION_INFRASTRUCTURE_GUIDE.md) | Full production deployment with observability and monitoring |
+| [CLOUDFLARE_DNS_SETUP.md](CLOUDFLARE_DNS_SETUP.md) | DNS records and subdomain strategy for andernet.dev |
+| [go-live-config.md](go-live-config.md) | Runtime configuration checklist for go-live |
+| [DEPLOYMENT_PREP_CHECKLIST.md](DEPLOYMENT_PREP_CHECKLIST.md) | Environment setup: KV, secrets, testing, security |
 
-**🎯 Main deployment** - Primary application deployment workflow and configuration.
+## Related
 
-### [INFRA_HARDENING.md](INFRA_HARDENING.md)
-
-**🔒 Infrastructure security** - Production-ready infrastructure hardening and security measures.
-
-### [RELEASE_NOTES__prod-rollback-2025-09-12.md](RELEASE_NOTES__prod-rollback-2025-09-12.md)
-
-**📝 Release Notes** - Production rollback to stable build with verification details and references.
-
-### [DNS_RESOLUTION_PLAN.md](DNS_RESOLUTION_PLAN.md)
-
-**🌐 DNS Configuration** - DNS issues resolution plan and configuration strategies for WebSocket services.
-
-## 🔗 Related Documentation
-
-- **Security**: [`../security/`](../security/) for security policies and baselines
-- **iOS**: [`../ios/`](../ios/) for iOS-specific deployment guides
-- **Architecture**: [`../architecture/`](../architecture/) for system design context
+- [Security](../security/) — security baselines and secret management
+- [Architecture](../architecture/) — system design context
+- [Troubleshooting](../TROUBLESHOOTING.md) — Worker deploy issues

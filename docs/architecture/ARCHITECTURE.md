@@ -1,6 +1,6 @@
-# Architecture Overview
+# VitalSense Architecture Overview
 
-A learning project exploring iOS development with HealthKit integration and a web-based health dashboard.
+Health monitoring platform: Apple Health insights, fall risk detection, emergency alerts, caregiver dashboards.
 
 ## High-Level Architecture
 
@@ -19,6 +19,7 @@ iOS App (Swift/HealthKit) ↔ API (Cloudflare Workers) ↔ Web Dashboard (React)
 ## Technology Stack
 
 ### Frontend (Web)
+
 - React 19 with TypeScript
 - Vite for build tooling
 - Tailwind CSS v4 for styling
@@ -26,11 +27,13 @@ iOS App (Swift/HealthKit) ↔ API (Cloudflare Workers) ↔ Web Dashboard (React)
 - TanStack Query for server state
 
 ### Backend
+
 - Cloudflare Workers (Hono framework)
 - Node.js WebSocket server
 - Cloudflare KV and R2 for storage
 
 ### iOS
+
 - Swift 5 with SwiftUI
 - HealthKit framework
 - Core Motion for sensors
@@ -60,6 +63,7 @@ Local development server (`server/websocket-server.js`) provides:
 - Connection status management
 
 **Message Types:**
+
 - `connection_established` - Initial handshake
 - `live_health_update` - Real-time metrics
 - `historical_data_update` - Batch data sync
@@ -67,12 +71,14 @@ Local development server (`server/websocket-server.js`) provides:
 ## Data Flow
 
 ### iOS → Backend
+
 1. iOS app requests HealthKit permissions
 2. Reads health data from Apple Health
 3. POSTs JSON to Cloudflare Worker API
 4. Worker stores in Cloudflare KV
 
 ### Backend → Web
+
 1. React app fetches data via REST API
 2. Displays charts and visualizations
 3. WebSocket connection for real-time updates
@@ -94,9 +100,8 @@ Local development server (`server/websocket-server.js`) provides:
 
 ```bash
 # Start all services
-npm run dev          # React dev server (5173)
-npm run cf:dev       # Cloudflare Worker (8787)
-npm run ws:dev       # WebSocket server (3001)
+pnpm dev          # React dev server (5173)
+pnpm cf:dev       # Cloudflare Worker (8787)
 ```
 
 ## Deployment

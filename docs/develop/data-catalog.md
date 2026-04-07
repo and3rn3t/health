@@ -1,18 +1,9 @@
-### Data catalog contracts (STAC-like)
+# Health Data Catalog
 
-- JSON Schemas:
-  - `schemas/stac-item.json`
-  - `schemas/stac-collection.json`
-- TypeScript types:
-  - `src/types/stac.ts`
+> **Archived**: This file previously documented STAC-like geospatial data schemas from an earlier project phase. It is no longer relevant to VitalSense.
 
-Usage notes:
+For current health data schemas, see:
 
-- Use the Item schema for individual datasets (imagery tiles, LiDAR tiles, vector exports).
-- Use the Collection schema to group related Items (sensor, campaign, study).
-- Include CRS as `proj:epsg` when known; prefer COG for raster and LAZ for point clouds.
-
-Next steps:
-
-- Add validation step in ingestion to verify new Items/Collections against these schemas.
-- Extend with domain fields (e.g., health-risk indices, model versions) as needed.
+- [Zod schemas](../../src/schemas/) — `processedHealthDataSchema` and related types
+- [API documentation](../architecture/API.md) — request/response shapes
+- [Retention policy](../security/RETENTION_POLICY.md) — data lifecycle by record type

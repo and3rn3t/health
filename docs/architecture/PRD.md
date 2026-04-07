@@ -1,6 +1,6 @@
-# Apple Health Insights & Fall Risk Monitor
+# VitalSense — Product Requirements Document
 
-A comprehensive health data analysis platform that transforms Apple Health data into actionable insights while providing proactive fall risk monitoring and emergency response capabilities.
+A comprehensive health monitoring platform that transforms Apple Health data into actionable insights while providing proactive fall risk monitoring and emergency response capabilities.
 
 **Experience Qualities**:
 
