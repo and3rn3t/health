@@ -339,14 +339,14 @@ final class ClinicalTestViewModel {
 
     // MARK: - Timer Helpers
 
-    private func startCountdown(completion: @escaping () -> Void) {
+    private func startCountdown(completion: @escaping @Sendable () -> Void) {
         var remaining = 3
         testState = .countdown(seconds: remaining)
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] t in
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
                 remaining -= 1
                 if remaining <= 0 {
-                    t.invalidate()
+                    self?.timer?.invalidate()
                     completion()
                 } else {
                     self?.testState = .countdown(seconds: remaining)
@@ -366,15 +366,15 @@ final class ClinicalTestViewModel {
         }
     }
 
-    private func startPhaseTimer(duration: TimeInterval, completion: @escaping () -> Void) {
+    private func startPhaseTimer(duration: TimeInterval, completion: @escaping @Sendable () -> Void) {
         var elapsed: TimeInterval = 0
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] t in
+        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
                 elapsed += 0.5
                 self?.phaseElapsedTime = elapsed
                 if elapsed >= duration {
-                    t.invalidate()
+                    self?.timer?.invalidate()
                     completion()
                 }
             }

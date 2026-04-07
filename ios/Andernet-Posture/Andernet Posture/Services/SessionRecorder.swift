@@ -58,7 +58,8 @@ protocol SessionRecorder {
 final class DefaultSessionRecorder: SessionRecorder, @unchecked Sendable {
 
     /// Backing storage for state — always access via `state` computed property.
-    private var stateBacking: RecordingState = .idle
+    /// nonisolated(unsafe): protected by recordingQueue; manual synchronization.
+    private nonisolated(unsafe) var stateBacking: RecordingState = .idle
 
     /// Lightweight lock for cached counters — avoids DispatchQueue.sync overhead on hot-path reads.
     private let counterLock = OSAllocatedUnfairLock(initialState: (state: RecordingState.idle, frames: 0, steps: 0))
@@ -73,13 +74,14 @@ final class DefaultSessionRecorder: SessionRecorder, @unchecked Sendable {
     /// Maximum frame capacity before decimation kicks in (~10 minutes at 60 fps).
     private let maxFrameCapacity = 36_000
 
-    private var startDate: Date?
-    private var pauseDate: Date?
-    private var accumulatedPause: TimeInterval = 0
+    /// nonisolated(unsafe): protected by recordingQueue; manual synchronization.
+    private nonisolated(unsafe) var startDate: Date?
+    private nonisolated(unsafe) var pauseDate: Date?
+    private nonisolated(unsafe) var accumulatedPause: TimeInterval = 0
 
-    private var frames: [BodyFrame] = []
-    private var steps: [StepEvent] = []
-    private var motionFrames: [MotionFrame] = []
+    private nonisolated(unsafe) var frames: [BodyFrame] = []
+    private nonisolated(unsafe) var steps: [StepEvent] = []
+    private nonisolated(unsafe) var motionFrames: [MotionFrame] = []
 
     var elapsedTime: TimeInterval {
         let currentState = state

@@ -184,14 +184,14 @@ enum PerformanceMonitor {
     // MARK: - Private State
 
     /// Signpost log for Instruments integration.
-    /// Note: Hardcoded subsystem avoids Bundle.main (@MainActor in Swift 6).
-    private static let signpostLog = OSLog(
+    /// nonisolated(unsafe): OSLog is thread-safe but not formally Sendable.
+    nonisolated(unsafe) private static let signpostLog = OSLog(
         subsystem: "dev.andernet.posture",
         category: "Performance"
     )
 
     /// Logger for performance warnings.
-    private static let logger = Logger(
+    nonisolated(unsafe) private static let logger = Logger(
         subsystem: "dev.andernet.posture",
         category: "Performance"
     )

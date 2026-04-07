@@ -21,7 +21,7 @@ import os.log
 /// Usage: initialized once at app startup via `_ = MetricsManager.shared`
 /// (guarded by `#if !DEBUG` in `Andernet_PostureApp.init`).
 @MainActor
-final class MetricsManager: NSObject, @preconcurrency MXMetricManagerSubscriber {
+final class MetricsManager: NSObject, MXMetricManagerSubscriber {
 
     static let shared = MetricsManager()
 
@@ -39,25 +39,21 @@ final class MetricsManager: NSObject, @preconcurrency MXMetricManagerSubscriber 
 
     /// Called when new metric payloads are available (typically once daily).
     nonisolated func didReceive(_ payloads: [MXMetricPayload]) {
-        Task { @MainActor in
-            for payload in payloads {
-                processMetricPayload(payload)
-            }
+        for payload in payloads {
+            processMetricPayload(payload)
         }
     }
 
     /// Called when diagnostic payloads are available (crashes, hangs, etc.).
     nonisolated func didReceive(_ payloads: [MXDiagnosticPayload]) {
-        Task { @MainActor in
-            for payload in payloads {
-                processDiagnosticPayload(payload)
-            }
+        for payload in payloads {
+            processDiagnosticPayload(payload)
         }
     }
 
     // MARK: - Metric Processing
 
-    private func processMetricPayload(_ payload: MXMetricPayload) {
+    private nonisolated func processMetricPayload(_ payload: MXMetricPayload) {
         AppLogger.performance.info("MetricKit payload: \(payload.timeStampBegin) – \(payload.timeStampEnd)")
 
         // CPU
@@ -108,7 +104,7 @@ final class MetricsManager: NSObject, @preconcurrency MXMetricManagerSubscriber 
     // MARK: - Histogram Helpers
 
     /// Computes a weighted-midpoint average from an MXHistogram's buckets.
-    private func approximateAverage<U: Unit>(from histogram: MXHistogram<U>) -> Measurement<U>? {
+    private nonisolated func approximateAverage<U: Unit>(from histogram: MXHistogram<U>) -> Measurement<U>? {
         var totalCount = 0
         var weightedSum = 0.0
         var bucketUnit: U?
@@ -125,7 +121,7 @@ final class MetricsManager: NSObject, @preconcurrency MXMetricManagerSubscriber 
 
     // MARK: - Diagnostic Processing
 
-    private func processDiagnosticPayload(_ payload: MXDiagnosticPayload) {
+    private nonisolated func processDiagnosticPayload(_ payload: MXDiagnosticPayload) {
         AppLogger.performance.error("Diagnostic payload: \(payload.timeStampBegin) – \(payload.timeStampEnd)")
 
         // Crashes

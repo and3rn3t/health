@@ -72,10 +72,12 @@ final class WebSocketBridge: NSObject {
 
     private(set) var connectionState: WSConnectionState = .disconnected
 
-    private var webSocket: URLSessionWebSocketTask?
-    private var urlSessionInstance: URLSession?
-    private var pingTimer: Timer?
-    private var reconnectTask: Task<Void, Never>?
+    // nonisolated: removes @MainActor isolation so deinit can tear these down.
+    // All runtime mutation is on @MainActor; deinit is the sole nonisolated reader.
+    private nonisolated var webSocket: URLSessionWebSocketTask?
+    private nonisolated var urlSessionInstance: URLSession?
+    private nonisolated var pingTimer: Timer?
+    private nonisolated var reconnectTask: Task<Void, Never>?
 
     /// Maximum reconnect attempts before giving up.
     private static let maxReconnectAttempts = AppConfig.WebSocket.maxReconnectAttempts
@@ -217,7 +219,9 @@ final class WebSocketBridge: NSObject {
 
             webSocket?.send(.string(jsonString)) { error in
                 if let error {
-                    AppLogger.webSocket.error("WebSocket send failed: \(error.localizedDescription)")
+                    Task { @MainActor in
+                        AppLogger.webSocket.error("WebSocket send failed: \(error.localizedDescription)")
+                    }
                 }
             }
         } catch {
@@ -245,7 +249,9 @@ final class WebSocketBridge: NSObject {
                 guard let self, case .connected = self.connectionState else { break }
                 self.webSocket?.send(.string(jsonString)) { error in
                     if let error {
-                        AppLogger.webSocket.error("Queue flush send failed: \(error.localizedDescription)")
+                        Task { @MainActor in
+                            AppLogger.webSocket.error("Queue flush send failed: \(error.localizedDescription)")
+                        }
                     }
                 }
                 try? await Task.sleep(for: .seconds(Self.queueDrainInterval))
@@ -300,7 +306,9 @@ final class WebSocketBridge: NSObject {
             Task { @MainActor [weak self] in
                 self?.webSocket?.sendPing { error in
                     if let error {
-                        AppLogger.webSocket.warning("Ping failed: \(error.localizedDescription)")
+                        Task { @MainActor in
+                            AppLogger.webSocket.warning("Ping failed: \(error.localizedDescription)")
+                        }
                     }
                 }
             }

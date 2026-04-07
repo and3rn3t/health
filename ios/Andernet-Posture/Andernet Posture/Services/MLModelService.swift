@@ -15,7 +15,8 @@ import Foundation
 import CoreML
 import os.log
 
-private let logger = AppLogger.ml
+/// nonisolated(unsafe): Logger is thread-safe; avoids MainActor inference from AppLogger.
+private nonisolated(unsafe) let logger = AppLogger.ml
 
 // MARK: - Model Identifier
 
