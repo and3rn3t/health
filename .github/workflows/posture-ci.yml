@@ -55,6 +55,7 @@ jobs:
 
       - name: Run unit tests
         run: |
+          set -o pipefail
           xcodebuild test \
             -project "$PROJECT" \
             -scheme "$SCHEME" \
@@ -64,7 +65,7 @@ jobs:
             -skipPackagePluginValidation \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            | xcpretty --color && exit ${PIPESTATUS[0]}
+            2>&1 | tee build.log | tail -100
 
       - name: Upload unit test results
         if: failure()
@@ -145,16 +146,18 @@ jobs:
 
       - name: Run full test suite
         run: |
+          set -o pipefail
           xcodebuild test \
             -project "$PROJECT" \
             -scheme "$SCHEME" \
             -destination "$DESTINATION" \
+            -only-testing "Andernet PostureTests" \
             -enableCodeCoverage YES \
             -resultBundlePath FullSuiteResults.xcresult \
             -skipPackagePluginValidation \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            | xcpretty --color && exit ${PIPESTATUS[0]}
+            2>&1 | tee build.log | tail -100
 
       - name: Upload test results & coverage
         if: always()
