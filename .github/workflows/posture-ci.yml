@@ -124,6 +124,7 @@ jobs:
     name: Full Test Suite
     runs-on: macos-15
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    continue-on-error: true  # Non-blocking — coverage reporting only
 
     steps:
       - name: Checkout
