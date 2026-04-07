@@ -3,13 +3,19 @@
  * Identifies patterns in health data (daily, weekly, seasonal)
  */
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, TrendingUp } from 'lucide-react';
-import { useMemo } from 'react';
-import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import type { PatternDetection } from '@/lib/analytics';
 import { detectPatterns, extractTimeSeries } from '@/lib/analytics';
+import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { Calendar, Clock, TrendingUp } from '@/lib/icons';
+import { useMemo } from 'react';
 
 interface PatternDetectionPanelProps {
   healthData: ProcessedHealthData;
@@ -73,14 +79,13 @@ export default function PatternDetectionPanel({
         ) : (
           <div className="space-y-4">
             {patterns.map((pattern, i) => (
-              <div
-                key={i}
-                className="rounded-lg border p-4"
-              >
+              <div key={i} className="rounded-lg border p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {getPatternIcon(pattern.pattern)}
-                    <span className="font-medium capitalize">{pattern.pattern} Pattern</span>
+                    <span className="font-medium capitalize">
+                      {pattern.pattern} Pattern
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge
@@ -92,11 +97,15 @@ export default function PatternDetectionPanel({
                   </div>
                 </div>
 
-                <p className="text-sm text-gray-600 mb-3">{pattern.description}</p>
+                <p className="mb-3 text-sm text-gray-600">
+                  {pattern.description}
+                </p>
 
                 {pattern.peakTimes && pattern.peakTimes.length > 0 && (
                   <div className="mb-2">
-                    <div className="text-xs text-gray-500 mb-1">Peak Times:</div>
+                    <div className="mb-1 text-xs text-gray-500">
+                      Peak Times:
+                    </div>
                     <div className="flex flex-wrap gap-1">
                       {pattern.peakTimes.map((time, idx) => (
                         <Badge key={idx} variant="outline" className="text-xs">
@@ -109,7 +118,7 @@ export default function PatternDetectionPanel({
 
                 {pattern.lowTimes && pattern.lowTimes.length > 0 && (
                   <div>
-                    <div className="text-xs text-gray-500 mb-1">Low Times:</div>
+                    <div className="mb-1 text-xs text-gray-500">Low Times:</div>
                     <div className="flex flex-wrap gap-1">
                       {pattern.lowTimes.map((time, idx) => (
                         <Badge key={idx} variant="outline" className="text-xs">

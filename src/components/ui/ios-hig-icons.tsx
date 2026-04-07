@@ -36,7 +36,7 @@ import {
   User,
   Users,
   Zap,
-} from 'lucide-react';
+} from '@/lib/icons';
 
 /**
  * iOS 26 SF Symbols Mapping (2025)

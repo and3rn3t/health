@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Settings } from 'lucide-react';
+import { Settings } from '@/lib/icons';
 
 export default function SettingsPanel() {
   return (
@@ -31,7 +31,7 @@ export default function SettingsPanel() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Settings className="h-5 w-5 text-vitalsense-gray" />
+            <Settings className="text-vitalsense-gray h-5 w-5" />
             <span>App Preferences</span>
           </CardTitle>
           <CardDescription>
@@ -39,7 +39,7 @@ export default function SettingsPanel() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             Use the controls above to change theme, language, units, and default
             view.
           </p>
@@ -60,7 +60,7 @@ export default function SettingsPanel() {
                 Restore default settings
               </p>
             </div>
-            <button className="bg-red-50 text-red-600 hover:bg-red-100 rounded px-4 py-2">
+            <button className="rounded bg-red-50 px-4 py-2 text-red-600 hover:bg-red-100">
               Reset
             </button>
           </div>
@@ -71,7 +71,7 @@ export default function SettingsPanel() {
                 Permanently delete your account
               </p>
             </div>
-            <button className="bg-red-600 hover:bg-red-700 rounded px-4 py-2 text-white">
+            <button className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700">
               Delete
             </button>
           </div>
@@ -79,7 +79,7 @@ export default function SettingsPanel() {
       </Card>
 
       <div className="mt-6 text-center">
-        <p className="text-xs text-vitalsense-gray">
+        <p className="text-vitalsense-gray text-xs">
           ⚙️ Settings panel loaded on-demand for optimal bundle size
         </p>
       </div>

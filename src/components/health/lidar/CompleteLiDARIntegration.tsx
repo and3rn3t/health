@@ -10,7 +10,7 @@ import {
   Download,
   Settings,
   Zap,
-} from 'lucide-react';
+} from '@/lib/icons';
 import React, { useEffect, useState } from 'react';
 import { AdvancedLiDARAnalytics } from './AdvancedLiDARAnalytics';
 import type { LiDARScanData } from './CleanLiDARComponents';

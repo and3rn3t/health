@@ -22,7 +22,7 @@ import {
   Smartphone,
   Wifi,
   WifiOff,
-} from 'lucide-react';
+} from '@/lib/icons';
 import { useState } from 'react';
 import { DeviceAttributionBadge } from './DeviceAttributionBadge';
 import { DeviceStatusCard } from './DeviceStatusCard';

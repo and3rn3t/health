@@ -38,10 +38,8 @@ jobs:
         run: pnpm run test:coverage
 
       - name: SonarCloud Scan
-        # TODO: Disable Automatic Analysis in SonarCloud dashboard:
-        # https://sonarcloud.io/project/analysis_method?id=and3rn3t_health
-        # Once disabled, remove continue-on-error below.
-        continue-on-error: true
+        # Ensure Automatic Analysis is disabled in SonarCloud dashboard to avoid duplicate scans
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
         uses: SonarSource/sonarcloud-github-action@v3
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -57,6 +55,14 @@ jobs:
         run: |
           test -d dist && echo "Build OK ($(du -sh dist | cut -f1))" || exit 1
 
+      - name: Upload build artifacts
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
   deploy:
     needs: ci
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -70,11 +76,11 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Build app
-        env:
-          CI: 'true'
-          NODE_ENV: production
-        run: pnpm run build
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
 
       - name: Build worker
         run: pnpm run build:worker

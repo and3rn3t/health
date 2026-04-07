@@ -14,7 +14,7 @@ import {
   Smartphone,
   Wifi,
   WifiOff,
-} from 'lucide-react';
+} from '@/lib/icons';
 import { memo, useEffect, useState } from 'react';
 
 interface FooterProps {

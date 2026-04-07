@@ -37,7 +37,7 @@ import {
   Shield,
   Sun,
   User,
-} from 'lucide-react';
+} from '@/lib/icons';
 import { memo, useState } from 'react';
 
 interface NavigationHeaderProps {

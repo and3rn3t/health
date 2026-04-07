@@ -25,7 +25,7 @@ import {
   Smartphone,
   Watch,
   WifiOff,
-} from 'lucide-react';
+} from '@/lib/icons';
 import { useState } from 'react';
 import { DeviceSetupWizard } from './DeviceSetupWizard';
 

@@ -27,15 +27,19 @@ export default defineConfig({
     ],
     setupFiles: ['./vitest.setup.ts'],
     globals: true,
-    // Memory optimization: use forks pool for better memory isolation (prevents OOM)
-    // Forks pool isolates each test file in its own process, allowing better memory cleanup
-    pool: 'forks',
+    // Use threads locally for speed, forks in CI for memory isolation (prevents OOM)
+    pool: process.env.CI ? 'forks' : 'threads',
     poolOptions: {
       forks: {
         singleFork: false,
         isolate: true,
-        maxForks: process.env.CI ? 1 : 4, // 4 locally for faster feedback, 1 in CI for memory safety
+        maxForks: 1,
         minForks: 1,
+      },
+      threads: {
+        isolate: true,
+        maxThreads: 4,
+        minThreads: 1,
       },
     },
     // Test timeout optimization - increased to accommodate tests with multiple waitFor calls

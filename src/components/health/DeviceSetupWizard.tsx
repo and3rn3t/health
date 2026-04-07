@@ -23,7 +23,7 @@ import {
   Smartphone,
   Watch,
   X,
-} from 'lucide-react';
+} from '@/lib/icons';
 import { useEffect, useState } from 'react';
 
 interface DeviceSetupWizardProps {

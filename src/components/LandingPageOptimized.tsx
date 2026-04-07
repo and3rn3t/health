@@ -31,7 +31,7 @@ import {
   Smartphone,
   Sparkles,
   Target,
-} from 'lucide-react';
+} from '@/lib/icons';
 import { useEffect, useState } from 'react';
 
 interface LandingPageOptimizedProps {

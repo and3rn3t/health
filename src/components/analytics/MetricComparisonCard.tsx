@@ -3,12 +3,12 @@
  * Compares current period with previous period
  */
 
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
-import { useMemo } from 'react';
-import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { Card, CardContent } from '@/components/ui/card';
 import { comparePeriods, extractTimeSeries } from '@/lib/analytics';
+import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { Minus, TrendingDown, TrendingUp } from '@/lib/icons';
+import { useMemo } from 'react';
 
 interface MetricComparisonCardProps {
   healthData: ProcessedHealthData;
@@ -91,16 +91,24 @@ export default function MetricComparisonCard({
 
   return (
     <Card
-      className={onNavigate ? 'cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]' : ''}
+      className={
+        onNavigate
+          ? 'cursor-pointer transition-shadow hover:shadow-md active:scale-[0.98]'
+          : ''
+      }
       onClick={onNavigate ? handleClick : undefined}
       role={onNavigate ? 'button' : undefined}
       tabIndex={onNavigate ? 0 : undefined}
-      onKeyDown={onNavigate ? (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleClick();
-        }
-      } : undefined}
+      onKeyDown={
+        onNavigate
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleClick();
+              }
+            }
+          : undefined
+      }
     >
       <CardContent className="p-4">
         <div className="mb-3 flex items-center justify-between">
@@ -118,13 +126,15 @@ export default function MetricComparisonCard({
           </Badge>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-3">
+        <div className="mb-3 grid grid-cols-2 gap-4">
           <div>
-            <div className="text-xs text-gray-500 mb-1">Current</div>
-            <div className="text-xl font-bold">{comparison.current.toFixed(1)}</div>
+            <div className="mb-1 text-xs text-gray-500">Current</div>
+            <div className="text-xl font-bold">
+              {comparison.current.toFixed(1)}
+            </div>
           </div>
           <div>
-            <div className="text-xs text-gray-500 mb-1">Previous</div>
+            <div className="mb-1 text-xs text-gray-500">Previous</div>
             <div className="text-xl font-bold text-gray-600">
               {comparison.previous.toFixed(1)}
             </div>
@@ -136,7 +146,8 @@ export default function MetricComparisonCard({
             {getTrendIcon()}
             <span className={`text-sm font-medium ${getTrendColor()}`}>
               {comparison.change > 0 ? '+' : ''}
-              {comparison.change.toFixed(1)} ({comparison.changePercent.toFixed(1)}%)
+              {comparison.change.toFixed(1)} (
+              {comparison.changePercent.toFixed(1)}%)
             </span>
           </div>
           <div className="text-xs text-gray-500">

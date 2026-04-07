@@ -3,12 +3,18 @@
  * Interactive line/area chart for health metrics over time
  */
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
-import { useMemo } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import type { TimeSeriesDataPoint } from '@/lib/analytics';
 import { calculateTrend } from '@/lib/analytics';
+import { Minus, TrendingDown, TrendingUp } from '@/lib/icons';
+import { useMemo } from 'react';
 
 interface TimeSeriesChartProps {
   title: string;
@@ -49,7 +55,10 @@ export default function TimeSeriesChart({
   // Generate path
   const points = data.map((point, i) => {
     const x = padding + (i / (data.length - 1 || 1)) * chartWidth;
-    const y = padding + chartHeight - ((point.value - minValue) / valueRange) * chartHeight;
+    const y =
+      padding +
+      chartHeight -
+      ((point.value - minValue) / valueRange) * chartHeight;
     return { x, y, ...point };
   });
 
@@ -66,7 +75,8 @@ export default function TimeSeriesChart({
     // Horizontal lines (value grid)
     for (let i = 0; i <= 4; i++) {
       const value = minValue + (valueRange / 4) * i;
-      const y = padding + chartHeight - ((value - minValue) / valueRange) * chartHeight;
+      const y =
+        padding + chartHeight - ((value - minValue) / valueRange) * chartHeight;
       lines.push({ type: 'horizontal' as const, y, value });
     }
     // Vertical lines (date grid) - show 5 evenly spaced
@@ -140,7 +150,7 @@ export default function TimeSeriesChart({
                       x={padding - 10}
                       y={line.y + 4}
                       textAnchor="end"
-                      className="text-xs fill-gray-500"
+                      className="fill-gray-500 text-xs"
                     >
                       {line.value.toFixed(1)}
                     </text>
@@ -164,11 +174,7 @@ export default function TimeSeriesChart({
             })}
 
             {/* Area fill */}
-            <path
-              d={areaPath}
-              fill={color}
-              fillOpacity={0.1}
-            />
+            <path d={areaPath} fill={color} fillOpacity={0.1} />
 
             {/* Line */}
             <path
@@ -191,7 +197,8 @@ export default function TimeSeriesChart({
                 className="hover:r-5 transition-all"
               >
                 <title>
-                  {point.date.toLocaleDateString()}: {point.value.toFixed(1)} {unit}
+                  {point.date.toLocaleDateString()}: {point.value.toFixed(1)}{' '}
+                  {unit}
                 </title>
               </circle>
             ))}
@@ -203,7 +210,12 @@ export default function TimeSeriesChart({
                   x1={points[points.length - 1].x}
                   y1={points[points.length - 1].y}
                   x2={padding + chartWidth}
-                  y2={padding + chartHeight - ((trend.prediction.nextValue - minValue) / valueRange) * chartHeight}
+                  y2={
+                    padding +
+                    chartHeight -
+                    ((trend.prediction.nextValue - minValue) / valueRange) *
+                      chartHeight
+                  }
                   stroke={color}
                   strokeWidth={2}
                   strokeDasharray="8 4"
@@ -211,7 +223,12 @@ export default function TimeSeriesChart({
                 />
                 <circle
                   cx={padding + chartWidth}
-                  cy={padding + chartHeight - ((trend.prediction.nextValue - minValue) / valueRange) * chartHeight}
+                  cy={
+                    padding +
+                    chartHeight -
+                    ((trend.prediction.nextValue - minValue) / valueRange) *
+                      chartHeight
+                  }
                   r={4}
                   fill={color}
                   opacity={0.6}
@@ -228,7 +245,7 @@ export default function TimeSeriesChart({
               x={width / 2}
               y={height - 5}
               textAnchor="middle"
-              className="text-xs fill-gray-600"
+              className="fill-gray-600 text-xs"
             >
               Date
             </text>
@@ -236,7 +253,7 @@ export default function TimeSeriesChart({
               x={15}
               y={height / 2}
               textAnchor="middle"
-              className="text-xs fill-gray-600"
+              className="fill-gray-600 text-xs"
               transform={`rotate(-90, 15, ${height / 2})`}
             >
               Value {unit && `(${unit})`}
@@ -253,15 +270,21 @@ export default function TimeSeriesChart({
             </div>
             <div>
               <div className="text-xs text-gray-500">R²</div>
-              <div className="font-semibold">{(trend.rSquared * 100).toFixed(1)}%</div>
+              <div className="font-semibold">
+                {(trend.rSquared * 100).toFixed(1)}%
+              </div>
             </div>
             <div>
               <div className="text-xs text-gray-500">Confidence</div>
-              <div className="font-semibold">{(trend.confidence * 100).toFixed(0)}%</div>
+              <div className="font-semibold">
+                {(trend.confidence * 100).toFixed(0)}%
+              </div>
             </div>
             <div>
               <div className="text-xs text-gray-500">Volatility</div>
-              <div className="font-semibold">{(trend.volatility * 100).toFixed(1)}%</div>
+              <div className="font-semibold">
+                {(trend.volatility * 100).toFixed(1)}%
+              </div>
             </div>
           </div>
         )}

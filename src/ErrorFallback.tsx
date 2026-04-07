@@ -1,7 +1,7 @@
 import { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
 import { Button } from './components/ui/button';
 
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from '@/lib/icons';
 
 interface ErrorFallbackProps {
   error: Error;

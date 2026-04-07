@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Heart, Play, Target, Trophy, Users } from 'lucide-react';
+import { Heart, Play, Target, Trophy, Users } from '@/lib/icons';
 
 export default function GameCenter() {
   return (

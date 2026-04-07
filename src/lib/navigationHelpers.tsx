@@ -3,7 +3,7 @@
  */
 
 import type { ComponentType } from 'react';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/lib/icons';
 
 /** Maps feature IDs (from events / landing page) to tab IDs */
 export const FEATURE_TAB_MAP: Record<string, string> = {

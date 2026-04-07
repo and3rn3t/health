@@ -6,7 +6,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useWebSocket } from '@/hooks/useWebSocket';
-import { RefreshCw, Signal, Wifi, WifiOff } from 'lucide-react';
+import { RefreshCw, Signal, Wifi, WifiOff } from '@/lib/icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface ConnectionStats {
@@ -137,7 +137,7 @@ export function LiveConnectionStatus() {
   // Get status icon and color
   const getStatusIcon = () => {
     if (connectionState.isConnecting) {
-      return <RefreshCw className="animate-spin h-4 w-4" />;
+      return <RefreshCw className="h-4 w-4 animate-spin" />;
     }
     if (connectionState.isConnected) {
       return <Wifi className="h-4 w-4" />;
@@ -183,7 +183,7 @@ export function LiveConnectionStatus() {
         <Button
           variant="outline"
           size="default"
-          className="h-10 px-3 flex items-center gap-2"
+          className="flex h-10 items-center gap-2 px-3"
           title={
             !connectionState.isConnected && connectionState.error
               ? connectionState.error
@@ -210,7 +210,7 @@ export function LiveConnectionStatus() {
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Server</span>
-              <span className="text-xs font-mono">{getWebSocketUrl()}</span>
+              <span className="font-mono text-xs">{getWebSocketUrl()}</span>
             </div>
 
             {connectionState.isConnected && (
@@ -229,7 +229,7 @@ export function LiveConnectionStatus() {
 
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Last Heartbeat</span>
-                  <span className="text-xs font-mono">
+                  <span className="font-mono text-xs">
                     {stats.lastHeartbeat
                       ? new Date(stats.lastHeartbeat).toLocaleTimeString()
                       : 'Never'}
@@ -246,13 +246,13 @@ export function LiveConnectionStatus() {
             )}
 
             {connectionState.error && (
-              <div className="bg-red-50 text-red-600 rounded p-2 text-sm">
+              <div className="rounded bg-red-50 p-2 text-sm text-red-600">
                 <strong>Error:</strong> {connectionState.error}
               </div>
             )}
 
             {connectionState.reconnectAttempts > 0 && (
-              <div className="bg-yellow-50 text-yellow-600 rounded p-2 text-sm">
+              <div className="rounded bg-yellow-50 p-2 text-sm text-yellow-600">
                 Reconnect attempt: {connectionState.reconnectAttempts}
               </div>
             )}

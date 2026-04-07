@@ -3,7 +3,7 @@
  * Machine learning and pattern recognition for health insights
  */
 
-import { Activity, AlertTriangle, Brain, TrendingUp } from 'lucide-react';
+import { Activity, AlertTriangle, Brain, TrendingUp } from '@/lib/icons';
 import React, { useEffect, useState } from 'react';
 import type { LiDARScanData } from './CleanLiDARComponents';
 
@@ -51,7 +51,6 @@ export interface TrendData {
 
 // Advanced Analytics Engine
 class LiDARAnalyticsEngine {
-
   // Detect gait patterns from LiDAR data
   detectGaitPatterns(data: LiDARScanData[]): GaitPattern[] {
     return data.map((scan) => {
@@ -103,7 +102,8 @@ class LiDARAnalyticsEngine {
     // Simulate gait analysis from point cloud data
     const accuracy = scan.metadata.accuracy;
 
-    return { // NOSONAR: Demo simulation data - Math.random() acceptable
+    return {
+      // NOSONAR: Demo simulation data - Math.random() acceptable
       strideLength: 0.7 + Math.random() * 0.3 * accuracy, // NOSONAR
       cadence: 110 + Math.random() * 20 * accuracy, // NOSONAR
       symmetry: 0.85 + Math.random() * 0.1 * accuracy, // NOSONAR
@@ -338,7 +338,7 @@ export const AdvancedLiDARAnalytics: React.FC<{
       {/* Analytics Header */}
       <div className="rounded-lg border bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center">
-          <Brain className="text-purple-600 mr-3 h-6 w-6" />
+          <Brain className="mr-3 h-6 w-6 text-purple-600" />
           <h2 className="text-xl font-semibold text-gray-900">
             Advanced LiDAR Analytics
           </h2>
@@ -353,20 +353,20 @@ export const AdvancedLiDARAnalytics: React.FC<{
         <div className="rounded-lg border bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="flex items-center text-lg font-semibold text-gray-900">
-              <AlertTriangle className="w-5 h-5 text-orange-500 mr-2" />
+              <AlertTriangle className="mr-2 h-5 w-5 text-orange-500" />
               Fall Risk Assessment
             </h3>
             <RiskBadge level={fallRisk.riskLevel} />
           </div>
 
-          <div className="md:grid-cols-2 grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
               <h4 className="mb-3 font-medium text-gray-900">Risk Factors</h4>
               <div className="space-y-2">
                 {fallRisk.factors.map((factor) => (
                   <div
                     key={factor.name}
-                    className="p-3 bg-gray-50 flex items-center justify-between rounded"
+                    className="flex items-center justify-between rounded bg-gray-50 p-3"
                   >
                     <div>
                       <div className="text-sm font-medium">{factor.name}</div>
@@ -388,10 +388,10 @@ export const AdvancedLiDARAnalytics: React.FC<{
                 {fallRisk.recommendations.map((recommendation) => (
                   <div
                     key={recommendation.slice(0, 20).replace(/\s/g, '-')}
-                    className="p-3 bg-blue-50 flex items-start rounded"
+                    className="flex items-start rounded bg-blue-50 p-3"
                   >
-                    <div className="bg-blue-500 mr-3 mt-2 h-2 w-2 flex-shrink-0 rounded-full" />
-                    <div className="text-blue-800 text-sm">
+                    <div className="mr-3 mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500" />
+                    <div className="text-sm text-blue-800">
                       {recommendation}
                     </div>
                   </div>
@@ -406,11 +406,11 @@ export const AdvancedLiDARAnalytics: React.FC<{
       {trends && (
         <div className="rounded-lg border bg-white p-6 shadow-sm">
           <h3 className="mb-4 flex items-center text-lg font-semibold text-gray-900">
-            <TrendingUp className="w-5 h-5 text-green-500 mr-2" />
+            <TrendingUp className="mr-2 h-5 w-5 text-green-500" />
             Health Trends - {trends.timeframe}
           </h3>
 
-          <div className="md:grid-cols-4 grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <TrendCard label="Mobility" data={trends.mobility} />
             <TrendCard label="Balance" data={trends.balance} />
             <TrendCard label="Posture" data={trends.posture} />
@@ -423,11 +423,11 @@ export const AdvancedLiDARAnalytics: React.FC<{
       {latestPattern && (
         <div className="rounded-lg border bg-white p-6 shadow-sm">
           <h3 className="mb-4 flex items-center text-lg font-semibold text-gray-900">
-            <Activity className="w-5 h-5 text-blue-500 mr-2" />
+            <Activity className="mr-2 h-5 w-5 text-blue-500" />
             Latest Gait Analysis
           </h3>
 
-          <div className="md:grid-cols-4 mb-4 grid grid-cols-2 gap-4">
+          <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
             <MetricDisplay
               label="Stride Length"
               value={`${latestPattern.strideLength.toFixed(2)}m`}
@@ -447,11 +447,11 @@ export const AdvancedLiDARAnalytics: React.FC<{
           </div>
 
           {latestPattern.anomalies.length > 0 && (
-            <div className="bg-yellow-50 border-yellow-200 rounded border p-4">
-              <h4 className="text-yellow-800 mb-2 font-medium">
+            <div className="rounded border border-yellow-200 bg-yellow-50 p-4">
+              <h4 className="mb-2 font-medium text-yellow-800">
                 Detected Anomalies
               </h4>
-              <ul className="text-yellow-700 space-y-1 text-sm">
+              <ul className="space-y-1 text-sm text-yellow-700">
                 {latestPattern.anomalies.map((anomaly) => (
                   <li key={anomaly.slice(0, 15).replace(/\s/g, '-')}>
                     • {anomaly}
@@ -479,7 +479,7 @@ const RiskBadge: React.FC<{ level: FallRiskAssessment['riskLevel'] }> = ({
 
   return (
     <span
-      className={`px-3 rounded-full py-1 text-sm font-medium ${styles[level]}`}
+      className={`rounded-full px-3 py-1 text-sm font-medium ${styles[level]}`}
     >
       {level.toUpperCase()} RISK
     </span>
@@ -513,15 +513,15 @@ const TrendCard: React.FC<{ label: string; data: TrendData }> = ({
   data,
 }) => {
   return (
-    <div className="bg-gray-50 rounded-lg p-4">
-      <div className="text-gray-700 mb-2 text-sm font-medium">{label}</div>
+    <div className="rounded-lg bg-gray-50 p-4">
+      <div className="mb-2 text-sm font-medium text-gray-700">{label}</div>
       <div className="flex items-center justify-between">
         <div className="text-lg font-bold text-gray-900">
           {(data.current * 100).toFixed(1)}%
         </div>
         <TrendIndicator trend={data.trend} />
       </div>
-      <div className="text-xs mt-1 text-gray-500">
+      <div className="mt-1 text-xs text-gray-500">
         {data.change > 0 ? '+' : ''}
         {data.change.toFixed(1)}% change
       </div>
@@ -535,7 +535,7 @@ const MetricDisplay: React.FC<{ label: string; value: string }> = ({
 }) => (
   <div className="text-center">
     <div className="text-lg font-bold text-gray-900">{value}</div>
-    <div className="text-gray-600 text-sm">{label}</div>
+    <div className="text-sm text-gray-600">{label}</div>
   </div>
 );
 

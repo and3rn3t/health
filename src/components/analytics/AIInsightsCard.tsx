@@ -30,7 +30,7 @@ import {
   Sparkles,
   TrendingUp,
   Zap,
-} from 'lucide-react';
+} from '@/lib/icons';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useOnceToast } from '@/hooks/useOnceToast';
 import type { ProcessedHealthData } from '@/lib/healthDataProcessor';

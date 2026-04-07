@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import {
   Activity,
   AlertTriangle,
@@ -7,7 +6,8 @@ import {
   FileText,
   Plus,
   X,
-} from 'lucide-react';
+} from '@/lib/icons';
+import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
 interface FloatingActionButtonProps {

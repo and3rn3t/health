@@ -6,7 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ErrorContext } from '@/hooks/useErrorHandling';
 import { AppErrorHandler, ErrorFactory, SafeLogger } from '@/lib/errorHandling';
-import { AlertTriangle, Bug, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Bug, RefreshCw } from '@/lib/icons';
 import React from 'react';
 import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary';
 
@@ -53,7 +53,7 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
   const showTechnicalDetails = !isProductionBuild;
 
   return (
-    <div className="bg-background flex min-h-screen items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <Alert variant="destructive" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
@@ -65,14 +65,14 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
         </Alert>
 
         {showTechnicalDetails && (
-          <div className="bg-card mb-6 rounded-lg border p-4">
+          <div className="mb-6 rounded-lg border bg-card p-4">
             <div className="mb-3 flex items-center gap-2">
-              <Bug className="text-muted-foreground h-4 w-4" />
-              <h3 className="text-muted-foreground text-sm font-semibold">
+              <Bug className="h-4 w-4 text-muted-foreground" />
+              <h3 className="text-sm font-semibold text-muted-foreground">
                 Technical Details
               </h3>
             </div>
-            <div className="text-muted-foreground text-xs space-y-2">
+            <div className="space-y-2 text-xs text-muted-foreground">
               <div>
                 <span className="font-medium">Error ID:</span> {appError.id}
               </div>
@@ -91,7 +91,7 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
             </div>
             {error.message && (
               <div className="mt-3">
-                <pre className="text-destructive bg-muted/50 max-h-32 p-3 text-xs overflow-auto whitespace-pre-wrap break-words rounded border">
+                <pre className="bg-muted/50 max-h-32 overflow-auto whitespace-pre-wrap break-words rounded border p-3 text-xs text-destructive">
                   {error.message}
                 </pre>
               </div>
@@ -111,10 +111,10 @@ export const EnhancedErrorFallback: React.FC<ErrorFallbackProps> = ({
 
           {isProductionBuild && (
             <div className="text-center">
-              <p className="text-muted-foreground text-xs">
+              <p className="text-xs text-muted-foreground">
                 Error ID: {appError.id}
               </p>
-              <p className="text-muted-foreground text-xs mt-1">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Please provide this ID when contacting support
               </p>
             </div>
@@ -144,7 +144,7 @@ export const HealthDataErrorFallback: React.FC<ErrorFallbackProps> = ({
   }, [appError]);
 
   return (
-    <div className="bg-background rounded-lg border p-6">
+    <div className="rounded-lg border bg-background p-6">
       <Alert variant="destructive" className="mb-4">
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Health Data Error</AlertTitle>
@@ -165,7 +165,7 @@ export const HealthDataErrorFallback: React.FC<ErrorFallbackProps> = ({
           Retry Loading Data
         </Button>
 
-        <p className="text-muted-foreground text-xs text-center">
+        <p className="text-center text-xs text-muted-foreground">
           If this problem persists, please refresh the page
         </p>
       </div>
@@ -186,7 +186,7 @@ export const NetworkErrorFallback: React.FC<ErrorFallbackProps> = ({
     error.message.includes('timeout');
 
   return (
-    <div className="bg-background rounded-lg border p-6">
+    <div className="rounded-lg border bg-background p-6">
       <Alert variant="destructive" className="mb-4">
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Connection Error</AlertTitle>

@@ -6,7 +6,7 @@
  */
 
 import { cn } from '@/lib/utils';
-import { ChevronRight, Filter, Home, Search, X } from 'lucide-react';
+import { ChevronRight, Filter, Home, Search, X } from '@/lib/icons';
 import React, { useEffect, useState } from 'react';
 
 // ===== TYPES =====

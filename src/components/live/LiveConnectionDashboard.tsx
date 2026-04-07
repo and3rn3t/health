@@ -26,7 +26,7 @@ import {
   Wifi,
   WifiOff,
   Zap,
-} from 'lucide-react';
+} from '@/lib/icons';
 import { useCallback, useEffect, useState } from 'react';
 
 interface LiveMetric {

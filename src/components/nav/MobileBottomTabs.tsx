@@ -7,7 +7,7 @@ import {
   Settings,
   Shield,
   Users,
-} from 'lucide-react';
+} from '@/lib/icons';
 import React from 'react';
 
 import { cn } from '@/lib/utils';

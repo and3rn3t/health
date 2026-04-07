@@ -24,7 +24,7 @@ import {
   type SyncFrequency,
   type ThemeMode,
 } from '@/lib/settingsTypes';
-import { Lock, Settings, Shield, Users, Wifi } from 'lucide-react';
+import { Lock, Settings, Shield, Users, Wifi } from '@/lib/icons';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 

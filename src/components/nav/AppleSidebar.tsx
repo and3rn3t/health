@@ -1,7 +1,7 @@
 'use client';
 
 import { Slot } from '@radix-ui/react-slot';
-import { PanelLeft } from 'lucide-react';
+import { PanelLeft } from '@/lib/icons';
 import {
   ComponentProps,
   createContext,

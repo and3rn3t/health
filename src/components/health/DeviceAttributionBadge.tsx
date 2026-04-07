@@ -5,7 +5,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { useDeviceManagement } from '@/hooks/useDeviceManagement';
-import { Bluetooth, Smartphone, Watch } from 'lucide-react';
+import { Bluetooth, Smartphone, Watch } from '@/lib/icons';
 import { useMemo } from 'react';
 
 interface DeviceAttributionBadgeProps {

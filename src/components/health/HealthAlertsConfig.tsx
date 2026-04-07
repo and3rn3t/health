@@ -30,7 +30,7 @@ import {
   Shield,
   Target,
   Trash,
-} from 'lucide-react';
+} from '@/lib/icons';
 import { useState } from 'react';
 import { toast } from 'sonner';
 

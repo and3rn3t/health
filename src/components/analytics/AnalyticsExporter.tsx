@@ -19,11 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Download, FileText, FileSpreadsheet, FileJson } from 'lucide-react';
-import { useState } from 'react';
 import { useOnceToast } from '@/hooks/useOnceToast';
-import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import type { AnalyticsSummary } from '@/lib/analytics';
+import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import { Download, FileJson, FileSpreadsheet, FileText } from '@/lib/icons';
+import { useState } from 'react';
 
 interface AnalyticsExporterProps {
   healthData: ProcessedHealthData | null;
@@ -45,7 +45,11 @@ export default function AnalyticsExporter({
     }
 
     setIsExporting(true);
-    showOnce(`export-generating-${format}`, 'info', `Generating ${format.toUpperCase()} report...`);
+    showOnce(
+      `export-generating-${format}`,
+      'info',
+      `Generating ${format.toUpperCase()} report...`
+    );
 
     try {
       // Simulate export generation
@@ -86,7 +90,11 @@ export default function AnalyticsExporter({
           break;
       }
 
-      showOnce(`export-success-${format}`, 'success', `Report exported as ${filename}`);
+      showOnce(
+        `export-success-${format}`,
+        'success',
+        `Report exported as ${filename}`
+      );
     } catch (error) {
       showOnce('export-error', 'error', 'Failed to export report');
       console.error(error);
@@ -139,7 +147,11 @@ export default function AnalyticsExporter({
     return rows.join('\n');
   };
 
-  const downloadFile = (content: string, filename: string, mimeType: string) => {
+  const downloadFile = (
+    content: string,
+    filename: string,
+    mimeType: string
+  ) => {
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -168,8 +180,15 @@ export default function AnalyticsExporter({
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <label htmlFor="export-format" className="text-sm font-medium">Export Format</label>
-            <Select value={format} onValueChange={(value) => setFormat(value as 'pdf' | 'csv' | 'json')}>
+            <label htmlFor="export-format" className="text-sm font-medium">
+              Export Format
+            </label>
+            <Select
+              value={format}
+              onValueChange={(value) =>
+                setFormat(value as 'pdf' | 'csv' | 'json')
+              }
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

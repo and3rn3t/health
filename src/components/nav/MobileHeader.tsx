@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { ChevronDown, Menu, Moon, MoreHorizontal, Sun } from 'lucide-react';
+import { ChevronDown, Menu, Moon, MoreHorizontal, Sun } from '@/lib/icons';
 import React, { useState } from 'react';
 
 interface MobileHeaderProps {

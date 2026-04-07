@@ -23,7 +23,7 @@ import {
 } from '@/lib/ios26-accessibility-enhanced';
 import { getiOS26TypographyClass } from '@/lib/ios26-dynamic-type';
 import { getVitalSenseClasses } from '@/lib/vitalsense-colors';
-import { Search } from 'lucide-react';
+import { Search } from '@/lib/icons';
 import { useState } from 'react';
 
 /**

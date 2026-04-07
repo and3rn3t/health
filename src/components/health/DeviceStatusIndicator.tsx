@@ -11,7 +11,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useDeviceManagement } from '@/hooks/useDeviceManagement';
-import { Bluetooth, WifiOff } from 'lucide-react';
+import { Bluetooth, WifiOff } from '@/lib/icons';
 import { DeviceStatusCard } from './DeviceStatusCard';
 
 export function DeviceStatusIndicator() {
@@ -23,7 +23,7 @@ export function DeviceStatusIndicator() {
         <Button
           variant="ghost"
           size="sm"
-          className="h-9 px-2 gap-1.5"
+          className="h-9 gap-1.5 px-2"
           title={
             hasConnectedDevices
               ? `${connectedCount} device${connectedCount !== 1 ? 's' : ''} connected`

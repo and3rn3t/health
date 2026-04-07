@@ -1,5 +1,5 @@
-import { describe, test, expect } from 'vitest';
-import { Home } from 'lucide-react';
+import { Home } from '@/lib/icons';
+import { describe, expect, test } from 'vitest';
 import {
   createNavigationItem,
   createNavigationItems,
@@ -11,13 +11,7 @@ const MockComponent = () => <div>Mock</div>;
 describe('navigationHelpers', () => {
   describe('createNavigationItem', () => {
     test('should create navigation item with all properties', () => {
-      const item = createNavigationItem(
-        'home',
-        'Home',
-        Home,
-        MockComponent,
-        1
-      );
+      const item = createNavigationItem('home', 'Home', Home, MockComponent, 1);
 
       expect(item).toEqual({
         id: 'home',
@@ -29,9 +23,27 @@ describe('navigationHelpers', () => {
     });
 
     test('should handle different priorities', () => {
-      const item1 = createNavigationItem('test', 'Test', Home, MockComponent, 1);
-      const item2 = createNavigationItem('test', 'Test', Home, MockComponent, 2);
-      const item3 = createNavigationItem('test', 'Test', Home, MockComponent, 3);
+      const item1 = createNavigationItem(
+        'test',
+        'Test',
+        Home,
+        MockComponent,
+        1
+      );
+      const item2 = createNavigationItem(
+        'test',
+        'Test',
+        Home,
+        MockComponent,
+        2
+      );
+      const item3 = createNavigationItem(
+        'test',
+        'Test',
+        Home,
+        MockComponent,
+        3
+      );
 
       expect(item1.priority).toBe(1);
       expect(item2.priority).toBe(2);
@@ -120,4 +132,3 @@ describe('navigationHelpers', () => {
     });
   });
 });
-

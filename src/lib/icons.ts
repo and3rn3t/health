@@ -1,51 +1,83 @@
 /**
- * Optimized icon exports - barrel export for better organization
- * lucide-react v0.484+ supports tree-shaking, so unused icons are automatically removed
- * This barrel export provides:
- * 1. Consistent import paths across the codebase
- * 2. Easier migration if we switch icon libraries
- * 3. Better IDE autocomplete and organization
+ * Centralized icon re-exports from lucide-react.
+ * All application components should import icons from '@/lib/icons' instead of 'lucide-react'.
+ * UI primitives (shadcn) in src/components/ui/ are excluded from this convention.
+ *
+ * lucide-react supports tree-shaking, so unused icons are automatically removed from the bundle.
  *
  * Usage: import { Activity, AlertTriangle } from '@/lib/icons';
- *
- * Note: Modern bundlers (Vite/esbuild) will tree-shake unused icons automatically
  */
 
-// Most commonly used icons - add more as needed
-// Tree-shaking will remove unused icons from the bundle
 export {
   Activity,
+  AlertCircle,
   AlertTriangle,
   BarChart3,
+  Battery,
   Bell,
+  BellRing,
+  Bluetooth,
   Brain,
   Bug,
   Calendar,
+  Camera,
   CheckCircle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  CloudUpload,
+  Database,
   Download,
   FileJson,
   FileSpreadsheet,
   FileText,
+  Filter,
   Footprints,
+  Gauge,
+  Globe,
   Heart,
+  Home,
   Lightbulb,
+  Loader2,
+  Lock,
+  MapPin,
+  Menu,
   Minus,
   Monitor,
+  Moon,
+  MoreHorizontal,
+  MoreVertical,
+  PanelLeft,
   Pause,
+  Phone,
   Play,
+  Plus,
+  Radio,
+  RefreshCcw,
   RefreshCw,
   Scan,
+  Search,
   Settings,
   Share,
   Shield,
+  ShieldCheck,
+  Signal,
   Smartphone,
   Sparkles,
+  Sun,
   Target,
+  Trash,
+  Trash2,
   TrendingDown,
   TrendingUp,
+  Trophy,
+  Upload,
+  User,
   Users,
   Watch,
   Wifi,
+  WifiOff,
   Wrench,
   X,
   XCircle,

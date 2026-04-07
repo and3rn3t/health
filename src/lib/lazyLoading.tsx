@@ -3,7 +3,7 @@
  */
 
 import { ComponentType, lazy, LazyExoticComponent } from 'react';
-import { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/lib/icons';
 
 /**
  * Creates a lazy-loaded component with a consistent fallback UI

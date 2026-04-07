@@ -18,7 +18,7 @@ import {
   TrendingDown,
   TrendingUp,
   Zap,
-} from 'lucide-react';
+} from '@/lib/icons';
 
 interface HealthTrend {
   metric: string;

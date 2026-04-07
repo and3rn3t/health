@@ -21,7 +21,7 @@ COPY tsconfig*.json ./
 
 # Prefer pnpm if lock exists, else npm ci
 RUN if [ -f pnpm-lock.yaml ]; then \
-  npm -g i pnpm@9 && pnpm i --frozen-lockfile; \
+  corepack enable && corepack install && pnpm i --frozen-lockfile; \
   elif [ -f package-lock.json ]; then \
   npm ci; \
   else \
