@@ -11,11 +11,9 @@ final class SessionFlowTests: BaseUITest {
     
     var tabBar: TabBar!
     
-    nonisolated override func setUpWithError() throws {
+    override func setUpWithError() throws {
         try super.setUpWithError()
-        MainActor.assumeIsolated {
-            tabBar = TabBar(app: app)
-        }
+        tabBar = TabBar(app: app)
     }
     
     // MARK: - Session List Tests
