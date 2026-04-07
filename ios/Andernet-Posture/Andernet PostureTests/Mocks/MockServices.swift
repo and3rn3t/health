@@ -86,7 +86,6 @@ final class MockSessionRecorder: SessionRecorder {
 
 // MARK: - MockMotionService
 
-@MainActor
 final class MockMotionService: MotionService {
     var isAvailable: Bool = true
     var onMotionUpdate: ((MotionFrame) -> Void)?
@@ -334,7 +333,6 @@ final class MockHealthKitService: HealthKitService {
 
 // MARK: - MockPedometerService
 
-@MainActor
 final class MockPedometerService: PedometerService {
     var isStepCountingAvailable: Bool = true
     var isDistanceAvailable: Bool = true
@@ -412,7 +410,6 @@ final class MockExportService: ExportServiceProtocol, @unchecked Sendable {
 
 // MARK: - MockSixMWTProtocol
 
-@MainActor
 final class MockSixMWTProtocol: SixMWTProtocol {
     var phase: SixMWTPhase = .notStarted
     var liveMetrics: SixMWTLiveMetrics?
@@ -442,7 +439,6 @@ final class MockSixMWTProtocol: SixMWTProtocol {
 
 // MARK: - MockCloudSyncService
 
-@MainActor
 final class MockCloudSyncService: CloudSyncServiceProtocol {
     var status: SyncStatus = .idle
     var lastSyncDate: Date?
@@ -459,7 +455,6 @@ final class MockCloudSyncService: CloudSyncServiceProtocol {
 
 // MARK: - MockKeyValueStoreSync
 
-@MainActor
 final class MockKeyValueStoreSync: KeyValueStoreSyncProtocol {
     var pushCallCount = 0
     var pushAllCallCount = 0
@@ -508,7 +503,6 @@ final class MockNotificationService: NotificationService, @unchecked Sendable {
 
 // MARK: - MockMLModelService
 
-@MainActor
 final class MockMLModelService: MLModelServiceProtocol {
     var useMLModels: Bool = false
     var modelStatuses: [MLModelStatus] = []
