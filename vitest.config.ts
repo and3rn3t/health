@@ -31,21 +31,13 @@ export default defineConfig({
     globals: true,
     // Memory optimization: use forks pool for better memory isolation (prevents OOM)
     // Forks pool isolates each test file in its own process, allowing better memory cleanup
-    pool: 'forks', // Use forks for both CI and local to prevent memory exhaustion
+    pool: 'forks',
     poolOptions: {
-      threads: {
-        // Threads pool options (not used when pool is 'forks', but kept for reference)
-        maxThreads: 2,
-        minThreads: 1,
-        singleThread: false,
-      },
       forks: {
-        // Use forks pool for better memory isolation and cleanup
-        // Reduced parallelism to prevent memory exhaustion
-        singleFork: false, // Allow multiple forks but limit them
-        isolate: true, // Isolate each test file in its own process for better memory cleanup
-        maxForks: process.env.CI ? 1 : 2, // Limit forks: 1 in CI, 2 locally to prevent OOM
-        minForks: 1, // Minimum 1 fork
+        singleFork: false,
+        isolate: true,
+        maxForks: process.env.CI ? 1 : 4, // 4 locally for faster feedback, 1 in CI for memory safety
+        minForks: 1,
       },
     },
     // Test timeout optimization - increased to accommodate tests with multiple waitFor calls
@@ -61,7 +53,7 @@ export default defineConfig({
       concurrent: false, // Disabled: tests within a file share global state (fetch mocks, window globals, timers)
     },
     // Memory optimization: reduce concurrency to prevent memory exhaustion
-    maxConcurrency: process.env.CI ? 1 : 2, // Reduced from 10 to 2 to prevent OOM
+    maxConcurrency: process.env.CI ? 1 : 4, // Match maxForks for consistent local parallelism
     fileParallelism: true, // Enable file-level parallelism but limited by maxConcurrency
     // Enable test retries for flaky tests (faster than manual reruns)
     retry: process.env.CI ? 1 : 0, // Retry once in CI, but not locally to save time

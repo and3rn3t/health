@@ -172,4 +172,23 @@ export default [
       'no-case-declarations': 'warn', // Downgrade to warning
     },
   },
+  // Test utilities don't participate in HMR — disable react-refresh
+  {
+    files: ['src/__tests__/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  // Standard patterns: shadcn/ui exports variants alongside components,
+  // React contexts export provider + hook, performance providers export hooks
+  {
+    files: [
+      'src/components/ui/**/*.{ts,tsx}',
+      'src/contexts/**/*.{ts,tsx}',
+      'src/lib/performance/**/*.{ts,tsx}',
+    ],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ];
