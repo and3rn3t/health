@@ -386,7 +386,7 @@ final class MockTrunkMotionAnalyzer: TrunkMotionAnalyzer {
 
 // MARK: - MockInsightsEngine
 
-final class MockInsightsEngine: InsightsEngine {
+final class MockInsightsEngine: InsightsEngine, @unchecked Sendable {
     var stubbedInsights: [Insight] = []
 
     func generateInsights(from sessions: [GaitSession]) -> [Insight] { stubbedInsights }
@@ -394,7 +394,7 @@ final class MockInsightsEngine: InsightsEngine {
 
 // MARK: - MockExportService
 
-final class MockExportService: ExportServiceProtocol {
+final class MockExportService: ExportServiceProtocol, @unchecked Sendable {
     var generateCSVCallCount = 0
     var generatePDFCallCount = 0
 
@@ -472,7 +472,7 @@ final class MockKeyValueStoreSync: KeyValueStoreSyncProtocol {
 
 // MARK: - MockNotificationService
 
-final class MockNotificationService: NotificationService {
+final class MockNotificationService: NotificationService, @unchecked Sendable {
     var requestPermissionCallCount = 0
     var scheduleReminderCallCount = 0
     var cancelAllCallCount = 0
