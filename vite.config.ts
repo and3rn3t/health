@@ -9,9 +9,7 @@ const isDev =
   process.env.CI !== 'true';
 
 export default defineConfig({
-  // Ensure Tailwind uses JS implementation (no native oxide binding)
   define: {
-    'process.env.TAILWIND_DISABLE_OXIDE': JSON.stringify('1'),
     __APP_VERSION__: JSON.stringify(
       process.env.npm_package_version || '0.0.0-dev'
     ),
@@ -146,8 +144,8 @@ export default defineConfig({
     minify: 'esbuild',
     target: 'esnext',
 
-    // Reduce asset inlining to allow better code splitting
-    assetsInlineLimit: process.env.CI === 'true' ? 1024 : 2048, // Reduced to force more code splitting
+    // Inline small assets (< 4KB) as data URIs to reduce HTTP requests
+    assetsInlineLimit: 4096,
 
     // Compression and optimization
     cssCodeSplit: true,

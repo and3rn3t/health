@@ -1,7 +1,5 @@
 import { defineConfig, type Plugin } from 'vite';
 import { resolve } from 'path';
-import react from '@vitejs/plugin-react';
-import { readFileSync } from 'fs';
 
 // Plugin to exclude client-side files from worker build
 function excludeClientFiles(): Plugin {
@@ -27,19 +25,13 @@ function excludeClientFiles(): Plugin {
 
   return {
     name: 'exclude-client-files',
-    enforce: 'pre', // Run before other plugins, especially before esbuild
-    buildStart() {
-      // Early interception - mark excluded files
-      this.addWatchFile = () => {}; // Prevent watching excluded files
-    },
+    enforce: 'pre',
     resolveId(id, importer) {
-      // Handle both relative imports and absolute paths
       const resolvedId = id.startsWith('.') && importer
         ? resolve(importer, '..', id).replace(/\\/g, '/')
         : id;
 
       if (shouldExclude(resolvedId) || shouldExclude(id)) {
-        // Return a virtual empty module to prevent processing
         return { id: '\0virtual:empty', external: false };
       }
       return null;
@@ -48,38 +40,7 @@ function excludeClientFiles(): Plugin {
       if (id === '\0virtual:empty') {
         return 'export {};';
       }
-      // Intercept file loading - return empty for excluded files
-      // This prevents the file from being read from disk
-      if (shouldExclude(id)) {
-        return 'export {};';
-      }
       return null;
-    },
-    // Intercept before load - this runs even earlier
-    resolveDynamicImport(specifier, importer) {
-      if (typeof specifier === 'string' && shouldExclude(specifier)) {
-        return '\0virtual:empty';
-      }
-      return null;
-    },
-    // Intercept transform to prevent esbuild from processing these files
-    // This MUST run before esbuild processes the file
-    transform(code, id) {
-      // Check both the id and try to resolve it
-      const normalizedId = id.replace(/\\/g, '/');
-      if (shouldExclude(normalizedId) || shouldExclude(id)) {
-        // Return empty module to prevent processing
-        // This should prevent esbuild from seeing the JSX
-        return { code: 'export {};', map: null };
-      }
-      return null;
-    },
-    // Intercept module resolution to prevent these files from being loaded
-    shouldTransformCachedModule({ id }) {
-      if (shouldExclude(id)) {
-        return false; // Don't transform excluded files
-      }
-      return undefined; // Let other plugins decide
     },
   };
 }

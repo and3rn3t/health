@@ -8,7 +8,7 @@ Common issues and solutions for the VitalSense health monitoring platform.
 
 **Symptom:** `Error: Cannot find module '@tailwindcss/oxide-...'`
 
-**Fix:** Oxide is disabled by default. Ensure `TAILWIND_DISABLE_OXIDE=1` is set (handled in `vite.config.ts`). If you explicitly enabled it, run:
+**Fix:** Tailwind uses the native Oxide engine when available, falling back to JS automatically. If you see this error, reinstall platform-specific binaries:
 ```bash
 pnpm rebuild
 ```

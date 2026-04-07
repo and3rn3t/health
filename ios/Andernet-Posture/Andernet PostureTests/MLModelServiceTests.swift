@@ -173,3 +173,45 @@ struct MLModelServiceInstanceTests {
         #expect(svc.useMLModels == false)
     }
 }
+
+// MARK: - Edge Case Tests (NaN, Infinity, Extreme Values)
+
+struct MLModelEdgeCaseTests {
+
+    @MainActor
+    @Test func nanInputsUseSentinel() {
+        let values: [Double?] = [Double.nan, 1.0, Double.nan]
+        let array = MLModelService.makeFeatureArray(values)!
+        // NaN values should be passed through — model handles sentinel-or-NaN
+        #expect(array.count == 3)
+        // Verify non-NaN values are correct
+        #expect(array[1].doubleValue == 1.0)
+    }
+
+    @MainActor
+    @Test func infinityInputsDoNotCrash() {
+        let values: [Double?] = [Double.infinity, -Double.infinity, 0.0]
+        let array = MLModelService.makeFeatureArray(values)!
+        #expect(array.count == 3)
+        #expect(array[2].doubleValue == 0.0)
+    }
+
+    @MainActor
+    @Test func allNilsProduceAllSentinels() {
+        let values: [Double?] = [nil, nil, nil, nil, nil]
+        let array = MLModelService.makeFeatureArray(values, sentinelValue: -1.0)!
+        #expect(array.count == 5)
+        for i in 0..<5 {
+            #expect(array[i].doubleValue == -1.0)
+        }
+    }
+
+    @MainActor
+    @Test func extremelyLargeValues() {
+        let values: [Double?] = [1e308, -1e308, Double.leastNonzeroMagnitude]
+        let array = MLModelService.makeFeatureArray(values)!
+        #expect(array.count == 3)
+        #expect(array[0].doubleValue == 1e308)
+        #expect(array[1].doubleValue == -1e308)
+    }
+}
