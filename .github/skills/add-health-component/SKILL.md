@@ -1,6 +1,7 @@
 ---
 name: add-health-component
 description: "Create a new health monitoring React component following VitalSense patterns. Use when building new health visualizations, device cards, alert UIs, or dashboard widgets. Includes Tailwind styling, accessibility, and React Query integration."
+argument-hint: "Component name and type (e.g., 'BloodPressureCard visualization')"
 ---
 
 # Add Health Component

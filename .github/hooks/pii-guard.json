@@ -1,0 +1,13 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/pii-guard.sh",
+        "description": "Scans file writes for PII patterns (SSNs, emails in logs, health record IDs, raw health metrics). Blocks writes that would leak sensitive data.",
+        "timeout": 10,
+        "events": ["create_file", "replace_string_in_file", "edit_file"]
+      }
+    ]
+  }
+}

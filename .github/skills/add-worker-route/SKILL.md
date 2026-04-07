@@ -1,6 +1,7 @@
 ---
 name: add-worker-route
 description: "Add a new Hono API route to the Cloudflare Worker. Use when creating new API endpoints, WebSocket handlers, or server-side functionality. Includes route, validation, auth, and testing scaffolding."
+argument-hint: "Route domain name (e.g., 'notifications', 'devices', 'analytics')"
 ---
 
 # Add Worker Route

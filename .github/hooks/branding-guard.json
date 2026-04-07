@@ -1,0 +1,13 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/branding-guard.sh",
+        "description": "Checks modified files for 'Health App' branding violations. User-facing text should use 'VitalSense'.",
+        "timeout": 10,
+        "events": ["create_file", "replace_string_in_file", "edit_file"]
+      }
+    ]
+  }
+}

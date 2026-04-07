@@ -1,0 +1,59 @@
+# VitalSense — Cursor Rules
+
+# VitalSense monitoring platform: React 19 + Cloudflare Workers + iOS (Swift/HealthKit)
+
+# Branding: Always "VitalSense" in user-facing text — never "Health App"
+
+## Stack
+
+- Frontend: React 19, TypeScript, Vite, Tailwind v4, Radix UI, TanStack Query
+- Backend: Cloudflare Workers (Hono), Durable Objects, KV/R2
+- iOS: Swift, SwiftUI, HealthKit, CoreML
+- Auth: Auth0 + JWT (JWKS + HS256 fallback)
+- Testing: Vitest + @testing-library/react, Playwright E2E, XCTest (iOS)
+- Validation: Zod at all boundaries
+
+## File Layout
+
+- src/components/ — React components (ui/, health/, gamification/)
+- src/hooks/ — Custom hooks (useAuth, useLiveHealthData, useWebSocket)
+- src/lib/ — Utilities, configs, health processors
+- src/schemas/ — Zod schemas
+- src/worker/ — Hono routes, middleware, Durable Objects
+- ios/ — Native iOS app (Andernet Posture)
+- e2e/ — Playwright E2E tests
+
+## Rules
+
+1. TypeScript + ESM only. No require, no CommonJS, no `any`.
+2. Zod validation at all data boundaries. Fail closed on parse errors.
+3. No PII or raw health data in logs. Health data is sensitive.
+4. Workers-safe APIs only (Request, Response, fetch, crypto). No Node.js APIs in Worker.
+5. Secrets via c.env bindings. Never hardcode.
+6. Path alias: @/*→ ./src/*
+7. Tailwind v4 utilities + semantic tokens from theme.css. No CSS-in-JS.
+8. React Query for server state. Co-locate query keys.
+9. Radix UI + existing src/components/ui/* — don't recreate primitives.
+10. Colocated tests: *.test.ts(x) next to source, Vitest + @testing-library/react.
+11. Function components with explicit props types.
+12. Hooks: use* prefix, memoize expensive computations.
+13. SwiftLint on iOS: WARNING >120 chars, ERROR >150 chars.
+14. iOS singletons: AppConfig.shared, HealthKitManager.shared, ApiClient.shared.
+15. HealthKit data stays on-device unless explicitly synced.
+
+## Commands
+
+- pnpm validate — Full CI (lint + type-check + test)
+- pnpm build:worker — Build Cloudflare Worker
+- pnpm cf:dev — Local Workers preview
+- pnpm cf:deploy — Deploy to dev
+- pnpm deploy:prod — Deploy to production
+
+## Don'ts
+
+- Don't use Node APIs in Worker routes
+- Don't bypass React Query for server state
+- Don't create duplicate UI primitives
+- Don't hardcode secrets
+- Don't log PII or raw health data
+- Don't skip zod validation

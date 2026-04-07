@@ -1,6 +1,7 @@
 ---
 name: sync-health-config
 description: "Synchronize health analysis configuration between web and iOS platforms. Use when updating gait thresholds, fall risk parameters, or health scoring configs. Ensures web and iOS stay in sync."
+argument-hint: "Config type: gait, fall-risk, or all"
 ---
 
 # Sync Health Configuration

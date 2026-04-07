@@ -1,6 +1,7 @@
 ---
 name: deploy-worker
 description: "Build and deploy Cloudflare Worker to development or production. Use when deploying, previewing, or troubleshooting Worker deployments. Covers build validation, environment selection, and post-deploy verification."
+argument-hint: "Environment: dev or prod"
 ---
 
 # Deploy Cloudflare Worker
