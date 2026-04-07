@@ -50,25 +50,17 @@ jobs:
       - name: Resolve dependencies
         run: xcodebuild -resolvePackageDependencies -project "$PROJECT" -scheme "$SCHEME"
 
-      - name: Build for testing
+      - name: Run unit tests
         run: |
-          xcodebuild build-for-testing \
+          xcodebuild test \
             -project "$PROJECT" \
             -scheme "$SCHEME" \
             -destination "$DESTINATION" \
+            -testPlan UnitTests \
+            -resultBundlePath UnitTestResults.xcresult \
             -skipPackagePluginValidation \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            | xcpretty --color && exit ${PIPESTATUS[0]}
-
-      - name: Run unit tests
-        run: |
-          xcodebuild test-without-building \
-            -project "$PROJECT" \
-            -scheme "$SCHEME" \
-            -destination "$DESTINATION" \
-            -only-testing "Andernet PostureTests" \
-            -resultBundlePath UnitTestResults.xcresult \
             | xcpretty --color && exit ${PIPESTATUS[0]}
 
       - name: Upload unit test results
@@ -103,25 +95,17 @@ jobs:
       - name: Resolve dependencies
         run: xcodebuild -resolvePackageDependencies -project "$PROJECT" -scheme "$SCHEME"
 
-      - name: Build for testing
-        run: |
-          xcodebuild build-for-testing \
-            -project "$PROJECT" \
-            -scheme "$SCHEME" \
-            -destination "$DESTINATION" \
-            -skipPackagePluginValidation \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            | xcpretty --color && exit ${PIPESTATUS[0]}
-
       - name: Run smoke UI tests
         run: |
-          xcodebuild test-without-building \
+          xcodebuild test \
             -project "$PROJECT" \
             -scheme "$SCHEME" \
             -destination "$DESTINATION" \
             -testPlan SmokeTests \
             -resultBundlePath SmokeTestResults.xcresult \
+            -skipPackagePluginValidation \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
             | xcpretty --color && exit ${PIPESTATUS[0]}
 
       - name: Upload smoke test results
@@ -156,27 +140,18 @@ jobs:
       - name: Resolve dependencies
         run: xcodebuild -resolvePackageDependencies -project "$PROJECT" -scheme "$SCHEME"
 
-      - name: Build for testing
-        run: |
-          xcodebuild build-for-testing \
-            -project "$PROJECT" \
-            -scheme "$SCHEME" \
-            -destination "$DESTINATION" \
-            -skipPackagePluginValidation \
-            -enableCodeCoverage YES \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            | xcpretty --color && exit ${PIPESTATUS[0]}
-
       - name: Run full test suite
         run: |
-          xcodebuild test-without-building \
+          xcodebuild test \
             -project "$PROJECT" \
             -scheme "$SCHEME" \
             -destination "$DESTINATION" \
             -testPlan FullSuite \
             -enableCodeCoverage YES \
             -resultBundlePath FullSuiteResults.xcresult \
+            -skipPackagePluginValidation \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
             | xcpretty --color && exit ${PIPESTATUS[0]}
 
       - name: Upload test results & coverage
