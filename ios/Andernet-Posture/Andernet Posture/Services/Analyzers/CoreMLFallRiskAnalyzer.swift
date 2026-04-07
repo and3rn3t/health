@@ -58,14 +58,14 @@ final class CoreMLFallRiskAnalyzer: FallRiskAnalyzer {
         let sentinel = -1.0
         do {
             let provider = try MLDictionaryFeatureProvider(dictionary: [
-                "walkingSpeedMPS":        MLFeatureValue(double: walkingSpeedMPS ?? sentinel),
-                "strideTimeCVPercent":    MLFeatureValue(double: strideTimeCVPercent ?? sentinel),
-                "doubleSupportPercent":   MLFeatureValue(double: doubleSupportPercent ?? sentinel),
+                "walkingSpeedMPS": MLFeatureValue(double: walkingSpeedMPS ?? sentinel),
+                "strideTimeCVPercent": MLFeatureValue(double: strideTimeCVPercent ?? sentinel),
+                "doubleSupportPercent": MLFeatureValue(double: doubleSupportPercent ?? sentinel),
                 "stepWidthVariabilityCm": MLFeatureValue(double: stepWidthVariabilityCm ?? sentinel),
-                "swayVelocityMMS":        MLFeatureValue(double: swayVelocityMMS ?? sentinel),
-                "stepAsymmetryPercent":   MLFeatureValue(double: stepAsymmetryPercent ?? sentinel),
-                "tugTimeSec":             MLFeatureValue(double: tugTimeSec ?? sentinel),
-                "footClearanceM":         MLFeatureValue(double: footClearanceM ?? sentinel)
+                "swayVelocityMMS": MLFeatureValue(double: swayVelocityMMS ?? sentinel),
+                "stepAsymmetryPercent": MLFeatureValue(double: stepAsymmetryPercent ?? sentinel),
+                "tugTimeSec": MLFeatureValue(double: tugTimeSec ?? sentinel),
+                "footClearanceM": MLFeatureValue(double: footClearanceM ?? sentinel)
             ])
             let prediction = try model.prediction(from: provider)
             return parsePrediction(prediction, features: [

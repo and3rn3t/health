@@ -25,7 +25,7 @@ final class MetricsManager: NSObject, MXMetricManagerSubscriber {
 
     static let shared = MetricsManager()
 
-    private override init() {
+    override private init() {
         super.init()
         MXMetricManager.shared.add(self)
         AppLogger.performance.info("MetricsManager subscribed to MetricKit")
@@ -53,7 +53,7 @@ final class MetricsManager: NSObject, MXMetricManagerSubscriber {
 
     // MARK: - Metric Processing
 
-    private nonisolated func processMetricPayload(_ payload: MXMetricPayload) {
+    nonisolated private func processMetricPayload(_ payload: MXMetricPayload) {
         AppLogger.performance.info("MetricKit payload: \(payload.timeStampBegin) – \(payload.timeStampEnd)")
 
         // CPU
@@ -104,7 +104,7 @@ final class MetricsManager: NSObject, MXMetricManagerSubscriber {
     // MARK: - Histogram Helpers
 
     /// Computes a weighted-midpoint average from an MXHistogram's buckets.
-    private nonisolated func approximateAverage<U: Unit>(from histogram: MXHistogram<U>) -> Measurement<U>? {
+    nonisolated private func approximateAverage<U: Unit>(from histogram: MXHistogram<U>) -> Measurement<U>? {
         var totalCount = 0
         var weightedSum = 0.0
         var bucketUnit: U?
@@ -121,7 +121,7 @@ final class MetricsManager: NSObject, MXMetricManagerSubscriber {
 
     // MARK: - Diagnostic Processing
 
-    private nonisolated func processDiagnosticPayload(_ payload: MXDiagnosticPayload) {
+    nonisolated private func processDiagnosticPayload(_ payload: MXDiagnosticPayload) {
         AppLogger.performance.error("Diagnostic payload: \(payload.timeStampBegin) – \(payload.timeStampEnd)")
 
         // Crashes

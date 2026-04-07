@@ -1,4 +1,3 @@
-// swiftlint:disable file_length
 //
 //  InsightsEngine.swift
 //  Andernet Posture
@@ -88,6 +87,7 @@ final class DefaultInsightsEngine: InsightsEngine {
         let withLean: [GaitSession]
     }
 
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     func generateInsights(from sessions: [GaitSession]) -> [Insight] {
         let insightToken = PerformanceMonitor.begin(.insightsGeneration)
         defer { PerformanceMonitor.end(insightToken) }

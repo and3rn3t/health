@@ -177,7 +177,7 @@ final class CaptureViewModel {
         recordingState = .finished
     }
 
-    /// Save the recorded session to SwiftData with full clinical analytics.
+    // Save the recorded session to SwiftData with full clinical analytics.
     // swiftlint:disable:next function_body_length
     func saveSession(context: ModelContext) -> GaitSession? {
         let saveToken = PerformanceMonitor.begin(.sessionSave)
@@ -605,7 +605,9 @@ final class CaptureViewModel {
             } else {
                 recorder.recordStep(stepEvent)
                 stepCount = recorder.stepCount
-                AppLogger.analysis.debug("Low IMU confidence (\(String(format: "%.2f", imuConfidence))) for ARKit step at \(String(format: "%.2f", strike.timestamp))s")
+                AppLogger.analysis.debug(
+                    "Low IMU confidence (\(String(format: "%.2f", imuConfidence))) for ARKit step at \(String(format: "%.2f", strike.timestamp))s"
+                )
             }
 
             if let sw = strike.stepWidthCm {

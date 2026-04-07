@@ -227,7 +227,10 @@ final class CloudSyncService {
                 // Implement exponential backoff logging
                 currentBackoffDelay = min(currentBackoffDelay * 2.0, Self.maxBackoffDelay)
                 status = .syncing
-                logger.info("Transient sync error (\(self.consecutiveTransientErrors)/\(Self.maxTransientRetries)), will retry with backoff ~\(String(format: "%.0f", self.currentBackoffDelay))s")
+                let retryCount = self.consecutiveTransientErrors
+                let maxRetries = Self.maxTransientRetries
+                let backoff = String(format: "%.0f", self.currentBackoffDelay)
+                logger.info("Transient sync error (\(retryCount)/\(maxRetries)), will retry with backoff ~\(backoff)s")
                 return
             } else {
                 // Too many retries — reset backoff for next attempt

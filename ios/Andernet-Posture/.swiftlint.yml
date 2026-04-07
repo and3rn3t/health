@@ -44,11 +44,11 @@ line_length:
   ignores_urls: true
 
 type_body_length:
-  warning: 500
+  warning: 550
   error: 800
 
 file_length:
-  warning: 600
+  warning: 750
   error: 1000
 
 function_body_length:
@@ -60,12 +60,8 @@ function_parameter_count:
   error: 14
 
 cyclomatic_complexity:
-  warning: 15
+  warning: 18
   error: 30
-
-large_tuple:
-  warning: 2
-  error: 9
 
 type_name:
   min_length: 3

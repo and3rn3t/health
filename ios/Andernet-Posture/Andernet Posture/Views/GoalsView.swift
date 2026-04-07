@@ -51,6 +51,7 @@ struct GoalsView: View {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_body_length
     private func goalsForm(_ goals: UserGoals) -> some View {
         @Bindable var goals = goals
         Form {

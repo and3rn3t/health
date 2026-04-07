@@ -139,8 +139,8 @@ final class SensorPipeline {
     // MARK: - Fatigue Tracking
 
     func recordFatigueTimePoint(timestamp: TimeInterval, postureScore: Double,
-                                 trunkLeanDeg: Double, lateralLeanDeg: Double,
-                                 cadenceSPM: Double, walkingSpeedMPS: Double) {
+                                trunkLeanDeg: Double, lateralLeanDeg: Double,
+                                cadenceSPM: Double, walkingSpeedMPS: Double) {
         fatigueAnalyzer.recordTimePoint(
             timestamp: timestamp, postureScore: postureScore,
             trunkLeanDeg: trunkLeanDeg, lateralLeanDeg: lateralLeanDeg,

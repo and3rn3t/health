@@ -1,4 +1,3 @@
-// swiftlint:disable file_length
 //
 //  DashboardView.swift
 //  Andernet Posture

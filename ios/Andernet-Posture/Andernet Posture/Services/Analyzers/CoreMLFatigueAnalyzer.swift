@@ -79,14 +79,14 @@ final class CoreMLFatigueAnalyzer: FatigueAnalyzer {
         // rule-based analyzer (slopes, variability, composite index).
         do {
             let input = try MLDictionaryFeatureProvider(dictionary: [
-                "postureTrendSlope":      MLFeatureValue(double: ruleResult.postureTrendSlope),
-                "postureTrendR2":         MLFeatureValue(double: ruleResult.postureTrendR2),
-                "postureVariabilitySD":   MLFeatureValue(double: ruleResult.postureVariabilitySD),
-                "cadenceTrendSlope":      MLFeatureValue(double: ruleResult.cadenceTrendSlope),
-                "speedTrendSlope":        MLFeatureValue(double: ruleResult.speedTrendSlope),
-                "forwardLeanTrendSlope":  MLFeatureValue(double: ruleResult.forwardLeanTrendSlope),
-                "lateralSwayTrendSlope":  MLFeatureValue(double: ruleResult.lateralSwayTrendSlope),
-                "ruleBasedFatigueIndex":  MLFeatureValue(double: ruleResult.fatigueIndex)
+                "postureTrendSlope": MLFeatureValue(double: ruleResult.postureTrendSlope),
+                "postureTrendR2": MLFeatureValue(double: ruleResult.postureTrendR2),
+                "postureVariabilitySD": MLFeatureValue(double: ruleResult.postureVariabilitySD),
+                "cadenceTrendSlope": MLFeatureValue(double: ruleResult.cadenceTrendSlope),
+                "speedTrendSlope": MLFeatureValue(double: ruleResult.speedTrendSlope),
+                "forwardLeanTrendSlope": MLFeatureValue(double: ruleResult.forwardLeanTrendSlope),
+                "lateralSwayTrendSlope": MLFeatureValue(double: ruleResult.lateralSwayTrendSlope),
+                "ruleBasedFatigueIndex": MLFeatureValue(double: ruleResult.fatigueIndex)
             ])
             let prediction = try model.prediction(from: input)
 

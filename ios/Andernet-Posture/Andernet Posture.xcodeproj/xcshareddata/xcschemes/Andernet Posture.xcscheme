@@ -31,17 +31,17 @@
       codeCoverageEnabled = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:Andernet Posture.xcodeproj/UnitTests.xctestplan"
+            reference = "container:UnitTests.xctestplan"
             default = "YES">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:Andernet Posture.xcodeproj/FullSuite.xctestplan">
+            reference = "container:FullSuite.xctestplan">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:Andernet Posture.xcodeproj/SmokeTests.xctestplan">
+            reference = "container:SmokeTests.xctestplan">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:Andernet Posture.xcodeproj/AccessibilityTests.xctestplan">
+            reference = "container:AccessibilityTests.xctestplan">
          </TestPlanReference>
       </TestPlans>
    </TestAction>

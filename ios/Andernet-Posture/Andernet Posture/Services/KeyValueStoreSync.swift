@@ -15,8 +15,8 @@ private let logger = AppLogger.kvSync
 
 /// Keys synced to iCloud Key-Value Store.
 enum SyncedPreferenceKey: String, CaseIterable {
-    case userAge    = "userAge"
-    case userSex    = "userSex"
+    case userAge
+    case userSex
 }
 
 @MainActor

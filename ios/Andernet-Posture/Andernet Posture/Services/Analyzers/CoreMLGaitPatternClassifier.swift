@@ -71,20 +71,20 @@ final class CoreMLGaitPatternClassifier: GaitPatternClassifying {
         let sentinel = -1.0
         do {
             let provider = try MLDictionaryFeatureProvider(dictionary: [
-                "stanceTimeLeftPct":      MLFeatureValue(double: stanceTimeLeftPercent ?? sentinel),
-                "stanceTimeRightPct":     MLFeatureValue(double: stanceTimeRightPercent ?? sentinel),
-                "stepLengthLeftM":        MLFeatureValue(double: stepLengthLeftM ?? sentinel),
-                "stepLengthRightM":       MLFeatureValue(double: stepLengthRightM ?? sentinel),
-                "cadenceSPM":             MLFeatureValue(double: cadenceSPM ?? sentinel),
-                "stepWidthCm":            MLFeatureValue(double: avgStepWidthCm ?? sentinel),
+                "stanceTimeLeftPct": MLFeatureValue(double: stanceTimeLeftPercent ?? sentinel),
+                "stanceTimeRightPct": MLFeatureValue(double: stanceTimeRightPercent ?? sentinel),
+                "stepLengthLeftM": MLFeatureValue(double: stepLengthLeftM ?? sentinel),
+                "stepLengthRightM": MLFeatureValue(double: stepLengthRightM ?? sentinel),
+                "cadenceSPM": MLFeatureValue(double: cadenceSPM ?? sentinel),
+                "stepWidthCm": MLFeatureValue(double: avgStepWidthCm ?? sentinel),
                 "stepWidthVariabilityCm": MLFeatureValue(double: stepWidthVariabilityCm ?? sentinel),
-                "pelvicObliquityDeg":     MLFeatureValue(double: pelvicObliquityDeg ?? sentinel),
-                "strideTimeCVPercent":    MLFeatureValue(double: strideTimeCVPercent ?? sentinel),
-                "walkingSpeedMPS":        MLFeatureValue(double: walkingSpeedMPS ?? sentinel),
-                "strideLengthM":          MLFeatureValue(double: strideLengthM ?? sentinel),
-                "hipFlexionROMDeg":       MLFeatureValue(double: hipFlexionROMDeg ?? sentinel),
-                "armSwingAsymmetryPct":   MLFeatureValue(double: armSwingAsymmetryPercent ?? sentinel),
-                "kneeFlexionROMDeg":      MLFeatureValue(double: kneeFlexionROMDeg ?? sentinel)
+                "pelvicObliquityDeg": MLFeatureValue(double: pelvicObliquityDeg ?? sentinel),
+                "strideTimeCVPercent": MLFeatureValue(double: strideTimeCVPercent ?? sentinel),
+                "walkingSpeedMPS": MLFeatureValue(double: walkingSpeedMPS ?? sentinel),
+                "strideLengthM": MLFeatureValue(double: strideLengthM ?? sentinel),
+                "hipFlexionROMDeg": MLFeatureValue(double: hipFlexionROMDeg ?? sentinel),
+                "armSwingAsymmetryPct": MLFeatureValue(double: armSwingAsymmetryPercent ?? sentinel),
+                "kneeFlexionROMDeg": MLFeatureValue(double: kneeFlexionROMDeg ?? sentinel)
             ])
             let prediction = try model.prediction(from: provider)
             return parsePrediction(prediction)
@@ -144,5 +144,4 @@ final class CoreMLGaitPatternClassifier: GaitPatternClassifying {
             flags: ["CoreML v\(modelService.modelStatuses.first { $0.identifier == .gaitPatternClassifier }?.version ?? "?")"]
         )
     }
-
 }

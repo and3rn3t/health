@@ -8,8 +8,6 @@
 
 import Foundation
 
-// swiftlint:disable type_body_length
-
 /// App-wide configuration values that vary by build configuration.
 enum AppConfig {
 
@@ -80,5 +78,3 @@ enum AppConfig {
         }
     }
 }
-
-// swiftlint:enable type_body_length

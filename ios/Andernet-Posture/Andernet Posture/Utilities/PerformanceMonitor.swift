@@ -378,5 +378,3 @@ enum PerformanceMonitor {
         return nanoseconds / 1_000_000.0
     }
 }
-
-

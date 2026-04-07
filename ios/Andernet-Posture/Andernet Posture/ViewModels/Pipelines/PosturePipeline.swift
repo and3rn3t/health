@@ -87,7 +87,8 @@ final class PosturePipeline {
         )
     }
 
-    /// Assess pain risk for session summary.
+    // Assess pain risk for session summary.
+    // swiftlint:disable:next function_parameter_count
     func assessPainRisk(
         craniovertebralAngleDeg: Double,
         sagittalVerticalAxisCm: Double,

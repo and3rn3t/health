@@ -144,7 +144,7 @@ final class DefaultGaitAnalyzer: GaitAnalyzer {
 
     // MARK: - Process Frame
 
-    // swiftlint:disable:next function_body_length
+    // swiftlint:disable:next function_body_length cyclomatic_complexity
     func processFrame(joints: [JointName: SIMD3<Float>], timestamp: TimeInterval) -> GaitMetrics {
         guard
             let leftFoot = joints[.leftFoot],

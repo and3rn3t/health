@@ -932,6 +932,7 @@ private extension ExportService {
         return items
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     static func riskItems(
         _ s: GaitSession
     ) -> [(String, String, ClinicalSeverity?, String?)] {

@@ -338,6 +338,6 @@ private func fileDateSuffix(_ date: Date) -> String {
                     averageStrideLengthM: 0.72, averageTrunkLeanDeg: 4.5, postureScore: 82),
         GaitSession(date: Calendar.current.date(byAdding: .day, value: -3, to: .now)!,
                     duration: 90, averageCadenceSPM: 108, averageStrideLengthM: 0.68,
-                    averageTrunkLeanDeg: 5.2, postureScore: 76),
+                    averageTrunkLeanDeg: 5.2, postureScore: 76)
     ])
 }

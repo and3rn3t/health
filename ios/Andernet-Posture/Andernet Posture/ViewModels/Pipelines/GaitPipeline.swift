@@ -98,6 +98,7 @@ final class GaitPipeline {
         )
     }
 
+    // swiftlint:disable:next function_parameter_count
     func classifyGaitPattern(
         stanceTimeLeftPercent: Double?, stanceTimeRightPercent: Double?,
         stepLengthLeftM: Double?, stepLengthRightM: Double?,

@@ -1,4 +1,3 @@
-// swiftlint:disable file_length
 //
 //  SessionAnalysisSummary.swift
 //  Andernet Posture

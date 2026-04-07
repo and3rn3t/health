@@ -6,9 +6,8 @@
 //
 
 import Foundation
-import simd
-import os.log
 import os
+import simd
 
 /// Recording state machine states.
 enum RecordingState: Sendable, Equatable {
@@ -59,7 +58,7 @@ final class DefaultSessionRecorder: SessionRecorder, @unchecked Sendable {
 
     /// Backing storage for state — always access via `state` computed property.
     /// nonisolated(unsafe): protected by recordingQueue; manual synchronization.
-    private nonisolated(unsafe) var stateBacking: RecordingState = .idle
+    nonisolated(unsafe) private var stateBacking: RecordingState = .idle
 
     /// Lightweight lock for cached counters — avoids DispatchQueue.sync overhead on hot-path reads.
     private let counterLock = OSAllocatedUnfairLock(initialState: (state: RecordingState.idle, frames: 0, steps: 0))
@@ -75,13 +74,13 @@ final class DefaultSessionRecorder: SessionRecorder, @unchecked Sendable {
     private let maxFrameCapacity = 36_000
 
     /// nonisolated(unsafe): protected by recordingQueue; manual synchronization.
-    private nonisolated(unsafe) var startDate: Date?
-    private nonisolated(unsafe) var pauseDate: Date?
-    private nonisolated(unsafe) var accumulatedPause: TimeInterval = 0
+    nonisolated(unsafe) private var startDate: Date?
+    nonisolated(unsafe) private var pauseDate: Date?
+    nonisolated(unsafe) private var accumulatedPause: TimeInterval = 0
 
-    private nonisolated(unsafe) var frames: [BodyFrame] = []
-    private nonisolated(unsafe) var steps: [StepEvent] = []
-    private nonisolated(unsafe) var motionFrames: [MotionFrame] = []
+    nonisolated(unsafe) private var frames: [BodyFrame] = []
+    nonisolated(unsafe) private var steps: [StepEvent] = []
+    nonisolated(unsafe) private var motionFrames: [MotionFrame] = []
 
     var elapsedTime: TimeInterval {
         let currentState = state

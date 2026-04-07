@@ -84,7 +84,8 @@ struct SettingsView: View {
                 } header: {
                     Text("Demographics")
                 } footer: {
-                    Text("Age and sex are used to display age-stratified normative ranges for clinical measurements. Demographics sync across your devices via iCloud.")
+                    Text("Age and sex are used to display age-stratified normative ranges "
+                        + "for clinical measurements. Demographics sync across your devices via iCloud.")
                 }
 
                 // MARK: - Capture Settings
@@ -164,7 +165,8 @@ struct SettingsView: View {
                     let estimatedMB = estimatedDataSizeMB
                     if estimatedMB > 50 {
                         Label {
-                            Text("Your session data is approximately \(String(format: "%.0f", estimatedMB)) MB. Large datasets may use significant iCloud storage.")
+                            Text("Your session data is approximately \(String(format: "%.0f", estimatedMB)) MB. "
+                                + "Large datasets may use significant iCloud storage.")
                                 .font(.caption)
                         } icon: {
                             Image(systemName: "externaldrive.badge.icloud")
@@ -225,7 +227,8 @@ struct SettingsView: View {
                 } header: {
                     Text("Machine Learning")
                 } footer: {
-                    Text("When enabled, CoreML models augment rule-based analysis. If a model is unavailable, the app falls back to geometric algorithms automatically.")
+                    Text("When enabled, CoreML models augment rule-based analysis. If a model is unavailable, "
+                        + "the app falls back to geometric algorithms automatically.")
                 }
 
                 // MARK: - Disclaimer
