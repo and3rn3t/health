@@ -67,7 +67,8 @@ This document provides a comprehensive index of all documentation in the project
 
 ### 🔧 Troubleshooting
 
-- [`troubleshooting/`](./troubleshooting/) - Problem solutions and troubleshooting guides
+- [`TROUBLESHOOTING.md`](../TROUBLESHOOTING.md) - **Start here!** Quick-reference guide for common issues across Web, Worker, iOS, Docker, and CI
+- [`troubleshooting/`](./troubleshooting/) - Deep-dive problem databases and historical fixes
   - [`PROBLEM_SOLUTIONS_DATABASE.md`](./troubleshooting/PROBLEM_SOLUTIONS_DATABASE.md) - Comprehensive problem database for AI-assisted development
   - [`BUILD_TROUBLESHOOTING.md`](./troubleshooting/BUILD_TROUBLESHOOTING.md) - Build and compilation troubleshooting
   - [`FIXES_SUMMARY.md`](./troubleshooting/FIXES_SUMMARY.md) - Compilation fixes summary
@@ -100,7 +101,7 @@ This document provides a comprehensive index of all documentation in the project
 - **Getting Started**: Start with [`getting-started/`](./getting-started/)
 - **Development Setup**: See [`getting-started/SETUP_GUIDE.md`](./getting-started/SETUP_GUIDE.md)
 - **API Development**: Check [`architecture/API.md`](./architecture/API.md)
-- **iOS Development**: Browse [`ios/`](./ios/) folder
+- **iOS Development**: Browse [`ios/`](./ios/) folder, see [`MODEL_TRAINING.md`](../ios/docs/MODEL_TRAINING.md) for CoreML workflow
 - **Deployment**: Look in [`deploy/`](./deploy/) folder
 - **Troubleshooting**: Visit [`troubleshooting/`](./troubleshooting/) folder
 

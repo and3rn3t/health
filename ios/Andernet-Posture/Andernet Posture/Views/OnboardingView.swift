@@ -11,6 +11,7 @@ struct OnboardingView: View {
     @Binding var hasCompletedOnboarding: Bool
     @AppStorage("clinicalDisclaimerAccepted") private var disclaimerAccepted = false
     @State private var currentPage = 0
+    @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 80
 
     private let pageCount = 5
 
@@ -112,7 +113,7 @@ struct OnboardingView: View {
             Spacer()
 
             Image(systemName: "checkmark.seal.fill")
-                .font(.system(size: 80))
+                .font(.system(size: heroIconSize))
                 .foregroundStyle(.white)
                 .symbolEffect(.bounce, value: currentPage == 4)
 
@@ -170,13 +171,14 @@ private struct OnboardingPageView: View {
     let subtitle: LocalizedStringKey
 
     @State private var appeared = false
+    @ScaledMetric(relativeTo: .largeTitle) private var iconSize: CGFloat = 80
 
     var body: some View {
         VStack(spacing: AppSpacing.xxl) {
             Spacer()
 
             Image(systemName: icon)
-                .font(.system(size: 80))
+                .font(.system(size: iconSize))
                 .foregroundStyle(.white)
                 .scaleEffect(appeared ? 1 : 0.6)
                 .opacity(appeared ? 1 : 0)

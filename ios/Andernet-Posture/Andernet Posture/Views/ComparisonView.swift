@@ -57,12 +57,14 @@ struct ComparisonView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            .accessibilityElement(children: .combine)
 
             Spacer()
 
             Image(systemName: "arrow.right")
                 .font(.title3)
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
 
             Spacer()
 
@@ -81,6 +83,7 @@ struct ComparisonView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            .accessibilityElement(children: .combine)
         }
         .padding(AppSpacing.lg)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: AppRadius.medium))

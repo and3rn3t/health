@@ -72,10 +72,12 @@ final class WebSocketBridge: NSObject {
 
     private(set) var connectionState: WSConnectionState = .disconnected
 
-    private var webSocket: URLSessionWebSocketTask?
-    private var urlSessionInstance: URLSession?
-    private var pingTimer: Timer?
-    private var reconnectTask: Task<Void, Never>?
+    // nonisolated(unsafe): All runtime access is via @MainActor methods.
+    // deinit is the only nonisolated reader and is safe (sole owner at that point).
+    private nonisolated(unsafe) var webSocket: URLSessionWebSocketTask?
+    private nonisolated(unsafe) var urlSessionInstance: URLSession?
+    private nonisolated(unsafe) var pingTimer: Timer?
+    private nonisolated(unsafe) var reconnectTask: Task<Void, Never>?
 
     /// Maximum reconnect attempts before giving up.
     private static let maxReconnectAttempts = AppConfig.WebSocket.maxReconnectAttempts
@@ -215,9 +217,9 @@ final class WebSocketBridge: NSObject {
                 return
             }
 
-            webSocket?.send(.string(jsonString)) { [weak self] error in
+            webSocket?.send(.string(jsonString)) { error in
                 if let error {
-                    self?.logger.error("WebSocket send failed: \(error.localizedDescription)")
+                    AppLogger.webSocket.error("WebSocket send failed: \(error.localizedDescription)")
                 }
             }
         } catch {
@@ -243,9 +245,9 @@ final class WebSocketBridge: NSObject {
         Task { @MainActor [weak self] in
             for jsonString in pending {
                 guard let self, case .connected = self.connectionState else { break }
-                self.webSocket?.send(.string(jsonString)) { [weak self] error in
+                self.webSocket?.send(.string(jsonString)) { error in
                     if let error {
-                        self?.logger.error("Queue flush send failed: \(error.localizedDescription)")
+                        AppLogger.webSocket.error("Queue flush send failed: \(error.localizedDescription)")
                     }
                 }
                 try? await Task.sleep(for: .seconds(Self.queueDrainInterval))
@@ -255,14 +257,14 @@ final class WebSocketBridge: NSObject {
 
     private func startReceiving() {
         webSocket?.receive { [weak self] result in
-            guard let self else { return }
-            switch result {
-            case .success(let message):
-                self.handleMessage(message)
-                self.startReceiving() // Continue listening
-            case .failure(let error):
-                self.logger.error("WebSocket receive error: \(error.localizedDescription)")
-                Task { @MainActor in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                switch result {
+                case .success(let message):
+                    self.handleMessage(message)
+                    self.startReceiving()
+                case .failure(let error):
+                    self.logger.error("WebSocket receive error: \(error.localizedDescription)")
                     self.handleDisconnect()
                 }
             }
@@ -297,9 +299,11 @@ final class WebSocketBridge: NSObject {
     private func startPingTimer() {
         pingTimer?.invalidate()
         pingTimer = Timer.scheduledTimer(withTimeInterval: AppConfig.WebSocket.pingInterval, repeats: true) { [weak self] _ in
-            self?.webSocket?.sendPing { error in
-                if let error {
-                    self?.logger.warning("Ping failed: \(error.localizedDescription)")
+            Task { @MainActor [weak self] in
+                self?.webSocket?.sendPing { error in
+                    if let error {
+                        AppLogger.webSocket.warning("Ping failed: \(error.localizedDescription)")
+                    }
                 }
             }
         }

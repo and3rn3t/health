@@ -46,6 +46,18 @@ enum AppConfig {
 
         /// Timeout for HealthKit fetch / query operations.
         static let fetchTimeout: TimeInterval = 15
+
+        /// TTL for cached demographic queries (avoids repeated HK calls).
+        static let demographicCacheTTL: TimeInterval = 3600 // 1 hour
+
+        /// Maximum retry attempts for failed HealthKit writes.
+        static let saveMaxRetries = 3
+
+        /// Base delay (seconds) for exponential backoff on retries.
+        static let saveRetryBaseDelay: TimeInterval = 0.2
+
+        /// Maximum delay cap (seconds) for exponential backoff.
+        static let saveRetryMaxDelay: TimeInterval = 5.0
     }
 
     // MARK: - Motion

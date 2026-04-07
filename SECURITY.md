@@ -1,30 +1,73 @@
-# Security
-
-Thanks for helping make GitHub safe for everyone.
-
-GitHub takes the security of our software products and services seriously, including all of the open source code repositories managed through our GitHub organizations, such as [GitHub](https://github.com/GitHub).
-
-Even though [open source repositories are outside of the scope of our bug bounty program](https://bounty.github.com/index.html#scope) and therefore not eligible for bounty rewards, we will ensure that your finding gets passed along to the appropriate maintainers for remediation.
+# Security Policy — VitalSense
 
 ## Reporting Security Issues
 
-If you believe you have found a security vulnerability in any GitHub-owned repository, please report it to us through coordinated disclosure.
+If you discover a security vulnerability in VitalSense, please report it responsibly.
 
-**Please do not report security vulnerabilities through public GitHub issues, discussions, or pull requests.**
+**Do not report security vulnerabilities through public GitHub issues, discussions, or pull requests.**
 
-Instead, please send an email to opensource-security[@]github.com.
+Instead, please send an email to **opensource-security[@]github.com** with the following details:
 
-Please include as much of the information listed below as you can to help us better understand and resolve the issue:
+- The type of issue (e.g., injection, broken access control, cryptographic failure)
+- Full paths of affected source files
+- Steps to reproduce
+- Potential impact and any proof-of-concept
 
-- The type of issue (e.g., buffer overflow, SQL injection, or cross-site scripting)
-- Full paths of source file(s) related to the manifestation of the issue
-- The location of the affected source code (tag/branch/commit or direct URL)
-- Any special configuration required to reproduce the issue
-- Step-by-step instructions to reproduce the issue
-- Proof-of-concept or exploit code (if possible)
-- Impact of the issue, including how an attacker might exploit the issue
+We aim to acknowledge reports within 48 hours and provide a fix timeline within 5 business days.
 
-This information will help us triage your report more quickly.
+## Scope
+
+This policy covers:
+
+- The VitalSense web application (`src/`)
+- Cloudflare Worker API routes (`src/worker/`)
+- iOS Swift application (`ios/`)
+- Build and deployment infrastructure
+
+## Security Practices
+
+### Authentication & Authorization
+
+- **Auth0** with JWKS-verified JWTs for web users.
+- **HS256 device tokens** for iOS devices (secret stored in Wrangler secrets, never in source).
+- All `/api/*` routes are auth-gated; health check endpoints require authenticated context.
+
+### Data Protection
+
+- **Health data is sensitive** — no raw metrics or PII in logs.
+- All data in transit uses HTTPS/WSS (TLS 1.2+).
+- HealthKit data stays on-device unless the user explicitly syncs via WebSocket.
+- Cloudflare KV and R2 encrypt data at rest.
+
+### Input Validation
+
+- All API inputs validated with **zod** schemas at the boundary.
+- WebSocket messages type-checked against defined message schemas.
+- iOS-side validation before sending data to the server.
+
+### Rate Limiting
+
+- POST endpoints protected by Durable Object-based rate limiter (token bucket algorithm).
+- In-memory fallback if the DO is unavailable.
+
+### Dependencies
+
+- `npm audit` runs in CI to catch vulnerable packages.
+- `eslint-plugin-security` warnings are reviewed.
+- Dependabot / Renovate keep dependencies current.
+
+### Secrets Management
+
+- Secrets stored via `wrangler secret put` — never hardcoded.
+- See `docs/security/SECRET_MANAGEMENT.md` for the rotation procedure.
+- Environment variables in `.env.development.local` (git-ignored) for local dev.
+
+## Supported Versions
+
+| Version | Supported |
+| ------- | --------- |
+| Latest `main` | Yes |
+| Older commits | Best effort |
 
 ## Policy
 

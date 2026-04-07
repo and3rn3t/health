@@ -257,3 +257,16 @@ struct SessionAnalysisSection: View {
         }
     }
 }
+
+// MARK: - Preview
+
+#Preview {
+    SessionAnalysisSection(analysis: SessionAnalysis(
+        overallAssessment: "Mostly normal gait pattern with mild forward lean.",
+        findings: [],
+        normalCount: 8,
+        totalEvaluated: 10,
+        overallSeverity: .mild
+    ))
+    .padding()
+}

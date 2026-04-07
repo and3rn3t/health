@@ -320,3 +320,26 @@ private func fileDateSuffix(_ date: Date) -> String {
     f.dateFormat = "yyyy-MM-dd"
     return f.string(from: date)
 }
+
+// MARK: - Previews
+
+#Preview("Single Session Export") {
+    ExportView(session: GaitSession(
+        date: .now,
+        duration: 120,
+        averageCadenceSPM: 112,
+        averageStrideLengthM: 0.72,
+        averageTrunkLeanDeg: 4.5,
+        postureScore: 82
+    ))
+}
+
+#Preview("Multi-Session Export") {
+    MultiSessionExportView(sessions: [
+        GaitSession(date: .now, duration: 120, averageCadenceSPM: 112,
+                    averageStrideLengthM: 0.72, averageTrunkLeanDeg: 4.5, postureScore: 82),
+        GaitSession(date: Calendar.current.date(byAdding: .day, value: -3, to: .now)!,
+                    duration: 90, averageCadenceSPM: 108, averageStrideLengthM: 0.68,
+                    averageTrunkLeanDeg: 5.2, postureScore: 76),
+    ])
+}

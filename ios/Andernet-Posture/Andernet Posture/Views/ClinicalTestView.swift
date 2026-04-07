@@ -13,6 +13,11 @@ struct ClinicalTestView: View {
     @State private var selectedTest: ClinicalTestType?
     @State private var pulseScale: CGFloat = 1.0
 
+    @ScaledMetric(relativeTo: .title) private var testCardIconSize: CGFloat = 36
+    @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 72
+    @ScaledMetric(relativeTo: .title) private var transitionIconSize: CGFloat = 48
+    @ScaledMetric(relativeTo: .title) private var resultIconSize: CGFloat = 56
+
     var body: some View {
         NavigationStack {
             Group {
@@ -90,7 +95,7 @@ struct ClinicalTestView: View {
 
                 HStack(spacing: AppSpacing.lg) {
                     Image(systemName: icon)
-                        .font(.system(size: 36))
+                        .font(.system(size: testCardIconSize))
                         .foregroundStyle(color)
                         .frame(width: 50)
 
@@ -215,7 +220,7 @@ struct ClinicalTestView: View {
                     .animation(.easeInOut(duration: 0.8), value: seconds)
 
                 Text("\(seconds)")
-                    .font(.system(size: 72, weight: .bold, design: .rounded))
+                    .font(.system(size: countdownSize, weight: .bold, design: .rounded))
                     .foregroundStyle(.blue)
                     .contentTransition(.numericText())
             }
@@ -293,7 +298,7 @@ struct ClinicalTestView: View {
         SectionCard {
             VStack(spacing: AppSpacing.lg) {
                 Image(systemName: "arrow.forward.circle.fill")
-                    .font(.system(size: 48))
+                    .font(.system(size: transitionIconSize))
                     .foregroundStyle(.blue)
                     .symbolEffect(.bounce)
 
@@ -311,7 +316,7 @@ struct ClinicalTestView: View {
     private var resultsView: some View {
         VStack(spacing: AppSpacing.xl) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 56))
+                .font(.system(size: resultIconSize))
                 .foregroundStyle(.green)
                 .symbolEffect(.bounce, value: viewModel.testState)
 

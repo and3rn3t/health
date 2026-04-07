@@ -90,6 +90,11 @@ final class DefaultHealthKitService: HealthKitService {
 
     private let store = HKHealthStore()
 
+    // MARK: Demographic Cache
+
+    private var cachedDemographics: UserDemographics?
+    private var demographicsCacheTimestamp: Date?
+
     var isAvailable: Bool {
         HKHealthStore.isHealthDataAvailable()
     }
@@ -186,35 +191,9 @@ final class DefaultHealthKitService: HealthKitService {
 
         guard !samples.isEmpty else { return }
 
-        // Capture as immutable for safe use in @Sendable closures
-        let samplesToSave = samples
-
-        // Add timeout to prevent hanging indefinitely
-        try await withThrowingTaskGroup(of: Void.self) { group in
-            group.addTask { [store = self.store] in
-                try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
-                    store.save(samplesToSave) { _, error in
-                        if let error {
-                            AppLogger.healthKit.error("Failed to save HealthKit samples: \(error.localizedDescription)")
-                            cont.resume(throwing: error)
-                        } else {
-                            AppLogger.healthKit.info("Saved \(samplesToSave.count) HealthKit sample(s)")
-                            cont.resume()
-                        }
-                    }
-                }
-            }
-            
-            // Timeout to prevent hanging indefinitely
-            group.addTask {
-                try await Task.sleep(for: .seconds(AppConfig.HealthKit.saveTimeout))
-                throw HealthKitError.timeout
-            }
-            
-            // Wait for the first task to complete (either success or timeout)
-            try await group.next()
-            group.cancelAll()
-        }
+        // Retry with exponential backoff on transient failures
+        try await saveWithRetry(samples)
+        AppLogger.healthKit.info("Saved \(samples.count) HealthKit sample(s)")
     }
 
     // MARK: Read
@@ -279,6 +258,14 @@ final class DefaultHealthKitService: HealthKitService {
     // MARK: Demographics
 
     func fetchDemographics() async throws -> UserDemographics {
+        // Return cached result if still valid
+        if let cached = cachedDemographics,
+           let ts = demographicsCacheTimestamp,
+           Date().timeIntervalSince(ts) < AppConfig.HealthKit.demographicCacheTTL {
+            AppLogger.healthKit.debug("Returning cached demographics")
+            return cached
+        }
+
         guard isAvailable else {
             return UserDemographics(age: nil, biologicalSex: nil, heightM: nil, bodyMassKg: nil)
         }
@@ -312,7 +299,10 @@ final class DefaultHealthKitService: HealthKitService {
         // Body mass (most recent)
         let mass = try await fetchMostRecentQuantity(type: .init(.bodyMass), unit: .gramUnit(with: .kilo))
 
-        return UserDemographics(age: age, biologicalSex: sex, heightM: height, bodyMassKg: mass)
+        let demographics = UserDemographics(age: age, biologicalSex: sex, heightM: height, bodyMassKg: mass)
+        cachedDemographics = demographics
+        demographicsCacheTimestamp = Date()
+        return demographics
     }
 
     // MARK: Daily Steps Average
@@ -398,6 +388,56 @@ final class DefaultHealthKitService: HealthKitService {
     }
 
     // MARK: Private Helpers
+
+    /// Retry a HealthKit save operation with exponential backoff.
+    private func saveWithRetry(_ samples: [HKQuantitySample]) async throws {
+        let maxRetries = AppConfig.HealthKit.saveMaxRetries
+        let baseDelay = AppConfig.HealthKit.saveRetryBaseDelay
+        let maxDelay = AppConfig.HealthKit.saveRetryMaxDelay
+
+        for attempt in 0..<maxRetries {
+            do {
+                try await performSave(samples)
+                return
+            } catch let error as HealthKitError where error == .timeout {
+                // Don't retry on timeout — already waited long enough
+                throw error
+            } catch {
+                if attempt == maxRetries - 1 {
+                    AppLogger.healthKit.error("HealthKit save failed after \(maxRetries) attempts: \(error.localizedDescription)")
+                    throw error
+                }
+                let delay = min(baseDelay * pow(2.0, Double(attempt)), maxDelay)
+                AppLogger.healthKit.warning("HealthKit save attempt \(attempt + 1) failed, retrying in \(delay, format: .fixed(precision: 1))s")
+                try await Task.sleep(for: .seconds(delay))
+            }
+        }
+    }
+
+    /// Performs a single HealthKit save with timeout.
+    private func performSave(_ samples: [HKQuantitySample]) async throws {
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask { [store = self.store] in
+                try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+                    store.save(samples) { _, error in
+                        if let error {
+                            cont.resume(throwing: error)
+                        } else {
+                            cont.resume()
+                        }
+                    }
+                }
+            }
+
+            group.addTask {
+                try await Task.sleep(for: .seconds(AppConfig.HealthKit.saveTimeout))
+                throw HealthKitError.timeout
+            }
+
+            try await group.next()
+            group.cancelAll()
+        }
+    }
 
     private func fetchMostRecentQuantity(type: HKQuantityType, unit: HKUnit) async throws -> Double? {
         let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
