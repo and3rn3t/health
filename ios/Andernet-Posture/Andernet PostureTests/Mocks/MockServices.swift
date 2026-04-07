@@ -86,6 +86,7 @@ final class MockSessionRecorder: SessionRecorder {
 
 // MARK: - MockMotionService
 
+@MainActor
 final class MockMotionService: MotionService {
     var isAvailable: Bool = true
     var onMotionUpdate: ((MotionFrame) -> Void)?
@@ -333,6 +334,7 @@ final class MockHealthKitService: HealthKitService {
 
 // MARK: - MockPedometerService
 
+@MainActor
 final class MockPedometerService: PedometerService {
     var isStepCountingAvailable: Bool = true
     var isDistanceAvailable: Bool = true
@@ -410,6 +412,7 @@ final class MockExportService: ExportServiceProtocol, @unchecked Sendable {
 
 // MARK: - MockSixMWTProtocol
 
+@MainActor
 final class MockSixMWTProtocol: SixMWTProtocol {
     var phase: SixMWTPhase = .notStarted
     var liveMetrics: SixMWTLiveMetrics?
