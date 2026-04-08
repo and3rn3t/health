@@ -1,0 +1,44 @@
+name: 'Setup iOS Build Environment'
+description: 'Select Xcode, cache & resolve SPM dependencies. Requires checkout before use.'
+inputs:
+  xcode-path:
+    description: 'Path to Xcode.app Developer directory'
+    required: false
+    default: '/Applications/Xcode_26.2.app/Contents/Developer'
+  project:
+    description: 'Xcode project file name'
+    required: false
+    default: 'Andernet Posture.xcodeproj'
+  scheme:
+    description: 'Xcode scheme name'
+    required: false
+    default: 'Andernet Posture'
+  working-directory:
+    description: 'iOS project working directory'
+    required: false
+    default: 'ios/Andernet-Posture'
+runs:
+  using: 'composite'
+  steps:
+    - name: Select Xcode
+      shell: bash
+      run: sudo xcode-select -s "${{ inputs.xcode-path }}"
+
+    - name: Cache SPM packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
+          ~/Library/Caches/org.swift.swiftpm
+          ~/.swiftpm
+        key: ${{ runner.os }}-spm-${{ hashFiles('ios/Andernet-Posture/**/*.xcodeproj/project.pbxproj') }}
+        restore-keys: |
+          ${{ runner.os }}-spm-
+
+    - name: Resolve SPM dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        xcodebuild -resolvePackageDependencies \
+          -project "${{ inputs.project }}" \
+          -scheme "${{ inputs.scheme }}"

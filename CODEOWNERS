@@ -11,7 +11,6 @@ src/ @and3rn3t
 # iOS application
 ios/ @and3rn3t
 .github/workflows/ios-ci.yml @and3rn3t
-.github/workflows/posture-ci.yml @and3rn3t
 
 # Security-sensitive files
 SECURITY.md @and3rn3t

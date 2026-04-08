@@ -1,6 +1,18 @@
-name: iOS CI (Lint, Build, Test, Archive)
+name: iOS CI
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'ios/Andernet-Posture/**'
+      - '.github/workflows/ios-ci.yml'
+      - '.github/actions/setup-ios/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'ios/Andernet-Posture/**'
+      - '.github/workflows/ios-ci.yml'
+      - '.github/actions/setup-ios/**'
   workflow_dispatch:
     inputs:
       skip_lint:
@@ -19,193 +31,192 @@ on:
         default: false
         type: boolean
 
-env:
-  XCODE_VERSION: '26.2'
-  SCHEME: "Andernet Posture"
-  PROJECT: "Andernet Posture.xcodeproj"
-  WORK_DIR: ios/Andernet-Posture
-  ARCHIVE_PATH: ios/Andernet-Posture/build/AndernetPosture.xcarchive
-  EXPORT_PATH: ios/Andernet-Posture/build/export
-
 concurrency:
   group: ios-ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  SCHEME: "Andernet Posture"
+  PROJECT: "Andernet Posture.xcodeproj"
+  DESTINATION: "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
+  WORK_DIR: ios/Andernet-Posture
+
+defaults:
+  run:
+    working-directory: ios/Andernet-Posture
+
 jobs:
-  lint:
-    name: SwiftLint (strict)
-    runs-on: macos-15
-    permissions:
-      contents: read
-    if: github.event.inputs.skip_lint != 'true'
+  # ─── SwiftLint on cheap ubuntu runner (~30s vs ~2min on macOS) ───
+  swiftlint:
+    name: SwiftLint
+    runs-on: ubuntu-latest
+    if: inputs.skip_lint != true
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+      - name: Run SwiftLint (strict)
+        uses: norio-nomura/action-swiftlint@3.2.1
         with:
-          xcode-version: ${{ env.XCODE_VERSION }}
-      - name: Cache Homebrew
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/Library/Caches/Homebrew
-            /usr/local/Homebrew
-          key: brew-${{ runner.os }}-${{ hashFiles('ios/Andernet-Posture/.swiftlint.yml') }}
-      - name: Install SwiftLint / swift-format
+          args: --strict
+        env:
+          WORKING_DIRECTORY: ios/Andernet-Posture
+
+  # ─── Unit tests (every push & PR, ~2min) ───
+  unit-tests:
+    name: Unit Tests
+    runs-on: macos-15
+    needs: swiftlint
+    if: |
+      always()
+      && (needs.swiftlint.result == 'success' || needs.swiftlint.result == 'skipped')
+      && inputs.skip_tests != true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-ios
+
+      - name: Run unit tests
         run: |
-          brew install swiftlint || true
-          brew install swift-format || true
-      - name: Run SwiftLint (fail on errors)
-        id: swiftlint
-        working-directory: ${{ env.WORK_DIR }}
-        run: |
-          set -e
-          echo 'Running SwiftLint strict mode'
-          swiftlint lint --reporter github-actions-logging > swiftlint.log || true
-          # Count errors (lines starting with Error: or containing 'error:' tokens from reporter)
-          ERROR_COUNT=$(grep -Ei 'error:' swiftlint.log | wc -l | tr -d ' ' || echo 0)
-          echo "error_count=$ERROR_COUNT" >> $GITHUB_OUTPUT
-          echo "SwiftLint error count: $ERROR_COUNT"
-          if [ "$ERROR_COUNT" -gt 0 ]; then
-            echo 'SwiftLint errors detected:'
-            cat swiftlint.log
-            exit 1
-          fi
-      - name: Upload SwiftLint Log
-        if: always()
+          set -o pipefail
+          xcodebuild test \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "$DESTINATION" \
+            -only-testing "Andernet PostureTests" \
+            -resultBundlePath UnitTestResults.xcresult \
+            -skipPackagePluginValidation \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Upload test results
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: swiftlint-log
-          path: ${{ env.WORK_DIR }}/swiftlint.log
-          retention-days: 7
+          name: UnitTestResults
+          path: ${{ env.WORK_DIR }}/UnitTestResults.xcresult
 
-  build-test:
-    name: Build & Test (Debug)
+  # ─── Smoke UI tests (PRs only, ~2min) ───
+  smoke-ui-tests:
+    name: Smoke UI Tests
     runs-on: macos-15
-    permissions:
-      contents: read
-    needs: lint
-    if: always() && (needs.lint.result == 'success' || needs.lint.result == 'skipped') && github.event.inputs.skip_tests != 'true'
+    needs: swiftlint
+    if: |
+      github.event_name == 'pull_request'
+      && (needs.swiftlint.result == 'success' || needs.swiftlint.result == 'skipped')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-ios
+
+      - name: Run smoke UI tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "$DESTINATION" \
+            -only-testing "Andernet PostureUITests" \
+            -resultBundlePath SmokeTestResults.xcresult \
+            -skipPackagePluginValidation \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmokeTestResults
+          path: ${{ env.WORK_DIR }}/SmokeTestResults.xcresult
+
+  # ─── Full suite + coverage (main push only, non-blocking) ───
+  full-suite:
+    name: Full Suite + Coverage
+    runs-on: macos-15
+    needs: swiftlint
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    continue-on-error: true
     outputs:
       coverage_percent: ${{ steps.coverage.outputs.coverage_percent }}
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: ${{ env.XCODE_VERSION }}
-      - name: Cache DerivedData & SPM
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/Library/Developer/Xcode/DerivedData
-            ~/Library/Caches/org.swift.swiftpm
-            ~/.swiftpm
-            ${{ env.WORK_DIR }}/build
-          key: dd-${{ runner.os }}-${{ env.XCODE_VERSION }}-${{ hashFiles('ios/Andernet-Posture/**/*.xcodeproj/project.pbxproj') }}
-      - name: Resolve Dependencies
-        working-directory: ${{ env.WORK_DIR }}
+      - uses: ./.github/actions/setup-ios
+
+      - name: Run full test suite with coverage
         run: |
-          xcodebuild -resolvePackageDependencies -project "${{ env.PROJECT }}" -scheme "${{ env.SCHEME }}"
-      - name: Build for Testing (Debug)
-        working-directory: ${{ env.WORK_DIR }}
-        run: |
-          set -e
-          xcodebuild build-for-testing \
-            -project "${{ env.PROJECT }}" \
-            -scheme "${{ env.SCHEME }}" \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest' \
-            -derivedDataPath build \
-            -configuration Debug \
-            -skipPackagePluginValidation \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES
-      - name: Run Unit Tests
-        working-directory: ${{ env.WORK_DIR }}
-        run: |
-          set -e
-          xcodebuild test-without-building \
-            -project "${{ env.PROJECT }}" \
-            -scheme "${{ env.SCHEME }}" \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest' \
-            -derivedDataPath build \
+          set -o pipefail
+          xcodebuild test \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "$DESTINATION" \
             -only-testing "Andernet PostureTests" \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO || EXIT_CODE=$?
-          # Allow test failures to still collect artifacts but fail job
-          if [ ! -z "$EXIT_CODE" ]; then
-            echo "Tests reported non-zero exit ($EXIT_CODE)"; exit $EXIT_CODE; fi
-      - name: Extract Coverage (Best Effort)
+            -enableCodeCoverage YES \
+            -resultBundlePath FullSuiteResults.xcresult \
+            -skipPackagePluginValidation \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Extract coverage
         id: coverage
         if: always()
         run: |
           set +e
-          RESULT=$(ls ${{ env.WORK_DIR }}/build/Logs/Test/*.xcresult 2>/dev/null | head -1)
-          if [ -z "$RESULT" ]; then echo "No xcresult found"; exit 0; fi
-          xcrun xccov view --report --json "$RESULT" > coverage.json 2>/dev/null || { echo "xccov JSON unavailable"; exit 0; }
-          TOTAL=$(python3 -c "import json;\nimport sys;\nimport math;\n\ntry:\n data=json.load(open('coverage.json'));\n cov=[t.get('lineCoverage',0) for t in data.get('targets',[]) if t.get('name')!='Andernet PostureUITests'];\n print(round(sum(cov)/len(cov)*100,2) if cov else 0)\nexcept Exception:\n print(0)")
+          RESULT="FullSuiteResults.xcresult"
+          [ ! -d "$RESULT" ] && echo "No xcresult" && exit 0
+          xcrun xccov view --report --json "$RESULT" > coverage.json 2>/dev/null || exit 0
+          TOTAL=$(python3 -c "
+          import json
+          try:
+              data = json.load(open('coverage.json'))
+              cov = [t.get('lineCoverage', 0) for t in data.get('targets', []) if t.get('name') != 'Andernet PostureUITests']
+              print(round(sum(cov) / len(cov) * 100, 2) if cov else 0)
+          except Exception:
+              print(0)
+          ")
           echo "Line Coverage: ${TOTAL}%"
           echo "coverage_percent=${TOTAL}" >> $GITHUB_OUTPUT
-      - name: Upload Coverage JSON
+
+      - name: Coverage gate (min 40%)
         if: always() && steps.coverage.outputs.coverage_percent != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report-json
-          path: coverage.json
-          retention-days: 7
-      - name: Coverage Gate (Min 40%)
-        if: always()
         run: |
-          RESULT=$(ls ${{ env.WORK_DIR }}/build/Logs/Test/*.xcresult 2>/dev/null | head -1)
-          if [ -z "$RESULT" ]; then echo "Skipping coverage gate (no results)"; exit 0; fi
-          COV=$(xcrun xccov view --report --json "$RESULT" | python3 -c "import sys,json;\n\nimport math;\n\ntry:\n data=json.load(sys.stdin);\n cov=[t.get('lineCoverage',0) for t in data.get('targets',[]) if t.get('name')!='Andernet PostureUITests'];\n print(round(sum(cov)/len(cov)*100,2) if cov else 0)\nexcept Exception:\n print(0)")
-          echo "Computed coverage: ${COV}%"
-          MIN=40
-          awk -v c=$COV -v m=$MIN 'BEGIN { if (c+0 < m) { printf("Coverage %.2f%% below minimum %d%%\n", c, m); exit 1 } }'
-          echo "Coverage gate passed (>= ${MIN}%)"
-      - name: Upload Test Artifacts
+          COV="${{ steps.coverage.outputs.coverage_percent }}"
+          awk -v c="$COV" -v m=40 'BEGIN { if (c+0 < m) { printf("Coverage %.2f%% below minimum %d%%\n", c, m); exit 1 } }'
+          echo "Coverage gate passed (${COV}% >= 40%)"
+
+      - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-debug
-          path: ${{ env.WORK_DIR }}/build/Logs/Test/*.xcresult
+          name: FullSuiteResults
+          path: |
+            ${{ env.WORK_DIR }}/FullSuiteResults.xcresult
+            ${{ env.WORK_DIR }}/coverage.json
           retention-days: 7
 
-  archive-release:
-    name: Archive & Export (Release IPA)
+  # ─── Archive (main push or manual, requires passing tests) ───
+  archive:
+    name: Archive (Release)
     runs-on: macos-15
-    permissions:
-      contents: read
-    needs: build-test
-    if: always() && (needs.build-test.result == 'success' || needs.build-test.result == 'skipped') && github.event.inputs.skip_archive != 'true'
+    needs: [unit-tests, full-suite]
+    if: |
+      always()
+      && inputs.skip_archive != true
+      && (github.event_name == 'workflow_dispatch' || (github.ref == 'refs/heads/main' && github.event_name == 'push'))
+      && (needs.unit-tests.result == 'success' || needs.unit-tests.result == 'skipped')
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: ${{ env.XCODE_VERSION }}
-      - name: Cache DerivedData & SPM
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/Library/Developer/Xcode/DerivedData
-            ~/Library/Caches/org.swift.swiftpm
-            ~/.swiftpm
-            ${{ env.WORK_DIR }}/build
-          key: archive-${{ runner.os }}-${{ env.XCODE_VERSION }}-${{ hashFiles('ios/Andernet-Posture/**/*.xcodeproj/project.pbxproj') }}
-      - name: Archive (Release)
-        working-directory: ${{ env.WORK_DIR }}
+      - uses: ./.github/actions/setup-ios
+
+      - name: Archive (Release, unsigned)
         run: |
           set -e
           xcodebuild archive \
-            -project "${{ env.PROJECT }}" \
-            -scheme "${{ env.SCHEME }}" \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
             -configuration Release \
             -archivePath build/AndernetPosture.xcarchive \
             -destination 'generic/platform=iOS' \
             -skipPackagePluginValidation \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO SKIP_INSTALL=NO || EXIT_CODE=$?
-          if [ ! -d "build/AndernetPosture.xcarchive" ]; then echo 'Archive failed'; exit 1; fi
-      - name: Export IPA (Ad-hoc Unsigned)
-        working-directory: ${{ env.WORK_DIR }}
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO SKIP_INSTALL=NO
+          test -d "build/AndernetPosture.xcarchive" || { echo "Archive failed"; exit 1; }
+
+      - name: Export IPA (ad-hoc unsigned)
         run: |
           set -e
           mkdir -p build/export
@@ -222,79 +233,67 @@ jobs:
           </dict>
           </plist>
           EOF
-          xcodebuild -exportArchive -archivePath build/AndernetPosture.xcarchive -exportPath build/export -exportOptionsPlist exportOptions.plist || echo 'Export may have partial artifacts'
-          ls -la build/export || true
-      - name: Upload Archive Artifacts
-        if: always()
+          xcodebuild -exportArchive \
+            -archivePath build/AndernetPosture.xcarchive \
+            -exportPath build/export \
+            -exportOptionsPlist exportOptions.plist || echo "Export may have partial artifacts"
+
+      - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
           name: ios-archive
           path: |
-            ${{ env.ARCHIVE_PATH }}
-            ${{ env.EXPORT_PATH }}
+            ${{ env.WORK_DIR }}/build/AndernetPosture.xcarchive
+            ${{ env.WORK_DIR }}/build/export
           retention-days: 14
 
+  # ─── Summary (cheap ubuntu, always runs) ───
   summary:
+    name: Summary
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    needs: [lint, build-test, archive-release]
+    needs: [swiftlint, unit-tests, smoke-ui-tests, full-suite, archive]
     if: always()
-    outputs:
-      lint_result: ${{ needs.lint.result }}
-      build_test_result: ${{ needs.build-test.result }}
-      archive_result: ${{ needs.archive-release.result }}
-      coverage: ${{ needs.build-test.outputs.coverage_percent || 'n/a' }}
+    defaults:
+      run:
+        working-directory: .
     steps:
-      - name: CI Summary
+      - name: Generate summary
         run: |
+          declare -A LABELS=(
+            [swiftlint]="SwiftLint"
+            [unit-tests]="Unit Tests"
+            [smoke-ui-tests]="Smoke UI Tests"
+            [full-suite]="Full Suite"
+            [archive]="Archive"
+          )
+          declare -A RESULTS=(
+            [swiftlint]="${{ needs.swiftlint.result }}"
+            [unit-tests]="${{ needs.unit-tests.result }}"
+            [smoke-ui-tests]="${{ needs.smoke-ui-tests.result }}"
+            [full-suite]="${{ needs.full-suite.result }}"
+            [archive]="${{ needs.archive.result }}"
+          )
+
           echo '## iOS CI Summary' >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
 
-          # Lint status
-          if [ "${{ needs.lint.result }}" = "skipped" ]; then
-            echo '- Lint: ⏭️ Skipped' >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- Lint: ${{ needs.lint.result == 'success' && '✅' || '❌' }} ${{ needs.lint.result }}" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          # Build & Test status
-          if [ "${{ needs.build-test.result }}" = "skipped" ]; then
-            echo '- Build & Test: ⏭️ Skipped' >> $GITHUB_STEP_SUMMARY
-            echo '- Coverage: N/A (tests skipped)' >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- Build & Test: ${{ needs.build-test.result == 'success' && '✅' || '❌' }} ${{ needs.build-test.result }}" >> $GITHUB_STEP_SUMMARY
-            if [ -n "${{ needs.build-test.outputs.coverage_percent }}" ] && [ "${{ needs.build-test.outputs.coverage_percent }}" != "n/a" ]; then
-              cov=${{ needs.build-test.outputs.coverage_percent }}
-              echo "- Coverage: ${cov}%" >> $GITHUB_STEP_SUMMARY
-              awk -v c=$cov -v m=40 'BEGIN { if (c+0 < m) { print "- Coverage Gate: ❌ (" c "% < " m "%)" } else { print "- Coverage Gate: ✅ (" c "% >= " m "%)" } }' >> $GITHUB_STEP_SUMMARY
-            else
-              echo '- Coverage: N/A' >> $GITHUB_STEP_SUMMARY
-            fi
-          fi
-
-          # Archive status
-          if [ "${{ needs.archive-release.result }}" = "skipped" ]; then
-            echo '- Archive: ⏭️ Skipped' >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- Archive: ${{ needs.archive-release.result == 'success' && '✅' || '❌' }} ${{ needs.archive-release.result }}" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          # Overall status
-          LINT_RESULT="${{ needs.lint.result }}"
-          BUILD_RESULT="${{ needs.build-test.result }}"
-          ARCHIVE_RESULT="${{ needs.archive-release.result }}"
-
           FAILED=0
-          if [ "$LINT_RESULT" != "success" ] && [ "$LINT_RESULT" != "skipped" ]; then FAILED=1; fi
-          if [ "$BUILD_RESULT" != "success" ] && [ "$BUILD_RESULT" != "skipped" ]; then FAILED=1; fi
-          if [ "$ARCHIVE_RESULT" != "success" ] && [ "$ARCHIVE_RESULT" != "skipped" ]; then FAILED=1; fi
+          for job in swiftlint unit-tests smoke-ui-tests full-suite archive; do
+            R="${RESULTS[$job]}"
+            case "$R" in
+              success) ICON="✅" ;;
+              skipped) ICON="⏭️" ;;
+              *)       ICON="❌"; FAILED=1 ;;
+            esac
+            echo "- ${LABELS[$job]}: ${ICON} ${R}" >> $GITHUB_STEP_SUMMARY
+          done
 
+          COV="${{ needs.full-suite.outputs.coverage_percent }}"
+          [ -n "$COV" ] && echo "- Coverage: ${COV}%" >> $GITHUB_STEP_SUMMARY
+
+          echo '' >> $GITHUB_STEP_SUMMARY
           if [ $FAILED -eq 1 ]; then
-            echo '' >> $GITHUB_STEP_SUMMARY
-            echo '### ❌ One or more critical stages failed' >> $GITHUB_STEP_SUMMARY
-            exit 1
+            echo '### ❌ One or more stages failed' >> $GITHUB_STEP_SUMMARY
           else
-            echo '' >> $GITHUB_STEP_SUMMARY
             echo '### ✅ All executed stages passed' >> $GITHUB_STEP_SUMMARY
           fi

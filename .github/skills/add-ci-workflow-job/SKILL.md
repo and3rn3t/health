@@ -13,17 +13,16 @@ argument-hint: "Job type and target workflow (e.g., 'bundle size check to ci-cor
 - Add a deployment or preview step
 
 ## Prerequisites
-- Workflows: `.github/workflows/` (ci-core.yml, ios-ci.yml, posture-ci.yml, ios-build.yml)
-- Actions: `.github/actions/setup-pnpm/` (reusable setup)
+- Workflows: `.github/workflows/` (ci-core.yml, ios-ci.yml, ios-build.yml)
+- Actions: `.github/actions/setup-pnpm/` (web), `.github/actions/setup-ios/` (iOS)
 - Concurrency: All workflows use `group: ci-${{ github.event.pull_request.number || github.ref }}` + `cancel-in-progress: true`
 
 ## Procedure
 
 ### 1. Choose the Target Workflow
 - **ci-core.yml** — Web: lint, type-check, test, build, SonarCloud
-- **ios-ci.yml** — iOS: unit + UI tests on PR
-- **posture-ci.yml** — iOS rebuild on path changes
-- **ios-build.yml** — Manual iOS dispatch
+- **ios-ci.yml** — iOS: lint, unit tests, UI smoke tests (PR), coverage + archive (main)
+- **ios-build.yml** — Manual iOS Fastlane/TestFlight dispatch
 
 ### 2. Add the Job
 Add after existing jobs in the target workflow:

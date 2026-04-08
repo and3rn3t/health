@@ -1,19 +1,17 @@
 name: 'Setup Node & pnpm (Pinned)'
-description: 'Standard Node setup using .nvmrc, enable Corepack, prepare pinned pnpm version from package.json'
+description: 'Node setup via .nvmrc, Corepack + pinned pnpm, store cache, and frozen-lockfile install'
 inputs:
   working-directory:
     description: 'Directory to run setup in'
     required: false
     default: '.'
+  skip-install:
+    description: 'Skip pnpm install (default: false)'
+    required: false
+    default: 'false'
 runs:
   using: 'composite'
   steps:
-    - name: Use working directory
-      shell: bash
-      env:
-        WORK_DIR: ${{ inputs.working-directory }}
-      run: |
-        echo "Working directory: $WORK_DIR"
     - name: Setup Node (actions/setup-node)
       uses: actions/setup-node@v4
       with:
@@ -64,3 +62,8 @@ runs:
     - name: Show pnpm store path (debug)
       shell: bash
       run: pnpm store path || true
+    - name: Install dependencies
+      if: ${{ inputs.skip-install == 'false' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: pnpm install --frozen-lockfile

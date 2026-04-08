@@ -22,9 +22,6 @@ jobs:
           fetch-depth: 0  # Full history needed for SonarCloud blame analysis
       - uses: ./.github/actions/setup-pnpm
 
-      - name: Install
-        run: pnpm install --frozen-lockfile
-
       - name: Lint
         run: pnpm run lint
 
@@ -72,9 +69,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-pnpm
-
-      - name: Install
-        run: pnpm install --frozen-lockfile
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
