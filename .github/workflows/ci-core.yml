@@ -22,6 +22,9 @@ jobs:
           fetch-depth: 0  # Full history needed for SonarCloud blame analysis
       - uses: ./.github/actions/setup-pnpm
 
+      - name: Config drift check
+        run: pnpm run check:drift
+
       - name: Lint
         run: pnpm run lint
 
@@ -59,6 +62,10 @@ jobs:
       - name: Verify build
         run: |
           test -d dist && echo "Build OK ($(du -sh dist | cut -f1))" || exit 1
+
+      - name: Bundle size report
+        run: |
+          node scripts/ci/check-bundle-size.mjs --update 2>&1 || echo "::warning::Bundle size check issue"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -118,3 +125,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: pnpm run deploy:prod
+
+      - name: Post-deploy smoke test
+        run: node scripts/deploy/smoke-test.mjs --env production
+        timeout-minutes: 2
