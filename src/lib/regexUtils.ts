@@ -50,20 +50,80 @@ export function createSafeRegex(
 
 /**
  * Validates that a regex pattern is safe (no nested quantifiers, etc.)
- * Returns true if pattern appears safe, false if potentially vulnerable
+ * Returns true if pattern appears safe, false if potentially vulnerable.
+ * Uses string-based scanning instead of regex to avoid backtracking hotspots.
  */
 export function isRegexSafe(pattern: string): boolean {
-  // Check for nested quantifiers (common ReDoS pattern)
-  if (/\([^)]*\+[^)]*\)\+/.test(pattern)) return false; // (a+)+
-  if (/\([^)]*\*[^)]*\)\*/.test(pattern)) return false; // (a*)*
-  if (/\([^)]*\+[^)]*\)\*/.test(pattern)) return false; // (a+)*
-  if (/\([^)]*\*[^)]*\)\+/.test(pattern)) return false; // (a*)+
+  const len = pattern.length;
 
-  // Check for complex alternation with quantifiers
-  if (/\([^|]+\|[^|]+\|.*\)[*+]/.test(pattern)) return false;
+  // Helper: count consecutive preceding backslashes (odd = escaped)
+  const isEscaped = (pos: number): boolean => {
+    let backslashes = 0;
+    let p = pos - 1;
+    while (p >= 0 && pattern[p] === '\\') {
+      backslashes++;
+      p--;
+    }
+    return backslashes % 2 === 1;
+  };
 
-  // Check for unbounded repetition
-  if (/\[[^\]]*\][*+]{2,}/.test(pattern)) return false;
+  let depth = 0;
+  let groupStart = -1;
+  let hasQuantifierInGroup = false;
+  let pipeCount = 0;
+  let inCharClass = false;
+
+  for (let i = 0; i < len; i++) {
+    if (isEscaped(i)) continue;
+
+    const ch = pattern[i];
+
+    // Track character classes to avoid false positives on brackets
+    if (ch === '[' && !inCharClass) {
+      inCharClass = true;
+      continue;
+    }
+    if (ch === ']' && inCharClass) {
+      inCharClass = false;
+      // Check for stacked quantifiers after character class: [abc]**
+      let qCount = 0;
+      let j = i + 1;
+      while (j < len && !isEscaped(j) && (pattern[j] === '*' || pattern[j] === '+')) {
+        qCount++;
+        j++;
+      }
+      if (qCount >= 2) return false;
+      continue;
+    }
+    if (inCharClass) continue;
+
+    if (ch === '(') {
+      if (depth === 0) {
+        groupStart = i;
+        hasQuantifierInGroup = false;
+        pipeCount = 0;
+      }
+      depth++;
+    } else if (ch === ')') {
+      depth--;
+      if (depth === 0 && groupStart >= 0) {
+        const afterChar = i + 1 < len ? pattern[i + 1] : '';
+        const followedByQuantifier = afterChar === '+' || afterChar === '*';
+
+        // Nested quantifier: (a+)+, (a+)*, (a*)*, (a*)+
+        if (followedByQuantifier && hasQuantifierInGroup) return false;
+
+        // Complex alternation with quantifier: (a|b|c)+
+        if (followedByQuantifier && pipeCount >= 2) return false;
+
+        groupStart = -1;
+      }
+    } else if ((ch === '+' || ch === '*') && depth > 0 && groupStart >= 0) {
+      hasQuantifierInGroup = true;
+    } else if (ch === '|' && depth === 1) {
+      pipeCount++;
+    }
+  }
 
   return true;
 }

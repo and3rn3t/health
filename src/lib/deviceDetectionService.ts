@@ -374,14 +374,8 @@ export class DeviceDetectionService {
       // Note: Web Bluetooth API connection is established when you access a service
       // The device.gatt.connected property indicates if already connected
       if (device.gatt) {
-        // Check if already connected
-        if (device.gatt.connected) {
-          // Already connected, proceed
-        } else {
-          // Connection will be established when we access a service
-          // For now, we'll assume connection is possible
-          // Actual connection happens when reading/writing characteristics
-        }
+        // Connection is lazy — established when accessing a service/characteristic.
+        // device.gatt.connected indicates current state but no action needed here.
 
         // Update device status
         // iOS devices connected via Bluetooth still have HealthKit capabilities

@@ -87,8 +87,6 @@ export default defineConfig({
         // Hooks / libs that are integration-heavy or wrappers pending test harness
         'src/hooks/useLiveHealthData*.ts',
         'src/hooks/useWebSocket.ts',
-        'src/lib/liveHealthDataSync.ts',
-        'src/lib/enhancedHealthProcessor.ts',
         // Keep existing general exclusions
         'scripts/**',
         'public/**',

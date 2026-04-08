@@ -312,8 +312,8 @@ export function detectPatterns(data: TimeSeriesDataPoint[]): PatternDetection[] 
     const strength = Math.min(1, variance / (overallAvg * 0.1));
 
     if (strength > 0.3) {
-      const peakDay = dayAverages.reduce((max, d) => d.avg > max.avg ? d : max);
-      const lowDay = dayAverages.reduce((min, d) => d.avg < min.avg ? d : min);
+      const peakDay = dayAverages.reduce((max, d) => d.avg > max.avg ? d : max, dayAverages[0]);
+      const lowDay = dayAverages.reduce((min, d) => d.avg < min.avg ? d : min, dayAverages[0]);
 
       patterns.push({
         pattern: 'weekly',

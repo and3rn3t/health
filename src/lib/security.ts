@@ -6,28 +6,13 @@ import { z } from 'zod';
 // that can be replaced with SafeLogger in browser context
 export const log = {
   info: (msg: string, meta?: Record<string, unknown>) => {
-    // In Workers, we still use console but with safe metadata
-    // In browser context, this should use SafeLogger
-    if (typeof window !== 'undefined') {
-      // Browser context - could import SafeLogger here if needed
-      console.log(msg, safeMeta(meta)); // NOSONAR: Workers runtime logging
-    } else {
-      console.log(msg, safeMeta(meta)); // NOSONAR: Workers runtime logging
-    }
+    console.log(msg, safeMeta(meta)); // NOSONAR: Workers runtime logging
   },
   warn: (msg: string, meta?: Record<string, unknown>) => {
-    if (typeof window !== 'undefined') {
-      console.warn(msg, safeMeta(meta)); // NOSONAR: Workers runtime logging
-    } else {
-      console.warn(msg, safeMeta(meta)); // NOSONAR: Workers runtime logging
-    }
+    console.warn(msg, safeMeta(meta)); // NOSONAR: Workers runtime logging
   },
   error: (msg: string, meta?: Record<string, unknown>) => {
-    if (typeof window !== 'undefined') {
-      console.error(msg, safeMeta(meta)); // NOSONAR: Workers runtime logging
-    } else {
-      console.error(msg, safeMeta(meta)); // NOSONAR: Workers runtime logging
-    }
+    console.error(msg, safeMeta(meta)); // NOSONAR: Workers runtime logging
   },
 };
 
