@@ -6,7 +6,12 @@
             "request": "launch",
             "name": "Build and Launch (SweetPad)",
             "preLaunchTask": "sweetpad: launch",
-            "stopAll": true
+            "stopAll": true,
+            "codelldbAttributes": {
+                "initCommands": [
+                    "settings set target.language swift"
+                ]
+            }
         },
         {
             "type": "sweetpad-lldb",

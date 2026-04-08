@@ -22,6 +22,8 @@
     "github.vscode-pull-request-github",
 
     // iOS Development Support
+    "sweetpad.sweetpad",
+    "vadimcn.vscode-lldb",
     "ms-vscode.lldb-dap",
 
     // Utilities

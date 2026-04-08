@@ -13,6 +13,9 @@
     "github.copilot-chat",
     "ms-vscode.powershell",
     "ms-vscode.powershell-preview",
-    "streetsidesoftware.code-spell-checker"
+    "streetsidesoftware.code-spell-checker",
+    "sweetpad.sweetpad",
+    "vadimcn.vscode-lldb",
+    "swiftlang.swift-vscode"
   ]
 }

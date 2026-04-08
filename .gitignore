@@ -19,6 +19,7 @@ dist-ssr
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
+!.vscode/.swift-format
 .idea
 .DS_Store
 *.suo
@@ -180,3 +181,11 @@ temp/
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# iOS / Xcode build artifacts
+.build/DerivedData/
+DerivedData/
+*.xcuserdata
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout

@@ -65,7 +65,7 @@
     "[swift]": {
         "editor.defaultFormatter": "sweetpad.sweetpad",
         "editor.formatOnSave": true,
-        "editor.tabSize": 2,
+        "editor.tabSize": 4,
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit"
         }
@@ -295,5 +295,9 @@
         "--configuration",
         ".vscode/.swift-format",
         "${file}"
-    ]
+    ],
+    "sweetpad.workspacePath": "ios/Andernet-Posture/Andernet Posture.xcodeproj/project.xcworkspace",
+    "sweetpad.build.args": ["-skipMacroValidation"],
+    "sweetpad.build.derivedDataPath": ".build/DerivedData",
+    "lldb.library": "/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/LLDB"
 }

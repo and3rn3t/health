@@ -4,6 +4,8 @@
         {
             "type": "sweetpad",
             "action": "build",
+            "scheme": "Andernet Posture",
+            "configuration": "Debug",
             "problemMatcher": [
                 "$sweetpad-watch",
                 "$sweetpad-xcodebuild-default",
@@ -23,6 +25,8 @@
         {
             "type": "sweetpad",
             "action": "launch",
+            "scheme": "Andernet Posture",
+            "configuration": "Debug",
             "problemMatcher": [
                 "$sweetpad-watch",
                 "$sweetpad-xcodebuild-default",
@@ -31,6 +35,7 @@
             ],
             "label": "sweetpad: launch",
             "detail": "Build and Launch the app",
+            "isBackground": true,
             "presentation": {
                 "reveal": "always",
                 "panel": "dedicated",
@@ -41,6 +46,7 @@
         {
             "type": "sweetpad",
             "action": "clean",
+            "scheme": "Andernet Posture",
             "problemMatcher": [
                 "$sweetpad-watch",
                 "$sweetpad-xcodebuild-default",
@@ -49,6 +55,42 @@
             ],
             "label": "sweetpad: clean",
             "detail": "Clean the app",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "type": "sweetpad",
+            "action": "test",
+            "scheme": "Andernet Posture",
+            "configuration": "Debug",
+            "problemMatcher": [
+                "$sweetpad-watch",
+                "$sweetpad-xcodebuild-default",
+                "$sweetpad-xcbeautify-errors",
+                "$sweetpad-xcbeautify-warnings"
+            ],
+            "label": "sweetpad: test",
+            "detail": "Run unit tests",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": true
+            }
+        },
+        {
+            "type": "sweetpad",
+            "action": "resolve-dependencies",
+            "scheme": "Andernet Posture",
+            "problemMatcher": [
+                "$sweetpad-xcodebuild-default"
+            ],
+            "label": "sweetpad: resolve-dependencies",
+            "detail": "Resolve Swift Package Manager dependencies",
             "presentation": {
                 "reveal": "always",
                 "panel": "dedicated",
