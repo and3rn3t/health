@@ -24,17 +24,6 @@ export default defineConfig({
   esbuild: {
     drop: process.env.CI === 'true' ? ['console', 'debugger'] : [],
     legalComments: 'none',
-    // More aggressive minification
-    minifyWhitespace: true,
-    minifyIdentifiers: true,
-    minifySyntax: true,
-    // Tree-shaking optimizations
-    treeShaking: true,
-    // Better compression in production
-    ...(process.env.CI === 'true' && {
-      pure: ['console.log', 'console.info', 'console.debug', 'console.warn'],
-      keepNames: false, // Don't keep function names for smaller bundle
-    }),
   },
   resolve: {
     alias: {
@@ -119,22 +108,17 @@ export default defineConfig({
       // Tree shaking optimizations
       treeshake: {
         moduleSideEffects: (id) => {
-          // Allow side effects for some libraries that need them
-          if (id.includes('polyfill')) {
+          if (id.includes('polyfill') || id.includes('.css')) {
             return true;
           }
-          // Recharts should not have side effects in initial bundle
-          if (id.includes('recharts')) {
-            return false; // Force tree-shaking for recharts
+          if (id.includes('recharts') || id.includes('lucide-react')) {
+            return false;
           }
-          return false;
+          // Default: let Rollup use package.json sideEffects field
+          return 'no-treeshake';
         },
         propertyReadSideEffects: false,
         tryCatchDeoptimization: false,
-        // More aggressive tree shaking
-        preset: 'smallest',
-        unknownGlobalSideEffects: false,
-        // More aggressive tree shaking settings
         annotations: true,
       },
     },

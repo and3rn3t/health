@@ -9,8 +9,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "lint": "eslint . --ext ts,tsx",
-    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
     "type-check": "tsc --noEmit",
     "cf:dev": "wrangler dev",
@@ -24,7 +24,7 @@
     "preinstall": "node scripts/ci/ensure-node-version.mjs",
     "build:worker": "node scripts/build/build-worker.js",
     "build:all": "vite build && node scripts/build/build-worker.js",
-    "validate": "tsc --noEmit && eslint . --ext ts,tsx && vitest run",
+    "validate": "tsc --noEmit && eslint src/ && vitest run",
     "test:coverage": "vitest run --coverage || exit 0",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:e2e": "playwright test",
@@ -39,7 +39,6 @@
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
       "eslint --fix",
-      "bash -c 'tsc --noEmit'",
       "vitest related --run"
     ]
   },

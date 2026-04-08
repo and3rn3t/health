@@ -64,7 +64,7 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/worker.ts'),
+      entry: resolve(import.meta.dirname, 'src/worker.ts'),
       name: 'worker',
       fileName: 'index',
       formats: ['es'],
@@ -111,7 +111,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
+      '@': resolve(import.meta.dirname, 'src'),
     },
   },
   esbuild: {

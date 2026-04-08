@@ -45,11 +45,10 @@ WORKDIR /app
 ENV NODE_ENV=development \
   PORT=8789
 
-# Install runtime deps for workerd used by wrangler dev, and wrangler itself
+# Install runtime deps for workerd used by wrangler dev
 RUN apt-get update && \
   apt-get install -y --no-install-recommends libc++1 ca-certificates && \
-  rm -rf /var/lib/apt/lists/* && \
-  npm i -g wrangler@4.33.1
+  rm -rf /var/lib/apt/lists/*
 
 # Copy built worker and minimal files
 COPY --from=base /app/package.json ./package.json
@@ -71,4 +70,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD node -e "fetch('http://localhost:8789/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
 
 # Default command runs worker in dev mode locally, binding to 0.0.0.0 for external access
-CMD ["wrangler", "dev", "--local", "--env", "development", "--port", "8789", "--host", "0.0.0.0"]
+CMD ["npx", "wrangler", "dev", "--local", "--env", "development", "--port", "8789", "--host", "0.0.0.0"]
