@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Integration tests for AI Insights feature
  * Tests the interaction between AIInsightsCard and EnhancedAIInsights

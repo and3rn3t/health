@@ -34,18 +34,20 @@ class MockWebSocket {
 (globalThis as unknown as Record<string, unknown>).WebSocket =
   MockWebSocket as unknown;
 
-// Mock window.location for tests that need it
-Object.defineProperty(window, 'location', {
-  value: {
-    protocol: 'https:',
-    host: 'localhost:3000',
-    href: 'https://localhost:3000',
-    assign: vi.fn(), // Mock location.assign to prevent navigation errors
-    replace: vi.fn(), // Mock location.replace to prevent navigation errors
-    reload: vi.fn(), // Mock location.reload to prevent navigation errors
-  },
-  writable: true,
-});
+// Mock window.location for tests that need it (skip in non-browser environments)
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'location', {
+    value: {
+      protocol: 'https:',
+      host: 'localhost:3000',
+      href: 'https://localhost:3000',
+      assign: vi.fn(),
+      replace: vi.fn(),
+      reload: vi.fn(),
+    },
+    writable: true,
+  });
+}
 
 // Suppress jsdom navigation errors (they're expected in tests with download links)
 const originalError = console.error;
@@ -60,19 +62,21 @@ console.error = (...args: unknown[]) => {
 
 // Mock matchMedia for components that use responsive hooks
 // Some jsdom versions expose matchMedia as undefined; normalize to a stub function
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-if (typeof (window as any).matchMedia !== 'function') {
+if (typeof window !== 'undefined') {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).matchMedia = (query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: () => {}, // deprecated
-    removeListener: () => {}, // deprecated
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => false,
-  });
+  if (typeof (window as any).matchMedia !== 'function') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).matchMedia = (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {}, // deprecated
+      removeListener: () => {}, // deprecated
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    });
+  }
 }
 
 // NOTE: useAuth mock moved to individual test files via vi.mock('@/hooks/useAuth').
