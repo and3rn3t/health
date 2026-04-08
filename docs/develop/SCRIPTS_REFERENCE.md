@@ -2,8 +2,8 @@
 
 Reference guide for all pnpm scripts defined in `package.json`.
 
-**Last verified:** July 2025
-**Total scripts:** 27
+**Last verified:** April 2026
+**Total scripts:** 33
 
 > For the most up-to-date list, run `pnpm run` in the project root.
 
@@ -34,6 +34,13 @@ pnpm validate         # Full CI: type-check + lint + test
 pnpm cf:dev           # Local Workers preview
 pnpm cf:deploy        # Deploy to development
 pnpm deploy:prod      # Deploy to production
+pnpm deploy:smoke     # Post-deploy smoke test (dev)
+pnpm deploy:smoke:prod # Post-deploy smoke test (prod)
+
+# CI & Validation
+pnpm check:drift      # Verify generated configs are up-to-date
+pnpm check:bundle     # Build & enforce bundle size budgets
+pnpm doctor           # Verify dev environment prerequisites
 ```
 
 ---
@@ -90,6 +97,16 @@ pnpm deploy:prod      # Deploy to production
 | `ios:open` | `open ios/Andernet-Posture/*.xcodeproj` | Open Xcode project |
 
 For iOS build, test, and lint commands, see the [iOS Makefile](../../ios/Makefile) (`make lint`, `make build`, `make test`).
+
+## CI & Validation
+
+| Script | Command | Description |
+|--------|---------|-------------|
+| `check:drift` | `node scripts/ci/check-config-drift.mjs` | Verify generated config artifacts (JSON + Swift) match TS source. Fails CI if stale. Use `--fix` to regenerate. |
+| `check:bundle` | `node scripts/ci/check-bundle-size.mjs` | Build app + worker and enforce size budgets (2 MB app, 1 MB worker). Use `--update` to save new baseline. |
+| `doctor` | `node scripts/dev/doctor.mjs` | Pre-flight check: Node version, pnpm, dependencies, tooling, config files, generated artifacts, git hooks. |
+| `deploy:smoke` | `node scripts/deploy/smoke-test.mjs` | Post-deploy smoke test against dev environment. Hits `/health`, `/`, auth, and WebSocket endpoints. |
+| `deploy:smoke:prod` | `node scripts/deploy/smoke-test.mjs --env production` | Post-deploy smoke test against production. |
 
 ## Maintenance
 

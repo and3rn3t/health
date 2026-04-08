@@ -45,8 +45,12 @@ pnpm build:worker     # Build Cloudflare Worker
 pnpm cf:dev           # Local Workers preview
 pnpm cf:deploy        # Deploy to dev
 pnpm deploy:prod      # Deploy to production
+pnpm deploy:smoke     # Post-deploy smoke test (dev)
 pnpm gait:sync        # Sync gait config (web → iOS)
 pnpm fallrisk:sync    # Sync fall risk config (web → iOS)
+pnpm doctor           # Verify dev environment prerequisites
+pnpm check:drift      # Verify generated configs are current
+pnpm check:bundle     # Enforce bundle size budgets
 ```
 
 ## Critical Rules
