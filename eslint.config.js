@@ -172,11 +172,26 @@ export default [
       'no-case-declarations': 'warn', // Downgrade to warning
     },
   },
-  // Test utilities don't participate in HMR — disable react-refresh
+  // Test files — relax rules that create noise in test code
   {
-    files: ['src/__tests__/**/*.{ts,tsx}'],
+    files: [
+      'src/**/*.test.{ts,tsx}',
+      'src/**/*.spec.{ts,tsx}',
+      'src/__tests__/**/*.{ts,tsx}',
+      'src/test/**/*.{ts,tsx}',
+    ],
     rules: {
       'react-refresh/only-export-components': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
     },
   },
   // Standard patterns: shadcn/ui exports variants alongside components,

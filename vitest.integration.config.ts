@@ -18,8 +18,11 @@ export default defineConfig({
     testTimeout: 30000,
     retry: process.env.CI ? 1 : 0,
     reporters: process.env.CI
-      ? ['default', 'github-actions']
+      ? ['default', 'github-actions', 'junit']
       : ['default'],
+    outputFile: process.env.CI
+      ? { junit: 'test-results/integration-junit.xml' }
+      : undefined,
   },
   resolve: {
     alias: {

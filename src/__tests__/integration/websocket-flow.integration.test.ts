@@ -1,54 +1,26 @@
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
-import { Miniflare } from 'miniflare';
-import fs from 'node:fs';
+import { createMiniflareWorker, type MiniflareInstance } from '@/test/integration-harness';
 
 /**
  * Integration tests for WebSocket connection flow
  * Tests the complete WebSocket lifecycle
  */
 describe('WebSocket Flow Integration', () => {
-  let mf: Miniflare;
-  const baseUrl = 'http://localhost:8792';
+  let ctx: MiniflareInstance;
 
   beforeAll(async () => {
-    const scriptPath = 'dist-worker/index.js';
-    if (!fs.existsSync(scriptPath)) {
-      throw new Error('dist-worker/index.js not found. Build worker first.');
-    }
-
-    mf = new Miniflare({
-      scriptPath,
-      modules: true,
-      compatibilityDate: '2024-05-01',
-      port: 8792,
-      bindings: {
-        ENVIRONMENT: 'development',
-        ALLOWED_ORIGINS: 'https://health.andernet.dev',
-        ENC_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
-        API_ISS: 'test-issuer',
-        API_AUD: 'test-audience',
-        DEVICE_JWT_SECRET: 'test-secret-key-for-jwt-signing',
-        BASE_URL: 'http://localhost:8792',
-        WEBSOCKET_URL: 'ws://localhost:8792/ws',
-      },
-      kvNamespaces: ['HEALTH_KV'],
-      r2Buckets: ['HEALTH_STORAGE'],
-      durableObjects: {
-        RATE_LIMITER: 'RateLimiter',
-        HEALTH_WEBSOCKET: 'HealthWebSocket',
-      },
+    ctx = await createMiniflareWorker({
+      bindings: { WEBSOCKET_URL: 'ws://localhost/ws' },
     });
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 
   afterAll(async () => {
-    await mf?.dispose();
+    await ctx?.dispose();
   });
 
   describe('WebSocket Connection', () => {
     test('WebSocket upgrade request is accepted', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/ws`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/ws`, {
         headers: {
           Upgrade: 'websocket',
           Connection: 'Upgrade',
@@ -64,7 +36,7 @@ describe('WebSocket Flow Integration', () => {
     });
 
     test('WebSocket URL endpoint returns correct URL', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/api/ws-url`);
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/ws-url`);
 
       expect(res.status).toBe(200);
       const data = await res.json() as { url: string };
@@ -76,7 +48,7 @@ describe('WebSocket Flow Integration', () => {
   describe('Device Token Generation', () => {
     test('POST /api/ws-device-token creates valid token', async () => {
       const deviceId = `test-device-${Date.now()}`;
-      const res = await mf.dispatchFetch(`${baseUrl}/api/ws-device-token`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/ws-device-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +65,7 @@ describe('WebSocket Flow Integration', () => {
     });
 
     test('Device token includes required claims', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/api/ws-device-token`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/ws-device-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +84,7 @@ describe('WebSocket Flow Integration', () => {
 
   describe('WebSocket Configuration', () => {
     test('GET /api/ws-live-enabled returns boolean', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/api/ws-live-enabled`);
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/ws-live-enabled`);
 
       expect(res.status).toBe(200);
       const data = await res.json() as { enabled: boolean };
@@ -120,7 +92,7 @@ describe('WebSocket Flow Integration', () => {
     });
 
     test('GET /api/ws-user-id returns user info when authenticated', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/api/ws-user-id`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/ws-user-id`, {
         headers: { Origin: 'https://health.andernet.dev' },
       });
 

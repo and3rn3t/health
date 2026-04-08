@@ -55,8 +55,11 @@ export default defineConfig({
     retry: process.env.CI ? 1 : 0,
     // Inline reporter for GitHub Actions annotations on failures
     reporters: process.env.CI
-      ? ['default', 'github-actions']
+      ? ['default', 'github-actions', 'junit']
       : ['default'],
+    outputFile: process.env.CI
+      ? { junit: 'test-results/junit.xml' }
+      : undefined,
     coverage: {
       provider: 'v8',
       reporter: process.env.CI

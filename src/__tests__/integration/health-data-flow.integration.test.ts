@@ -1,54 +1,28 @@
-import { describe, test, expect, beforeAll, afterAll } from 'vitest';
-import { Miniflare } from 'miniflare';
-import fs from 'node:fs';
+import {
+  createMiniflareWorker,
+  type MiniflareInstance,
+} from '@/test/integration-harness';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
 /**
  * Integration tests for health data ingestion and processing flow
  */
 describe('Health Data Flow Integration', () => {
-  let mf: Miniflare;
-  const baseUrl = 'http://localhost:8793';
+  let ctx: MiniflareInstance;
 
   beforeAll(async () => {
-    const scriptPath = 'dist-worker/index.js';
-    if (!fs.existsSync(scriptPath)) {
-      throw new Error('dist-worker/index.js not found. Build worker first.');
-    }
-
-    mf = new Miniflare({
-      scriptPath,
-      modules: true,
-      compatibilityDate: '2024-05-01',
-      port: 8793,
-      bindings: {
-        ENVIRONMENT: 'development',
-        ALLOWED_ORIGINS: 'https://health.andernet.dev',
-        ENC_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
-        API_ISS: 'test-issuer',
-        API_AUD: 'test-audience',
-        DEVICE_JWT_SECRET: 'test-secret-key-for-jwt-signing',
-        BASE_URL: 'http://localhost:8793',
-      },
-      kvNamespaces: ['HEALTH_KV'],
-      r2Buckets: ['HEALTH_STORAGE'],
-      durableObjects: {
-        RATE_LIMITER: 'RateLimiter',
-        HEALTH_WEBSOCKET: 'HealthWebSocket',
-      },
-    });
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    ctx = await createMiniflareWorker();
   });
 
   afterAll(async () => {
-    await mf?.dispose();
+    await ctx?.dispose();
   });
 
   describe('Health Data Validation', () => {
     test('POST /api/health-data validates required fields', async () => {
       const invalidData = {};
 
-      const res = await mf.dispatchFetch(`${baseUrl}/api/health-data`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/health-data`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +43,7 @@ describe('Health Data Flow Integration', () => {
         fall_risk_score: 0.15,
       };
 
-      const res = await mf.dispatchFetch(`${baseUrl}/api/health-data`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/health-data`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -96,7 +70,7 @@ describe('Health Data Flow Integration', () => {
         ],
       };
 
-      const res = await mf.dispatchFetch(`${baseUrl}/api/health-data`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/health-data`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,8 +85,8 @@ describe('Health Data Flow Integration', () => {
 
   describe('Data Retrieval', () => {
     test('GET /api/health-data supports pagination', async () => {
-      const res = await mf.dispatchFetch(
-        `${baseUrl}/api/health-data?limit=10&offset=0`,
+      const res = await ctx.mf.dispatchFetch(
+        `${ctx.baseUrl}/api/health-data?limit=10&offset=0`,
         {
           headers: { Origin: 'https://health.andernet.dev' },
         }
@@ -124,8 +98,8 @@ describe('Health Data Flow Integration', () => {
 
     test('GET /api/health-data supports date filtering', async () => {
       const today = new Date().toISOString().split('T')[0];
-      const res = await mf.dispatchFetch(
-        `${baseUrl}/api/health-data?startDate=${today}`,
+      const res = await ctx.mf.dispatchFetch(
+        `${ctx.baseUrl}/api/health-data?startDate=${today}`,
         {
           headers: { Origin: 'https://health.andernet.dev' },
         }
@@ -138,7 +112,7 @@ describe('Health Data Flow Integration', () => {
   describe('Rate Limiting', () => {
     test('Rate limiting is applied to health data endpoints', async () => {
       const requests = Array.from({ length: 10 }, () =>
-        mf.dispatchFetch(`${baseUrl}/api/health-data`, {
+        ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/health-data`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -159,4 +133,3 @@ describe('Health Data Flow Integration', () => {
     });
   });
 });
-

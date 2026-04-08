@@ -1,54 +1,24 @@
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
-import { Miniflare } from 'miniflare';
-import fs from 'node:fs';
+import { createMiniflareWorker, type MiniflareInstance } from '@/test/integration-harness';
 
 /**
  * Integration tests for critical API endpoints
  * Tests the built worker bundle with realistic scenarios
  */
 describe('API Endpoints Integration', () => {
-  let mf: Miniflare;
-  const baseUrl = 'http://localhost:8791';
+  let ctx: MiniflareInstance;
 
   beforeAll(async () => {
-    const scriptPath = 'dist-worker/index.js';
-    if (!fs.existsSync(scriptPath)) {
-      throw new Error('dist-worker/index.js not found. Build worker first.');
-    }
-
-    mf = new Miniflare({
-      scriptPath,
-      modules: true,
-      compatibilityDate: '2024-05-01',
-      port: 8791,
-      bindings: {
-        ENVIRONMENT: 'development',
-        ALLOWED_ORIGINS: 'https://health.andernet.dev,http://localhost:5173',
-        ENC_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
-        API_ISS: 'test-issuer',
-        API_AUD: 'test-audience',
-        DEVICE_JWT_SECRET: 'test-secret-key-for-jwt-signing',
-        BASE_URL: 'http://localhost:8791',
-      },
-      kvNamespaces: ['HEALTH_KV'],
-      r2Buckets: ['HEALTH_STORAGE'],
-      durableObjects: {
-        RATE_LIMITER: 'RateLimiter',
-        HEALTH_WEBSOCKET: 'HealthWebSocket',
-      },
-    });
-
-    // Wait for worker to be ready
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    ctx = await createMiniflareWorker();
   });
 
   afterAll(async () => {
-    await mf?.dispose();
+    await ctx?.dispose();
   });
 
   describe('Health and Status Endpoints', () => {
     test('GET /health returns healthy status', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/health`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/health`, {
         headers: { Origin: 'https://health.andernet.dev' },
       });
 
@@ -60,7 +30,7 @@ describe('API Endpoints Integration', () => {
     });
 
     test('GET /health includes CORS headers', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/health`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/health`, {
         headers: { Origin: 'https://health.andernet.dev' },
       });
 
@@ -68,7 +38,7 @@ describe('API Endpoints Integration', () => {
     });
 
     test('GET /app-config.js returns configuration', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/app-config.js`);
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/app-config.js`);
 
       expect(res.status).toBe(200);
       expect(res.headers.get('Content-Type')).toContain('javascript');
@@ -80,7 +50,7 @@ describe('API Endpoints Integration', () => {
 
   describe('WebSocket Configuration Endpoints', () => {
     test('GET /api/ws-url returns WebSocket URL', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/api/ws-url`);
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/ws-url`);
 
       expect(res.status).toBe(200);
       const data = await res.json() as { url: string };
@@ -89,7 +59,7 @@ describe('API Endpoints Integration', () => {
     });
 
     test('GET /api/ws-device-token generates device token', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/api/ws-device-token`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/ws-device-token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deviceId: 'test-device-123' }),
@@ -102,7 +72,7 @@ describe('API Endpoints Integration', () => {
     });
 
     test('GET /api/ws-live-enabled returns live status', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/api/ws-live-enabled`);
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/ws-live-enabled`);
 
       expect(res.status).toBe(200);
       const data = await res.json() as { enabled: boolean };
@@ -119,7 +89,7 @@ describe('API Endpoints Integration', () => {
         fall_risk_score: 0.15,
       };
 
-      const res = await mf.dispatchFetch(`${baseUrl}/api/health-data`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/health-data`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +103,7 @@ describe('API Endpoints Integration', () => {
     });
 
     test('GET /api/health-data requires authentication', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/api/health-data`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/health-data`, {
         headers: { Origin: 'https://health.andernet.dev' },
       });
 
@@ -144,7 +114,7 @@ describe('API Endpoints Integration', () => {
 
   describe('Analytics Endpoints', () => {
     test('GET /api/_analytics_ping responds', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/api/_analytics_ping`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/_analytics_ping`, {
         headers: { Origin: 'https://health.andernet.dev' },
       });
 
@@ -155,13 +125,13 @@ describe('API Endpoints Integration', () => {
 
   describe('Error Handling', () => {
     test('404 for unknown routes', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/unknown/route`);
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/unknown/route`);
 
       expect(res.status).toBe(404);
     });
 
     test('CORS preflight handled correctly', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/health`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/health`, {
         method: 'OPTIONS',
         headers: {
           Origin: 'https://health.andernet.dev',
@@ -176,7 +146,7 @@ describe('API Endpoints Integration', () => {
 
   describe('Security Headers', () => {
     test('Responses include security headers', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/health`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/health`, {
         headers: { Origin: 'https://health.andernet.dev' },
       });
 

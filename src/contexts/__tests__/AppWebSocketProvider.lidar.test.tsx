@@ -26,14 +26,14 @@ beforeEach(() => {
       });
     }
     return new Response('{}', { status: 200 });
-  }) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  }) as any;
   localStorage.clear();
   localStorage.setItem('vs_lidar_enabled', '1');
 });
 
 describe('AppWebSocketProvider LiDAR assimilation', () => {
   it('records lidar_metrics payload values into lastMetrics', async () => {
-    let ctxValue: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+    let ctxValue: any = null;
     render(
       <AppWebSocketProvider>
         <AppWsContext.Consumer>
@@ -47,7 +47,7 @@ describe('AppWebSocketProvider LiDAR assimilation', () => {
 
     // Wait briefly for provider effect to attach message listener
     for (let i = 0; i < 10; i++) {
-      if (ctxValue?.socket || (ctxValue as any)?.client) break; // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (ctxValue?.socket || (ctxValue as any)?.client) break;
       await new Promise((r) => setTimeout(r, 5));
     }
     // Dispatch LIDAR metrics event after listener likely attached

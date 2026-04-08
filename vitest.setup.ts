@@ -1,7 +1,14 @@
 // Vitest setup for ESBuild + React testing
 import '@testing-library/jest-dom';
 import { webcrypto as cryptoWeb } from 'crypto';
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
+
+// Clear mock call history after each test to prevent cross-test pollution.
+// Uses clearAllMocks (not restoreAllMocks) to preserve module-level mock
+// implementations that tests configure outside beforeEach.
+afterEach(() => {
+  vi.clearAllMocks();
+});
 
 // Mock WebSocket for testing
 class MockWebSocket {

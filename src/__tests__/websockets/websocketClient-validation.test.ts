@@ -27,7 +27,6 @@ describe('WebSocketClient (schema enforcement)', () => {
       removeEventListener: vi.fn(),
     };
     // Override global WebSocket with a mock constructor
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (global as any).WebSocket = vi.fn(() => mockWs);
     // @ts-expect-error override fetch for test
     global.fetch = vi.fn(async () => ({
@@ -36,7 +35,6 @@ describe('WebSocketClient (schema enforcement)', () => {
   });
 
   afterEach(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (global as any).WebSocket = original as any;
   });
 

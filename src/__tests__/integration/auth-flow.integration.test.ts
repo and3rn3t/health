@@ -1,54 +1,28 @@
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
-import { Miniflare } from 'miniflare';
-import fs from 'node:fs';
+import { createMiniflareWorker, type MiniflareInstance } from '@/test/integration-harness';
 
 /**
  * Integration tests for authentication flow
  */
 describe('Authentication Flow Integration', () => {
-  let mf: Miniflare;
-  const baseUrl = 'http://localhost:8795';
+  let ctx: MiniflareInstance;
 
   beforeAll(async () => {
-    const scriptPath = 'dist-worker/index.js';
-    if (!fs.existsSync(scriptPath)) {
-      throw new Error('dist-worker/index.js not found. Build worker first.');
-    }
-
-    mf = new Miniflare({
-      scriptPath,
-      modules: true,
-      compatibilityDate: '2024-05-01',
-      port: 8795,
+    ctx = await createMiniflareWorker({
       bindings: {
-        ENVIRONMENT: 'development',
-        ALLOWED_ORIGINS: 'https://health.andernet.dev',
-        ENC_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
-        API_ISS: 'test-issuer',
-        API_AUD: 'test-audience',
-        DEVICE_JWT_SECRET: 'test-secret-key-for-jwt-signing',
-        BASE_URL: 'http://localhost:8795',
         AUTH0_DOMAIN: 'test.auth0.com',
         AUTH0_CLIENT_ID: 'test-client-id',
       },
-      kvNamespaces: ['HEALTH_KV'],
-      r2Buckets: ['HEALTH_STORAGE'],
-      durableObjects: {
-        RATE_LIMITER: 'RateLimiter',
-        HEALTH_WEBSOCKET: 'HealthWebSocket',
-      },
     });
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 
   afterAll(async () => {
-    await mf?.dispose();
+    await ctx?.dispose();
   });
 
   describe('Auth0 Configuration', () => {
     test('app-config.js includes Auth0 configuration', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/app-config.js`);
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/app-config.js`);
 
       expect(res.status).toBe(200);
       const text = await res.text();
@@ -58,7 +32,7 @@ describe('Authentication Flow Integration', () => {
     });
 
     test('Auth0 callback route exists', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/callback?code=test&state=test`);
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/callback?code=test&state=test`);
 
       // Should handle callback (may redirect or return)
       expect(res.status).toBeLessThan(500);
@@ -67,7 +41,7 @@ describe('Authentication Flow Integration', () => {
 
   describe('JWT Token Validation', () => {
     test('Protected endpoints require authentication', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/api/health-data`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/health-data`, {
         headers: { Origin: 'https://health.andernet.dev' },
       });
 
@@ -76,7 +50,7 @@ describe('Authentication Flow Integration', () => {
     });
 
     test('Invalid JWT tokens are rejected', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/api/health-data`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/api/health-data`, {
         headers: {
           Authorization: 'Bearer invalid-token',
           Origin: 'https://health.andernet.dev',
@@ -90,7 +64,7 @@ describe('Authentication Flow Integration', () => {
 
   describe('CORS and Security', () => {
     test('CORS headers are set correctly', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/health`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/health`, {
         headers: { Origin: 'https://health.andernet.dev' },
       });
 
@@ -99,7 +73,7 @@ describe('Authentication Flow Integration', () => {
     });
 
     test('Unauthorized origins are blocked', async () => {
-      const res = await mf.dispatchFetch(`${baseUrl}/health`, {
+      const res = await ctx.mf.dispatchFetch(`${ctx.baseUrl}/health`, {
         headers: { Origin: 'https://evil.com' },
       });
 
