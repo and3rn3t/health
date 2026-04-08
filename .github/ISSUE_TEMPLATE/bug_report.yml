@@ -1,0 +1,77 @@
+name: Bug Report
+description: Report a bug in VitalSense (web app, Worker, or iOS)
+labels: ["bug", "triage"]
+body:
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Web App
+        - Cloudflare Worker / API
+        - iOS App
+        - Multiple
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened? Be as specific as possible.
+      placeholder: "When I tap X, I expected Y but got Z."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Numbered steps to trigger the issue.
+      placeholder: |
+        1. Open the dashboard
+        2. Click "Fall Risk" tab
+        3. Observe error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should happen instead?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Critical (data loss, crash, security)
+        - High (feature broken, no workaround)
+        - Medium (feature broken, workaround exists)
+        - Low (cosmetic, minor inconvenience)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser/OS/device info, or Worker environment.
+      placeholder: "Safari 18.2, macOS 15.4 / iPhone 17 Pro, iOS 26.2"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Screenshots
+      description: Paste relevant console output or attach screenshots. **Never include health data or PII.**
+
+  - type: checkboxes
+    id: pii-check
+    attributes:
+      label: Privacy Check
+      options:
+        - label: I confirm this report does not contain health data, PII, or secrets.
+          required: true

@@ -1,0 +1,37 @@
+name: Documentation
+description: Request new docs, flag inaccuracies, or suggest improvements
+labels: ["documentation"]
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options:
+        - Missing documentation
+        - Inaccurate / outdated content
+        - Improvement / clarification
+        - New guide or tutorial
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What needs to change and where?
+      placeholder: "The deployment guide doesn't mention the new smoke test script."
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Location
+      description: File path or URL of the affected docs (if applicable).
+      placeholder: "docs/deploy/DEPLOYMENT_PREP_CHECKLIST.md"
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Content
+      description: Draft the change if you can, or describe what should be written.

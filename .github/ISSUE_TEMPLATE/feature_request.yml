@@ -1,0 +1,60 @@
+name: Feature Request
+description: Propose a new feature or enhancement for VitalSense
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Health Monitoring / Analytics
+        - Fall Risk / Emergency
+        - Caregiver Dashboard
+        - iOS App
+        - Worker / API
+        - Gamification
+        - Accessibility
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What pain point or gap does this address?
+      placeholder: "As a caregiver, I need to see real-time alerts because..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How should this work? Include UI sketches, API shapes, or data flow if relevant.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Other approaches you thought about and why they're less ideal.
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: How will we know this is done?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Suggested Priority
+      options:
+        - Nice to have
+        - Should have
+        - Must have
