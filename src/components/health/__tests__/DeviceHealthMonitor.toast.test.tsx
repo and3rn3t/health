@@ -29,7 +29,9 @@ vi.mock('@/hooks/useOnceToast', () => ({
 
 describe('DeviceHealthMonitor - Toast Deduplication', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    // Re-apply showOnce mock after reset
+    mockShowOnce.mockImplementation(() => {});
   });
 
   it('should use useOnceToast for battery alerts with unique device IDs', () => {
@@ -134,6 +136,11 @@ describe('DeviceHealthMonitor - Toast Deduplication', () => {
   });
 
   it('should prevent duplicate alerts on re-render with same device state', () => {
+    // Set up mock before first render to avoid undefined destructuring
+    vi.mocked(useDeviceManagement).mockReturnValue({
+      devices: [],
+    } as unknown as ReturnType<typeof useDeviceManagement>);
+
     const { rerender } = render(<DeviceHealthMonitor />);
 
     vi.mocked(useDeviceManagement).mockReturnValue({

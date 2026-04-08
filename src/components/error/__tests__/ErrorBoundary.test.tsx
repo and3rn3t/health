@@ -34,8 +34,16 @@ vi.mock('@/lib/errorHandling', () => ({
 }));
 
 describe('ErrorBoundary', () => {
+  const savedLocation = window.location;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    // Restore location to avoid cross-test pollution (e.g. hostname leak)
+    Object.defineProperty(window, 'location', {
+      value: savedLocation,
+      writable: true,
+      configurable: true,
+    });
   });
 
   describe('EnhancedErrorFallback', () => {

@@ -6,10 +6,14 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? 'github' : 'html',
+  reporter: process.env.CI
+    ? [['github'], ['html', { open: 'never' }]]
+    : [['html', { open: 'on-failure' }]],
   use: {
     baseURL: 'http://localhost:4173',
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
   projects: [
     {
@@ -23,6 +27,11 @@ export default defineConfig({
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
+    },
+    // Mobile viewport for responsive testing
+    {
+      name: 'mobile-chrome',
+      use: { ...devices['Pixel 7'] },
     },
   ],
   webServer: {

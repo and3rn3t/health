@@ -13,13 +13,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ci:
+  # ── Fast quality gates (parallel) ────────────────────────────
+  lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Full history needed for SonarCloud blame analysis
       - uses: ./.github/actions/setup-pnpm
 
       - name: Config drift check
@@ -31,8 +30,23 @@ jobs:
       - name: Security audit
         run: pnpm audit --audit-level=moderate || echo "::warning::Audit found vulnerabilities"
 
+  type-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-pnpm
+
       - name: Type Check
         run: pnpm run type-check
+
+  # ── Unit tests ───────────────────────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-pnpm
 
       - name: Test with coverage
         run: pnpm run test:coverage
@@ -46,12 +60,35 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: SonarCloud Scan
-        # Ensure Automatic Analysis is disabled in SonarCloud dashboard to avoid duplicate scans
         if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
         uses: SonarSource/sonarcloud-github-action@v3
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── Integration tests (excluded from unit run) ──────────────
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-pnpm
+
+      - name: Run integration tests
+        run: npx vitest run --config vitest.integration.config.ts
+        env:
+          CI: 'true'
+
+  # ── Build (depends on quality gates) ─────────────────────────
+  build:
+    needs: [lint, type-check, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-pnpm
 
       - name: Build
         env:
@@ -75,15 +112,27 @@ jobs:
           retention-days: 3
 
   e2e:
-    needs: ci
+    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-pnpm
 
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps chromium
+
+      - name: Install Playwright system deps
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -103,7 +152,7 @@ jobs:
           retention-days: 7
 
   deploy:
-    needs: [ci, e2e]
+    needs: [build, e2e, integration]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10

@@ -68,21 +68,10 @@ if (typeof (window as any).matchMedia !== 'function') {
   });
 }
 
-// Mock useAuth hook globally
-vi.mock('../src/hooks/useAuth', () => ({
-  useAuth: () => ({
-    user: {
-      id: 'test-user',
-      email: 'test@vitalsense.com',
-      name: 'Test User',
-    },
-    isAuthenticated: true,
-    isLoading: false,
-    login: vi.fn(),
-    logout: vi.fn(),
-    getAccessToken: vi.fn().mockResolvedValue('mock-token'),
-  }),
-}));
+// NOTE: useAuth mock moved to individual test files via vi.mock('@/hooks/useAuth').
+// This allows tests to customize auth state (unauthenticated, loading, error, etc.)
+// instead of being locked into a single "authenticated" mock.
+
 if (!('crypto' in globalThis)) {
   (globalThis as unknown as Record<string, unknown>).crypto =
     cryptoWeb as unknown;

@@ -26,6 +26,7 @@
     "build:all": "vite build && node scripts/build/build-worker.js",
     "validate": "tsc --noEmit && eslint . --ext ts,tsx && vitest run",
     "test:coverage": "vitest run --coverage || exit 0",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:e2e": "playwright test",
     "deploy:prod": "wrangler deploy --env production",
     "deploy:smoke": "node scripts/deploy/smoke-test.mjs",

@@ -4,15 +4,12 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   esbuild: {
     target: 'node18',
-    // Optimize esbuild for faster compilation in tests
     format: 'esm',
     treeShaking: true,
-    // Faster compilation with sourcemaps disabled in tests
     sourcemap: false,
   },
   test: {
-    environment: 'jsdom', // For React component testing
-    // Discover tests colocated with code and in __tests__ folders
+    environment: 'jsdom',
     include: [
       'src/**/*.{test,spec}.{ts,tsx}',
       'src/**/__tests__/**/*.{test,spec}.{ts,tsx}',
@@ -23,17 +20,18 @@ export default defineConfig({
       'src/**/*.{e2e-test,e2e.spec,e2e.test}.{ts,tsx}',
       'src/__tests__/emergency-cancel.test.ts',
       'src/__tests__/branding/vitalsense-branding.test.tsx',
-      'src/**/*integration*.test.ts', // Exclude integration tests that require running servers
+      'src/**/*integration*.test.ts',
     ],
     setupFiles: ['./vitest.setup.ts'],
     globals: true,
-    // Use threads locally for speed, forks in CI for memory isolation (prevents OOM)
+    // Threads locally for speed, forks in CI for memory isolation
     pool: process.env.CI ? 'forks' : 'threads',
     poolOptions: {
       forks: {
         singleFork: false,
         isolate: true,
-        maxForks: 1,
+        // GitHub Actions runners have 2+ cores — use them
+        maxForks: 2,
         minForks: 1,
       },
       threads: {
@@ -42,41 +40,36 @@ export default defineConfig({
         minThreads: 1,
       },
     },
-    // Test timeout optimization - increased to accommodate tests with multiple waitFor calls
-    // Tests use waitFor with 2-3s timeouts, so we need higher global timeout
-    testTimeout: process.env.CI ? 20000 : 15000, // Increased: 15s locally, 20s in CI
-    hookTimeout: process.env.CI ? 10000 : 5000, // Increased hook timeouts
-    teardownTimeout: process.env.CI ? 10000 : 5000, // Increased teardown timeout
-    // Enable bail mode in CI to fail fast, but not locally for full test coverage
-    bail: process.env.CI ? 1 : 0, // Stop after first failure in CI, continue locally
-    // Optimize test execution: maximize parallelism in local dev for speed
+    testTimeout: process.env.CI ? 20000 : 15000,
+    hookTimeout: process.env.CI ? 10000 : 5000,
+    teardownTimeout: process.env.CI ? 10000 : 5000,
+    // Retry in CI for flakiness resilience (no bail — let retry handle transients)
+    bail: 0,
     sequence: {
-      shuffle: false, // Disable shuffle for faster execution and deterministic order
-      concurrent: false, // Disabled: tests within a file share global state (fetch mocks, window globals, timers)
+      // Shuffle catches hidden order dependencies; seed is logged for reproducibility
+      shuffle: true,
+      concurrent: false,
     },
-    // Memory optimization: reduce concurrency to prevent memory exhaustion
-    maxConcurrency: process.env.CI ? 1 : 4, // Match maxForks for consistent local parallelism
-    fileParallelism: true, // Enable file-level parallelism but limited by maxConcurrency
-    // Enable test retries for flaky tests (faster than manual reruns)
-    retry: process.env.CI ? 1 : 0, // Retry once in CI, but not locally to save time
-    // Coverage is only collected when --coverage flag is used
+    maxConcurrency: process.env.CI ? 2 : 4,
+    fileParallelism: true,
+    retry: process.env.CI ? 1 : 0,
+    // Inline reporter for GitHub Actions annotations on failures
+    reporters: process.env.CI
+      ? ['default', 'github-actions']
+      : ['default'],
     coverage: {
       provider: 'v8',
-      // Added 'json-summary' so CI coverage gate (expects coverage/coverage-summary.json)
-      // succeeds; previously only 'json' produced coverage-final.json causing gate failure.
-      // In CI, use minimal reporters to reduce memory usage (json-summary is sufficient for gate)
       reporter: process.env.CI
-        ? ['json-summary', 'json', 'lcov'] // lcov needed for SonarCloud coverage import
-        : ['text', 'json', 'json-summary', 'lcov'], // Full reporters when coverage is enabled
+        ? ['json-summary', 'json', 'lcov']
+        : ['text', 'json', 'json-summary', 'lcov'],
       reportsDirectory: 'coverage',
-      // Memory optimization: only collect coverage for tested files (not all source files)
-      all: false, // Reduces memory usage by not processing untested files
-      // Regression guard: fail if overall coverage drops below these floors
+      all: false,
+      // Ratchet up: raise thresholds as coverage improves
       thresholds: {
-        lines: 30,
-        branches: 25,
-        functions: 30,
-        statements: 30,
+        lines: 35,
+        branches: 30,
+        functions: 35,
+        statements: 35,
       },
       // Exclude large, non-runtime or archival areas to raise meaningful signal
       exclude: [

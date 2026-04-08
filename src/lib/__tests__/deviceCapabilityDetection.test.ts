@@ -10,9 +10,16 @@ import {
 } from '../deviceCapabilityDetection';
 
 describe('Device Capability Detection', () => {
+  const originalUserAgent = navigator.userAgent;
+
   beforeEach(() => {
-    // Reset navigator mock
     vi.clearAllMocks();
+    // Restore userAgent to prevent cross-test pollution from defineProperty
+    Object.defineProperty(navigator, 'userAgent', {
+      writable: true,
+      configurable: true,
+      value: originalUserAgent,
+    });
   });
 
   it('detects iOS device capabilities', () => {
@@ -37,6 +44,7 @@ describe('Device Capability Detection', () => {
   it('detects iPad capabilities', () => {
     Object.defineProperty(navigator, 'userAgent', {
       writable: true,
+      configurable: true,
       value:
         'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15',
     });
@@ -52,6 +60,7 @@ describe('Device Capability Detection', () => {
 
     Object.defineProperty(navigator, 'userAgent', {
       writable: true,
+      configurable: true,
       value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0)',
     });
 
