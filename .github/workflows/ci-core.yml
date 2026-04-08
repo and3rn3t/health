@@ -34,6 +34,14 @@ jobs:
       - name: Test with coverage
         run: pnpm run test:coverage
 
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage/lcov.info
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: SonarCloud Scan
         # Ensure Automatic Analysis is disabled in SonarCloud dashboard to avoid duplicate scans
         if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
@@ -53,15 +61,42 @@ jobs:
           test -d dist && echo "Build OK ($(du -sh dist | cut -f1))" || exit 1
 
       - name: Upload build artifacts
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
-          retention-days: 1
+          retention-days: 3
+
+  e2e:
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-pnpm
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Run E2E tests
+        run: pnpm test:e2e --project=chromium
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
 
   deploy:
-    needs: ci
+    needs: [ci, e2e]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
