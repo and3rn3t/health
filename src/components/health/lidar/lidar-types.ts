@@ -3,7 +3,7 @@
  */
 
 import type { EnvironmentRisk } from '@/lib/lidar/processing';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 // ── Interfaces & Types ─────────────────────────────────────────────
 

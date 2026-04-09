@@ -4,7 +4,7 @@ import {
   log,
   verifyJwtWithJwks,
 } from '@/lib/security';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import type { Env } from './types';
 
 // ---------------------------------------------------------------------------

@@ -12,9 +12,8 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     globals: true,
     pool: 'forks',
-    poolOptions: {
-      forks: { maxForks: 1, isolate: true },
-    },
+    maxWorkers: 1,
+    isolate: true,
     testTimeout: 30000,
     retry: process.env.CI ? 1 : 0,
     reporters: process.env.CI

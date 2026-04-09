@@ -26,20 +26,8 @@ export default defineConfig({
     globals: true,
     // Threads locally for speed, forks in CI for memory isolation
     pool: process.env.CI ? 'forks' : 'threads',
-    poolOptions: {
-      forks: {
-        singleFork: false,
-        isolate: true,
-        // GitHub Actions runners have 2+ cores — use them
-        maxForks: 2,
-        minForks: 1,
-      },
-      threads: {
-        isolate: true,
-        maxThreads: 4,
-        minThreads: 1,
-      },
-    },
+    isolate: true,
+    maxWorkers: process.env.CI ? 2 : 4,
     testTimeout: process.env.CI ? 20000 : 15000,
     hookTimeout: process.env.CI ? 10000 : 5000,
     teardownTimeout: process.env.CI ? 10000 : 5000,

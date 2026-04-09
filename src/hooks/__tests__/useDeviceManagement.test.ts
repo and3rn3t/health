@@ -64,7 +64,7 @@ vi.mock('@/lib/liveHealthDataSync', () => ({
 }));
 
 vi.mock('@/lib/deviceDetectionService', () => ({
-  DeviceDetectionService: vi.fn(() => mockServiceInstance),
+  DeviceDetectionService: vi.fn(function () { return mockServiceInstance; }),
 }));
 
 vi.mock('sonner', () => ({

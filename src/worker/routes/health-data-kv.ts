@@ -10,7 +10,7 @@
  *  POST   /_spark/loaded
  */
 import { Hono } from 'hono';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { generateDemoHealthData } from '@/lib/demo-data';
 import { getTtlSecondsForType } from '@/lib/retention';
 import {

@@ -1,5 +1,5 @@
 // Simple WebSocket Durable Object for testing
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 const wsMessageSchema = z.object({
   type: z.string().max(64),

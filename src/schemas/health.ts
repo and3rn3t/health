@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 // Mail used for WebSocket messages
 export const messageEnvelopeSchema = z.object({

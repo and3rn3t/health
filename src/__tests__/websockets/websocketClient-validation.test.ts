@@ -27,7 +27,7 @@ describe('WebSocketClient (schema enforcement)', () => {
       removeEventListener: vi.fn(),
     };
     // Override global WebSocket with a mock constructor
-    (global as any).WebSocket = vi.fn(() => mockWs);
+    (global as any).WebSocket = vi.fn(function () { return mockWs; });
     // @ts-expect-error override fetch for test
     global.fetch = vi.fn(async () => ({
       json: async () => ({ url: 'ws://localhost:9999' }),

@@ -1,5 +1,5 @@
 // Security utilities for Workers runtime (ESM). Keep small and edge-safe.
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 // Minimal redaction-friendly logger
 // Note: SafeLogger may not be available in Workers runtime, so we use a simple wrapper

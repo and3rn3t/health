@@ -29,7 +29,7 @@ describe('VitalSense WebSocket System', () => {
     };
 
     // Mock WebSocket constructor
-    global.WebSocket = vi.fn(() => mockWebSocket) as unknown as typeof WebSocket;
+    global.WebSocket = vi.fn(function () { return mockWebSocket; }) as unknown as typeof WebSocket;
   });
 
   afterEach(() => {

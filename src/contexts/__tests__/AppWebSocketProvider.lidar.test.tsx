@@ -18,7 +18,7 @@ let mockSocket: MockWebSocket;
 beforeEach(() => {
   mockSocket = new MockWebSocket();
   // @ts-expect-error override global
-  global.WebSocket = vi.fn(() => mockSocket);
+  global.WebSocket = vi.fn(function () { return mockSocket; });
   global.fetch = vi.fn(async (url: RequestInfo) => {
     if (typeof url === 'string' && url.includes('/api/ws-url')) {
       return new Response(JSON.stringify({ url: 'ws://example.test/mock' }), {

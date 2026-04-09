@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { normalizeBatch } from '@/sensors/lidar/normalize';
 import {
   broadcastUserLiveEvent,

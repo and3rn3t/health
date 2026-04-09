@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 // WebSocket message schema validation
 const wsMessageSchema = z.object({
   type: z.string(),

@@ -99,23 +99,6 @@ export default defineConfig({
           return 'assets/[name]-[hash].[ext]';
         },
       },
-
-      // Tree shaking optimizations
-      treeshake: {
-        moduleSideEffects: (id) => {
-          if (id.includes('polyfill') || id.includes('.css')) {
-            return true;
-          }
-          if (id.includes('recharts') || id.includes('lucide-react')) {
-            return false;
-          }
-          // Default: let Rollup use package.json sideEffects field
-          return 'no-treeshake';
-        },
-        propertyReadSideEffects: false,
-        tryCatchDeoptimization: false,
-        annotations: true,
-      },
     },
 
     // Additional aggressive optimizations

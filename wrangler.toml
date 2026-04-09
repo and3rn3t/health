@@ -4,7 +4,7 @@
 
 name = "health-app"
 main = "dist-worker/index.js"
-compatibility_date = "2026-01-15"
+compatibility_date = "2026-04-05"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 preview_urls = false
