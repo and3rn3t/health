@@ -159,7 +159,7 @@ function accumulateMetric(
   }
   if (d.alert?.level === 'critical') acc.criticalAlerts++;
   else if (d.alert?.level === 'warning') acc.warningAlerts++;
-  if (d.fallRisk && d.fallRisk in acc.fallRisk) acc.fallRisk[d.fallRisk]++;
+  if (d.fallRisk && d.fallRisk in acc.fallRisk) acc.fallRisk[d.fallRisk] = (acc.fallRisk[d.fallRisk] ?? 0) + 1;
   acc.metricTypeSet.add(d.type);
   if (d.dataQuality) {
     acc.dqSum +=

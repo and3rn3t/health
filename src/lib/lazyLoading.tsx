@@ -2,7 +2,8 @@
  * Utilities for lazy loading components with consistent fallback patterns
  */
 
-import { ComponentType, lazy, LazyExoticComponent } from 'react';
+import type { ComponentType, LazyExoticComponent } from 'react';
+import { lazy } from 'react';
 import type { LucideIcon } from '@/lib/icons';
 
 /**

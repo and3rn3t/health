@@ -6,7 +6,7 @@ import { useKV } from '@/hooks/useCloudflareKV';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProcessedHealthData } from '@/types';
+import type { ProcessedHealthData } from '@/types';
 import {
   Activity,
   AlertTriangle,

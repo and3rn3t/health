@@ -89,9 +89,9 @@ function pushWindow(
 // Simple EWMA for smoothing
 function ewma(values: number[], alpha = 0.3): number[] {
   if (values.length === 0) return [];
-  const out: number[] = [values[0]];
+  const out: number[] = [values[0]!];
   for (let i = 1; i < values.length; i++) {
-    out[i] = alpha * values[i] + (1 - alpha) * out[i - 1];
+    out[i] = alpha * values[i]! + (1 - alpha) * out[i - 1]!;
   }
   return out;
 }
@@ -105,7 +105,7 @@ function slope(values: number[]): number {
   let num = 0;
   let den = 0;
   for (let i = 0; i < n; i++) {
-    num += (i - xMean) * (values[i] - yMean);
+    num += (i - xMean) * (values[i]! - yMean);
     den += (i - xMean) * (i - xMean);
   }
   return den === 0 ? 0 : num / den;

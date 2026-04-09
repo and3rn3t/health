@@ -272,7 +272,7 @@ describe('subscribe & unsubscribe', () => {
       },
     });
     expect(received).toHaveLength(1);
-    expect(received[0].value).toBe(72);
+    expect(received[0]!.value).toBe(72);
   });
 
   it('filters by deviceId', async () => {
@@ -371,7 +371,7 @@ describe('sendHealthData', () => {
     const ws = await connectSync(sync);
     const before = ws.sent.length;
     sync.sendHealthData(metric);
-    const sent = JSON.parse(ws.sent[before]);
+    const sent = JSON.parse(ws.sent[before]!);
     expect(sent.type).toBe('live_health_data');
     expect(sent.data.value).toBe(72);
   });
@@ -401,7 +401,7 @@ describe('requestPing', () => {
     const ws = await connectSync(sync);
     const before = ws.sent.length;
     expect(sync.requestPing()).toBe(true);
-    const sent = JSON.parse(ws.sent[before]);
+    const sent = JSON.parse(ws.sent[before]!);
     expect(sent.type).toBe('ping');
   });
 

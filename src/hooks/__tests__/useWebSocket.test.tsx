@@ -159,7 +159,7 @@ describe('useWebSocket', () => {
     });
 
     expect(sendSpy).toHaveBeenCalled();
-    const sentData = JSON.parse(sendSpy.mock.calls[0][0] as string);
+    const sentData = JSON.parse(sendSpy.mock.calls[0]![0] as string);
     expect(sentData.type).toBe('test');
     expect(sentData.data).toEqual({ message: 'hello' });
   });

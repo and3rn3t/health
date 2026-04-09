@@ -127,7 +127,7 @@ describe('DeviceDetectionService', () => {
 
       const devices = service.getDetectedDevices();
       expect(devices).toHaveLength(1);
-      expect(devices[0].id).toBe('ios_app-user-1');
+      expect(devices[0]!.id).toBe('ios_app-user-1');
     });
 
     it('should generate device name from deviceType when deviceName missing', () => {
@@ -140,7 +140,7 @@ describe('DeviceDetectionService', () => {
         },
       });
 
-      const device = service.getDetectedDevices()[0];
+      const device = service.getDetectedDevices()[0]!;
       expect(device.name).toBe('Apple watch');
     });
 
@@ -151,7 +151,7 @@ describe('DeviceDetectionService', () => {
         status: 'online',
       });
 
-      const device = service.getDetectedDevices()[0];
+      const device = service.getDetectedDevices()[0]!;
       expect(device.name).toBe('Device');
     });
 
@@ -162,7 +162,7 @@ describe('DeviceDetectionService', () => {
         status: 'online',
       });
 
-      expect(service.getDetectedDevices()[0].type).toBe('iphone');
+      expect(service.getDetectedDevices()[0]!.type).toBe('iphone');
     });
 
     it('should map watch_app clientType to apple_watch device type', () => {
@@ -172,7 +172,7 @@ describe('DeviceDetectionService', () => {
         status: 'online',
       });
 
-      expect(service.getDetectedDevices()[0].type).toBe('apple_watch');
+      expect(service.getDetectedDevices()[0]!.type).toBe('apple_watch');
     });
 
     it('should map unknown clientType to health_app device type', () => {
@@ -182,7 +182,7 @@ describe('DeviceDetectionService', () => {
         status: 'online',
       });
 
-      expect(service.getDetectedDevices()[0].type).toBe('health_app');
+      expect(service.getDetectedDevices()[0]!.type).toBe('health_app');
     });
 
     it('should prefer deviceInfo.deviceType over clientType mapping', () => {
@@ -193,7 +193,7 @@ describe('DeviceDetectionService', () => {
         deviceInfo: { deviceType: 'apple_watch' },
       });
 
-      expect(service.getDetectedDevices()[0].type).toBe('apple_watch');
+      expect(service.getDetectedDevices()[0]!.type).toBe('apple_watch');
     });
 
     it('should update existing device when same ID seen again', () => {
@@ -213,8 +213,8 @@ describe('DeviceDetectionService', () => {
 
       const devices = service.getDetectedDevices();
       expect(devices).toHaveLength(1);
-      expect(devices[0].status).toBe('offline');
-      expect(devices[0].name).toBe('Updated Name');
+      expect(devices[0]!.status).toBe('offline');
+      expect(devices[0]!.name).toBe('Updated Name');
     });
 
     it('should store metadata with userId and clientType', () => {

@@ -20,7 +20,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useKV } from '@/hooks/useCloudflareKV';
-import { ProcessedHealthData } from '@/types';
+import type { ProcessedHealthData } from '@/types';
 import {
   AlertTriangle,
   Bell,
@@ -258,7 +258,7 @@ export default function HealthAlertsConfig({
     const metricInfo = HEALTH_METRICS.find((m) => m.value === metric);
     if (!metricInfo) return;
 
-    const [min, max] = metricInfo.normalRange;
+    const [min, max] = metricInfo.normalRange as [number, number];
 
     // Create alerts based on the metric type
     const smartAlerts: Partial<HealthAlert>[] = [];

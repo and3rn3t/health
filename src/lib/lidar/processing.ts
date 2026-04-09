@@ -39,9 +39,9 @@ export function fitPlaneRansac(
     const i2 = Math.floor(Math.random() * points.length); // NOSONAR
     const i3 = Math.floor(Math.random() * points.length); // NOSONAR
     if (i1 === i2 || i2 === i3 || i1 === i3) continue;
-    const p1 = points[i1];
-    const p2 = points[i2];
-    const p3 = points[i3];
+    const p1 = points[i1]!;
+    const p2 = points[i2]!;
+    const p3 = points[i3]!;
     const n = cross(sub(p2, p1), sub(p3, p1));
     const nNorm = norm(n);
     if (nNorm < 1e-6) continue; // degenerate

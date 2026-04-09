@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { computeMomentum, GaitTrendSeverity } from '../gaitMomentum';
+import { computeMomentum } from '../gaitMomentum';
+import type { GaitTrendSeverity } from '../gaitMomentum';
 
 interface FixtureTrendPartial {
   severity: string;

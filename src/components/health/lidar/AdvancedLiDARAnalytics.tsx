@@ -128,7 +128,7 @@ class LiDARAnalyticsEngine {
     // Detect sudden changes
     const index = allScans.indexOf(scan);
     if (index > 0) {
-      const prev = allScans[index - 1];
+      const prev = allScans[index - 1]!;
       const durationDiff = Math.abs(
         scan.metadata.duration - prev.metadata.duration
       );

@@ -152,17 +152,17 @@ const IOS26EnhancedBreadcrumb: React.FC<EnhancedBreadcrumbProps> = ({
   const [showOverflow, setShowOverflow] = useState(false);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.touches[0].clientX);
+    setTouchStart(e.touches[0]!.clientX);
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (!touchStart) return;
 
-    const touchEnd = e.changedTouches[0].clientX;
+    const touchEnd = e.changedTouches[0]!.clientX;
     const distance = touchStart - touchEnd;
 
     if (distance > 50 && items.length > 1) {
-      onNavigate(items[items.length - 2]);
+      onNavigate(items[items.length - 2]!);
     }
 
     setTouchStart(null);

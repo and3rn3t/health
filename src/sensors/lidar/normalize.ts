@@ -1,4 +1,4 @@
-import { NormalizedLidarFrame, RawLidarFrame } from './types';
+import type { NormalizedLidarFrame, RawLidarFrame } from './types';
 
 // Hard bounds to defend against sensor glitches / malicious payloads
 const BOUNDS: Record<string, [number, number]> = {

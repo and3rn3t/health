@@ -45,7 +45,7 @@ export async function purgeOldHealthData(
     scanned += 1;
     const parts = k.name.split(':');
     if (parts.length < 3) continue;
-    const type = parts[1];
+    const type = parts[1]!;
     const iso = parts.slice(2).join(':');
     const ttlSec = getTtlSecondsForType(type, env.ENVIRONMENT);
     const ts = Date.parse(iso);

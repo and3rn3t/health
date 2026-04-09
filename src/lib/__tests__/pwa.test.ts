@@ -256,7 +256,7 @@ describe('queueHealthData', () => {
     await mgr.initialize();
     await mgr.queueHealthData(testData);
     expect(setItem).toHaveBeenCalled();
-    const [key, val] = setItem.mock.calls[0];
+    const [key, val] = setItem.mock.calls[0]!;
     expect(key).toContain('pending_health-data_');
     expect(JSON.parse(val)).toMatchObject({ metrics: { heart_rate: 72 } });
   });

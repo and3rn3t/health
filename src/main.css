@@ -1,12 +1,65 @@
 /* ==================================================================
-   VitalSense Author Styles (CLEAN BASE) RESET v3
+   VitalSense Author Styles — Tailwind v4 CSS-first
    ------------------------------------------------------------------
-   This file was forcibly reset to remove accidentally committed
-   generated utilities. Keep it lean (<250 lines).
+   Migrated from Tailwind v3 (tailwind.config.js) to v4 (@theme).
+   All theme tokens now live in this CSS file.
    ================================================================== */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* --- Dark mode: selector-based (data-appearance attribute) --- */
+@custom-variant dark (&:where([data-appearance="dark"], [data-appearance="dark"] *));
+
+/* --- Theme: semantic colors backed by CSS variables --- */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+/* --- Theme: VitalSense brand tokens + fonts + animations --- */
+@theme {
+  --color-vitalsense-primary: #2563eb;
+  --color-vitalsense-secondary: #34C759;
+  --color-vitalsense-success: #30D158;
+  --color-vitalsense-warning: #FF9500;
+  --color-vitalsense-error: #FF3B30;
+  --color-vitalsense-info: #5AC8FA;
+  --color-vitalsense-teal: #056487;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --animate-fade-in: fadeIn 0.2s ease-in-out;
+  --animate-slide-in: slideIn 0.3s ease-out;
+
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes slideIn {
+    0% { transform: translateY(-10px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+}
 
 @layer base {
   :root {

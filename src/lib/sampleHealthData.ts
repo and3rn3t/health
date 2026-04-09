@@ -3,7 +3,7 @@
  * Provides realistic sample data for development and testing
  */
 
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
 
 /**
  * Generates sample health data for demonstration and testing purposes
@@ -18,21 +18,21 @@ export function generateSampleHealthData(): ProcessedHealthData {
     const dailyData = Array.from({ length: 30 }, (_, i) => ({
       date: new Date(now.getTime() - (29 - i) * 24 * 60 * 60 * 1000)
         .toISOString()
-        .split('T')[0],
+        .split('T')[0]!,
       value: Math.max(0, baseValue + (Math.random() - 0.5) * variance), // NOSONAR: Sample data
     }));
 
     const weeklyData = Array.from({ length: 12 }, (_, i) => ({
       date: new Date(now.getTime() - (11 - i) * 7 * 24 * 60 * 60 * 1000)
         .toISOString()
-        .split('T')[0],
+        .split('T')[0]!,
       value: Math.max(0, baseValue + (Math.random() - 0.5) * variance * 1.5), // NOSONAR
     }));
 
     const monthlyData = Array.from({ length: 6 }, (_, i) => ({
       date: new Date(now.getTime() - (5 - i) * 30 * 24 * 60 * 60 * 1000)
         .toISOString()
-        .split('T')[0],
+        .split('T')[0]!,
       value: Math.max(0, baseValue + (Math.random() - 0.5) * variance * 2), // NOSONAR
     }));
 
@@ -44,7 +44,7 @@ export function generateSampleHealthData(): ProcessedHealthData {
       trend,
       variability: variance / baseValue,
       reliability: 0.8 + Math.random() * 0.2, // NOSONAR
-      lastValue: dailyData[dailyData.length - 1].value,
+      lastValue: dailyData[dailyData.length - 1]!.value,
       percentileRank: 50 + (Math.random() - 0.5) * 40, // NOSONAR
     };
   };

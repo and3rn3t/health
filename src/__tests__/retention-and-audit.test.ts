@@ -49,7 +49,7 @@ describe('audit writer', () => {
       meta: { x: 1 },
     });
     expect(puts.length).toBe(1);
-    const { key, data } = puts[0];
+    const { key, data } = puts[0]!;
     expect(key.startsWith('audit/events/')).toBe(true);
     expect(data.endsWith('\n')).toBe(true);
     const parsed = JSON.parse(data.trim());

@@ -93,6 +93,6 @@ export function accumulateHistogram(
 		if (v < range.min || v > range.max) continue
 		let idx = Math.floor((v - range.min) / width)
 		if (idx === bins) idx = bins - 1
-		if (idx >= 0 && idx < bins) targetCounts[idx]++
+		if (idx >= 0 && idx < bins) targetCounts[idx]!++;
 	}
 }

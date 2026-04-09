@@ -61,12 +61,12 @@ describe('Feature Extraction', () => {
     const buildings = extractBuildings(chm, 2.5, 20.0, 15.0)
 
     if (buildings.length > 0) {
-      const b = buildings[0]
-      expect(b.bbox.minX).toBeLessThanOrEqual(b.bbox.maxX)
-      expect(b.bbox.minY).toBeLessThanOrEqual(b.bbox.maxY)
-      expect(b.confidence).toBeGreaterThanOrEqual(0)
-      expect(b.confidence).toBeLessThanOrEqual(1)
-      expect(b.properties).toBeDefined()
+      const b = buildings[0]!
+      expect(b!.bbox.minX).toBeLessThanOrEqual(b!.bbox.maxX)
+      expect(b!.bbox.minY).toBeLessThanOrEqual(b!.bbox.maxY)
+      expect(b!.confidence).toBeGreaterThanOrEqual(0)
+      expect(b!.confidence).toBeLessThanOrEqual(1)
+      expect(b!.properties).toBeDefined()
     }
   })
 })

@@ -78,7 +78,7 @@ export class HealthDataProcessor {
       return {
         date: new Date(Date.now() - (days - 1 - i) * 24 * 60 * 60 * 1000)
           .toISOString()
-          .split('T')[0],
+          .split('T')[0]!,
         value: Math.round(value * 100) / 100,
       };
     });
@@ -124,7 +124,7 @@ export class HealthDataProcessor {
         const weekAvg =
           weekData.reduce((sum, day) => sum + day.value, 0) / weekData.length;
         weekly.push({
-          date: weekData[weekData.length - 1].date, // End of week
+          date: weekData[weekData.length - 1]!.date, // End of week
           value: Math.round(weekAvg * 100) / 100,
         });
       }

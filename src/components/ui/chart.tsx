@@ -1,13 +1,5 @@
-import {
-  ComponentProps,
-  ComponentType,
-  createContext,
-  CSSProperties,
-  ReactNode,
-  useContext,
-  useId,
-  useMemo,
-} from 'react';
+import type { ComponentProps, ComponentType, CSSProperties, ReactNode } from 'react';
+import { createContext, useContext, useId, useMemo } from 'react';
 import * as RechartsPrimitive from 'recharts';
 
 import { cn } from '@/lib/utils';
@@ -87,7 +79,7 @@ function sanitizeCSSColor(color: string): string {
   // Validate it's a safe CSS color format
   // Match hex colors, rgb/rgba, hsl/hsla, or named colors
   const cssColorPattern = /^(#[0-9a-fA-F]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|[a-zA-Z]+)$/;
-  if (!cssColorPattern.test(sanitized.split('(')[0])) {
+  if (!cssColorPattern.test(sanitized.split('(')[0]!)) {
     return ''; // Return empty string for invalid colors
   }
 

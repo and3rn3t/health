@@ -101,7 +101,7 @@ export async function validateBearerJWT(
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return { ok: false };
-    const payload = JSON.parse(atob(parts[1]));
+    const payload = JSON.parse(atob(parts[1]!));
     const now = Math.floor(Date.now() / 1000);
     const skew = opts.clockSkewSec ?? 60;
     if (typeof payload.exp === 'number' && now > payload.exp + skew)
@@ -231,7 +231,7 @@ export function decodeJwtPayload(
     const parts = token.split('.');
     if (parts.length < 2) return null;
     const payload = JSON.parse(
-      new TextDecoder().decode(b64urlToBytes(parts[1]))
+      new TextDecoder().decode(b64urlToBytes(parts[1]!))
     );
     return payload as Record<string, unknown>;
   } catch {

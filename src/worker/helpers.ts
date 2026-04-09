@@ -201,7 +201,7 @@ export function shouldSample(c: Context<{ Bindings: Env }>): boolean {
   }
   const array = new Uint32Array(1);
   crypto.getRandomValues(array);
-  const randomValue = array[0] / (0xffffffff + 1);
+  const randomValue = array[0]! / (0xffffffff + 1);
   return randomValue < rate;
 }
 
@@ -221,7 +221,7 @@ export function shouldSampleWithKey(
   rate ??= env === 'production' ? fallbackProd : fallbackDev;
   const array = new Uint32Array(1);
   crypto.getRandomValues(array);
-  const randomValue = array[0] / (0xffffffff + 1);
+  const randomValue = array[0]! / (0xffffffff + 1);
   return randomValue < rate;
 }
 

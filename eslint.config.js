@@ -93,7 +93,6 @@ export default [
       '*.config.mjs',
       'vite.config.*',
       'postcss.config.*',
-      'tailwind.config.*',
       'eslint.config.*',
     ],
     languageOptions: {

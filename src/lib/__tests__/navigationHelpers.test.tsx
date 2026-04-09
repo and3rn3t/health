@@ -87,8 +87,8 @@ describe('navigationHelpers', () => {
       ]);
 
       expect(items).toHaveLength(2);
-      expect(items[0].id).toBe('home');
-      expect(items[1].id).toBe('about');
+      expect(items[0]!.id).toBe('home');
+      expect(items[1]!.id).toBe('about');
     });
 
     test('should handle empty array', () => {
@@ -107,13 +107,13 @@ describe('navigationHelpers', () => {
         },
       ]);
 
-      expect(items[0]).toMatchObject({
+      expect(items[0]!).toMatchObject({
         id: 'test',
         label: 'Test',
         priority: 3,
       });
-      expect(items[0].icon).toBe(Home);
-      expect(items[0].component).toBe(MockComponent);
+      expect(items[0]!.icon).toBe(Home);
+      expect(items[0]!.component).toBe(MockComponent);
     });
 
     test('should handle single item', () => {
@@ -128,7 +128,7 @@ describe('navigationHelpers', () => {
       ]);
 
       expect(items).toHaveLength(1);
-      expect(items[0].id).toBe('single');
+      expect(items[0]!.id).toBe('single');
     });
   });
 });

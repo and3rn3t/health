@@ -146,12 +146,12 @@ route.post('/api/health-data/batch', async (c) => {
     const batchResults: ProcessedHealthData[] = [];
     const errors: string[] = [];
     for (let i = 0; i < results.length; i++) {
-      const r = results[i];
+      const r = results[i]!;
       if (r.status === 'fulfilled') {
         batchResults.push(r.value);
       } else {
         errors.push(
-          `${parsed.data.metrics[i].type}: ${r.reason instanceof Error ? r.reason.message : String(r.reason)}`
+          `${parsed.data.metrics[i]!.type}: ${r.reason instanceof Error ? r.reason.message : String(r.reason)}`
         );
       }
     }

@@ -117,8 +117,8 @@ describe('processHealthBatch', () => {
     };
     const results = await HealthDataProcessor.processHealthBatch(batch);
     expect(results).toHaveLength(2);
-    expect(results[0].type).toBe('heart_rate');
-    expect(results[1].type).toBe('steps');
+    expect(results[0]!.type).toBe('heart_rate');
+    expect(results[1]!.type).toBe('steps');
   });
 
   it('creates error record for failed metrics', async () => {
@@ -146,8 +146,8 @@ describe('processHealthBatch', () => {
     const results = await HealthDataProcessor.processHealthBatch(batch);
     expect(results).toHaveLength(2);
     // First should be error record
-    expect(results[0].validated).toBe(false);
-    expect(results[0].alert?.message).toContain('Processing failed');
+    expect(results[0]!.validated).toBe(false);
+    expect(results[0]!.alert?.message).toContain('Processing failed');
 
     // Restore
     vi.stubGlobal('crypto', { randomUUID: origUUID });
@@ -160,7 +160,7 @@ describe('processHealthBatch', () => {
     };
     const history = makeHistoricalData('heart_rate', [68, 70, 72, 74, 76]);
     const results = await HealthDataProcessor.processHealthBatch(batch, history);
-    expect(results[0].trendAnalysis?.confidence).toBeGreaterThan(0);
+    expect(results[0]!.trendAnalysis?.confidence).toBeGreaterThan(0);
   });
 });
 

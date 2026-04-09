@@ -40,7 +40,11 @@ describe('env', () => {
 
     afterEach(() => {
       if (originalLocation && globalThis.window) {
-        globalThis.window.location = originalLocation;
+        Object.defineProperty(globalThis.window, 'location', {
+          value: originalLocation,
+          writable: true,
+          configurable: true,
+        });
       }
     });
 

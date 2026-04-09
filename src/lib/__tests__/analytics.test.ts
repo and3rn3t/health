@@ -199,8 +199,8 @@ describe('detectPatterns', () => {
   it('returns irregular for insufficient data', () => {
     const result = detectPatterns(makePoints([1, 2, 3]));
     expect(result).toHaveLength(1);
-    expect(result[0].pattern).toBe('irregular');
-    expect(result[0].strength).toBe(0);
+    expect(result[0]!.pattern).toBe('irregular');
+    expect(result[0]!.strength).toBe(0);
   });
 
   it('detects weekly pattern with clear weekday/weekend difference', () => {
@@ -398,7 +398,7 @@ describe('extractTimeSeries', () => {
     };
     const result = extractTimeSeries(metricMulti, '30d');
     for (let i = 1; i < result.length; i++) {
-      expect(result[i].date.getTime()).toBeGreaterThanOrEqual(result[i - 1].date.getTime());
+      expect(result[i]!.date.getTime()).toBeGreaterThanOrEqual(result[i - 1]!.date.getTime());
     }
   });
 

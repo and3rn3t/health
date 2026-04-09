@@ -52,7 +52,7 @@ describe('errorHandling', () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       SafeLogger.info('Test message', { key: 'value' });
       expect(consoleSpy).toHaveBeenCalled();
-      const call = consoleSpy.mock.calls[0][0];
+      const call = consoleSpy.mock.calls[0]![0];
       expect(call).toContain('Test message');
       consoleSpy.mockRestore();
     });
@@ -71,7 +71,7 @@ describe('errorHandling', () => {
         timestamp: '2024-01-01',
         password: 'secret123',
       });
-      const call = consoleSpy.mock.calls[0][0];
+      const call = consoleSpy.mock.calls[0]![0];
       const parsed = JSON.parse(call);
       // Email and password should be redacted
       expect(parsed.email).toBe('[REDACTED]');

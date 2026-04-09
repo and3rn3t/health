@@ -76,16 +76,16 @@ describe('computeMultiMetricTrends', () => {
       expect.arrayContaining(['speed', 'cadence', 'asymmetry', 'variability'])
     );
     // speed & cadence should be improving (positive slope)
-    expect(['improving', 'stable']).toContain(trends.speed.direction);
-    expect(['improving', 'stable']).toContain(trends.cadence.direction);
+    expect(['improving', 'stable']).toContain(trends.speed!.direction);
+    expect(['improving', 'stable']).toContain(trends.cadence!.direction);
     // asymmetry & variability series decreasing (improvement after flip)
-    expect(['improving', 'stable']).toContain(trends.asymmetry.direction);
-    expect(['improving', 'stable']).toContain(trends.variability.direction);
+    expect(['improving', 'stable']).toContain(trends.asymmetry!.direction);
+    expect(['improving', 'stable']).toContain(trends.variability!.direction);
   });
 
   it('produces insufficient_data when not enough samples', () => {
     const snapshots: BasicGaitSnapshot[] = [{ speed: 1.2 }];
     const trends = computeMultiMetricTrends(snapshots);
-    expect(trends.speed.severity).toBe('insufficient_data');
+    expect(trends.speed!.severity).toBe('insufficient_data');
   });
 });

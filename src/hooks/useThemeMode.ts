@@ -54,7 +54,7 @@ export function useThemeMode() {
   const toggleThemeMode = useCallback(() => {
     const order: ThemeMode[] = ['light', 'dark', 'system'];
     const idx = order.indexOf(themeMode ?? 'system');
-    const next = order[(idx + 1) % order.length];
+    const next = order[(idx + 1) % order.length]!;
     setThemeMode(next);
   }, [themeMode, setThemeMode]);
 

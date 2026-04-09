@@ -20,7 +20,7 @@ function extractSwiftValue(swift: string, name: string): number | null {
   );
   const m = re.exec(swift);
   if (!m) return null;
-  return parseFloat(m[1]);
+  return parseFloat(m[1]!);
 }
 
 describe('GaitConfig Swift parity', () => {

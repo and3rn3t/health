@@ -38,7 +38,7 @@ export class SimpleHealthWebSocket {
 
       // Create WebSocket pair
       const webSocketPair = new WebSocketPair();
-      const [client, server] = Object.values(webSocketPair);
+      const [client, server] = Object.values(webSocketPair) as [WebSocket, WebSocket];
 
       // Get connection parameters
       const userId = url.searchParams.get('userId') || `user_${Date.now()}`;

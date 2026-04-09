@@ -11,7 +11,7 @@ export function secureRandom(): number {
   const array = new Uint32Array(1);
   crypto.getRandomValues(array);
   // Convert to 0-1 range (divide by max 32-bit unsigned int)
-  return array[0] / (0xffffffff + 1);
+  return array[0]! / (0xffffffff + 1);
 }
 
 /**
@@ -23,7 +23,7 @@ export function secureRandomInt(min: number, max: number): number {
   const range = max - min;
   const array = new Uint32Array(1);
   crypto.getRandomValues(array);
-  return min + (array[0] % range);
+  return min + (array[0]! % range);
 }
 
 /**
@@ -49,7 +49,7 @@ export function secureRandomChoice<T>(array: T[]): T {
   if (array.length === 0) {
     throw new Error('Cannot select from empty array');
   }
-  return array[secureRandomInt(0, array.length)];
+  return array[secureRandomInt(0, array.length)] as T;
 }
 
 /**
@@ -59,7 +59,7 @@ export function secureShuffle<T>(array: T[]): T[] {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = secureRandomInt(0, i + 1);
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
   }
   return shuffled;
 }

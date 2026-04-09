@@ -1,5 +1,7 @@
-import { CSSProperties, useEffect, useState } from 'react';
-import { Toaster as Sonner, ToasterProps } from 'sonner';
+import type { CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
+import { Toaster as Sonner } from 'sonner';
+import type { ToasterProps } from 'sonner';
 
 const Toaster = ({ ...props }: ToasterProps) => {
   // Derive theme from our global data-appearance attribute or OS preference

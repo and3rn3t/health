@@ -27,8 +27,8 @@ function buildRecordsSignature(records: ProcessedHealthRecord[]): string {
   const sorted = [...records].sort((a, b) =>
     a.timestamp.localeCompare(b.timestamp)
   );
-  const first = sorted[0].timestamp;
-  const last = sorted[sorted.length - 1].timestamp;
+  const first = sorted[0]!.timestamp;
+  const last = sorted[sorted.length - 1]!.timestamp;
   // Sample up to first 20 records to keep key small
   const sample = sorted.slice(0, 20);
   const parts: string[] = [String(records.length), first, last];

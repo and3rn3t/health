@@ -533,8 +533,8 @@ export class HealthDataProcessor {
   ): 'improving' | 'stable' | 'declining' {
     if (values.length < 2) return 'stable';
 
-    const first = values[0];
-    const last = values[values.length - 1];
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
     const changePercent = ((last - first) / first) * 100;
 
     if (changePercent > 5) return 'improving';
@@ -548,8 +548,8 @@ export class HealthDataProcessor {
   private static calculateChangePercent(values: number[]): number {
     if (values.length < 2) return 0;
 
-    const first = values[0];
-    const last = values[values.length - 1];
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
     return ((last - first) / first) * 100;
   }
 }

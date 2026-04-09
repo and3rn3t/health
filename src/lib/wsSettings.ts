@@ -19,7 +19,7 @@ export function decodeJwtExp(token: string): number | null {
   try {
     const parts = token.split('.');
     if (parts.length < 2) return null;
-    const json = JSON.parse(atob(parts[1]));
+    const json = JSON.parse(atob(parts[1]!));
     const exp = json?.exp;
     if (typeof exp === 'number' && Number.isFinite(exp)) return exp;
     return null;

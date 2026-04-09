@@ -3,10 +3,19 @@
  * Comprehensive analytics calculations and data processing
  */
 
-import type { ProcessedHealthData, MetricData } from '@/lib/healthDataProcessor';
+import type {
+  MetricData,
+  ProcessedHealthData,
+} from '@/lib/healthDataProcessor';
 
 export type TimeRange = '7d' | '30d' | '90d' | '1y' | 'all' | 'custom';
-export type MetricType = 'steps' | 'heartRate' | 'walkingSteadiness' | 'sleepHours' | 'activeEnergy' | 'distanceWalking';
+export type MetricType =
+  | 'steps'
+  | 'heartRate'
+  | 'walkingSteadiness'
+  | 'sleepHours'
+  | 'activeEnergy'
+  | 'distanceWalking';
 export type TrendDirection = 'improving' | 'stable' | 'declining' | 'volatile';
 
 export interface TimeSeriesDataPoint {
@@ -132,27 +141,30 @@ export function calculateTrend(
   let denominatorY = 0;
 
   for (let i = 0; i < n; i++) {
-    const xDiff = xValues[i] - xMean;
-    const yDiff = yValues[i] - yMean;
+    const xDiff = xValues[i]! - xMean;
+    const yDiff = yValues[i]! - yMean;
     numerator += xDiff * yDiff;
     denominatorX += xDiff * xDiff;
     denominatorY += yDiff * yDiff;
   }
 
   const slope = denominatorX > 0 ? numerator / denominatorX : 0;
-  const rSquared = denominatorX * denominatorY > 0
-    ? (numerator * numerator) / (denominatorX * denominatorY)
-    : 0;
+  const rSquared =
+    denominatorX * denominatorY > 0
+      ? (numerator * numerator) / (denominatorX * denominatorY)
+      : 0;
 
   // Calculate volatility
-  const variance = yValues.reduce((sum, val) => sum + Math.pow(val - yMean, 2), 0) / n;
+  const variance =
+    yValues.reduce((sum, val) => sum + Math.pow(val - yMean, 2), 0) / n;
   const stdDev = Math.sqrt(variance);
   const volatility = yMean > 0 ? stdDev / yMean : 0;
 
   // Determine direction
-  const firstValue = yValues[0];
-  const lastValue = yValues[yValues.length - 1];
-  const changePercent = firstValue > 0 ? ((lastValue - firstValue) / firstValue) * 100 : 0;
+  const firstValue = yValues[0]!;
+  const lastValue = yValues[yValues.length - 1]!;
+  const changePercent =
+    firstValue > 0 ? ((lastValue - firstValue) / firstValue) * 100 : 0;
 
   let direction: TrendDirection = 'stable';
   if (Math.abs(changePercent) < 2) {
@@ -169,7 +181,7 @@ export function calculateTrend(
   // Predict next value
   const nextIndex = n;
   const nextValue = yMean + slope * (nextIndex - xMean);
-  const nextDate = new Date(filtered[filtered.length - 1].date);
+  const nextDate = new Date(filtered[filtered.length - 1]!.date);
   nextDate.setDate(nextDate.getDate() + 1);
 
   return {
@@ -235,16 +247,17 @@ export function calculateCorrelation(
   let denominator2 = 0;
 
   for (let i = 0; i < aligned.length; i++) {
-    const diff1 = values1[i] - mean1;
-    const diff2 = values2[i] - mean2;
+    const diff1 = values1[i]! - mean1;
+    const diff2 = values2[i]! - mean2;
     numerator += diff1 * diff2;
     denominator1 += diff1 * diff1;
     denominator2 += diff2 * diff2;
   }
 
-  const correlation = denominator1 * denominator2 > 0
-    ? numerator / Math.sqrt(denominator1 * denominator2)
-    : 0;
+  const correlation =
+    denominator1 * denominator2 > 0
+      ? numerator / Math.sqrt(denominator1 * denominator2)
+      : 0;
 
   const absCorr = Math.abs(correlation);
   let strength: 'strong' | 'moderate' | 'weak' | 'none' = 'none';
@@ -253,17 +266,22 @@ export function calculateCorrelation(
   else if (absCorr > 0.2) strength = 'weak';
 
   // Calculate significance (simplified)
-  const significance = Math.min(1, Math.max(0, absCorr * (aligned.length / 30)));
+  const significance = Math.min(
+    1,
+    Math.max(0, absCorr * (aligned.length / 30))
+  );
 
   let interpretation = '';
   if (absCorr > 0.7) {
-    interpretation = correlation > 0
-      ? 'Strong positive correlation - these metrics move together'
-      : 'Strong negative correlation - these metrics move in opposite directions';
+    interpretation =
+      correlation > 0
+        ? 'Strong positive correlation - these metrics move together'
+        : 'Strong negative correlation - these metrics move in opposite directions';
   } else if (absCorr > 0.4) {
-    interpretation = correlation > 0
-      ? 'Moderate positive correlation'
-      : 'Moderate negative correlation';
+    interpretation =
+      correlation > 0
+        ? 'Moderate positive correlation'
+        : 'Moderate negative correlation';
   } else {
     interpretation = 'Weak or no significant correlation';
   }
@@ -282,13 +300,17 @@ export function calculateCorrelation(
 /**
  * Detect patterns in time series data
  */
-export function detectPatterns(data: TimeSeriesDataPoint[]): PatternDetection[] {
+export function detectPatterns(
+  data: TimeSeriesDataPoint[]
+): PatternDetection[] {
   if (data.length < 7) {
-    return [{
-      pattern: 'irregular',
-      strength: 0,
-      description: 'Insufficient data for pattern detection',
-    }];
+    return [
+      {
+        pattern: 'irregular',
+        strength: 0,
+        description: 'Insufficient data for pattern detection',
+      },
+    ];
   }
 
   const patterns: PatternDetection[] = [];
@@ -302,25 +324,34 @@ export function detectPatterns(data: TimeSeriesDataPoint[]): PatternDetection[] 
   });
 
   if (Object.keys(dayOfWeekGroups).length >= 5) {
-    const dayAverages = Object.entries(dayOfWeekGroups).map(([day, values]) => ({
-      day: parseInt(day),
-      avg: values.reduce((a, b) => a + b, 0) / values.length,
-    }));
+    const dayAverages = Object.entries(dayOfWeekGroups).map(
+      ([day, values]) => ({
+        day: parseInt(day),
+        avg: values.reduce((a, b) => a + b, 0) / values.length,
+      })
+    );
 
     const variance = calculateVariance(dayAverages.map((d) => d.avg));
-    const overallAvg = dayAverages.reduce((sum, d) => sum + d.avg, 0) / dayAverages.length;
+    const overallAvg =
+      dayAverages.reduce((sum, d) => sum + d.avg, 0) / dayAverages.length;
     const strength = Math.min(1, variance / (overallAvg * 0.1));
 
     if (strength > 0.3) {
-      const peakDay = dayAverages.reduce((max, d) => d.avg > max.avg ? d : max, dayAverages[0]);
-      const lowDay = dayAverages.reduce((min, d) => d.avg < min.avg ? d : min, dayAverages[0]);
+      const peakDay = dayAverages.reduce(
+        (max, d) => (d.avg > max.avg ? d : max),
+        dayAverages[0]!
+      );
+      const lowDay = dayAverages.reduce(
+        (min, d) => (d.avg < min.avg ? d : min),
+        dayAverages[0]!
+      );
 
       patterns.push({
         pattern: 'weekly',
         strength,
-        description: `Weekly pattern detected with peak on ${getDayName(peakDay.day)} and low on ${getDayName(lowDay.day)}`,
-        peakTimes: [getDayName(peakDay.day)],
-        lowTimes: [getDayName(lowDay.day)],
+        description: `Weekly pattern detected with peak on ${getDayName(peakDay!.day)} and low on ${getDayName(lowDay!.day)}`,
+        peakTimes: [getDayName(peakDay!.day)],
+        lowTimes: [getDayName(lowDay!.day)],
       });
     }
   }
@@ -354,7 +385,9 @@ export function detectAnomalies(
 
   const values = data.map((d) => d.value);
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
-  const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+  const variance =
+    values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+    values.length;
   const stdDev = Math.sqrt(variance);
 
   const anomalies: Anomaly[] = [];
@@ -367,12 +400,14 @@ export function detectAnomalies(
     const deviation = stdDev > 0 ? Math.abs(point.value - mean) / stdDev : 0;
 
     if (deviation > threshold) {
-      const previousValue = index > 0 ? data[index - 1].value : mean;
-      const nextValue = index < data.length - 1 ? data[index + 1].value : mean;
+      const previousValue = index > 0 ? data[index - 1]!.value : mean;
+      const nextValue = index < data.length - 1 ? data[index + 1]!.value : mean;
 
       let type: 'spike' | 'drop' | 'outlier' = 'outlier';
-      if (point.value > previousValue && point.value > nextValue) type = 'spike';
-      else if (point.value < previousValue && point.value < nextValue) type = 'drop';
+      if (point.value > previousValue && point.value > nextValue)
+        type = 'spike';
+      else if (point.value < previousValue && point.value < nextValue)
+        type = 'drop';
 
       let severity: 'low' | 'moderate' | 'high' | 'critical' = 'low';
       if (deviation > 4) severity = 'critical';
@@ -407,12 +442,14 @@ export function comparePeriods(
   current: TimeSeriesDataPoint[],
   previous: TimeSeriesDataPoint[]
 ): MetricComparison {
-  const currentAvg = current.length > 0
-    ? current.reduce((sum, d) => sum + d.value, 0) / current.length
-    : 0;
-  const previousAvg = previous.length > 0
-    ? previous.reduce((sum, d) => sum + d.value, 0) / previous.length
-    : 0;
+  const currentAvg =
+    current.length > 0
+      ? current.reduce((sum, d) => sum + d.value, 0) / current.length
+      : 0;
+  const previousAvg =
+    previous.length > 0
+      ? previous.reduce((sum, d) => sum + d.value, 0) / previous.length
+      : 0;
 
   const change = currentAvg - previousAvg;
   const changePercent = previousAvg > 0 ? (change / previousAvg) * 100 : 0;
@@ -484,7 +521,9 @@ export function extractTimeSeries(
 function calculateVariance(values: number[]): number {
   if (values.length === 0) return 0;
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
-  const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+  const variance =
+    values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+    values.length;
   return variance;
 }
 
@@ -492,7 +531,15 @@ function calculateVariance(values: number[]): number {
  * Get day name
  */
 function getDayName(day: number): string {
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const days = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
   return days[day] || 'Unknown';
 }
 
@@ -509,9 +556,10 @@ export function generateAnalyticsSummary(
   const healthScores = healthData
     .filter((d) => d.healthScore !== undefined)
     .map((d) => d.healthScore || 0);
-  const overallHealthScore = healthScores.length > 0
-    ? healthScores.reduce((a, b) => a + b, 0) / healthScores.length
-    : 0;
+  const overallHealthScore =
+    healthScores.length > 0
+      ? healthScores.reduce((a, b) => a + b, 0) / healthScores.length
+      : 0;
 
   // TODO: Calculate health score trend from healthScores
 

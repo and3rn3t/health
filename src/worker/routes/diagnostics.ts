@@ -124,7 +124,7 @@ route.get('/api/_diagnostics', (c) => {
           .ANALYTICS_VERSION_MISMATCH_SAMPLE_RATE || '1.0',
       oldestEventAgeMs:
         versionMismatchBuffer.length > 0
-          ? Date.now() - Date.parse(versionMismatchBuffer[0].ts)
+          ? Date.now() - Date.parse(versionMismatchBuffer[0]!.ts)
           : 0,
     },
     datasets,

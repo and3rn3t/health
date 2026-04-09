@@ -67,7 +67,7 @@ export default function TimeSeriesChart({
     .join(' ');
 
   // Area path (for area chart variant)
-  const areaPath = `${pathData} L ${points[points.length - 1].x} ${padding + chartHeight} L ${points[0].x} ${padding + chartHeight} Z`;
+  const areaPath = `${pathData} L ${points[points.length - 1]!.x} ${padding + chartHeight} L ${points[0]!.x} ${padding + chartHeight} Z`;
 
   // Grid lines
   const gridLines = useMemo(() => {
@@ -207,8 +207,8 @@ export default function TimeSeriesChart({
             {showPrediction && trend?.prediction && (
               <g>
                 <line
-                  x1={points[points.length - 1].x}
-                  y1={points[points.length - 1].y}
+                  x1={points[points.length - 1]!.x}
+                  y1={points[points.length - 1]!.y}
                   x2={padding + chartWidth}
                   y2={
                     padding +

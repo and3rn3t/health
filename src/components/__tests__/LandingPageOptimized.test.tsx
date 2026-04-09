@@ -3,7 +3,7 @@
  */
 import { useDeviceManagement } from '@/hooks/useDeviceManagement';
 import { useLiveRegion } from '@/hooks/useLiveRegion';
-import { ProcessedHealthData } from '@/lib/healthDataProcessor';
+import type { ProcessedHealthData } from '@/lib/healthDataProcessor';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import LandingPageOptimized from '../LandingPageOptimized';
@@ -197,7 +197,7 @@ describe('LandingPageOptimized', () => {
         />
       );
       const cards = screen.getAllByTestId('interactive-card');
-      fireEvent.click(cards[0]);
+      fireEvent.click(cards[0]!);
       expect(mockNavigate).toHaveBeenCalled();
     });
   });

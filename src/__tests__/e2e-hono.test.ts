@@ -105,11 +105,11 @@ describe('Worker E2E via Hono fetch', () => {
     }
     // KV wrote an encrypted or plain payload with TTL
     expect(puts.length).toBe(1);
-    expect(puts[0].key).toMatch(/^health:heart_rate:/);
-    expect(puts[0].opts).toHaveProperty('expirationTtl');
+    expect(puts[0]!.key).toMatch(/^health:heart_rate:/);
+    expect(puts[0]!.opts).toHaveProperty('expirationTtl');
     // Audit wrote a line to R2
     expect(r2Puts.length).toBe(1);
-    expect(r2Puts[0].key).toMatch(/^audit\/events\//);
+    expect(r2Puts[0]!.key).toMatch(/^audit\/events\//);
   });
 
   it('POST /api/health-data: accepts gait_speed metric and persists/audits', async () => {
@@ -148,11 +148,11 @@ describe('Worker E2E via Hono fetch', () => {
     }
     // KV wrote an entry for gait_speed
     expect(puts.length).toBe(1);
-    expect(puts[0].key).toMatch(/^health:gait_speed:/);
-    expect(puts[0].opts).toHaveProperty('expirationTtl');
+    expect(puts[0]!.key).toMatch(/^health:gait_speed:/);
+    expect(puts[0]!.opts).toHaveProperty('expirationTtl');
     // Audit wrote a line to R2
     expect(r2Puts.length).toBe(1);
-    expect(r2Puts[0].key).toMatch(/^audit\/events\//);
+    expect(r2Puts[0]!.key).toMatch(/^audit\/events\//);
   });
 
   it('GET /api/health-data: lists recent records from KV with optional metric filter', async () => {

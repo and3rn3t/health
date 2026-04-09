@@ -1,4 +1,5 @@
-import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react-swc';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
@@ -18,9 +19,7 @@ export default defineConfig({
       process.env.RUM_SAMPLE_RATE || (isDev ? '0' : '1')
     ),
   },
-  plugins: [react()],
-  // Suppress PostCSS warnings in CI/production (known harmless warning about 'from' option)
-  logLevel: process.env.CI === 'true' ? 'error' : 'warn',
+  plugins: [tailwindcss(), react()],
   esbuild: {
     drop: process.env.CI === 'true' ? ['console', 'debugger'] : [],
     legalComments: 'none',
@@ -29,10 +28,6 @@ export default defineConfig({
     alias: {
       '@': resolve(projectRoot, 'src'),
     },
-  },
-  // Avoid native lightningcss by using PostCSS + esbuild
-  css: {
-    transformer: 'postcss',
   },
   build: {
     cssMinify: 'esbuild',

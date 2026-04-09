@@ -38,7 +38,7 @@ export function computeSingleMetricTrend(values: number[]): TrendResult {
   let den = 0;
   for (let i = 0; i < n; i++) {
     const dx = i - meanX;
-    num += dx * (values[i] - meanY);
+    num += dx * (values[i]! - meanY);
     den += dx * dx;
   }
   const slope = den === 0 ? 0 : num / den;
@@ -106,7 +106,7 @@ export function computeMultiMetricTrends(snapshots: BasicGaitSnapshot[]) {
   const trends: Record<string, TrendResult> = {};
   for (const key of Object.keys(metricExtractors)) {
     const series = snapshots
-      .map(metricExtractors[key])
+      .map(metricExtractors[key]!)
       .filter((n): n is number => typeof n === 'number' && !Number.isNaN(n));
     let base = computeSingleMetricTrend(series);
     if (

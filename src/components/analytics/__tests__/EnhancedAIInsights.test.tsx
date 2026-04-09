@@ -204,7 +204,7 @@ describe('EnhancedAIInsights', () => {
       // Use getAllByRole since component may render multiple times (React StrictMode)
       const highPriorityTabs = screen.getAllByRole('tab', { name: /High Priority/i });
       expect(highPriorityTabs.length).toBeGreaterThan(0);
-      fireEvent.click(highPriorityTabs[0]); // Click the first one
+      fireEvent.click(highPriorityTabs[0]!); // Click the first one
     }, { timeout: 3000 });
   });
 
@@ -216,12 +216,12 @@ describe('EnhancedAIInsights', () => {
       // Use getAllByPlaceholderText since component may render multiple times (React StrictMode)
       const textareas = screen.getAllByPlaceholderText(/Ask me anything/i);
       expect(textareas.length).toBeGreaterThan(0);
-      fireEvent.change(textareas[0], { target: { value: 'What exercises help balance?' } });
+      fireEvent.change(textareas[0]!, { target: { value: 'What exercises help balance?' } });
 
       // Use getAllByText for the button as well since there may be multiple instances
       const submitButtons = screen.getAllByText('Get AI Answer');
       expect(submitButtons.length).toBeGreaterThan(0);
-      fireEvent.click(submitButtons[0]);
+      fireEvent.click(submitButtons[0]!);
     }, { timeout: 3000 });
 
     await waitFor(() => {
@@ -407,7 +407,7 @@ describe('EnhancedAIInsights', () => {
       // Use getAllByText and click first button to avoid duplicate issue
       const buttons = screen.getAllByText('Refresh Insights');
       expect(buttons.length).toBeGreaterThan(0);
-      fireEvent.click(buttons[0]);
+      fireEvent.click(buttons[0]!);
     }, { timeout: 3000 });
   });
 });

@@ -2,7 +2,7 @@
 
 import { Command as CommandPrimitive } from 'cmdk';
 import { Search } from 'lucide-react';
-import { ComponentProps } from 'react';
+import type { ComponentProps } from 'react';
 
 import {
   Dialog,

@@ -36,8 +36,8 @@ export function generateSecureUUID(): string {
   crypto.getRandomValues(randomBytes);
 
   // Set version (4) and variant bits
-  randomBytes[6] = (randomBytes[6] & 0x0f) | 0x40; // Version 4
-  randomBytes[8] = (randomBytes[8] & 0x3f) | 0x80; // Variant 10
+  randomBytes[6] = (randomBytes[6]! & 0x0f) | 0x40; // Version 4
+  randomBytes[8] = (randomBytes[8]! & 0x3f) | 0x80; // Variant 10
 
   // Convert to UUID format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
   const hex = Array.from(randomBytes)

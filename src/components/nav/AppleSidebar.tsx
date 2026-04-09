@@ -1,9 +1,9 @@
 'use client';
 
-import { Slot } from '@radix-ui/react-slot';
 import { PanelLeft } from '@/lib/icons';
+import { Slot } from '@radix-ui/react-slot';
+import type { ComponentProps } from 'react';
 import {
-  ComponentProps,
   createContext,
   useCallback,
   useContext,
@@ -207,7 +207,7 @@ export function AppleSidebarPanel({
       data-collapsible={collapsible}
       aria-label="Primary navigation"
       className={cn(
-        'shrink-0 border-r border-border/50 vs-glass-thick text-foreground transition-[width] duration-200 ease-linear',
+        'border-border/50 vs-glass-thick shrink-0 border-r text-foreground transition-[width] duration-200 ease-linear',
         widthClass,
         className
       )}

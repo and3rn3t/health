@@ -108,7 +108,7 @@ route.post('/api/lidar/ingest', async (c) => {
       if (ds) {
         const m = last.metrics;
         const ingestInterval =
-          frames.length > 1 ? last.ts - frames[0].ts : -1;
+          frames.length > 1 ? last.ts - frames[0]!.ts : -1;
         ds.writeDataPoint({
           blobs: [c.env.ENVIRONMENT || 'dev', 'lidar_ingest'],
           doubles: [-1, -1, -1, -1, ingestInterval >= 0 ? ingestInterval : -1, m.obstacle_distance_min ?? -1],

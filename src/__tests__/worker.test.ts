@@ -142,7 +142,7 @@ describe('worker: core routes and middleware', () => {
     const body = (await res.json()) as { ok: boolean };
     expect(body.ok).toBe(true);
     expect(puts.length).toBe(1);
-    const { key, value, ttl } = puts[0];
+    const { key, value, ttl } = puts[0]!;
     expect(key).toContain(`health:${payload.type}`);
     // TTL capped in non-production (<= 2 days)
     expect(typeof ttl).toBe('number');

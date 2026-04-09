@@ -15,7 +15,7 @@ RUN apk add --no-cache \
 
 # Only install root package deps (workspaces used, but we build from root)
 COPY package.json pnpm-lock.yaml* package-lock.json* yarn.lock* ./
-COPY eslint.config.js postcss.config.* tailwind.config.* ./
+COPY eslint.config.js postcss.config.* ./
 COPY vite*.ts ./
 COPY tsconfig*.json ./
 

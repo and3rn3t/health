@@ -18,7 +18,7 @@ import { IOS26Button } from '@/components/ui/ios26-button-system';
 import { EnhancedVitalSenseStatusCard } from '@/components/ui/ios26-enhanced-components';
 import { useDeviceManagement } from '@/hooks/useDeviceManagement';
 import { useLiveRegion } from '@/hooks/useLiveRegion';
-import { ProcessedHealthData } from '@/types';
+import type { ProcessedHealthData } from '@/types';
 import {
   Activity,
   BarChart3,
