@@ -90,6 +90,8 @@ export function registerMiddleware(app: Hono<{ Bindings: Env }>) {
       newHeaders.set('X-Content-Type-Options', 'nosniff');
       newHeaders.set('X-Frame-Options', 'DENY');
       newHeaders.set('Referrer-Policy', 'no-referrer');
+      newHeaders.set('Cross-Origin-Opener-Policy', 'same-origin');
+      newHeaders.set('Cross-Origin-Embedder-Policy', 'credentialless');
       newHeaders.set(
         'Permissions-Policy',
         'geolocation=(), microphone=(), camera=()'

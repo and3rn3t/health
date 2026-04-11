@@ -5,13 +5,8 @@ FROM node:22-alpine AS base
 WORKDIR /app
 ENV CI=true
 
-# Install OS deps for node-gyp if needed (kept minimal)
-RUN apk add --no-cache \
-  bash \
-  g++ \
-  libc6-compat \
-  make \
-  python3
+# Minimal OS deps (libc6-compat for Alpine; native build tools only when needed)
+RUN apk add --no-cache bash libc6-compat
 
 # Only install root package deps (workspaces used, but we build from root)
 COPY package.json pnpm-lock.yaml* package-lock.json* yarn.lock* ./
@@ -19,8 +14,9 @@ COPY eslint.config.js postcss.config.* ./
 COPY vite*.ts ./
 COPY tsconfig*.json ./
 
-# Prefer pnpm if lock exists, else npm ci
-RUN if [ -f pnpm-lock.yaml ]; then \
+# Install deps with BuildKit cache mount for pnpm store
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+  if [ -f pnpm-lock.yaml ]; then \
   corepack enable && corepack install && pnpm i --frozen-lockfile; \
   elif [ -f package-lock.json ]; then \
   npm ci; \

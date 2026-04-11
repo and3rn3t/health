@@ -77,7 +77,12 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 10, // 10 minutes before garbage collection
       retry: 3,
+    },
+    mutations: {
+      retry: 1,
+      retryDelay: (attempt: number) => Math.min(1000 * 2 ** attempt, 10_000),
     },
   },
 });

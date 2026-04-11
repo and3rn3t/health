@@ -59,6 +59,9 @@ class_name = "HealthWebSocket"
 name = "health-app-prod"
 workers_dev = false
 
+[env.production.placement]
+mode = "smart"
+
 # Observability & Analytics Configuration
 # Health metrics analytics
 [[env.production.analytics_engine_datasets]]

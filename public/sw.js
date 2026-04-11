@@ -4,9 +4,10 @@
 // VitalSense Service Worker
 // Provides offline functionality, caching, and background sync capabilities
 
-const STATIC_CACHE_NAME = 'vitalsense-static-v1.0.0';
-const API_CACHE_NAME = 'vitalsense-api-v1.0.0';
-const HEALTH_DATA_CACHE_NAME = 'vitalsense-health-data-v1.0.0';
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v1.0.0';
+const STATIC_CACHE_NAME = `vitalsense-static-${APP_VERSION}`;
+const API_CACHE_NAME = `vitalsense-api-${APP_VERSION}`;
+const HEALTH_DATA_CACHE_NAME = `vitalsense-health-data-${APP_VERSION}`;
 
 // Files to cache for offline functionality
 const STATIC_ASSETS = [
@@ -81,7 +82,7 @@ self.addEventListener('activate', (event) => {
       const deletePromises = cacheNames
         .filter(
           (cacheName) =>
-            cacheName.startsWith('vitalsense-') && !cacheName.includes('v1.0.0')
+            cacheName.startsWith('vitalsense-') && !cacheName.includes(APP_VERSION)
         )
         .map((cacheName) => caches.delete(cacheName));
 

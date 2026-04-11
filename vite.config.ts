@@ -104,7 +104,7 @@ export default defineConfig({
     // Additional aggressive optimizations
     chunkSizeWarningLimit: 100, // Further reduced to enforce smaller chunks (was 150)
     minify: 'esbuild',
-    target: 'esnext',
+    target: 'es2022',
 
     // Inline small assets (< 4KB) as data URIs to reduce HTTP requests
     assetsInlineLimit: 4096,
