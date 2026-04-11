@@ -44,15 +44,26 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [unit, integration]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-pnpm
 
-      - name: Test with coverage
-        run: pnpm run test:coverage
+      - name: Run ${{ matrix.suite }} tests
+        run: |
+          if [ "${{ matrix.suite }}" = "unit" ]; then
+            pnpm run test:coverage
+          else
+            npx vitest run --config vitest.integration.config.ts
+          fi
+        env:
+          CI: 'true'
 
       - name: Upload coverage to Codecov
-        if: always()
+        if: matrix.suite == 'unit' && always()
         uses: codecov/codecov-action@v4
         with:
           files: coverage/lcov.info
@@ -60,24 +71,11 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: SonarCloud Scan
-        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+        if: matrix.suite == 'unit' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
         uses: SonarSource/sonarcloud-github-action@v3
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # ── Integration tests (excluded from unit run) ──────────────
-  integration:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-pnpm
-
-      - name: Run integration tests
-        run: npx vitest run --config vitest.integration.config.ts
-        env:
-          CI: 'true'
 
   # ── Build (depends on quality gates) ─────────────────────────
   build:
@@ -94,11 +92,12 @@ jobs:
         env:
           CI: 'true'
           NODE_ENV: production
-        run: pnpm run build
+        run: pnpm run build:all
 
       - name: Verify build
         run: |
-          test -d dist && echo "Build OK ($(du -sh dist | cut -f1))" || exit 1
+          test -d dist && echo "App build OK ($(du -sh dist | cut -f1))" || exit 1
+          test -d dist-worker && echo "Worker build OK ($(du -sh dist-worker | cut -f1))" || exit 1
 
       - name: Bundle size report
         run: |
@@ -108,7 +107,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: dist/
+          path: |
+            dist/
+            dist-worker/
           retention-days: 3
 
   e2e:
@@ -152,7 +153,7 @@ jobs:
           retention-days: 7
 
   deploy:
-    needs: [build, e2e, integration]
+    needs: [build, e2e]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -165,10 +166,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dist
-          path: dist/
-
-      - name: Build worker
-        run: pnpm run build:worker
 
       - name: Deploy to Cloudflare
         env:

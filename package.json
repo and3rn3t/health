@@ -9,8 +9,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix",
+    "lint": "eslint src/ --cache --cache-location .eslintcache",
+    "lint:fix": "eslint src/ --fix --cache --cache-location .eslintcache",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
     "type-check": "tsc --noEmit",
     "cf:dev": "wrangler dev",
@@ -134,7 +134,7 @@
   },
   "engines": {
     "node": ">=22.21.1",
-    "npm": ">=8.0.0"
+    "pnpm": ">=10.0.0"
   },
   "packageManager": "pnpm@10.16.0+sha512.8066e7b034217b700a9a4dbb3a005061d641ba130a89915213a10b3ca4919c19c037bec8066afdc559b89635fdb806b16ea673f2468fbb28aabfa13c53e3f769"
 }

@@ -1,5 +1,5 @@
-// Minimal ESLint flat config for TS + React + Vite
-// More permissive rules for development
+// ESLint flat config for TS + React + Vite
+// Strict rules aligned with CLAUDE.md project standards
 import js from '@eslint/js';
 import eslintPluginJsxA11y from 'eslint-plugin-jsx-a11y';
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks';
@@ -133,7 +133,7 @@ export default [
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        projectService: false,
+        projectService: true,
       },
       globals: {
         ...globals.browser,
@@ -154,21 +154,23 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
-      // More permissive rules for development
+      // Strict rules — aligned with CLAUDE.md: no `any`, prefer `const`
       '@typescript-eslint/no-unused-vars': [
-        'warn', // Downgrade to warning
+        'error',
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
           caughtErrorsIgnorePattern: '^_',
         },
       ],
-      '@typescript-eslint/no-explicit-any': 'warn', // Allow any types with warning
-      'react-hooks/exhaustive-deps': 'warn', // Warning instead of error
-      'react-hooks/rules-of-hooks': 'error', // Keep this strict - important
-      '@typescript-eslint/triple-slash-reference': 'warn', // Allow for test files
-      'prefer-const': 'warn', // Downgrade to warning
-      'no-case-declarations': 'warn', // Downgrade to warning
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': ['error', { checksVoidReturn: { attributes: false } }],
+      'react-hooks/exhaustive-deps': 'error',
+      'react-hooks/rules-of-hooks': 'error',
+      '@typescript-eslint/triple-slash-reference': 'warn',
+      'prefer-const': 'error',
+      'no-case-declarations': 'warn'
     },
   },
   // Test files — relax rules that create noise in test code

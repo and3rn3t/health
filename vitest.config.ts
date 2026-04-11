@@ -3,7 +3,7 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   esbuild: {
-    target: 'node18',
+    target: 'node22',
     format: 'esm',
     treeShaking: true,
     sourcemap: false,
@@ -27,7 +27,7 @@ export default defineConfig({
     // Threads locally for speed, forks in CI for memory isolation
     pool: process.env.CI ? 'forks' : 'threads',
     isolate: true,
-    maxWorkers: process.env.CI ? 2 : 4,
+    maxWorkers: process.env.CI ? 4 : 4,
     testTimeout: process.env.CI ? 20000 : 15000,
     hookTimeout: process.env.CI ? 10000 : 5000,
     teardownTimeout: process.env.CI ? 10000 : 5000,

@@ -107,7 +107,7 @@ export default defineConfig({
       },
     },
     outDir: 'dist-worker',
-    sourcemap: true,
+    sourcemap: process.env.CI !== 'true',
   },
   resolve: {
     alias: {
