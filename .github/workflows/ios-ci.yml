@@ -247,11 +247,52 @@ jobs:
             ${{ env.WORK_DIR }}/build/export
           retention-days: 14
 
+  # ─── TestFlight upload (main push, after archive, requires signing secrets) ───
+  testflight:
+    name: TestFlight Upload
+    runs-on: macos-15
+    needs: [archive]
+    if: |
+      needs.archive.result == 'success'
+      && github.ref == 'refs/heads/main'
+      && github.event_name == 'push'
+    environment: ios-testflight
+    defaults:
+      run:
+        working-directory: ios/Andernet-Posture
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-ios
+
+      - name: Install Fastlane
+        working-directory: ios
+        run: |
+          bundle config set --local deployment 'false'
+          bundle config set --local path 'vendor/bundle'
+          bundle install --jobs 4 --retry 3
+
+      - name: Upload to TestFlight
+        working-directory: ios
+        env:
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+          APP_STORE_CONNECT_API_KEY_PATH: ${{ secrets.APP_STORE_CONNECT_API_KEY_PATH }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        run: |
+          if [ -z "$APP_STORE_CONNECT_API_KEY_PATH" ]; then
+            echo "::warning::APP_STORE_CONNECT_API_KEY_PATH not set. Configure secrets to enable TestFlight."
+            exit 0
+          fi
+          echo "$APP_STORE_CONNECT_API_KEY_PATH" | base64 -d > /tmp/api_key.json
+          export APP_STORE_CONNECT_API_KEY_PATH=/tmp/api_key.json
+          bundle exec fastlane ios beta
+
   # ─── Summary (cheap ubuntu, always runs) ───
   summary:
     name: Summary
     runs-on: ubuntu-latest
-    needs: [swiftlint, unit-tests, smoke-ui-tests, full-suite, archive]
+    needs: [swiftlint, unit-tests, smoke-ui-tests, full-suite, archive, testflight]
     if: always()
     defaults:
       run:
@@ -265,6 +306,7 @@ jobs:
             [smoke-ui-tests]="Smoke UI Tests"
             [full-suite]="Full Suite"
             [archive]="Archive"
+            [testflight]="TestFlight"
           )
           declare -A RESULTS=(
             [swiftlint]="${{ needs.swiftlint.result }}"
@@ -272,13 +314,14 @@ jobs:
             [smoke-ui-tests]="${{ needs.smoke-ui-tests.result }}"
             [full-suite]="${{ needs.full-suite.result }}"
             [archive]="${{ needs.archive.result }}"
+            [testflight]="${{ needs.testflight.result }}"
           )
 
           echo '## iOS CI Summary' >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
 
           FAILED=0
-          for job in swiftlint unit-tests smoke-ui-tests full-suite archive; do
+          for job in swiftlint unit-tests smoke-ui-tests full-suite archive testflight; do
             R="${RESULTS[$job]}"
             case "$R" in
               success) ICON="✅" ;;

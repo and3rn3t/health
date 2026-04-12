@@ -1,0 +1,24 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "src/main.tsx",
+    "src/worker/index.ts",
+    "scripts/**/*.{js,mjs}",
+    "e2e/**/*.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}"
+  ],
+  "ignore": [
+    "src/components/ui/**",
+    "src/**/*.test.{ts,tsx}",
+    "src/**/__tests__/**"
+  ],
+  "ignoreDependencies": [
+    "@tailwindcss/vite",
+    "postcss",
+    "lightningcss",
+    "prettier-plugin-tailwindcss",
+    "@vitejs/plugin-react-swc"
+  ]
+}

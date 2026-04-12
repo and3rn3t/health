@@ -114,6 +114,9 @@ test-health-data.json.backup
 .eslintcache
 .stylelintcache
 
+# Generated temp files
+.openapi-spec.tmp.json
+
 # Docker
 .dockerignore
 docker-compose.override.yml

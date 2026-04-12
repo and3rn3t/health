@@ -1,0 +1,84 @@
+name: Nightly E2E Regression
+
+on:
+  schedule:
+    # Run nightly at 03:00 UTC (catches regressions from Dependabot merges, etc.)
+    - cron: '0 3 * * *'
+  workflow_dispatch: # Manual trigger
+
+concurrency:
+  group: nightly-e2e
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  e2e-regression:
+    name: E2E (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, webkit, mobile-chrome]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-pnpm
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Build
+        env:
+          CI: 'true'
+          NODE_ENV: production
+        run: pnpm run build:all
+
+      - name: Run E2E tests (${{ matrix.project }})
+        run: pnpm test:e2e --project=${{ matrix.project }}
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.project }}
+          path: playwright-report/
+          retention-days: 7
+
+  notify-failure:
+    needs: e2e-regression
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🚨 Nightly E2E regression detected';
+            const body = [
+              '## Nightly E2E Test Failure',
+              '',
+              `**Run**: [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              `**Date**: ${new Date().toISOString().slice(0, 10)}`,
+              `**Branch**: main`,
+              '',
+              'One or more browser E2E suites failed in the nightly regression run.',
+              'Check the Playwright reports in the workflow artifacts.',
+              '',
+              'Labels: `bug`, `e2e`',
+            ].join('\n');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['bug', 'e2e'],
+            });

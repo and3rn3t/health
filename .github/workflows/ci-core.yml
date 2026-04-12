@@ -34,7 +34,7 @@ jobs:
         run: pnpm run lint
 
       - name: Security audit
-        run: pnpm audit --audit-level=moderate || echo "::warning::Audit found vulnerabilities"
+        run: pnpm audit --audit-level=high
 
   type-check:
     runs-on: ubuntu-latest
@@ -76,6 +76,10 @@ jobs:
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
 
+      - name: Coverage ratchet check
+        if: matrix.suite == 'unit'
+        run: node scripts/ci/coverage-ratchet.mjs
+
       - name: SonarCloud Scan
         if: matrix.suite == 'unit' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
         uses: SonarSource/sonarcloud-github-action@v3
@@ -93,6 +97,14 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup-pnpm
+
+      - name: Cache Vite build
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.vite
+          key: vite-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'vite.config.ts', 'vite.worker.config.ts') }}
+          restore-keys: |
+            vite-${{ runner.os }}-
 
       - name: Build
         env:
@@ -163,7 +175,11 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment: production
+    # Requires manual approval — configure required reviewers in
+    # GitHub → Settings → Environments → "production"
+    environment:
+      name: production
+      url: https://vitalsense.andernet.dev
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-pnpm

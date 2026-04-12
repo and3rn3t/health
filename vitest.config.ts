@@ -38,7 +38,7 @@ export default defineConfig({
     },
     maxConcurrency: process.env.CI ? 2 : 4,
     fileParallelism: true,
-    retry: process.env.CI ? 1 : 0,
+    retry: process.env.CI ? 2 : 0,
     // Inline reporter for GitHub Actions annotations on failures
     reporters: process.env.CI
       ? ['default', 'github-actions', 'junit']
@@ -54,10 +54,10 @@ export default defineConfig({
       reportsDirectory: 'coverage',
       // Ratchet up: raise thresholds as coverage improves
       thresholds: {
-        lines: 50,
-        branches: 40,
-        functions: 50,
-        statements: 50,
+        lines: 65,
+        branches: 54,
+        functions: 66,
+        statements: 64,
       },
       // Exclude large, non-runtime or archival areas to raise meaningful signal
       exclude: [

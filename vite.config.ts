@@ -8,6 +8,7 @@ const isDev =
   process.env.NODE_ENV !== 'production' &&
   process.env.BUILD !== 'production' &&
   process.env.CI !== 'true';
+const analyzeBundle = process.env.ANALYZE === 'true';
 
 export default defineConfig({
   define: {
@@ -19,7 +20,24 @@ export default defineConfig({
       process.env.RUM_SAMPLE_RATE || (isDev ? '0' : '1')
     ),
   },
-  plugins: [tailwindcss(), react()],
+  plugins: [
+    tailwindcss(),
+    react(),
+    // Bundle analysis: ANALYZE=true pnpm build → opens treemap
+    ...(analyzeBundle
+      ? [
+          import('rollup-plugin-visualizer').then((m) =>
+            m.visualizer({
+              open: true,
+              filename: 'dist/bundle-stats.html',
+              gzipSize: true,
+              brotliSize: true,
+              template: 'treemap',
+            })
+          ),
+        ]
+      : []),
+  ],
   esbuild: {
     drop: process.env.CI === 'true' ? ['console', 'debugger'] : [],
     legalComments: 'none',

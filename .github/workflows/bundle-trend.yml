@@ -1,0 +1,65 @@
+name: Bundle Trend
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md', 'docs/**', 'ios/**']
+
+concurrency:
+  group: bundle-trend-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  track-bundle:
+    name: Track Bundle Size
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-pnpm
+
+      - name: Build
+        env:
+          CI: 'true'
+          NODE_ENV: production
+        run: pnpm run build:all
+
+      - name: Record bundle sizes
+        run: |
+          mkdir -p .bundle-history
+
+          # Compute sizes for each chunk
+          TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          COMMIT="${{ github.sha }}"
+          TOTAL_APP=$(du -sb dist/ | cut -f1)
+          TOTAL_WORKER=$(du -sb dist-worker/ | cut -f1)
+          JS_SIZE=$(find dist/js -name '*.js' -exec du -sb {} + 2>/dev/null | awk '{sum+=$1} END {print sum+0}')
+          CSS_SIZE=$(find dist/css -name '*.css' -exec du -sb {} + 2>/dev/null | awk '{sum+=$1} END {print sum+0}')
+
+          # Append to history CSV
+          echo "${TIMESTAMP},${COMMIT::7},${TOTAL_APP},${TOTAL_WORKER},${JS_SIZE},${CSS_SIZE}" >> .bundle-history/sizes.csv
+
+          # Keep last 100 entries
+          tail -100 .bundle-history/sizes.csv > .bundle-history/sizes.csv.tmp
+          mv .bundle-history/sizes.csv.tmp .bundle-history/sizes.csv
+
+          echo "### Bundle Size Trend" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| App total | $(numfmt --to=iec $TOTAL_APP) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Worker total | $(numfmt --to=iec $TOTAL_WORKER) |" >> $GITHUB_STEP_SUMMARY
+          echo "| JS | $(numfmt --to=iec $JS_SIZE) |" >> $GITHUB_STEP_SUMMARY
+          echo "| CSS | $(numfmt --to=iec $CSS_SIZE) |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Commit bundle history
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .bundle-history/sizes.csv
+          git diff --cached --quiet || git commit -m "chore: update bundle size history [skip ci]"
+          git push

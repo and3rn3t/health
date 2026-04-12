@@ -1,0 +1,67 @@
+name: SBOM & License Compliance
+
+on:
+  push:
+    branches: [main]
+    paths: ['pnpm-lock.yaml', 'package.json']
+  release:
+    types: [published]
+  workflow_dispatch:
+
+concurrency:
+  group: sbom-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-pnpm
+
+      - name: Generate CycloneDX SBOM
+        run: npx @cyclonedx/cyclonedx-npm --output-file sbom.json --output-format JSON
+
+      - name: Check for problematic licenses
+        run: |
+          echo "### License Compliance Check" >> $GITHUB_STEP_SUMMARY
+
+          # Extract unique licenses
+          licenses=$(jq -r '.components[].licenses[]?.license?.id // empty' sbom.json 2>/dev/null | sort -u)
+
+          # Flag known copyleft licenses
+          FLAGGED=""
+          for lic in $licenses; do
+            case "$lic" in
+              GPL-*|AGPL-*|LGPL-*|SSPL-*|EUPL-*)
+                FLAGGED="$FLAGGED $lic"
+                ;;
+            esac
+          done
+
+          if [ -n "$FLAGGED" ]; then
+            echo "⚠️ **Copyleft licenses detected**:$FLAGGED" >> $GITHUB_STEP_SUMMARY
+            echo "::warning::Copyleft licenses detected:$FLAGGED"
+          else
+            echo "✅ No copyleft licenses found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Summary table
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| License | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-------|" >> $GITHUB_STEP_SUMMARY
+          jq -r '.components[].licenses[]?.license?.id // empty' sbom.json 2>/dev/null \
+            | sort | uniq -c | sort -rn \
+            | awk '{printf "| %s | %s |\n", $2, $1}' >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+          retention-days: 90

@@ -7,6 +7,9 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-blue.svg)](https://reactjs.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![CI](https://github.com/and3rn3t/health/actions/workflows/ci-core.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/ci-core.yml)
+[![codecov](https://codecov.io/gh/and3rn3t/health/graph/badge.svg)](https://codecov.io/gh/and3rn3t/health)
+[![iOS CI](https://github.com/and3rn3t/health/actions/workflows/ios-ci.yml/badge.svg)](https://github.com/and3rn3t/health/actions/workflows/ios-ci.yml)
 
 ## Features
 

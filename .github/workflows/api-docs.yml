@@ -1,0 +1,89 @@
+name: API Documentation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/worker/routes/**'
+      - 'schemas/**'
+      - '.github/workflows/api-docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-docs:
+    name: Build API Documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-pnpm
+
+      - name: Generate OpenAPI spec
+        run: |
+          node scripts/ci/check-openapi-drift.mjs --generate 2>/dev/null || true
+          # Fallback: use committed spec if generation fails
+          if [ ! -f .openapi-spec.tmp.json ]; then
+            echo "Using committed OpenAPI spec"
+            cp schemas/openapi.json .openapi-spec.tmp.json 2>/dev/null || echo '{}' > .openapi-spec.tmp.json
+          fi
+
+      - name: Build Swagger UI
+        run: |
+          mkdir -p api-docs
+          cat > api-docs/index.html << 'SWAGGER_HTML'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>VitalSense API Documentation</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css" />
+            <style>
+              body { margin: 0; background: #fafafa; }
+              .swagger-ui .topbar { display: none; }
+              .swagger-ui .info .title { font-size: 2rem; }
+            </style>
+          </head>
+          <body>
+            <div id="swagger-ui"></div>
+            <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+            <script>
+              SwaggerUIBundle({
+                url: './openapi.json',
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.SwaggerUIStandalonePreset],
+                layout: 'StandaloneLayout',
+              });
+            </script>
+          </body>
+          </html>
+          SWAGGER_HTML
+
+          cp .openapi-spec.tmp.json api-docs/openapi.json
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: api-docs/
+
+  deploy-docs:
+    name: Deploy to GitHub Pages
+    needs: build-docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

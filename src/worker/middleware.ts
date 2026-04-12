@@ -9,6 +9,7 @@ import {
   requireAuth,
   shouldSample,
 } from './helpers';
+import { exportSpan, parseTraceContext, startSpan, toTraceparent } from './tracing';
 import type { Env } from './types';
 
 /**
@@ -26,7 +27,9 @@ export function registerMiddleware(app: Hono<{ Bindings: Env }>) {
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
-    const correlationId = crypto.randomUUID();
+    const traceCtx = parseTraceContext(c.req.header('traceparent'));
+    const correlationId = traceCtx.traceId.slice(0, 36);
+    const { ctx: spanCtx, finish: finishSpan } = startSpan(traceCtx, 'http.request');
 
     if (c.req.method === 'OPTIONS') {
       const h = corsHeaders(origin, allowed);
@@ -110,6 +113,7 @@ export function registerMiddleware(app: Hono<{ Bindings: Env }>) {
       if (!newHeaders.has('X-Correlation-Id')) {
         newHeaders.set('X-Correlation-Id', correlationId);
       }
+      newHeaders.set('traceparent', toTraceparent(spanCtx));
       const cors = corsHeaders(origin, allowed);
       cors.forEach((v, k) => newHeaders.set(k, v));
       resp = new Response(resp.body, {
@@ -143,6 +147,18 @@ export function registerMiddleware(app: Hono<{ Bindings: Env }>) {
           correlationId,
           sub,
         });
+        const span = finishSpan(status, {
+          'http.method': method,
+          'http.route': reqPath,
+          'http.status_code': status,
+          'http.duration_ms': durMs,
+        });
+        exportSpan(
+          (c.env as Record<string, unknown>)?.PERFORMANCE_ANALYTICS as
+            | { writeDataPoint: (e: { blobs: string[]; doubles: number[] }) => void }
+            | undefined,
+          span,
+        );
       }
     } catch {
       // ignore

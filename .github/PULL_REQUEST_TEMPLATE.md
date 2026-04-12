@@ -14,6 +14,7 @@ If UI changes, include before/after.
 - [ ] Fix
 - [ ] Refactor
 - [ ] Docs
+- [ ] CI / Tooling
 
 ## How to test
 
@@ -29,10 +30,23 @@ Mandatory gates (mark ALL that apply):
 - [ ] Unit tests pass (`pnpm test`)
 - [ ] Full validation (`pnpm validate`)
 - [ ] No PII or raw health data in logs
-- [ ] Docs updated (API / WS / security / deployment) if applicable
 - [ ] No sensitive data or raw health metrics logged
+
+Data & API:
+
+- [ ] Zod validation at all new data boundaries
+- [ ] Schema changes are backward-compatible (or migration provided)
+- [ ] API changes reflected in OpenAPI spec (`pnpm check:openapi`)
+
+Cross-platform:
+
+- [ ] iOS config sync needed? (`pnpm gait:sync` / `pnpm fallrisk:sync`)
+- [ ] WebSocket message changes coordinated with iOS bridge
 
 Optional (but encouraged):
 
-- [ ] Performance snapshot captured (bundle analyzer)
+- [ ] Bundle size checked (`pnpm check:bundle`)
 - [ ] Added/updated tests for new schemas
+- [ ] Visual regression screenshots updated if UI changed
+- [ ] Docs updated (API / WS / security / deployment) if applicable
+- [ ] Accessibility tested (keyboard nav, screen reader)

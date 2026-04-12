@@ -12,6 +12,7 @@ import { readdirSync, statSync, readFileSync, writeFileSync, existsSync } from '
 import { resolve, dirname, relative, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+import { gzipSync, brotliCompressSync, constants } from 'node:zlib';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const updateMode = process.argv.includes('--update');
@@ -36,6 +37,27 @@ function dirSize(dir, extensions = null) {
     }
   }
   return total;
+}
+
+/** Sum compressed sizes (gzip + brotli) for all matching files in a directory. */
+function compressedSizes(dir, extensions = null) {
+  const result = { gzip: 0, brotli: 0 };
+  if (!existsSync(dir)) return result;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = resolve(dir, entry.name);
+    if (entry.isDirectory()) {
+      const sub = compressedSizes(full, extensions);
+      result.gzip += sub.gzip;
+      result.brotli += sub.brotli;
+    } else if (!extensions || extensions.includes(extname(entry.name))) {
+      const buf = readFileSync(full);
+      result.gzip += gzipSync(buf, { level: 9 }).length;
+      result.brotli += brotliCompressSync(buf, {
+        params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
+      }).length;
+    }
+  }
+  return result;
 }
 
 function formatBytes(bytes) {
@@ -63,6 +85,11 @@ const sizes = {
   'dist-worker/': dirSize(resolve(repoRoot, 'dist-worker'), ['.js']),
 };
 
+const compressed = {
+  'dist/':        compressedSizes(resolve(repoRoot, 'dist'), ['.js', '.css', '.html']),
+  'dist-worker/': compressedSizes(resolve(repoRoot, 'dist-worker'), ['.js']),
+};
+
 // Load previous baseline
 const baseline = existsSync(budgetPath)
   ? JSON.parse(readFileSync(budgetPath, 'utf8'))
@@ -71,7 +98,7 @@ const baseline = existsSync(budgetPath)
 const budgets = { ...DEFAULT_BUDGETS, ...baseline.budgets };
 
 console.log('\n📊 Bundle Size Report');
-console.log('─'.repeat(58));
+console.log('─'.repeat(72));
 
 let failed = false;
 
@@ -86,7 +113,10 @@ for (const [key, size] of Object.entries(sizes)) {
 
   const icon = overBudget ? '❌' : '✅';
   const budgetStr = budget ? ` / ${formatBytes(budget)}` : '';
+  const comp = compressed[key];
+  const compStr = comp ? `  gzip: ${formatBytes(comp.gzip)}  brotli: ${formatBytes(comp.brotli)}` : '';
   console.log(`  ${icon} ${key.padEnd(15)} ${formatBytes(size).padStart(10)}${budgetStr}${deltaStr}`);
+  if (compStr) console.log(`     📦 compressed:${compStr}`);
 
   if (overBudget) {
     failed = true;
@@ -94,7 +124,7 @@ for (const [key, size] of Object.entries(sizes)) {
   }
 }
 
-console.log('─'.repeat(58));
+console.log('─'.repeat(72));
 
 // Save baseline
 if (updateMode || !existsSync(budgetPath)) {
