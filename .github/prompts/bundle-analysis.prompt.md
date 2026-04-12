@@ -1,6 +1,6 @@
 ---
 description: 'Analyze and explain the current bundle size, identify large chunks, and suggest optimization strategies for the VitalSense web app.'
-agent: 'agent'
+agent: 'performance-analyst'
 tools: [execute, read, search]
 ---
 

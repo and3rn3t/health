@@ -1,6 +1,5 @@
 ---
 description: 'Create a new zod schema with TypeScript type for health data validation. Generates schema, type export, and usage examples following VitalSense conventions.'
-agent: 'agent'
 ---
 
 Create a new zod schema for the described health data type. Follow these conventions:

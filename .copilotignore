@@ -1,0 +1,29 @@
+# Prevent Copilot from indexing sensitive or noisy files
+
+# Environment and secrets
+.env*
+.dev.vars
+*.pem
+*.key
+
+# Build outputs
+dist/
+dist-worker/
+dist-ssr/
+coverage/
+.bundle-history/
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# iOS build artifacts
+ios/**/DerivedData/
+ios/**/build/
+ios/**/*.xcarchive
+
+# Binary and generated files
+*.wasm
+*.sqlite
+*.mlmodel
+*.mlmodelc

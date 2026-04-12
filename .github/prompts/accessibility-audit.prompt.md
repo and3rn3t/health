@@ -20,4 +20,4 @@ For each issue found, provide:
 - **Location**: File and approximate line
 - **Fix**: Code example
 
-Reference existing accessible patterns in `src/components/ui/*` and VitalSense design tokens in `src/styles/theme.css`.
+Reference existing accessible patterns in `src/components/ui/*` and VitalSense design tokens in `src/main.css`.

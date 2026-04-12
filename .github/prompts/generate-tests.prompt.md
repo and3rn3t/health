@@ -1,6 +1,5 @@
 ---
 description: 'Generate a comprehensive Vitest unit test file for a given component, hook, or utility. Follows VitalSense testing patterns with mocking, accessibility checks, and edge cases.'
-agent: 'agent'
 ---
 
 Generate comprehensive Vitest unit tests for the provided code:

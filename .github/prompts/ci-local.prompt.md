@@ -1,6 +1,5 @@
 ---
 description: 'Run the full CI validation pipeline locally before pushing. Includes lint, type-check, test, build, and bundle verification.'
-agent: 'agent'
 tools: [execute, read]
 ---
 

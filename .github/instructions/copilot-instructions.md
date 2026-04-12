@@ -8,7 +8,7 @@
 - **Runtime**: Cloudflare Workers (Hono) for static assets + API. Worker entry: `src/worker.ts` → `dist-worker/index.js`.
 - **iOS**: Swift/HealthKit app in `ios/` — singletons (`AppConfig.shared`, `HealthKitManager.shared`), WebSocket bridge.
 - **Auth**: Auth0 with JWT verification (JWKS + HS256 fallback). Config in `src/lib/auth0Config.ts` and `wrangler.toml`.
-- **Data**: Client-side `useKV` from `@github/spark/hooks`; server-side Cloudflare KV/R2 via Wrangler bindings.
+- **Data**: Client-side `useKV` from `@/hooks/useCloudflareKV`; server-side Cloudflare KV/R2 via Wrangler bindings.
 
 ## Architecture and boundaries
 
@@ -32,7 +32,7 @@
 
 ## UI and styling
 
-- Tailwind v4 with semantic CSS tokens from `theme.json` + `styles/theme.css`. Utility classes preferred.
+- Tailwind v4 with semantic CSS tokens from `src/main.css`. Utility classes preferred.
 - Compose from existing `src/components/ui/*` and Radix primitives — don't re-create.
 - Icons: `lucide-react` via barrel `src/lib/icons.ts`, or `@phosphor-icons/react`.
 - Dark mode: `[data-appearance="dark"]` on `document.documentElement`. No alternate theme systems.
@@ -48,7 +48,7 @@
 
 ## State, data fetching, and realtime
 
-- UI state: `useKV` for lightweight client persistence.
+- UI state: `useKV` from `@/hooks/useCloudflareKV` for lightweight client persistence.
 - Server state: `@tanstack/react-query` — co-locate query keys/constants.
 - Pagination: cursor-based (`{ data, nextCursor?, hasMore? }`).
 - Validation: `zod` at all boundaries (WebSocket payloads, Worker bodies, query params).
@@ -90,7 +90,7 @@
 - Networking: `fetch` + React Query. Workers: `c.req`/`c.env`.
 - Realtime: `WebSocket` API; envelopes `{ type, data, timestamp }` + zod.
 - Styling: Tailwind utilities + existing components; no CSS-in-JS.
-- Storage: `useKV` (client); Cloudflare KV/R2 (server, bind in wrangler.toml).
+- Storage: `useKV` from `@/hooks/useCloudflareKV` (client); Cloudflare KV/R2 (server, bind in wrangler.toml).
 
 ## Don'ts
 
@@ -112,7 +112,7 @@
 - Singleton pattern: `AppConfig.shared`, `HealthKitManager.shared`, `ApiClient.shared` (private inits).
 - HealthKit permissions via usage descriptions in `Info.plist`.
 - Design for background execution with proper task management.
-- Project: `ios/HealthKitBridge/` (managers, WebSocket, config), tests in `HealthKitBridgeTests/`.
+- Project: `ios/Andernet-Posture/` (main app), `ios/HealthKitBridge/` (generated configs). Tests in `Andernet PostureTests/`.
 
 ### SwiftLint compliance (mandatory)
 

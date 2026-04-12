@@ -15,7 +15,7 @@
 3. No PII or raw health data in logs.
 4. Workers-safe APIs only (Request, Response, fetch, crypto). No Node.js APIs in Worker code.
 5. Secrets via c.env bindings. Never hardcode.
-6. Tailwind v4 utilities + semantic tokens from theme.css. No CSS-in-JS.
+6. Tailwind v4 utilities + semantic tokens from src/main.css. No CSS-in-JS.
 7. React Query for server state. Co-locate query keys.
 8. Radix UI + existing src/components/ui/* — don't recreate primitives.
 9. Colocated tests: *.test.ts(x) next to source, Vitest + @testing-library/react.
