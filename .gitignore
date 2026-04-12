@@ -100,7 +100,25 @@ package-lock.json
 
 # SonarLint
 .sonarlint/
-!.sonarlint/settings.json
+
+# Cursor IDE
+.cursor/
+
+# Python
+.mypy_cache/
+__pycache__/
+
+# Playwright
+playwright-report/
+
+# Wrangler test artifacts
+.wrangler-test/
+
+# Secrets (NEVER track)
+.secrets/
+
+# Xcode build server (local paths)
+buildServer.json
 
 # Health monitoring specific
 *.health-data

@@ -1,1 +1,0 @@
-This folder contains the built output assets for the worker "vitalsense-websocket-advanced-dev" generated at 2025-11-17T01:58:56.421Z.
