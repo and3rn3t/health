@@ -266,7 +266,7 @@ export function useLiveHealthData(_userId: string = 'demo-user') {
 
   // Auto-connect on mount
   useEffect(() => {
-    connectToHealthData();
+    void connectToHealthData();
   }, [connectToHealthData]);
 
   // Update reconnect attempts from WebSocket state

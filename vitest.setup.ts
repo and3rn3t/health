@@ -1,6 +1,6 @@
 // Vitest setup for ESBuild + React testing
 import '@testing-library/jest-dom';
-import { webcrypto as cryptoWeb } from 'crypto';
+import { webcrypto as cryptoWeb } from 'node:crypto';
 import { afterEach, vi } from 'vitest';
 
 // Clear mock call history after each test to prevent cross-test pollution.
@@ -35,8 +35,8 @@ class MockWebSocket {
   MockWebSocket as unknown;
 
 // Mock window.location for tests that need it (skip in non-browser environments)
-if (typeof window !== 'undefined') {
-  Object.defineProperty(window, 'location', {
+if (globalThis.window !== undefined) {
+  Object.defineProperty(globalThis, 'location', {
     value: {
       protocol: 'https:',
       host: 'localhost:3000',
@@ -62,11 +62,11 @@ console.error = (...args: unknown[]) => {
 
 // Mock matchMedia for components that use responsive hooks
 // Some jsdom versions expose matchMedia as undefined; normalize to a stub function
-if (typeof window !== 'undefined') {
+if (globalThis.window !== undefined) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (typeof (window as any).matchMedia !== 'function') {
+  if (typeof (globalThis as any).matchMedia !== 'function') {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).matchMedia = (query: string) => ({
+    (globalThis as any).matchMedia = (query: string) => ({
       matches: false,
       media: query,
       onchange: null,
@@ -86,4 +86,31 @@ if (typeof window !== 'undefined') {
 if (!('crypto' in globalThis)) {
   (globalThis as unknown as Record<string, unknown>).crypto =
     cryptoWeb as unknown;
+}
+
+// IntersectionObserver stub for Radix UI components that depend on it
+if (globalThis.window !== undefined && !('IntersectionObserver' in globalThis)) {
+  class MockIntersectionObserver implements IntersectionObserver {
+    readonly root: Element | Document | null = null;
+    readonly rootMargin: string = '0px';
+    readonly scrollMargin: string = '0px';
+    readonly thresholds: ReadonlyArray<number> = [0];
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+    takeRecords = vi.fn().mockReturnValue([]);
+  }
+  (globalThis as unknown as Record<string, unknown>).IntersectionObserver =
+    MockIntersectionObserver;
+}
+
+// ResizeObserver stub for components that use it
+if (globalThis.window !== undefined && !('ResizeObserver' in globalThis)) {
+  class MockResizeObserver {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+  }
+  (globalThis as unknown as Record<string, unknown>).ResizeObserver =
+    MockResizeObserver;
 }

@@ -91,11 +91,11 @@ export class PWAManager {
       'serviceWorker' in navigator &&
       'sync' in globalThis.ServiceWorkerRegistration.prototype
     ) {
-      this.setupBackgroundSync();
+      void this.setupBackgroundSync();
     }
 
     // Setup push notifications
-    this.setupPushNotifications();
+    void this.setupPushNotifications();
   }
 
   /**
@@ -108,7 +108,7 @@ export class PWAManager {
     }
 
     try {
-      this.deferredPrompt.prompt();
+      await this.deferredPrompt.prompt();
       const { outcome } = await this.deferredPrompt.userChoice;
 
       if (import.meta.env.DEV) console.log('[PWA] Install prompt result:', outcome);
@@ -312,8 +312,9 @@ export class PWAManager {
     updateButton.className = 'px-3 py-1 bg-white text-blue-600 rounded text-sm font-medium';
     updateButton.textContent = 'Update';
     updateButton.addEventListener('click', () => {
-      if (globalThis.pwaManager) {
-        globalThis.pwaManager.updateSW();
+      const mgr = (globalThis as typeof globalThis & { pwaManager?: PWAManager }).pwaManager;
+      if (mgr) {
+        void mgr.updateSW();
       }
     });
 
@@ -352,8 +353,8 @@ export class PWAManager {
       this.swRegistration &&
       'sync' in globalThis.ServiceWorkerRegistration.prototype
     ) {
-      this.swRegistration.sync.register('health-data-sync');
-      this.swRegistration.sync.register('emergency-alert-sync');
+      void this.swRegistration.sync.register('health-data-sync');
+      void this.swRegistration.sync.register('emergency-alert-sync');
     }
   }
 
@@ -462,8 +463,9 @@ declare global {
 
 // Initialize PWA manager when DOM is ready
 if (globalThis.window !== undefined) {
-  globalThis.addEventListener('DOMContentLoaded', async () => {
-    globalThis.pwaManager = new PWAManager();
-    await globalThis.pwaManager.initialize();
+  globalThis.addEventListener('DOMContentLoaded', () => {
+    const g = globalThis as typeof globalThis & { pwaManager?: PWAManager };
+    g.pwaManager = new PWAManager();
+    void g.pwaManager.initialize();
   });
 }

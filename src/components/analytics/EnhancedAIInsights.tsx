@@ -228,7 +228,7 @@ export default function EnhancedAIInsights({
   useEffect(() => {
     // Only auto-generate if we don't have insights yet
     if (healthData && insights.length === 0) {
-      generateInsights();
+      void generateInsights();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [healthData]); // Only depend on healthData, not the function

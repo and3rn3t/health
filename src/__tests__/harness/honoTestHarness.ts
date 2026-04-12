@@ -37,8 +37,8 @@ export async function invoke<T = unknown>(
     headers,
     body,
   });
-  const env: Record<string, unknown> = { ...DEFAULT_ENV, ...(opts.env || {}) };
-  const res = (await app.fetch(req, env)) as Response;
+  const env: Record<string, unknown> = { ...DEFAULT_ENV, ...opts.env };
+  const res = await app.fetch(req, env);
   let data: T | undefined = undefined;
   if (opts.asJson) {
     try {

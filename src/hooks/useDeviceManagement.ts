@@ -119,7 +119,7 @@ export function useDeviceManagement(userId?: string) {
 
     // Connect to WebSocket if not connected
     if (liveSync && !liveSync.isConnected()) {
-      liveSync.connect();
+      void liveSync.connect();
     }
 
     return () => {

@@ -159,7 +159,14 @@ export function registerMiddleware(app: Hono<{ Bindings: Env }>) {
     if (!publicInfo && !(await requireAuth(c))) {
       return c.json({ error: 'unauthorized' }, 401);
     }
-    return next();
+    await next();
+
+    // API responses must never be cached by browsers or intermediaries
+    if (c.res && c.res.status !== 101) {
+      const h = new Headers(c.res.headers);
+      h.set('Cache-Control', 'no-store');
+      c.res = new Response(c.res.body, { status: c.res.status, headers: h });
+    }
   });
 
   // -----------------------------------------------------------------------

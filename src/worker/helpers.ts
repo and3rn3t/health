@@ -49,6 +49,42 @@ export function rateLimit(
   return true;
 }
 
+/**
+ * KV-backed rate limiter fallback — shared across isolates unlike the in-memory Map.
+ * Slower than the Durable Object but consistent under multi-isolate deployments.
+ */
+async function rateLimitKV(
+  kv: Env['HEALTH_KV'],
+  key: string,
+  limit: number,
+  intervalMs: number
+): Promise<boolean> {
+  if (!kv?.get || !kv.put) return rateLimit(key, limit, intervalMs);
+  const kvKey = `rl:${key}`;
+  try {
+    const raw = await kv.get(kvKey);
+    const now = Date.now();
+    let record: { tokens: number; last: number } = raw
+      ? JSON.parse(raw)
+      : { tokens: limit, last: now };
+    const elapsed = now - record.last;
+    const refill = Math.floor(elapsed / intervalMs) * limit;
+    record = {
+      tokens: Math.min(limit, record.tokens + refill),
+      last: now,
+    };
+    if (record.tokens <= 0) {
+      await kv.put(kvKey, JSON.stringify(record), { expirationTtl: Math.ceil(intervalMs / 1000) * 2 });
+      return false;
+    }
+    record.tokens -= 1;
+    await kv.put(kvKey, JSON.stringify(record), { expirationTtl: Math.ceil(intervalMs / 1000) * 2 });
+    return true;
+  } catch {
+    return rateLimit(key, limit, intervalMs);
+  }
+}
+
 export async function rateLimitDO(
   c: Context<{ Bindings: Env }>,
   key: string,
@@ -56,7 +92,7 @@ export async function rateLimitDO(
   intervalMs = 60_000
 ): Promise<boolean> {
   try {
-    if (!c.env.RATE_LIMITER) return rateLimit(key, limit, intervalMs);
+    if (!c.env.RATE_LIMITER) return rateLimitKV(c.env.HEALTH_KV, key, limit, intervalMs);
     const id = c.env.RATE_LIMITER.idFromName(key);
     const stub = c.env.RATE_LIMITER.get(id);
     const u = new URL('https://do.local/consume');
@@ -74,7 +110,8 @@ export async function rateLimitDO(
       error: err instanceof Error ? err.message : String(err),
       key,
     });
-    return rateLimit(key, limit, intervalMs);
+    // Fall back to KV, then to in-memory if KV is also unavailable
+    return rateLimitKV(c.env.HEALTH_KV, key, limit, intervalMs);
   }
 }
 

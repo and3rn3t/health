@@ -224,7 +224,7 @@ export function WSTokenSettings() {
       !loading
     ) {
       // Attempt refresh; ignore errors
-      (async () => {
+      void (async () => {
         try {
           const resp = await fetch('/api/device/auth', {
             method: 'POST',

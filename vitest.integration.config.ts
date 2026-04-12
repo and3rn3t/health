@@ -14,7 +14,7 @@ export default defineConfig({
     pool: 'forks',
     maxWorkers: 1,
     isolate: true,
-    testTimeout: 30000,
+    testTimeout: 30_000,
     retry: process.env.CI ? 1 : 0,
     reporters: process.env.CI
       ? ['default', 'github-actions', 'junit']

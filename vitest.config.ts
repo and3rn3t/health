@@ -25,10 +25,10 @@ export default defineConfig({
     // Threads locally for speed, forks in CI for memory isolation
     pool: process.env.CI ? 'forks' : 'threads',
     isolate: true,
-    maxWorkers: process.env.CI ? 4 : 4,
-    testTimeout: process.env.CI ? 20000 : 15000,
-    hookTimeout: process.env.CI ? 10000 : 5000,
-    teardownTimeout: process.env.CI ? 10000 : 5000,
+    maxWorkers: 4,
+    testTimeout: 20_000,
+    hookTimeout: 10_000,
+    teardownTimeout: 10_000,
     // Retry in CI for flakiness resilience (no bail — let retry handle transients)
     bail: 0,
     sequence: {
@@ -52,13 +52,12 @@ export default defineConfig({
         ? ['json-summary', 'json', 'lcov']
         : ['text', 'json', 'json-summary', 'lcov'],
       reportsDirectory: 'coverage',
-      all: false,
       // Ratchet up: raise thresholds as coverage improves
       thresholds: {
-        lines: 35,
-        branches: 30,
-        functions: 35,
-        statements: 35,
+        lines: 50,
+        branches: 40,
+        functions: 50,
+        statements: 50,
       },
       // Exclude large, non-runtime or archival areas to raise meaningful signal
       exclude: [

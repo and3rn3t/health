@@ -43,7 +43,7 @@ if (!window.__vitalsenseRUM) {
     window.__vitalsenseRUM = true;
 
     const metrics: RumMetrics = {};
-    (async () => {
+    void (async () => {
       try {
         const load = () =>
           import(/* @vite-ignore */ 'web-vitals')
@@ -71,9 +71,9 @@ if (!window.__vitalsenseRUM) {
             window as unknown as {
               requestIdleCallback?: (cb: () => void) => void;
             }
-          ).requestIdleCallback?.(load);
+          ).requestIdleCallback?.(() => void load());
         } else {
-          setTimeout(load, 3000);
+          setTimeout(() => void load(), 3000);
         }
       } catch {
         /* noop outer */

@@ -261,7 +261,7 @@ export function DeviceStatusCard({
                           aria-label={`Sync ${device.name}`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            syncDevice(device.id);
+                            void syncDevice(device.id);
                           }}
                         >
                           <Radio className="h-4 w-4" />

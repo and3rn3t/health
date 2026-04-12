@@ -144,12 +144,12 @@ export function LiDARGaitAnalyzer({
   }, []);
 
   useEffect(() => {
-    checkLiDARAvailability();
+    void checkLiDARAvailability();
   }, [checkLiDARAvailability]);
 
   useEffect(() => {
     let mounted = true;
-    detectWebxrSupport((v) => {
+    void detectWebxrSupport((v) => {
       if (mounted) setWebxrSupported(v);
     });
     return () => {

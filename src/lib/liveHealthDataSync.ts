@@ -464,7 +464,7 @@ export class LiveHealthDataSync {
     );
 
     this.reconnectTimer = setTimeout(() => {
-      this.connect();
+      void this.connect();
     }, delay);
   }
 

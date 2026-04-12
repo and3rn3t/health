@@ -156,7 +156,7 @@ describe('connect', () => {
   it('appends token when __WS_DEVICE_TOKEN__ is set', async () => {
     (window as unknown as Record<string, unknown>).__WS_DEVICE_TOKEN__ = 'tok123';
     const sync = createSync();
-    sync.connect();
+    void sync.connect();
     expect(latestWs!.url).toContain('token=tok123');
     delete (window as unknown as Record<string, unknown>).__WS_DEVICE_TOKEN__;
   });
@@ -164,7 +164,7 @@ describe('connect', () => {
   it('uses __WS_URL__ override when set', async () => {
     (window as unknown as Record<string, unknown>).__WS_URL__ = 'wss://override/ws';
     const sync = createSync();
-    sync.connect();
+    void sync.connect();
     expect(latestWs!.url).toBe('wss://override/ws');
     delete (window as unknown as Record<string, unknown>).__WS_URL__;
   });

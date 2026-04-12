@@ -242,7 +242,7 @@ function AppContent() {
   const onNavItemHover = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
       const id = (e.currentTarget as HTMLElement).dataset.id;
-      if (id) preloadById(id);
+      if (id) void preloadById(id);
     },
     [preloadById]
   );

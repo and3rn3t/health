@@ -273,7 +273,7 @@ export default function EnhancedHealthInsightsDashboard({
       setTrends(newTrends);
     };
 
-    initializeInsights();
+    void initializeInsights();
   }, [
     healthData,
     setInsights,
