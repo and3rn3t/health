@@ -11,11 +11,15 @@
     "cloudflare.vscode-cloudflare-workers",
     "github.copilot",
     "github.copilot-chat",
-    "ms-vscode.powershell",
-    "ms-vscode.powershell-preview",
+    "github.vscode-pull-request-github",
+    "eamodio.gitlens",
     "streetsidesoftware.code-spell-checker",
     "sweetpad.sweetpad",
     "vadimcn.vscode-lldb",
-    "swiftlang.swift-vscode"
+    "swiftlang.swift-vscode",
+    "ms-azuretools.vscode-docker",
+    "SonarSource.sonarlint-vscode",
+    "vitest.explorer",
+    "ms-playwright.playwright"
   ]
 }

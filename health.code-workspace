@@ -34,51 +34,14 @@
       "**/*.tsbuildinfo": true,
     },
 
-    // PowerShell workspace settings with enhanced profile loading
-    "powershell.enableProfileLoading": true,
+    // PowerShell settings (for .ps1 file editing)
     "powershell.scriptAnalysis.enable": true,
-    "powershell.integratedConsole.suppressStartupBanner": false,
-    "powershell.powerShellDefaultVersion": "PowerShell-7",
     "powershell.codeFormatting.preset": "OTBS",
     "powershell.codeFormatting.useConstantStrings": true,
     "powershell.codeFormatting.useCorrectCasing": true,
 
-    // Terminal configuration with VitalSense profile
+    // Terminal configuration
     "terminal.integrated.cwd": "${workspaceFolder}",
-    "terminal.integrated.defaultProfile.windows": "VitalSense Development",
-    "terminal.integrated.profiles.windows": {
-      "VitalSense Development": {
-        "path": "pwsh.exe",
-        "icon": "heart",
-        "color": "terminal.ansiBlue",
-        "args": [
-          "-NoLogo",
-          "-NoProfile",
-          "-NoExit",
-          "-ExecutionPolicy",
-          "Bypass",
-          "-Command",
-          ". '${workspaceFolder}\\scripts\\fast-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}'",
-        ],
-      },
-      "Swift Development": {
-        "path": "pwsh.exe",
-        "icon": "symbol-method",
-        "color": "terminal.ansiMagenta",
-        "args": [
-          "-NoLogo",
-          "-NoProfile",
-          "-NoExit",
-          "-Command",
-          ". '${workspaceFolder}\\scripts\\enhanced-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}' -SwiftMode",
-        ],
-      },
-      "PowerShell 7 (Clean)": {
-        "path": "pwsh.exe",
-        "icon": "terminal-powershell",
-        "args": ["-NoLogo", "-NoProfile"],
-      },
-    },
 
     // Task and terminal optimization
     "task.autoDetect": "on",
@@ -106,7 +69,7 @@
 
     // Language-specific settings
     "powershell.cwd": "Health App (Root)",
-    "typescript.tsdk": "Health App (Root)\\node_modules\\typescript\\lib",
+    "typescript.tsdk": "node_modules/typescript/lib",
     "swift.sourcekit-lsp.serverPath": "/usr/bin/sourcekit-lsp",
 
     // File associations for better syntax highlighting
@@ -154,18 +117,6 @@
 
   "tasks": {
     "version": "2.0.0",
-    "options": {
-      "shell": {
-        "executable": "pwsh",
-        "args": [
-          "-NoProfile",
-          "-ExecutionPolicy",
-          "Bypass",
-          "-Command",
-          ". '${workspaceFolder}\\scripts\\fast-vitalsense-profile.ps1' -WorkspaceRoot '${workspaceFolder}'; ",
-        ],
-      },
-    },
   },
 
   "launch": {
@@ -175,12 +126,9 @@
         "name": "Debug VitalSense Web App",
         "type": "node",
         "request": "launch",
-        "program": "${workspaceFolder}/node_modules/.bin/vite",
-        "args": ["dev", "--host", "0.0.0.0", "--port", "5173"],
+        "runtimeExecutable": "pnpm",
+        "runtimeArgs": ["dev"],
         "cwd": "${workspaceFolder}",
-        "env": {
-          "NODE_ENV": "development",
-        },
         "console": "integratedTerminal",
         "internalConsoleOptions": "neverOpen",
       },
@@ -188,8 +136,8 @@
         "name": "Debug Wrangler Worker",
         "type": "node",
         "request": "launch",
-        "program": "${workspaceFolder}/node_modules/.bin/wrangler",
-        "args": ["dev", "--port", "8789", "--env", "development"],
+        "runtimeExecutable": "pnpm",
+        "runtimeArgs": ["cf:dev"],
         "cwd": "${workspaceFolder}",
         "console": "integratedTerminal",
         "internalConsoleOptions": "neverOpen",

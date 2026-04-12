@@ -23,14 +23,8 @@
             "name": "Launch Dev Server",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/node_modules/vite/bin/vite.js",
-            "args": [
-                "--mode",
-                "development"
-            ],
-            "env": {
-                "NODE_ENV": "development"
-            },
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": ["dev"],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
         },
@@ -38,14 +32,39 @@
             "name": "Launch Wrangler Dev",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/node_modules/wrangler/bin/wrangler.js",
-            "args": [
-                "dev",
-                "--local"
-            ],
-            "env": {
-                "NODE_ENV": "development"
-            },
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": ["cf:dev"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Debug Vitest (Current File)",
+            "type": "node",
+            "request": "launch",
+            "autoAttachChildProcesses": true,
+            "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+            "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+            "args": ["run", "${relativeFile}"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Debug Vitest (All Tests)",
+            "type": "node",
+            "request": "launch",
+            "autoAttachChildProcesses": true,
+            "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+            "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+            "args": ["run"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Debug Playwright Tests",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "npx",
+            "runtimeArgs": ["playwright", "test", "--headed", "--debug"],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
         }
