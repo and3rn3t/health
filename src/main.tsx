@@ -168,6 +168,7 @@ function initClientErrorReporter() {
         void getApiClient().reportClientError({
           ...payload,
           message: String(payload.message ?? 'unknown'),
+          source: (payload.source as 'window.onerror' | 'unhandledrejection' | 'console.error') ?? 'window.onerror',
           route: window.location.pathname,
           ua: navigator.userAgent,
         });

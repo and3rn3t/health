@@ -221,6 +221,11 @@ const schemas: Record<string, object> = {
         maximum: 1,
         description: 'How unusual this reading is',
       },
+      correlatedMetrics: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Related metrics that influenced this reading',
+      },
       alert: {
         type: ['object', 'null'],
         properties: {
@@ -498,7 +503,10 @@ function buildPaths(): Record<string, object> {
           content: jsonContent('LiveBalanceProgress'),
         },
         responses: {
-          '200': { content: jsonContent('SuccessResponse') },
+          '200': {
+            description: 'Progress recorded',
+            content: jsonContent('SuccessResponse'),
+          },
           ...errorResponses,
         },
       },
@@ -516,7 +524,10 @@ function buildPaths(): Record<string, object> {
           content: jsonContent('LiveBalanceResult'),
         },
         responses: {
-          '200': { content: jsonContent('SuccessResponse') },
+          '200': {
+            description: 'Result submitted',
+            content: jsonContent('SuccessResponse'),
+          },
           ...errorResponses,
         },
       },
@@ -1047,7 +1058,10 @@ function buildPaths(): Record<string, object> {
           },
         },
         responses: {
-          '200': { content: jsonContent('SuccessResponse') },
+          '200': {
+            description: 'Metrics ingested',
+            content: jsonContent('SuccessResponse'),
+          },
           '400': { description: 'No valid metrics or invalid payload' },
           '429': { description: 'Rate limited' },
         },

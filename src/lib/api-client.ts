@@ -2,51 +2,36 @@
  * Typed API client for VitalSense backend.
  *
  * Centralises all fetch calls, attaches auth headers when available,
- * and provides typed request/response shapes derived from the OpenAPI spec.
+ * and provides typed request/response shapes from the generated OpenAPI types.
  */
+import type { components, operations } from './api-types.generated';
 
 // ---------------------------------------------------------------------------
-// Request / Response types (mirror OpenAPI component schemas)
+// Convenience aliases from generated types
 // ---------------------------------------------------------------------------
 
-export interface DeviceAuthRequest {
-  userId: string;
-  clientType: 'ios_app' | 'web_dashboard';
-  ttlSec?: number;
-}
+export type DeviceAuthRequest =
+  operations['postDeviceAuth']['requestBody']['content']['application/json'];
 
-export interface DeviceAuthResponse {
-  ok: boolean;
-  token?: string;
-  expiresIn?: number;
-}
+export type DeviceAuthResponse = NonNullable<
+  operations['postDeviceAuth']['responses']['200']['content']
+>['application/json'];
 
-export interface TwoFactorStatusResponse {
-  enabled: boolean;
-}
+export type TwoFactorStatusResponse = NonNullable<
+  operations['get2FAStatus']['responses']['200']['content']
+>['application/json'];
 
-export interface TwoFactorToggleResponse {
-  ok: boolean;
-  enabled: boolean;
-}
+export type TwoFactorToggleResponse = NonNullable<
+  operations['enable2FA']['responses']['200']['content']
+>['application/json'];
 
-export interface WsUrlResponse {
-  url?: string;
-  fallback?: string;
-}
+export type WsUrlResponse = NonNullable<
+  operations['getWsUrl']['responses']['200']['content']
+>['application/json'];
 
-export interface WsTelemetryPayload {
-  event: string;
-  readyState?: number;
-  [key: string]: unknown;
-}
+export type WsTelemetryPayload = components['schemas']['WebSocketTelemetry'];
 
-export interface ClientErrorPayload {
-  message: string;
-  stack?: string;
-  url?: string;
-  [key: string]: unknown;
-}
+export type ClientErrorPayload = components['schemas']['ClientError'];
 
 export interface PushSubscribePayload {
   endpoint: string;

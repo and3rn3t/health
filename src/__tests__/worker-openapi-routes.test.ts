@@ -1,3 +1,4 @@
+import SwaggerParser from '@apidevtools/swagger-parser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import app from '../worker';
 
@@ -247,5 +248,56 @@ describe('worker: openapi routes', () => {
       makeEnv()
     );
     expect(htmlRes.status).toBe(200);
+  });
+
+  // -----------------------------------------------------------------------
+  // Spec validation (swagger-parser)
+  // -----------------------------------------------------------------------
+
+  it('passes swagger-parser structural validation', async () => {
+    const res = await app.fetch(
+      new Request('https://x.test/api/docs/openapi.json'),
+      makeEnv()
+    );
+    const spec = await res.json();
+
+    // swagger-parser.validate resolves all $ref pointers and validates
+    // the spec against the OpenAPI 3.x JSON Schema. Throws on invalid.
+    await expect(
+      SwaggerParser.validate(structuredClone(spec) as never)
+    ).resolves.toBeDefined();
+  });
+
+  it('all $ref targets resolve to defined schemas', async () => {
+    const res = await app.fetch(
+      new Request('https://x.test/api/docs/openapi.json'),
+      makeEnv()
+    );
+    const spec = await res.json();
+
+    // dereference resolves every $ref — throws if any are broken
+    await expect(
+      SwaggerParser.dereference(structuredClone(spec) as never)
+    ).resolves.toBeDefined();
+  });
+
+  it('all operationIds are unique', async () => {
+    const res = await app.fetch(
+      new Request('https://x.test/api/docs/openapi.json'),
+      makeEnv()
+    );
+    const spec = (await res.json()) as {
+      paths: Record<string, Record<string, { operationId?: string }>>;
+    };
+
+    const ids: string[] = [];
+    for (const methods of Object.values(spec.paths)) {
+      for (const op of Object.values(methods)) {
+        if (op.operationId) ids.push(op.operationId);
+      }
+    }
+
+    const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
+    expect(dupes, `duplicate operationIds: ${dupes.join(', ')}`).toEqual([]);
   });
 });

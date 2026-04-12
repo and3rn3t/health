@@ -27,6 +27,9 @@ jobs:
       - name: OpenAPI spec drift check
         run: pnpm run check:openapi
 
+      - name: API types freshness check
+        run: pnpm run check:api-types
+
       - name: Lint
         run: pnpm run lint
 

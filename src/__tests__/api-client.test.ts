@@ -175,7 +175,7 @@ describe('api-client', () => {
       );
 
       const client = createApiClient();
-      await client.sendWsTelemetry({ event: 'connect', readyState: 1 });
+      await client.sendWsTelemetry({ event: 'connect_start', readyState: 1 });
 
       expect(fetchSpy).toHaveBeenCalledWith(
         '/api/ws-telemetry',
