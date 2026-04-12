@@ -45,6 +45,7 @@ SESSION_TIMEOUT = "24h"
 AUTH0_DOMAIN = "dev-qjdpc81dzr7xrnlu.us.auth0.com"
 AUTH0_CLIENT_ID = "YyCHkHZ11713YG7QsB518lHrCFE3bW1s"
 # DEVICE_JWT_SECRET: Set via `wrangler secret put DEVICE_JWT_SECRET` or .env.development.local
+# SENTRY_DSN: Set via `wrangler secret put SENTRY_DSN --env development`
 # Do NOT commit secrets here. See docs/security/SECRET_MANAGEMENT.md
 
 # Development Durable Objects
@@ -94,6 +95,7 @@ SESSION_TIMEOUT = "12h"
 ENABLE_ANALYTICS = "true"
 ENABLE_SECURITY_LOGGING = "true"
 ENABLE_PERFORMANCE_MONITORING = "true"
+# SENTRY_DSN: Set via `wrangler secret put SENTRY_DSN --env production`
 # Auth0 Configuration
 AUTH0_DOMAIN = "dev-qjdpc81dzr7xrnlu.us.auth0.com"
 AUTH0_CLIENT_ID = "YyCHkHZ11713YG7QsB518lHrCFE3bW1s"
@@ -194,3 +196,34 @@ new_sqlite_classes = ["RateLimiter"]
 # ============================================================================
 [observability]
 enabled = false  # Disabled to prevent Cloudflare Insights beacon injection
+
+# ============================================================================
+# Preview Environment (PR deployments)
+# ============================================================================
+[env.preview]
+name = "health-app-preview"
+workers_dev = true
+
+[env.preview.vars]
+ENVIRONMENT = "preview"
+ALLOWED_ORIGINS = "*"
+LOG_LEVEL = "debug"
+LOG_SAMPLE_RATE = "0.5"
+FALL_DETECTION_THRESHOLD = "0.75"
+EMERGENCY_RESPONSE_DELAY = "30"
+MAX_FILE_SIZE = "100MB"
+SESSION_TIMEOUT = "24h"
+AUTH0_DOMAIN = "dev-qjdpc81dzr7xrnlu.us.auth0.com"
+AUTH0_CLIENT_ID = "YyCHkHZ11713YG7QsB518lHrCFE3bW1s"
+
+[[env.preview.durable_objects.bindings]]
+name = "HEALTH_WEBSOCKET"
+class_name = "HealthWebSocket"
+
+[[env.preview.migrations]]
+tag = "v1"
+new_sqlite_classes = ["HealthWebSocket", "VitalSenseWebSocketDO"]
+
+[[env.preview.migrations]]
+tag = "v2"
+new_sqlite_classes = ["RateLimiter"]

@@ -29,10 +29,12 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:e2e": "playwright test",
     "deploy:prod": "wrangler deploy --env production",
+    "deploy:preview": "wrangler deploy --env preview",
     "deploy:smoke": "node scripts/deploy/smoke-test.mjs",
     "deploy:smoke:prod": "node scripts/deploy/smoke-test.mjs --env production",
     "doctor": "node scripts/dev/doctor.mjs",
     "check:drift": "node scripts/ci/check-config-drift.mjs",
+    "check:openapi": "node scripts/ci/check-openapi-drift.mjs",
     "check:bundle": "node scripts/ci/check-bundle-size.mjs",
     "prepare": "husky"
   },

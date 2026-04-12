@@ -22,6 +22,8 @@ import { batchRoutes } from './worker/routes/health-data-batch';
 import { analyticsRoutes } from './worker/routes/health-data-analytics';
 import { kvRoutes } from './worker/routes/health-data-kv';
 import { demoRoutes } from './worker/routes/demo';
+import { openapiRoutes } from './worker/routes/openapi';
+import { captureException } from './worker/sentry';
 
 // ---------------------------------------------------------------------------
 // App setup
@@ -47,6 +49,32 @@ app.route('/', batchRoutes);
 app.route('/', analyticsRoutes);
 app.route('/', kvRoutes);
 app.route('/', demoRoutes);
+app.route('/', openapiRoutes);
+
+// ---------------------------------------------------------------------------
+// Global error handler — reports unhandled exceptions to Sentry
+// ---------------------------------------------------------------------------
+
+app.onError((err, c) => {
+  const dsn = c.env.SENTRY_DSN;
+  if (dsn) {
+    const promise = captureException(
+      err instanceof Error ? err : new Error(String(err)),
+      {
+        dsn,
+        environment: c.env.ENVIRONMENT || 'unknown',
+        request: c.req.raw,
+        tags: { path: new URL(c.req.url).pathname },
+      }
+    );
+    try {
+      c.executionCtx?.waitUntil(promise);
+    } catch {
+      // no execution context available
+    }
+  }
+  return c.json({ error: 'internal_server_error' }, 500);
+});
 
 // ---------------------------------------------------------------------------
 // SPA catch-all (MUST be last)

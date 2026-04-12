@@ -15,6 +15,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useKV } from '@/hooks/useCloudflareKV';
+import { ApiError, getApiClient } from '@/lib/api-client';
 import { getLiveHealthDataSync } from '@/lib/liveHealthDataSync';
 import {
   clampTtl,
@@ -138,27 +139,11 @@ export function WSTokenSettings() {
   const onGetToken = async () => {
     setLoading(true);
     try {
-      const resp = await fetch('/api/device/auth', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          userId: draftUser || 'default-user',
-          clientType: 'web_dashboard',
-          ttlSec: clampTtl(ttlSec),
-        }),
+      const json = await getApiClient().deviceAuth({
+        userId: draftUser || 'default-user',
+        clientType: 'web_dashboard',
+        ttlSec: clampTtl(ttlSec),
       });
-      if (!resp.ok) {
-        if (resp.status === 401) {
-          toast.error('Sign-in required to issue a device token');
-          return;
-        }
-        throw new Error(`Failed: ${resp.status}`);
-      }
-      const json = (await resp.json()) as {
-        ok?: boolean;
-        token?: string;
-        expiresIn?: number;
-      };
       if (json?.token) {
         setDraft(json.token);
         setStoredToken(json.token);
@@ -169,8 +154,12 @@ export function WSTokenSettings() {
       } else {
         toast.error('No token returned');
       }
-    } catch {
-      toast.error('Failed to get token');
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        toast.error('Sign-in required to issue a device token');
+      } else {
+        toast.error('Failed to get token');
+      }
     } finally {
       setLoading(false);
     }
@@ -179,26 +168,11 @@ export function WSTokenSettings() {
   const onGetIosToken = async () => {
     setLoading(true);
     try {
-      const resp = await fetch('/api/device/auth', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          userId: draftUser || 'default-user',
-          clientType: 'ios_app',
-          ttlSec: clampTtl(ttlSec),
-        }),
+      const json = await getApiClient().deviceAuth({
+        userId: draftUser || 'default-user',
+        clientType: 'ios_app',
+        ttlSec: clampTtl(ttlSec),
       });
-      if (!resp.ok) {
-        if (resp.status === 401) {
-          toast.error('Sign-in required to issue a device token');
-          return;
-        }
-        throw new Error(`Failed: ${resp.status}`);
-      }
-      const json = (await resp.json()) as {
-        token?: string;
-        expiresIn?: number;
-      };
       if (json?.token) {
         setDraft(json.token);
         setStoredToken(json.token);
@@ -206,8 +180,12 @@ export function WSTokenSettings() {
       } else {
         toast.error('No token returned');
       }
-    } catch {
-      toast.error('Failed to get iOS token');
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        toast.error('Sign-in required to issue a device token');
+      } else {
+        toast.error('Failed to get iOS token');
+      }
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,6 @@
 import { AppToaster } from '@/components/ui/sonner';
 import { AppWebSocketProvider } from '@/contexts/AppWebSocketProvider';
+import { getApiClient } from '@/lib/api-client';
 import '@/polyfills/importMetaEnv';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode, Suspense } from 'react';
@@ -164,29 +165,12 @@ function initClientErrorReporter() {
         }
         lastErrorTime = now;
 
-        fetch('/api/client-error', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
-            ...payload,
-            route: window.location.pathname,
-            ua: navigator.userAgent,
-          }),
-          keepalive: true,
-        })
-          .then((res) => {
-            // Silently ignore 401 (Unauthorized) - expected when not authenticated
-            if (res.status === 401) {
-              return;
-            }
-            // Only log other errors in development
-            if (!res.ok && import.meta.env.DEV) {
-              console.debug('Client error reporting failed:', res.status, res.statusText);
-            }
-          })
-          .catch(() => {
-            // Silently ignore network errors
-          });
+        void getApiClient().reportClientError({
+          ...payload,
+          message: String(payload.message ?? 'unknown'),
+          route: window.location.pathname,
+          ua: navigator.userAgent,
+        });
       } catch {
         /* noop */
       }

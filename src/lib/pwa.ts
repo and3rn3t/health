@@ -3,6 +3,8 @@
  * Handles service worker registration, PWA features, and offline functionality
  */
 
+import { getApiClient } from '@/lib/api-client';
+
 export class PWAManager {
   private swRegistration: ServiceWorkerRegistrationWithSync | null = null;
   private updateAvailable = false;
@@ -404,13 +406,8 @@ export class PWAManager {
     subscription: PushSubscription
   ): Promise<void> {
     try {
-      await fetch('/api/push/subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(subscription),
-      });
+      const json = subscription.toJSON();
+      await getApiClient().pushSubscribe(json as never);
     } catch (error) {
       console.error('[PWA] Failed to send subscription to server:', error);
     }

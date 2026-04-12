@@ -24,6 +24,9 @@ jobs:
       - name: Config drift check
         run: pnpm run check:drift
 
+      - name: OpenAPI spec drift check
+        run: pnpm run check:openapi
+
       - name: Lint
         run: pnpm run lint
 
@@ -175,3 +178,76 @@ jobs:
       - name: Post-deploy smoke test
         run: node scripts/deploy/smoke-test.mjs --env production
         timeout-minutes: 2
+
+  # ── Preview deployment (PR only) ─────────────────────────────
+  preview:
+    needs: build
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-pnpm
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+
+      - name: Deploy preview
+        id: deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          output=$(npx wrangler deploy --env preview 2>&1)
+          echo "$output"
+          url=$(echo "$output" | grep -oP 'https://[^\s]+\.workers\.dev' | head -1)
+          echo "preview_url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Comment preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const url = '${{ steps.deploy.outputs.preview_url }}';
+            const body = [
+              '### 🚀 Preview Deployment',
+              '',
+              `**URL**: ${url}`,
+              `**Commit**: \`${context.sha.slice(0, 7)}\``,
+              '',
+              '| Endpoint | Link |',
+              '|----------|------|',
+              `| App | [Open](${url}) |`,
+              `| Health Check | [/health](${url}/health) |`,
+              `| API Docs | [/api/docs](${url}/api/docs) |`,
+            ].join('\n');
+
+            // Update existing comment or create new one
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c =>
+              c.body?.includes('### 🚀 Preview Deployment') &&
+              c.user?.login === 'github-actions[bot]'
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

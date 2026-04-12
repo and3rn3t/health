@@ -1,0 +1,1224 @@
+/**
+ * OpenAPI 3.1 spec and Swagger UI route.
+ *
+ * Serves:
+ *   GET /api/docs/openapi.json — OpenAPI specification
+ *   GET /api/docs              — Swagger UI
+ *
+ * The spec is built at runtime from static definitions that mirror
+ * the Zod schemas in `src/schemas/health.ts`. No external dependencies.
+ */
+import { Hono } from 'hono';
+import type { Env } from '../types';
+
+const route = new Hono<{ Bindings: Env }>();
+
+// ---------------------------------------------------------------------------
+// Schema components (mirror the Zod schemas in src/schemas/health.ts)
+// ---------------------------------------------------------------------------
+
+const healthMetricTypeEnum = [
+  'heart_rate',
+  'walking_steadiness',
+  'steps',
+  'gait_speed',
+  'cadence',
+  'stride_length',
+  'step_asymmetry',
+  'double_support_time',
+  'posture_angle',
+  'stability_index',
+  'sway_balance',
+  'oxygen_saturation',
+  'sleep_hours',
+  'body_weight',
+  'active_energy',
+  'distance_walking',
+  'blood_pressure_systolic',
+  'blood_pressure_diastolic',
+  'body_temperature',
+  'respiratory_rate',
+  'fall_event',
+] as const;
+
+const schemas: Record<string, object> = {
+  HealthMetricType: {
+    type: 'string',
+    enum: healthMetricTypeEnum,
+  },
+  HealthMetric: {
+    type: 'object',
+    required: ['type', 'value'],
+    properties: {
+      type: { $ref: '#/components/schemas/HealthMetricType' },
+      value: { type: 'number', description: 'Numeric value for the metric' },
+      unit: { type: 'string' },
+      timestamp: { type: 'string', format: 'date-time' },
+      deviceId: { type: 'string' },
+      userId: { type: 'string' },
+      source: {
+        type: 'string',
+        description: 'Data source (e.g. Apple Watch, manual entry)',
+      },
+      confidence: {
+        type: 'number',
+        minimum: 0,
+        maximum: 1,
+        description: 'Confidence level of the reading',
+      },
+    },
+    example: {
+      type: 'gait_speed',
+      value: 1.15,
+      unit: 'm/s',
+      timestamp: '2026-04-12T10:30:00.000Z',
+      deviceId: 'apple-watch-ultra-2',
+      source: 'Apple Watch',
+      confidence: 0.95,
+    },
+  },
+  HealthMetricBatch: {
+    type: 'object',
+    required: ['metrics', 'uploadedAt'],
+    properties: {
+      metrics: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/HealthMetric' },
+        minItems: 1,
+        maxItems: 100,
+      },
+      uploadedAt: { type: 'string', format: 'date-time' },
+      deviceInfo: {
+        type: 'object',
+        properties: {
+          deviceId: { type: 'string' },
+          deviceType: { type: 'string' },
+          osVersion: { type: 'string' },
+          appVersion: { type: 'string' },
+        },
+        required: ['deviceId', 'deviceType'],
+      },
+    },
+  },
+  LiveGaitSnapshot: {
+    type: 'object',
+    required: ['speed', 'stepFrequency'],
+    properties: {
+      speed: {
+        type: 'number',
+        minimum: 0,
+        maximum: 4,
+        description: 'Walking speed m/s',
+      },
+      stepFrequency: {
+        type: 'number',
+        minimum: 0,
+        maximum: 300,
+        description: 'Steps per minute',
+      },
+      asymmetry: { type: ['number', 'null'], minimum: 0, maximum: 1 },
+      variability: { type: ['number', 'null'], minimum: 0, maximum: 1 },
+      userId: { type: 'string' },
+      deviceId: { type: 'string' },
+      capturedAt: { type: 'string', format: 'date-time' },
+      source: { type: 'string', default: 'ios_device' },
+    },
+    example: {
+      speed: 1.2,
+      stepFrequency: 110,
+      asymmetry: 0.08,
+      variability: 0.12,
+      deviceId: 'apple-watch-ultra-2',
+      source: 'ios_device',
+      capturedAt: '2026-04-12T10:30:00.000Z',
+    },
+  },
+  LiveGaitSnapshotBatch: {
+    type: 'object',
+    required: ['snapshots'],
+    properties: {
+      snapshots: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/LiveGaitSnapshot' },
+        minItems: 1,
+        maxItems: 50,
+      },
+      userId: { type: 'string' },
+      deviceId: { type: 'string' },
+      capturedAt: { type: 'string', format: 'date-time' },
+    },
+  },
+  LiveBalanceProgress: {
+    type: 'object',
+    required: ['percent', 'elapsedSeconds'],
+    properties: {
+      percent: { type: 'number', minimum: 0, maximum: 100 },
+      instantaneousStability: {
+        type: ['number', 'null'],
+        minimum: 0,
+        maximum: 1,
+      },
+      elapsedSeconds: { type: 'number', minimum: 0 },
+      testKind: { type: 'string' },
+      userId: { type: 'string' },
+      deviceId: { type: 'string' },
+      capturedAt: { type: 'string', format: 'date-time' },
+    },
+  },
+  LiveBalanceResult: {
+    type: 'object',
+    required: ['overallScore', 'componentScores'],
+    properties: {
+      overallScore: { type: 'number', minimum: 0, maximum: 100 },
+      componentScores: {
+        type: 'object',
+        additionalProperties: { type: 'number', minimum: 0, maximum: 100 },
+      },
+      testKind: { type: 'string' },
+      userId: { type: 'string' },
+      deviceId: { type: 'string' },
+      capturedAt: { type: 'string', format: 'date-time' },
+    },
+  },
+  ProcessedHealthData: {
+    type: 'object',
+    required: [
+      'type',
+      'value',
+      'timestamp',
+      'processedAt',
+      'validated',
+      'source',
+    ],
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      type: { $ref: '#/components/schemas/HealthMetricType' },
+      value: { type: 'number' },
+      unit: { type: 'string' },
+      timestamp: { type: 'string', format: 'date-time' },
+      processedAt: { type: 'string', format: 'date-time' },
+      validated: { type: 'boolean' },
+      healthScore: { type: 'number', minimum: 0, maximum: 100 },
+      fallRisk: {
+        type: 'string',
+        enum: ['low', 'moderate', 'high', 'critical'],
+      },
+      trendAnalysis: {
+        type: 'object',
+        properties: {
+          direction: {
+            type: 'string',
+            enum: ['improving', 'stable', 'declining'],
+          },
+          confidence: { type: 'number', minimum: 0, maximum: 1 },
+          changePercent: { type: 'number' },
+        },
+        required: ['direction', 'confidence'],
+      },
+      anomalyScore: {
+        type: 'number',
+        minimum: 0,
+        maximum: 1,
+        description: 'How unusual this reading is',
+      },
+      alert: {
+        type: ['object', 'null'],
+        properties: {
+          level: {
+            type: 'string',
+            enum: ['info', 'warning', 'critical', 'emergency'],
+          },
+          message: { type: 'string' },
+          actionRequired: { type: 'boolean' },
+          expiresAt: { type: 'string', format: 'date-time' },
+        },
+        required: ['level', 'message'],
+      },
+      source: {
+        type: 'object',
+        required: ['userId', 'collectedAt'],
+        properties: {
+          deviceId: { type: 'string' },
+          userId: { type: 'string' },
+          collectedAt: { type: 'string', format: 'date-time' },
+          processingPipeline: { type: 'string' },
+        },
+      },
+      dataQuality: {
+        type: 'object',
+        properties: {
+          completeness: { type: 'number', minimum: 0, maximum: 100 },
+          accuracy: { type: 'number', minimum: 0, maximum: 100 },
+          timeliness: { type: 'number', minimum: 0, maximum: 100 },
+          consistency: { type: 'number', minimum: 0, maximum: 100 },
+        },
+      },
+    },
+  },
+  ErrorResponse: {
+    type: 'object',
+    required: ['error'],
+    properties: {
+      error: { type: 'string' },
+      details: { type: 'object' },
+    },
+  },
+  SuccessResponse: {
+    type: 'object',
+    required: ['ok'],
+    properties: {
+      ok: { type: 'boolean', const: true },
+    },
+  },
+  ClientError: {
+    type: 'object',
+    required: ['message'],
+    properties: {
+      message: { type: 'string', minLength: 1, maxLength: 2000 },
+      source: {
+        type: 'string',
+        enum: ['window.onerror', 'unhandledrejection', 'console.error'],
+        default: 'window.onerror',
+      },
+      route: { type: 'string', maxLength: 512 },
+      sessionId: { type: 'string', maxLength: 128 },
+      ua: { type: 'string', maxLength: 512 },
+      stack: { type: 'string', maxLength: 4000 },
+      meta: {
+        type: 'object',
+        additionalProperties: { type: 'string', maxLength: 256 },
+      },
+    },
+  },
+  WebSocketTelemetry: {
+    type: 'object',
+    required: ['event'],
+    properties: {
+      event: {
+        type: 'string',
+        enum: [
+          'connect_start',
+          'connect_success',
+          'connect_error',
+          'close',
+          'retry',
+          'ping_timeout',
+          'pong_received',
+          'message_error',
+        ],
+      },
+      url: { type: 'string', maxLength: 2048 },
+      attempt: { type: 'integer', minimum: 0, maximum: 100 },
+      code: { type: 'integer', minimum: 0, maximum: 6000 },
+      reason: { type: 'string', maxLength: 500 },
+      backoffMs: { type: 'integer', minimum: 0, maximum: 600000 },
+      sinceMs: { type: 'integer', minimum: 0, maximum: 600000 },
+      rttMs: { type: 'integer', minimum: 0, maximum: 120000 },
+      readyState: { type: 'integer', minimum: 0, maximum: 3 },
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Path definitions
+// ---------------------------------------------------------------------------
+
+const bearerAuth = [{ bearerAuth: [] }];
+const jsonContent = (ref: string) => ({
+  'application/json': { schema: { $ref: `#/components/schemas/${ref}` } },
+});
+const errorResponses = {
+  '400': {
+    description: 'Validation error',
+    content: jsonContent('ErrorResponse'),
+  },
+  '401': { description: 'Unauthorized — missing or invalid JWT' },
+  '429': { description: 'Rate limited' },
+};
+
+function buildPaths(): Record<string, object> {
+  return {
+    '/health': {
+      get: {
+        tags: ['System'],
+        summary: 'Health check',
+        operationId: 'getHealth',
+        security: [],
+        responses: {
+          '200': {
+            description: 'Service status',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string', enum: ['healthy'] },
+                    timestamp: { type: 'string', format: 'date-time' },
+                    environment: { type: 'string' },
+                  },
+                },
+                example: {
+                  status: 'healthy',
+                  timestamp: '2026-04-12T12:00:00.000Z',
+                  environment: 'production',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+
+    '/api/gait-config-version': {
+      get: {
+        tags: ['Configuration'],
+        summary: 'Gait analytics configuration',
+        operationId: 'getGaitConfig',
+        security: [],
+        responses: {
+          '200': {
+            description: 'Current gait config and version',
+            headers: {
+              ETag: {
+                schema: { type: 'string' },
+                description: 'Config version ETag for conditional requests',
+              },
+            },
+          },
+          '304': { description: 'Not modified (ETag match)' },
+        },
+      },
+    },
+
+    '/api/fall-risk-config-version': {
+      get: {
+        tags: ['Configuration'],
+        summary: 'Fall risk analytics configuration',
+        operationId: 'getFallRiskConfig',
+        security: [],
+        responses: {
+          '200': { description: 'Current fall risk config and version' },
+          '304': { description: 'Not modified' },
+        },
+      },
+    },
+
+    '/api/analytics-config-versions': {
+      get: {
+        tags: ['Configuration'],
+        summary: 'Combined analytics config versions',
+        operationId: 'getAnalyticsConfigVersions',
+        security: [],
+        responses: {
+          '200': {
+            description: 'Gait + fall risk config versions (single round-trip)',
+          },
+          '304': { description: 'Not modified' },
+        },
+      },
+    },
+
+    '/api/live/gait': {
+      post: {
+        tags: ['Live Health Data'],
+        summary: 'Ingest a live gait snapshot',
+        description:
+          'Submit a single gait measurement. Broadcasts to connected WebSocket clients. Rate limit: 120 req/min.',
+        operationId: 'postLiveGait',
+        security: bearerAuth,
+        requestBody: {
+          required: true,
+          content: jsonContent('LiveGaitSnapshot'),
+        },
+        responses: {
+          '200': {
+            description: 'Snapshot accepted',
+            content: jsonContent('SuccessResponse'),
+          },
+          ...errorResponses,
+        },
+      },
+    },
+
+    '/api/live/gait/batch': {
+      post: {
+        tags: ['Live Health Data'],
+        summary: 'Ingest batched gait snapshots',
+        description:
+          'Submit up to 50 gait measurements in one request. Rate limit: 30 req/min.',
+        operationId: 'postLiveGaitBatch',
+        security: bearerAuth,
+        requestBody: {
+          required: true,
+          content: jsonContent('LiveGaitSnapshotBatch'),
+        },
+        responses: {
+          '200': {
+            description: 'Batch accepted',
+            content: jsonContent('SuccessResponse'),
+          },
+          ...errorResponses,
+        },
+      },
+    },
+
+    '/api/live/gait/recent': {
+      get: {
+        tags: ['Live Health Data'],
+        summary: 'Recent gait snapshots with rolling statistics',
+        operationId: 'getLiveGaitRecent',
+        security: bearerAuth,
+        parameters: [
+          {
+            name: 'limit',
+            in: 'query',
+            schema: { type: 'integer', default: 20, maximum: 100 },
+          },
+        ],
+        responses: {
+          '200': {
+            description:
+              'Recent snapshots with rolling averages and trend analysis',
+          },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+    },
+
+    '/api/live/balance/progress': {
+      post: {
+        tags: ['Live Health Data'],
+        summary: 'Report balance test progress',
+        description:
+          'Submit real-time balance test progress. Broadcasts to WebSocket clients. Rate limit: 120 req/min.',
+        operationId: 'postLiveBalanceProgress',
+        security: bearerAuth,
+        requestBody: {
+          required: true,
+          content: jsonContent('LiveBalanceProgress'),
+        },
+        responses: {
+          '200': { content: jsonContent('SuccessResponse') },
+          ...errorResponses,
+        },
+      },
+    },
+
+    '/api/live/balance/result': {
+      post: {
+        tags: ['Live Health Data'],
+        summary: 'Submit balance test result',
+        description: 'Final balance test result. Rate limit: 30 req/min.',
+        operationId: 'postLiveBalanceResult',
+        security: bearerAuth,
+        requestBody: {
+          required: true,
+          content: jsonContent('LiveBalanceResult'),
+        },
+        responses: {
+          '200': { content: jsonContent('SuccessResponse') },
+          ...errorResponses,
+        },
+      },
+    },
+
+    '/api/live/balance/recent': {
+      get: {
+        tags: ['Live Health Data'],
+        summary: 'Recent balance test results',
+        operationId: 'getLiveBalanceRecent',
+        security: bearerAuth,
+        responses: {
+          '200': { description: 'Recent balance results and last progress' },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+    },
+
+    '/api/health-data/process': {
+      post: {
+        tags: ['Health Data Processing'],
+        summary: 'Process a single health metric',
+        description:
+          'Validates, enriches with analytics (health score, fall risk, trend), encrypts, and stores in KV. Rate limit: 60 req/min.',
+        operationId: 'postHealthDataProcess',
+        security: bearerAuth,
+        requestBody: {
+          required: true,
+          content: jsonContent('HealthMetric'),
+        },
+        responses: {
+          '200': {
+            description: 'Processed metric with analytics',
+            content: jsonContent('ProcessedHealthData'),
+          },
+          ...errorResponses,
+        },
+      },
+    },
+
+    '/api/health-data/batch': {
+      post: {
+        tags: ['Health Data Processing'],
+        summary: 'Process a batch of health metrics',
+        description:
+          'Process up to 100 metrics in one request. Rate limit: 20 req/min.',
+        operationId: 'postHealthDataBatch',
+        security: bearerAuth,
+        requestBody: {
+          required: true,
+          content: jsonContent('HealthMetricBatch'),
+        },
+        responses: {
+          '200': {
+            description: 'Batch processing results',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    ok: { type: 'boolean' },
+                    processed: { type: 'integer' },
+                    results: {
+                      type: 'array',
+                      items: {
+                        $ref: '#/components/schemas/ProcessedHealthData',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          ...errorResponses,
+        },
+      },
+    },
+
+    '/api/health-data/analytics/{userId}': {
+      get: {
+        tags: ['Health Data Processing'],
+        summary: 'Historical analytics for a user',
+        operationId: 'getHealthDataAnalytics',
+        security: bearerAuth,
+        parameters: [
+          {
+            name: 'userId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Historical health data array',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/ProcessedHealthData',
+                  },
+                },
+              },
+            },
+          },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+    },
+
+    '/api/kv/{key}': {
+      get: {
+        tags: ['User Settings'],
+        summary: 'Read a user setting',
+        operationId: 'getKVValue',
+        security: bearerAuth,
+        parameters: [
+          {
+            name: 'key',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              enum: [
+                'preferences',
+                'dashboard-layout',
+                'alert-settings',
+                'theme',
+                'notification-settings',
+              ],
+            },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Setting value',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    key: { type: 'string' },
+                    value: {},
+                  },
+                },
+              },
+            },
+          },
+          '400': { description: 'Invalid key' },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+      put: {
+        tags: ['User Settings'],
+        summary: 'Write a user setting',
+        operationId: 'putKVValue',
+        security: bearerAuth,
+        parameters: [
+          {
+            name: 'key',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              enum: [
+                'preferences',
+                'dashboard-layout',
+                'alert-settings',
+                'theme',
+                'notification-settings',
+              ],
+            },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['value'],
+                properties: { value: {} },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Setting saved' },
+          '400': { description: 'Invalid key or body' },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+      delete: {
+        tags: ['User Settings'],
+        summary: 'Delete a user setting',
+        operationId: 'deleteKVValue',
+        security: bearerAuth,
+        parameters: [
+          {
+            name: 'key',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+          },
+        ],
+        responses: {
+          '200': { description: 'Setting deleted' },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+    },
+
+    '/api/user/2fa/status': {
+      get: {
+        tags: ['Authentication'],
+        summary: 'Two-factor authentication status',
+        operationId: 'get2FAStatus',
+        security: bearerAuth,
+        responses: {
+          '200': {
+            description: '2FA status',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    enabled: { type: 'boolean' },
+                    updatedAt: { type: ['string', 'null'], format: 'date-time' },
+                  },
+                },
+              },
+            },
+          },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+    },
+
+    '/api/user/2fa/enable': {
+      post: {
+        tags: ['Authentication'],
+        summary: 'Enable two-factor authentication',
+        operationId: 'enable2FA',
+        security: bearerAuth,
+        responses: {
+          '200': {
+            description: '2FA enabled',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    ok: { type: 'boolean' },
+                    enabled: { type: 'boolean', const: true },
+                  },
+                },
+              },
+            },
+          },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+    },
+
+    '/api/user/2fa/disable': {
+      post: {
+        tags: ['Authentication'],
+        summary: 'Disable two-factor authentication',
+        operationId: 'disable2FA',
+        security: bearerAuth,
+        responses: {
+          '200': {
+            description: '2FA disabled',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    ok: { type: 'boolean' },
+                    enabled: { type: 'boolean', const: false },
+                  },
+                },
+              },
+            },
+          },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+    },
+
+    '/api/user/export': {
+      get: {
+        tags: ['Authentication'],
+        summary: 'Export user data',
+        description:
+          'Download a JSON export of server-held user data (GDPR-compliant).',
+        operationId: 'getUserExport',
+        security: bearerAuth,
+        responses: {
+          '200': {
+            description: 'User data export (JSON file download)',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    exportVersion: { type: 'integer' },
+                    exportedAt: { type: 'string', format: 'date-time' },
+                    userId: { type: 'string' },
+                    twoFactor: {
+                      type: 'object',
+                      properties: {
+                        enabled: { type: 'boolean' },
+                        updatedAt: { type: ['string', 'null'] },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+    },
+
+    '/api/device/auth': {
+      post: {
+        tags: ['Authentication'],
+        summary: 'Obtain device JWT',
+        description: 'Exchange device credentials for a short-lived HS256 JWT.',
+        operationId: 'postDeviceAuth',
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['userId'],
+                properties: {
+                  userId: { type: 'string', minLength: 1 },
+                  clientType: {
+                    type: 'string',
+                    enum: ['ios_app', 'web_dashboard'],
+                    default: 'ios_app',
+                  },
+                  ttlSec: {
+                    type: 'integer',
+                    minimum: 60,
+                    maximum: 3600,
+                    description: 'Token TTL in seconds',
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'JWT issued',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    ok: { type: 'boolean' },
+                    token: { type: 'string' },
+                    expiresIn: { type: 'integer' },
+                  },
+                },
+              },
+            },
+          },
+          '400': { description: 'Invalid request body' },
+          '500': { description: 'Device auth not configured' },
+        },
+      },
+    },
+
+    '/ws': {
+      get: {
+        tags: ['WebSocket'],
+        summary: 'WebSocket upgrade for real-time health data',
+        description:
+          'Upgrade to WebSocket for live gait/balance streaming and alerts. Without `Upgrade: websocket` header, returns metadata.',
+        operationId: 'getWebSocket',
+        security: bearerAuth,
+        responses: {
+          '101': { description: 'WebSocket connection established' },
+          '200': {
+            description: 'WebSocket metadata (no upgrade header)',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    ok: { type: 'boolean' },
+                    upgradeRequired: { type: 'boolean' },
+                    url: { type: 'string', format: 'uri' },
+                    supportedMessageTypes: {
+                      type: 'array',
+                      items: { type: 'string' },
+                    },
+                    analyticsVersions: {
+                      type: 'object',
+                      properties: {
+                        gait: { type: 'string' },
+                        fallRisk: { type: 'string' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          '401': { description: 'Unauthorized (production only)' },
+          '503': { description: 'WebSocket binding not available' },
+        },
+      },
+    },
+
+    // ── Telemetry ──────────────────────────────────────────────
+
+    '/api/client-error': {
+      post: {
+        tags: ['Telemetry'],
+        summary: 'Report a client-side error',
+        description:
+          'Submit client errors for analytics and audit logging. Returns a correlationId for tracing.',
+        operationId: 'postClientError',
+        security: bearerAuth,
+        requestBody: {
+          required: true,
+          content: jsonContent('ClientError'),
+        },
+        responses: {
+          '200': {
+            description: 'Error recorded',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    ok: { type: 'boolean' },
+                    correlationId: { type: 'string', format: 'uuid' },
+                  },
+                },
+                example: { ok: true, correlationId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' },
+              },
+            },
+          },
+          ...errorResponses,
+        },
+      },
+    },
+
+    '/api/ws-telemetry': {
+      post: {
+        tags: ['Telemetry'],
+        summary: 'Report WebSocket lifecycle events',
+        description:
+          'Submit client-side WebSocket telemetry (connections, disconnects, errors, latency).',
+        operationId: 'postWsTelemetry',
+        security: bearerAuth,
+        requestBody: {
+          required: true,
+          content: jsonContent('WebSocketTelemetry'),
+        },
+        responses: {
+          '200': {
+            description: 'Telemetry recorded',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    ok: { type: 'boolean' },
+                    correlationId: { type: 'string', format: 'uuid' },
+                  },
+                },
+              },
+            },
+          },
+          ...errorResponses,
+        },
+      },
+    },
+
+    '/api/_perf_ingest': {
+      post: {
+        tags: ['Telemetry'],
+        summary: 'Ingest RUM performance metrics',
+        description:
+          'Submit anonymized Real User Monitoring metrics (LCP, TTFB, hydration, CLS, INP). Rate limit: 30 req/min per IP.',
+        operationId: 'postPerfIngest',
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  metrics: {
+                    type: 'object',
+                    description: 'RUM metrics — only valid keys are: lcp, ttfb, hydration, wsConnect, cls, inp',
+                    properties: {
+                      lcp: { type: 'number', minimum: 0, description: 'Largest Contentful Paint (ms)' },
+                      ttfb: { type: 'number', minimum: 0, description: 'Time to First Byte (ms)' },
+                      hydration: { type: 'number', minimum: 0, description: 'React hydration time (ms)' },
+                      wsConnect: { type: 'number', minimum: 0, description: 'WebSocket connect time (ms)' },
+                      cls: { type: 'number', minimum: 0, description: 'Cumulative Layout Shift' },
+                      inp: { type: 'number', minimum: 0, description: 'Interaction to Next Paint (ms)' },
+                    },
+                  },
+                  v: { type: 'integer', description: 'RUM protocol version' },
+                  appVersion: { type: 'string' },
+                },
+              },
+              example: {
+                v: 1,
+                appVersion: '1.0.0',
+                metrics: { lcp: 1200, ttfb: 150, hydration: 320, cls: 0.05 },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { content: jsonContent('SuccessResponse') },
+          '400': { description: 'No valid metrics or invalid payload' },
+          '429': { description: 'Rate limited' },
+        },
+      },
+    },
+
+    '/api/ws-url': {
+      get: {
+        tags: ['WebSocket'],
+        summary: 'WebSocket connection URL',
+        description: 'Returns the WebSocket URL for the current environment.',
+        operationId: 'getWsUrl',
+        security: [],
+        responses: {
+          '200': {
+            description: 'WebSocket URL',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    url: { type: 'string', format: 'uri' },
+                    fallback: { type: 'string', format: 'uri' },
+                  },
+                },
+                example: {
+                  url: 'wss://health.andernet.dev/ws',
+                  fallback: 'wss://health.andernet.dev/ws',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+
+    '/api/ws-live-enabled': {
+      get: {
+        tags: ['WebSocket'],
+        summary: 'Check if live WebSocket streaming is enabled',
+        operationId: 'getWsLiveEnabled',
+        security: [],
+        responses: {
+          '200': {
+            description: 'Feature flag status',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    enabled: { type: 'boolean' },
+                  },
+                },
+                example: { enabled: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// OpenAPI spec builder
+// ---------------------------------------------------------------------------
+
+function buildSpec(baseUrl: string): object {
+  return {
+    openapi: '3.1.0',
+    info: {
+      title: 'VitalSense API',
+      version: '1.0.0',
+      description:
+        'Health monitoring platform API — real-time gait analysis, fall risk detection, balance assessment, and health data processing. Powered by Cloudflare Workers.',
+      contact: { name: 'VitalSense', url: 'https://health.andernet.dev' },
+      license: { name: 'MIT', identifier: 'MIT' },
+    },
+    servers: [{ url: baseUrl, description: 'Current environment' }],
+    tags: [
+      {
+        name: 'System',
+        description: 'Health checks and system information',
+      },
+      {
+        name: 'Configuration',
+        description:
+          'Analytics configuration versions (gait, fall risk). ETag-cacheable.',
+      },
+      {
+        name: 'Live Health Data',
+        description:
+          'Real-time gait and balance data ingestion with WebSocket broadcast.',
+      },
+      {
+        name: 'Health Data Processing',
+        description:
+          'Process, enrich, and store health metrics with analytics scoring.',
+      },
+      {
+        name: 'User Settings',
+        description: 'User-scoped KV settings (preferences, layout, theme).',
+      },
+      {
+        name: 'Authentication',
+        description: '2FA management, user export, device JWT issuance.',
+      },
+      {
+        name: 'WebSocket',
+        description:
+          'Real-time bidirectional streaming for health data and alerts.',
+      },
+      {
+        name: 'Telemetry',
+        description:
+          'Client-side error reporting, RUM performance metrics, and WebSocket lifecycle telemetry.',
+      },
+    ],
+    security: [{ bearerAuth: [] }],
+    paths: buildPaths(),
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description:
+            'Auth0 JWT. Obtain via Auth0 login flow or POST /api/device/auth for device tokens.',
+        },
+      },
+      schemas,
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Routes
+// ---------------------------------------------------------------------------
+
+route.get('/api/docs/openapi.json', (c) => {
+  const baseUrl = c.env.BASE_URL || new URL(c.req.url).origin;
+  return c.json(buildSpec(baseUrl));
+});
+
+route.get('/api/docs', (c) => {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>VitalSense API Documentation</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+  <style>
+    body { margin: 0; background: #fafafa; }
+    .topbar { display: none !important; }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js" crossorigin="anonymous"></script>
+  <script>
+    SwaggerUIBundle({
+      url: '/api/docs/openapi.json',
+      dom_id: '#swagger-ui',
+      deepLinking: true,
+      presets: [SwaggerUIBundle.presets.apis],
+      layout: 'BaseLayout',
+    });
+  </script>
+</body>
+</html>`;
+  return c.html(html);
+});
+
+export { route as openapiRoutes };

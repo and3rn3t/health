@@ -18,6 +18,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useKV } from '@/hooks/useCloudflareKV';
+import { getApiClient } from '@/lib/api-client';
 import {
   DEFAULT_SETTINGS,
   type AllSettings,
@@ -111,14 +112,8 @@ export default function UserSettingsPanel() {
       setBusy(true);
       setBusyAction('2fa');
       const enabled = s.privacy.twoFactorEnabled;
-      const path = enabled ? '/api/user/2fa/disable' : '/api/user/2fa/enable';
-      const headers: Record<string, string> = { 'cache-control': 'no-store' };
-      const res = await fetch(path, { method: 'POST', headers });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        enabled?: boolean;
-      };
+      const api = getApiClient();
+      const body = enabled ? await api.disable2FA() : await api.enable2FA();
       const next = Boolean(body.enabled);
       updateSettings((prev) => ({
         ...prev,
@@ -138,9 +133,7 @@ export default function UserSettingsPanel() {
     try {
       setBusy(true);
       setBusyAction('export');
-      const headers: Record<string, string> = { 'cache-control': 'no-store' };
-      const res = await fetch('/api/user/export', { headers });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const res = await getApiClient().exportUserData();
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

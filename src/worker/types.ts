@@ -17,6 +17,7 @@ export type Env = {
   API_AUD?: string;
   API_JWKS_URL?: string;
   DEVICE_JWT_SECRET?: string; // HS256 secret for device-issued tokens (dev/edge)
+  SENTRY_DSN?: string; // Sentry error tracking DSN
   HEALTH_KV?: {
     put: (
       key: string,

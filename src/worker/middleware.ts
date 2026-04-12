@@ -40,6 +40,7 @@ export function registerMiddleware(app: Hono<{ Bindings: Env }>) {
     const path = new URL(c.req.url).pathname;
     const isLoginPage = path === '/login' || path.startsWith('/login/');
     const isDemoPage = path === '/demo' || path.startsWith('/demo/');
+    const isDocsPage = path.startsWith('/api/docs');
 
     let csp: string;
     const auth0DomainRaw =
@@ -66,6 +67,15 @@ export function registerMiddleware(app: Hono<{ Bindings: Env }>) {
         "font-src 'self' https://fonts.gstatic.com",
         "script-src 'self' 'unsafe-inline'",
         `connect-src 'self' ${wssOrigin}`,
+        "frame-ancestors 'none'",
+      ].join('; ');
+    } else if (isDocsPage) {
+      csp = [
+        "default-src 'self'",
+        "img-src 'self' data: https:",
+        "style-src 'self' 'unsafe-inline' https://unpkg.com",
+        "script-src 'self' 'unsafe-inline' https://unpkg.com",
+        "connect-src 'self'",
         "frame-ancestors 'none'",
       ].join('; ');
     } else {
@@ -150,7 +160,8 @@ export function registerMiddleware(app: Hono<{ Bindings: Env }>) {
       (pathname === '/api/ws-url' ||
         pathname === '/api/ws-device-token' ||
         pathname === '/api/ws-user-id' ||
-        pathname === '/api/ws-live-enabled');
+        pathname === '/api/ws-live-enabled' ||
+        pathname.startsWith('/api/docs'));
 
     const key = deriveRateLimitKey(c);
     if (!(await rateLimitDO(c, key)))

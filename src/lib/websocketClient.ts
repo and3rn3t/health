@@ -5,6 +5,7 @@
  * - Minimal subscribe API by message.type
  * - Optional zod schema enforcement for message envelopes
  */
+import { getApiClient } from '@/lib/api-client';
 import { messageEnvelopeSchema } from '@/schemas/health';
 
 export type WsEventName =
@@ -94,25 +95,7 @@ export class WebSocketClient {
       ) {
         return;
       }
-      fetch('/api/ws-telemetry', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ ...evt, readyState: this.ws?.readyState }),
-        keepalive: true,
-      })
-        .then((res) => {
-          // Silently ignore 401 (Unauthorized) and 429 (Too Many Requests) - expected when not authenticated or rate limited
-          if (res.status === 401 || res.status === 429) {
-            return;
-          }
-          // Only log other errors in development
-          if (!res.ok && import.meta.env.DEV) {
-            console.debug('WebSocket telemetry error:', res.status, res.statusText);
-          }
-        })
-        .catch(() => {
-          // Silently ignore network errors - they're expected in some scenarios
-        });
+      void getApiClient().sendWsTelemetry({ ...evt, readyState: this.ws?.readyState });
     } catch {
       /* noop */
     }
@@ -120,13 +103,7 @@ export class WebSocketClient {
 
   private async resolveUrl(): Promise<string> {
     if (this.opts.url) return this.opts.url;
-    const res = await fetch('/api/ws-url', {
-      headers: { 'cache-control': 'no-store' },
-    });
-    const json = (await res.json().catch(() => ({}))) as Record<
-      string,
-      unknown
-    >;
+    const json = await getApiClient().getWsUrl();
     const url =
       (typeof json.url === 'string' && json.url) ||
       (typeof json.fallback === 'string' && json.fallback) ||

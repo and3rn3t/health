@@ -1,3 +1,4 @@
+import { getApiClient } from '@/lib/api-client';
 import { DeviceDetectionService } from '@/lib/deviceDetectionService';
 import { getLiveHealthDataSync } from '@/lib/liveHealthDataSync';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -276,27 +277,12 @@ export function useDeviceManagement(userId?: string) {
           : 'web_dashboard';
 
         // Get device auth token from API
-        const response = await fetch('/api/device/auth', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: userId || 'default-user',
-            clientType,
-            ttlSec: 600, // 10 minutes
-          }),
+        const data = await getApiClient().deviceAuth({
+          userId: userId || 'default-user',
+          clientType,
+          ttlSec: 600, // 10 minutes
         });
 
-        if (!response.ok) {
-          console.warn(
-            'Device auth token request failed:',
-            response.statusText
-          );
-          return null;
-        }
-
-        const data = (await response.json()) as { token?: string };
         return data.token || null;
       } catch (error) {
         console.error('Failed to get device auth token:', error);
