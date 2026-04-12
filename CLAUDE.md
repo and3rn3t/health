@@ -61,7 +61,7 @@ pnpm check:bundle     # Enforce bundle size budgets
 4. **Workers-safe APIs only** — Web APIs (Request, Response, fetch, crypto) in Worker code. No Node.js APIs.
 5. **Secrets via `c.env`** — access Wrangler bindings, never hardcode secrets or API keys.
 6. **Path alias `@/*`** maps to `./src/*` in tsconfig and Vite.
-7. **Tailwind v4 utilities** — use semantic tokens from `theme.css`. No CSS-in-JS.
+7. **Tailwind v4 utilities** — use semantic tokens from `src/main.css`. No CSS-in-JS.
 8. **Radix UI + existing `src/components/ui/*`** — don't recreate primitives.
 9. **React Query for server state** — co-locate query keys. No bypassing with raw fetch.
 10. **Colocated tests** — `*.test.ts(x)` next to source files, using Vitest + @testing-library/react.

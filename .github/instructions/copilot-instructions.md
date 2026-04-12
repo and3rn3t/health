@@ -28,7 +28,7 @@
   - Libraries: `src/lib/**`
   - Schemas: `src/schemas/**`
   - Worker: `src/worker/` (routes, helpers, Durable Objects)
-  - Styles: `src/main.css` + `src/styles/theme.css`
+  - Styles: `src/main.css` (includes Tailwind v4 theme tokens)
 
 ## UI and styling
 
@@ -41,9 +41,7 @@
 
 ### CSS strategy
 
-> Canonical source: `docs/develop/CSS_STRATEGY.md`. Summary only here.
-
-- Single entry: `src/main.css` with `@layer base|components|utilities`.
+- Single entry: `src/main.css` with `@layer base|components|utilities` and Tailwind v4 `@theme` tokens.
 - New CSS files only for sizable lazy-loaded feature chunks.
 - Semantic light/dark tokens, WCAG AA contrast (normal ≥4.5, large/UI ≥3.0).
 - Guard enforced: `pnpm run guard:css` (local), `pnpm run ci:css-guard` (CI).
