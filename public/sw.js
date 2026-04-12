@@ -12,16 +12,10 @@ const HEALTH_DATA_CACHE_NAME = `vitalsense-health-data-${APP_VERSION}`;
 // Files to cache for offline functionality
 const STATIC_ASSETS = [
   '/',
-  '/index.html',
-  '/main.css',
-  '/favicon.svg',
   '/manifest.json',
-  // Core app files - will be updated dynamically during build
-  '/assets/index.js',
-  '/assets/index.css',
-  // Essential icons
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
+  '/favicon.svg',
+  // Hashed JS/CSS assets are cached on first fetch via cache-first strategy
+  // rather than pre-cached, since filenames change per build
 ];
 
 // Removed unused API_ROUTES constant
@@ -432,25 +426,84 @@ async function openWindow(url) {
   }
 }
 
-// Utility functions for data persistence (simplified)
+// ---------------------------------------------------------------------------
+// IndexedDB persistence for background sync queues
+// ---------------------------------------------------------------------------
+
+const IDB_NAME = 'vitalsense-sw';
+const IDB_VERSION = 1;
+const HEALTH_STORE = 'pending-health';
+const ALERT_STORE = 'pending-alerts';
+
+function openSyncDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(HEALTH_STORE)) {
+        db.createObjectStore(HEALTH_STORE, { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains(ALERT_STORE)) {
+        db.createObjectStore(ALERT_STORE, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function getAllFromStore(storeName) {
+  const db = await openSyncDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function deleteFromStore(storeName, id) {
+  const db = await openSyncDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const req = store.delete(id);
+    req.onsuccess = () => resolve(undefined);
+    req.onerror = () => reject(req.error);
+  });
+}
+
 async function getPendingHealthData() {
-  // In a real implementation, this would use IndexedDB
-  return [];
+  try {
+    return await getAllFromStore(HEALTH_STORE);
+  } catch {
+    return [];
+  }
 }
 
 async function removePendingHealthData(id) {
-  // Remove from IndexedDB
-  console.log('[ServiceWorker] Removed pending health data:', id);
+  try {
+    await deleteFromStore(HEALTH_STORE, id);
+  } catch (error) {
+    console.error('[ServiceWorker] Failed to remove pending health data:', error);
+  }
 }
 
 async function getPendingEmergencyAlerts() {
-  // In a real implementation, this would use IndexedDB
-  return [];
+  try {
+    return await getAllFromStore(ALERT_STORE);
+  } catch {
+    return [];
+  }
 }
 
 async function removePendingEmergencyAlert(id) {
-  // Remove from IndexedDB
-  console.log('[ServiceWorker] Removed pending emergency alert:', id);
+  try {
+    await deleteFromStore(ALERT_STORE, id);
+  } catch (error) {
+    console.error('[ServiceWorker] Failed to remove pending alert:', error);
+  }
 }
 
 // Handle service worker updates

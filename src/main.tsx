@@ -8,6 +8,7 @@ import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
 import App from './App';
 import './lib/pwa'; // Initialize PWA functionality
+import { startOfflineSync } from './lib/offlineStore';
 import './main.css';
 import './monitor/rum';
 import './types/global.d.ts';
@@ -248,3 +249,5 @@ try {
 } catch {
   /* noop */
 }
+// Start IndexedDB offline sync (drains pending writes when online)
+startOfflineSync();

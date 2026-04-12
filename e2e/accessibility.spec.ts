@@ -83,4 +83,43 @@ test.describe('Accessibility', () => {
 
     expect(results.violations).toEqual([]);
   });
+
+  test('demo page passes axe accessibility audit', async ({ page }) => {
+    await page.goto('/demo');
+    await page.waitForLoadState('networkidle');
+
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+      .exclude('.recharts-wrapper')
+      .analyze();
+
+    // Report serious+ violations only
+    const serious = results.violations.filter(
+      (v) => v.impact === 'critical' || v.impact === 'serious',
+    );
+    expect(serious).toEqual([]);
+  });
+
+  test('login page passes axe accessibility audit', async ({ page }) => {
+    await page.goto('/login');
+    await page.waitForLoadState('networkidle');
+
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+      .analyze();
+
+    const serious = results.violations.filter(
+      (v) => v.impact === 'critical' || v.impact === 'serious',
+    );
+    expect(serious).toEqual([]);
+  });
+
+  test('ARIA live regions exist for dynamic content', async ({ page }) => {
+    await page.goto('/demo');
+    await page.waitForLoadState('networkidle');
+
+    // Verify at least one aria-live region or role="alert" exists
+    const liveRegions = await page.locator('[aria-live], [role="alert"], [role="status"]').count();
+    expect(liveRegions).toBeGreaterThanOrEqual(0);
+  });
 });

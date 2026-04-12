@@ -42,4 +42,9 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
   },
+
+  // Accessibility testing: use @axe-core/playwright in test files
+  // import { AxeBuilder } from '@axe-core/playwright';
+  // const results = await new AxeBuilder({ page }).analyze();
+  // expect(results.violations).toEqual([]);
 });

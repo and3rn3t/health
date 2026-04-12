@@ -59,6 +59,50 @@ route.get('/api/analytics-config-versions', (c) => {
   });
 });
 
+// Dynamic config delivery — unified endpoint with KV override support
+// iOS and web clients can fetch config on launch and periodically refresh
+// without requiring a rebuild. KV overrides enable A/B testing.
+route.get('/api/config/:type', async (c) => {
+  const type = c.req.param('type');
+  const validTypes = ['gait', 'fallRisk'] as const;
+  if (!validTypes.includes(type as (typeof validTypes)[number])) {
+    return c.json({ error: 'invalid_config_type', valid: validTypes }, 400);
+  }
+
+  // Check for KV override first (enables hot-patching without deploys)
+  const kv = c.env.HEALTH_KV;
+  if (kv && typeof kv.get === 'function') {
+    try {
+      const override = await kv.get(`config-override:${type}`);
+      if (override) {
+        const parsed = JSON.parse(override);
+        return c.json({
+          source: 'override',
+          type,
+          config: parsed,
+          overrideAt: new Date().toISOString(),
+        }, 200, {
+          'Cache-Control': 'public, max-age=60, stale-while-revalidate=30',
+        });
+      }
+    } catch {
+      // Fall through to built-in config
+    }
+  }
+
+  // Built-in config (baked at build time)
+  const configs = {
+    gait: { version: GAIT_ANALYTICS_VERSION, config: gaitConfig },
+    fallRisk: { version: FALL_RISK_ANALYTICS_VERSION, config: fallRiskConfig },
+  } as const;
+
+  return cachedJson(c, {
+    source: 'built-in',
+    type,
+    ...configs[type as keyof typeof configs],
+  });
+});
+
 // Runtime config for SPA: exposes safe public variables
 route.get('/app-config.js', (c) => {
   const domain = c.env.AUTH0_DOMAIN || '';

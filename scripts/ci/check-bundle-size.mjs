@@ -24,6 +24,26 @@ const DEFAULT_BUDGETS = {
   'dist-worker/': 1 * 1024 * 1024,   // 1 MB worker
 };
 
+// Per-chunk budgets (matched against chunk filenames in dist/js/)
+const CHUNK_BUDGETS = {
+  'react-dom':    200 * 1024,  // 200 KB
+  'react':         20 * 1024,  //  20 KB
+  'radix-ui':     150 * 1024,  // 150 KB
+  'react-query':   50 * 1024,  //  50 KB
+  'recharts':     250 * 1024,  // 250 KB
+  'lucide-icons': 100 * 1024,  // 100 KB
+  'date-utils':    50 * 1024,  //  50 KB
+  'validation':    50 * 1024,  //  50 KB
+  'vendor':       200 * 1024,  // 200 KB
+  'health-gait':  150 * 1024,  // 150 KB
+  'health-fall':  100 * 1024,  // 100 KB
+  'lidar':        150 * 1024,  // 150 KB
+  'analytics':    100 * 1024,  // 100 KB
+  'landing':      100 * 1024,  // 100 KB
+  'settings':      80 * 1024,  //  80 KB
+  'ml':           100 * 1024,  // 100 KB
+};
+
 /** Recursively sum file sizes in a directory, filtering by extension. */
 function dirSize(dir, extensions = null) {
   if (!existsSync(dir)) return 0;
@@ -125,6 +145,37 @@ for (const [key, size] of Object.entries(sizes)) {
 }
 
 console.log('─'.repeat(72));
+
+// Per-chunk budget check
+const jsDir = resolve(repoRoot, 'dist/js');
+if (existsSync(jsDir)) {
+  console.log('\n📊 Per-Chunk Budget Report');
+  console.log('─'.repeat(72));
+
+  for (const file of readdirSync(jsDir)) {
+    if (!file.endsWith('.js')) continue;
+    const fullPath = resolve(jsDir, file);
+    const fileSize = statSync(fullPath).size;
+
+    // Match chunk name from filename pattern: {name}-{hash}.js
+    const match = file.match(/^(.+?)-[a-f0-9]+\.js$/);
+    if (!match) continue;
+    const chunkName = match[1];
+    const budget = CHUNK_BUDGETS[chunkName];
+    if (!budget) continue;
+
+    const overBudget = fileSize > budget;
+    const icon = overBudget ? '❌' : '✅';
+    console.log(`  ${icon} ${chunkName.padEnd(18)} ${formatBytes(fileSize).padStart(10)} / ${formatBytes(budget)}`);
+
+    if (overBudget) {
+      failed = true;
+      console.error(`     ⚠ Over budget by ${formatBytes(fileSize - budget)}`);
+    }
+  }
+
+  console.log('─'.repeat(72));
+}
 
 // Save baseline
 if (updateMode || !existsSync(budgetPath)) {

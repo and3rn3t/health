@@ -29,6 +29,22 @@ import {
 export const apiKeys = {
   twoFactor: ['user', '2fa'] as const,
   wsUrl: ['ws', 'url'] as const,
+  healthData: ['health', 'data'] as const,
+  gaitConfig: ['config', 'gait'] as const,
+  fallRiskConfig: ['config', 'fallRisk'] as const,
+  settings: ['user', 'settings'] as const,
+} as const;
+
+// Per-hook stale time presets (ms)
+export const staleTimes = {
+  /** Real-time data: 30s stale tolerance */
+  realtime: 30_000,
+  /** Dashboard summaries: 5 min (default) */
+  dashboard: 5 * 60_000,
+  /** Config: rarely changes, 30 min */
+  config: 30 * 60_000,
+  /** Settings: almost never changes client-side */
+  settings: Infinity,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -40,6 +56,7 @@ export function use2FAStatus(): UseQueryResult<TwoFactorStatusResponse, ApiError
   return useQuery({
     queryKey: apiKeys.twoFactor,
     queryFn: () => getApiClient().get2FAStatus(),
+    staleTime: staleTimes.settings,
   });
 }
 
@@ -48,6 +65,7 @@ export function useWsUrl(): UseQueryResult<WsUrlResponse, ApiError> {
   return useQuery({
     queryKey: apiKeys.wsUrl,
     queryFn: () => getApiClient().getWsUrl(),
+    staleTime: staleTimes.config,
   });
 }
 

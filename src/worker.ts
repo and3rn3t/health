@@ -23,6 +23,7 @@ import { analyticsRoutes } from './worker/routes/health-data-analytics';
 import { kvRoutes } from './worker/routes/health-data-kv';
 import { demoRoutes } from './worker/routes/demo';
 import { openapiRoutes } from './worker/routes/openapi';
+import { observabilityRoutes } from './worker/routes/observability';
 import { captureException } from './worker/sentry';
 
 // ---------------------------------------------------------------------------
@@ -50,6 +51,7 @@ app.route('/', analyticsRoutes);
 app.route('/', kvRoutes);
 app.route('/', demoRoutes);
 app.route('/', openapiRoutes);
+app.route('/', observabilityRoutes);
 
 // ---------------------------------------------------------------------------
 // Global error handler — reports unhandled exceptions to Sentry
