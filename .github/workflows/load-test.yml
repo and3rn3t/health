@@ -1,0 +1,93 @@
+name: Nightly Load Tests
+
+on:
+  schedule:
+    # Run nightly at 04:00 UTC (1 hour after E2E regression)
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: 'k6 scenario to run (leave empty for all)'
+        required: false
+        type: string
+      base_url:
+        description: 'Target URL'
+        required: false
+        default: 'https://health.andernet.dev'
+        type: string
+
+concurrency:
+  group: load-test
+  cancel-in-progress: true
+
+jobs:
+  load-test:
+    name: k6 Load Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install k6
+        run: |
+          curl -fsSL https://dl.k6.io/key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      - name: Run load tests
+        env:
+          BASE_URL: ${{ inputs.base_url || 'https://health.andernet.dev' }}
+          K6_SCENARIO: ${{ inputs.scenario || '' }}
+        run: |
+          ARGS="--env BASE_URL=${BASE_URL}"
+          if [ -n "${K6_SCENARIO}" ]; then
+            ARGS="${ARGS} --scenario ${K6_SCENARIO}"
+          fi
+          k6 run ${ARGS} --out json=k6-results.json scripts/load-test.mjs 2>&1 | tee k6-output.txt
+
+      - name: Upload k6 results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-load-test-results
+          path: |
+            k6-results.json
+            k6-output.txt
+          retention-days: 14
+
+  notify-failure:
+    needs: load-test
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🔥 Nightly load test regression detected';
+            const body = [
+              '## Load Test Failure',
+              '',
+              `**Run**: [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              `**Date**: ${new Date().toISOString().slice(0, 10)}`,
+              '',
+              'k6 load tests failed — one or more thresholds were breached:',
+              '- `http_req_duration p(95) < 500ms`',
+              '- `http_req_duration p(99) < 1500ms`',
+              '- `http_req_failed rate < 5%`',
+              '- `errors rate < 10%`',
+              '',
+              'Check the k6 artifacts in the workflow run for detailed results.',
+            ].join('\n');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['bug', 'performance'],
+            });
