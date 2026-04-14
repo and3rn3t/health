@@ -4,6 +4,7 @@ import {
   fallRiskConfig,
 } from '@/lib/fallRiskConfig';
 import { GAIT_ANALYTICS_VERSION, gaitConfig } from '@/lib/gaitConfig';
+import { API_TIMING } from '@/lib/motion-tokens';
 import type { Env } from '../types';
 
 const route = new Hono<{ Bindings: Env }>();
@@ -124,7 +125,7 @@ window.__VITALSENSE_CONFIG__ = ${JSON.stringify({
     },
     api: {
       baseUrl: baseUrl,
-      timeout: 10000,
+      timeout: API_TIMING.timeout,
     },
     wsBaseUrl:
       c.env.WEBSOCKET_URL ||

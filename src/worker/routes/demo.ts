@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { APP_NAME, BRAND_COLORS } from '@/lib/branding';
 import type { Env } from '../types';
 
 const route = new Hono<{ Bindings: Env }>();
@@ -212,15 +213,15 @@ route.get('/demo-static', async (c) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitalSense Demo - Health Dashboard</title>
+    <title>${APP_NAME} Demo - Health Dashboard</title>
     <style>
         :root {
-            --vs-primary: #2563eb;
-            --vs-secondary: #0891b2;
-            --vs-background: #ffffff;
-            --vs-foreground: #0f172a;
-            --vs-card: #f8fafc;
-            --vs-border: #e2e8f0;
+            --vs-primary: ${BRAND_COLORS.primary};
+            --vs-secondary: ${BRAND_COLORS.teal};
+            --vs-background: ${BRAND_COLORS.background};
+            --vs-foreground: ${BRAND_COLORS.foreground};
+            --vs-card: ${BRAND_COLORS.card};
+            --vs-border: ${BRAND_COLORS.border};
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -254,7 +255,7 @@ route.get('/demo-static', async (c) => {
         }
 
         .demo-header p {
-            color: #64748b;
+            color: ${BRAND_COLORS.muted};
             font-size: 1.1rem;
         }
 
@@ -327,7 +328,7 @@ route.get('/demo-static', async (c) => {
         }
 
         .demo-button:hover {
-            background: #1d4ed8;
+            background: ${BRAND_COLORS.primaryDark};
         }
 
         .demo-button.secondary {
@@ -335,7 +336,7 @@ route.get('/demo-static', async (c) => {
         }
 
         .demo-button.secondary:hover {
-            background: #0e7490;
+            background: ${BRAND_COLORS.tealDark};
         }
     </style>
 </head>
@@ -345,7 +346,7 @@ route.get('/demo-static', async (c) => {
             <div class="demo-badge">🚀 DEMO MODE</div>
             <h1>VitalSense Health Dashboard</h1>
             <p>Your Personal Health Intelligence Platform</p>
-            <p style="margin-top: 1rem; font-size: 0.9rem; color: #64748b;">
+            <p style="margin-top: 1rem; font-size: 0.9rem; color: ${BRAND_COLORS.muted};">
                 Welcome, <strong>Demo User</strong> (demo@vitalsense.health)
             </p>
         </div>
@@ -375,7 +376,7 @@ route.get('/demo-static', async (c) => {
                 <h3>🛡️ Fall Risk Analysis</h3>
                 <div class="demo-metric">
                     <span>Risk Level</span>
-                    <span class="demo-value" style="color: #10b981;">Low</span>
+                    <span class="demo-value" style="color: ${BRAND_COLORS.successLight};">Low</span>
                 </div>
                 <div class="demo-metric">
                     <span>Balance Score</span>

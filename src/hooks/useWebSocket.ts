@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { z } from 'zod/v3';
+import { WS_TIMING } from '@/lib/motion-tokens';
 // WebSocket message schema validation
 const wsMessageSchema = z.object({
   type: z.string(),
@@ -86,11 +87,11 @@ export function useWebSocket(
 
   // Production connection limits - prevent connection storms
   const maxReconnectAttempts = config.reconnectAttempts ?? 5;
-  const reconnectDelay = config.reconnectDelay ?? 1000;
-  const pingInterval = config.pingInterval ?? 30000;
+  const reconnectDelay = config.reconnectDelay ?? WS_TIMING.reconnectDelay;
+  const pingInterval = config.pingInterval ?? WS_TIMING.pingInterval;
   const maxConnectionAttempts = 3; // Max simultaneous connection attempts
-  const connectionThrottle = 5000; // 5 seconds between connection attempts
-  const connectionTimeout = 10000; // 10 second connection timeout
+  const connectionThrottle = WS_TIMING.connectionThrottle;
+  const connectionTimeout = WS_TIMING.connectionTimeout;
 
   const cleanup = useCallback(() => {
     if (reconnectTimeoutRef.current) {

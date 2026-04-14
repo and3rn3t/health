@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useReducer } from 'react';
+import { WS_TIMING } from '@/lib/motion-tokens';
 import { useWebSocket, type MessageHandlers } from './useWebSocket';
 
 export interface LiveHealthMetric {
@@ -191,8 +192,8 @@ export function useLiveHealthData(_userId: string = 'demo-user') {
       url: 'ws://localhost:3001/ws', // Connect to enhanced server in development
       enableInDevelopment: true, // Enable WebSocket in development for enhanced server
       reconnectAttempts: 10,
-      reconnectDelay: 2000,
-      pingInterval: 30000,
+      reconnectDelay: WS_TIMING.reconnectDelay,
+      pingInterval: WS_TIMING.pingInterval,
     },
     handlers
   );

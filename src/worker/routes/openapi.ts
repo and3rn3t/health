@@ -9,6 +9,7 @@
  * the Zod schemas in `src/schemas/health.ts`. No external dependencies.
  */
 import { Hono } from 'hono';
+import { APP_NAME, APP_URL } from '@/lib/branding';
 import type { Env } from '../types';
 
 const route = new Hono<{ Bindings: Env }>();
@@ -1133,11 +1134,11 @@ function buildSpec(baseUrl: string): object {
   return {
     openapi: '3.1.0',
     info: {
-      title: 'VitalSense API',
+      title: `${APP_NAME} API`,
       version: '1.0.0',
       description:
         'Health monitoring platform API — real-time gait analysis, fall risk detection, balance assessment, and health data processing. Powered by Cloudflare Workers.',
-      contact: { name: 'VitalSense', url: 'https://health.andernet.dev' },
+      contact: { name: APP_NAME, url: APP_URL },
       license: { name: 'MIT', identifier: 'MIT' },
     },
     servers: [{ url: baseUrl, description: 'Current environment' }],
@@ -1211,7 +1212,7 @@ route.get('/api/docs', (c) => {
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>VitalSense API Documentation</title>
+  <title>${APP_NAME} API Documentation</title>
   <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
   <style>
     body { margin: 0; background: #fafafa; }

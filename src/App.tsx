@@ -9,6 +9,7 @@ import React, {
   useTransition,
 } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
+import { APP_NAME, formatPageTitle } from '@/lib/branding';
 import { SafeLogger } from '@/lib/errorHandling';
 
 // Debug logging (only in development)
@@ -166,11 +167,11 @@ function AppContent() {
   const activeLabel = useMemo(
     () =>
       navigationItems.find((item) => item.id === activeTab)?.label ??
-      'VitalSense',
+      APP_NAME,
     [activeTab]
   );
   useEffect(() => {
-    document.title = `${activeLabel} • VitalSense`;
+    document.title = formatPageTitle(activeLabel);
     if (activeLabel) announce(`Viewing ${activeLabel}`);
   }, [activeLabel, announce]);
 
@@ -282,7 +283,7 @@ function AppContent() {
           <AppleSidebarHeader>
             <div className="flex h-12 items-center justify-between px-3 py-2">
               <h2 className="text-sm font-semibold text-foreground">
-                VitalSense
+                {APP_NAME}
               </h2>
               <Button
                 variant="ghost"
@@ -317,7 +318,7 @@ function AppContent() {
             </AppleSidebarList>
           </AppleSidebarSection>
           <div className="mt-auto px-2 py-1.5 text-xs text-muted-foreground">
-            © {new Date().getFullYear()} VitalSense
+            © {new Date().getFullYear()} {APP_NAME}
           </div>
         </AppleSidebarPanel>
 

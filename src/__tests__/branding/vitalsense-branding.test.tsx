@@ -8,6 +8,14 @@ import { AppleSidebarProvider } from '../../components/nav/AppleSidebar';
 import NavigationHeader from '../../components/NavigationHeader';
 import { AuthContext } from '../../hooks/useAuth';
 import type { AuthContextType } from '../../lib/authTypes';
+import {
+  APP_NAME,
+  APP_TAGLINE,
+  APP_AUTHOR,
+  APP_URL,
+  BRAND_COLORS,
+  formatPageTitle,
+} from '../../lib/branding';
 import { VitalSenseColors } from '../../lib/vitalsense-colors';
 
 function withAuth(ui: React.ReactElement) {
@@ -61,6 +69,51 @@ const mockFooterProps = {
 };
 
 describe('VitalSense Branding Compliance', () => {
+  describe('Centralized Branding Constants', () => {
+    it('should export the correct app name', () => {
+      expect(APP_NAME).toBe('VitalSense');
+    });
+
+    it('should export the correct tagline', () => {
+      expect(APP_TAGLINE).toBe('Apple Health Insights & Fall Risk Monitor');
+    });
+
+    it('should export the correct author', () => {
+      expect(APP_AUTHOR).toBe('VitalSense Health Technologies');
+    });
+
+    it('should export the correct app URL', () => {
+      expect(APP_URL).toBe('https://health.andernet.dev');
+    });
+
+    it('should export brand colors matching the primary palette', () => {
+      expect(BRAND_COLORS.primary).toBe('#2563eb');
+      expect(BRAND_COLORS.teal).toBe('#0891b2');
+      expect(BRAND_COLORS.background).toBe('#ffffff');
+      expect(BRAND_COLORS.foreground).toBe('#0f172a');
+    });
+
+    it('should export extended palette colors', () => {
+      expect(BRAND_COLORS.primaryDark).toBe('#1d4ed8');
+      expect(BRAND_COLORS.tealDark).toBe('#0e7490');
+      expect(BRAND_COLORS.card).toBe('#f8fafc');
+      expect(BRAND_COLORS.border).toBe('#e2e8f0');
+      expect(BRAND_COLORS.muted).toBe('#64748b');
+      expect(BRAND_COLORS.success).toBe('#059669');
+      expect(BRAND_COLORS.successLight).toBe('#10b981');
+      expect(BRAND_COLORS.error).toBe('#dc2626');
+    });
+
+    it('should format page titles correctly', () => {
+      expect(formatPageTitle('Dashboard')).toBe('Dashboard \u2022 VitalSense');
+      expect(formatPageTitle('Settings')).toBe('Settings \u2022 VitalSense');
+    });
+
+    it('should keep BRAND_COLORS.primary in sync with VitalSenseColors', () => {
+      expect(BRAND_COLORS.primary).toBe(VitalSenseColors.primary.main);
+    });
+  });
+
   describe('Brand Colors', () => {
     it('should define correct VitalSense color palette', () => {
       expect(VitalSenseColors.primary.main).toBe('#2563eb');

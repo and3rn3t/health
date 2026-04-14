@@ -4,6 +4,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { WS_TIMING } from '@/lib/motion-tokens';
 import type { LiDARScanData } from './CleanLiDARComponents';
 import { useCleanLiDARPerformance } from './index';
 
@@ -34,7 +35,7 @@ class RealLiDARDataManager {
   private socket: WebSocket | null = null;
   private reconnectAttempts = 0;
   private readonly maxReconnectAttempts = 5;
-  private readonly reconnectDelay = 2000;
+  private readonly reconnectDelay = WS_TIMING.reconnectDelay;
 
   constructor(
     private onDataReceived: (data: RealLiDARDataStream) => void,

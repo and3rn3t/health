@@ -6,6 +6,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import { WS_TIMING } from '@/lib/motion-tokens';
 import { RefreshCw, Signal, Wifi, WifiOff } from '@/lib/icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -72,8 +73,8 @@ export function LiveConnectionStatus() {
       url: getWebSocketUrl(),
       enableInDevelopment: true,
       reconnectAttempts: 5,
-      reconnectDelay: 1000,
-      pingInterval: 30000,
+      reconnectDelay: WS_TIMING.reconnectDelay,
+      pingInterval: WS_TIMING.pingInterval,
       onConnect: () => {
         console.log('Connection status widget connected');
       },

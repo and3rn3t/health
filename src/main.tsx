@@ -1,6 +1,7 @@
 import { AppToaster } from '@/components/ui/sonner';
 import { AppWebSocketProvider } from '@/contexts/AppWebSocketProvider';
 import { getApiClient } from '@/lib/api-client';
+import { APP_NAME } from '@/lib/branding';
 import '@/polyfills/importMetaEnv';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode, Suspense } from 'react';
@@ -105,7 +106,7 @@ export function ErrorFallback({ error }: Readonly<{ error?: Error | null }>) {
       <div className="max-w-md text-center">
         <div className="mb-4 text-6xl">⚠️</div>
         <h1 className="mb-2 text-2xl font-bold text-gray-900">
-          VitalSense Initialization Error
+          {APP_NAME} Initialization Error
         </h1>
         <p className="mb-4 text-gray-600">{errorMessage}</p>
         {isDev && error && (
@@ -135,7 +136,7 @@ export function LoadingFallback() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <div className="text-center">
         <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent"></div>
-        <p className="text-gray-600">Loading VitalSense...</p>
+        <p className="text-gray-600">Loading {APP_NAME}...</p>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { z } from 'zod/v3';
+import { APP_NAME, APP_URL, BRAND_COLORS } from '@/lib/branding';
 import {
   decryptJSON,
   encryptJSON,
@@ -252,7 +253,7 @@ route.get('/login', async (c) => {
   const baseUrl =
     c.env.BASE_URL ||
     new URL(c.req.url).origin ||
-    'https://health.andernet.dev';
+    APP_URL;
   const redirectUri = `${baseUrl}/callback`;
 
   const html = `<!DOCTYPE html>
@@ -260,18 +261,18 @@ route.get('/login', async (c) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitalSense Health - Secure Sign In</title>
+    <title>${APP_NAME} Health - Secure Sign In</title>
     <style>
         :root {
-            --vs-primary: #2563eb;
+            --vs-primary: ${BRAND_COLORS.primary};
             --vs-primary-foreground: #ffffff;
-            --vs-secondary: #0891b2;
-            --vs-background: #ffffff;
-            --vs-foreground: #0f172a;
-            --vs-card: #f8fafc;
-            --vs-border: #e2e8f0;
-            --vs-input: #ffffff;
-            --vs-ring: #2563eb;
+            --vs-secondary: ${BRAND_COLORS.teal};
+            --vs-background: ${BRAND_COLORS.background};
+            --vs-foreground: ${BRAND_COLORS.foreground};
+            --vs-card: ${BRAND_COLORS.card};
+            --vs-border: ${BRAND_COLORS.border};
+            --vs-input: ${BRAND_COLORS.background};
+            --vs-ring: ${BRAND_COLORS.primary};
             --vs-radius: 0.5rem;
         }
 
@@ -299,7 +300,7 @@ route.get('/login', async (c) => {
 
         .logo { text-align: center; margin-bottom: 2rem; }
         .logo h1 { color: var(--vs-primary); font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .logo p { color: #64748b; font-size: 0.875rem; }
+        .logo p { color: ${BRAND_COLORS.muted}; font-size: 0.875rem; }
 
         .login-button {
             width: 100%;
@@ -315,14 +316,14 @@ route.get('/login', async (c) => {
             margin-bottom: 1rem;
         }
 
-        .login-button:hover { background: #1d4ed8; }
+        .login-button:hover { background: ${BRAND_COLORS.primaryDark}; }
         .login-button:focus { outline: 2px solid var(--vs-ring); outline-offset: 2px; }
 
         .divider {
             text-align: center;
             margin: 1.5rem 0;
             position: relative;
-            color: #64748b;
+            color: ${BRAND_COLORS.muted};
             font-size: 0.875rem;
         }
 
@@ -338,7 +339,7 @@ route.get('/login', async (c) => {
 
         .divider span { background: var(--vs-background); padding: 0 1rem; }
 
-        .features { text-align: center; font-size: 0.875rem; color: #64748b; line-height: 1.5; }
+        .features { text-align: center; font-size: 0.875rem; color: ${BRAND_COLORS.muted}; line-height: 1.5; }
 
         .security-note {
             margin-top: 1rem;
@@ -346,8 +347,7 @@ route.get('/login', async (c) => {
             background: var(--vs-card);
             border-radius: calc(var(--vs-radius) - 2px);
             font-size: 0.75rem;
-            color: #64748b;
-            border: 1px solid var(--vs-border);
+            color: ${BRAND_COLORS.muted};
         }
 
         @media (max-width: 480px) { .login-container { margin: 1rem; padding: 1.5rem; } }
@@ -356,19 +356,19 @@ route.get('/login', async (c) => {
 <body>
     <div class="login-container">
         <div class="logo">
-            <h1>VitalSense</h1>
+            <h1>${APP_NAME}</h1>
             <p>Your Health Intelligence Platform</p>
         </div>
 
-        <button class="login-button" onclick="loginWithAuth0()">Sign In with VitalSense</button>
+        <button class="login-button" onclick="loginWithAuth0()">Sign In with ${APP_NAME}</button>
 
         <div class="divider"><span>or</span></div>
 
         <button class="login-button" onclick="loginDemo()" style="background: var(--vs-secondary);">Try Demo Mode</button>
 
-        <button class="login-button" onclick="window.open('/demo-static', '_blank')" style="background: #059669; margin-top: 0.5rem;">Quick Demo Access (New Tab)</button>
+        <button class="login-button" onclick="window.open('/demo-static', '_blank')" style="background: ${BRAND_COLORS.success}; margin-top: 0.5rem;">Quick Demo Access (New Tab)</button>
 
-        <button class="login-button" onclick="alert('Redirecting to static demo...'); setTimeout(() => window.location.href='/demo-static', 1000);" style="background: #dc2626; margin-top: 0.5rem;">Debug Demo Redirect</button>
+        <button class="login-button" onclick="alert('Redirecting to static demo...'); setTimeout(() => window.location.href='/demo-static', 1000);" style="background: ${BRAND_COLORS.error}; margin-top: 0.5rem;">Debug Demo Redirect</button>
 
         <div class="divider"><span>Secure Authentication</span></div>
 

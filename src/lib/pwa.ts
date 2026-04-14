@@ -4,6 +4,7 @@
  */
 
 import { getApiClient } from '@/lib/api-client';
+import { APP_NAME, APP_TAGLINE } from '@/lib/branding';
 
 export class PWAManager {
   private swRegistration: ServiceWorkerRegistrationWithSync | null = null;
@@ -260,8 +261,8 @@ export class PWAManager {
    */
   getAppInfo() {
     return {
-      name: 'VitalSense',
-      description: 'Apple Health Insights & Fall Risk Monitor',
+      name: APP_NAME,
+      description: APP_TAGLINE,
       url: globalThis.location.origin,
       isPWA: this.isPWA(),
       isInstallable: this.isInstallable(),

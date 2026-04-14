@@ -5,6 +5,7 @@
 
 import { useDeviceManagement } from '@/hooks/useDeviceManagement';
 import { useOnceToast } from '@/hooks/useOnceToast';
+import { TOAST_DURATION } from '@/lib/motion-tokens';
 import { useEffect, useRef } from 'react';
 
 interface DeviceHealthState {
@@ -34,7 +35,7 @@ export function DeviceHealthMonitor() {
             `${device.name} battery is low (${device.battery}%)`,
             {
               description: 'Consider charging your device soon',
-              duration: 5000,
+              duration: TOAST_DURATION.default,
             }
           );
         } else if (device.battery >= 20) {
@@ -53,7 +54,7 @@ export function DeviceHealthMonitor() {
             {
               description:
                 'Device is no longer connected. Check your connection.',
-              duration: 5000,
+              duration: TOAST_DURATION.default,
             }
           );
         }
@@ -69,7 +70,7 @@ export function DeviceHealthMonitor() {
           `${device.name} connection error`,
           {
             description: 'There was an issue connecting to this device.',
-            duration: 5000,
+            duration: TOAST_DURATION.default,
           }
         );
       }

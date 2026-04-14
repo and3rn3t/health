@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useKV } from '@/hooks/useCloudflareKV';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import { WS_TIMING } from '@/lib/motion-tokens';
 import {
   Activity,
   AlertTriangle,
@@ -140,8 +141,8 @@ export default function LiveConnectionDashboard() {
       url: getWebSocketUrl(),
       enableInDevelopment: true,
       reconnectAttempts: 10,
-      reconnectDelay: 1000,
-      pingInterval: 30000,
+      reconnectDelay: WS_TIMING.reconnectDelay,
+      pingInterval: WS_TIMING.pingInterval,
       onConnect: () => {
         console.debug('Live connection established');
         // Send client identification
