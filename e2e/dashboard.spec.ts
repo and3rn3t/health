@@ -1,28 +1,56 @@
 import { test, expect } from '@playwright/test';
+import { AppPage } from './pages/app.page';
+import { DashboardPage } from './pages/dashboard.page';
 
-test.describe('Dashboard & Navigation', () => {
-  test('dashboard route renders health dashboard content', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+test.describe('Dashboard', () => {
+  let app: AppPage;
+  let dashboard: DashboardPage;
 
-    // The main app should render dashboard-like content
-    const main = page.locator('main, [role="main"], #root');
-    await expect(main).toBeVisible();
+  test.beforeEach(async ({ page }) => {
+    app = new AppPage(page);
+    dashboard = new DashboardPage(page);
+    await app.goto();
+    // Dashboard is the default tab
+  });
+
+  test('renders VitalSense Live header', async () => {
+    await dashboard.expectHeaderVisible();
+  });
+
+  test('shows all three tabs', async () => {
+    await dashboard.expectTabsVisible();
+  });
+
+  test('system status card is visible in overview', async () => {
+    await expect(dashboard.systemStatusCard).toBeVisible();
+  });
+
+  test('switching to devices tab shows connected devices', async () => {
+    const errors = app.collectErrors();
+
+    await dashboard.switchTab('devices');
+    await expect(dashboard.connectedDevicesHeading).toBeVisible();
+
+    expect(errors).toHaveLength(0);
+  });
+
+  test('switching tabs does not produce console errors', async () => {
+    const errors = app.collectErrors();
+
+    await dashboard.switchTab('metrics');
+    await dashboard.switchTab('devices');
+    await dashboard.switchTab('overview');
+
+    expect(errors).toHaveLength(0);
   });
 
   test('navigation links are interactive', async ({ page }) => {
-    await page.goto('/');
-
     const navLinks = page.locator('header a, nav a, [role="navigation"] a');
     const count = await navLinks.count();
-
-    // App should have at least one navigation link
     expect(count).toBeGreaterThan(0);
 
-    // Each link should be visible and have an href
     for (let i = 0; i < Math.min(count, 5); i++) {
-      const link = navLinks.nth(i);
-      await expect(link).toBeVisible();
+      await expect(navLinks.nth(i)).toBeVisible();
     }
   });
 
@@ -31,17 +59,15 @@ test.describe('Dashboard & Navigation', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    // Content should still be visible
     const body = page.locator('body');
     await expect(body).not.toBeEmpty();
 
-    // No horizontal overflow
     const scrollWidth = await page.evaluate(
-      () => document.documentElement.scrollWidth
+      () => document.documentElement.scrollWidth,
     );
     const clientWidth = await page.evaluate(
-      () => document.documentElement.clientWidth
+      () => document.documentElement.clientWidth,
     );
-    expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 5); // 5px tolerance
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 5);
   });
 });

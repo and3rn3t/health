@@ -21,15 +21,16 @@ test.describe('Settings Page', () => {
     await settings.expectSectionsVisible();
   });
 
-  test('danger zone buttons are present', async () => {
+  test('action buttons are present', async () => {
+    await settings.resetBtn.scrollIntoViewIfNeeded();
     await expect(settings.resetBtn).toBeVisible();
-    await expect(settings.deleteBtn).toBeVisible();
+    await expect(settings.saveBtn).toBeVisible();
   });
 
-  test('reset button is styled as destructive', async () => {
-    // The reset button should have a red/destructive visual treatment
-    const classes = await settings.resetBtn.getAttribute('class');
-    expect(classes).toBeTruthy();
+  test('profile inputs are editable', async () => {
+    await settings.expectProfileInputsVisible();
+    await settings.displayNameInput.fill('Test User');
+    await expect(settings.displayNameInput).toHaveValue('Test User');
   });
 
   test('navigating away and back preserves settings tab', async () => {
