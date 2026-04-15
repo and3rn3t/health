@@ -20,6 +20,15 @@
     "ms-azuretools.vscode-docker",
     "SonarSource.sonarlint-vscode",
     "vitest.explorer",
-    "ms-playwright.playwright"
+    "ms-playwright.playwright",
+    "usernamehw.errorlens",
+    "Gruntfuggly.todo-tree",
+    "wix.vscode-import-cost",
+    "yoavbls.pretty-ts-errors",
+    "github.vscode-github-actions",
+    "mikestead.dotenv",
+    "42Crunch.vscode-openapi",
+    "mhutchie.git-graph",
+    "ryanluker.vscode-coverage-gutters"
   ]
 }

@@ -13,6 +13,7 @@
         80,
         120
     ],
+    "editor.stickyScroll.enabled": true,
     "editor.tabSize": 2,
     "editor.insertSpaces": true,
     "editor.detectIndentation": false,
@@ -170,6 +171,7 @@
     },
     "sonarlint.focusOnNewCode": true,
     "sonarlint.verboseLogging": false,
+    "testing.coverageGutterEnabled": true,
     "github.copilot.enable": {
         "*": true,
         "yaml": true,
@@ -228,5 +230,26 @@
     "sweetpad.workspacePath": "ios/Andernet-Posture/Andernet Posture.xcodeproj/project.xcworkspace",
     "sweetpad.build.args": ["-skipMacroValidation"],
     "sweetpad.build.derivedDataPath": ".build/DerivedData",
-    "lldb.library": "/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/LLDB"
+    "lldb.library": "/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/LLDB",
+    "todo-tree.general.tags": [
+        "TODO",
+        "FIXME",
+        "HACK",
+        "BUG",
+        "PERF"
+    ],
+    "todo-tree.filtering.excludeGlobs": [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/dist-worker/**",
+        "**/coverage/**",
+        "**/DerivedData/**"
+    ],
+    "errorLens.excludeBySource": [
+        "cSpell"
+    ],
+    "errorLens.enabledDiagnosticLevels": [
+        "error",
+        "warning"
+    ]
 }

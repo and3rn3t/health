@@ -67,6 +67,31 @@
             "runtimeArgs": ["playwright", "test", "--headed", "--debug"],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Debug Playwright (Current File)",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "npx",
+            "runtimeArgs": ["playwright", "test", "${relativeFile}", "--headed", "--debug"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Debug Worker (Wrangler Inspect)",
+            "type": "node",
+            "request": "attach",
+            "port": 9229,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "${workspaceFolder}",
+            "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+            "preLaunchTask": "Worker Dev (port 8789)"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Full Stack (Dev Server + Worker)",
+            "configurations": ["Launch Dev Server", "Launch Wrangler Dev"]
         }
     ]
 }
