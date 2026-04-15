@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 # --- Base build stage --------------------------------------------------------
-FROM node:22-alpine AS base
+FROM node:24-alpine AS base
 WORKDIR /app
 ENV CI=true
 
@@ -36,7 +36,7 @@ ARG SKIP_BUILD=true
 RUN if [ "$SKIP_BUILD" != "true" ]; then npm run build; else echo "Skipping build (SKIP_BUILD=$SKIP_BUILD)"; fi
 
 # --- Runtime stage -----------------------------------------------------------
-FROM node:22-bookworm-slim AS runner
+FROM node:24-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=development \
   PORT=8789
