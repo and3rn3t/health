@@ -10,32 +10,34 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-// Mock WebSocket for testing
-class MockWebSocket {
-  url: string;
-  readyState: number = 1; // OPEN
-  onopen: ((ev: Event) => void) | null = null;
-  onmessage: ((ev: MessageEvent) => void) | null = null;
-  onclose: ((ev: Event) => void) | null = null;
-  onerror: ((ev: Event) => void) | null = null;
-
-  // No-op stubs for tests
-  send: (data?: unknown) => void = vi.fn();
-  close: (code?: number, reason?: string) => void = vi.fn();
-  addEventListener: (..._args: unknown[]) => void = vi.fn();
-  removeEventListener: (..._args: unknown[]) => void = vi.fn();
-
-  constructor(url: string) {
-    this.url = url;
-  }
+// --- Crypto polyfill (needed by both jsdom and node environments) ---
+if (!('crypto' in globalThis)) {
+  (globalThis as unknown as Record<string, unknown>).crypto =
+    cryptoWeb as unknown;
 }
 
-// Mock global WebSocket
-(globalThis as unknown as Record<string, unknown>).WebSocket =
-  MockWebSocket as unknown;
-
-// Mock window.location for tests that need it (skip in non-browser environments)
+// --- DOM mocks (only when running in jsdom, skipped for node-env integration tests) ---
 if (globalThis.window !== undefined) {
+  // Mock WebSocket — prevents real connections during component tests
+  class MockWebSocket {
+    url: string;
+    readyState: number = 1; // OPEN
+    onopen: ((ev: Event) => void) | null = null;
+    onmessage: ((ev: MessageEvent) => void) | null = null;
+    onclose: ((ev: Event) => void) | null = null;
+    onerror: ((ev: Event) => void) | null = null;
+    send: (data?: unknown) => void = vi.fn();
+    close: (code?: number, reason?: string) => void = vi.fn();
+    addEventListener: (..._args: unknown[]) => void = vi.fn();
+    removeEventListener: (..._args: unknown[]) => void = vi.fn();
+    constructor(url: string) {
+      this.url = url;
+    }
+  }
+  (globalThis as unknown as Record<string, unknown>).WebSocket =
+    MockWebSocket as unknown;
+
+  // Mock window.location
   Object.defineProperty(globalThis, 'location', {
     value: {
       protocol: 'https:',
@@ -47,22 +49,18 @@ if (globalThis.window !== undefined) {
     },
     writable: true,
   });
-}
 
-// Suppress jsdom navigation errors (they're expected in tests with download links)
-const originalError = console.error;
-console.error = (...args: unknown[]) => {
-  const message = String(args[0] || '');
-  // Suppress jsdom navigation errors
-  if (message.includes('Not implemented: navigation')) {
-    return;
-  }
-  originalError(...args);
-};
+  // Suppress jsdom navigation errors (expected in tests with download links)
+  const originalError = console.error;
+  console.error = (...args: unknown[]) => {
+    const message = String(args[0] || '');
+    if (message.includes('Not implemented: navigation')) {
+      return;
+    }
+    originalError(...args);
+  };
 
-// Mock matchMedia for components that use responsive hooks
-// Some jsdom versions expose matchMedia as undefined; normalize to a stub function
-if (globalThis.window !== undefined) {
+  // Mock matchMedia for responsive hooks
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (typeof (globalThis as any).matchMedia !== 'function') {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -70,47 +68,42 @@ if (globalThis.window !== undefined) {
       matches: false,
       media: query,
       onchange: null,
-      addListener: () => {}, // deprecated
-      removeListener: () => {}, // deprecated
+      addListener: () => {},
+      removeListener: () => {},
       addEventListener: () => {},
       removeEventListener: () => {},
       dispatchEvent: () => false,
     });
+  }
+
+  // IntersectionObserver stub for Radix UI components
+  if (!('IntersectionObserver' in globalThis)) {
+    class MockIntersectionObserver implements IntersectionObserver {
+      readonly root: Element | Document | null = null;
+      readonly rootMargin: string = '0px';
+      readonly scrollMargin: string = '0px';
+      readonly thresholds: ReadonlyArray<number> = [0];
+      observe = vi.fn();
+      unobserve = vi.fn();
+      disconnect = vi.fn();
+      takeRecords = vi.fn().mockReturnValue([]);
+    }
+    (globalThis as unknown as Record<string, unknown>).IntersectionObserver =
+      MockIntersectionObserver;
+  }
+
+  // ResizeObserver stub
+  if (!('ResizeObserver' in globalThis)) {
+    class MockResizeObserver {
+      observe = vi.fn();
+      unobserve = vi.fn();
+      disconnect = vi.fn();
+    }
+    (globalThis as unknown as Record<string, unknown>).ResizeObserver =
+      MockResizeObserver;
   }
 }
 
 // NOTE: useAuth mock moved to individual test files via vi.mock('@/hooks/useAuth').
 // This allows tests to customize auth state (unauthenticated, loading, error, etc.)
 // instead of being locked into a single "authenticated" mock.
-
-if (!('crypto' in globalThis)) {
-  (globalThis as unknown as Record<string, unknown>).crypto =
-    cryptoWeb as unknown;
-}
-
-// IntersectionObserver stub for Radix UI components that depend on it
-if (globalThis.window !== undefined && !('IntersectionObserver' in globalThis)) {
-  class MockIntersectionObserver implements IntersectionObserver {
-    readonly root: Element | Document | null = null;
-    readonly rootMargin: string = '0px';
-    readonly scrollMargin: string = '0px';
-    readonly thresholds: ReadonlyArray<number> = [0];
-    observe = vi.fn();
-    unobserve = vi.fn();
-    disconnect = vi.fn();
-    takeRecords = vi.fn().mockReturnValue([]);
-  }
-  (globalThis as unknown as Record<string, unknown>).IntersectionObserver =
-    MockIntersectionObserver;
-}
-
-// ResizeObserver stub for components that use it
-if (globalThis.window !== undefined && !('ResizeObserver' in globalThis)) {
-  class MockResizeObserver {
-    observe = vi.fn();
-    unobserve = vi.fn();
-    disconnect = vi.fn();
-  }
-  (globalThis as unknown as Record<string, unknown>).ResizeObserver =
-    MockResizeObserver;
-}

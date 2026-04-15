@@ -61,7 +61,12 @@ jobs:
       - name: Run ${{ matrix.suite }} tests
         run: |
           if [ "${{ matrix.suite }}" = "unit" ]; then
-            pnpm run test:coverage
+            # Only collect coverage on main (pushes) — PRs run faster without it
+            if [ "${{ github.event_name }}" = "push" ]; then
+              pnpm run test:coverage
+            else
+              pnpm vitest run
+            fi
           else
             npx vitest run --config vitest.integration.config.ts
           fi
@@ -69,7 +74,7 @@ jobs:
           CI: 'true'
 
       - name: Upload coverage to Codecov
-        if: matrix.suite == 'unit' && always()
+        if: matrix.suite == 'unit' && github.event_name == 'push' && always()
         uses: codecov/codecov-action@v4
         with:
           files: coverage/lcov.info
@@ -77,8 +82,46 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Coverage ratchet check
-        if: matrix.suite == 'unit'
+        if: matrix.suite == 'unit' && github.event_name == 'push'
         run: node scripts/ci/coverage-ratchet.mjs
+
+      - name: Detect slow tests
+        if: always()
+        run: |
+          JUNIT_FILE="test-results/${{ matrix.suite == 'unit' && 'junit' || 'integration-junit' }}.xml"
+          if [ -f "$JUNIT_FILE" ]; then
+            node -e "
+              const fs = require('fs');
+              const xml = fs.readFileSync('$JUNIT_FILE', 'utf8');
+              // Extract test durations from JUnit XML
+              const matches = [...xml.matchAll(/testcase[^>]+name=\"([^\"]+)\"[^>]+time=\"([\d.]+)\"/g)];
+              const threshold = '${{ matrix.suite }}' === 'unit' ? 5 : 15;
+              const slow = matches.filter(m => parseFloat(m[2]) > threshold);
+              if (slow.length > 0) {
+                console.log('::warning::' + slow.length + ' slow test(s) detected (>' + threshold + 's):');
+                slow.forEach(m => console.log('  ⚠️ ' + m[1] + ' (' + m[2] + 's)'));
+              }
+            "
+          fi
+
+      - name: Detect flaky tests (retried)
+        if: matrix.suite == 'unit' && always()
+        run: |
+          if [ -f "test-results/junit.xml" ]; then
+            # Count tests that appear more than once (retried)
+            RETRIED=$(node -e "
+              const fs = require('fs');
+              const xml = fs.readFileSync('test-results/junit.xml', 'utf8');
+              const names = [...xml.matchAll(/testcase[^>]+name=\"([^\"]+)\"/g)].map(m => m[1]);
+              const counts = {};
+              names.forEach(n => { counts[n] = (counts[n] || 0) + 1; });
+              const flaky = Object.entries(counts).filter(([,c]) => c > 1);
+              if (flaky.length > 0) {
+                console.log('::warning::' + flaky.length + ' flaky test(s) retried:');
+                flaky.forEach(([name, count]) => console.log('  🔄 ' + name + ' (ran ' + count + 'x)'));
+              }
+            ")
+          fi
 
       - name: SonarCloud Scan
         if: matrix.suite == 'unit' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
@@ -143,7 +186,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          key: playwright-${{ runner.os }}-1.59.1-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-1.59.1-
 
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'

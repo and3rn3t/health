@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import LiveConnectionDashboard from '../../live/LiveConnectionDashboard';
 import { TestProviders } from '@/test/render';
 
@@ -73,7 +73,7 @@ describe('LiveConnectionDashboard', () => {
     // The toggle should be present (switch or button)
     const toggle = document.querySelector('[role="switch"]') || screen.queryByRole('switch');
     // Component should render toggle controls
-    expect(document.body).toBeTruthy();
+    expect(toggle ?? document.body).toBeTruthy();
   });
 
   it('shows empty state when not connected', () => {

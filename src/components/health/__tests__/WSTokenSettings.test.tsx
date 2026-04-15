@@ -61,7 +61,7 @@ describe('WSTokenSettings', () => {
       </TestProviders>,
     );
     // The component should show token status — "not set" is visible somewhere
-    const el = screen.queryByText(/not set/i);
+    screen.queryByText(/not set/i);
     // It might be in a tooltip or in the button; we just verify it renders without crashing
     expect(document.body).toBeTruthy();
   });
@@ -80,7 +80,7 @@ describe('WSTokenSettings', () => {
       // Dialog content should appear
       await waitFor(() => {
         // Look for dialog-related content
-        const dialogs = document.querySelectorAll('[role="dialog"]');
+        document.querySelectorAll('[role="dialog"]');
         // Either a dialog renders or the component has inline controls
         expect(document.body).toBeTruthy();
       });

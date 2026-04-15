@@ -99,7 +99,8 @@ export default defineConfig({
         return false;
       },
       output: {
-        // Ensure React is externalized
+        // Single-file bundle — Miniflare cannot resolve chunk imports
+        inlineDynamicImports: true,
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',

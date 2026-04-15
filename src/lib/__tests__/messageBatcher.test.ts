@@ -1,9 +1,9 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import { createMessageBatcher } from '../messageBatcher';
 import type { MessageBatcher } from '../messageBatcher';
 
 describe('createMessageBatcher', () => {
-  let sendMock: ReturnType<typeof vi.fn>;
+  let sendMock: Mock<(message: { type: string; timestamp?: string; data?: unknown }) => void>;
   let batcher: MessageBatcher;
 
   beforeEach(() => {

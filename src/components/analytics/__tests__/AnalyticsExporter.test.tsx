@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { TestProviders } from '@/test/render';
 import type { ProcessedHealthData } from '@/types';
+import type { AnalyticsSummary } from '@/lib/analytics';
 
 vi.mock('@/hooks/useOnceToast', () => ({
   useOnceToast: () => vi.fn(),
@@ -23,7 +24,7 @@ const analyticsSummary = {
   trendDirection: 'improving' as const,
   anomalyCount: 2,
   recommendations: ['Keep walking'],
-};
+} as unknown as AnalyticsSummary;
 
 describe('AnalyticsExporter', () => {
   beforeEach(() => {

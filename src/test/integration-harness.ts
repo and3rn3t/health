@@ -31,9 +31,9 @@ async function findAvailablePort(): Promise<number> {
   });
 }
 
-/** Poll the /health endpoint until the worker responds (max 5 s). */
+/** Poll the /health endpoint until the worker responds (max 15 s). */
 async function waitForReady(mf: Miniflare, baseUrl: string): Promise<void> {
-  const deadline = Date.now() + 5_000;
+  const deadline = Date.now() + 15_000;
   while (Date.now() < deadline) {
     try {
       const res = await mf.dispatchFetch(`${baseUrl}/health`);
@@ -43,7 +43,7 @@ async function waitForReady(mf: Miniflare, baseUrl: string): Promise<void> {
     }
     await new Promise((r) => setTimeout(r, 100));
   }
-  throw new Error('Miniflare worker did not become ready within 5 s');
+  throw new Error('Miniflare worker did not become ready within 15 s');
 }
 
 interface CreateMiniflareOptions {

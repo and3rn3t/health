@@ -12,9 +12,14 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     globals: true,
     pool: 'forks',
-    maxWorkers: 1,
+    // Each integration test creates its own Miniflare on an auto-assigned port.
+    // CI runners have more headroom for parallel workers; keep serial locally
+    // where Miniflare startup contention is higher.
+    maxWorkers: process.env.CI ? 2 : 1,
+    fileParallelism: !!process.env.CI,
     isolate: true,
     testTimeout: 30_000,
+    hookTimeout: 30_000,
     retry: process.env.CI ? 1 : 0,
     reporters: process.env.CI
       ? ['default', 'github-actions', 'junit']

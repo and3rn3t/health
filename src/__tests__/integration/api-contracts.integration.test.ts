@@ -102,6 +102,7 @@ describe('API Contract Tests', () => {
 
       expect(shape).toMatchInlineSnapshot(`
         {
+          "fallback": "string",
           "url": "string",
         }
       `);

@@ -49,7 +49,7 @@ const defaultMockReturn = {
   isScanning: false,
   scanResults: [] as never[],
   hasConnectedDevices: true,
-} as ReturnType<typeof useDeviceManagement>;
+} as unknown as ReturnType<typeof useDeviceManagement>;
 
 describe('ConnectedDevices', () => {
   beforeEach(() => {

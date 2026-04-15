@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { TestProviders } from '@/test/render';
 import type { ProcessedHealthData } from '@/types';
+import type { PatternDetection } from '@/lib/analytics';
 
 // Mock analytics library
 vi.mock('@/lib/analytics', () => ({
@@ -15,7 +16,7 @@ vi.mock('@/lib/analytics', () => ({
 const { default: PatternDetectionPanel } = await import('../PatternDetectionPanel');
 const { detectPatterns } = await import('@/lib/analytics');
 
-const defaultPatterns = [
+const defaultPatterns: PatternDetection[] = [
   {
     pattern: 'daily',
     description: 'Activity peaks in the morning',
