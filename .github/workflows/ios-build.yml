@@ -68,7 +68,7 @@ jobs:
         run: sudo xcode-select -s "$XCODE_PATH"
 
       - name: Cache Ruby gems
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ios/vendor/bundle
           key: ${{ runner.os }}-ruby-${{ hashFiles('ios/Gemfile', 'ios/Gemfile.lock') }}
@@ -83,7 +83,7 @@ jobs:
           bundle install --jobs 4 --retry 3
 
       - name: Cache derived data
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/Library/Developer/Xcode/DerivedData
           key: ${{ runner.os }}-xcode-${{ hashFiles('ios/Andernet-Posture/**/*.xcodeproj/project.pbxproj') }}
