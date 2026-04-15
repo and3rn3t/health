@@ -1,6 +1,31 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('@tanstack/react-router', () => ({
+  useRouterState: () => '/',
+  Link: ({
+    children,
+    to,
+    ...props
+  }: {
+    children: React.ReactNode;
+    to: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
+}));
+vi.mock('../../hooks/useThemeMode', () => ({
+  useThemeMode: () => ({
+    themeMode: 'light',
+    toggleThemeMode: vi.fn(),
+    effectiveTheme: 'light',
+  }),
+}));
 
 // Import VitalSense components and utilities
 import Footer from '../../components/Footer';
@@ -45,21 +70,6 @@ function withAuth(ui: React.ReactElement) {
   };
   return <AuthContext.Provider value={mockAuth}>{ui}</AuthContext.Provider>;
 }
-
-// Mock props for components
-const mockNavigationProps = {
-  currentPageInfo: {
-    label: 'Health Dashboard',
-    category: 'Analytics',
-  },
-  themeMode: 'light' as const,
-  onThemeToggle: () => {},
-  onNavigate: () => {},
-  onToggleSidebar: () => {},
-  sidebarCollapsed: false,
-  healthScore: 85,
-  hasAlerts: false,
-};
 
 const mockFooterProps = {
   healthScore: 85,
@@ -132,16 +142,19 @@ describe('VitalSense Branding Compliance', () => {
   });
 
   describe('Brand Text Consistency', () => {
-    it('should display VitalSense in navigation header', () => {
+    it('should display VitalSense in navigation header', async () => {
+      const user = userEvent.setup();
       render(
         withAuth(
           <AppleSidebarProvider>
-            <NavigationHeader {...mockNavigationProps} />
+            <NavigationHeader />
           </AppleSidebarProvider>
         )
       );
 
-      // Check for VitalSense branding in header
+      // VitalSense appears in the quick-actions dropdown
+      const moreButton = screen.getByLabelText('More actions');
+      await user.click(moreButton);
       const brandElements = screen.getAllByText(/VitalSense/i);
       expect(brandElements.length).toBeGreaterThan(0);
     });
@@ -190,15 +203,19 @@ describe('VitalSense Branding Compliance', () => {
 });
 
 describe('VitalSense Brand Assets', () => {
-  it('should maintain VitalSense branding in navigation', () => {
+  it('should maintain VitalSense branding in navigation', async () => {
+    const user = userEvent.setup();
     render(
       withAuth(
         <AppleSidebarProvider>
-          <NavigationHeader {...mockNavigationProps} />
+          <NavigationHeader />
         </AppleSidebarProvider>
       )
     );
 
+    // VitalSense appears in the quick-actions dropdown
+    const moreButton = screen.getByLabelText('More actions');
+    await user.click(moreButton);
     const brandText = screen.getByText(/VitalSense/i);
     expect(brandText).toBeVisible();
   });

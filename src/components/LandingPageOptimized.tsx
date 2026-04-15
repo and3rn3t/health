@@ -14,7 +14,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { InteractiveCard } from '@/components/ui/interactive-card';
-import { IOS26Button } from '@/components/ui/ios26-button-system';
 import { EnhancedVitalSenseStatusCard } from '@/components/ui/ios26-enhanced-components';
 import { useDeviceManagement } from '@/hooks/useDeviceManagement';
 import { useLiveRegion } from '@/hooks/useLiveRegion';
@@ -486,15 +485,14 @@ export default function LandingPageOptimized({
                     insights
                   </p>
                 </div>
-                <IOS26Button
-                  variant="primary"
-                  size="large"
-                  icon="smartphone"
+                <Button
+                  variant="prominent"
+                  size="lg"
                   onClick={() => onNavigateToFeature('healthkit-guide')}
                   className="min-h-[50px] w-full"
                 >
                   Setup Health Data
-                </IOS26Button>
+                </Button>
               </div>
             </CardContent>
           </Card>

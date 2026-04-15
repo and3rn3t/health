@@ -4,7 +4,12 @@ import { cn } from '@/lib/utils';
 
 type CardVariant = 'default' | 'glass';
 
-function Card({ className, variant = 'default', ...props }: ComponentProps<'div'> & { variant?: CardVariant }) {
+function Card({
+  className,
+  variant = 'default',
+  interactive = false,
+  ...props
+}: ComponentProps<'div'> & { variant?: CardVariant; interactive?: boolean }) {
   return (
     <div
       data-slot="card"
@@ -15,8 +20,11 @@ function Card({ className, variant = 'default', ...props }: ComponentProps<'div'
         variant === 'glass'
           ? 'vs-glass hover:vs-elevation-grouped'
           : 'border border-border bg-card vs-elevation-raised hover:vs-elevation-grouped',
+        interactive &&
+          'cursor-pointer select-none active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2',
         className
       )}
+      {...(interactive ? { tabIndex: 0, role: 'button' } : {})}
       {...props}
     />
   );

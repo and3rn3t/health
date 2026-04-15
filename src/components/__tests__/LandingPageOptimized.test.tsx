@@ -43,15 +43,7 @@ vi.mock('@/components/ui/interactive-card', () => ({
     </button>
   ),
 }));
-vi.mock('@/components/ui/ios26-button-system', () => ({
-  IOS26Button: ({
-    children,
-    onClick,
-  }: {
-    children: React.ReactNode;
-    onClick?: () => void;
-  }) => <button onClick={onClick}>{children}</button>,
-}));
+// IOS26Button mock removed — LandingPage now uses consolidated Button from button.tsx
 
 const mockNavigate = vi.fn();
 const mockRefresh = vi.fn();

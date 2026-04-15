@@ -17,6 +17,29 @@ vi.mock('@/hooks/useAuth', () => ({
     isLoading: false,
   }),
 }));
+vi.mock('@/hooks/useThemeMode', () => ({
+  useThemeMode: () => ({
+    themeMode: 'light',
+    toggleThemeMode: vi.fn(),
+    effectiveTheme: 'light',
+  }),
+}));
+vi.mock('@tanstack/react-router', () => ({
+  useRouterState: () => '/',
+  Link: ({
+    children,
+    to,
+    ...props
+  }: {
+    children: React.ReactNode;
+    to: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
+}));
 vi.mock('@/components/health/DeviceStatusIndicator', () => ({
   DeviceStatusIndicator: () => (
     <div data-testid="device-status-indicator">Device Status</div>
@@ -37,26 +60,22 @@ describe('NavigationHeader Device Integration', () => {
     } as unknown as ReturnType<typeof useDeviceManagement>);
   });
 
-  const renderWithProvider = (props: Record<string, unknown>) => {
+  const renderWithProvider = () => {
     return render(
       <AppleSidebarProvider>
-        <NavigationHeader {...props} />
+        <NavigationHeader />
       </AppleSidebarProvider>
     );
   };
 
   it('renders DeviceStatusIndicator in header', () => {
-    renderWithProvider({
-      currentPageInfo: { label: 'Dashboard', category: 'Health' },
-    });
+    renderWithProvider();
 
     expect(screen.getByTestId('device-status-indicator')).toBeInTheDocument();
   });
 
   it('renders DeviceStatusIndicator next to LiveConnectionStatus', () => {
-    renderWithProvider({
-      currentPageInfo: { label: 'Dashboard', category: 'Health' },
-    });
+    renderWithProvider();
 
     const deviceIndicator = screen.getByTestId('device-status-indicator');
     const liveConnection = screen.getByTestId('live-connection-status');
@@ -66,14 +85,10 @@ describe('NavigationHeader Device Integration', () => {
   });
 
   it('maintains header layout with device indicator', () => {
-    renderWithProvider({
-      currentPageInfo: { label: 'Dashboard', category: 'Health' },
-      healthScore: 85,
-    });
+    renderWithProvider();
 
     // All header elements should be present
     expect(screen.getByTestId('device-status-indicator')).toBeInTheDocument();
     expect(screen.getByTestId('live-connection-status')).toBeInTheDocument();
-    expect(screen.getByText('85/100')).toBeInTheDocument();
   });
 });

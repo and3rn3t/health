@@ -4,15 +4,29 @@ import { getApiClient } from '@/lib/api-client';
 import { APP_NAME } from '@/lib/branding';
 import '@/polyfills/importMetaEnv';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
-import App from './App';
+import { routeTree } from './routeTree.gen';
 import './lib/pwa'; // Initialize PWA functionality
 import { startOfflineSync } from './lib/offlineStore';
 import './main.css';
 import './monitor/rum';
 import './types/global.d.ts';
+
+// Create TanStack Router instance
+const router = createRouter({
+  routeTree,
+  defaultPreload: 'intent',
+});
+
+// Register router types for full type safety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 if (import.meta.env.DEV) console.log('🚀 main.tsx: Starting app initialization...');
 
@@ -144,7 +158,7 @@ export function LoadingFallback() {
 
 // App wrapper component
 export function AppWrapper() {
-  return <App />;
+  return <RouterProvider router={router} />;
 }
 
 // Get the root element

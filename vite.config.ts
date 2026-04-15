@@ -1,3 +1,4 @@
+import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react-swc';
 import { resolve } from 'node:path';
@@ -21,6 +22,11 @@ export default defineConfig({
     ),
   },
   plugins: [
+    // TanStack Router must be before React plugin for file-based routing
+    tanstackRouter({
+      target: 'react',
+      autoCodeSplitting: true,
+    }),
     tailwindcss(),
     react(),
     // Bundle analysis: ANALYZE=true pnpm build → opens treemap
@@ -68,6 +74,7 @@ export default defineConfig({
 
             // Data & state
             if (id.includes('@tanstack/react-query')) return 'react-query';
+            if (id.includes('@tanstack/react-router')) return 'react-router';
 
             // Charts (large, lazy-loaded)
             if (id.includes('recharts')) return 'recharts';
