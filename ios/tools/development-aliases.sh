@@ -1,31 +1,32 @@
 #!/bin/bash
 # VitalSense Development Aliases
-# Source this file in your shell profile for quick access to common commands
+# Usage: source /path/to/health/ios/tools/development-aliases.sh
+# All paths resolved relative to this script — no hardcoded user paths.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VS_IOS_ROOT="$(dirname "$SCRIPT_DIR")"
+VS_ROOT="$(dirname "$VS_IOS_ROOT")"
 
 # Quick navigation
-alias vs-root='cd /Users/ma55700/Documents/GitHub/VitalSense'
-alias vs-docs='cd /Users/ma55700/Documents/GitHub/VitalSense/Documentation'
-alias vs-scripts='cd /Users/ma55700/Documents/GitHub/VitalSense/Scripts/Build'
+alias vs-root="cd \"$VS_ROOT\""
+alias vs-ios="cd \"$VS_IOS_ROOT\""
+alias vs-docs="cd \"$VS_ROOT/docs\""
+alias vs-scripts="cd \"$VS_ROOT/scripts\""
 
-# Build shortcuts
-alias vs-build='./Scripts/Build/build-and-run.sh'
-alias vs-fast='./Scripts/Build/fast-build.sh'
-alias vs-clean='./Scripts/Build/optimize-xcode.sh'
-alias vs-preflight='./Scripts/Build/preflight-xcode-finalization.sh'
-alias vs-sign='./Scripts/Build/signing-audit.sh'
+# Web build/dev shortcuts
+alias vs-dev="cd \"$VS_ROOT\" && pnpm dev"
+alias vs-worker="cd \"$VS_ROOT\" && pnpm cf:dev"
+alias vs-validate="cd \"$VS_ROOT\" && pnpm validate"
+alias vs-build="cd \"$VS_ROOT\" && pnpm build"
 
-# Development shortcuts
-alias vs-open='open VitalSense.xcworkspace'
-alias vs-test='xcodebuild test -workspace VitalSense.xcworkspace -scheme VitalSense'
-alias vs-lint='./Scripts/Build/swiftlint-precheck.ps1'
+# iOS build shortcuts
+alias vs-xcode="open \"$VS_IOS_ROOT/Andernet-Posture/Andernet Posture.xcodeproj\""
+alias vs-ios-build="cd \"$VS_IOS_ROOT\" && make build"
+alias vs-ios-test="cd \"$VS_IOS_ROOT\" && make test"
+alias vs-ios-lint="cd \"$VS_IOS_ROOT\" && make lint"
+alias vs-ios-clean="cd \"$VS_IOS_ROOT\" && make clean"
 
-# Recovery tools
-alias vs-health='./Scripts/Recovery/check_project_health.sh'
-alias vs-recover='./Scripts/Recovery/ultimate_recovery.sh'
+# Doctor / health check
+alias vs-doctor="cd \"$VS_ROOT\" && pnpm doctor"
 
-# Documentation
-alias vs-doc-index='open Documentation/INDEX.md'
-alias vs-copilot='open Documentation/COPILOT_INSTRUCTIONS.md'
-
-echo "VitalSense development aliases loaded!"
-echo "Use vs-<command> for quick access to common tasks"
+echo "✅ VitalSense dev aliases loaded (root: $VS_ROOT)"

@@ -106,7 +106,23 @@
             "path": "/bin/zsh",
             "icon": "heart",
             "color": "terminal.ansiBlue"
+        },
+        "Worker Dev": {
+            "path": "/bin/zsh",
+            "icon": "cloud",
+            "color": "terminal.ansiYellow",
+            "args": ["-c", "pnpm cf:dev; exec zsh"]
+        },
+        "Test Watch": {
+            "path": "/bin/zsh",
+            "icon": "beaker",
+            "color": "terminal.ansiGreen",
+            "args": ["-c", "pnpm test -- --watch; exec zsh"]
         }
+    },
+    "terminal.integrated.env.osx": {
+        "EDITOR": "code --wait",
+        "PAGER": "cat"
     },
     "terminal.integrated.commandsToSkipShell": [
         "workbench.action.terminal.sendSequence"
@@ -125,7 +141,7 @@
     "terminal.integrated.shellIntegration.history": 1000,
     "terminal.integrated.smoothScrolling": true,
     "terminal.integrated.allowChords": true,
-    "terminal.integrated.tabs.title": "💙 VitalSense (pwsh) • ${cwdBasename}",
+    "terminal.integrated.tabs.title": "💙 ${process} • ${cwdBasename}",
     "terminal.integrated.tabs.description": "${workspaceFolderBasename}",
     "terminal.integrated.copyOnSelection": true,
     "terminal.integrated.rightClickBehavior": "copyPaste",
@@ -134,7 +150,7 @@
     "terminal.integrated.gpuAcceleration": "auto",
     "terminal.integrated.tabs.enabled": true,
 
-    "terminal.integrated.defaultLocation": "editor",
+    "terminal.integrated.defaultLocation": "view",
     "terminal.integrated.drawBoldTextInBrightColors": false,
     "terminal.integrated.minimumContrastRatio": 4.5,
     "terminal.integrated.unicodeVersion": "11",
