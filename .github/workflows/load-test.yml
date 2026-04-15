@@ -1,13 +1,15 @@
-name: Nightly Load Tests
+name: Load Tests
 
 on:
   schedule:
-    # Run nightly at 04:00 UTC (1 hour after E2E regression)
+    # Nightly at 04:00 UTC (1 hour after E2E regression) — all scenarios except soak
     - cron: '0 4 * * *'
+    # Weekly soak test: Sundays at 05:00 UTC
+    - cron: '0 5 * * 0'
   workflow_dispatch:
     inputs:
       scenario:
-        description: 'k6 scenario to run (leave empty for all)'
+        description: 'k6 scenario to run (leave empty for all except soak)'
         required: false
         type: string
       base_url:
@@ -15,6 +17,11 @@ on:
         required: false
         default: 'https://health.andernet.dev'
         type: string
+      include_soak:
+        description: 'Include the 30-minute soak test'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: load-test
@@ -24,9 +31,13 @@ jobs:
   load-test:
     name: k6 Load Test
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 30min for nightly (no soak), 60min for weekly soak or manual with soak
+    timeout-minutes: ${{ (github.event.schedule == '0 5 * * 0' || inputs.include_soak == true) && 60 || 30 }}
     permissions:
       contents: read
+    env:
+      BASE_URL: ${{ inputs.base_url || 'https://health.andernet.dev' }}
+      IS_SOAK_RUN: ${{ github.event.schedule == '0 5 * * 0' || inputs.include_soak == true }}
     steps:
       - uses: actions/checkout@v4
 
@@ -37,22 +48,53 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y k6
 
+      - name: Acquire device token
+        id: auth
+        run: |
+          echo "Requesting device token from ${BASE_URL}/api/device/auth ..."
+          RESPONSE=$(curl -sf -X POST "${BASE_URL}/api/device/auth" \
+            -H "Content-Type: application/json" \
+            -d '{"userId":"ci-load-test","clientType":"web_dashboard","ttlSec":3600}' \
+            2>/dev/null || echo '{}')
+          TOKEN=$(echo "$RESPONSE" | jq -r '.token // empty')
+          if [ -n "$TOKEN" ]; then
+            echo "::add-mask::${TOKEN}"
+            echo "token=${TOKEN}" >> "$GITHUB_OUTPUT"
+            echo "Device token acquired (TTL: 1h)"
+          else
+            echo "::warning::Could not acquire device token — auth-gated scenarios will rely on k6 setup()"
+          fi
+
       - name: Run load tests
         env:
-          BASE_URL: ${{ inputs.base_url || 'https://health.andernet.dev' }}
+          AUTH_TOKEN: ${{ steps.auth.outputs.token }}
           K6_SCENARIO: ${{ inputs.scenario || '' }}
         run: |
           ARGS="--env BASE_URL=${BASE_URL}"
+
+          # Pass token if available
+          if [ -n "${AUTH_TOKEN}" ]; then
+            ARGS="${ARGS} --env AUTH_TOKEN=${AUTH_TOKEN}"
+          fi
+
+          # Scenario selection
           if [ -n "${K6_SCENARIO}" ]; then
+            # Manual: run exactly the requested scenario
             ARGS="${ARGS} --scenario ${K6_SCENARIO}"
           fi
+
+          # Weekly or manual soak: enable soak scenario
+          if [ "${IS_SOAK_RUN}" = "true" ]; then
+            ARGS="${ARGS} --env INCLUDE_SOAK=true"
+          fi
+
           k6 run ${ARGS} --out json=k6-results.json scripts/load-test.mjs 2>&1 | tee k6-output.txt
 
       - name: Upload k6 results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: k6-load-test-results
+          name: k6-load-test-results-${{ github.run_id }}
           path: |
             k6-results.json
             k6-output.txt
@@ -68,18 +110,25 @@ jobs:
       - uses: actions/github-script@v7
         with:
           script: |
-            const title = '🔥 Nightly load test regression detected';
+            const isSoak = '${{ github.event.schedule }}' === '0 5 * * 0';
+            const type = isSoak ? 'Weekly soak' : 'Nightly load';
+            const title = `🔥 ${type} test regression detected`;
             const body = [
-              '## Load Test Failure',
+              `## ${type} Test Failure`,
               '',
               `**Run**: [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
               `**Date**: ${new Date().toISOString().slice(0, 10)}`,
+              `**Type**: ${isSoak ? 'Soak (30m sustained)' : 'Full suite (14 scenarios)'}`,
               '',
               'k6 load tests failed — one or more thresholds were breached:',
-              '- `http_req_duration p(95) < 500ms`',
-              '- `http_req_duration p(99) < 1500ms`',
+              '- `http_req_duration p(95) < 500ms, p(99) < 1500ms`',
               '- `http_req_failed rate < 5%`',
               '- `errors rate < 10%`',
+              '- `gait_ingestion_latency p(95) < 600ms`',
+              '- `batch_process_latency p(95) < 2s`',
+              '- `telemetry_latency p(95) < 400ms`',
+              '- `ws_message_rtt p(95) < 500ms`',
+              '- `ws_connect_time p(95) < 3s`',
               '',
               'Check the k6 artifacts in the workflow run for detailed results.',
             ].join('\n');
