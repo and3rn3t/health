@@ -39,7 +39,7 @@ jobs:
       BASE_URL: ${{ inputs.base_url || 'https://health.andernet.dev' }}
       IS_SOAK_RUN: ${{ github.event.schedule == '0 5 * * 0' || inputs.include_soak == true }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install k6
         run: |
