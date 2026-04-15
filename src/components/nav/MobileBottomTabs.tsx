@@ -1,110 +1,58 @@
-import {
-  Activity,
-  BarChart3,
-  Calendar,
-  Heart,
-  Home,
-  Settings,
-  Shield,
-  Users,
-} from '@/lib/icons';
-import React from 'react';
-
+import { Link, useRouterState } from '@tanstack/react-router';
+import { NAV_ITEMS } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 
-interface MobileBottomTabsProps {
-  activeTab: string;
-  onTabChange: (tabId: string) => void;
-  navigationItems: Array<{
-    id: string;
-    label: string;
-    icon: React.ComponentType<{ className?: string }>;
-  }>;
-  className?: string;
-}
-
-// Map common tab IDs to more mobile-friendly icons and labels
-const mobileTabConfig: Record<
-  string,
-  { icon: React.ComponentType<{ className?: string }>; label: string }
-> = {
-  dashboard: { icon: Home, label: 'Home' },
-  'health-overview': { icon: Heart, label: 'Health' },
-  analytics: { icon: BarChart3, label: 'Analytics' },
-  'live-monitoring': { icon: Activity, label: 'Live' },
-  'emergency-contacts': { icon: Users, label: 'Contacts' },
-  'fall-detection': { icon: Shield, label: 'Safety' },
-  calendar: { icon: Calendar, label: 'Calendar' },
-  settings: { icon: Settings, label: 'Settings' },
-};
-
-export function MobileBottomTabs({
-  activeTab,
-  onTabChange,
-  navigationItems,
-  className: _className,
-}: MobileBottomTabsProps) {
-  // Show only the most important 4-5 tabs on mobile bottom bar
-  const primaryTabs = navigationItems
-    .filter((item) =>
-      [
-        'dashboard',
-        'health-overview',
-        'analytics',
-        'live-monitoring',
-        'settings',
-      ].includes(item.id)
-    )
-    .slice(0, 5);
-
-  const handleTabClick = (tabId: string) => {
-    // Add haptic feedback if available
-    if ('vibrate' in navigator) {
-      navigator.vibrate(50);
-    }
-    onTabChange(tabId);
-  };
+/**
+ * Mobile bottom tab bar — router-aware, glass background, 44px touch targets.
+ * Fixed to viewport bottom with safe-area padding for notched devices.
+ */
+export function MobileBottomTabs({ className }: { className?: string }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <div className="vs-glass-thick fixed bottom-0 left-0 right-0 z-50 border-t border-border/30">
-      <div
-        className="h-18 flex items-center justify-center gap-1 px-2 py-2"
-        role="tablist"
-        aria-label="Main navigation"
-      >
-        {primaryTabs.map((item) => {
-          const config = mobileTabConfig[item.id] || {
-            icon: item.icon,
-            label: item.label,
-          };
-          const Icon = config.icon;
-          const isActive = activeTab === item.id;
+    <nav
+      aria-label="Main navigation"
+      className={cn(
+        'vs-glass-thick fixed inset-x-0 bottom-0 z-50 border-t border-border/30 pb-safe-bottom',
+        className
+      )}
+    >
+      <div className="flex items-center justify-around px-2 py-1">
+        {NAV_ITEMS.map((item) => {
+          const isActive =
+            item.path === '/'
+              ? pathname === '/'
+              : pathname.startsWith(item.path);
+          const Icon = item.icon;
 
           return (
-            <button
-              key={item.id}
-              role="tab"
-              aria-selected={isActive ? 'true' : 'false'}
-              aria-label={`${config.label} tab`}
-              onClick={() => handleTabClick(item.id)}
+            <Link
+              key={item.path}
+              to={item.path}
+              aria-current={isActive ? 'page' : undefined}
               className={cn(
-                'flex w-16 flex-col items-center gap-1 rounded-lg px-2 py-2 text-xs font-medium transition-all duration-200',
-                'cursor-pointer touch-manipulation select-none',
-                'hover:scale-105 active:scale-95 active:bg-vitalsense-teal/20',
-                'focus:outline-none focus:ring-2 focus:ring-vitalsense-teal/50',
+                'relative flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-colors duration-150',
+                'touch-manipulation select-none active:scale-95',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
                 isActive
-                  ? 'bg-vitalsense-teal/15 text-vitalsense-teal shadow-sm'
-                  : 'text-muted-foreground hover:bg-vitalsense-teal/5 hover:text-vitalsense-teal hover:shadow-sm'
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <Icon
-                className={cn('h-5 w-5', isActive && 'text-vitalsense-teal')}
+                className={cn(
+                  'size-5 transition-colors',
+                  isActive && 'text-primary'
+                )}
               />
-              <span className="truncate leading-tight">{config.label}</span>
-            </button>
+              <span className="truncate leading-tight">{item.label}</span>
+              {isActive && (
+                <span className="absolute -bottom-0.5 h-0.5 w-4 rounded-full bg-primary" />
+              )}
+            </Link>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }

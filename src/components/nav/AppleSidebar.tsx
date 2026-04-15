@@ -1,7 +1,7 @@
 'use client';
 
+import { Link, useRouterState } from '@tanstack/react-router';
 import { PanelLeft } from '@/lib/icons';
-import { Slot } from '@radix-ui/react-slot';
 import type { ComponentProps } from 'react';
 import {
   createContext,
@@ -23,7 +23,13 @@ import {
 } from '@/components/ui/sheet';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { NAV_ITEMS } from '@/lib/navigation';
+import { APP_NAME } from '@/lib/branding';
 import { cn } from '@/lib/utils';
+
+/* ===========================
+   Sidebar Context & Provider
+   =========================== */
 
 type NavState = 'expanded' | 'collapsed';
 
@@ -35,11 +41,10 @@ type AppleSidebarCtx = {
   setOpenMobile: (v: boolean) => void;
   isMobile: boolean;
   toggle: () => void;
-  width: number; // px
-  iconWidth: number; // px
 };
 
 const Ctx = createContext<AppleSidebarCtx | null>(null);
+
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAppleSidebar = () => {
   const ctx = useContext(Ctx);
@@ -50,16 +55,10 @@ export const useAppleSidebar = () => {
 
 export function AppleSidebarProvider({
   defaultOpen = true,
-  width = 272, // iPad style width ~ 17rem (base fallback)
-  iconWidth = 56,
   children,
   className,
   ...props
-}: ComponentProps<'div'> & {
-  defaultOpen?: boolean;
-  width?: number;
-  iconWidth?: number;
-}) {
+}: ComponentProps<'div'> & { defaultOpen?: boolean }) {
   const isMobile = useIsMobile();
   const [o, setO] = useState(defaultOpen);
   const [openMobile, setOpenMobile] = useState(false);
@@ -72,7 +71,6 @@ export function AppleSidebarProvider({
   );
 
   const toggle = useCallback(() => {
-    // Toggle only the relevant state for the current form factor
     if (isMobile) {
       setOpenMobile((x) => !x);
     } else {
@@ -80,6 +78,7 @@ export function AppleSidebarProvider({
     }
   }, [isMobile]);
 
+  // Cmd+B keyboard shortcut
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
@@ -102,20 +101,8 @@ export function AppleSidebarProvider({
       setOpenMobile,
       isMobile,
       toggle,
-      width,
-      iconWidth,
     }),
-    [
-      state,
-      o,
-      setOpen,
-      openMobile,
-      setOpenMobile,
-      isMobile,
-      toggle,
-      width,
-      iconWidth,
-    ]
+    [state, o, setOpen, openMobile, setOpenMobile, isMobile, toggle]
   );
 
   return (
@@ -124,8 +111,6 @@ export function AppleSidebarProvider({
         <div
           data-vs="apple-sidebar"
           className={cn('group/apple-sidebar flex min-h-svh w-full', className)}
-          data-vs-sidebar-width={width}
-          data-vs-sidebar-icon-width={iconWidth}
           {...props}
         >
           {children}
@@ -135,91 +120,127 @@ export function AppleSidebarProvider({
   );
 }
 
+/* ===========================
+   Sidebar Nav Items (shared)
+   =========================== */
+
+function SidebarNavItems({ onLinkClick }: { onLinkClick?: () => void }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Split nav into main items and system (settings)
+  const mainItems = NAV_ITEMS.filter((i) => i.path !== '/settings');
+  const systemItems = NAV_ITEMS.filter((i) => i.path === '/settings');
+
+  const renderItem = (item: (typeof NAV_ITEMS)[number]) => {
+    const isActive =
+      item.path === '/' ? pathname === '/' : pathname.startsWith(item.path);
+    const Icon = item.icon;
+
+    return (
+      <li key={item.path}>
+        <Link
+          to={item.path}
+          onClick={onLinkClick}
+          aria-current={isActive ? 'page' : undefined}
+          className={cn(
+            'flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+            isActive
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
+          )}
+        >
+          <Icon className="size-5 shrink-0" />
+          <span className="truncate">{item.label}</span>
+        </Link>
+      </li>
+    );
+  };
+
+  return (
+    <div className="flex flex-1 flex-col justify-between overflow-y-auto px-3 py-4">
+      <div>
+        <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Navigation
+        </p>
+        <ul className="flex flex-col gap-1">{mainItems.map(renderItem)}</ul>
+      </div>
+      {systemItems.length > 0 && (
+        <div className="mt-4 border-t border-border/50 pt-4">
+          <ul className="flex flex-col gap-1">
+            {systemItems.map(renderItem)}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ===========================
+   Sidebar Panel
+   =========================== */
+
 export function AppleSidebarPanel({
   side = 'left',
-  variant = 'inset',
-  collapsible = 'offcanvas',
-  withSpacer: _withSpacer = false,
   className,
-  children,
   ...props
-}: ComponentProps<'aside'> & {
-  side?: 'left' | 'right';
-  variant?: 'inset' | 'floating' | 'sidebar';
-  collapsible?: 'offcanvas' | 'icon' | 'none';
-  /** When true, renders a non-fixed spacer sibling to reserve layout space instead of relying on peer-margin. Default false. */
-  withSpacer?: boolean;
-}) {
+}: ComponentProps<'aside'> & { side?: 'left' | 'right' }) {
   const { isMobile, state, openMobile, setOpenMobile } = useAppleSidebar();
-
-  if (collapsible === 'none') {
-    return (
-      <aside
-        data-vs="apple-sidebar-panel"
-        data-side={side}
-        className={cn(
-          // Responsive comfort widths on large displays
-          'h-full w-[280px] shrink-0 border-r border-border bg-card text-foreground md:w-[300px] xl:w-[340px] 2xl:w-[380px]',
-          className
-        )}
-        {...props}
-      >
-        <div
-          data-vs="apple-sidebar-inner"
-          className="flex h-full min-h-0 w-full flex-col overflow-y-auto"
-        >
-          {children}
-        </div>
-      </aside>
-    );
-  }
 
   if (isMobile) {
     return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+      <Sheet
+        open={openMobile}
+        onOpenChange={setOpenMobile}
+        {...(props as Record<string, unknown>)}
+      >
         <SheetContent
           side={side}
-          className="w-[90vw] max-w-[420px] bg-card p-0 text-foreground shadow-xl" // cap width on large phones/tablets
+          className="w-[85vw] max-w-[380px] bg-card p-0 text-foreground shadow-xl"
           id="vs-apple-sidebar-mobile"
         >
-          <SheetHeader className="sr-only">
-            <SheetTitle>Navigation</SheetTitle>
+          <SheetHeader className="border-b border-border px-4 py-3">
+            <SheetTitle className="text-base font-semibold">
+              {APP_NAME}
+            </SheetTitle>
           </SheetHeader>
-          <div data-vs="apple-sidebar-inner" className="flex w-full flex-col">
-            {children}
-          </div>
+          <SidebarNavItems onLinkClick={() => setOpenMobile(false)} />
         </SheetContent>
       </Sheet>
     );
   }
 
-  // Desktop: static flex item that transitions width. No overlay; main content is never hidden.
-  const expandedWidth = 'w-[280px] md:w-[300px] xl:w-[340px] 2xl:w-[380px]';
-  const collapsedWidth =
-    collapsible === 'icon' ? 'w-0 md:w-[56px]' : 'w-0 md:w-0';
-  const widthClass = state === 'expanded' ? expandedWidth : collapsedWidth;
+  // Desktop: static sidebar with glass effect
+  const expanded = state === 'expanded';
 
   return (
     <aside
       data-vs="apple-sidebar-panel"
       data-side={side}
-      data-variant={variant}
-      data-collapsible={collapsible}
       aria-label="Primary navigation"
       className={cn(
-        'border-border/50 vs-glass-thick shrink-0 border-r text-foreground transition-[width] duration-200 ease-linear',
-        widthClass,
+        'vs-glass-thick shrink-0 border-r border-border/30 text-foreground transition-[width] duration-200 ease-linear overflow-hidden',
+        expanded ? 'w-[260px]' : 'w-0',
         className
       )}
       {...props}
     >
-      <div data-vs="apple-sidebar-inner" className="flex w-full flex-col">
-        {/* Section headings get visually-hidden heading elements for screen readers */}
-        {children}
+      <div className="flex h-full w-[260px] flex-col">
+        {/* Sidebar header */}
+        <div className="flex h-12 shrink-0 items-center border-b border-border/30 px-4">
+          <span className="text-sm font-semibold text-foreground">
+            {APP_NAME}
+          </span>
+        </div>
+        <SidebarNavItems />
       </div>
     </aside>
   );
 }
+
+/* ===========================
+   Sidebar Trigger Button
+   =========================== */
 
 export function AppleSidebarTrigger({
   className,
@@ -234,125 +255,14 @@ export function AppleSidebarTrigger({
       aria-expanded={open}
       variant="ghost"
       size="icon"
-      className={cn('size-7', className)}
+      className={cn('size-8', className)}
       onClick={(e) => {
         onClick?.(e);
         toggle();
       }}
       {...props}
     >
-      <PanelLeft />
+      <PanelLeft className="size-4" />
     </Button>
-  );
-}
-
-export function AppleSidebarMain({
-  className,
-  bumper: _bumper = 'none',
-  ...props
-}: ComponentProps<'main'> & {
-  bumper?: 'peer-margin' | 'none' | 'responsive';
-}) {
-  const { state } = useAppleSidebar();
-  return (
-    <main
-      data-vs="apple-sidebar-main"
-      className={cn(
-        // Allow content to flow naturally without forcing scrollbars
-        'flex w-full min-w-0 flex-1 flex-col bg-background text-foreground',
-        className
-      )}
-      data-state={state}
-      {...props}
-    />
-  );
-}
-
-export function AppleSidebarHeader({
-  className,
-  asChild = false,
-  ...props
-}: ComponentProps<'div'> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : 'div';
-  return (
-    <Comp
-      data-vs="apple-sidebar-header"
-      className={cn(
-        // z-20 to sit above sidebar items, below main NavigationHeader (z-40)
-        'sticky top-0 z-20 flex h-12 items-center gap-2 border-b border-border px-3',
-        className
-      )}
-      {...props}
-    />
-  );
-}
-
-export function AppleSidebarSection({
-  className,
-  ...props
-}: ComponentProps<'section'>) {
-  return (
-    <section
-      data-vs="apple-sidebar-section"
-      className={cn('px-2 py-2', className)}
-      {...props}
-    />
-  );
-}
-
-export function AppleSidebarList({
-  className,
-  ...props
-}: ComponentProps<'ul'>) {
-  return (
-    <ul
-      data-vs="apple-sidebar-list"
-      className={cn('flex flex-col gap-1', className)}
-      {...props}
-    />
-  );
-}
-
-export function AppleSidebarItem({
-  className,
-  active,
-  ...props
-}: ComponentProps<'button'> & { active?: boolean }) {
-  return (
-    <li>
-      <button
-        data-vs="apple-sidebar-item"
-        type="button"
-        data-active={active ? 'true' : undefined}
-        aria-current={active ? 'page' : undefined}
-        className={cn(
-          // Increased to min-h 44px for iOS touch target compliance
-          'outline-hidden relative flex min-h-[44px] w-full items-center gap-3 rounded-md px-3 pr-4 text-left text-sm transition-colors',
-          active
-            ? 'dark:bg-vitalsense-primary/20 bg-vitalsense-primary/10 font-semibold text-vitalsense-primary'
-            : 'hover:bg-muted/70 dark:hover:bg-muted/60 font-medium text-muted-foreground',
-          'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-vitalsense-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-          'select-none active:scale-[0.985]',
-          className
-        )}
-        {...props}
-      />
-    </li>
-  );
-}
-
-export function AppleSidebarBadge({
-  className,
-  ...props
-}: ComponentProps<'div'>) {
-  return (
-    <div
-      data-vs="apple-sidebar-badge"
-      className={cn(
-        'pointer-events-none ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-md bg-muted px-1 text-xs tabular-nums text-muted-foreground',
-        className
-      )}
-      {...props}
-    />
   );
 }

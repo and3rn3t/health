@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck — This file is dead code (replaced by TanStack Router + __root.tsx). Kept temporarily for reference.
 // 🚀 VitalSense App - Unified Navigation System
 import React, {
   Suspense,
