@@ -19,8 +19,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useKV } from '@/hooks/useCloudflareKV';
-import type { ProcessedHealthData } from '@/types';
+import { useAlertManagement } from '@/hooks/useAlertManagement';
 import {
   AlertTriangle,
   Bell,
@@ -31,311 +30,38 @@ import {
   Target,
   Trash,
 } from '@/lib/icons';
-import { useState } from 'react';
-import { toast } from 'sonner';
 
-interface HealthAlert {
-  id: string;
-  name: string;
-  metric: string;
-  condition:
-    | 'above'
-    | 'below'
-    | 'equal'
-    | 'range_outside'
-    | 'trend_up'
-    | 'trend_down';
-  threshold: number;
-  thresholdMax?: number; // For range conditions
-  enabled: boolean;
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  frequency: 'immediate' | 'daily' | 'weekly';
-  createdAt: string;
-  lastTriggered?: string;
-  triggerCount: number;
-  description?: string;
-}
+import {
+  CONDITION_LABELS,
+  HEALTH_METRICS,
+  PRIORITY_COLORS,
+  type AlertsConfigProps,
+  type HealthAlert,
+} from './alerts/types';
 
-interface AlertHistoryEntry {
-  id: string;
-  alertId: string;
-  alertName: string;
-  metric: string;
-  value: number;
-  unit?: string;
-  priority: HealthAlert['priority'];
-  timestamp: number;
-}
-
-interface AlertsConfigProps {
-  healthData: ProcessedHealthData;
-}
-
-const HEALTH_METRICS = [
-  {
-    value: 'heart_rate',
-    label: 'Heart Rate',
-    unit: 'bpm',
-    normalRange: [60, 100],
-  },
-  {
-    value: 'steps',
-    label: 'Daily Steps',
-    unit: 'steps',
-    normalRange: [8000, 12000],
-  },
-  {
-    value: 'sleep_hours',
-    label: 'Sleep Hours',
-    unit: 'hours',
-    normalRange: [7, 9],
-  },
-  {
-    value: 'blood_pressure_systolic',
-    label: 'Blood Pressure (Systolic)',
-    unit: 'mmHg',
-    normalRange: [90, 120],
-  },
-  {
-    value: 'blood_pressure_diastolic',
-    label: 'Blood Pressure (Diastolic)',
-    unit: 'mmHg',
-    normalRange: [60, 80],
-  },
-  {
-    value: 'walking_speed',
-    label: 'Walking Speed',
-    unit: 'mph',
-    normalRange: [2.5, 4],
-  },
-  {
-    value: 'balance_score',
-    label: 'Balance Score',
-    unit: '%',
-    normalRange: [80, 100],
-  },
-  {
-    value: 'fall_risk_score',
-    label: 'Fall Risk Score',
-    unit: '%',
-    normalRange: [0, 30],
-  },
-  {
-    value: 'activity_level',
-    label: 'Activity Level',
-    unit: 'minutes',
-    normalRange: [150, 300],
-  },
-  { value: 'weight', label: 'Weight', unit: 'lbs', normalRange: [0, 0] }, // User-specific
-];
-
-const CONDITION_LABELS = {
-  above: 'Above threshold',
-  below: 'Below threshold',
-  equal: 'Equals threshold',
-  range_outside: 'Outside normal range',
-  trend_up: 'Trending upward',
-  trend_down: 'Trending downward',
-};
-
-const PRIORITY_COLORS = {
-  low: 'bg-blue-100 text-blue-800 border-blue-200',
-  medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  high: 'bg-orange-100 text-orange-800 border-orange-200',
-  critical: 'bg-red-100 text-red-800 border-red-200',
-};
+export type { AlertHistoryEntry, AlertsConfigProps, HealthAlert } from './alerts/types';
 
 export default function HealthAlertsConfig({
   healthData: _healthData,
 }: Readonly<AlertsConfigProps>) {
-  const [alertsRaw, setAlerts] = useKV<HealthAlert[]>('health-alerts', []);
-  // History is read-only here
-  const [alertHistoryRaw] = useKV<AlertHistoryEntry[]>('alert-history', []);
-  interface GlobalSettings {
-    enabled: boolean;
-    quietHours: { start: string; end: string };
-    maxAlertsPerDay: number;
-    emailNotifications: boolean;
-    pushNotifications: boolean;
-  }
-  const [globalSettingsRaw, setGlobalSettings] = useKV<GlobalSettings>(
-    'alert-global-settings',
-    {
-      enabled: true,
-      quietHours: { start: '22:00', end: '07:00' },
-      maxAlertsPerDay: 10,
-      emailNotifications: false,
-      pushNotifications: true,
-    }
-  );
-  const alerts: HealthAlert[] = alertsRaw ?? [];
-  const alertHistory = alertHistoryRaw ?? [];
-  const globalSettings = globalSettingsRaw ?? {
-    enabled: true,
-    quietHours: { start: '22:00', end: '07:00' },
-    maxAlertsPerDay: 10,
-    emailNotifications: false,
-    pushNotifications: true,
-  };
-
-  const [newAlert, setNewAlert] = useState<Partial<HealthAlert>>({
-    name: '',
-    metric: '',
-    condition: 'above',
-    threshold: 0,
-    priority: 'medium',
-    frequency: 'immediate',
-    enabled: true,
-    description: '',
-  });
-
-  const [showNewAlertForm, setShowNewAlertForm] = useState(false);
-
-  const createAlert = () => {
-    if (
-      !newAlert.name ||
-      !newAlert.metric ||
-      newAlert.threshold === undefined
-    ) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    const alert: HealthAlert = {
-      id: `alert_${Date.now()}`,
-      name: newAlert.name || '',
-      metric: newAlert.metric || '',
-      condition: newAlert.condition || 'above',
-      threshold: newAlert.threshold ?? 0,
-      thresholdMax: newAlert.thresholdMax,
-      enabled: newAlert.enabled ?? true,
-      priority: newAlert.priority || 'medium',
-      frequency: newAlert.frequency || 'immediate',
-      createdAt: new Date().toISOString(),
-      triggerCount: 0,
-      description: newAlert.description,
-    };
-
-    setAlerts((current) => [...(current ?? []), alert]);
-    setNewAlert({
-      name: '',
-      metric: '',
-      condition: 'above',
-      threshold: 0,
-      priority: 'medium',
-      frequency: 'immediate',
-      enabled: true,
-      description: '',
-    });
-    setShowNewAlertForm(false);
-    toast.success('Alert created successfully');
-  };
-
-  const deleteAlert = (alertId: string) => {
-    setAlerts((current) =>
-      (current ?? []).filter((alert) => alert.id !== alertId)
-    );
-    toast.success('Alert deleted');
-  };
-
-  const toggleAlert = (alertId: string) => {
-    setAlerts((current) =>
-      (current ?? []).map((alert) =>
-        alert.id === alertId ? { ...alert, enabled: !alert.enabled } : alert
-      )
-    );
-  };
-
-  const getMetricLabel = (metric: string) => {
-    return HEALTH_METRICS.find((m) => m.value === metric)?.label || metric;
-  };
-
-  const getMetricUnit = (metric: string) => {
-    return HEALTH_METRICS.find((m) => m.value === metric)?.unit || '';
-  };
-
-  const generateSmartAlert = (metric: string) => {
-    const metricInfo = HEALTH_METRICS.find((m) => m.value === metric);
-    if (!metricInfo) return;
-
-    const [min, max] = metricInfo.normalRange as [number, number];
-
-    // Create alerts based on the metric type
-    const smartAlerts: Partial<HealthAlert>[] = [];
-
-    if (metric === 'fall_risk_score') {
-      smartAlerts.push({
-        name: `High Fall Risk Alert`,
-        metric,
-        condition: 'above',
-        threshold: 70,
-        priority: 'critical',
-        frequency: 'immediate',
-        description: 'Alert when fall risk score indicates high danger',
-      });
-    } else if (metric === 'heart_rate') {
-      smartAlerts.push(
-        {
-          name: `High Heart Rate Alert`,
-          metric,
-          condition: 'above',
-          threshold: 120,
-          priority: 'high',
-          frequency: 'immediate',
-          description: 'Alert when heart rate exceeds safe threshold',
-        },
-        {
-          name: `Low Heart Rate Alert`,
-          metric,
-          condition: 'below',
-          threshold: 50,
-          priority: 'high',
-          frequency: 'immediate',
-          description: 'Alert when heart rate drops below safe threshold',
-        }
-      );
-    } else if (min > 0 && max > 0) {
-      smartAlerts.push({
-        name: `${metricInfo.label} Out of Range`,
-        metric,
-        condition: 'range_outside',
-        threshold: min,
-        thresholdMax: max,
-        priority: 'medium',
-        frequency: 'daily',
-        description: `Alert when ${metricInfo.label.toLowerCase()} is outside normal range`,
-      });
-    }
-
-    // Add the smart alerts
-    smartAlerts.forEach((alertTemplate) => {
-      const alert: HealthAlert = {
-        id: `alert_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`,
-        name: alertTemplate.name!,
-        metric: alertTemplate.metric!,
-        condition: alertTemplate.condition!,
-        threshold: alertTemplate.threshold!,
-        thresholdMax: alertTemplate.thresholdMax,
-        enabled: true,
-        priority: alertTemplate.priority!,
-        frequency: alertTemplate.frequency!,
-        createdAt: new Date().toISOString(),
-        triggerCount: 0,
-        description: alertTemplate.description,
-      };
-
-      setAlerts((current) => [...(current ?? []), alert]);
-    });
-
-    toast.success(`Smart alerts created for ${metricInfo.label}`);
-  };
-
-  const activeAlerts = alerts.filter((alert) => alert.enabled);
-  const recentlyTriggered = alerts.filter(
-    (alert) =>
-      alert.lastTriggered &&
-      new Date(alert.lastTriggered) > new Date(Date.now() - 24 * 60 * 60 * 1000)
-  );
+  const {
+    alerts,
+    alertHistory,
+    globalSettings,
+    setGlobalSettings,
+    newAlert,
+    setNewAlert,
+    showNewAlertForm,
+    setShowNewAlertForm,
+    createAlert,
+    deleteAlert,
+    toggleAlert,
+    getMetricLabel,
+    getMetricUnit,
+    generateSmartAlert,
+    activeAlerts,
+    recentlyTriggered,
+  } = useAlertManagement();
 
   return (
     <div className="space-y-6">

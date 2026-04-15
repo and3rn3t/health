@@ -25,7 +25,8 @@ vi.mock('@/hooks/useThemeMode', () => ({
   }),
 }));
 vi.mock('@tanstack/react-router', () => ({
-  useRouterState: () => '/',
+  useRouterState: ({ select }: { select: (s: { location: { pathname: string } }) => string }) =>
+    select({ location: { pathname: '/' } }),
   Link: ({
     children,
     to,
