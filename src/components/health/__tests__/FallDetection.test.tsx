@@ -3,13 +3,11 @@ import { describe, expect, it } from 'vitest';
 import FallDetection from '../FallDetection';
 
 describe('FallDetection', () => {
-  it('renders the heading and description', () => {
+  it('renders status cards and detection settings', () => {
     render(<FallDetection />);
+    expect(screen.getByText('System Status')).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { name: /fall detection system/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/ai-powered fall detection with automatic emergency alerts/i)
+      screen.getByRole('heading', { name: /detection settings/i })
     ).toBeInTheDocument();
   });
 

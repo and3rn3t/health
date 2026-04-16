@@ -9,29 +9,23 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Settings } from '@/lib/icons';
+import { useState } from 'react';
 
 export default function SettingsPanel() {
+  const [showDangerZone, setShowDangerZone] = useState(false);
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="mb-2 text-3xl font-bold text-vitalsense-primary">
-          Settings
-        </h1>
-        <p className="text-vitalsense-gray">
-          Customize your VitalSense experience
-        </p>
-      </div>
-
       {/* Fully featured settings panel */}
       <UserSettingsPanel />
 
-      {/* Preferences summary now managed in UserSettingsPanel above */}
-      <Card>
+      {/* App Preferences info */}
+      <Card variant="glass">
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Settings className="text-vitalsense-gray h-5 w-5" />
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5 text-muted-foreground" />
             <span>App Preferences</span>
           </CardTitle>
           <CardDescription>
@@ -46,43 +40,60 @@ export default function SettingsPanel() {
         </CardContent>
       </Card>
 
-      {/* Danger Zone */}
-      <Card className="border-red-200">
+      {/* Danger Zone — behind confirmation */}
+      <Card className="border-red-200 dark:border-red-900">
         <CardHeader>
-          <CardTitle className="text-red-600">Danger Zone</CardTitle>
+          <CardTitle className="text-red-600 dark:text-red-400">
+            Danger Zone
+          </CardTitle>
           <CardDescription>Irreversible account actions</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium">Reset All Settings</h4>
-              <p className="text-vitalsense-gray text-sm">
-                Restore default settings
-              </p>
-            </div>
-            <button className="rounded bg-red-50 px-4 py-2 text-red-600 hover:bg-red-100">
-              Reset
-            </button>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium">Delete Account</h4>
-              <p className="text-vitalsense-gray text-sm">
-                Permanently delete your account
-              </p>
-            </div>
-            <button className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700">
-              Delete
-            </button>
-          </div>
+          {!showDangerZone ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="min-h-[44px] border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
+              onClick={() => setShowDangerZone(true)}
+            >
+              Show dangerous actions
+            </Button>
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-medium">Reset All Settings</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Restore default settings
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="min-h-[44px] border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
+                >
+                  Reset
+                </Button>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-medium">Delete Account</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Permanently delete your account
+                  </p>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="min-h-[44px]"
+                >
+                  Delete
+                </Button>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
-
-      <div className="mt-6 text-center">
-        <p className="text-vitalsense-gray text-xs">
-          ⚙️ Settings panel loaded on-demand for optimal bundle size
-        </p>
-      </div>
     </div>
   );
 }

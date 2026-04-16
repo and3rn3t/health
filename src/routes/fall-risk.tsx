@@ -1,16 +1,20 @@
+import { PageLayout } from '@/components/layout/PageLayout';
+import { DashboardSkeleton } from '@/components/ui/DashboardSkeleton';
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy, Suspense } from 'react';
-import { DashboardSkeleton } from '@/components/ui/DashboardSkeleton';
 
-const FallDetection = lazy(
-  () => import('@/components/health/FallDetection')
-);
+const FallDetection = lazy(() => import('@/components/health/FallDetection'));
 
 function FallRiskPage() {
   return (
-    <Suspense fallback={<DashboardSkeleton />}>
-      <FallDetection />
-    </Suspense>
+    <PageLayout
+      title="Fall Risk Analysis"
+      subtitle="AI-powered fall detection with automatic emergency alerts"
+    >
+      <Suspense fallback={<DashboardSkeleton />}>
+        <FallDetection />
+      </Suspense>
+    </PageLayout>
   );
 }
 

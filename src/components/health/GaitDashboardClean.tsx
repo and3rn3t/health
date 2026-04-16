@@ -5,6 +5,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Footprints, Target, TrendingUp } from '@/lib/icons';
 import {
   Card,
   CardContent,
@@ -23,134 +24,74 @@ export function GaitDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 text-3xl font-bold text-foreground">
-            <span className="text-primary text-2xl">🚶</span>
-            Gait Analysis Dashboard
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Comprehensive walking pattern analysis using advanced sensors and
-            real-time tracking
-          </p>
-        </div>
-        <Badge variant="outline" className="text-xs">
-          Advanced Analytics
-        </Badge>
+      {/* Mode Selection — segmented control */}
+      <div className="flex items-center gap-1 rounded-xl bg-muted p-1">
+        {(
+          [
+            { key: 'overview', label: 'Overview' },
+            { key: 'lidar', label: 'LiDAR Analysis' },
+            { key: 'walking', label: 'Walking Tracker' },
+          ] as const
+        ).map(({ key, label }) => (
+          <Button
+            key={key}
+            size="sm"
+            variant="ghost"
+            aria-pressed={activeAnalysisMode === key}
+            onClick={() => setActiveAnalysisMode(key)}
+            className={`min-h-[44px] flex-1 rounded-lg text-sm font-medium transition-all ${
+              activeAnalysisMode === key
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {label}
+          </Button>
+        ))}
       </div>
-
-      {/* Mode Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span>⚙️</span>
-            Analysis Mode
-          </CardTitle>
-          <CardDescription>
-            Choose your preferred analysis method based on available sensors and
-            requirements
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <Button
-              variant={
-                activeAnalysisMode === 'overview' ? 'default' : 'outline'
-              }
-              onClick={() => setActiveAnalysisMode('overview')}
-              className="h-auto flex-col gap-2 p-4"
-            >
-              <span className="text-lg">📊</span>
-              <div className="text-center">
-                <div className="font-semibold">Overview</div>
-                <div className="text-muted-foreground text-xs">
-                  Quick insights and comparison
-                </div>
-              </div>
-            </Button>
-
-            <Button
-              variant={activeAnalysisMode === 'lidar' ? 'default' : 'outline'}
-              onClick={() => setActiveAnalysisMode('lidar')}
-              className="h-auto flex-col gap-2 p-4"
-            >
-              <span className="text-lg">🎯</span>
-              <div className="text-center">
-                <div className="font-semibold">LiDAR Analysis</div>
-                <div className="text-muted-foreground text-xs">
-                  High-precision depth sensing
-                </div>
-              </div>
-            </Button>
-
-            <Button
-              variant={activeAnalysisMode === 'walking' ? 'default' : 'outline'}
-              onClick={() => setActiveAnalysisMode('walking')}
-              className="h-auto flex-col gap-2 p-4"
-            >
-              <span className="text-lg">👟</span>
-              <div className="text-center">
-                <div className="font-semibold">Walking Tracker</div>
-                <div className="text-muted-foreground text-xs">
-                  Real-time movement analysis
-                </div>
-              </div>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Content Area */}
       <div className="space-y-6">
         {activeAnalysisMode === 'overview' && (
           <div className="space-y-6">
             {/* Quick Stats Overview */}
-            <div className="grid gap-4 md:grid-cols-4">
-              <Card>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Card variant="glass">
                 <CardContent className="pt-4">
                   <div className="text-center">
                     <p className="text-2xl font-bold">85%</p>
-                    <p className="text-muted-foreground text-xs">
-                      Gait Quality
-                    </p>
+                    <p className="text-xs text-muted-foreground">Gait Quality</p>
                   </div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card variant="glass">
                 <CardContent className="pt-4">
                   <div className="text-center">
                     <p className="text-2xl font-bold">1.4</p>
-                    <p className="text-muted-foreground text-xs">
-                      Avg Speed (m/s)
-                    </p>
+                    <p className="text-xs text-muted-foreground">Avg Speed (m/s)</p>
                   </div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card variant="glass">
                 <CardContent className="pt-4">
                   <div className="text-center">
                     <p className="text-2xl font-bold">95</p>
-                    <p className="text-muted-foreground text-xs">
-                      Cadence (steps/min)
-                    </p>
+                    <p className="text-xs text-muted-foreground">Cadence (steps/min)</p>
                   </div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card variant="glass">
                 <CardContent className="pt-4">
                   <div className="text-center">
                     <p className="text-2xl font-bold">78%</p>
-                    <p className="text-muted-foreground text-xs">
-                      Balance Score
-                    </p>
+                    <p className="text-xs text-muted-foreground">Balance Score</p>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Analysis Options */}
-            <Card>
+            <Card variant="glass">
               <CardHeader>
                 <CardTitle>Choose Your Analysis Method</CardTitle>
                 <CardDescription>
@@ -162,7 +103,7 @@ export function GaitDashboard() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-3 rounded-lg border p-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">🎯</span>
+                      <Target className="h-5 w-5 text-primary" />
                       <h3 className="font-semibold">LiDAR Gait Analysis</h3>
                     </div>
                     <p className="text-muted-foreground text-sm">
@@ -195,7 +136,7 @@ export function GaitDashboard() {
 
                   <div className="space-y-3 rounded-lg border p-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">👟</span>
+                      <Footprints className="h-5 w-5 text-primary" />
                       <h3 className="font-semibold">
                         Walking Pattern Tracking
                       </h3>
@@ -232,10 +173,10 @@ export function GaitDashboard() {
             </Card>
 
             {/* Recent Activity Summary */}
-            <Card>
+            <Card variant="glass">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <span>📈</span>
+                  <TrendingUp className="h-4 w-4" />
                   Recent Analysis Summary
                 </CardTitle>
               </CardHeader>

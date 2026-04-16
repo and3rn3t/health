@@ -134,65 +134,53 @@ export const CompleteLiDARIntegration: React.FC<{
   return (
     <CleanLiDARPerformanceProvider>
       <div className={`space-y-6 ${className}`}>
-        {/* Integration Header */}
-        <div className="from-blue-600 to-purple-600 rounded-lg bg-gradient-to-r p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="mb-2 text-2xl font-bold">
-                VitalSense LiDAR Integration
-              </h1>
-              <p className="text-blue-100">
-                Complete health monitoring with real-time data, advanced
-                analytics, and clinical reporting
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold">{scanHistory.length}</div>
-                <div className="text-blue-100 text-sm">Scans Collected</div>
-              </div>
-              <button
-                type="button"
-                onClick={handleExportData}
-                disabled={!settings.enableExport}
-                className="flex items-center rounded-lg bg-white/20 px-4 py-2 transition-colors hover:bg-white/30 disabled:opacity-50"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Export Data
-              </button>
+        {/* Quick Stats Bar */}
+        <div className="flex items-center justify-between rounded-xl bg-muted/50 p-3">
+          <div className="flex items-center gap-4">
+            <div className="text-sm">
+              <span className="font-semibold">{scanHistory.length}</span>
+              <span className="ml-1 text-muted-foreground">Scans</span>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={handleExportData}
+            disabled={!settings.enableExport}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export
+          </button>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="rounded-lg border bg-white shadow-sm">
-          <div className="flex border-b">
-            <TabButton
-              active={activeTab === 'realtime'}
-              onClick={() => setActiveTab('realtime')}
-              icon={<Activity className="h-4 w-4" />}
-              label="Real-time Data"
-            />
-            <TabButton
-              active={activeTab === 'analytics'}
-              onClick={() => setActiveTab('analytics')}
-              icon={<Brain className="h-4 w-4" />}
-              label="Advanced Analytics"
-            />
-            <TabButton
-              active={activeTab === 'reports'}
-              onClick={() => setActiveTab('reports')}
-              icon={<Database className="h-4 w-4" />}
-              label="Clinical Reports"
-              badge="Preview"
-            />
-            <TabButton
-              active={activeTab === 'settings'}
-              onClick={() => setActiveTab('settings')}
-              icon={<Settings className="h-4 w-4" />}
-              label="Settings"
-            />
-          </div>
+        {/* Segmented Control */}
+        <div role="tablist" className="flex rounded-xl bg-muted p-1">
+          {[
+            { key: 'realtime' as const, label: 'Real-time', icon: <Activity className="h-3.5 w-3.5" /> },
+            { key: 'analytics' as const, label: 'Analytics', icon: <Brain className="h-3.5 w-3.5" /> },
+            { key: 'reports' as const, label: 'Reports', icon: <Database className="h-3.5 w-3.5" /> },
+            { key: 'settings' as const, label: 'Settings', icon: <Settings className="h-3.5 w-3.5" /> },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              role="tab"
+              type="button"
+              aria-selected={activeTab === tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                activeTab === tab.key
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {tab.icon}
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        <div className="rounded-xl border bg-card shadow-sm">
 
           <div className="p-6">
             {/* Real-time Data Tab */}
@@ -211,17 +199,17 @@ export const CompleteLiDARIntegration: React.FC<{
             {/* Clinical Reports Tab (Preview) */}
             {activeTab === 'reports' && (
               <div className="space-y-6">
-                <div className="bg-blue-50 border-blue-200 rounded-lg border p-6">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-6 dark:border-blue-900 dark:bg-blue-950">
                   <div className="mb-4 flex items-center">
-                    <Database className="text-blue-600 mr-3 h-6 w-6" />
-                    <h3 className="text-blue-900 text-lg font-semibold">
+                    <Database className="mr-3 h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">
                       Clinical Reports System
                     </h3>
-                    <span className="ml-3 bg-blue-200 text-blue-800 text-xs rounded-full px-2 py-1">
+                    <span className="ml-3 rounded-full bg-blue-200 px-2 py-1 text-xs text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                       FUTURE ENHANCEMENT
                     </span>
                   </div>
-                  <p className="text-blue-800 mb-4">
+                  <p className="mb-4 text-blue-800 dark:text-blue-200">
                     Professional medical reports with HIPAA compliance, HL7 FHIR
                     standards, and provider integration.
                   </p>
@@ -245,28 +233,27 @@ export const CompleteLiDARIntegration: React.FC<{
                   </div>
                 </div>
 
-                {/* Preview of generated reports */}
-                <div className="rounded-lg border bg-white p-6">
-                  <h4 className="mb-4 font-semibold text-gray-900">
+                <div className="rounded-lg border bg-card p-6">
+                  <h4 className="mb-4 font-semibold text-foreground">
                     Sample Reports (Demo)
                   </h4>
                   <div className="space-y-3">
                     {clinicalReports.map((report) => (
                       <div
                         key={report.id}
-                        className="bg-gray-50 flex items-center justify-between rounded-lg p-4"
+                        className="flex items-center justify-between rounded-lg bg-muted/50 p-4"
                       >
                         <div>
-                          <div className="font-medium text-gray-900">
+                          <div className="font-medium text-foreground">
                             {report.reportType
                               .replace('_', ' ')
                               .replace(/\b\w/g, (l) => l.toUpperCase())}{' '}
                             Report
                           </div>
-                          <div className="text-gray-600 text-sm">
+                          <div className="text-sm text-muted-foreground">
                             {report.summary}
                           </div>
-                          <div className="text-xs mt-1 text-gray-500">
+                          <div className="mt-1 text-xs text-muted-foreground">
                             Generated: {report.generatedAt.toLocaleDateString()}
                           </div>
                         </div>
@@ -281,9 +268,9 @@ export const CompleteLiDARIntegration: React.FC<{
             {/* Settings Tab */}
             {activeTab === 'settings' && (
               <div className="space-y-6">
-                <div className="bg-white">
-                  <h3 className="mb-4 flex items-center text-lg font-semibold text-gray-900">
-                    <Zap className="w-5 h-5 text-yellow-500 mr-2" />
+                <div>
+                  <h3 className="mb-4 flex items-center text-lg font-semibold text-foreground">
+                    <Zap className="mr-2 h-5 w-5 text-yellow-500" />
                     Integration Settings
                   </h3>
 
@@ -341,7 +328,7 @@ export const CompleteLiDARIntegration: React.FC<{
                       <div>
                         <label
                           htmlFor="update-interval-select"
-                          className="text-gray-700 mb-2 block text-sm font-medium"
+                          className="mb-2 block text-sm font-medium text-foreground"
                         >
                           Update Interval (ms)
                         </label>
@@ -354,8 +341,7 @@ export const CompleteLiDARIntegration: React.FC<{
                               updateInterval: parseInt(e.target.value),
                             }))
                           }
-                          className="px-3 border-gray-300 focus:ring-blue-500 w-full rounded-md border py-2 focus:outline-none focus:ring-2"
-                          aria-label="Update interval setting"
+                          className="w-full rounded-md border border-border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                           <option value={1000}>1 second</option>
                           <option value={3000}>3 seconds</option>
@@ -367,7 +353,7 @@ export const CompleteLiDARIntegration: React.FC<{
                       <div>
                         <label
                           htmlFor="max-history-select"
-                          className="text-gray-700 mb-2 block text-sm font-medium"
+                          className="mb-2 block text-sm font-medium text-foreground"
                         >
                           Max History Items
                         </label>
@@ -380,7 +366,7 @@ export const CompleteLiDARIntegration: React.FC<{
                               maxHistoryItems: parseInt(e.target.value),
                             }))
                           }
-                          className="px-3 border-gray-300 focus:ring-blue-500 w-full rounded-md border py-2 focus:outline-none focus:ring-2"
+                          className="w-full rounded-md border border-border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                           aria-label="Maximum history items setting"
                         >
                           <option value={25}>25 items</option>
@@ -398,9 +384,9 @@ export const CompleteLiDARIntegration: React.FC<{
         </div>
 
         {/* Integration Status Footer */}
-        <div className="rounded-lg border bg-white p-4 shadow-sm">
+        <div className="rounded-xl border bg-card p-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center gap-6">
               <StatusIndicator
                 label="Real Data"
                 active={settings.enableRealData}
@@ -411,8 +397,8 @@ export const CompleteLiDARIntegration: React.FC<{
               />
               <StatusIndicator label="Export" active={settings.enableExport} />
             </div>
-            <div className="text-gray-600 text-sm">
-              Integration Status: All systems operational
+            <div className="text-sm text-muted-foreground">
+              All systems operational
             </div>
           </div>
         </div>
@@ -422,41 +408,15 @@ export const CompleteLiDARIntegration: React.FC<{
 };
 
 // Helper Components
-const TabButton: React.FC<{
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
-  badge?: string;
-}> = ({ active, onClick, icon, label, badge }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`py-3 flex items-center border-b-2 px-6 text-sm font-medium transition-colors ${
-      active
-        ? 'border-blue-500 text-blue-600 bg-blue-50'
-        : 'text-gray-600 hover:bg-gray-50 border-transparent hover:text-gray-900'
-    }`}
-  >
-    {icon}
-    <span className="ml-2">{label}</span>
-    {badge && (
-      <span className="bg-orange-100 text-orange-800 text-xs ml-2 rounded-full px-2 py-1">
-        {badge}
-      </span>
-    )}
-  </button>
-);
-
 const FeatureCard: React.FC<{
   title: string;
   description: string;
   status: string;
 }> = ({ title, description, status }) => (
-  <div className="rounded-lg border bg-white p-4">
-    <h4 className="mb-2 font-medium text-gray-900">{title}</h4>
-    <p className="text-gray-600 mb-3 text-sm">{description}</p>
-    <span className="text-gray-700 text-xs inline-block rounded bg-gray-100 px-2 py-1">
+  <div className="rounded-lg border bg-card p-4">
+    <h4 className="mb-2 font-medium text-foreground">{title}</h4>
+    <p className="mb-3 text-sm text-muted-foreground">{description}</p>
+    <span className="inline-block rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
       {status}
     </span>
   </div>
@@ -487,17 +447,17 @@ const SettingToggle: React.FC<{
   onChange: (checked: boolean) => void;
   disabled?: boolean;
 }> = ({ label, description, checked, onChange, disabled = false }) => (
-  <div className="bg-gray-50 flex items-center justify-between rounded-lg p-4">
+  <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
     <div className="flex-1">
-      <div className="font-medium text-gray-900">{label}</div>
-      <div className="text-gray-600 text-sm">{description}</div>
+      <div className="font-medium text-foreground">{label}</div>
+      <div className="text-sm text-muted-foreground">{description}</div>
     </div>
     <button
       type="button"
       onClick={() => !disabled && onChange(!checked)}
       disabled={disabled}
       className={`w-11 relative inline-flex h-6 items-center rounded-full transition-colors ${
-        checked && !disabled ? 'bg-blue-600' : 'bg-gray-300'
+        checked && !disabled ? 'bg-primary' : 'bg-muted-foreground/30'
       } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
       aria-label={`Toggle ${label}`}
     >
@@ -516,9 +476,9 @@ const StatusIndicator: React.FC<{
 }> = ({ label, active }) => (
   <div className="flex items-center">
     <div
-      className={`mr-2 h-2 w-2 rounded-full ${active ? 'bg-green-500' : 'bg-gray-300'}`}
+      className={`mr-2 h-2 w-2 rounded-full ${active ? 'bg-green-500' : 'bg-muted-foreground/30'}`}
     />
-    <span className="text-gray-600 text-sm">{label}</span>
+    <span className="text-sm text-muted-foreground">{label}</span>
   </div>
 );
 
