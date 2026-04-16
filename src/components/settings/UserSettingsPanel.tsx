@@ -261,7 +261,7 @@ export default function UserSettingsPanel() {
                   }))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Language">
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>
                 <SelectContent>
@@ -282,7 +282,7 @@ export default function UserSettingsPanel() {
                   }))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Time zone">
                   <SelectValue placeholder="Select time zone" />
                 </SelectTrigger>
                 <SelectContent className="max-h-[300px]">
@@ -322,6 +322,7 @@ export default function UserSettingsPanel() {
                     privacy: { ...prev.privacy, dataSharing: v },
                   }))
                 }
+                aria-label="Data sharing"
               />
             </div>
             <div className="flex items-center justify-between">
@@ -339,6 +340,7 @@ export default function UserSettingsPanel() {
                     privacy: { ...prev.privacy, analyticsTracking: v },
                   }))
                 }
+                aria-label="Product analytics"
               />
             </div>
             <div className="flex items-center justify-between">
@@ -391,6 +393,7 @@ export default function UserSettingsPanel() {
                     notifications: { ...prev.notifications, healthAlerts: v },
                   }))
                 }
+                aria-label="Health alerts"
               />
             </div>
             <div className="flex items-center justify-between">
@@ -403,6 +406,7 @@ export default function UserSettingsPanel() {
                     notifications: { ...prev.notifications, goalReminders: v },
                   }))
                 }
+                aria-label="Goal reminders"
               />
             </div>
             <div className="flex items-center justify-between">
@@ -415,6 +419,7 @@ export default function UserSettingsPanel() {
                     notifications: { ...prev.notifications, weeklyReports: v },
                   }))
                 }
+                aria-label="Weekly reports"
               />
             </div>
           </CardContent>
@@ -440,6 +445,7 @@ export default function UserSettingsPanel() {
                     dataSync: { ...prev.dataSync, autoSync: v },
                   }))
                 }
+                aria-label="Auto-sync"
               />
             </div>
             <div className="grid gap-2">
@@ -456,7 +462,7 @@ export default function UserSettingsPanel() {
                   }))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Sync frequency">
                   <SelectValue placeholder="Select frequency" />
                 </SelectTrigger>
                 <SelectContent>
@@ -509,7 +515,7 @@ export default function UserSettingsPanel() {
                 }))
               }
             >
-              <SelectTrigger>
+              <SelectTrigger aria-label="Theme">
                 <SelectValue placeholder="Select theme" />
               </SelectTrigger>
               <SelectContent>
@@ -533,7 +539,7 @@ export default function UserSettingsPanel() {
                 }))
               }
             >
-              <SelectTrigger>
+              <SelectTrigger aria-label="Units">
                 <SelectValue placeholder="Select units" />
               </SelectTrigger>
               <SelectContent>
@@ -556,7 +562,7 @@ export default function UserSettingsPanel() {
                 }))
               }
             >
-              <SelectTrigger>
+              <SelectTrigger aria-label="Default view">
                 <SelectValue placeholder="Select default" />
               </SelectTrigger>
               <SelectContent>
@@ -580,7 +586,7 @@ export default function UserSettingsPanel() {
                 }))
               }
             >
-              <SelectTrigger id="dynamicTypeScale">
+              <SelectTrigger id="dynamicTypeScale" aria-label="Dynamic type scale">
                 <SelectValue placeholder="Font size" />
               </SelectTrigger>
               <SelectContent>

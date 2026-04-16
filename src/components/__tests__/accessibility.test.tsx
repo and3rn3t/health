@@ -78,9 +78,7 @@ describe('Component Accessibility Audits', () => {
   });
 
   describe('UserSettingsPanel', () => {
-    // TODO: Fix a11y violations — Radix Select triggers missing aria-label
-    // See: https://dequeuniversity.com/rules/axe/4.11/button-name
-    it.skip('passes axe accessibility audit', async () => {
+    it('passes axe accessibility audit', async () => {
       const { container } = renderWithProviders(<UserSettingsPanel />);
       await expectNoA11yViolations(container);
     });

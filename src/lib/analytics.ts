@@ -561,14 +561,42 @@ export function generateAnalyticsSummary(
       ? healthScores.reduce((a, b) => a + b, 0) / healthScores.length
       : 0;
 
-  // TODO: Calculate health score trend from healthScores
+  // Calculate health score trend from healthScores
+  let healthScoreTrend: TrendDirection = 'stable';
+  if (healthScores.length >= 2) {
+    const midpoint = Math.floor(healthScores.length / 2);
+    const firstHalf = healthScores.slice(0, midpoint);
+    const secondHalf = healthScores.slice(midpoint);
+    const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+    const secondAvg =
+      secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+    const changePct =
+      firstAvg > 0 ? ((secondAvg - firstAvg) / firstAvg) * 100 : 0;
+
+    if (changePct > 5) {
+      healthScoreTrend = 'improving';
+    } else if (changePct < -5) {
+      healthScoreTrend = 'declining';
+    } else {
+      const variance =
+        healthScores.reduce(
+          (sum, v) => sum + Math.pow(v - overallHealthScore, 2),
+          0
+        ) / healthScores.length;
+      const cv =
+        overallHealthScore > 0
+          ? Math.sqrt(variance) / overallHealthScore
+          : 0;
+      healthScoreTrend = cv > 0.2 ? 'volatile' : 'stable';
+    }
+  }
 
   return {
     timeRange,
     totalDataPoints: healthData.length,
     metricsAnalyzed,
     overallHealthScore,
-    healthScoreTrend: 'stable',
+    healthScoreTrend,
     keyInsights: [],
     anomalies: 0,
     correlations: [],

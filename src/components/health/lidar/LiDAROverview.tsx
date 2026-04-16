@@ -52,23 +52,28 @@ export function LiDAROverview(props: Readonly<OverviewProps>) {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {!currentSession.metrics ? (
+          <p className="text-sm text-muted-foreground">
+            No metrics available for this session.
+          </p>
+        ) : (
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm font-medium">Step Length</p>
             <p className="text-2xl font-bold">
-              {currentSession.metrics!.spatialMetrics.stepLength} cm
+              {currentSession.metrics.spatialMetrics.stepLength} cm
             </p>
           </div>
           <div>
             <p className="text-sm font-medium">Cadence</p>
             <p className="text-2xl font-bold">
-              {currentSession.metrics!.temporalMetrics.cadence} steps/min
+              {currentSession.metrics.temporalMetrics.cadence} steps/min
             </p>
           </div>
           <div>
             <p className="text-sm font-medium">Balance Score</p>
             <p className="text-2xl font-bold">
-              {currentSession.metrics!.stabilityMetrics.balanceScore}%
+              {currentSession.metrics.stabilityMetrics.balanceScore}%
             </p>
           </div>
           <div>
@@ -96,6 +101,7 @@ export function LiDAROverview(props: Readonly<OverviewProps>) {
             </div>
           </div>
         </div>
+        )}
         {/* Sparkline */}
         {sessionHistory.length > 0 &&
           (() => {
