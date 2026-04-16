@@ -13,7 +13,7 @@ function Input({ className, type, ...props }: ComponentProps<'input'>) {
           'dark:bg-input/30',
           'border-input shadow-xs',
           'h-10 py-2.5',
-          'file:text-slate-900 placeholder:text-slate-500',
+          'file:text-foreground placeholder:text-muted-foreground',
           'md:text-sm flex w-full min-w-0 rounded-md border bg-transparent px-4 text-base',
           'outline-none transition-[color,box-shadow]',
           'file:inline-flex file:h-8 file:border-0 file:bg-transparent file:text-sm file:font-medium',

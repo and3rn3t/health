@@ -1,0 +1,11 @@
+{
+  "sizes": {
+    "dist/": 1033238,
+    "dist-worker/": 266028
+  },
+  "budgets": {
+    "dist/": 2097152,
+    "dist-worker/": 1048576
+  },
+  "updatedAt": "2026-04-16T01:54:45.353Z"
+}
