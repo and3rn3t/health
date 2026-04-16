@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { TestProviders } from '@/test/render';
 
 // Mock dependencies before importing the component
-vi.mock('@/hooks/useCloudflareKV', () => ({
+vi.mock('@/hooks/useLocalKV', () => ({
   useKV: vi.fn().mockImplementation((_key: string, defaultVal: unknown) => [
     defaultVal,
     vi.fn(),

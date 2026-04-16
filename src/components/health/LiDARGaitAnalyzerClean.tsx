@@ -8,6 +8,7 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Target } from '@/lib/icons';
 import {
   Card,
   CardContent,
@@ -74,8 +75,8 @@ export function LiDARGaitAnalyzer({
     return (
       <Card className="text-center">
         <CardContent className="pt-6">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-xl text-gray-400">
-            🎯
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted text-xl text-muted-foreground">
+            <Target className="h-6 w-6" />
           </div>
           <h3 className="mb-2 text-lg font-semibold">LiDAR Not Available</h3>
           <p className="text-muted-foreground">
@@ -133,12 +134,10 @@ export function LiDARGaitAnalyzer({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <span
+            <Target
               aria-hidden="true"
-              className="mr-1 select-none text-xl text-primary"
-            >
-              🎯
-            </span>
+              className="mr-1 h-5 w-5 select-none text-primary"
+            />
             <span>LiDAR Gait Analyzer</span>
           </h2>
           <p className="text-muted-foreground">
@@ -406,9 +405,7 @@ export function LiDARGaitAnalyzer({
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <span aria-hidden="true" className="mr-1 select-none">
-                      🎯
-                    </span>
+                    <Target aria-hidden="true" className="mr-1 h-4 w-4 select-none" />
                     <span>Personalized Recommendations</span>
                   </CardTitle>
                 </CardHeader>

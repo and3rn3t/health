@@ -79,7 +79,7 @@ const CleanLiDARScanItem = memo<{
   return (
     <button
       type="button"
-      className="border-gray-200 hover:bg-gray-50 flex w-full cursor-pointer items-center justify-between border-b p-4 text-left transition-colors duration-150"
+      className="border-border hover:bg-muted/50 flex w-full cursor-pointer items-center justify-between border-b p-4 text-left transition-colors duration-150"
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       aria-label={`LiDAR scan ${scan.id} with ${scan.metadata.pointCount} points`}
@@ -96,7 +96,7 @@ const CleanLiDARScanItem = memo<{
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center space-x-2">
-              <p className="truncate text-sm font-medium text-gray-900">
+              <p className="truncate text-sm font-medium text-foreground">
                 Scan {scan.id}
               </p>
               <span className={`text-xs font-medium ${accuracyColor}`}>
@@ -105,11 +105,11 @@ const CleanLiDARScanItem = memo<{
             </div>
 
             <div className="mt-1 flex items-center space-x-4">
-              <p className="text-xs text-gray-500">{formatTimestamp}</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">{formatTimestamp}</p>
+              <p className="text-xs text-muted-foreground">
                 {scan.metadata.pointCount.toLocaleString()} points
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Duration: {formatDuration}
               </p>
               {scan.metadata.roomId && (
@@ -124,7 +124,7 @@ const CleanLiDARScanItem = memo<{
 
       <div className="ml-4 flex-shrink-0">
         <svg
-          className="w-5 h-5 text-gray-400"
+          className="w-5 h-5 text-muted-foreground"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -169,7 +169,7 @@ export const CleanLiDARList: React.FC<CleanLiDARListProps> = ({
       <div className={`lidar-empty-state ${className}`}>
         <div>
           <svg
-            className="h-12 w-12 text-gray-400 mx-auto"
+            className="h-12 w-12 text-muted-foreground mx-auto"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -182,10 +182,10 @@ export const CleanLiDARList: React.FC<CleanLiDARListProps> = ({
               d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
             />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">
+          <h3 className="mt-2 text-sm font-medium text-foreground">
             No LiDAR scans
           </h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             Start a scan to see data appear here.
           </p>
         </div>
@@ -195,7 +195,7 @@ export const CleanLiDARList: React.FC<CleanLiDARListProps> = ({
 
   return (
     <div
-      className={`border-gray-300 overflow-hidden rounded-lg border ${className}`}
+      className={`border-border overflow-hidden rounded-lg border ${className}`}
     >
       <ul>
         {displayData.map((item, index) => (
@@ -210,7 +210,7 @@ export const CleanLiDARList: React.FC<CleanLiDARListProps> = ({
       </ul>
 
       {data.length > maxItems && (
-        <div className="border-t p-4 text-center text-sm text-gray-500">
+        <div className="border-t p-4 text-center text-sm text-muted-foreground">
           Showing {maxItems} of {data.length} scans.
           <button
             type="button"
@@ -256,32 +256,32 @@ export const LiDARDataSummary: React.FC<{
   }, [data]);
 
   return (
-    <div className={`rounded-lg border bg-white p-4 shadow-sm ${className}`}>
-      <h3 className="mb-4 text-lg font-semibold text-gray-900">Data Summary</h3>
+    <div className={`rounded-lg border bg-card p-4 shadow-sm ${className}`}>
+      <h3 className="mb-4 text-lg font-semibold text-foreground">Data Summary</h3>
       <div className="md:grid-cols-4 grid grid-cols-2 gap-4">
         <div className="text-center">
           <div className="text-blue-600 text-2xl font-bold">
             {stats.totalScans}
           </div>
-          <div className="text-gray-600 text-sm">Total Scans</div>
+          <div className="text-muted-foreground text-sm">Total Scans</div>
         </div>
         <div className="text-center">
           <div className="text-green-600 text-2xl font-bold">
             {stats.totalPoints.toLocaleString()}
           </div>
-          <div className="text-gray-600 text-sm">Total Points</div>
+          <div className="text-muted-foreground text-sm">Total Points</div>
         </div>
         <div className="text-center">
           <div className="text-purple-600 text-2xl font-bold">
             {(stats.avgAccuracy * 100).toFixed(1)}%
           </div>
-          <div className="text-gray-600 text-sm">Avg Accuracy</div>
+          <div className="text-muted-foreground text-sm">Avg Accuracy</div>
         </div>
         <div className="text-center">
           <div className="text-orange-600 text-2xl font-bold">
             {stats.avgDuration.toFixed(1)}ms
           </div>
-          <div className="text-gray-600 text-sm">Avg Duration</div>
+          <div className="text-muted-foreground text-sm">Avg Duration</div>
         </div>
       </div>
     </div>
@@ -297,12 +297,12 @@ export const LiDARPointCloudViewer: React.FC<{
   const pointCount = data.length;
 
   return (
-    <div className={`rounded-lg border bg-white p-4 shadow-sm ${className}`}>
-      <h3 className="mb-4 text-lg font-semibold text-gray-900">
+    <div className={`rounded-lg border bg-card p-4 shadow-sm ${className}`}>
+      <h3 className="mb-4 text-lg font-semibold text-foreground">
         Point Cloud Viewer
       </h3>
-      <div className="h-96 flex w-full items-center justify-center rounded-lg border bg-gray-100">
-        <div className="text-gray-600 text-center">
+      <div className="h-96 flex w-full items-center justify-center rounded-lg border bg-muted">
+        <div className="text-muted-foreground text-center">
           <div className="text-lg font-medium">
             {pointCount.toLocaleString()} Points
           </div>

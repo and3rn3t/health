@@ -178,7 +178,7 @@ export function DeviceSetupWizard({
                             'complete',
                           ].indexOf(step) > index
                         ? 'border-green-500 bg-green-500 text-white'
-                        : 'border-gray-300 bg-white text-gray-400'
+                        : 'border-border bg-card text-muted-foreground'
                   }`}
                 >
                   {[
@@ -204,7 +204,7 @@ export function DeviceSetupWizard({
                         'complete',
                       ].indexOf(step) > index
                         ? 'bg-green-500'
-                        : 'bg-gray-300'
+                        : 'bg-border'
                     }`}
                   />
                 )}

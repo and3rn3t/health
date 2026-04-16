@@ -11,7 +11,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useKV } from '@/hooks/useCloudflareKV';
+import { useKV } from '@/hooks/useLocalKV';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { WS_TIMING } from '@/lib/motion-tokens';
 import {
@@ -256,7 +256,7 @@ export default function LiveConnectionDashboard() {
       case 'activity':
         return <Zap className="h-4 w-4 text-yellow-500" />;
       default:
-        return <Monitor className="h-4 w-4 text-gray-500" />;
+        return <Monitor className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -272,7 +272,7 @@ export default function LiveConnectionDashboard() {
       case 'poor':
         return 'text-red-600';
       default:
-        return 'text-gray-600';
+        return 'text-muted-foreground';
     }
   };
 

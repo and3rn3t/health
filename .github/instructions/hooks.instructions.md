@@ -11,13 +11,13 @@ applyTo: "src/hooks/**/*.ts"
 - Explicit return types — no implicit `any`.
 
 ## State Management
-- Use `useKV` from `@/hooks/useCloudflareKV` for client-side persistence (localStorage-backed).
+- Use `useKV` from `@/hooks/useLocalKV` for client-side persistence (localStorage-backed).
 - `@tanstack/react-query` for server state — co-locate query keys with hooks.
 - `useMemo` / `useCallback` for expensive computations or stable references.
 
 ## Existing Hooks (compose from these)
 - `useAuth` — Auth0 authentication state
-- `useCloudflareKV` — KV storage operations
+- `useLocalKV` — localStorage-backed KV storage operations
 - `useDeviceManagement` — connected device state
 - `useLiveHealthData` — real-time health metrics
 - `useWebSocket` — auto-reconnect WebSocket with backoff, heartbeat, zod guards

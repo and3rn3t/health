@@ -3,6 +3,7 @@
  */
 
 import { Button } from '@/components/ui/button';
+import { BarChart3 } from '@/lib/icons';
 import {
   Card,
   CardContent,
@@ -53,9 +54,7 @@ export function LiDARControls(props: Readonly<ControlsProps>) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <span aria-hidden="true" className="mr-1 select-none">
-            📊
-          </span>
+          <BarChart3 aria-hidden="true" className="mr-1 h-4 w-4 select-none" />
           <span>Analysis Controls</span>
         </CardTitle>
       </CardHeader>

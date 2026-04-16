@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { useKV } from '@/hooks/useCloudflareKV';
+import { useKV } from '@/hooks/useLocalKV';
 import { getApiClient } from '@/lib/api-client';
 import {
   DEFAULT_SETTINGS,

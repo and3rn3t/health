@@ -5,6 +5,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { BarChart3, TrendingUp } from '@/lib/icons';
 import {
   Card,
   CardContent,
@@ -205,7 +206,7 @@ export function WalkingPatternVisualizer() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <span>📊</span>
+              <BarChart3 className="h-4 w-4" />
               Live Walking Metrics
             </CardTitle>
             <CardDescription>
@@ -284,7 +285,7 @@ export function WalkingPatternVisualizer() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <span>📈</span>
+              <TrendingUp className="h-4 w-4" />
               Session History
             </CardTitle>
           </CardHeader>

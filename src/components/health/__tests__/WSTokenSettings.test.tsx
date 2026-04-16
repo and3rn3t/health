@@ -4,7 +4,7 @@ import { WSTokenSettings } from '../WSTokenSettings';
 import { TestProviders } from '@/test/render';
 
 // Mock dependencies
-vi.mock('@/hooks/useCloudflareKV', () => ({
+vi.mock('@/hooks/useLocalKV', () => ({
   useKV: vi.fn().mockImplementation((_key: string, defaultVal: unknown) => [
     defaultVal,
     vi.fn(),

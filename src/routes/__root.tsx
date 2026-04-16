@@ -17,7 +17,7 @@ import {
 import NavigationHeader from '@/components/NavigationHeader';
 import { MobileHeader } from '@/components/nav/MobileHeader';
 import { MobileBottomTabs } from '@/components/nav/MobileBottomTabs';
-import { useKV } from '@/hooks/useCloudflareKV';
+import { useKV } from '@/hooks/useLocalKV';
 import type { AllSettings } from '@/lib/settingsTypes';
 import { NAV_ITEMS } from '@/lib/navigation';
 import { APP_NAME, formatPageTitle } from '@/lib/branding';

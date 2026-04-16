@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { TestProviders } from '@/test/render';
 import type { ProcessedHealthData } from '@/types';
 
-vi.mock('@/hooks/useCloudflareKV', () => ({
+vi.mock('@/hooks/useLocalKV', () => ({
   useKV: vi.fn().mockImplementation((_key: string, defaultVal: unknown) => [
     defaultVal,
     vi.fn(),

@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useKV, useLocalStorage } from '../useCloudflareKV';
+import { useKV, useLocalStorage } from '../useLocalKV';
 
 describe('useKV', () => {
   beforeEach(() => {

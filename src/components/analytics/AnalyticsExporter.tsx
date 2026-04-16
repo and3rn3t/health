@@ -215,7 +215,7 @@ export default function AnalyticsExporter({
             </Select>
           </div>
 
-          <div className="rounded-lg border bg-gray-50 p-3 text-sm text-gray-600">
+          <div className="rounded-lg border bg-muted/50 p-3 text-sm text-muted-foreground">
             <strong>Includes:</strong>
             <ul className="mt-1 list-disc space-y-1 pl-5">
               <li>Analytics summary and key metrics</li>

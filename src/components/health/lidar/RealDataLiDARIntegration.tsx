@@ -196,12 +196,12 @@ export const RealDataLiDARIntegration: React.FC<{
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Connection Status */}
-      <div className="rounded-lg border bg-white p-4 shadow-sm">
+      <div className="rounded-lg border bg-card p-4 shadow-sm">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900">Data Source Status</h3>
+          <h3 className="font-semibold text-foreground">Data Source Status</h3>
           <div className="flex items-center space-x-4">
             <ConnectionStatusBadge status={connectionStatus} />
-            <div className="text-gray-600 text-sm">
+            <div className="text-muted-foreground text-sm">
               Source: {dataSource === 'real' ? 'Live Sensors' : 'Mock Data'}
             </div>
           </div>
@@ -210,8 +210,8 @@ export const RealDataLiDARIntegration: React.FC<{
 
       {/* Real-time Health Metrics */}
       {realDataStream && (
-        <div className="rounded-lg border bg-white p-4 shadow-sm">
-          <h3 className="mb-4 font-semibold text-gray-900">
+        <div className="rounded-lg border bg-card p-4 shadow-sm">
+          <h3 className="mb-4 font-semibold text-foreground">
             Real-time Health Metrics
           </h3>
           <div className="md:grid-cols-5 grid grid-cols-2 gap-4">
@@ -245,26 +245,26 @@ export const RealDataLiDARIntegration: React.FC<{
       )}
 
       {/* Recent Scans */}
-      <div className="rounded-lg border bg-white p-4 shadow-sm">
-        <h3 className="mb-4 font-semibold text-gray-900">
+      <div className="rounded-lg border bg-card p-4 shadow-sm">
+        <h3 className="mb-4 font-semibold text-foreground">
           Recent Scans ({scanHistory.length})
         </h3>
         <div className="max-h-64 space-y-2 overflow-y-auto">
           {scanHistory.map((scan, index) => (
             <div
               key={scan.id}
-              className="p-3 bg-gray-50 flex items-center justify-between rounded"
+              className="p-3 bg-muted/50 flex items-center justify-between rounded"
             >
               <div>
                 <div className="text-sm font-medium">
                   {new Date(scan.timestamp).toLocaleTimeString()}
                 </div>
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-muted-foreground">
                   {scan.metadata.pointCount.toLocaleString()} points •{' '}
                   {scan.metadata.accuracy * 100}% accuracy
                 </div>
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-muted-foreground">
                 {index === 0 && dataSource === 'real' ? '🔴 LIVE' : ''}
               </div>
             </div>
@@ -273,20 +273,20 @@ export const RealDataLiDARIntegration: React.FC<{
       </div>
 
       {/* Data Quality Indicators */}
-      <div className="rounded-lg border bg-white p-4 shadow-sm">
-        <h3 className="mb-4 font-semibold text-gray-900">Data Quality</h3>
+      <div className="rounded-lg border bg-card p-4 shadow-sm">
+        <h3 className="mb-4 font-semibold text-foreground">Data Quality</h3>
         <div className="md:grid-cols-3 grid grid-cols-1 gap-4">
           <div className="text-center">
             <div className="text-blue-600 text-2xl font-bold">
               {connectionStatus === 'connected' ? '✓' : '⚠'}
             </div>
-            <div className="text-gray-600 text-sm">Connection</div>
+            <div className="text-muted-foreground text-sm">Connection</div>
           </div>
           <div className="text-center">
             <div className="text-green-600 text-2xl font-bold">
               {scanHistory.length}
             </div>
-            <div className="text-gray-600 text-sm">Scans Collected</div>
+            <div className="text-muted-foreground text-sm">Scans Collected</div>
           </div>
           <div className="text-center">
             <div className="text-purple-600 text-2xl font-bold">
@@ -294,7 +294,7 @@ export const RealDataLiDARIntegration: React.FC<{
                 ? (realDataStream.accuracy * 100).toFixed(1) + '%'
                 : 'N/A'}
             </div>
-            <div className="text-gray-600 text-sm">Average Accuracy</div>
+            <div className="text-muted-foreground text-sm">Average Accuracy</div>
           </div>
         </div>
       </div>
@@ -361,7 +361,7 @@ const MetricCard: React.FC<{
   return (
     <div className="text-center">
       <div className={`text-lg font-bold ${colorClass}`}>{displayValue}</div>
-      <div className="text-xs text-gray-600">{label}</div>
+      <div className="text-xs text-muted-foreground">{label}</div>
     </div>
   );
 };

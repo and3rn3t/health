@@ -336,23 +336,23 @@ export const AdvancedLiDARAnalytics: React.FC<{
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Analytics Header */}
-      <div className="rounded-lg border bg-white p-6 shadow-sm">
+      <div className="rounded-lg border bg-card p-6 shadow-sm">
         <div className="mb-4 flex items-center">
           <Brain className="mr-3 h-6 w-6 text-purple-600" />
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-foreground">
             Advanced LiDAR Analytics
           </h2>
         </div>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           AI-powered analysis of your movement patterns and health indicators
         </p>
       </div>
 
       {/* Fall Risk Assessment */}
       {fallRisk && (
-        <div className="rounded-lg border bg-white p-6 shadow-sm">
+        <div className="rounded-lg border bg-card p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="flex items-center text-lg font-semibold text-gray-900">
+            <h3 className="flex items-center text-lg font-semibold text-foreground">
               <AlertTriangle className="mr-2 h-5 w-5 text-orange-500" />
               Fall Risk Assessment
             </h3>
@@ -361,16 +361,16 @@ export const AdvancedLiDARAnalytics: React.FC<{
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
-              <h4 className="mb-3 font-medium text-gray-900">Risk Factors</h4>
+              <h4 className="mb-3 font-medium text-foreground">Risk Factors</h4>
               <div className="space-y-2">
                 {fallRisk.factors.map((factor) => (
                   <div
                     key={factor.name}
-                    className="flex items-center justify-between rounded bg-gray-50 p-3"
+                    className="flex items-center justify-between rounded bg-muted/50 p-3"
                   >
                     <div>
                       <div className="text-sm font-medium">{factor.name}</div>
-                      <div className="text-xs text-gray-600">
+                      <div className="text-xs text-muted-foreground">
                         {factor.description}
                       </div>
                     </div>
@@ -381,7 +381,7 @@ export const AdvancedLiDARAnalytics: React.FC<{
             </div>
 
             <div>
-              <h4 className="mb-3 font-medium text-gray-900">
+              <h4 className="mb-3 font-medium text-foreground">
                 Recommendations
               </h4>
               <div className="space-y-2">
@@ -404,8 +404,8 @@ export const AdvancedLiDARAnalytics: React.FC<{
 
       {/* Health Trends */}
       {trends && (
-        <div className="rounded-lg border bg-white p-6 shadow-sm">
-          <h3 className="mb-4 flex items-center text-lg font-semibold text-gray-900">
+        <div className="rounded-lg border bg-card p-6 shadow-sm">
+          <h3 className="mb-4 flex items-center text-lg font-semibold text-foreground">
             <TrendingUp className="mr-2 h-5 w-5 text-green-500" />
             Health Trends - {trends.timeframe}
           </h3>
@@ -421,8 +421,8 @@ export const AdvancedLiDARAnalytics: React.FC<{
 
       {/* Recent Gait Analysis */}
       {latestPattern && (
-        <div className="rounded-lg border bg-white p-6 shadow-sm">
-          <h3 className="mb-4 flex items-center text-lg font-semibold text-gray-900">
+        <div className="rounded-lg border bg-card p-6 shadow-sm">
+          <h3 className="mb-4 flex items-center text-lg font-semibold text-foreground">
             <Activity className="mr-2 h-5 w-5 text-blue-500" />
             Latest Gait Analysis
           </h3>
@@ -496,7 +496,7 @@ const TrendIndicator: React.FC<{
     if (trendValue === 'declining' || trendValue === 'down') {
       return { icon: '↘️', color: 'text-red-600', text: 'declining' };
     }
-    return { icon: '➡️', color: 'text-gray-600', text: 'stable' };
+    return { icon: '➡️', color: 'text-muted-foreground', text: 'stable' };
   };
 
   const display = getTrendDisplay(trend);
@@ -513,15 +513,15 @@ const TrendCard: React.FC<{ label: string; data: TrendData }> = ({
   data,
 }) => {
   return (
-    <div className="rounded-lg bg-gray-50 p-4">
-      <div className="mb-2 text-sm font-medium text-gray-700">{label}</div>
+    <div className="rounded-lg bg-muted/50 p-4">
+      <div className="mb-2 text-sm font-medium text-foreground">{label}</div>
       <div className="flex items-center justify-between">
-        <div className="text-lg font-bold text-gray-900">
+        <div className="text-lg font-bold text-foreground">
           {(data.current * 100).toFixed(1)}%
         </div>
         <TrendIndicator trend={data.trend} />
       </div>
-      <div className="mt-1 text-xs text-gray-500">
+      <div className="mt-1 text-xs text-muted-foreground">
         {data.change > 0 ? '+' : ''}
         {data.change.toFixed(1)}% change
       </div>
@@ -534,8 +534,8 @@ const MetricDisplay: React.FC<{ label: string; value: string }> = ({
   value,
 }) => (
   <div className="text-center">
-    <div className="text-lg font-bold text-gray-900">{value}</div>
-    <div className="text-sm text-gray-600">{label}</div>
+    <div className="text-lg font-bold text-foreground">{value}</div>
+    <div className="text-sm text-muted-foreground">{label}</div>
   </div>
 );
 

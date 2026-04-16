@@ -27,6 +27,7 @@ export {
   ChevronRight,
   Clock,
   CloudUpload,
+  Construction,
   Database,
   Download,
   FileJson,

@@ -14,7 +14,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useKV } from '@/hooks/useCloudflareKV';
+import { useKV } from '@/hooks/useLocalKV';
 import { ApiError, getApiClient } from '@/lib/api-client';
 import { getLiveHealthDataSync } from '@/lib/liveHealthDataSync';
 import {
@@ -259,7 +259,7 @@ export function WSTokenSettings() {
                 <span
                   className={
                     'inline-block h-2 w-2 rounded-full ' +
-                    (connected ? 'bg-green-500' : 'bg-gray-400')
+                    (connected ? 'bg-green-500' : 'bg-muted-foreground/50')
                   }
                   aria-label={connected ? 'connected' : 'disconnected'}
                 />

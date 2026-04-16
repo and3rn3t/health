@@ -112,7 +112,7 @@ export default function TimeSeriesChart({
                 <TrendingDown className="h-4 w-4 text-red-600" />
               )}
               {trend.direction === 'stable' && (
-                <Minus className="h-4 w-4 text-gray-600" />
+                <Minus className="h-4 w-4 text-muted-foreground" />
               )}
               <Badge
                 variant={
@@ -150,7 +150,7 @@ export default function TimeSeriesChart({
                       x={padding - 10}
                       y={line.y + 4}
                       textAnchor="end"
-                      className="fill-gray-500 text-xs"
+                      className="fill-muted-foreground text-xs"
                     >
                       {line.value.toFixed(1)}
                     </text>
@@ -245,7 +245,7 @@ export default function TimeSeriesChart({
               x={width / 2}
               y={height - 5}
               textAnchor="middle"
-              className="fill-gray-600 text-xs"
+              className="fill-muted-foreground text-xs"
             >
               Date
             </text>
@@ -253,7 +253,7 @@ export default function TimeSeriesChart({
               x={15}
               y={height / 2}
               textAnchor="middle"
-              className="fill-gray-600 text-xs"
+              className="fill-muted-foreground text-xs"
               transform={`rotate(-90, 15, ${height / 2})`}
             >
               Value {unit && `(${unit})`}
@@ -265,23 +265,23 @@ export default function TimeSeriesChart({
         {trend && (
           <div className="mt-4 grid grid-cols-4 gap-4 rounded-lg border p-3 text-sm">
             <div>
-              <div className="text-xs text-gray-500">Slope</div>
+              <div className="text-xs text-muted-foreground">Slope</div>
               <div className="font-semibold">{trend.slope.toFixed(3)}/day</div>
             </div>
             <div>
-              <div className="text-xs text-gray-500">R²</div>
+              <div className="text-xs text-muted-foreground">R²</div>
               <div className="font-semibold">
                 {(trend.rSquared * 100).toFixed(1)}%
               </div>
             </div>
             <div>
-              <div className="text-xs text-gray-500">Confidence</div>
+              <div className="text-xs text-muted-foreground">Confidence</div>
               <div className="font-semibold">
                 {(trend.confidence * 100).toFixed(0)}%
               </div>
             </div>
             <div>
-              <div className="text-xs text-gray-500">Volatility</div>
+              <div className="text-xs text-muted-foreground">Volatility</div>
               <div className="font-semibold">
                 {(trend.volatility * 100).toFixed(1)}%
               </div>

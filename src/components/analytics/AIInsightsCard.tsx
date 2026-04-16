@@ -306,7 +306,7 @@ export default function AIInsightsCard({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-500">No health data available</p>
+          <p className="text-sm text-muted-foreground">No health data available</p>
         </CardContent>
       </Card>
     );
@@ -391,11 +391,11 @@ export default function AIInsightsCard({
                           {insight.priority}
                         </Badge>
                       </div>
-                      <p className="text-xs text-gray-700 line-clamp-2">
+                      <p className="text-xs text-foreground line-clamp-2">
                         {insight.content}
                       </p>
                       {insight.actionable && (
-                        <div className="mt-2 flex items-center gap-2 text-xs text-gray-600">
+                        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                           <CheckCircle className="h-3 w-3" />
                           <span>Actionable</span>
                           {insight.timeframe && (
@@ -431,7 +431,7 @@ export default function AIInsightsCard({
               )}
             </>
           ) : (
-            <div className="py-4 text-center text-sm text-gray-500">
+            <div className="py-4 text-center text-sm text-muted-foreground">
               No insights available. Generate insights to see recommendations.
             </div>
           )}

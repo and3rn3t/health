@@ -3,7 +3,7 @@ import { DeviceDetectionService } from '@/lib/deviceDetectionService';
 import { getLiveHealthDataSync } from '@/lib/liveHealthDataSync';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useKV } from './useCloudflareKV';
+import { useKV } from './useLocalKV';
 
 export type { ConnectedDevice, DeviceScanResult, DeviceType } from './device-management/types';
 import type { ConnectedDevice, DeviceScanResult, DeviceType } from './device-management/types';

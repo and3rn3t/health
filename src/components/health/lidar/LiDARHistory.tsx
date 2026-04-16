@@ -4,6 +4,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { TrendingUp } from '@/lib/icons';
 import {
   Card,
   CardContent,
@@ -63,9 +64,7 @@ export function LiDARHistory(props: Readonly<HistoryProps>) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <span aria-hidden="true" className="mr-1 select-none">
-              📈
-            </span>
+            <TrendingUp aria-hidden="true" className="mr-1 h-4 w-4 select-none" />
             <span>Recent Sessions</span>
           </CardTitle>
           <div className="flex gap-2">

@@ -54,7 +54,7 @@ export default function MetricComparisonCard({
   if (!comparison) {
     return (
       <Card>
-        <CardContent className="py-8 text-center text-gray-500">
+        <CardContent className="py-8 text-center text-muted-foreground">
           Insufficient data for comparison
         </CardContent>
       </Card>
@@ -68,7 +68,7 @@ export default function MetricComparisonCard({
       case 'declining':
         return <TrendingDown className="h-4 w-4 text-red-600" />;
       default:
-        return <Minus className="h-4 w-4 text-gray-600" />;
+        return <Minus className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -79,7 +79,7 @@ export default function MetricComparisonCard({
       case 'declining':
         return 'text-red-600';
       default:
-        return 'text-gray-600';
+        return 'text-muted-foreground';
     }
   };
 
@@ -128,14 +128,14 @@ export default function MetricComparisonCard({
 
         <div className="mb-3 grid grid-cols-2 gap-4">
           <div>
-            <div className="mb-1 text-xs text-gray-500">Current</div>
+            <div className="mb-1 text-xs text-muted-foreground">Current</div>
             <div className="text-xl font-bold">
               {comparison.current.toFixed(1)}
             </div>
           </div>
           <div>
-            <div className="mb-1 text-xs text-gray-500">Previous</div>
-            <div className="text-xl font-bold text-gray-600">
+            <div className="mb-1 text-xs text-muted-foreground">Previous</div>
+            <div className="text-xl font-bold text-muted-foreground">
               {comparison.previous.toFixed(1)}
             </div>
           </div>
@@ -150,7 +150,7 @@ export default function MetricComparisonCard({
               {comparison.changePercent.toFixed(1)}%)
             </span>
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-muted-foreground">
             {comparison.percentile}th percentile
           </div>
         </div>

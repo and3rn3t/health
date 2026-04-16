@@ -69,7 +69,7 @@ export function DeviceStatusCard({
       case 'error':
         return 'bg-red-500';
       default:
-        return 'bg-gray-500';
+        return 'bg-muted-foreground';
     }
   };
 

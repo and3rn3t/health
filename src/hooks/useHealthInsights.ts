@@ -2,7 +2,7 @@
  * useHealthInsights — generates insights, trends, and predictive alerts from health data.
  */
 
-import { useKV } from '@/hooks/useCloudflareKV';
+import { useKV } from '@/hooks/useLocalKV';
 import type { ProcessedHealthData } from '@/types';
 import { useCallback, useEffect, useState } from 'react';
 

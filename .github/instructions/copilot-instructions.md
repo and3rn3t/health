@@ -8,7 +8,7 @@
 - **Runtime**: Cloudflare Workers (Hono) for static assets + API. Worker entry: `src/worker.ts` → `dist-worker/index.js`.
 - **iOS**: Swift/HealthKit app in `ios/` — singletons (`AppConfig.shared`, `HealthKitManager.shared`), WebSocket bridge.
 - **Auth**: Auth0 with JWT verification (JWKS + HS256 fallback). Config in `src/lib/auth0Config.ts` and `wrangler.toml`.
-- **Data**: Client-side `useKV` from `@/hooks/useCloudflareKV`; server-side Cloudflare KV/R2 via Wrangler bindings.
+- **Data**: Client-side `useKV` from `@/hooks/useLocalKV`; server-side Cloudflare KV/R2 via Wrangler bindings.
 
 ## Architecture and boundaries
 
@@ -48,7 +48,7 @@
 
 ## State, data fetching, and realtime
 
-- UI state: `useKV` from `@/hooks/useCloudflareKV` for lightweight client persistence.
+- UI state: `useKV` from `@/hooks/useLocalKV` for lightweight client persistence.
 - Server state: `@tanstack/react-query` — co-locate query keys/constants.
 - Pagination: cursor-based (`{ data, nextCursor?, hasMore? }`).
 - Validation: `zod` at all boundaries (WebSocket payloads, Worker bodies, query params).
@@ -90,7 +90,7 @@
 - Networking: `fetch` + React Query. Workers: `c.req`/`c.env`.
 - Realtime: `WebSocket` API; envelopes `{ type, data, timestamp }` + zod.
 - Styling: Tailwind utilities + existing components; no CSS-in-JS.
-- Storage: `useKV` from `@/hooks/useCloudflareKV` (client); Cloudflare KV/R2 (server, bind in wrangler.toml).
+- Storage: `useKV` from `@/hooks/useLocalKV` (client); Cloudflare KV/R2 (server, bind in wrangler.toml).
 
 ## Don'ts
 

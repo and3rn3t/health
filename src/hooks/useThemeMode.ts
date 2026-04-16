@@ -1,4 +1,4 @@
-import { useKV } from '@/hooks/useCloudflareKV';
+import { useKV } from '@/hooks/useLocalKV';
 import { useCallback, useEffect, useMemo } from 'react';
 
 export type ThemeMode = 'light' | 'dark' | 'system';

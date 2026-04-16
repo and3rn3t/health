@@ -4,7 +4,7 @@
  */
 
 import { Button } from '@/components/ui/button';
-import { Activity, AlertCircle, Heart, TrendingUp } from '@/lib/icons';
+import { Activity, AlertCircle, Construction, Heart, TrendingUp } from '@/lib/icons';
 
 export default function HeartHealthMonitoring() {
   return (
@@ -176,10 +176,13 @@ export default function HeartHealthMonitoring() {
 
       {/* Coming Soon Notice */}
       <div className="mt-8 rounded-lg border border-border bg-card p-4">
-        <p className="text-sm text-vitalsense-error">
-          🚧 <strong>Advanced Cardiac Analysis Coming Soon</strong> - ECG
-          analysis, atrial fibrillation detection, and predictive cardiovascular
-          risk assessment.
+        <p className="flex items-center gap-2 text-sm text-vitalsense-error">
+          <Construction className="h-4 w-4 shrink-0" />
+          <span>
+            <strong>Advanced Cardiac Analysis Coming Soon</strong> - ECG
+            analysis, atrial fibrillation detection, and predictive
+            cardiovascular risk assessment.
+          </span>
         </p>
       </div>
     </div>

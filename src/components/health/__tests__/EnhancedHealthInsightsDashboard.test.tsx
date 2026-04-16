@@ -2,10 +2,10 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import EnhancedHealthInsightsDashboard from '../EnhancedHealthInsightsDashboard';
 import { TestProviders } from '@/test/render';
-import { useKV } from '@/hooks/useCloudflareKV';
+import { useKV } from '@/hooks/useLocalKV';
 import type { ProcessedHealthData } from '@/types';
 
-vi.mock('@/hooks/useCloudflareKV', () => ({
+vi.mock('@/hooks/useLocalKV', () => ({
   useKV: vi.fn().mockImplementation((_key: string, defaultVal: unknown) => [
     defaultVal,
     vi.fn(),

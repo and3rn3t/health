@@ -295,7 +295,7 @@ This guidance is informational and not medical advice. Consult healthcare provid
 
   if (!healthData) {
     return (
-      <div className="py-8 text-center text-gray-500">
+      <div className="py-8 text-center text-muted-foreground">
         No health data available for AI analysis
       </div>
     );
@@ -378,7 +378,7 @@ This guidance is informational and not medical advice. Consult healthcare provid
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm leading-relaxed mb-3">{insight.content}</p>
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                     {insight.actionable && (
                       <div className="flex items-center gap-1">
                         <CheckCircle className="h-3 w-3" />

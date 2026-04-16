@@ -56,7 +56,7 @@ export default function PatternDetectionPanel({
       case 'seasonal':
         return 'bg-purple-500';
       default:
-        return 'bg-gray-500';
+        return 'bg-muted/500';
     }
   };
 
@@ -73,7 +73,7 @@ export default function PatternDetectionPanel({
       </CardHeader>
       <CardContent>
         {patterns.length === 0 ? (
-          <div className="py-8 text-center text-gray-500">
+          <div className="py-8 text-center text-muted-foreground">
             No patterns detected
           </div>
         ) : (
@@ -97,13 +97,13 @@ export default function PatternDetectionPanel({
                   </div>
                 </div>
 
-                <p className="mb-3 text-sm text-gray-600">
+                <p className="mb-3 text-sm text-muted-foreground">
                   {pattern.description}
                 </p>
 
                 {pattern.peakTimes && pattern.peakTimes.length > 0 && (
                   <div className="mb-2">
-                    <div className="mb-1 text-xs text-gray-500">
+                    <div className="mb-1 text-xs text-muted-foreground">
                       Peak Times:
                     </div>
                     <div className="flex flex-wrap gap-1">
@@ -118,7 +118,7 @@ export default function PatternDetectionPanel({
 
                 {pattern.lowTimes && pattern.lowTimes.length > 0 && (
                   <div>
-                    <div className="mb-1 text-xs text-gray-500">Low Times:</div>
+                    <div className="mb-1 text-xs text-muted-foreground">Low Times:</div>
                     <div className="flex flex-wrap gap-1">
                       {pattern.lowTimes.map((time, idx) => (
                         <Badge key={idx} variant="outline" className="text-xs">
@@ -135,7 +135,7 @@ export default function PatternDetectionPanel({
                     <span>Pattern Strength</span>
                     <span>{(pattern.strength * 100).toFixed(0)}%</span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-gray-200">
+                  <div className="h-2 w-full rounded-full bg-muted">
                     <div
                       className={`h-2 rounded-full ${getPatternColor(pattern.pattern)}`}
                       style={{ width: `${pattern.strength * 100}%` }}

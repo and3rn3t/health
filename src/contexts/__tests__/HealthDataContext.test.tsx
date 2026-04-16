@@ -2,10 +2,10 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { HealthDataProvider, useHealthData } from '../HealthDataContext';
 import { TestProviders } from '@/test/render';
-import { useKV } from '@/hooks/useCloudflareKV';
+import { useKV } from '@/hooks/useLocalKV';
 
 // Mock dependencies
-vi.mock('@/hooks/useCloudflareKV', () => ({
+vi.mock('@/hooks/useLocalKV', () => ({
   useKV: vi.fn().mockReturnValue([null, vi.fn()]),
 }));
 

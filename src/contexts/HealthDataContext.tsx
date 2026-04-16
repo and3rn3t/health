@@ -5,7 +5,7 @@ import {
   useMemo,
   type ReactNode,
 } from 'react';
-import { useKV } from '@/hooks/useCloudflareKV';
+import { useKV } from '@/hooks/useLocalKV';
 import { HealthDataProcessor } from '@/lib/healthDataProcessor';
 import type { ProcessedHealthData } from '@/types';
 

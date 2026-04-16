@@ -4,7 +4,7 @@ import LiveConnectionDashboard from '../../live/LiveConnectionDashboard';
 import { TestProviders } from '@/test/render';
 
 // Mock hooks
-vi.mock('@/hooks/useCloudflareKV', () => ({
+vi.mock('@/hooks/useLocalKV', () => ({
   useKV: vi.fn().mockImplementation((_key: string, defaultVal: unknown) => [
     defaultVal,
     vi.fn(),

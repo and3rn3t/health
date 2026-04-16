@@ -2,7 +2,7 @@
  * useAlertManagement — CRUD operations and smart alert generation.
  */
 
-import { useKV } from '@/hooks/useCloudflareKV';
+import { useKV } from '@/hooks/useLocalKV';
 import { useState } from 'react';
 import { toast } from 'sonner';
 

@@ -5,7 +5,7 @@
  * from LiDARGaitAnalyzerClean.tsx into a single composable hook.
  */
 
-import { useKV } from '@/hooks/useCloudflareKV';
+import { useKV } from '@/hooks/useLocalKV';
 import {
   assessEnvironmentRisk,
   summarizeSurface,
