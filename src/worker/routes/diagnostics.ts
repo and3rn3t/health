@@ -152,6 +152,13 @@ route.get('/api/_diagnostics', (c) => {
   return c.json(body, 200);
 });
 
+// Dev-only: lightweight ping for latency measurement
+route.get('/api/_diagnostics/ping', (c) => {
+  if (!c.env.ENVIRONMENT || c.env.ENVIRONMENT === 'production')
+    return c.json({ error: 'not_available' }, 404);
+  return c.json({ ok: true, ts: Date.now() });
+});
+
 // Dev-only: rate limit remaining probe (does not consume)
 route.get('/api/_ratelimit', async (c) => {
   if (!c.env.ENVIRONMENT || c.env.ENVIRONMENT === 'production')

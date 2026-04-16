@@ -13,6 +13,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as LidarPostureRouteImport } from './routes/lidar-posture'
 import { Route as GaitAnalysisRouteImport } from './routes/gait-analysis'
 import { Route as FallRiskRouteImport } from './routes/fall-risk'
+import { Route as DiagnosticsDevRouteImport } from './routes/diagnostics-dev'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SettingsRoute = SettingsRouteImport.update({
@@ -35,6 +36,11 @@ const FallRiskRoute = FallRiskRouteImport.update({
   path: '/fall-risk',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DiagnosticsDevRoute = DiagnosticsDevRouteImport.update({
+  id: '/diagnostics-dev',
+  path: '/diagnostics-dev',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,6 +49,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/diagnostics-dev': typeof DiagnosticsDevRoute
   '/fall-risk': typeof FallRiskRoute
   '/gait-analysis': typeof GaitAnalysisRoute
   '/lidar-posture': typeof LidarPostureRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/diagnostics-dev': typeof DiagnosticsDevRoute
   '/fall-risk': typeof FallRiskRoute
   '/gait-analysis': typeof GaitAnalysisRoute
   '/lidar-posture': typeof LidarPostureRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/diagnostics-dev': typeof DiagnosticsDevRoute
   '/fall-risk': typeof FallRiskRoute
   '/gait-analysis': typeof GaitAnalysisRoute
   '/lidar-posture': typeof LidarPostureRoute
@@ -67,15 +76,23 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/diagnostics-dev'
     | '/fall-risk'
     | '/gait-analysis'
     | '/lidar-posture'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/fall-risk' | '/gait-analysis' | '/lidar-posture' | '/settings'
+  to:
+    | '/'
+    | '/diagnostics-dev'
+    | '/fall-risk'
+    | '/gait-analysis'
+    | '/lidar-posture'
+    | '/settings'
   id:
     | '__root__'
     | '/'
+    | '/diagnostics-dev'
     | '/fall-risk'
     | '/gait-analysis'
     | '/lidar-posture'
@@ -84,6 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DiagnosticsDevRoute: typeof DiagnosticsDevRoute
   FallRiskRoute: typeof FallRiskRoute
   GaitAnalysisRoute: typeof GaitAnalysisRoute
   LidarPostureRoute: typeof LidarPostureRoute
@@ -120,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FallRiskRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/diagnostics-dev': {
+      id: '/diagnostics-dev'
+      path: '/diagnostics-dev'
+      fullPath: '/diagnostics-dev'
+      preLoaderRoute: typeof DiagnosticsDevRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -132,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DiagnosticsDevRoute: DiagnosticsDevRoute,
   FallRiskRoute: FallRiskRoute,
   GaitAnalysisRoute: GaitAnalysisRoute,
   LidarPostureRoute: LidarPostureRoute,
