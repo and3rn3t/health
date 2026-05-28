@@ -38,7 +38,7 @@
 
 /* --- Theme: VitalSense brand tokens + fonts + animations --- */
 @theme {
-  --color-vitalsense-primary: #2563eb;
+  --color-vitalsense-primary: #1d4ed8;
   --color-vitalsense-secondary: #34C759;
   --color-vitalsense-success: #30D158;
   --color-vitalsense-warning: #FF9500;
@@ -93,7 +93,7 @@
     --card-foreground: #1e293b;
     --popover: #ffffff;
     --popover-foreground: #1e293b;
-    --primary: #2563eb;
+    --primary: #1d4ed8;
     --primary-foreground: #ffffff;
     --secondary: #e2e8f0;
     --secondary-foreground: #475569;
@@ -107,11 +107,11 @@
     --destructive-foreground: #ffffff;
     --border: #cbd5e1;
     --input: #e2e8f0;
-    --ring: #2563eb;
+    --ring: #1d4ed8;
     --radius: 0.5rem;
 
     /* VitalSense Brand Colors (aligned with @theme iOS-style values) */
-    --vitalsense-primary: #2563eb;
+    --vitalsense-primary: #1d4ed8;
     --vitalsense-primary-light: #3b82f6;
     --vitalsense-teal: #056487;
     --vitalsense-success: #30D158;

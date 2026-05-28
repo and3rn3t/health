@@ -76,6 +76,7 @@ function AppShell({ pageLabel }: { pageLabel: string }) {
             id="main-content"
             role="main"
             aria-label={pageLabel}
+            tabIndex={-1}
             className="flex-1 px-4 pb-20 pt-2"
           >
             <Suspense fallback={<DashboardSkeleton />}>
@@ -99,6 +100,7 @@ function AppShell({ pageLabel }: { pageLabel: string }) {
             id="main-content"
             role="main"
             aria-label={pageLabel}
+            tabIndex={-1}
             className="flex-1 px-6 pb-4 pt-3 lg:px-10 2xl:px-16"
           >
             <Suspense fallback={<DashboardSkeleton />}>
