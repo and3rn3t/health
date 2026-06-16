@@ -166,7 +166,8 @@
       "brace-expansion@>=2.0.0": "2.0.3",
       "lint-staged>picomatch": "4.0.4",
       "eslint>ajv": "6.14.0",
-      "@eslint/eslintrc>ajv": "6.14.0"
+      "@eslint/eslintrc>ajv": "6.14.0",
+      "fast-uri": ">=3.1.2"
     }
   },
   "engines": {

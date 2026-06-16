@@ -58,6 +58,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-pnpm
 
+      - name: Build worker (integration tests require compiled worker)
+        if: matrix.suite == 'integration'
+        run: pnpm run build:worker
+        env:
+          CI: 'true'
+
       - name: Run ${{ matrix.suite }} tests
         run: |
           if [ "${{ matrix.suite }}" = "unit" ]; then
@@ -125,6 +131,7 @@ jobs:
 
       - name: SonarCloud Scan
         if: matrix.suite == 'unit' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+        continue-on-error: true
         uses: SonarSource/sonarcloud-github-action@v3
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

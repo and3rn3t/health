@@ -80,6 +80,13 @@ const EXCLUDED_ROUTES = new Set([
   '/api/docs/openapi.json',
   // Internal app config (loaded via <script>)
   '/app-config.js',
+  // Runtime config endpoint (internal, not public API)
+  '/api/config/:type',
+  // Diagnostics ping (internal health probe)
+  '/api/_diagnostics/ping',
+  // Observability endpoints (internal metrics/health)
+  '/api/observability/health',
+  '/api/observability/metrics',
   // Internal WS helpers (auth-derived, not public API)
   '/api/ws-device-token',
   '/api/ws-user-id',
