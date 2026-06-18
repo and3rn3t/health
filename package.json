@@ -85,7 +85,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
-    "hono": "^4.12.14",
+    "hono": "^4.12.25",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.484.0",
     "react": "^19.0.0",
@@ -141,7 +141,7 @@
     "tailwindcss": "^4.1.13",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.58.2",
-    "vite": "8.0.8",
+    "vite": "8.0.16",
     "vitest": "4.1.4",
     "vitest-axe": "0.1.0",
     "wrangler": "^4.81.0"
@@ -167,7 +167,9 @@
       "lint-staged>picomatch": "4.0.4",
       "eslint>ajv": "6.14.0",
       "@eslint/eslintrc>ajv": "6.14.0",
-      "fast-uri": ">=3.1.2"
+      "fast-uri": ">=3.1.2",
+      "ws": "8.21.0",
+      "undici@<7.28.0": "7.28.0"
     }
   },
   "engines": {

@@ -24,6 +24,14 @@ pnpm test:e2e          # Run Playwright tests
 
 Configuration: [playwright.config.ts](../../playwright.config.ts)
 
+When API/Worker endpoints are required during E2E, run tests against a local Worker runtime:
+
+```bash
+E2E_USE_WRANGLER=true pnpm test:e2e
+```
+
+CI and nightly workflows use this mode so `/api/*`, `/ws`, and `/health` routes are exercised through the Worker instead of a static preview server.
+
 ### iOS Tests (XCTest)
 
 Unit and UI tests for the native iOS app.

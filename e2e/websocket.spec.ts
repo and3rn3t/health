@@ -1,5 +1,16 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type APIResponse } from '@playwright/test';
 import { AppPage } from './pages/app.page';
+
+async function readJsonResponse(res: APIResponse) {
+  const contentType = res.headers()['content-type'] ?? '';
+  if (!contentType.toLowerCase().includes('application/json')) {
+    const bodySnippet = (await res.text()).slice(0, 200);
+    throw new Error(
+      `Expected JSON response but got "${contentType || 'unknown'}": ${bodySnippet}`
+    );
+  }
+  return res.json();
+}
 
 /**
  * E2E tests for WebSocket connectivity and real-time data flow.
@@ -13,7 +24,7 @@ test.describe('WebSocket Real-Time Data', () => {
     const res = await request.get('/ws');
 
     expect(res.ok()).toBe(true);
-    const body = await res.json();
+    const body = await readJsonResponse(res);
     expect(body.ok).toBe(true);
     expect(body.upgradeRequired).toBe(true);
     expect(body.supportedMessageTypes).toContain('connection_established');
@@ -25,7 +36,7 @@ test.describe('WebSocket Real-Time Data', () => {
     const res = await request.get('/api/ws-url');
 
     expect(res.ok()).toBe(true);
-    const body = await res.json();
+    const body = await readJsonResponse(res);
     expect(body.url).toBeDefined();
     expect(body.url).toMatch(/^wss?:\/\//);
   });
@@ -36,7 +47,7 @@ test.describe('WebSocket Real-Time Data', () => {
     const res = await request.get('/api/ws-live-enabled');
 
     expect(res.ok()).toBe(true);
-    const body = await res.json();
+    const body = await readJsonResponse(res);
     expect(typeof body.enabled).toBe('boolean');
   });
 

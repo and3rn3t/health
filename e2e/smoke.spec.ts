@@ -39,8 +39,11 @@ test.describe('Smoke Tests', () => {
     // Tab through interactive elements — should not throw
     await page.keyboard.press('Tab');
     await page.keyboard.press('Tab');
-    const focused = page.locator(':focus');
-    await expect(focused).toBeAttached();
+    const focusedTag = await page.evaluate(
+      () => document.activeElement?.tagName ?? null
+    );
+    expect(focusedTag).not.toBeNull();
+    expect(focusedTag).not.toBe('BODY');
   });
 });
 

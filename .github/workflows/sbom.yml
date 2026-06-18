@@ -25,7 +25,7 @@ jobs:
       - uses: ./.github/actions/setup-pnpm
 
       - name: Generate CycloneDX SBOM
-        run: npx @cyclonedx/cyclonedx-npm --output-file sbom.json --output-format JSON
+        run: npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-file sbom.json --output-format JSON
 
       - name: Check for problematic licenses
         run: |
