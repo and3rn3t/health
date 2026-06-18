@@ -81,14 +81,12 @@ jobs:
             ].join('\n');
 
             const { owner, repo } = context.repo;
-            const { data: openIssues } = await github.rest.issues.listForRepo({
-              owner,
-              repo,
-              state: 'open',
-              labels: 'bug,e2e',
-              per_page: 20,
+            const query = `repo:${owner}/${repo} is:issue is:open in:title "${title}"`;
+            const { data: searchResult } = await github.rest.search.issuesAndPullRequests({
+              q: query,
+              per_page: 1,
             });
-            const existing = openIssues.find((issue) => issue.title === title);
+            const existing = searchResult.items[0];
 
             if (existing) {
               await github.rest.issues.createComment({

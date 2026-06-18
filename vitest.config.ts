@@ -52,7 +52,7 @@ export default defineConfig({
         ? ['json-summary', 'json', 'lcov']
         : ['text', 'json', 'json-summary', 'lcov'],
       reportsDirectory: 'coverage',
-      // Ratchet up: raise thresholds as coverage improves
+      // Current enforced baseline thresholds (kept in sync by coverage ratchet updates)
       thresholds: {
         lines: 63,
         branches: 51,
