@@ -88,18 +88,18 @@
 
     /* Light Theme Tokens */
     --background: #f8fafc;
-    --foreground: #1e293b;
+    --foreground: #0f172a;
     --card: #ffffff;
-    --card-foreground: #1e293b;
+    --card-foreground: #0f172a;
     --popover: #ffffff;
     --popover-foreground: #1e293b;
-    --primary: #1d4ed8;
+    --primary: #1e40af;
     --primary-foreground: #ffffff;
     --secondary: #e2e8f0;
-    --secondary-foreground: #475569;
+    --secondary-foreground: #334155;
     --muted: #f1f5f9;
     /* Adjusted muted-foreground darker (was #64748b) to improve contrast on #f1f5f9 */
-    --muted-foreground: #566176;
+    --muted-foreground: #475569;
     /* Darkened accent (was #0891b2) to increase contrast for white foreground */
     --accent: #056487;
     --accent-foreground: #ffffff;
@@ -149,18 +149,18 @@
 
   [data-appearance='dark'] {
     --background: #0f172a;
-    --foreground: #f8fafc;
+    --foreground: #e5e7eb;
     --card: #1e293b;
-    --card-foreground: #f8fafc;
+    --card-foreground: #e5e7eb;
     --popover: #1e293b;
     --popover-foreground: #f8fafc;
     /* Dark theme primary darkened (was #3b82f6) to raise white contrast above 4.5 */
     --primary: #2563eb;
     --primary-foreground: #ffffff;
     --secondary: #334155;
-    --secondary-foreground: #cbd5e1;
+    --secondary-foreground: #d1d5db;
     --muted: #1e293b;
-    --muted-foreground: #94a3b8;
+    --muted-foreground: #cbd5e1;
     --accent: #0ea5e9;
     /* Adjusted for contrast: white on #0ea5e9 was 2.77:1. Using #333333 (~4.56:1) */
     --accent-foreground: #333333;

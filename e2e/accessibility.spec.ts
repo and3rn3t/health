@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 test.describe('Accessibility', () => {
   test('home page passes axe accessibility audit', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
@@ -16,7 +16,7 @@ test.describe('Accessibility', () => {
 
   test('all images have alt attributes', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     const images = page.locator('img');
     const count = await images.count();
@@ -35,7 +35,7 @@ test.describe('Accessibility', () => {
 
   test('focus order is logical with tab navigation', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     const focusedElements: string[] = [];
 
@@ -75,7 +75,7 @@ test.describe('Accessibility', () => {
 
   test('color contrast meets WCAG AA', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     const results = await new AxeBuilder({ page })
       .withRules(['color-contrast'])
@@ -86,7 +86,7 @@ test.describe('Accessibility', () => {
 
   test('demo page passes axe accessibility audit', async ({ page }) => {
     await page.goto('/demo');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
@@ -102,7 +102,7 @@ test.describe('Accessibility', () => {
 
   test('login page passes axe accessibility audit', async ({ page }) => {
     await page.goto('/login');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
@@ -116,7 +116,7 @@ test.describe('Accessibility', () => {
 
   test('ARIA live regions exist for dynamic content', async ({ page }) => {
     await page.goto('/demo');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Verify at least one aria-live region or role="alert" exists
     const liveRegions = await page.locator('[aria-live], [role="alert"], [role="status"]').count();

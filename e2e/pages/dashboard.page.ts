@@ -66,7 +66,7 @@ export class DashboardPage {
     } as const;
     const tabEl = tabs[tab];
     await tabEl.click();
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async expectHeaderVisible(): Promise<void> {

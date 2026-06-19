@@ -7,6 +7,7 @@
  */
 import { Hono } from 'hono';
 import { purgeOldHealthData, type KVNamespaceLite } from '@/lib/retention';
+import { SimpleHealthWebSocket } from '@/SimpleHealthWebSocket';
 
 import type { Env } from './worker/types';
 import { registerMiddleware } from './worker/middleware';
@@ -131,6 +132,9 @@ export async function scheduled(
 // ---------------------------------------------------------------------------
 
 export { RateLimiter } from '@/rateLimiter';
+
+// Backward-compatible Durable Object class name referenced by existing migrations.
+export class VitalSenseWebSocketDO extends SimpleHealthWebSocket {}
 
 // Export the simple WebSocket implementation
 export { SimpleHealthWebSocket as HealthWebSocket } from '@/SimpleHealthWebSocket';

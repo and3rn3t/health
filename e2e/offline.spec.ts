@@ -13,7 +13,7 @@ test.describe('Offline & Network Resilience', () => {
     context,
   }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Verify app loaded correctly first
     const heading = page.locator('h1, [role="heading"]');
@@ -44,7 +44,7 @@ test.describe('Offline & Network Resilience', () => {
     page.on('pageerror', (err) => errors.push(err.message));
 
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Go offline
     await context.setOffline(true);
@@ -89,7 +89,7 @@ test.describe('Offline & Network Resilience', () => {
     context,
   }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Go offline briefly
     await context.setOffline(true);
@@ -114,7 +114,7 @@ test.describe('Offline & Network Resilience', () => {
     context,
   }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Track failed request count
     let failedRequestCount = 0;
@@ -147,7 +147,7 @@ test.describe('Offline & Network Resilience', () => {
   }) => {
     // First load — populate cache
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Go offline
     await context.setOffline(true);

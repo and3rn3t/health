@@ -67,8 +67,8 @@ jobs:
       - name: Run ${{ matrix.suite }} tests
         run: |
           if [ "${{ matrix.suite }}" = "unit" ]; then
-            # Only collect coverage on main (pushes) — PRs run faster without it
-            if [ "${{ github.event_name }}" = "push" ]; then
+            # Collect coverage on pushes and same-repo PRs (used by SonarCloud)
+            if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}" = "true" ]; then
               pnpm run test:coverage
             else
               pnpm vitest run
@@ -211,6 +211,8 @@ jobs:
           name: dist
 
       - name: Run E2E tests
+        env:
+          E2E_USE_WRANGLER: 'true'
         run: pnpm test:e2e --project=chromium
 
       - name: Upload Playwright report
@@ -273,9 +275,19 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          output=$(npx wrangler deploy --env preview 2>&1)
+          set +e
+          output=$(pnpm exec wrangler deploy --env preview 2>&1)
+          status=$?
+          set -e
           echo "$output"
+          if [ "$status" -ne 0 ]; then
+            echo "::error::Preview deploy failed"
+            exit "$status"
+          fi
           url=$(echo "$output" | grep -oP 'https://[^\s]+\.workers\.dev' | head -1)
+          if [ -z "$url" ]; then
+            echo "::warning::No preview URL detected in Wrangler output"
+          fi
           echo "preview_url=$url" >> "$GITHUB_OUTPUT"
 
       - name: Comment preview URL

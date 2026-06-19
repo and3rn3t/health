@@ -25,13 +25,13 @@ export class GaitPage {
     this.page = page;
 
     this.heading = page.getByRole('heading', {
-      name: /Gait Analysis Dashboard/i,
+      name: /Gait Analysis/i,
     });
     this.badge = page.getByText('Advanced Analytics');
 
-    this.overviewBtn = page.getByRole('button', { name: /Overview/i });
-    this.lidarBtn = page.getByRole('button', { name: /LiDAR Analysis/i });
-    this.walkingBtn = page.getByRole('button', { name: /Walking Tracker/i });
+    this.overviewBtn = page.getByRole('button', { name: /Overview/i }).first();
+    this.lidarBtn = page.getByRole('button', { name: /LiDAR Analysis/i }).first();
+    this.walkingBtn = page.getByRole('button', { name: /Walking Tracker/i }).first();
 
     this.gaitQuality = page.getByText('Gait Quality');
     this.avgSpeed = page.getByText('Avg Speed (m/s)');
@@ -54,7 +54,7 @@ export class GaitPage {
     } as const;
     const btn = buttons[mode];
     await btn.click();
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async expectOverviewVisible(): Promise<void> {

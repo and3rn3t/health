@@ -13,6 +13,7 @@ COPY package.json pnpm-lock.yaml* package-lock.json* yarn.lock* ./
 COPY eslint.config.js postcss.config.* ./
 COPY vite*.ts ./
 COPY tsconfig*.json ./
+COPY scripts ./scripts
 
 # Install deps with BuildKit cache mount for pnpm store
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
@@ -29,7 +30,6 @@ COPY src ./src
 COPY public ./public
 COPY app-config.js ./
 COPY wrangler.toml ./
-COPY scripts ./scripts
 
 # Optionally build app + worker; default skip in dev images to speed up compose
 ARG SKIP_BUILD=true
