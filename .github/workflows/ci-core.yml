@@ -211,8 +211,6 @@ jobs:
           name: dist
 
       - name: Run E2E tests
-        env:
-          E2E_USE_WRANGLER: 'true'
         run: pnpm test:e2e --project=chromium
 
       - name: Upload Playwright report
