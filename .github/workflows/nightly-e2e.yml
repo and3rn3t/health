@@ -45,6 +45,8 @@ jobs:
         run: pnpm run build:all
 
       - name: Run E2E tests (${{ matrix.project }})
+        env:
+          E2E_USE_WRANGLER: 'true'
         run: pnpm test:e2e --project=${{ matrix.project }}
 
       - name: Upload Playwright report
@@ -64,10 +66,11 @@ jobs:
         with:
           script: |
             const title = '🚨 Nightly E2E regression detected';
+            const runLink = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const body = [
               '## Nightly E2E Test Failure',
               '',
-              `**Run**: [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              `**Run**: [${context.runId}](${runLink})`,
               `**Date**: ${new Date().toISOString().slice(0, 10)}`,
               `**Branch**: main`,
               '',
@@ -77,10 +80,27 @@ jobs:
               'Labels: `bug`, `e2e`',
             ].join('\n');
 
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title,
-              body,
-              labels: ['bug', 'e2e'],
+            const { owner, repo } = context.repo;
+            const query = `repo:${owner}/${repo} is:issue is:open in:title "${title}"`;
+            const { data: searchResult } = await github.rest.search.issuesAndPullRequests({
+              q: query,
+              per_page: 1,
             });
+            const existing = searchResult.items[0];
+
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: existing.number,
+                body: `Another nightly regression run failed: [Run #${context.runNumber}](${runLink})`,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                body,
+                labels: ['bug', 'e2e'],
+              });
+            }

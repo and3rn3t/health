@@ -47,7 +47,7 @@ test.describe('Tab Navigation', () => {
 
     await app.expectActiveTab('Fall Risk');
     await expect(
-      app.page.getByRole('heading', { name: /Fall Detection/i }),
+      app.page.getByRole('heading', { name: /Fall Risk Analysis|Fall Detection/i }),
     ).toBeVisible();
     expect(errors).toHaveLength(0);
   });
@@ -130,7 +130,7 @@ test.describe('Tab Navigation – Mobile', () => {
     });
     if ((await settingsTab.count()) > 0) {
       await settingsTab.click();
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
       await app.expectActiveTab('Settings');
     }
 

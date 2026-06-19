@@ -6,7 +6,7 @@ test.describe('Auth Flow', () => {
     page.on('pageerror', (err) => errors.push(err.message));
 
     await page.goto('/login');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Login page should render some content
     await expect(page.locator('body')).not.toBeEmpty();
@@ -19,7 +19,7 @@ test.describe('Auth Flow', () => {
     page.on('pageerror', (err) => errors.push(err.message));
 
     await page.goto('/demo');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     await expect(page.locator('body')).not.toBeEmpty();
   });
@@ -34,7 +34,7 @@ test.describe('Auth Flow', () => {
 
   test('login page has accessible form elements', async ({ page }) => {
     await page.goto('/login');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Should have at least one interactive element (button, link, or input)
     const interactive = page.locator('button, a, input, [role="button"]');

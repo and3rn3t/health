@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const runAgainstWorker = process.env.E2E_USE_WRANGLER === 'true';
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -37,10 +39,12 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'pnpm preview',
+    command: runAgainstWorker
+      ? 'pnpm exec wrangler dev --port 4173 --host 127.0.0.1'
+      : 'pnpm preview',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
-    timeout: 30_000,
+    timeout: runAgainstWorker ? 120_000 : 30_000,
   },
 
   // Accessibility testing: use @axe-core/playwright in test files

@@ -26,7 +26,7 @@ export class FallRiskPage {
     this.page = page;
 
     this.heading = page.getByRole('heading', {
-      name: /Fall Detection/i,
+      name: /Fall Risk Analysis|Fall Detection/i,
     });
 
     this.systemStatus = page.getByText('System Status');

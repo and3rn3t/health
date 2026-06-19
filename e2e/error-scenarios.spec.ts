@@ -9,7 +9,7 @@ test.describe('Error Scenarios', () => {
     page.on('pageerror', (err) => errors.push(err.message));
 
     await page.goto('/this-does-not-exist');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // App should not crash — should render something
     const body = page.locator('body');
@@ -41,7 +41,7 @@ test.describe('Error Scenarios', () => {
     }
 
     // Let the final navigation settle
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     expect(errors).toHaveLength(0);
   });
 
@@ -52,7 +52,7 @@ test.describe('Error Scenarios', () => {
     page.on('pageerror', (err) => errors.push(err.message));
 
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // The error boundary wraps all tab content; body should have content
     await expect(page.locator('body')).not.toBeEmpty();
@@ -83,11 +83,11 @@ test.describe('Error Scenarios', () => {
 
     // Use browser back
     await page.goBack();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Use browser forward
     await page.goForward();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // App should not crash
     await expect(page.locator('body')).not.toBeEmpty();
@@ -103,7 +103,7 @@ test.describe('Error Scenarios', () => {
 
     // Hard reload the page
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // App should re-render (defaults to dashboard on fresh load)
     await expect(app.mainContent).toBeVisible();

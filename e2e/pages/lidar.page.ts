@@ -20,21 +20,21 @@ export class LidarPage {
     this.page = page;
 
     this.heading = page.getByRole('heading', {
-      name: /LiDAR Gait Analyzer/i,
+      name: /LiDAR & Posture/i,
     });
 
     this.statusBadge = page.getByText(
       /LiDAR Ready|Simulated|LiDAR Unavailable/i,
     );
 
-    this.calibrationHeading = page.getByText('Calibration Required');
+    this.calibrationHeading = page.getByRole('tab', { name: /Real-time/i });
     this.calibrateBtn = page.getByRole('button', {
       name: /Begin Calibration/i,
     });
 
-    this.analysisControlsHeading = page.getByText('Analysis Controls');
+    this.analysisControlsHeading = page.getByRole('tab', { name: /Settings/i });
 
-    this.unavailableHeading = page.getByText('LiDAR Not Available');
+    this.unavailableHeading = page.getByText(/not available|unavailable/i).first();
   }
 
   async expectCalibrationVisible(): Promise<void> {

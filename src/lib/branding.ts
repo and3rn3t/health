@@ -27,7 +27,7 @@ export const BRAND_COLORS = {
   /** Primary hover / dark variant */
   primaryDark: '#1d4ed8',
   /** Accent teal */
-  teal: '#0891b2',
+  teal: '#0f766e',
   /** Teal hover / dark variant */
   tealDark: '#0e7490',
   /** Background (light) */
@@ -39,9 +39,9 @@ export const BRAND_COLORS = {
   /** Border / divider */
   border: '#e2e8f0',
   /** Muted / secondary text */
-  muted: '#64748b',
+  muted: '#475569',
   /** Success green */
-  success: '#059669',
+  success: '#047857',
   /** Success light variant (e.g. "Low" risk label) */
   successLight: '#10b981',
   /** Error / destructive red */

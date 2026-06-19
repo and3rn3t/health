@@ -99,7 +99,7 @@ describe('VitalSense Branding Compliance', () => {
 
     it('should export brand colors matching the primary palette', () => {
       expect(BRAND_COLORS.primary).toBe('#2563eb');
-      expect(BRAND_COLORS.teal).toBe('#0891b2');
+      expect(BRAND_COLORS.teal).toBe('#0f766e');
       expect(BRAND_COLORS.background).toBe('#ffffff');
       expect(BRAND_COLORS.foreground).toBe('#0f172a');
     });
@@ -109,8 +109,8 @@ describe('VitalSense Branding Compliance', () => {
       expect(BRAND_COLORS.tealDark).toBe('#0e7490');
       expect(BRAND_COLORS.card).toBe('#f8fafc');
       expect(BRAND_COLORS.border).toBe('#e2e8f0');
-      expect(BRAND_COLORS.muted).toBe('#64748b');
-      expect(BRAND_COLORS.success).toBe('#059669');
+      expect(BRAND_COLORS.muted).toBe('#475569');
+      expect(BRAND_COLORS.success).toBe('#047857');
       expect(BRAND_COLORS.successLight).toBe('#10b981');
       expect(BRAND_COLORS.error).toBe('#dc2626');
     });

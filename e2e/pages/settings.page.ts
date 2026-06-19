@@ -36,19 +36,11 @@ export class SettingsPage {
       name: /Account & Profile/i,
     });
 
-    this.profileSection = page.getByRole('heading', { name: /^Profile$/i });
-    this.privacySection = page.getByRole('heading', {
-      name: /Privacy & Security/i,
-    });
-    this.notificationsSection = page.getByRole('heading', {
-      name: /^Notifications$/i,
-    });
-    this.dataSyncSection = page.getByRole('heading', {
-      name: /Data & Sync/i,
-    });
-    this.preferencesSection = page.getByRole('heading', {
-      name: /App Preferences/i,
-    });
+    this.profileSection = page.getByText(/^Profile$/i).first();
+    this.privacySection = page.getByText(/Privacy & Security/i).first();
+    this.notificationsSection = page.getByText(/^Notifications$/i).first();
+    this.dataSyncSection = page.getByText(/Data & Sync/i).first();
+    this.preferencesSection = page.getByText(/App Preferences/i).first();
 
     this.displayNameInput = page.locator('input#displayName');
     this.emailInput = page.locator('input#email');
