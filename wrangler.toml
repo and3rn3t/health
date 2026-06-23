@@ -227,3 +227,21 @@ new_sqlite_classes = ["HealthWebSocket", "VitalSenseWebSocketDO"]
 [[env.preview.migrations]]
 tag = "v2"
 new_sqlite_classes = ["RateLimiter"]
+
+# ── Advanced-dev WebSocket worker ────────────────────────────────────────────
+# Matches the Cloudflare-managed worker "vitalsense-websocket-advanced-dev"
+# connected to this repo via the Cloudflare GitHub integration.
+[env.advanced-dev]
+name = "vitalsense-websocket-advanced-dev"
+
+[env.advanced-dev.vars]
+ENVIRONMENT = "development"
+LOG_LEVEL = "debug"
+
+[[env.advanced-dev.durable_objects.bindings]]
+name = "HEALTH_WEBSOCKET"
+class_name = "HealthWebSocket"
+
+[[env.advanced-dev.migrations]]
+tag = "v1"
+new_sqlite_classes = ["HealthWebSocket"]
