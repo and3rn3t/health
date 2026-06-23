@@ -95,7 +95,7 @@ export function useDeviceManagement(userId?: string) {
     return () => {
       unsubscribe();
     };
-  }, [userId]);
+  }, [userId, setDevices]);
 
   /**
    * Scan for available devices
