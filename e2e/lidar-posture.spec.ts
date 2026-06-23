@@ -28,7 +28,7 @@ test.describe('LiDAR Posture Analysis', () => {
     // real-time tabs, an unavailable state, or a loading placeholder first.
     const calibration = lidar.calibrationHeading;
     const unavailable = lidar.unavailableHeading;
-    const loading = app.page.getByLabel(/Loading content/i).first();
+    const loading = app.page.locator('[aria-label="Loading content"]').first();
     const eitherVisible =
       (await calibration.isVisible().catch(() => false)) ||
       (await unavailable.isVisible().catch(() => false)) ||

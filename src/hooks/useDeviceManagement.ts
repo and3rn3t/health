@@ -24,6 +24,12 @@ export function useDeviceManagement(userId?: string) {
     null
   );
 
+  // Keep a ref to the latest devices so callbacks don't stale-close over it
+  const devicesRef = useRef(devices);
+  useEffect(() => {
+    devicesRef.current = devices;
+  });
+
   // Initialize device detection service
   useEffect(() => {
     const userIdValue = userId || 'default-user';
@@ -54,7 +60,7 @@ export function useDeviceManagement(userId?: string) {
       // Auto-connect to newly detected devices that aren't in our list
       detectedDevices.forEach((detected) => {
         if (detected.status === 'online') {
-          const existing = devices.find((d) => d.id === detected.id);
+          const existing = devicesRef.current.find((d) => d.id === detected.id);
           if (!existing || existing.status !== 'connected') {
             // Auto-add to connected devices
             const connectedDevice =
@@ -89,7 +95,7 @@ export function useDeviceManagement(userId?: string) {
     return () => {
       unsubscribe();
     };
-  }, [userId, devices, setDevices]);
+  }, [userId]);
 
   /**
    * Scan for available devices
