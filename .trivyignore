@@ -1,0 +1,22 @@
+# Trivy CVE ignore list
+# Only suppress CVEs that cannot be fixed from our side
+# (OS packages without Debian backports, disputed advisories, or platform-specific issues)
+
+# ── zlib / MiniZip ──────────────────────────────────────────────────────────
+# CVE-2023-45853: MiniZip integer overflow — explicitly noted by NVD as not a supported
+# part of the zlib library; Debian has not backported a fix for this disputed advisory.
+CVE-2023-45853
+
+# ── GNU tar (Debian OS package) ─────────────────────────────────────────────
+# CVE-2005-2541: tar extraction side-effects — 20-year-old informational advisory,
+# no patch exists; only affects manual user behaviour, not automated pipelines.
+CVE-2005-2541
+
+# TEMP-0290435-0B57B5: rmt command side-effects — Debian tracking entry, no CVE fix.
+TEMP-0290435-0B57B5
+
+# ── esbuild (development build tool, not runtime) ───────────────────────────
+# GHSA-g7r4-m6w7-qqqr: dev-server path traversal on Windows only.
+# esbuild is a build-time dev tool; the production Docker image does not run
+# esbuild's development server, and our CI runners are Linux-only.
+GHSA-g7r4-m6w7-qqqr
