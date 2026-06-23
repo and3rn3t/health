@@ -46,6 +46,9 @@ RUN apt-get update && \
   apt-get install -y --no-install-recommends libc++1 ca-certificates && \
   rm -rf /var/lib/apt/lists/*
 
+# Upgrade npm to get patched bundled packages (undici etc.)
+RUN npm install -g npm@latest --prefer-dedupe
+
 # Copy built worker and minimal files
 COPY --from=base /app/package.json ./package.json
 COPY --from=base /app/node_modules ./node_modules
