@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Visual Regression', () => {
+  // No Firefox/WebKit baselines exist in the repo — skip on non-Chromium browsers
+  test.skip(({ browserName }) => browserName !== 'chromium', 'Baseline screenshots are Chromium-only');
+
   test('home page snapshot', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');

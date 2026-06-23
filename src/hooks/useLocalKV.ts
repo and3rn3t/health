@@ -23,21 +23,23 @@ export function useKV<T>(
   // Update value function that supports both direct values and updater functions
   const updateValue = useCallback(
     (newValue: T | ((prev: T) => T)) => {
-      try {
+      setValue((prev) => {
         const actualValue =
           typeof newValue === 'function'
-            ? (newValue as (prev: T) => T)(value)
+            ? (newValue as (prev: T) => T)(prev)
             : newValue;
-        setValue(actualValue);
-        localStorage.setItem(`kv:${key}`, JSON.stringify(actualValue));
-      } catch (error) {
-        console.error(
-          `❌ Failed to save to localStorage for key "${key}":`,
-          error
-        );
-      }
+        try {
+          localStorage.setItem(`kv:${key}`, JSON.stringify(actualValue));
+        } catch (error) {
+          console.error(
+            `❌ Failed to save to localStorage for key "${key}":`,
+            error
+          );
+        }
+        return actualValue;
+      });
     },
-    [key, value]
+    [key],   // only key — value is read via functional update
   );
 
   return [value, updateValue];

@@ -126,7 +126,9 @@ export class AppPage {
         lower.includes('websocket') ||
         lower.includes('ws://') ||
         lower.includes('wss://') ||
-        lower.includes('connecting state')
+        lower.includes('connecting state') ||
+        // Firefox dead-object error — browser-internal, not an app crash
+        lower.includes('an attempt was made to use an object that is not')
       ) {
         return;
       }

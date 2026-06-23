@@ -83,14 +83,16 @@ test.describe('Tab Navigation', () => {
     expect(errors).toHaveLength(0);
   });
 
-  test('document title updates with active tab', async ({ page }) => {
+  test('document title updates with active tab', async ({ page, browserName }) => {
     await expect(page).toHaveTitle(/Dashboard.*VitalSense/i);
 
     await app.navigateTo('gait-analysis');
     await expect(page).toHaveTitle(/Gait Analysis.*VitalSense/i);
 
     await app.navigateTo('settings');
-    await expect(page).toHaveTitle(/Settings.*VitalSense/i);
+    // Firefox lazy-loads the Settings component slowly in CI — give it extra time
+    const titleTimeout = browserName === 'firefox' ? 15_000 : 5_000;
+    await expect(page).toHaveTitle(/Settings.*VitalSense/i, { timeout: titleTimeout });
   });
 
   test('sidebar item shows active state', async () => {

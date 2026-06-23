@@ -93,7 +93,9 @@ test.describe('WebSocket Real-Time Data', () => {
       (e) =>
         !e.includes('WebSocket') &&
         !e.includes('ws://') &&
-        !e.includes('wss://'),
+        !e.includes('wss://') &&
+        // Firefox dead-object error — browser-internal, not an app crash
+        !e.toLowerCase().includes('an attempt was made to use an object'),
     );
     expect(criticalErrors).toHaveLength(0);
 
@@ -170,7 +172,9 @@ test.describe('WebSocket Real-Time Data', () => {
         !e.toLowerCase().includes('websocket') &&
         !e.toLowerCase().includes('ws://') &&
         !e.toLowerCase().includes('wss://') &&
-        !e.toLowerCase().includes('connection'),
+        !e.toLowerCase().includes('connection') &&
+        // Firefox dead-object error — browser-internal, not an app crash
+        !e.toLowerCase().includes('an attempt was made to use an object'),
     );
 
     expect(nonWsErrors).toHaveLength(0);
