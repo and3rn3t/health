@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     if: inputs.skip_lint != true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run SwiftLint (strict)
         uses: norio-nomura/action-swiftlint@3.2.1
         with:
@@ -70,7 +70,7 @@ jobs:
       && (needs.swiftlint.result == 'success' || needs.swiftlint.result == 'skipped')
       && inputs.skip_tests != true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ios
 
       - name: Run unit tests
@@ -102,7 +102,7 @@ jobs:
       github.event_name == 'pull_request'
       && (needs.swiftlint.result == 'success' || needs.swiftlint.result == 'skipped')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ios
 
       - name: Run smoke UI tests
@@ -135,7 +135,7 @@ jobs:
     outputs:
       coverage_percent: ${{ steps.coverage.outputs.coverage_percent }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ios
 
       - name: Run full test suite with coverage
@@ -200,7 +200,7 @@ jobs:
       && (github.event_name == 'workflow_dispatch' || (github.ref == 'refs/heads/main' && github.event_name == 'push'))
       && (needs.unit-tests.result == 'success' || needs.unit-tests.result == 'skipped')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ios
 
       - name: Archive (Release, unsigned)
@@ -261,7 +261,7 @@ jobs:
       run:
         working-directory: ios/Andernet-Posture
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ios
 
       - name: Install Fastlane
