@@ -65,9 +65,13 @@ export function AppleSidebarProvider({
 
   const setOpen = useCallback(
     (v: boolean | ((v: boolean) => boolean)) => {
-      setO(typeof v === 'function' ? (v as (b: boolean) => boolean)(o) : v);
+      if (typeof v === 'function') {
+        setO(v as (prev: boolean) => boolean);
+      } else {
+        setO(v);
+      }
     },
-    [o]
+    []
   );
 
   const toggle = useCallback(() => {

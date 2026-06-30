@@ -169,7 +169,9 @@ test.describe('Offline & Network Resilience', () => {
 
   test('slow network degrades performance but app remains functional', async ({
     page,
+    browserName,
   }) => {
+    test.skip(browserName !== 'chromium', 'CDP sessions are only available in Chromium');
     // Simulate slow 3G
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('Network.emulateNetworkConditions', {

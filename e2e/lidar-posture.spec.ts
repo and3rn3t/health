@@ -24,11 +24,17 @@ test.describe('LiDAR Posture Analysis', () => {
   });
 
   test('shows calibration card or unavailable state', async () => {
-    // Depending on lazy-load timing and device capability, this may show
-    // real-time tabs, an unavailable state, or a loading placeholder first.
+    // Wait for the lazy-loaded component to settle into one of its expected states:
+    // - calibration tabs (component loaded, LiDAR available)
+    // - unavailable message (component loaded, no LiDAR)
+    // - loading skeleton (Suspense fallback still active)
     const calibration = lidar.calibrationHeading;
     const unavailable = lidar.unavailableHeading;
     const loading = app.page.locator('[aria-label="Loading content"]').first();
+
+    // Wait up to 10 s for any of the three states to appear
+    await calibration.or(unavailable).or(loading).waitFor({ timeout: 10_000 }).catch(() => null);
+
     const eitherVisible =
       (await calibration.isVisible().catch(() => false)) ||
       (await unavailable.isVisible().catch(() => false)) ||
