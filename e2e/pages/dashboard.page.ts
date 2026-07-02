@@ -65,6 +65,9 @@ export class DashboardPage {
       devices: this.devicesTab,
     } as const;
     const tabEl = tabs[tab];
+    // Scroll into view first — on mobile the tab bar may be partially
+    // off-screen until the user scrolls, causing click timeouts.
+    await tabEl.scrollIntoViewIfNeeded();
     await tabEl.click();
     await this.page.waitForLoadState('domcontentloaded');
   }
