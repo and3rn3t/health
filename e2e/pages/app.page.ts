@@ -46,9 +46,11 @@ export class AppPage {
   }
 
   /**
-   * Navigate to a tab via the app's custom event system.
-   * Uses window.dispatchEvent('navigate') which the React component listens for.
-   * This bypasses CSS layout issues with the collapsed sidebar.
+   * Navigate to a route by URL — works on all viewports including mobile
+   * where the sidebar is collapsed and sidebar links are not clickable.
+   *
+   * Use `clickSidebarItem()` when the test specifically exercises sidebar
+   * interaction. Use `navigateTo()` for everything else.
    */
   async navigateTo(
     tab: 'dashboard' | 'gait-analysis' | 'lidar-posture' | 'fall-risk' | 'settings',
@@ -60,22 +62,7 @@ export class AppPage {
       'fall-risk': '/fall-risk',
       settings: '/settings',
     };
-    const linkByTab: Record<typeof tab, Locator> = {
-      dashboard: this.dashboardLink,
-      'gait-analysis': this.gaitLink,
-      'lidar-posture': this.lidarLink,
-      'fall-risk': this.fallRiskLink,
-      settings: this.settingsLink,
-    };
-    await linkByTab[tab].click();
-    try {
-      await this.page.waitForURL(new RegExp(`${pathByTab[tab]}$`), {
-        timeout: 10_000,
-      });
-    } catch {
-      // Offline-mode tests can intentionally block route chunk fetches.
-      // Keep assertions focused on graceful degradation, not URL transitions.
-    }
+    await this.page.goto(pathByTab[tab], { waitUntil: 'domcontentloaded' });
     await expect(this.mainContent).toBeVisible();
   }
 
