@@ -1,96 +1,42 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-/** Page object for the Settings / Account & Profile tab. */
+/** Page object for the Settings tab. */
 export class SettingsPage {
   readonly page: Page;
   readonly heading: Locator;
 
-  /* Section headings */
-  readonly profileSection: Locator;
-  readonly privacySection: Locator;
-  readonly notificationsSection: Locator;
-  readonly dataSyncSection: Locator;
-  readonly preferencesSection: Locator;
+  /* Sections */
+  readonly appPreferences: Locator;
+  readonly dangerZone: Locator;
 
-  /* Profile inputs */
-  readonly displayNameInput: Locator;
-  readonly emailInput: Locator;
-  readonly phoneInput: Locator;
-
-  /* Action buttons */
+  /* Danger actions */
   readonly resetBtn: Locator;
-  readonly saveBtn: Locator;
   readonly deleteBtn: Locator;
-  readonly exportBtn: Locator;
-
-  /* Toggles */
-  readonly dataSharingToggle: Locator;
-  readonly healthAlertsToggle: Locator;
-  readonly autoSyncToggle: Locator;
-  readonly lockNavOrderToggle: Locator;
 
   constructor(page: Page) {
     this.page = page;
 
-    this.heading = page.getByRole('heading', {
-      name: /Account & Profile/i,
-    });
+    // Use the visible heading (not the sr-only one)
+    this.heading = page.locator('h1.text-vitalsense-primary, h1:not(.sr-only)').filter({ hasText: 'Settings' }).first();
 
     this.profileSection = page.getByText(/^Profile$/i).first();
     this.privacySection = page.getByText(/Privacy & Security/i).first();
     this.notificationsSection = page.getByText(/^Notifications$/i).first();
     this.dataSyncSection = page.getByText(/Data & Sync/i).first();
     this.preferencesSection = page.getByText(/App Preferences/i).first();
+    this.appPreferences = page.getByText('App Preferences').first();
+    this.dangerZone = page.getByText('Danger Zone');
 
-    this.displayNameInput = page.locator('input#displayName');
-    this.emailInput = page.locator('input#email');
-    this.phoneInput = page.locator('input#phone');
 
-    this.resetBtn = page.getByRole('button', { name: /Reset/i });
-    this.saveBtn = page.getByRole('button', { name: /Save changes/i });
-    // Delete button may not exist — locator won't throw but assertions will
-    this.deleteBtn = page.getByRole('button', { name: /Delete/i });
-    this.exportBtn = page.getByRole('button', { name: /Download/i });
-
-    this.dataSharingToggle = page
-      .getByText('Data sharing')
-      .locator('..')
-      .locator('..')
-      .getByRole('switch');
-    this.healthAlertsToggle = page
-      .getByText('Health alerts')
-      .locator('..')
-      .locator('..')
-      .getByRole('switch');
-    this.autoSyncToggle = page
-      .getByText('Auto-sync')
-      .locator('..')
-      .locator('..')
-      .getByRole('switch');
-    this.lockNavOrderToggle = page.locator('#lockNavOrderToggle');
+    // Scope buttons to the danger zone section to avoid duplicates
+    const dangerSection = page.locator('.border-red-200, [class*="border-red"]').first();
+    this.resetBtn = dangerSection.getByRole('button', { name: /Reset/i });
+    this.deleteBtn = dangerSection.getByRole('button', { name: /Delete/i });
   }
 
   async expectSectionsVisible(): Promise<void> {
-    await expect(this.profileSection).toBeVisible();
-    await this.privacySection.scrollIntoViewIfNeeded();
-    await expect(this.privacySection).toBeVisible();
-    await this.notificationsSection.scrollIntoViewIfNeeded();
-    await expect(this.notificationsSection).toBeVisible();
-    await this.dataSyncSection.scrollIntoViewIfNeeded();
-    await expect(this.dataSyncSection).toBeVisible();
-    await this.preferencesSection.scrollIntoViewIfNeeded();
-    await expect(this.preferencesSection).toBeVisible();
-  }
-
-  async expectProfileInputsVisible(): Promise<void> {
-    await expect(this.displayNameInput).toBeVisible();
-    await expect(this.emailInput).toBeVisible();
-    await expect(this.phoneInput).toBeVisible();
-  }
-
-  async expectActionButtonsVisible(): Promise<void> {
-    await this.resetBtn.scrollIntoViewIfNeeded();
-    await expect(this.resetBtn).toBeVisible();
-    await expect(this.saveBtn).toBeVisible();
+    await expect(this.heading).toBeVisible();
+    await expect(this.appPreferences).toBeVisible();
+    await expect(this.dangerZone).toBeVisible();
   }
 }

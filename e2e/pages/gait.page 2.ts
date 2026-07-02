@@ -1,6 +1,6 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-/** Page object for the Gait Analysis tab. */
+/** Page object for the Gait Analysis Dashboard tab. */
 export class GaitPage {
   readonly page: Page;
   readonly heading: Locator;
@@ -11,27 +11,31 @@ export class GaitPage {
   readonly lidarBtn: Locator;
   readonly walkingBtn: Locator;
 
-  /* Quick stat cards (Overview mode) */
+  /* Overview stats */
   readonly gaitQuality: Locator;
   readonly avgSpeed: Locator;
   readonly cadence: Locator;
   readonly balanceScore: Locator;
 
+  /* Analysis options */
+  readonly startLidarBtn: Locator;
+  readonly startWalkingBtn: Locator;
+
   constructor(page: Page) {
     this.page = page;
 
-    this.heading = page.locator('h1:not(.sr-only)').filter({ hasText: /Gait Analysis/ });
-
+    this.heading = page.getByRole('heading', {
+      name: /Gait Analysis Dashboard/i,
+    });
     this.badge = page.getByText('Advanced Analytics');
 
-    this.overviewBtn = page.getByRole('button', { name: /Overview/i }).first();
-    this.lidarBtn = page.getByRole('button', { name: /LiDAR Analysis/i }).first();
-    this.walkingBtn = page.getByRole('button', { name: /Walking Tracker/i }).first();
-
+    this.overviewBtn = page.getByRole('button', { name: /Overview/i });
+    this.lidarBtn = page.getByRole('button', { name: /LiDAR Analysis/i });
+    this.walkingBtn = page.getByRole('button', { name: /Walking Tracker/i });
 
     this.gaitQuality = page.getByText('Gait Quality');
-    this.avgSpeed = page.getByText('Avg Speed');
-    this.cadence = page.getByText('Cadence');
+    this.avgSpeed = page.getByText('Avg Speed (m/s)');
+    this.cadence = page.getByText('Cadence (steps/min)');
     this.balanceScore = page.getByText('Balance Score');
 
     this.startLidarBtn = page.getByRole('button', {
@@ -50,8 +54,7 @@ export class GaitPage {
     } as const;
     const btn = buttons[mode];
     await btn.click();
-    await this.page.waitForLoadState('domcontentloaded');
-
+    await this.page.waitForLoadState('networkidle');
   }
 
   async expectOverviewVisible(): Promise<void> {
@@ -59,15 +62,5 @@ export class GaitPage {
     await expect(this.avgSpeed).toBeVisible();
     await expect(this.cadence).toBeVisible();
     await expect(this.balanceScore).toBeVisible();
-  }
-
-  async switchMode(mode: 'overview' | 'lidar' | 'walking'): Promise<void> {
-    const btn =
-      mode === 'overview'
-        ? this.overviewBtn
-        : mode === 'lidar'
-          ? this.lidarBtn
-          : this.walkingBtn;
-    await btn.click();
   }
 }
