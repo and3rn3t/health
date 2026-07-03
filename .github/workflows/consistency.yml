@@ -1,3 +1,5 @@
+# Consistency guard — warns on PRs when baseline config files drift from
+# ai-template-repo. Switch mode to "fail" once the repo is clean to block drift.
 name: Consistency
 
 on:
