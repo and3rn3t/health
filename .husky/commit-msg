@@ -1,1 +1,7 @@
-npx --no -- commitlint --edit "$1"
+#!/usr/bin/env sh
+# Enforce conventional commit format; skip auto-generated messages.
+COMMIT_MSG=$(head -1 "$1")
+case "$COMMIT_MSG" in
+  Merge\ *|Revert\ *|"fixup! "*|"squash! "*) exit 0 ;;
+esac
+npx --no-install commitlint --edit "$1"
