@@ -1,0 +1,15 @@
+# Validate workflow YAML against the real Actions schema on every PR that
+# touches .github/workflows/. See reusable-actionlint.yml.
+name: Actionlint
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  actionlint:
+    uses: and3rn3t/.github/.github/workflows/reusable-actionlint.yml@main
