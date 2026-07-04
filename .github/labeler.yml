@@ -1,0 +1,35 @@
+# Applied by .github/workflows/labeler.yml on every PR.
+# TODO: adjust globs to your project layout.
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: ['**/*.md', 'docs/**']
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file: ['.github/**']
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          [
+            'package.json',
+            'pnpm-lock.yaml',
+            'package-lock.json',
+            'pyproject.toml',
+            'renovate.json',
+          ]
+
+frontend:
+  - changed-files:
+      - any-glob-to-any-file: ['src/components/**', 'src/hooks/**', '*.css']
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file:
+          ['worker/**', 'workers/**', 'functions/**', 'src/api/**']
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          ['tests/**', 'src/test/**', '**/*.test.*', '**/*.spec.*', 'e2e/**']

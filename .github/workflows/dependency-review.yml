@@ -1,0 +1,14 @@
+# Calls the shared reusable dependency-review workflow (and3rn3t/.github).
+name: Dependency Review
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependency-review:
+    uses: and3rn3t/.github/.github/workflows/reusable-dependency-review.yml@main
