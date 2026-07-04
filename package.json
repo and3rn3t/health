@@ -1,5 +1,6 @@
 {
   "name": "vitalsense-app",
+  "description": "Tinkering with Apple HealthKit and the LiDAR sensors in Apple iPhones.",
   "private": true,
   "version": "0.0.0",
   "type": "module",
