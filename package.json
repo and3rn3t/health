@@ -1,5 +1,10 @@
 {
   "name": "vitalsense-app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/and3rn3t/health.git"
+  },
+  "license": "MIT",
   "description": "Tinkering with Apple HealthKit and the LiDAR sensors in Apple iPhones.",
   "private": true,
   "version": "0.0.0",
