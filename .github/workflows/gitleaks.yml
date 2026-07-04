@@ -1,0 +1,15 @@
+# Secret scan — runs Gitleaks against pushes and PRs to catch committed
+# credentials before they land. See reusable-gitleaks.yml for the shared job.
+name: Gitleaks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  scan:
+    uses: and3rn3t/.github/.github/workflows/reusable-gitleaks.yml@main
