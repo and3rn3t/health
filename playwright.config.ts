@@ -7,7 +7,13 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 4 : undefined,
+  // A single `wrangler dev` (workerd) instance backs the whole e2e run when
+  // E2E_USE_WRANGLER is set — it isn't built to take 4 parallel Playwright
+  // workers' worth of concurrent traffic and has been observed to crash
+  // mid-run ("disconnected: Broken pipe"), cascading into unrelated test
+  // failures across the suite. `vite preview` (the non-wrangler path) is a
+  // plain static server and handles 4 workers fine.
+  workers: process.env.CI ? (runAgainstWorker ? 1 : 4) : undefined,
   reporter: process.env.CI
     ? [['github'], ['html', { open: 'never' }]]
     : [['html', { open: 'on-failure' }]],
