@@ -7,13 +7,16 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  // A single `wrangler dev` (workerd) instance backs the whole e2e run when
-  // E2E_USE_WRANGLER is set — it isn't built to take 4 parallel Playwright
-  // workers' worth of concurrent traffic and has been observed to crash
-  // mid-run ("disconnected: Broken pipe"), cascading into unrelated test
-  // failures across the suite. `vite preview` (the non-wrangler path) is a
-  // plain static server and handles 4 workers fine.
-  workers: process.env.CI ? (runAgainstWorker ? 1 : 4) : undefined,
+  // NOTE: e2e/websocket.spec.ts's long-lived WebSocket connections trigger a
+  // known, longstanding workerd bug when run against `wrangler dev`
+  // (E2E_USE_WRANGLER) — the runtime logs "disconnected: ... Broken pipe" /
+  // "Uncaught exception: kj/async-io-unix.c++" and drops connections after a
+  // few minutes, unrelated to Playwright's worker count (confirmed: still
+  // happens with workers=1). This is tracked upstream, unresolved as of
+  // wrangler 4.107.0: https://github.com/cloudflare/workerd/issues/1401
+  // A previous attempt to fix this by capping workers to 1 for wrangler runs
+  // did not help and was reverted — left as flat 4 for both paths.
+  workers: process.env.CI ? 4 : undefined,
   reporter: process.env.CI
     ? [['github'], ['html', { open: 'never' }]]
     : [['html', { open: 'on-failure' }]],

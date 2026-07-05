@@ -183,10 +183,7 @@ jobs:
   e2e:
     needs: build
     runs-on: ubuntu-latest
-    # Bumped from 15: capping Playwright to 1 worker against wrangler dev
-    # (see playwright.config.ts) means the suite now runs serially instead
-    # of across 4 parallel workers, so it needs more wall-clock time.
-    timeout-minutes: 25
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-pnpm
