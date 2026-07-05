@@ -6,6 +6,9 @@ on:
     types: [completed]
     branches: [main]
 
+permissions:
+  issues: write
+
 jobs:
   notify-failure:
     runs-on: ubuntu-latest
