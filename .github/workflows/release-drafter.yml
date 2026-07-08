@@ -1,3 +1,6 @@
+# Drafts an in-progress GitHub Release from merged PRs. Categories/template
+# live in .github/release-drafter.yml (local, repo-specific). See
+# reusable-release-drafter.yml for the shared runner.
 name: Release Drafter
 
 on:
@@ -12,9 +15,4 @@ permissions:
 
 jobs:
   update-release-draft:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: release-drafter/release-drafter@v7
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    uses: and3rn3t/.github/.github/workflows/reusable-release-drafter.yml@v1
