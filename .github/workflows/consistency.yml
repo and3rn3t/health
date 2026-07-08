@@ -11,6 +11,6 @@ permissions:
 
 jobs:
   guard:
-    uses: and3rn3t/.github/.github/workflows/reusable-consistency-guard.yml@main
+    uses: and3rn3t/.github/.github/workflows/reusable-consistency-guard.yml@v1
     with:
       mode: warn

@@ -11,4 +11,4 @@ permissions:
 
 jobs:
   dependency-review:
-    uses: and3rn3t/.github/.github/workflows/reusable-dependency-review.yml@main
+    uses: and3rn3t/.github/.github/workflows/reusable-dependency-review.yml@v1

@@ -13,4 +13,4 @@ permissions:
 
 jobs:
   actionlint:
-    uses: and3rn3t/.github/.github/workflows/reusable-actionlint.yml@main
+    uses: and3rn3t/.github/.github/workflows/reusable-actionlint.yml@v1

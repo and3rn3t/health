@@ -13,4 +13,4 @@ permissions:
 
 jobs:
   scan:
-    uses: and3rn3t/.github/.github/workflows/reusable-gitleaks.yml@main
+    uses: and3rn3t/.github/.github/workflows/reusable-gitleaks.yml@v1
