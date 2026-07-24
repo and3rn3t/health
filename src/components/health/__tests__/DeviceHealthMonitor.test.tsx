@@ -218,8 +218,6 @@ describe('DeviceHealthMonitor', () => {
     });
 
     it('clears alert when device reconnects', () => {
-      const { rerender } = render(<DeviceHealthMonitor />);
-
       // First render with disconnected device
       vi.mocked(useDeviceManagement).mockReturnValue({
         devices: [
@@ -232,7 +230,7 @@ describe('DeviceHealthMonitor', () => {
         ],
       } as unknown as ReturnType<typeof useDeviceManagement>);
 
-      rerender(<DeviceHealthMonitor />);
+      const { rerender } = render(<DeviceHealthMonitor />);
       expect(toast.error).toHaveBeenCalledTimes(1);
 
       // Second render with connected device
