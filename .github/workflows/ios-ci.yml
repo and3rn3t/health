@@ -52,9 +52,9 @@ jobs:
     runs-on: ubuntu-latest
     if: inputs.skip_lint != true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Run SwiftLint (strict)
-        uses: norio-nomura/action-swiftlint@3.2.1
+        uses: norio-nomura/action-swiftlint@9f4dcd7fd46b4e75d7935cf2f4df406d5cae3684 # 3.2.1
         with:
           args: --strict
         env:
@@ -70,7 +70,7 @@ jobs:
       && (needs.swiftlint.result == 'success' || needs.swiftlint.result == 'skipped')
       && inputs.skip_tests != true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: ./.github/actions/setup-ios
 
       - name: Run unit tests
@@ -88,7 +88,7 @@ jobs:
 
       - name: Upload test results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: UnitTestResults
           path: ${{ env.WORK_DIR }}/UnitTestResults.xcresult
@@ -102,7 +102,7 @@ jobs:
       github.event_name == 'pull_request'
       && (needs.swiftlint.result == 'success' || needs.swiftlint.result == 'skipped')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: ./.github/actions/setup-ios
 
       - name: Run smoke UI tests
@@ -120,7 +120,7 @@ jobs:
 
       - name: Upload test results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: SmokeTestResults
           path: ${{ env.WORK_DIR }}/SmokeTestResults.xcresult
@@ -135,7 +135,7 @@ jobs:
     outputs:
       coverage_percent: ${{ steps.coverage.outputs.coverage_percent }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: ./.github/actions/setup-ios
 
       - name: Run full test suite with coverage
@@ -181,7 +181,7 @@ jobs:
 
       - name: Upload results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: FullSuiteResults
           path: |
@@ -200,7 +200,7 @@ jobs:
       && (github.event_name == 'workflow_dispatch' || (github.ref == 'refs/heads/main' && github.event_name == 'push'))
       && (needs.unit-tests.result == 'success' || needs.unit-tests.result == 'skipped')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: ./.github/actions/setup-ios
 
       - name: Archive (Release, unsigned)
@@ -239,7 +239,7 @@ jobs:
             -exportOptionsPlist exportOptions.plist || echo "Export may have partial artifacts"
 
       - name: Upload archive
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ios-archive
           path: |
@@ -261,7 +261,7 @@ jobs:
       run:
         working-directory: ios/Andernet-Posture
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: ./.github/actions/setup-ios
 
       - name: Install Fastlane
