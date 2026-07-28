@@ -29,8 +29,6 @@ jobs:
 
       - name: Check for problematic licenses
         run: |
-          echo "### License Compliance Check" >> $GITHUB_STEP_SUMMARY
-
           # Extract unique licenses
           licenses=$(jq -r '.components[].licenses[]?.license?.id // empty' sbom.json 2>/dev/null | sort -u)
 
@@ -44,20 +42,22 @@ jobs:
             esac
           done
 
-          if [ -n "$FLAGGED" ]; then
-            echo "⚠️ **Copyleft licenses detected**:$FLAGGED" >> $GITHUB_STEP_SUMMARY
-            echo "::warning::Copyleft licenses detected:$FLAGGED"
-          else
-            echo "✅ No copyleft licenses found." >> $GITHUB_STEP_SUMMARY
-          fi
+          {
+            echo "### License Compliance Check"
+            if [ -n "$FLAGGED" ]; then
+              echo "⚠️ **Copyleft licenses detected**:$FLAGGED"
+              echo "::warning::Copyleft licenses detected:$FLAGGED" >&2
+            else
+              echo "✅ No copyleft licenses found."
+            fi
 
-          # Summary table
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| License | Count |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------|-------|" >> $GITHUB_STEP_SUMMARY
-          jq -r '.components[].licenses[]?.license?.id // empty' sbom.json 2>/dev/null \
-            | sort | uniq -c | sort -rn \
-            | awk '{printf "| %s | %s |\n", $2, $1}' >> $GITHUB_STEP_SUMMARY
+            echo ""
+            echo "| License | Count |"
+            echo "|---------|-------|"
+            jq -r '.components[].licenses[]?.license?.id // empty' sbom.json 2>/dev/null \
+              | sort | uniq -c | sort -rn \
+              | awk '{printf "| %s | %s |\n", $2, $1}'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload SBOM artifact
         uses: actions/upload-artifact@v4
