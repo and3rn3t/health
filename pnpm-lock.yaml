@@ -9,7 +9,7 @@ overrides:
   minimatch@>=9.0.0,<9.0.7: 9.0.7
   picomatch@<2.3.2: 2.3.2
   picomatch@>=4.0.0,<4.0.4: 4.0.4
-  flatted@<3.4.0: 3.4.2
+  flatted@<3.4.0: 3.4.3
   brace-expansion@<1.1.16: 5.0.8
   brace-expansion@>=2.0.0: 5.0.8
   js-yaml: 4.3.0
@@ -3900,6 +3900,9 @@ packages:
 
   flatted@3.4.2:
     resolution: {integrity: sha512-PjDse7RzhcPkIJwy5t7KPWQSZ9cAbzQXcafsetQoD7sOJRQlGikNbx7yZp2OotDnJyrDcbyRq3Ttb18iYOqkxA==}
+
+  flatted@3.4.3:
+    resolution: {integrity: sha512-/zipXxyO6rGvuNGDiULY9MvEGSkb2gaG4GGH4ygMi0ZZzyMHdUZBmntJmx5x1G2VuPytCwGN4xsJP6cw+sK+vQ==}
 
   for-each@0.3.5:
     resolution: {integrity: sha512-dKx12eRCVIzqCxFGplyFKJMPvLEWgmNtUrpTiJIR5u97zEhRG8ySrtboPHZXx7daLxQVrl643cTzbab2tkQjxg==}
@@ -9157,10 +9160,12 @@ snapshots:
 
   flat-cache@4.0.1:
     dependencies:
-      flatted: 3.4.2
+      flatted: 3.4.3
       keyv: 4.5.4
 
   flatted@3.4.2: {}
+
+  flatted@3.4.3: {}
 
   for-each@0.3.5:
     dependencies:
