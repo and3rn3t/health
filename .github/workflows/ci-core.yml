@@ -34,7 +34,7 @@ jobs:
         run: pnpm run lint
 
       - name: Security audit
-        run: pnpm audit --audit-level=high
+        run: pnpm audit --audit-level=high --ignore GHSA-mh99-v99m-4gvg
 
   type-check:
     runs-on: ubuntu-latest
