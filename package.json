@@ -160,24 +160,6 @@
     "lightningcss-linux-x64-gnu": "1.32.0",
     "lightningcss-win32-x64-msvc": "1.32.0"
   },
-  "pnpm": {
-    "overrides": {
-      "minimatch@<3.1.4": "3.1.4",
-      "minimatch@>=9.0.0,<9.0.7": "9.0.7",
-      "picomatch@<2.3.2": "2.3.2",
-      "picomatch@>=4.0.0,<4.0.4": "4.0.4",
-      "flatted@<3.4.0": "3.4.2",
-      "brace-expansion@<1.1.13": "5.0.8",
-      "js-yaml": "4.3.0",
-      "brace-expansion@>=2.0.0": "5.0.8",
-      "lint-staged>picomatch": "4.0.4",
-      "eslint>ajv": "6.14.0",
-      "@eslint/eslintrc>ajv": "6.14.0",
-      "fast-uri": ">=3.1.2",
-      "ws": "8.21.0",
-      "undici@<7.28.0": "7.28.0"
-    }
-  },
   "engines": {
     "node": ">=24.13.0",
     "pnpm": ">=11.8.0"

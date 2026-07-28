@@ -4,6 +4,20 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  minimatch@<3.1.4: 3.1.4
+  minimatch@>=9.0.0,<9.0.7: 9.0.7
+  picomatch@<2.3.2: 2.3.2
+  picomatch@>=4.0.0,<4.0.4: 4.0.4
+  flatted@<3.4.0: 3.4.2
+  js-yaml: 4.3.0
+  lint-staged>picomatch: 4.0.4
+  eslint>ajv: 6.14.0
+  '@eslint/eslintrc>ajv': 6.14.0
+  fast-uri: '>=3.1.2'
+  ws: 8.21.0
+  undici@<7.28.0: 7.28.0
+
 importers:
 
   .:
@@ -4268,10 +4282,6 @@ packages:
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
-  js-yaml@4.1.1:
-    resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
-    hasBin: true
-
   js-yaml@4.3.0:
     resolution: {integrity: sha512-1td788aAnnZ5qs7V2QIRl1owjtYpbKt749Y3xauqQgwIIGF/xXWz1wMTEBx5O3LK3lXLVuqXPdPxj2BoFHaW9Q==}
     hasBin: true
@@ -5349,8 +5359,8 @@ packages:
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
-  undici@7.24.4:
-    resolution: {integrity: sha512-BM/JzwwaRXxrLdElV2Uo6cTLEjhSb3WXboncJamZ15NgUURmvlXvxa6xkwIOILIjPNo9i8ku136ZvWV0Uly8+w==}
+  undici@7.28.0:
+    resolution: {integrity: sha512-cRZYrTDwWznlnRiPjggAGxZXanty6M8RV1ff8Wm4LWXBp7/IG8v5DnOm74DtUBp9OONpK75YlPnIjQqX0dBDtA==}
     engines: {node: '>=20.18.1'}
 
   unenv@2.0.0-rc.24:
@@ -5597,18 +5607,6 @@ packages:
   wrap-ansi@9.0.2:
     resolution: {integrity: sha512-42AtmgqjV+X1VpdOfyTGOYRi0/zsoLqtXQckTmqTeybT+BDIbM/Guxo7x3pE2vtpr1ok6xRqM9OpBe+Jyoqyww==}
     engines: {node: '>=18'}
-
-  ws@8.18.0:
-    resolution: {integrity: sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      bufferutil: ^4.0.1
-      utf-8-validate: '>=5.0.2'
-    peerDependenciesMeta:
-      bufferutil:
-        optional: true
-      utf-8-validate:
-        optional: true
 
   ws@8.21.0:
     resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
@@ -7597,7 +7595,7 @@ snapshots:
       colorette: 1.4.0
       https-proxy-agent: 7.0.6(supports-color@10.2.2)
       js-levenshtein: 1.1.6
-      js-yaml: 4.1.1
+      js-yaml: 4.3.0
       minimatch: 5.1.9
       pluralize: 8.0.0
       yaml-ast-parser: 0.0.43
@@ -9467,10 +9465,6 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  js-yaml@4.1.1:
-    dependencies:
-      argparse: 2.0.1
-
   js-yaml@4.3.0:
     dependencies:
       argparse: 2.0.1
@@ -9707,9 +9701,9 @@ snapshots:
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       sharp: 0.34.5
-      undici: 7.24.4
+      undici: 7.28.0
       workerd: 1.20260405.1
-      ws: 8.18.0
+      ws: 8.21.0
       youch: 4.1.0-beta.10
     transitivePeerDependencies:
       - bufferutil
@@ -10588,7 +10582,7 @@ snapshots:
 
   undici-types@6.21.0: {}
 
-  undici@7.24.4: {}
+  undici@7.28.0: {}
 
   unenv@2.0.0-rc.24:
     dependencies:
@@ -10840,8 +10834,6 @@ snapshots:
       ansi-styles: 6.2.3
       string-width: 7.2.0
       strip-ansi: 7.1.2
-
-  ws@8.18.0: {}
 
   ws@8.21.0: {}
 
