@@ -308,8 +308,8 @@ importers:
         specifier: ^2.5.1
         version: 2.5.1
       '@rollup/rollup-linux-x64-gnu':
-        specifier: 4.50.1
-        version: 4.50.1
+        specifier: 4.62.3
+        version: 4.62.3
       '@rollup/rollup-win32-x64-msvc':
         specifier: 4.62.3
         version: 4.62.3
@@ -2631,8 +2631,8 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@rollup/rollup-linux-x64-gnu@4.50.1':
-    resolution: {integrity: sha512-MCgtFB2+SVNuQmmjHf+wfI4CMxy3Tk8XjA5Z//A0AKD7QXUYFMQcns91K6dEHBvZPCnhJSyDWLApk40Iq/H3tA==}
+  '@rollup/rollup-linux-x64-gnu@4.62.3':
+    resolution: {integrity: sha512-V4KtWtQfAFMU7+9/A/VDps/VI8CHd3cYz0L8sgJzz8qK7eY7wI4ruFD82UYIYvW9Z4DtlTfhQcsl4XyPHW5uSg==}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
@@ -7683,7 +7683,7 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@rollup/rollup-linux-x64-gnu@4.50.1':
+  '@rollup/rollup-linux-x64-gnu@4.62.3':
     optional: true
 
   '@rollup/rollup-win32-x64-msvc@4.62.3':
