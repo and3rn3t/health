@@ -69,7 +69,7 @@ function AppShell({ pageLabel }: { pageLabel: string }) {
 
   if (isMobile) {
     return (
-      <div className="flex min-h-svh flex-col bg-background text-foreground">
+      <div className="flex min-h-svh w-screen flex-col overflow-x-hidden bg-background text-foreground">
         <MobileHeader />
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <main
@@ -77,7 +77,7 @@ function AppShell({ pageLabel }: { pageLabel: string }) {
             role="main"
             aria-label={pageLabel}
             tabIndex={-1}
-            className="flex-1 px-4 pb-20 pt-2"
+            className="flex-1 overflow-x-hidden px-4 pb-20 pt-2"
           >
             <Suspense fallback={<DashboardSkeleton />}>
               <Outlet />
@@ -93,7 +93,7 @@ function AppShell({ pageLabel }: { pageLabel: string }) {
   return (
     <>
       <AppleSidebarPanel />
-      <div className="flex min-h-svh min-w-0 flex-1 flex-col bg-background text-foreground">
+      <div className="flex min-h-svh min-w-0 flex-1 flex-col overflow-x-hidden bg-background text-foreground">
         <NavigationHeader />
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <main
