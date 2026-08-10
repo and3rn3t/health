@@ -35,7 +35,8 @@ extension MetricExplainer {
         ),
         "sva": MetricExplainer(
             metric: "Sagittal Vertical Axis (SVA)",
-            definition: "The horizontal distance between a vertical plumb line from C7 and the posterior superior corner of S1. Measures overall sagittal balance.",
+            definition: "The horizontal distance between a vertical plumb line from C7 and the "
+                + "posterior superior corner of S1. Measures overall sagittal balance.",
             normalRange: "< 5 cm",
             clinicalSignificance: "SVA greater than 5 cm indicates positive sagittal imbalance, which increases energy expenditure during standing and walking. Values >9.5 cm are associated with significant disability and pain.",
             icon: "arrow.up.and.down.text.horizontal",
