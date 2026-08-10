@@ -7,6 +7,8 @@ test.describe('Visual Regression', () => {
   test('home page snapshot', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
+    // Wait for Suspense / lazy-loaded content to render before snapshotting
+    await page.getByLabel('Loading content').waitFor({ state: 'hidden', timeout: 15_000 }).catch(() => {});
 
     // Wait for animations/transitions to settle
     await page.waitForTimeout(500);
@@ -21,6 +23,7 @@ test.describe('Visual Regression', () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
+    await page.getByLabel('Loading content').waitFor({ state: 'hidden', timeout: 15_000 }).catch(() => {});
     await page.waitForTimeout(500);
 
     await expect(page).toHaveScreenshot('home-mobile.png', {
@@ -34,6 +37,7 @@ test.describe('Visual Regression', () => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
+    await page.getByLabel('Loading content').waitFor({ state: 'hidden', timeout: 15_000 }).catch(() => {});
     await page.waitForTimeout(500);
 
     await expect(page).toHaveScreenshot('home-dark.png', {
