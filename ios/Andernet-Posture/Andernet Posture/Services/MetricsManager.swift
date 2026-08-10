@@ -66,6 +66,7 @@ final class MetricsManager: NSObject, MXMetricManagerSubscriber {
         if let mem = payload.memoryMetrics {
             let peakMB = mem.peakMemoryUsage.converted(to: .megabytes).value
             let avgSuspendedMB = mem.averageSuspendedMemory.averageMeasurement.converted(to: .megabytes).value
+            // swiftlint:disable:next line_length
             AppLogger.performance.info("Memory — peak: \(peakMB, format: .fixed(precision: 1))MB, avg suspended: \(avgSuspendedMB, format: .fixed(precision: 1))MB")
         }
 
