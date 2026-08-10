@@ -43,6 +43,15 @@ export class AppPage {
   async goto(): Promise<void> {
     await this.page.goto('/', { waitUntil: 'domcontentloaded' });
     await expect(this.mainContent.first()).toBeVisible();
+    // Wait for any Suspense boundary (lazy-loaded route components) to resolve.
+    // Chromium resolves domcontentloaded faster than other browsers, so without
+    // this guard, assertions run before React has rendered route content.
+    await this.page
+      .getByLabel('Loading content')
+      .waitFor({ state: 'hidden', timeout: 15_000 })
+      .catch(() => {
+        // No skeleton in DOM — content already loaded synchronously.
+      });
   }
 
   /**
@@ -64,6 +73,16 @@ export class AppPage {
     };
     await this.page.goto(pathByTab[tab], { waitUntil: 'domcontentloaded' });
     await expect(this.mainContent).toBeVisible();
+    // Wait for Suspense boundaries to resolve — each route lazy-loads its
+    // component, showing <DashboardSkeleton aria-label="Loading content"> until
+    // the chunk arrives. Chromium fires domcontentloaded before React renders,
+    // so without this wait the assertions run against an empty shell.
+    await this.page
+      .getByLabel('Loading content')
+      .waitFor({ state: 'hidden', timeout: 15_000 })
+      .catch(() => {
+        // No skeleton present — content loaded synchronously or was cached.
+      });
   }
 
   /**
