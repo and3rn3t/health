@@ -227,6 +227,7 @@ export function VitalSenseEnhancedDashboard() {
                   }
                 }}
                 role="button"
+                aria-label={`Heart Rate: ${Math.round(latestMetrics.heart_rate.value)} bpm`}
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -264,6 +265,7 @@ export function VitalSenseEnhancedDashboard() {
                   }
                 }}
                 role="button"
+                aria-label={`Walking Steadiness: ${Math.round(latestMetrics.walking_steadiness.value * 100)}%`}
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -302,6 +304,7 @@ export function VitalSenseEnhancedDashboard() {
                   }
                 }}
                 role="button"
+                aria-label={`Daily Steps: ${Math.round(latestMetrics.step_count.value).toLocaleString()}`}
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {

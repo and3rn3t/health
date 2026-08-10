@@ -8,7 +8,7 @@ const FallDetection = lazy(() => import('@/components/health/FallDetection'));
 function FallRiskPage() {
   return (
     <PageLayout
-      title="Fall Risk Analysis"
+      title="Fall Detection"
       subtitle="AI-powered fall detection with automatic emergency alerts"
     >
       <Suspense fallback={<DashboardSkeleton />}>

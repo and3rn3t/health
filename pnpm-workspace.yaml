@@ -1,3 +1,10 @@
+onlyBuiltDependencies:
+  - '@swc/core'
+  - esbuild
+  - msw
+  - sharp
+  - workerd
+
 allowBuilds:
   '@swc/core': true
   esbuild: true
