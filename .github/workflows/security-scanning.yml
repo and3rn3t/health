@@ -35,7 +35,7 @@ jobs:
 
       - name: Upload Trivy results to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@4187e74d05793876e9989daffde9c3e66b4acd07 # v3
+        uses: github/codeql-action/upload-sarif@f3712979fa5f215279b101dd0a2e3bdfb4353324 # v3
         with:
           sarif_file: 'trivy-results.sarif'
 
@@ -57,7 +57,7 @@ jobs:
 
       - name: Upload Trivy results to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@4187e74d05793876e9989daffde9c3e66b4acd07 # v3
+        uses: github/codeql-action/upload-sarif@f3712979fa5f215279b101dd0a2e3bdfb4353324 # v3
         with:
           sarif_file: 'trivy-fs-results.sarif'
           category: 'trivy-filesystem'
