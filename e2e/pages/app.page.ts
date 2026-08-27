@@ -46,12 +46,16 @@ export class AppPage {
     // Wait for any Suspense boundary (lazy-loaded route components) to resolve.
     // Chromium resolves domcontentloaded faster than other browsers, so without
     // this guard, assertions run before React has rendered route content.
-    await this.page
-      .getByLabel('Loading content')
-      .waitFor({ state: 'hidden', timeout: 15_000 })
-      .catch(() => {
-        // No skeleton in DOM — content already loaded synchronously.
-      });
+    // Two-step: first wait for skeleton to appear (it may be too brief to catch
+    // with hidden-only wait), then wait for it to disappear.
+    const skeleton = this.page.getByLabel('Loading content');
+    const appeared = await skeleton
+      .waitFor({ state: 'visible', timeout: 2_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (appeared) {
+      await skeleton.waitFor({ state: 'hidden', timeout: 15_000 });
+    }
   }
 
   /**
@@ -77,12 +81,17 @@ export class AppPage {
     // component, showing <DashboardSkeleton aria-label="Loading content"> until
     // the chunk arrives. Chromium fires domcontentloaded before React renders,
     // so without this wait the assertions run against an empty shell.
-    await this.page
-      .getByLabel('Loading content')
-      .waitFor({ state: 'hidden', timeout: 15_000 })
-      .catch(() => {
-        // No skeleton present — content loaded synchronously or was cached.
-      });
+    // Two-step: first wait for skeleton to appear (short timeout handles the
+    // case where content loads so fast the skeleton is never rendered), then
+    // wait for skeleton to disappear.
+    const skeleton = this.page.getByLabel('Loading content');
+    const appeared = await skeleton
+      .waitFor({ state: 'visible', timeout: 2_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (appeared) {
+      await skeleton.waitFor({ state: 'hidden', timeout: 15_000 });
+    }
   }
 
   /**
