@@ -18,7 +18,7 @@ overrides:
   eslint>ajv: 6.14.0
   '@eslint/eslintrc>ajv': 6.14.0
   fast-uri@<3.1.4: 3.1.8
-  seroval@<1.5.3: 1.5.3
+  seroval@<1.5.3: 1.6.3
   sharp@<0.35.0: 0.35.4
   ws: 8.21.0
   undici@<7.28.0: 7.29.1
@@ -5093,10 +5093,10 @@ packages:
     resolution: {integrity: sha512-qpY0Cl+fKYFn4GOf3cMiq6l72CpuVaawb6ILjubOQ+diJ54LfOWaSSPsaswN8DRPIPW4Yq+tE1k5aKd7ILyaFg==}
     engines: {node: '>=10'}
     peerDependencies:
-      seroval: 1.5.3
+      seroval: 1.6.3
 
-  seroval@1.5.3:
-    resolution: {integrity: sha512-BXe0x4buEeYiIKaRUnth1WqCILQ3k4O67KP/B4pC3pVz0Mv2c96ngA9QDREUYxWY1sb2RZVRqwI9RcpVMyHCVw==}
+  seroval@1.6.3:
+    resolution: {integrity: sha512-5PwLbVPpT4DEki1hYVSSsoxWY6xCNMVucAVLK/CH0mXSDfp/I4KaAex72q80GNt5hpn7CCMGdSpIg4YGqH/wXQ==}
     engines: {node: '>=10'}
 
   set-function-length@1.2.2:
@@ -8020,8 +8020,8 @@ snapshots:
     dependencies:
       '@tanstack/history': 1.161.6
       cookie-es: 3.1.1
-      seroval: 1.5.3
-      seroval-plugins: 1.5.2(seroval@1.5.3)
+      seroval: 1.6.3
+      seroval-plugins: 1.5.2(seroval@1.6.3)
 
   '@tanstack/router-generator@1.166.32':
     dependencies:
@@ -10324,11 +10324,11 @@ snapshots:
 
   semver@7.8.5: {}
 
-  seroval-plugins@1.5.2(seroval@1.5.3):
+  seroval-plugins@1.5.2(seroval@1.6.3):
     dependencies:
-      seroval: 1.5.3
+      seroval: 1.6.3
 
-  seroval@1.5.3: {}
+  seroval@1.6.3: {}
 
   set-function-length@1.2.2:
     dependencies:
