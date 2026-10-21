@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   track-bundle:
@@ -19,9 +19,16 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          fetch-depth: 0
       - uses: ./.github/actions/setup-pnpm
+
+      # main is protected (PR-only), so history lives in the Actions cache
+      # instead of being committed back; the tracked CSV seeds the first run.
+      - name: Restore bundle history
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: .bundle-history
+          key: bundle-history-${{ github.run_id }}
+          restore-keys: bundle-history-
 
       - name: Build
         env:
@@ -56,10 +63,9 @@ jobs:
           echo "| JS | $(numfmt --to=iec $JS_SIZE) |" >> $GITHUB_STEP_SUMMARY
           echo "| CSS | $(numfmt --to=iec $CSS_SIZE) |" >> $GITHUB_STEP_SUMMARY
 
-      - name: Commit bundle history
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .bundle-history/sizes.csv
-          git diff --cached --quiet || git commit -m "chore: update bundle size history [skip ci]"
-          git push
+      - name: Upload bundle history
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: bundle-history
+          path: .bundle-history/sizes.csv
+          retention-days: 90
