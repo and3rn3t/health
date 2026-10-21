@@ -1,0 +1,3 @@
+# Default owner for everything — requests review from @and3rn3t on every PR.
+# Add path-specific rules below as the repo grows; the last matching pattern wins.
+* @and3rn3t
