@@ -42,12 +42,15 @@ ENV NODE_ENV=development \
   PORT=8789
 
 # Install runtime deps for workerd used by wrangler dev
+# (upgrade pulls in Debian security fixes newer than the base image, e.g. perl-base)
 RUN apt-get update && \
+  apt-get upgrade -y && \
   apt-get install -y --no-install-recommends libc++1 ca-certificates && \
   rm -rf /var/lib/apt/lists/*
 
-# Upgrade npm to get patched bundled packages (undici etc.)
-RUN npm install -g npm@latest --prefer-dedupe
+# npm/npx aren't used at runtime; drop them so their bundled deps (undici,
+# brace-expansion, ...) don't ship vulnerable copies in the image
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 # Copy built worker and minimal files
 COPY --from=base /app/package.json ./package.json
@@ -69,4 +72,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD node -e "fetch('http://localhost:8789/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
 
 # Default command runs worker in dev mode locally, binding to 0.0.0.0 for external access
-CMD ["npx", "wrangler", "dev", "--local", "--env", "development", "--port", "8789", "--host", "0.0.0.0"]
+CMD ["./node_modules/.bin/wrangler", "dev", "--local", "--env", "development", "--port", "8789", "--host", "0.0.0.0"]
