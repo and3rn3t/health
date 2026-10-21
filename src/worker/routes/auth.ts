@@ -17,10 +17,7 @@ const route = new Hono<{ Bindings: Env }>();
 // Two-Factor Authentication (2FA) helpers
 // ---------------------------------------------------------------------------
 
-async function readTwoFactor(
-  c: { env: Env },
-  sub: string
-) {
+async function readTwoFactor(c: { env: Env }, sub: string) {
   const kv = c.env.HEALTH_KV;
   if (!kv || typeof kv.get !== 'function')
     return { enabled: false, updatedAt: null as string | null };
@@ -47,11 +44,7 @@ async function readTwoFactor(
   }
 }
 
-async function writeTwoFactor(
-  c: { env: Env },
-  sub: string,
-  enabled: boolean
-) {
+async function writeTwoFactor(c: { env: Env }, sub: string, enabled: boolean) {
   const kv = c.env.HEALTH_KV;
   if (!kv || typeof kv.put !== 'function') return false;
   const key = `user:2fa:${encodeURIComponent(sub)}`;
@@ -133,10 +126,7 @@ route.get('/api/user/export', async (c) => {
     });
   } catch (e) {
     log.error('export_failed', { error: (e as Error).message });
-    return c.json(
-      { error: 'export_failed' },
-      500
-    );
+    return c.json({ error: 'export_failed' }, 500);
   }
 });
 
@@ -157,7 +147,7 @@ route.get('/callback', async (c) => {
       return c.redirect('/', 302);
     }
     const url = new URL(c.req.url);
-    const indexUrl = new URL('/index.html', url.origin);
+    const indexUrl = new URL('/', url.origin);
     const req = new Request(indexUrl.toString(), { method: 'GET' });
     const res = await c.env.ASSETS?.fetch(req);
     if (!res || res.status === 404) {
@@ -250,10 +240,7 @@ route.post('/api/device/auth', async (c) => {
 route.get('/login', async (c) => {
   const auth0Domain = c.env.AUTH0_DOMAIN || '';
   const auth0ClientId = c.env.AUTH0_CLIENT_ID || '';
-  const baseUrl =
-    c.env.BASE_URL ||
-    new URL(c.req.url).origin ||
-    APP_URL;
+  const baseUrl = c.env.BASE_URL || new URL(c.req.url).origin || APP_URL;
   const redirectUri = `${baseUrl}/callback`;
 
   const html = `<!DOCTYPE html>
@@ -482,10 +469,8 @@ route.get('/api/auth0/health', async (c) => {
     });
     const parsed = openIdSchema.safeParse(await res.json());
     out.ok = true;
-    out.issuer =
-      (parsed.success ? parsed.data.issuer : undefined) || issuerUrl;
-    out.jwks_uri =
-      (parsed.success ? parsed.data.jwks_uri : undefined) || null;
+    out.issuer = (parsed.success ? parsed.data.issuer : undefined) || issuerUrl;
+    out.jwks_uri = (parsed.success ? parsed.data.jwks_uri : undefined) || null;
     out.authorization_endpoint =
       (parsed.success ? parsed.data.authorization_endpoint : undefined) || null;
     return c.json(out, 200);
@@ -528,10 +513,8 @@ route.get('/auth0/health', async (c) => {
     });
     const parsed = openIdSchema.safeParse(await res.json());
     out.ok = true;
-    out.issuer =
-      (parsed.success ? parsed.data.issuer : undefined) || issuerUrl;
-    out.jwks_uri =
-      (parsed.success ? parsed.data.jwks_uri : undefined) || null;
+    out.issuer = (parsed.success ? parsed.data.issuer : undefined) || issuerUrl;
+    out.jwks_uri = (parsed.success ? parsed.data.jwks_uri : undefined) || null;
     out.authorization_endpoint =
       (parsed.success ? parsed.data.authorization_endpoint : undefined) || null;
     return c.json(out, 200);

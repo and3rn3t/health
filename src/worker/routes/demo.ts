@@ -14,7 +14,7 @@ route.get('/demo', async (c) => {
   }
 
   const assetResp = await c.env.ASSETS.fetch(
-    new Request(`${new URL(c.req.url).origin}/index.html`)
+    new Request(`${new URL(c.req.url).origin}/`)
   );
   if (!assetResp.ok) {
     return c.text(

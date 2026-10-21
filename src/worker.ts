@@ -109,7 +109,10 @@ app.get('*', async (c) => {
   ) {
     return c.text('Not Found', 404);
   }
-  const indexUrl = new URL('/index.html', c.req.url);
+  // Request '/' rather than '/index.html': the assets binding's default
+  // html_handling answers '/index.html' with a 307 redirect to '/', which
+  // would bounce every deep link (e.g. /fall-risk) back to the dashboard.
+  const indexUrl = new URL('/', c.req.url);
   return c.env.ASSETS.fetch(new Request(indexUrl.toString(), c.req.raw));
 });
 
