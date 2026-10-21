@@ -37,5 +37,6 @@ overrides:
   'fflate@<0.8.3': 0.8.3
   'smol-toml@<1.7.1': 1.7.1
   'source-map-js@<1.2.2': 1.2.2
+  'nanoid@<3.3.18': 3.3.18
   ws: 8.21.0
   'undici@<7.28.0': 7.29.1
