@@ -17,27 +17,28 @@ test.describe('Performance', () => {
     await page.waitForLoadState('domcontentloaded');
 
     // Measure CLS using the Performance Observer API
-    const cls = await page.evaluate(() =>
-      new Promise<number>((resolve) => {
-        let clsValue = 0;
-        const observer = new PerformanceObserver((list) => {
-          for (const entry of list.getEntries()) {
-            const layoutShift = entry as PerformanceEntry & {
-              hadRecentInput: boolean;
-              value: number;
-            };
-            if (!layoutShift.hadRecentInput) {
-              clsValue += layoutShift.value;
+    const cls = await page.evaluate(
+      () =>
+        new Promise<number>((resolve) => {
+          let clsValue = 0;
+          const observer = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+              const layoutShift = entry as PerformanceEntry & {
+                hadRecentInput: boolean;
+                value: number;
+              };
+              if (!layoutShift.hadRecentInput) {
+                clsValue += layoutShift.value;
+              }
             }
-          }
-        });
-        observer.observe({ type: 'layout-shift', buffered: true });
-        // Wait a moment then collect
-        setTimeout(() => {
-          observer.disconnect();
-          resolve(clsValue);
-        }, 1000);
-      }),
+          });
+          observer.observe({ type: 'layout-shift', buffered: true });
+          // Wait a moment then collect
+          setTimeout(() => {
+            observer.disconnect();
+            resolve(clsValue);
+          }, 1000);
+        })
     );
 
     // CLS should be under 0.1 (good threshold per Web Vitals)
@@ -56,17 +57,20 @@ test.describe('Performance', () => {
       }
     });
 
-    await app.navigateTo('gait-analysis');
-    await app.navigateTo('fall-risk');
-    await app.navigateTo('settings');
-    await app.navigateTo('dashboard');
+    await app.clickSidebarItem('gait-analysis');
+    await app.clickSidebarItem('fall-risk');
+    await app.clickSidebarItem('settings');
+    await app.clickSidebarItem('dashboard');
 
     // TanStack Router can emit same-document navigation events for route changes.
     // Keep this bounded to guard against unexpected hard reload loops.
     expect(navigations.length).toBeLessThanOrEqual(5);
   });
 
-  test('lazy-loaded tabs render within timeout', async ({ page, browserName }) => {
+  test('lazy-loaded tabs render within timeout', async ({
+    page,
+    browserName,
+  }) => {
     const app = new AppPage(page);
     await app.goto();
 
@@ -84,7 +88,11 @@ test.describe('Performance', () => {
       const start = Date.now();
       await app.navigateTo(tab);
       // Wait for main content to have visible children
-      await page.locator('main#main-content').locator(':visible').first().waitFor();
+      await page
+        .locator('main#main-content')
+        .locator(':visible')
+        .first()
+        .waitFor();
       const renderTime = Date.now() - start;
 
       expect(renderTime).toBeLessThan(timeoutBudget);
@@ -97,11 +105,18 @@ test.describe('Performance', () => {
 
     // Get initial heap snapshot
     const initialHeap = await page.evaluate(
-      () => (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize ?? 0,
+      () =>
+        (performance as Performance & { memory?: { usedJSHeapSize: number } })
+          .memory?.usedJSHeapSize ?? 0
     );
 
     // Rapidly switch tabs 20 times
-    const tabs = ['gait-analysis', 'fall-risk', 'settings', 'dashboard'] as const;
+    const tabs = [
+      'gait-analysis',
+      'fall-risk',
+      'settings',
+      'dashboard',
+    ] as const;
     for (let i = 0; i < 20; i++) {
       await app.navigateTo(tabs[i % tabs.length]);
     }
@@ -115,7 +130,9 @@ test.describe('Performance', () => {
     });
 
     const finalHeap = await page.evaluate(
-      () => (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize ?? 0,
+      () =>
+        (performance as Performance & { memory?: { usedJSHeapSize: number } })
+          .memory?.usedJSHeapSize ?? 0
     );
 
     // If memory API is available, ensure heap doesn't grow more than 50MB
