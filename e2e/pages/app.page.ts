@@ -1,4 +1,4 @@
-import { type Locator, type Page, expect } from '@playwright/test';
+import { type Locator, type Page, errors, expect } from '@playwright/test';
 
 /** Reusable page object for the main VitalSense app shell. */
 export class AppPage {
@@ -40,18 +40,31 @@ export class AppPage {
     this.mobileTabBar = page.locator('nav[aria-label="Main navigation"]');
   }
 
+  /**
+   * Two-step wait: the skeleton may never render (fast load) or be too brief to
+   * catch with a hidden-only wait. Only a timeout on the "visible" step means
+   * "never appeared"; any other Playwright error is rethrown.
+   */
+  private async waitForSuspenseSkeleton(): Promise<void> {
+    const skeleton = this.page.getByLabel('Loading content');
+    try {
+      await skeleton.waitFor({ state: 'visible', timeout: 2_000 });
+    } catch (error: unknown) {
+      if (error instanceof errors.TimeoutError) return;
+      throw error;
+    }
+    await skeleton.waitFor({ state: 'hidden', timeout: 15_000 });
+  }
+
   async goto(): Promise<void> {
     await this.page.goto('/', { waitUntil: 'domcontentloaded' });
     await expect(this.mainContent.first()).toBeVisible();
     // Wait for any Suspense boundary (lazy-loaded route components) to resolve.
     // Chromium resolves domcontentloaded faster than other browsers, so without
     // this guard, assertions run before React has rendered route content.
-    await this.page
-      .getByLabel('Loading content')
-      .waitFor({ state: 'hidden', timeout: 15_000 })
-      .catch(() => {
-        // No skeleton in DOM — content already loaded synchronously.
-      });
+    // Two-step: first wait for skeleton to appear (it may be too brief to catch
+    // with hidden-only wait), then wait for it to disappear.
+    await this.waitForSuspenseSkeleton();
   }
 
   /**
@@ -62,7 +75,12 @@ export class AppPage {
    * interaction. Use `navigateTo()` for everything else.
    */
   async navigateTo(
-    tab: 'dashboard' | 'gait-analysis' | 'lidar-posture' | 'fall-risk' | 'settings',
+    tab:
+      | 'dashboard'
+      | 'gait-analysis'
+      | 'lidar-posture'
+      | 'fall-risk'
+      | 'settings'
   ): Promise<void> {
     const pathByTab: Record<typeof tab, string> = {
       dashboard: '/',
@@ -77,12 +95,10 @@ export class AppPage {
     // component, showing <DashboardSkeleton aria-label="Loading content"> until
     // the chunk arrives. Chromium fires domcontentloaded before React renders,
     // so without this wait the assertions run against an empty shell.
-    await this.page
-      .getByLabel('Loading content')
-      .waitFor({ state: 'hidden', timeout: 15_000 })
-      .catch(() => {
-        // No skeleton present — content loaded synchronously or was cached.
-      });
+    // Two-step: first wait for skeleton to appear (short timeout handles the
+    // case where content loads so fast the skeleton is never rendered), then
+    // wait for skeleton to disappear.
+    await this.waitForSuspenseSkeleton();
   }
 
   /**
@@ -90,7 +106,12 @@ export class AppPage {
    * Opens the sidebar first if collapsed so clicks aren't intercepted.
    */
   async clickSidebarItem(
-    tab: 'dashboard' | 'gait-analysis' | 'lidar-posture' | 'fall-risk' | 'settings',
+    tab:
+      | 'dashboard'
+      | 'gait-analysis'
+      | 'lidar-posture'
+      | 'fall-risk'
+      | 'settings'
   ): Promise<void> {
     // Ensure sidebar is expanded so items are clickable
     const toggle = this.sidebarToggle;
@@ -113,7 +134,9 @@ export class AppPage {
 
   /** Navigate using mobile bottom tabs. */
   async mobileNavigateTo(label: string): Promise<void> {
-    await this.mobileTabBar.getByRole('link', { name: new RegExp(label, 'i') }).click();
+    await this.mobileTabBar
+      .getByRole('link', { name: new RegExp(label, 'i') })
+      .click();
     await this.page.waitForLoadState('domcontentloaded');
   }
 

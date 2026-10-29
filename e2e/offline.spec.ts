@@ -12,8 +12,7 @@ test.describe('Offline & Network Resilience', () => {
     page,
     context,
   }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await new AppPage(page).goto();
 
     // Verify app loaded correctly first
     const heading = page.locator('h1, [role="heading"]');
@@ -24,7 +23,7 @@ test.describe('Offline & Network Resilience', () => {
 
     // Navigate within the app — SPA routing should still work for cached routes
     const app = new AppPage(page);
-    await app.navigateTo('settings');
+    await app.clickSidebarItem('settings');
 
     // Wait for any error states to appear
     await page.waitForTimeout(1000);
@@ -43,15 +42,14 @@ test.describe('Offline & Network Resilience', () => {
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));
 
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await new AppPage(page).goto();
 
     // Go offline
     await context.setOffline(true);
 
     // Try to interact with the app
     const app = new AppPage(page);
-    await app.navigateTo('dashboard');
+    await app.clickSidebarItem('dashboard');
     await page.waitForTimeout(2000);
 
     // Filter expected network errors (fetch failures are expected offline)
@@ -63,7 +61,7 @@ test.describe('Offline & Network Resilience', () => {
         !e.toLowerCase().includes('failed to fetch') &&
         !e.toLowerCase().includes('websocket') &&
         !e.toLowerCase().includes('load failed') &&
-        !e.toLowerCase().includes('connection'),
+        !e.toLowerCase().includes('connection')
     );
 
     expect(unexpectedErrors).toHaveLength(0);
@@ -84,12 +82,8 @@ test.describe('Offline & Network Resilience', () => {
     }
   });
 
-  test('app recovers after coming back online', async ({
-    page,
-    context,
-  }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+  test('app recovers after coming back online', async ({ page, context }) => {
+    await new AppPage(page).goto();
 
     // Go offline briefly
     await context.setOffline(true);
@@ -103,7 +97,7 @@ test.describe('Offline & Network Resilience', () => {
 
     // App should be functional — verify by navigating
     const app = new AppPage(page);
-    await app.navigateTo('dashboard');
+    await app.clickSidebarItem('dashboard');
 
     const heading = page.locator('h1, [role="heading"]');
     await expect(heading.first()).toBeVisible();
@@ -113,8 +107,7 @@ test.describe('Offline & Network Resilience', () => {
     page,
     context,
   }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await new AppPage(page).goto();
 
     // Track failed request count
     let failedRequestCount = 0;
@@ -127,11 +120,11 @@ test.describe('Offline & Network Resilience', () => {
 
     // Trigger data-fetching actions
     const app = new AppPage(page);
-    await app.navigateTo('gait-analysis');
+    await app.clickSidebarItem('gait-analysis');
     await page.waitForTimeout(2000);
 
     // Some requests should fail (expected offline)
-    // eslint-disable-next-line no-console
+
     console.log(`Offline: ${failedRequestCount} requests failed (expected)`);
 
     // But the important thing is the UI doesn't crash
@@ -171,7 +164,10 @@ test.describe('Offline & Network Resilience', () => {
     page,
     browserName,
   }) => {
-    test.skip(browserName !== 'chromium', 'CDP sessions are only available in Chromium');
+    test.skip(
+      browserName !== 'chromium',
+      'CDP sessions are only available in Chromium'
+    );
     // Simulate slow 3G
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('Network.emulateNetworkConditions', {
