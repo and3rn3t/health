@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   analyze:
-    uses: and3rn3t/.github/.github/workflows/reusable-codeql.yml@bac71674cf57c550774f71a70e32a5bb7bec48ad # v1
+    uses: and3rn3t/.github/.github/workflows/reusable-codeql.yml@0415d76d5dfdf1dec81d4756d411850057f38618 # v1
     with:
       languages: '["javascript-typescript"]'
 
