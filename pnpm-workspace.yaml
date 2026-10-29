@@ -31,7 +31,7 @@ overrides:
   'eslint>ajv': 6.14.0
   '@eslint/eslintrc>ajv': 6.14.0
   'fast-uri@<3.1.4': 3.1.8
-  'seroval@<1.6.3': 1.6.3
+  'seroval@<1.6.3': 1.6.11
   'sharp@<0.35.5': 0.35.5
   'browserslist@<4.28.7': 4.28.7
   'fflate@<0.8.3': 0.8.3
