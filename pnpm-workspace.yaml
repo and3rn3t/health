@@ -43,4 +43,4 @@ overrides:
   'qs@<6.16.1': 6.16.1
   '@vitest/mocker@<4.1.12': 4.1.12
   '@humanfs/node@<0.16.8': 0.16.8
-  '@babel/core@<7.29.6': 7.29.6
+  '@babel/core@<7.29.6': 7.29.7
