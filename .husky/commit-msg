@@ -4,4 +4,4 @@ COMMIT_MSG=$(head -1 "$1")
 case "$COMMIT_MSG" in
   Merge\ *|Revert\ *|"fixup! "*|"squash! "*) exit 0 ;;
 esac
-npx --no-install commitlint --edit "$1"
+pnpm exec commitlint --edit "$1"
