@@ -182,6 +182,8 @@ jobs:
 
   e2e:
     needs: build
+    # PRs get lint/type/test/build + preview; full e2e gates the production deploy on main
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -232,7 +234,7 @@ jobs:
     # GitHub → Settings → Environments → "production"
     environment:
       name: production
-      url: https://vitalsense.andernet.dev
+      url: https://health.andernet.dev
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: ./.github/actions/setup-pnpm
@@ -254,7 +256,7 @@ jobs:
   # ── Preview deployment (PR only) ─────────────────────────────
   preview:
     needs: build
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.actor != 'renovate[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

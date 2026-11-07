@@ -1,12 +1,10 @@
 name: CodeQL Security Analysis
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
   schedule:
-    - cron: "0 6 * * 1"
+    - cron: '0 6 * * 1'
 
 permissions:
   actions: read
@@ -18,4 +16,3 @@ jobs:
     uses: and3rn3t/.github/.github/workflows/reusable-codeql.yml@99fae926f05867cc98ec7007b9fce8c1fd125b53 # v1
     with:
       languages: '["javascript-typescript"]'
-

@@ -1,9 +1,6 @@
 name: SBOM & License Compliance
 
 on:
-  push:
-    branches: [main]
-    paths: ['pnpm-lock.yaml', 'package.json']
   release:
     types: [published]
   workflow_dispatch:

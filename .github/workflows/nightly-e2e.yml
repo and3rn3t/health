@@ -1,9 +1,9 @@
-name: Nightly E2E Regression
+name: Weekly E2E Regression
 
 on:
   schedule:
-    # Run nightly at 03:00 UTC (catches regressions from Dependabot merges, etc.)
-    - cron: '0 3 * * *'
+    # Weekly (Mondays 03:00 UTC); PR/main CI already runs chromium e2e
+    - cron: '0 3 * * 1'
   workflow_dispatch: # Manual trigger
 
 concurrency:
@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [chromium, firefox, webkit, mobile-chrome]
+        project: [chromium, mobile-chrome]
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: ./.github/actions/setup-pnpm

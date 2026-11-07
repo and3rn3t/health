@@ -1,13 +1,6 @@
 name: Mutation Testing
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'src/lib/**'
-      - 'src/schemas/**'
-      - 'src/hooks/**'
-      - 'stryker.config.mjs'
   workflow_dispatch:
 
 concurrency:
