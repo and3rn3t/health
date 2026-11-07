@@ -28,7 +28,6 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
 # Copy source (mounted in dev via volumes, but include for completeness)
 COPY src ./src
 COPY public ./public
-COPY app-config.js ./
 COPY wrangler.toml ./
 
 # Optionally build app + worker; default skip in dev images to speed up compose
@@ -57,7 +56,6 @@ COPY --from=base /app/package.json ./package.json
 COPY --from=base /app/node_modules ./node_modules
 # Dev image runs wrangler directly; built outputs not required here
 COPY --from=base /app/wrangler.toml ./wrangler.toml
-COPY --from=base /app/app-config.js ./app-config.js
 COPY --from=base /app/scripts ./scripts
 
 # Run as non-root user for security

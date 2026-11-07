@@ -115,7 +115,7 @@ export default [
   },
   // Browser-targeted JS (src, public, runtime config)
   {
-    files: ['src/**/*.js', 'app-config.js'],
+    files: ['src/**/*.js', 'public/app-config.js'],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -165,12 +165,15 @@ export default [
       ],
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
-      '@typescript-eslint/no-misused-promises': ['error', { checksVoidReturn: { attributes: false } }],
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        { checksVoidReturn: { attributes: false } },
+      ],
       'react-hooks/exhaustive-deps': 'error',
       'react-hooks/rules-of-hooks': 'error',
       '@typescript-eslint/triple-slash-reference': 'warn',
       'prefer-const': 'error',
-      'no-case-declarations': 'warn'
+      'no-case-declarations': 'warn',
     },
   },
   // Test files — relax rules that create noise in test code
