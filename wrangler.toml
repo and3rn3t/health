@@ -234,13 +234,6 @@ new_sqlite_classes = ["RateLimiter"]
 [env.advanced-dev]
 name = "vitalsense-websocket-advanced-dev"
 
-# The Cloudflare GitHub integration runs a bare `wrangler deploy` on a clean
-# checkout, so build the frontend assets (dist/) as well as the worker bundle.
-[env.advanced-dev.build]
-command = "npm run build:all"
-cwd = "."
-watch_dir = "src"
-
 [env.advanced-dev.vars]
 ENVIRONMENT = "development"
 LOG_LEVEL = "debug"
