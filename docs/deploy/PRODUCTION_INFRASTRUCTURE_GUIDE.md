@@ -65,18 +65,10 @@ curl https://health.andernet.dev/health
 curl https://health.andernet.dev/api/health
 ```
 
-## Cloudflare Workers Builds (GitHub integration)
+## Deployment path
 
-The `vitalsense-websocket-advanced-dev` worker is built by Cloudflare's GitHub
-integration, which runs a bare `wrangler deploy` on a clean checkout (no `dist/`).
-`[env.advanced-dev.build]` in `wrangler.toml` therefore runs `npm run build:all`
-so both the frontend assets and the worker bundle exist before deploy. Other
-environments keep the default `build:worker` command.
-
-If a Workers Build fails, reproduce it locally on a fresh clone with
-`npx wrangler deploy --dry-run --env advanced-dev`. The build image's Node
-version must satisfy `engines` in `package.json` (set `NODE_VERSION` in the
-worker's build settings if needed).
+Production and PR previews deploy from GitHub Actions (`.github/workflows/ci-core.yml`).
+The Cloudflare Workers Builds Git integration is not used.
 
 ## 🎛️ Observability Features Enabled
 
