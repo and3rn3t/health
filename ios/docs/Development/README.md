@@ -5,7 +5,6 @@ This folder contains documentation for development workflows, debugging techniqu
 ## 📋 Contents
 
 - **[development-workflow.md](./development-workflow.md)** - Complete development workflow guide
-- **[XCODE_PROJECT_VIEW_FIX.md](./XCODE_PROJECT_VIEW_FIX.md)** - Xcode project view troubleshooting
 
 ## 🛠️ Development Workflow
 
@@ -39,4 +38,4 @@ The Xcode project view fix document provides solutions for common Xcode interfac
 
 ---
 
-*For specific development procedures, see the individual guides in this folder.*
+_For specific development procedures, see the individual guides in this folder._

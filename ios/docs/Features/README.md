@@ -5,8 +5,6 @@ This folder contains documentation for specific features and their implementatio
 ## 📋 Contents
 
 - **[WIDGET_IMPLEMENTATION_GUIDE.md](./WIDGET_IMPLEMENTATION_GUIDE.md)** - iOS widget development guide
-- **[WIDGET_IMPLEMENTATION_COMPLETE.md](./WIDGET_IMPLEMENTATION_COMPLETE.md)** - Widget implementation summary
-- **[ICON_IMPLEMENTATION_SUMMARY.md](./ICON_IMPLEMENTATION_SUMMARY.md)** - App icon implementation details
 
 ## ⚡ Feature Overview
 
@@ -50,4 +48,4 @@ Professional app icons optimized for all iOS contexts:
 
 ---
 
-*For specific feature implementation details, see the individual guides in this folder.*
+_For specific feature implementation details, see the individual guides in this folder._
