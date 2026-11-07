@@ -8,6 +8,10 @@
   color: 'd73a4a'
   description: Something isn't working
 
+- name: breaking
+  color: 'b60205'
+  description: Breaking change (major version bump)
+
 - name: feature
   color: '0e8a16'
   description: New feature request
@@ -27,6 +31,10 @@
 - name: refactor
   color: 'c5def5'
   description: Code restructuring with no behavior change
+
+- name: chore
+  color: 'fef2c0'
+  description: Maintenance, CI, build or tooling
 
 - name: security
   color: 'e11d48'
