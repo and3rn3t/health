@@ -81,8 +81,13 @@ test.describe('Performance', () => {
       'settings',
     ] as const;
 
-    // Firefox in CI takes 10+ seconds to load lazy tabs
-    const timeoutBudget = browserName === 'firefox' ? 15_000 : 3_000;
+    // Firefox in CI takes 10+ seconds to load lazy tabs; webkit on shared
+    // runners is also ~2x slower than chromium
+    const timeoutBudgets: Record<string, number> = {
+      firefox: 15_000,
+      webkit: 8_000,
+    };
+    const timeoutBudget = timeoutBudgets[browserName] ?? 3_000;
 
     for (const tab of tabs) {
       const start = Date.now();
@@ -108,6 +113,11 @@ test.describe('Performance', () => {
       () =>
         (performance as Performance & { memory?: { usedJSHeapSize: number } })
           .memory?.usedJSHeapSize ?? 0
+    );
+    // performance.memory is Chromium-only; without it there is nothing to assert
+    test.skip(
+      initialHeap === 0,
+      'performance.memory unavailable in this browser'
     );
 
     // Rapidly switch tabs 20 times

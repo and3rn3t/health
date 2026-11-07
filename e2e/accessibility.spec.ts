@@ -24,6 +24,12 @@ async function waitForSettledUi(page: Page): Promise<void> {
 }
 
 test.describe('Accessibility', () => {
+  test.beforeEach(async ({ page }) => {
+    // The app disables animations/transitions under reduced motion, so axe never
+    // samples colors mid-fade (which produced run-to-run contrast failures).
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+  });
+
   test('home page passes axe accessibility audit', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
