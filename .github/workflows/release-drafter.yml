@@ -7,7 +7,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, reopened, synchronize]
+    types: [opened, reopened, synchronize, edited]
 
 permissions:
   contents: write
@@ -16,3 +16,15 @@ permissions:
 jobs:
   update-release-draft:
     uses: and3rn3t/.github/.github/workflows/reusable-release-drafter.yml@99fae926f05867cc98ec7007b9fce8c1fd125b53 # v1
+
+  # Release Drafter v7 split the autolabeler into its own action; it applies the
+  # `autolabeler` rules in .github/release-drafter.yml (conventional-commit titles).
+  autolabel:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: release-drafter/release-drafter/autolabeler@978bb0b30c5ee8cdd332ced253758157150d43f0 # v7.10.0
