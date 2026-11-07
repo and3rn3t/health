@@ -1,0 +1,103 @@
+# GitHub Labels
+# Synced automatically by the label-sync workflow.
+# Edit this file and push to main to update labels in the repo.
+
+# ---- Types ----
+
+- name: bug
+  color: 'd73a4a'
+  description: Something isn't working
+
+- name: feature
+  color: '0e8a16'
+  description: New feature request
+
+- name: enhancement
+  color: 'a2eeef'
+  description: Improvement to existing functionality
+
+- name: documentation
+  color: '0075ca'
+  description: Documentation additions or updates
+
+- name: question
+  color: 'd876e3'
+  description: Further information is requested
+
+- name: refactor
+  color: 'c5def5'
+  description: Code restructuring with no behavior change
+
+- name: security
+  color: 'e11d48'
+  description: Security-related issue or improvement
+
+- name: performance
+  color: 'f9d0c4'
+  description: Performance improvement or issue
+
+- name: dependencies
+  color: '0366d6'
+  description: Dependency updates
+
+# ---- Status ----
+
+- name: needs-triage
+  color: 'fbca04'
+  description: Awaiting initial review and categorization
+
+- name: in-progress
+  color: '1d76db'
+  description: Actively being worked on
+
+- name: blocked
+  color: 'b60205'
+  description: Blocked by another issue or external factor
+
+- name: wontfix
+  color: 'e4e669'
+  description: This will not be worked on
+
+- name: duplicate
+  color: 'cfd3d7'
+  description: This issue or PR already exists
+
+# ---- Priority ----
+
+- name: 'priority: critical'
+  color: 'b60205'
+  description: Must be fixed immediately
+
+- name: 'priority: high'
+  color: 'd93f0b'
+  description: Should be addressed soon
+
+- name: 'priority: medium'
+  color: 'fbca04'
+  description: Normal priority
+
+- name: 'priority: low'
+  color: '0e8a16'
+  description: Nice to have, no rush
+
+# ---- Size (estimated effort) ----
+
+- name: 'size: xs'
+  color: 'ededed'
+  description: 'Trivial change (< 30 min)'
+
+- name: 'size: s'
+  color: 'd4c5f9'
+  description: 'Small change (a few hours)'
+
+- name: 'size: m'
+  color: 'bfd4f2'
+  description: 'Medium change (a day or two)'
+
+- name: 'size: l'
+  color: 'c2e0c6'
+  description: 'Large change (several days)'
+
+- name: 'size: xl'
+  color: 'f9d0c4'
+  description: 'Very large change (a week+)'

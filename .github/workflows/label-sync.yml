@@ -1,0 +1,35 @@
+# Label Sync — keeps GitHub labels in sync with .github/labels.yml.
+#
+# When you add, rename, or remove a label in labels.yml and push to main,
+# this workflow updates the repo's labels to match.
+# You can also run it manually via workflow_dispatch.
+#
+# TODO: Review .github/labels.yml and customize labels for your project.
+
+name: Label Sync
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/labels.yml'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  sync:
+    name: Sync labels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Sync labels
+        uses: EndBug/label-sync@v2
+        with:
+          config-file: .github/labels.yml
+          delete-other-labels: false

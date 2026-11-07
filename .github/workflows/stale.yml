@@ -1,0 +1,15 @@
+# Auto-mark and close stale issues/PRs. See reusable-stale.yml for defaults.
+name: Stale
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # daily at 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    uses: and3rn3t/.github/.github/workflows/reusable-stale.yml@v1
