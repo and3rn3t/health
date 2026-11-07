@@ -21,15 +21,17 @@
 
 ## Tech Stack
 
-| Layer | Tech |
-|-------|------|
+| Layer    | Tech                                                              |
+| -------- | ----------------------------------------------------------------- |
 | Frontend | React 19, TypeScript, Vite, Tailwind v4, Radix UI, TanStack Query |
-| Backend | Cloudflare Workers (Hono), Durable Objects, KV/R2 |
-| iOS | Swift, SwiftUI, HealthKit, CoreML |
-| Auth | Auth0 with JWT (JWKS + HS256 fallback) |
-| Testing | Vitest, Playwright, XCTest |
+| Backend  | Cloudflare Workers (Hono), Durable Objects, KV/R2                 |
+| iOS      | Swift, SwiftUI, HealthKit, CoreML                                 |
+| Auth     | Auth0 with JWT (JWKS + HS256 fallback)                            |
+| Testing  | Vitest, Playwright, XCTest                                        |
 
 ## Quick Start
+
+Requires Node ≥24.13.0 (`.nvmrc` pins 24.22.0) and pnpm ≥11.11.0.
 
 ```bash
 # Install dependencies
