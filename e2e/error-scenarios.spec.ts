@@ -35,7 +35,7 @@ test.describe('Error Scenarios', () => {
     ]) {
       await page.evaluate((tabId: string) => {
         window.dispatchEvent(
-          new CustomEvent('navigate', { detail: { feature: tabId } }),
+          new CustomEvent('navigate', { detail: { feature: tabId } })
         );
       }, tab);
     }
@@ -66,17 +66,25 @@ test.describe('Error Scenarios', () => {
   });
 
   test('unknown routes serve the SPA shell', async ({ request }) => {
-    // Preview server serves the SPA for all routes (no Worker backend)
+    // Preview serves index.html (200) for every path; the real Worker answers
+    // unknown API paths with 401/404. Either way: handled, never a 5xx.
     const response = await request.get('/api/nonexistent-endpoint-xyz');
-    // Static preview serves index.html with 200 for all paths
-    expect(response.ok()).toBe(true);
+    expect(response.ok() || [401, 403, 404].includes(response.status())).toBe(
+      true
+    );
   });
 
-  test('app handles back/forward browser navigation', async ({ page, browserName }) => {
+  test('app handles back/forward browser navigation', async ({
+    page,
+    browserName,
+  }) => {
     // TODO: React error #185 (Maximum update depth exceeded) fires during Firefox
     // popstate handling with React 19 + TanStack Router. Track at:
     // https://github.com/TanStack/router/issues — skip until root cause is fixed.
-    test.skip(browserName === 'firefox', 'React #185 fires during Firefox popstate navigation – known React 19 / TanStack Router interaction');
+    test.skip(
+      browserName === 'firefox',
+      'React #185 fires during Firefox popstate navigation – known React 19 / TanStack Router interaction'
+    );
     const app = new AppPage(page);
     await app.goto();
 

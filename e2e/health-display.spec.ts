@@ -29,9 +29,8 @@ test.describe('Health Data Display', () => {
     );
 
     // At least some content should be visible (cards or health widgets)
-    const healthCount = await healthContent.count();
-    const cardCount = await genericCards.count();
-    expect(healthCount + cardCount).toBeGreaterThan(0);
+    // Auto-retrying wait: lazy routes may not have rendered at domcontentloaded
+    await expect(healthContent.or(genericCards).first()).toBeAttached();
 
     // No JS errors during rendering
     expect(errors).toHaveLength(0);

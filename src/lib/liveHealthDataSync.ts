@@ -179,14 +179,17 @@ export class LiveHealthDataSync {
             'token=' +
             encodeURIComponent(token);
         }
-        this.ws = new WebSocket(wsUrl);
+        const socket: WebSocket = new WebSocket(wsUrl);
+        this.ws = socket;
 
-        if (!this.ws) {
-          resolve(false);
-          return;
-        }
-
-        this.ws.onopen = () => {
+        socket.onopen = () => {
+          // Send on this handler's own socket: `this.ws` may already point at a
+          // newer, still-CONNECTING socket (rapid reconnect / remount), and
+          // sending there throws InvalidStateError. Also bail if it already closed.
+          if (socket.readyState !== WebSocket.OPEN) {
+            resolve(false);
+            return;
+          }
           console.log('Connected to health monitoring server');
           this.connectionStatus.connected = true;
           this.connectionStatus.reconnectAttempts = 0;
@@ -194,7 +197,7 @@ export class LiveHealthDataSync {
           this.notifyConnectionChange(true);
 
           // Identify as web dashboard client
-          this.ws?.send(
+          socket.send(
             JSON.stringify({
               type: 'client_identification',
               clientType: 'web_dashboard',
@@ -215,7 +218,7 @@ export class LiveHealthDataSync {
           resolve(true);
         };
 
-        this.ws.onmessage = (event: MessageEvent) => {
+        socket.onmessage = (event: MessageEvent) => {
           try {
             const raw = JSON.parse(event.data);
             const parsed = messageEnvelopeSchema.safeParse(raw);
@@ -227,7 +230,7 @@ export class LiveHealthDataSync {
           }
         };
 
-        this.ws.onclose = () => {
+        socket.onclose = () => {
           console.log('Disconnected from health monitoring server');
           this.connectionStatus.connected = false;
           this.connectionStatus.dataQuality = 'offline';
@@ -236,7 +239,7 @@ export class LiveHealthDataSync {
           this.attemptReconnect();
         };
 
-        this.ws.onerror = (error: Event) => {
+        socket.onerror = (error: Event) => {
           console.error('WebSocket error:', error);
           this.connectionStatus.dataQuality = 'poor';
           resolve(false);

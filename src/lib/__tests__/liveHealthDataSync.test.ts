@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { LiveHealthDataSync, getLiveHealthDataSync } from '../liveHealthDataSync';
-import type { LiveHealthMetric, LiveDataSubscription } from '../liveHealthDataSync';
+import {
+  LiveHealthDataSync,
+  getLiveHealthDataSync,
+} from '../liveHealthDataSync';
+import type {
+  LiveHealthMetric,
+  LiveDataSubscription,
+} from '../liveHealthDataSync';
 
 // ── Mock setup ───────────────────────────────────────────────────────────────
 
@@ -45,7 +51,9 @@ class MockWebSocket {
   }
 
   simulateMessage(data: unknown) {
-    this.onmessage?.(new MessageEvent('message', { data: JSON.stringify(data) }));
+    this.onmessage?.(
+      new MessageEvent('message', { data: JSON.stringify(data) })
+    );
   }
 
   simulateError() {
@@ -58,17 +66,20 @@ let latestWs: MockWebSocket | null = null;
 beforeEach(() => {
   vi.useFakeTimers();
   latestWs = null;
-  vi.stubGlobal('WebSocket', class extends MockWebSocket {
-    constructor(url: string) {
-      super(url);
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
-      latestWs = this;
+  vi.stubGlobal(
+    'WebSocket',
+    class extends MockWebSocket {
+      constructor(url: string) {
+        super(url);
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        latestWs = this;
+      }
     }
-  });
+  );
   // Provide OPEN constant on the global so code can use WebSocket.OPEN
   (globalThis as Record<string, unknown>).WebSocket = Object.assign(
     (globalThis as Record<string, unknown>).WebSocket as object,
-    { OPEN: 1, CLOSED: 3, CONNECTING: 0, CLOSING: 2 },
+    { OPEN: 1, CLOSED: 3, CONNECTING: 0, CLOSING: 2 }
   );
   mockToast.error.mockClear();
   mockToast.success.mockClear();
@@ -140,10 +151,23 @@ describe('connect', () => {
     const sync = createSync();
     const ws = await connectSync(sync);
     const messages = ws.sent.map((s: string) => JSON.parse(s));
-    const ident = messages.find((m: Record<string, unknown>) => m.type === 'client_identification');
+    const ident = messages.find(
+      (m: Record<string, unknown>) => m.type === 'client_identification'
+    );
     expect(ident).toBeDefined();
     expect(ident.clientType).toBe('web_dashboard');
     expect(ident.userId).toBe('user-1');
+  });
+
+  it('does not send when the socket is no longer open at onopen time', async () => {
+    const sync = createSync();
+    const p = sync.connect();
+    const ws = latestWs!;
+    // Simulate the socket being closed before the open handler runs
+    ws.readyState = MockWebSocket.CLOSED;
+    expect(() => ws.onopen?.(new Event('open'))).not.toThrow();
+    expect(ws.sent).toHaveLength(0);
+    expect(await p).toBe(false);
   });
 
   it('resolves false on error', async () => {
@@ -154,7 +178,8 @@ describe('connect', () => {
   });
 
   it('appends token when __WS_DEVICE_TOKEN__ is set', async () => {
-    (window as unknown as Record<string, unknown>).__WS_DEVICE_TOKEN__ = 'tok123';
+    (window as unknown as Record<string, unknown>).__WS_DEVICE_TOKEN__ =
+      'tok123';
     const sync = createSync();
     void sync.connect();
     expect(latestWs!.url).toContain('token=tok123');
@@ -162,7 +187,8 @@ describe('connect', () => {
   });
 
   it('uses __WS_URL__ override when set', async () => {
-    (window as unknown as Record<string, unknown>).__WS_URL__ = 'wss://override/ws';
+    (window as unknown as Record<string, unknown>).__WS_URL__ =
+      'wss://override/ws';
     const sync = createSync();
     void sync.connect();
     expect(latestWs!.url).toBe('wss://override/ws');
@@ -200,8 +226,12 @@ describe('heartbeat', () => {
     const ws = await connectSync(sync);
     const initialCount = ws.sent.length;
     vi.advanceTimersByTime(1000);
-    const messages = ws.sent.slice(initialCount).map((s: string) => JSON.parse(s));
-    const ping = messages.find((m: Record<string, unknown>) => m.type === 'ping');
+    const messages = ws.sent
+      .slice(initialCount)
+      .map((s: string) => JSON.parse(s));
+    const ping = messages.find(
+      (m: Record<string, unknown>) => m.type === 'ping'
+    );
     expect(ping).toBeDefined();
   });
 
@@ -257,7 +287,11 @@ describe('subscribe & unsubscribe', () => {
 
     // Send subscription to server
     const sent = ws.sent.map((s: string) => JSON.parse(s));
-    expect(sent.find((m: Record<string, unknown>) => m.type === 'subscribe_health_updates')).toBeDefined();
+    expect(
+      sent.find(
+        (m: Record<string, unknown>) => m.type === 'subscribe_health_updates'
+      )
+    ).toBeDefined();
 
     // Simulate incoming metric
     ws.simulateMessage({
@@ -289,8 +323,12 @@ describe('subscribe & unsubscribe', () => {
     ws.simulateMessage({
       type: 'live_health_update',
       data: {
-        metricType: 'heart_rate', value: 72, timestamp: new Date().toISOString(),
-        deviceId: 'dev-B', confidence: 0.9, source: 'apple_watch',
+        metricType: 'heart_rate',
+        value: 72,
+        timestamp: new Date().toISOString(),
+        deviceId: 'dev-B',
+        confidence: 0.9,
+        source: 'apple_watch',
       },
     });
     expect(received).toHaveLength(0); // Filtered out
@@ -298,8 +336,12 @@ describe('subscribe & unsubscribe', () => {
     ws.simulateMessage({
       type: 'live_health_update',
       data: {
-        metricType: 'heart_rate', value: 80, timestamp: new Date().toISOString(),
-        deviceId: 'dev-A', confidence: 0.9, source: 'apple_watch',
+        metricType: 'heart_rate',
+        value: 80,
+        timestamp: new Date().toISOString(),
+        deviceId: 'dev-A',
+        confidence: 0.9,
+        source: 'apple_watch',
       },
     });
     expect(received).toHaveLength(1);
@@ -319,8 +361,12 @@ describe('subscribe & unsubscribe', () => {
     ws.simulateMessage({
       type: 'live_health_update',
       data: {
-        metricType: 'heart_rate', value: 72, timestamp: new Date().toISOString(),
-        deviceId: 'dev-1', confidence: 0.5, source: 'apple_watch',
+        metricType: 'heart_rate',
+        value: 72,
+        timestamp: new Date().toISOString(),
+        deviceId: 'dev-1',
+        confidence: 0.5,
+        source: 'apple_watch',
       },
     });
     expect(received).toHaveLength(0);
@@ -346,8 +392,12 @@ describe('subscribe & unsubscribe', () => {
     ws.simulateMessage({
       type: 'live_health_update',
       data: {
-        metricType: 'heart_rate', value: 72, timestamp: new Date().toISOString(),
-        deviceId: 'dev-1', confidence: 0.9, source: 'apple_watch',
+        metricType: 'heart_rate',
+        value: 72,
+        timestamp: new Date().toISOString(),
+        deviceId: 'dev-1',
+        confidence: 0.9,
+        source: 'apple_watch',
       },
     });
     expect(cb).not.toHaveBeenCalled();
@@ -388,7 +438,9 @@ describe('sendHealthData', () => {
     sync.sendHealthData(metric);
     const ws = await connectSync(sync);
     const sent = ws.sent.map((s: string) => JSON.parse(s));
-    const healthMsg = sent.find((m: Record<string, unknown>) => m.type === 'live_health_data');
+    const healthMsg = sent.find(
+      (m: Record<string, unknown>) => m.type === 'live_health_data'
+    );
     expect(healthMsg).toBeDefined();
   });
 });
@@ -458,14 +510,28 @@ describe('server messages', () => {
     const sync = createSync();
     const ws = await connectSync(sync);
     const received: LiveHealthMetric[] = [];
-    sync.subscribe({ id: 'sub-batch', metricTypes: ['heart_rate', 'steps'], callback: (d) => received.push(d) });
+    sync.subscribe({
+      id: 'sub-batch',
+      metricTypes: ['heart_rate', 'steps'],
+      callback: (d) => received.push(d),
+    });
 
     ws.simulateMessage({
       type: 'live_health_update',
       data: {
         metrics: [
-          { type: 'heart_rate', value: 72, unit: 'bpm', timestamp: new Date().toISOString() },
-          { type: 'steps', value: 100, unit: 'count', timestamp: new Date().toISOString() },
+          {
+            type: 'heart_rate',
+            value: 72,
+            unit: 'bpm',
+            timestamp: new Date().toISOString(),
+          },
+          {
+            type: 'steps',
+            value: 100,
+            unit: 'count',
+            timestamp: new Date().toISOString(),
+          },
         ],
         deviceId: 'dev-batch',
         userId: 'user-1',
@@ -557,7 +623,11 @@ describe('client presence', () => {
     const ws = await connectSync(sync);
     ws.simulateMessage({
       type: 'client_presence',
-      data: { clientType: 'ios_app', status: 'offline', deviceInfo: { deviceId: 'iph-1' } },
+      data: {
+        clientType: 'ios_app',
+        status: 'offline',
+        deviceInfo: { deviceId: 'iph-1' },
+      },
     });
     expect(handler).toHaveBeenCalled();
     window.removeEventListener('apple-device-disconnected', handler);
@@ -592,7 +662,9 @@ describe('triggerEmergency', () => {
     sync.triggerEmergency({ reason: 'fall' }, 2000);
     vi.advanceTimersByTime(2000);
     const sent = ws.sent.map((s: string) => JSON.parse(s));
-    const emergency = sent.find((m: Record<string, unknown>) => m.type === 'emergency_alert');
+    const emergency = sent.find(
+      (m: Record<string, unknown>) => m.type === 'emergency_alert'
+    );
     expect(emergency).toBeDefined();
     expect(sync.getPendingEmergency()).toBeNull();
   });
@@ -649,7 +721,9 @@ describe('cancelPendingEmergency', () => {
     sync.cancelPendingEmergency();
     vi.advanceTimersByTime(3000);
     const sent = ws.sent.map((s: string) => JSON.parse(s));
-    expect(sent.find((m: Record<string, unknown>) => m.type === 'emergency_alert')).toBeUndefined();
+    expect(
+      sent.find((m: Record<string, unknown>) => m.type === 'emergency_alert')
+    ).toBeUndefined();
   });
 });
 
