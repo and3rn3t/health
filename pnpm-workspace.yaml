@@ -15,10 +15,15 @@ allowBuilds:
 auditConfig:
   ignoreGhsas:
     - GHSA-mh99-v99m-4gvg
+    # zod 3.x pulled in by @tanstack/router-generator (build-time only, needs the v3 API;
+    # forcing zod 4 breaks `vite build`). No 3.x patch exists; app code uses zod >=4.6.6.
+    - GHSA-mrhx-c7xc-m3w5
 
 overrides:
   'minimatch@<3.1.4': 11.0.1
   'minimatch@>=9.0.0,<9.0.7': 11.0.1
+  'minimatch@>=7.0.0 <11.0.1': 11.0.1
+  'esbuild@>=0.27.3 <0.28.1': 0.28.1
   'picomatch@<2.3.2': 2.3.2
   'picomatch@>=4.0.0,<4.0.4': 4.0.4
   'flatted@<3.4.0': 3.4.4
