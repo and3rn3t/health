@@ -57,47 +57,50 @@ make lint              # SwiftLint check
 ## CI Pipeline
 
 Tests run automatically in GitHub Actions:
+
 1. TypeScript type-check (`tsc --noEmit`)
 2. ESLint
 3. Vitest unit tests
 4. Bundle size budget check
 5. SwiftLint (iOS)
+
 ## Adding New Tests
 
 ### Unit Test Template
+
 ```typescript
-import { describe, test, expect } from 'vitest'
-import { yourFunction } from '../your-module'
+import { describe, test, expect } from 'vitest';
+import { yourFunction } from '../your-module';
 
 describe('Your Module', () => {
   test('does something correctly', () => {
-    const result = yourFunction(input)
-    expect(result).toMatchExpectedOutput()
-  })
-})
+    const result = yourFunction(input);
+    expect(result).toMatchExpectedOutput();
+  });
+});
 ```
 
 ### Integration Test Template
+
 ```typescript
 test('endpoint works correctly', async () => {
   const response = await fetch(`${API_URL}/your-endpoint`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ /* test data */ }),
-  })
-  expect(response.ok).toBe(true)
-  const data = await response.json()
-  expect(data).toMatchExpectedStructure()
-})
+    body: JSON.stringify({
+      /* test data */
+    }),
+  });
+  expect(response.ok).toBe(true);
+  const data = await response.json();
+  expect(data).toMatchExpectedStructure();
+});
 ```
-
-## Golden Datasets
-
-Golden datasets are stored in `fixtures/golden/` and represent expected outputs for acceptance tests. When updating algorithms, update golden datasets accordingly.
 
 ## Continuous Integration
 
 Tests should be run in CI/CD pipelines:
+
 - On every pull request
 - Before merging to main
 - On scheduled basis for regression detection
