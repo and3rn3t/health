@@ -5,7 +5,7 @@
     "url": "https://github.com/and3rn3t/health.git"
   },
   "license": "MIT",
-  "description": "Tinkering with Apple HealthKit and the LiDAR sensors in Apple iPhones.",
+  "description": "VitalSense — Apple Health insights, fall risk detection, emergency alerts, and caregiver dashboards. React + Cloudflare Workers + native iOS (HealthKit).",
   "private": true,
   "version": "0.0.0",
   "type": "module",
