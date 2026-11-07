@@ -7,7 +7,7 @@ settings:
 overrides:
   minimatch@<3.1.4: 11.0.5
   minimatch@>=9.0.0,<9.0.7: 11.0.1
-  minimatch@>=7.0.0 <11.0.1: 11.0.1
+  minimatch@>=7.0.0 <11.0.1: 11.0.5
   esbuild@>=0.27.3 <0.28.1: 0.28.2
   picomatch@<2.3.2: 2.3.2
   picomatch@>=4.0.0,<4.0.4: 4.0.4
@@ -7498,7 +7498,7 @@ snapshots:
       execa: 9.6.1
       json-rpc-2.0: 1.7.1
       lodash.groupby: 4.6.0
-      minimatch: 11.0.1
+      minimatch: 11.0.5
       mutation-server-protocol: 0.4.1
       mutation-testing-elements: 3.7.3
       mutation-testing-metrics: 3.7.3
@@ -7919,7 +7919,7 @@ snapshots:
       '@typescript-eslint/types': 8.58.2
       '@typescript-eslint/visitor-keys': 8.58.2
       debug: 4.4.3
-      minimatch: 11.0.1
+      minimatch: 11.0.5
       semver: 7.7.4
       tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(typescript@5.8.3)
