@@ -42,7 +42,11 @@ test.describe('Health Data Display', () => {
     const response = await request.get('/health');
     // In the preview (static) server, /health may not exist — that's OK
     // But if it does respond, validate the shape
-    if (response.ok()) {
+    // The preview server's SPA fallback answers unknown paths with index.html,
+    // so only validate when the response is actually JSON.
+    const isJson =
+      response.headers()['content-type']?.includes('json') ?? false;
+    if (response.ok() && isJson) {
       const body = await response.json();
       expect(body).toHaveProperty('status');
     }

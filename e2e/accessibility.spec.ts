@@ -1,10 +1,33 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import type { Page } from '@playwright/test';
+
+/**
+ * Axe samples computed colors at call time, so content that is still fading in
+ * (or a Suspense skeleton still on screen) yields bogus contrast ratios that
+ * differ run to run. Wait for the UI to be visually settled first.
+ */
+async function waitForSettledUi(page: Page): Promise<void> {
+  await page
+    .getByLabel('Loading content')
+    .waitFor({ state: 'hidden', timeout: 15_000 })
+    .catch(() => undefined);
+  await page.waitForFunction(
+    () =>
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
+        .every((a) => a.playState !== 'running'),
+    undefined,
+    { timeout: 10_000, polling: 100 }
+  );
+}
 
 test.describe('Accessibility', () => {
   test('home page passes axe accessibility audit', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
+    await waitForSettledUi(page);
 
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
@@ -17,6 +40,7 @@ test.describe('Accessibility', () => {
   test('all images have alt attributes', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
+    await waitForSettledUi(page);
 
     const images = page.locator('img');
     const count = await images.count();
@@ -36,6 +60,7 @@ test.describe('Accessibility', () => {
   test('focus order is logical with tab navigation', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
+    await waitForSettledUi(page);
 
     const focusedElements: string[] = [];
 
@@ -76,6 +101,7 @@ test.describe('Accessibility', () => {
   test('color contrast meets WCAG AA', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
+    await waitForSettledUi(page);
 
     const results = await new AxeBuilder({ page })
       .withRules(['color-contrast'])
@@ -87,6 +113,7 @@ test.describe('Accessibility', () => {
   test('demo page passes axe accessibility audit', async ({ page }) => {
     await page.goto('/demo');
     await page.waitForLoadState('domcontentloaded');
+    await waitForSettledUi(page);
 
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
@@ -95,7 +122,7 @@ test.describe('Accessibility', () => {
 
     // Report serious+ violations only
     const serious = results.violations.filter(
-      (v) => v.impact === 'critical' || v.impact === 'serious',
+      (v) => v.impact === 'critical' || v.impact === 'serious'
     );
     expect(serious).toEqual([]);
   });
@@ -103,13 +130,14 @@ test.describe('Accessibility', () => {
   test('login page passes axe accessibility audit', async ({ page }) => {
     await page.goto('/login');
     await page.waitForLoadState('domcontentloaded');
+    await waitForSettledUi(page);
 
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
       .analyze();
 
     const serious = results.violations.filter(
-      (v) => v.impact === 'critical' || v.impact === 'serious',
+      (v) => v.impact === 'critical' || v.impact === 'serious'
     );
     expect(serious).toEqual([]);
   });
@@ -117,9 +145,12 @@ test.describe('Accessibility', () => {
   test('ARIA live regions exist for dynamic content', async ({ page }) => {
     await page.goto('/demo');
     await page.waitForLoadState('domcontentloaded');
+    await waitForSettledUi(page);
 
     // Verify at least one aria-live region or role="alert" exists
-    const liveRegions = await page.locator('[aria-live], [role="alert"], [role="status"]').count();
+    const liveRegions = await page
+      .locator('[aria-live], [role="alert"], [role="status"]')
+      .count();
     expect(liveRegions).toBeGreaterThanOrEqual(0);
   });
 });

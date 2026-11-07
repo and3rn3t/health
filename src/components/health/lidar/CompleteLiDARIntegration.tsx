@@ -135,18 +135,18 @@ export const CompleteLiDARIntegration: React.FC<{
     <CleanLiDARPerformanceProvider>
       <div className={`space-y-6 ${className}`}>
         {/* Quick Stats Bar */}
-        <div className="flex items-center justify-between rounded-xl bg-muted/50 p-3">
+        <div className="bg-muted/50 flex items-center justify-between rounded-xl p-3">
           <div className="flex items-center gap-4">
             <div className="text-sm">
               <span className="font-semibold">{scanHistory.length}</span>
-              <span className="ml-1 text-muted-foreground">Scans</span>
+              <span className="text-muted-foreground ml-1">Scans</span>
             </div>
           </div>
           <button
             type="button"
             onClick={handleExportData}
             disabled={!settings.enableExport}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50"
           >
             <Download className="h-3.5 w-3.5" />
             Export
@@ -154,12 +154,28 @@ export const CompleteLiDARIntegration: React.FC<{
         </div>
 
         {/* Segmented Control */}
-        <div role="tablist" className="flex rounded-xl bg-muted p-1">
+        <div role="tablist" className="bg-muted flex rounded-xl p-1">
           {[
-            { key: 'realtime' as const, label: 'Real-time', icon: <Activity className="h-3.5 w-3.5" /> },
-            { key: 'analytics' as const, label: 'Analytics', icon: <Brain className="h-3.5 w-3.5" /> },
-            { key: 'reports' as const, label: 'Reports', icon: <Database className="h-3.5 w-3.5" /> },
-            { key: 'settings' as const, label: 'Settings', icon: <Settings className="h-3.5 w-3.5" /> },
+            {
+              key: 'realtime' as const,
+              label: 'Real-time',
+              icon: <Activity className="h-3.5 w-3.5" />,
+            },
+            {
+              key: 'analytics' as const,
+              label: 'Analytics',
+              icon: <Brain className="h-3.5 w-3.5" />,
+            },
+            {
+              key: 'reports' as const,
+              label: 'Reports',
+              icon: <Database className="h-3.5 w-3.5" />,
+            },
+            {
+              key: 'settings' as const,
+              label: 'Settings',
+              icon: <Settings className="h-3.5 w-3.5" />,
+            },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -174,14 +190,14 @@ export const CompleteLiDARIntegration: React.FC<{
               }`}
             >
               {tab.icon}
-              <span className="hidden sm:inline">{tab.label}</span>
+              {/* Visually hidden on mobile but still the tab's accessible name */}
+              <span className="sr-only sm:not-sr-only">{tab.label}</span>
             </button>
           ))}
         </div>
 
         {/* Tab Content */}
-        <div className="rounded-xl border bg-card shadow-sm">
-
+        <div className="bg-card rounded-xl border shadow-sm">
           <div className="p-6">
             {/* Real-time Data Tab */}
             {activeTab === 'realtime' && (
@@ -214,7 +230,7 @@ export const CompleteLiDARIntegration: React.FC<{
                     standards, and provider integration.
                   </p>
 
-                  <div className="md:grid-cols-3 grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <FeatureCard
                       title="Fall Risk Assessment"
                       description="Comprehensive analysis with clinical recommendations"
@@ -233,27 +249,27 @@ export const CompleteLiDARIntegration: React.FC<{
                   </div>
                 </div>
 
-                <div className="rounded-lg border bg-card p-6">
-                  <h4 className="mb-4 font-semibold text-foreground">
+                <div className="bg-card rounded-lg border p-6">
+                  <h4 className="text-foreground mb-4 font-semibold">
                     Sample Reports (Demo)
                   </h4>
                   <div className="space-y-3">
                     {clinicalReports.map((report) => (
                       <div
                         key={report.id}
-                        className="flex items-center justify-between rounded-lg bg-muted/50 p-4"
+                        className="bg-muted/50 flex items-center justify-between rounded-lg p-4"
                       >
                         <div>
-                          <div className="font-medium text-foreground">
+                          <div className="text-foreground font-medium">
                             {report.reportType
                               .replace('_', ' ')
                               .replace(/\b\w/g, (l) => l.toUpperCase())}{' '}
                             Report
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-muted-foreground text-sm">
                             {report.summary}
                           </div>
-                          <div className="mt-1 text-xs text-muted-foreground">
+                          <div className="text-muted-foreground mt-1 text-xs">
                             Generated: {report.generatedAt.toLocaleDateString()}
                           </div>
                         </div>
@@ -269,7 +285,7 @@ export const CompleteLiDARIntegration: React.FC<{
             {activeTab === 'settings' && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="mb-4 flex items-center text-lg font-semibold text-foreground">
+                  <h3 className="text-foreground mb-4 flex items-center text-lg font-semibold">
                     <Zap className="mr-2 h-5 w-5 text-yellow-500" />
                     Integration Settings
                   </h3>
@@ -324,11 +340,11 @@ export const CompleteLiDARIntegration: React.FC<{
                       }
                     />
 
-                    <div className="md:grid-cols-2 grid grid-cols-1 gap-4 border-t pt-4">
+                    <div className="grid grid-cols-1 gap-4 border-t pt-4 md:grid-cols-2">
                       <div>
                         <label
                           htmlFor="update-interval-select"
-                          className="mb-2 block text-sm font-medium text-foreground"
+                          className="text-foreground mb-2 block text-sm font-medium"
                         >
                           Update Interval (ms)
                         </label>
@@ -341,7 +357,7 @@ export const CompleteLiDARIntegration: React.FC<{
                               updateInterval: parseInt(e.target.value),
                             }))
                           }
-                          className="w-full rounded-md border border-border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="border-border bg-background focus:ring-primary w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
                         >
                           <option value={1000}>1 second</option>
                           <option value={3000}>3 seconds</option>
@@ -353,7 +369,7 @@ export const CompleteLiDARIntegration: React.FC<{
                       <div>
                         <label
                           htmlFor="max-history-select"
-                          className="mb-2 block text-sm font-medium text-foreground"
+                          className="text-foreground mb-2 block text-sm font-medium"
                         >
                           Max History Items
                         </label>
@@ -366,7 +382,7 @@ export const CompleteLiDARIntegration: React.FC<{
                               maxHistoryItems: parseInt(e.target.value),
                             }))
                           }
-                          className="w-full rounded-md border border-border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="border-border bg-background focus:ring-primary w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
                           aria-label="Maximum history items setting"
                         >
                           <option value={25}>25 items</option>
@@ -384,7 +400,7 @@ export const CompleteLiDARIntegration: React.FC<{
         </div>
 
         {/* Integration Status Footer */}
-        <div className="rounded-xl border bg-card p-4 shadow-sm">
+        <div className="bg-card rounded-xl border p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
               <StatusIndicator
@@ -397,7 +413,7 @@ export const CompleteLiDARIntegration: React.FC<{
               />
               <StatusIndicator label="Export" active={settings.enableExport} />
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-muted-foreground text-sm">
               All systems operational
             </div>
           </div>
@@ -413,10 +429,10 @@ const FeatureCard: React.FC<{
   description: string;
   status: string;
 }> = ({ title, description, status }) => (
-  <div className="rounded-lg border bg-card p-4">
-    <h4 className="mb-2 font-medium text-foreground">{title}</h4>
-    <p className="mb-3 text-sm text-muted-foreground">{description}</p>
-    <span className="inline-block rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
+  <div className="bg-card rounded-lg border p-4">
+    <h4 className="text-foreground mb-2 font-medium">{title}</h4>
+    <p className="text-muted-foreground mb-3 text-sm">{description}</p>
+    <span className="bg-muted text-muted-foreground inline-block rounded px-2 py-1 text-xs">
       {status}
     </span>
   </div>
@@ -433,7 +449,7 @@ const ReportStatusBadge: React.FC<{
 
   return (
     <span
-      className={`text-xs rounded-full px-2 py-1 font-medium ${styles[status]}`}
+      className={`rounded-full px-2 py-1 text-xs font-medium ${styles[status]}`}
     >
       {status.toUpperCase()}
     </span>
@@ -447,16 +463,16 @@ const SettingToggle: React.FC<{
   onChange: (checked: boolean) => void;
   disabled?: boolean;
 }> = ({ label, description, checked, onChange, disabled = false }) => (
-  <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
+  <div className="bg-muted/50 flex items-center justify-between rounded-lg p-4">
     <div className="flex-1">
-      <div className="font-medium text-foreground">{label}</div>
-      <div className="text-sm text-muted-foreground">{description}</div>
+      <div className="text-foreground font-medium">{label}</div>
+      <div className="text-muted-foreground text-sm">{description}</div>
     </div>
     <button
       type="button"
       onClick={() => !disabled && onChange(!checked)}
       disabled={disabled}
-      className={`w-11 relative inline-flex h-6 items-center rounded-full transition-colors ${
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
         checked && !disabled ? 'bg-primary' : 'bg-muted-foreground/30'
       } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
       aria-label={`Toggle ${label}`}
@@ -478,7 +494,7 @@ const StatusIndicator: React.FC<{
     <div
       className={`mr-2 h-2 w-2 rounded-full ${active ? 'bg-green-500' : 'bg-muted-foreground/30'}`}
     />
-    <span className="text-sm text-muted-foreground">{label}</span>
+    <span className="text-muted-foreground text-sm">{label}</span>
   </div>
 );
 

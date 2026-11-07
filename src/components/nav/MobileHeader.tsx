@@ -23,14 +23,15 @@ export function MobileHeader({ className }: { className?: string }) {
   return (
     <header
       className={cn(
-        'vs-glass-thick sticky top-0 z-40 border-b border-border/30 pt-safe-top',
+        'vs-glass-thick border-border/30 pt-safe-top sticky top-0 z-40 border-b',
         className
       )}
     >
       <div className="flex h-11 items-center justify-between px-4">
-        <h1 className="truncate text-base font-semibold text-foreground">
+        {/* Not a heading: each page renders its own <h1>, and a second one is an a11y defect */}
+        <p className="text-foreground truncate text-base font-semibold">
           {pageLabel}
-        </h1>
+        </p>
         <Button
           variant="ghost"
           size="icon"

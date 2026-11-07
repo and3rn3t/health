@@ -9,7 +9,11 @@ test.describe('Tab Navigation', () => {
     await app.goto();
   });
 
-  test('sidebar contains all navigation items', async () => {
+  test('sidebar contains all navigation items', async ({ isMobile }) => {
+    test.skip(
+      isMobile,
+      'Mobile uses the bottom tab bar; the sidebar is a Sheet'
+    );
     // Sidebar starts collapsed (w-0) — check items are in the DOM
     await expect(app.dashboardLink).toBeAttached();
     await expect(app.gaitLink).toBeAttached();
@@ -28,7 +32,9 @@ test.describe('Tab Navigation', () => {
 
     await app.expectActiveTab('Gait Analysis');
     await expect(
-      app.mainContent.locator('h1:not(.sr-only)').filter({ hasText: /Gait Analysis/ }),
+      app.mainContent
+        .locator('h1:not(.sr-only)')
+        .filter({ hasText: /Gait Analysis/ })
     ).toBeVisible();
     expect(errors).toHaveLength(0);
   });
@@ -47,7 +53,9 @@ test.describe('Tab Navigation', () => {
 
     await app.expectActiveTab('Fall Risk');
     await expect(
-      app.page.getByRole('heading', { name: /Fall Risk Analysis|Fall Detection/i }),
+      app.page.getByRole('heading', {
+        name: /Fall Risk Analysis|Fall Detection/i,
+      })
     ).toBeVisible();
     expect(errors).toHaveLength(0);
   });
@@ -59,7 +67,7 @@ test.describe('Tab Navigation', () => {
     await app.expectActiveTab('Settings');
     // Two "Settings" headings exist (sr-only + visible) — check the visible one
     await expect(
-      app.page.locator('h1:not(.sr-only)').filter({ hasText: 'Settings' }),
+      app.page.locator('h1:not(.sr-only)').filter({ hasText: 'Settings' })
     ).toBeVisible();
     expect(errors).toHaveLength(0);
   });
@@ -83,7 +91,10 @@ test.describe('Tab Navigation', () => {
     expect(errors).toHaveLength(0);
   });
 
-  test('document title updates with active tab', async ({ page, browserName }) => {
+  test('document title updates with active tab', async ({
+    page,
+    browserName,
+  }) => {
     await expect(page).toHaveTitle(/Dashboard.*VitalSense/i);
 
     await app.navigateTo('gait-analysis');
@@ -92,10 +103,16 @@ test.describe('Tab Navigation', () => {
     await app.navigateTo('settings');
     // Firefox lazy-loads the Settings component slowly in CI — give it extra time
     const titleTimeout = browserName === 'firefox' ? 15_000 : 5_000;
-    await expect(page).toHaveTitle(/Settings.*VitalSense/i, { timeout: titleTimeout });
+    await expect(page).toHaveTitle(/Settings.*VitalSense/i, {
+      timeout: titleTimeout,
+    });
   });
 
-  test('sidebar item shows active state', async () => {
+  test('sidebar item shows active state', async ({ isMobile }) => {
+    test.skip(
+      isMobile,
+      'Mobile uses the bottom tab bar; the sidebar is a Sheet'
+    );
     // Expand sidebar so items are interactive and visible
     await app.clickSidebarItem('dashboard');
     await expect(app.dashboardLink).toHaveAttribute('aria-current', 'page');
@@ -103,10 +120,7 @@ test.describe('Tab Navigation', () => {
     await app.navigateTo('gait-analysis');
     await expect(app.gaitLink).toHaveAttribute('aria-current', 'page');
     // Dashboard should no longer be active
-    await expect(app.dashboardLink).not.toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    await expect(app.dashboardLink).not.toHaveAttribute('aria-current', 'page');
   });
 });
 

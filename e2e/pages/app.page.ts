@@ -1,5 +1,13 @@
 import { type Locator, type Page, errors, expect } from '@playwright/test';
 
+const LABEL_BY_TAB = {
+  dashboard: 'Dashboard',
+  'gait-analysis': 'Gait Analysis',
+  'lidar-posture': 'LiDAR & Posture',
+  'fall-risk': 'Fall Risk',
+  settings: 'Settings',
+} as const;
+
 /** Reusable page object for the main VitalSense app shell. */
 export class AppPage {
   readonly page: Page;
@@ -113,6 +121,11 @@ export class AppPage {
       | 'fall-risk'
       | 'settings'
   ): Promise<void> {
+    // Mobile has no persistent sidebar — use the bottom tab bar instead
+    if (await this.mobileTabBar.isVisible()) {
+      await this.mobileNavigateTo(LABEL_BY_TAB[tab]);
+      return;
+    }
     // Ensure sidebar is expanded so items are clickable
     const toggle = this.sidebarToggle;
     if ((await toggle.count()) > 0) {
