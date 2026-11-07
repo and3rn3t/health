@@ -50,8 +50,9 @@ async function probe(name, path, expect) {
       : await res.text();
 
     // Run assertions
-    if (expect.status && res.status !== expect.status) {
-      throw new Error(`Expected status ${expect.status}, got ${res.status}`);
+    const allowedStatuses = [expect.status].flat().filter(Boolean);
+    if (allowedStatuses.length > 0 && !allowedStatuses.includes(res.status)) {
+      throw new Error(`Expected status ${allowedStatuses.join(' or ')}, got ${res.status}`);
     }
     if (expect.jsonField && body[expect.jsonField] !== expect.jsonValue) {
       throw new Error(`Expected ${expect.jsonField}="${expect.jsonValue}", got "${body[expect.jsonField]}"`);
@@ -84,8 +85,9 @@ await probe('Static assets (index.html)', '/', {
   bodyIncludes: 'VitalSense',
 });
 
+// Auth-gated in production (401 is the expected unauthenticated response)
 await probe('Auth0 diagnostics', '/api/auth0/health', {
-  status: 200,
+  status: [200, 401],
 });
 
 await probe('WebSocket probe (no upgrade)', '/ws', {
