@@ -3,10 +3,10 @@
   "permissions": {
     "allow": [
       "Bash(git status *)",
-      "Bash(git diff *)",
-      "Bash(git log *)",
-      "Bash(git show *)",
-      "Bash(git branch *)",
+      "Bash(git diff)",
+      "Bash(git log)",
+      "Bash(git show)",
+      "Bash(git branch)",
       "Bash(gh pr view *)",
       "Bash(gh pr list *)",
       "Bash(gh pr checks *)",
