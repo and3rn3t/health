@@ -4,7 +4,7 @@ Thanks for helping improve this project. Please follow these guidelines to keep 
 
 ## Prereqs
 
-- Node ≥22.21.1, pnpm 10.16+
+- Node ≥24.13.0 (see `.nvmrc`), pnpm ≥11.11.0
 - Wrangler CLI for Workers dev
 
 ## Setup
@@ -30,14 +30,14 @@ Thanks for helping improve this project. Please follow these guidelines to keep 
 
 Before opening or updating a PR run:
 
-| Category | Command | Purpose |
-|----------|---------|--------|
-| Type check | `pnpm type-check` | Surface TS errors early |
-| Lint | `pnpm lint` | Code style + obvious issues |
-| Unit tests | `pnpm test` | Core logic validation |
-| Full validation | `pnpm validate` | type-check + lint + test in one pass |
-| E2E tests | `pnpm test:e2e` | End-to-end Playwright tests |
-| Build | `pnpm build` | Ensure production build succeeds |
+| Category        | Command           | Purpose                              |
+| --------------- | ----------------- | ------------------------------------ |
+| Type check      | `pnpm type-check` | Surface TS errors early              |
+| Lint            | `pnpm lint`       | Code style + obvious issues          |
+| Unit tests      | `pnpm test`       | Core logic validation                |
+| Full validation | `pnpm validate`   | type-check + lint + test in one pass |
+| E2E tests       | `pnpm test:e2e`   | End-to-end Playwright tests          |
+| Build           | `pnpm build`      | Ensure production build succeeds     |
 
 If you change public behavior or WebSocket message shapes, update/add Vitest tests under `src/__tests__` and adjust docs in `docs/architecture/WEBSOCKETS.md`.
 

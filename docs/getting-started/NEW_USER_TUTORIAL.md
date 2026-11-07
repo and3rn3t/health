@@ -4,7 +4,7 @@ Welcome to VitalSense! This quick "walk me through" guide helps you set up the p
 
 ## What you'll do
 
-- Ensure prerequisites (Node 22.21.1+, pnpm, Git, Wrangler)
+- Ensure prerequisites (Node 24.13.0+, pnpm, Git, Wrangler)
 - Install dependencies and configure environment
 - Start the Worker and verify the health endpoint
 - Run tests

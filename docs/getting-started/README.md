@@ -7,7 +7,7 @@ Welcome to VitalSense - your comprehensive health monitoring platform! This guid
 ### Prerequisites
 
 - **Development Environment**: VS Code with recommended extensions
-- **Node.js**: Version 22.21.1 or later (see `engines` in `package.json`)
+- **Node.js**: Version 24.13.0 or later (`.nvmrc` pins 24.22.0) (see `engines` in `package.json`)
 - **pnpm**: Version 10.16+ (via Corepack)
 - **Git**: For version control
 

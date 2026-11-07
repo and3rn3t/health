@@ -6,8 +6,8 @@ Complete guide for setting up your VitalSense development environment across all
 
 ### Required Software
 
-- **Node.js 22.21.1+**: [Download from nodejs.org](https://nodejs.org/) (enforced by `engines` in `package.json`)
-- **pnpm 10.16+**: [Install via Corepack](https://pnpm.io/installation) (`corepack enable && corepack prepare`)
+- **Node.js 24.13.0+**: [Download from nodejs.org](https://nodejs.org/) (enforced by `engines` in `package.json`)
+- **pnpm 11.11+**: [Install via Corepack](https://pnpm.io/installation) (`corepack enable && corepack prepare`)
 - **Git**: [Download from git-scm.com](https://git-scm.com/)
 - **VS Code**: [Download from code.visualstudio.com](https://code.visualstudio.com/)
 
@@ -198,7 +198,7 @@ For complete deployment setup, see [Deployment Guide](../deploy/README.md).
 
 1. **Port Conflicts**: `lsof -ti:5173 | xargs kill` (macOS/Linux)
 2. **Permission Errors**: Check file permissions or run with elevated privileges
-3. **Node Version**: Run `node -v` — must be ≥22.21.1 (see `package.json engines`)
+3. **Node Version**: Run `node -v` — must be ≥24.13.0 (see `package.json engines`)
 4. **Build Errors**: Clear cache with `pnpm clean`
 
 ### Getting Help
