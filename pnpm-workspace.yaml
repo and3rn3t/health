@@ -20,7 +20,7 @@ auditConfig:
     - GHSA-mrhx-c7xc-m3w5
 
 overrides:
-  'minimatch@<3.1.4': 11.0.5
+  'minimatch@<3.1.4': 11.0.8
   'minimatch@>=9.0.0,<9.0.7': 11.0.8
   'minimatch@>=7.0.0 <11.0.1': 11.0.5
   'esbuild@>=0.27.3 <0.28.1': 0.28.2
