@@ -13,6 +13,6 @@ permissions:
 
 jobs:
   analyze:
-    uses: and3rn3t/.github/.github/workflows/reusable-codeql.yml@99fae926f05867cc98ec7007b9fce8c1fd125b53 # v1
+    uses: and3rn3t/.github/.github/workflows/reusable-codeql.yml@bee3d0a11a39b66867b89dddc0306362587aa011 # v1
     with:
       languages: '["javascript-typescript"]'
