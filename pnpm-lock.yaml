@@ -15,7 +15,7 @@ overrides:
   brace-expansion@<1.1.21: 1.1.22
   brace-expansion@>=2.0.0 <2.1.7: 2.1.7
   brace-expansion@>=3.0.0 <3.0.9: 5.0.12
-  brace-expansion@>=4.0.0 <5.0.12: 5.0.12
+  brace-expansion@>=4.0.0 <5.0.12: 5.0.13
   js-yaml: 4.3.2
   lint-staged>picomatch: 4.0.5
   eslint>ajv: 6.14.0
@@ -4415,10 +4415,6 @@ packages:
 
   minimalistic-assert@1.0.1:
     resolution: {integrity: sha512-UtJcAD4yEaGtjPezWuO9wC4nwUnVH/8/Im3yEHQP4b67cXlD/Qr9hdITCU1xDbSEXg2XKNaP8jsReV7vQd00/A==}
-
-  minimatch@11.0.5:
-    resolution: {integrity: sha512-snPlVppFcYWfLLFQGhDxUyBcHNtMlWmn3jtj7pEaO+DP8pqL0IvAzXhMYmn1z9ASNtgmwLBdFxSf4tMUB0OTKA==}
-    engines: {node: 20 || >=22}
 
   minimatch@11.0.8:
     resolution: {integrity: sha512-nFQuYSTVrGvysVBps5Ih+0BdnYFN/Cj3C816r6+p7yK+FHrVLGE4O4N9AFwykrlNlvM2HYt+Rad1Uiro6h88Ig==}
@@ -9579,11 +9575,6 @@ snapshots:
       - utf-8-validate
 
   minimalistic-assert@1.0.1: {}
-
-  minimatch@11.0.5:
-    dependencies:
-      '@isaacs/nonrecursive-glob-match': 1.1.0
-      brace-expansion: 5.0.12
 
   minimatch@11.0.8:
     dependencies:
